@@ -4943,7 +4943,6 @@ class ModelImputationWithExtrapolationAndInterpolationData:
     column_with_null_values_name: str = "null_values"
     model_column_name: str = "trend_model"
     imputation_model_column_name: str = "imputation_null_values_trend_model"
-    expected_column_name = imputation_model_column_name
 
     imputation_model_rows = [
         ("1-001", None, None, None),

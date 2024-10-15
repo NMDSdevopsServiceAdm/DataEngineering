@@ -37,7 +37,8 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             self.imputation_with_extrapolation_and_interpolation_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
-            care_home=False,
+            False,
+            Data.imputation_model_column_name,
         )
 
     @patch(
@@ -55,7 +56,8 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             self.imputation_with_extrapolation_and_interpolation_df,
             Data.column_with_null_values_name,
             Data.model_column_name,
-            care_home=False,
+            False,
+            Data.imputation_model_column_name,
         )
 
         model_extrapolation_mock.assert_called_once()
@@ -73,21 +75,6 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
         self,
     ):
         self.assertIn(Data.imputation_model_column_name, self.returned_df.columns)
-
-
-class CreateImputationModelNameTests(
-    ModelImputationWithExtrapolationAndInterpolationTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_create_imputation_model_name_returns_expected_column_name(self):
-        self.assertEqual(
-            job.create_imputation_model_name(
-                Data.column_with_null_values_name, Data.model_column_name
-            ),
-            Data.expected_column_name,
-        )
 
 
 class SplitDatasetForImputationTests(

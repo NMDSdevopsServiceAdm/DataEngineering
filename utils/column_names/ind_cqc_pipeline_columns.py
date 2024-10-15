@@ -119,17 +119,9 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     import_month_index: str = "import_month_index"
-    imputation_filled_posts_rolling_average_model: str = (
-        "imputation_" + ascwds_filled_posts_dedup_clean + "_rolling_average_model"
-    )
-    imputation_posts_per_bed_ratio_rolling_average_model_filled_posts_per_bed_ratio: (
-        str
-    ) = (
-        "imputation_"
-        + filled_posts_per_bed_ratio
-        + "_rolling_average_model_filled_posts_per_bed_ratio"
-    )
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
+    imputed_posts_rolling_avg_model: str = "imputed_posts_rolling_avg_model"
+    imputed_ratio_rolling_avg_model: str = "imputed_ratio_rolling_avg_model"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
     interpolation_model_ascwds_filled_posts_dedup_clean: str = (
