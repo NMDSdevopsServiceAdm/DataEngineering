@@ -12,6 +12,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     column_with_null_values: str,
     model_column_name: str,
     care_home: bool,
+    imputed_column_name: str,
 ) -> DataFrame:
     """
     Create a new column of imputed values based on known values and null values being extrapolated and interpolated.
@@ -23,22 +24,18 @@ def model_imputation_with_extrapolation_and_interpolation(
     the rate of change of values in '<model_column_name>'. Values before the first known submission in 'column_with_null_values'
     and after the last known submission are extrapolated based on the rate of change of the '<model_column_name>'. Values in
     between the non-null values are interpolated using the rate of change of the '<model_column_name>' but the trend is adapted
-    so that the end point matches the next non-null value. A new column is added which includes the name of the
-    '<column_with_null_values>' and the '<model_column_name>'.
+    so that the end point matches the next non-null value. A new column is added with the name provided in '<imputed_column_name>'.
 
     Args:
         df (DataFrame): The input DataFrame containing the columns to be extrapolated and interpolated.
         column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
         model_column_name (str): The name of the column containing the model values used for extrapolation and interpolation.
         care_home (bool): True if imputation is for care homes, False if it is for non residential.
+        imputed_column_name (str): The name of the new imputated column.
 
     Returns:
         DataFrame: The DataFrame with the added column for imputed values.
     """
-    imputation_model_column_name = create_imputation_model_name(
-        column_with_null_values, model_column_name
-    )
-
     df = identify_locations_with_a_non_null_submission(df, column_with_null_values)
 
     imputed_df, non_imputed_df = split_dataset_for_imputation(df, care_home)
@@ -53,7 +50,7 @@ def model_imputation_with_extrapolation_and_interpolation(
         column_with_null_values,
     )
     imputed_df = model_imputation(
-        imputed_df, column_with_null_values, imputation_model_column_name
+        imputed_df, column_with_null_values, imputed_column_name
     )
 
     combined_df = imputed_df.unionByName(non_imputed_df, allowMissingColumns=True)
@@ -69,33 +66,6 @@ def model_imputation_with_extrapolation_and_interpolation(
     )
 
     return combined_df
-
-
-def create_imputation_model_name(
-    column_with_null_values: str, model_column_name: str
-) -> str:
-    """
-    Generate a new column name imputation model output.
-
-    Generate a new column names for imputation model outputs which includes the name of the column with
-    null values and the model name which trend line the process is following. For example:
-        - 'filled_posts' using the 'rolling_average_model' trend would become
-          'imputatation_filled_posts_rolling_average_model".
-        - 'filled_posts_per_bed_ratio' using the 'care_home_model' trend would become
-          'imputatation_filled_posts_per_bed_ratio_care_home_model".
-
-
-    Args:
-        column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
-        model_column_name (str): The name of the model column to use.
-
-    Returns:
-        str: A string with the imputation model column name.
-    """
-    imputation_model_column_name = (
-        "imputation_" + column_with_null_values + "_" + model_column_name
-    )
-    return imputation_model_column_name
 
 
 def split_dataset_for_imputation(
