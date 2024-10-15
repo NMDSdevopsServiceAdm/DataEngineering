@@ -4683,7 +4683,6 @@ class EstimateMissingAscwdsFilledPostsData:
         ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
     ]
     # fmt: on
-    
 
     null_changing_carehome_status_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.care_home, 20.0, None),

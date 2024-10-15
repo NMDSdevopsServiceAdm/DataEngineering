@@ -2431,7 +2431,6 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
-
     null_changing_carehome_status_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
