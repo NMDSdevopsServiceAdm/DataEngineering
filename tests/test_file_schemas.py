@@ -2431,49 +2431,6 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
-    merge_imputed_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.extrapolation_rolling_average_model, FloatType(), True),
-            StructField(
-                IndCQC.interpolation_model,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-
-    expected_merge_imputed_columns_schema = StructType(
-        [
-            *merge_imputed_columns_schema,
-            StructField(IndCQC.ascwds_filled_posts_imputed, FloatType(), True),
-        ]
-    )
-
-    merge_interpolated_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-                FloatType(),
-                True,
-            ),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-        ]
-    )
-
-    expected_merge_interpolated_values_schema = StructType(
-        [
-            *merge_interpolated_values_schema,
-            StructField(IndCQC.interpolation_model, FloatType(), True),
-        ]
-    )
 
     null_changing_carehome_status_schema = StructType(
         [
