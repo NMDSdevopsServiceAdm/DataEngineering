@@ -4161,11 +4161,6 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
             StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
-            StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                DoubleType(),
-                True,
-            ),
             StructField(IndCQC.non_res_model, DoubleType(), True),
         ]
     )
