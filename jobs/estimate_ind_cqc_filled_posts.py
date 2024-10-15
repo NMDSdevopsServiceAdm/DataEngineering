@@ -7,7 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
