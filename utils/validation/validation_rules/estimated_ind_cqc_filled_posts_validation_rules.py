@@ -36,7 +36,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
             IndCqcColumns.estimate_filled_posts: 1.0,
-            IndCqcColumns.interpolation_model: 0.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.people_directly_employed_dedup: 1,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
@@ -48,7 +47,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             # IndCqcColumns.estimate_filled_posts: 3000.0, # temporarily removed until non res models are fixed
             IndCqcColumns.extrapolation_care_home_model: 3000.0,
             # IndCqcColumns.extrapolation_non_res_with_dormancy_model: 3000.0, # temporarily removed until non res models are fixed
-            IndCqcColumns.interpolation_model: 3000.0,
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
