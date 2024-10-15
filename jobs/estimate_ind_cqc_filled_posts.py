@@ -9,6 +9,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 from utils.estimate_filled_posts.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
 )
@@ -102,23 +105,32 @@ def main(
         ml_model_metrics_destination,
     )
 
-    estimate_filled_posts_df = model_extrapolation(
-        estimate_filled_posts_df, IndCQC.care_home_model
+    estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.care_home_model,
+        IndCQC.imputed_posts_care_home_model,
+        care_home=True,
     )
-    estimate_filled_posts_df = model_extrapolation(
-        estimate_filled_posts_df, IndCQC.non_res_with_dormancy_model
+
+    estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.non_res_with_dormancy_model,
+        IndCQC.imputed_posts_non_res_with_dormancy_model,
+        care_home=False,
     )
+
+    # TODO: add imputation for other non res models
 
     estimate_filled_posts_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             estimate_filled_posts_df,
             [
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                IndCQC.interpolation_model,
-                IndCQC.extrapolation_care_home_model,
+                IndCQC.imputed_posts_care_home_model,
                 IndCQC.care_home_model,
-                IndCQC.extrapolation_rolling_average_model,
-                IndCQC.extrapolation_non_res_with_dormancy_model,
+                IndCQC.imputed_posts_non_res_with_dormancy_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,
                 IndCQC.rolling_average_model,

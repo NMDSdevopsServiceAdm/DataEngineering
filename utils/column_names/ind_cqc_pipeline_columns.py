@@ -120,6 +120,10 @@ class IndCqcColumns:
     has_non_null_value: str = "has_non_null_value"
     import_month_index: str = "import_month_index"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
+    imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
+    imputed_posts_non_res_with_dormancy_model: str = (
+        "imputed_posts_non_res_with_dormancy_model"
+    )
     imputed_posts_rolling_avg_model: str = "imputed_posts_rolling_avg_model"
     imputed_ratio_rolling_avg_model: str = "imputed_ratio_rolling_avg_model"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
