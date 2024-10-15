@@ -124,12 +124,6 @@ class IndCqcColumns:
     imputed_ratio_rolling_avg_model: str = "imputed_ratio_rolling_avg_model"
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
-    interpolation_model_ascwds_filled_posts_dedup_clean: str = (
-        "interpolation_model_ascwds_filled_posts_dedup_clean"
-    )
-    interpolation_model_filled_posts_per_bed_ratio: str = (
-        "interpolation_model_filled_posts_per_bed_ratio"
-    )
     last_filled_posts: str = "last_filled_posts"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
