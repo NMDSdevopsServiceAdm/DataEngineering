@@ -2529,20 +2529,47 @@ class ModelPrimaryServiceRollingAverage:
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:
+    column_with_null_values: str = "null_values"
+
     imputation_with_extrapolation_and_interpolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField("null_values", DoubleType(), True),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_with_null_values, DoubleType(), True),
             StructField("trend_model", DoubleType(), True),
+        ]
+    )
+
+    split_dataset_for_imputation_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.has_non_null_value, BooleanType(), True),
+        ]
+    )
+
+    non_null_submission_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_with_null_values, DoubleType(), True),
+        ]
+    )
+    expected_non_null_submission_schema = StructType(
+        [
+            *non_null_submission_schema,
+            StructField(IndCQC.has_non_null_value, BooleanType(), True),
         ]
     )
 
     imputation_model_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField("null_values", DoubleType(), True),
+            StructField(column_with_null_values, DoubleType(), True),
             StructField(IndCQC.extrapolation_model, DoubleType(), True),
             StructField(IndCQC.interpolation_model, DoubleType(), True),
         ]

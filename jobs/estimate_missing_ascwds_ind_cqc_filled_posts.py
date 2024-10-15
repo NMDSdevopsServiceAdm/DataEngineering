@@ -12,6 +12,9 @@ from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 
@@ -46,30 +49,50 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.rolling_average_model,
     )
+
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.rolling_average_model,
+        False,
+    )
+
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+        True,
+    )
+
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
-    )
+    )  # TODO remove
 
     estimate_missing_ascwds_df = model_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-    )
+    )  # TODO remove
+
     estimate_missing_ascwds_df = model_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-    )
+    )  # TODO remove
+
     estimate_missing_ascwds_df = (
         merge_interpolated_values_into_interpolated_filled_posts(
             estimate_missing_ascwds_df
         )
-    )
-    estimate_missing_ascwds_df = merge_imputed_columns(estimate_missing_ascwds_df)
+    )  # TODO function no longer required
+
+    estimate_missing_ascwds_df = merge_imputed_columns(
+        estimate_missing_ascwds_df
+    )  # TODO function no longer required
 
     estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
         estimate_missing_ascwds_df
-    )
+    )  # TODO check if the function is still required
 
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
