@@ -2975,7 +2975,6 @@ class MLModelMetrics:
     r2_metric_schema = predictions_schema
 
 
-
 @dataclass
 class ValidateMergedIndCqcData:
     cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
