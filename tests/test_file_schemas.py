@@ -2475,31 +2475,6 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
-    null_changing_carehome_status_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.cqc_location_import_date,
-                DateType(),
-                True,
-            ),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_imputed,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    retain_ascwds_filled_posts_dedup_clean_changing_carehome_status_schema = (
-        null_changing_carehome_status_schema
-    )
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
