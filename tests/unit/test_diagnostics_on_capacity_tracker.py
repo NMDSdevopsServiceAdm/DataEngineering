@@ -74,7 +74,7 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
         super().setUp()
         self.join_capacity_tracker_care_home_df = self.spark.createDataFrame(
             Data.join_capacity_tracker_care_home_rows,
-            Schemas.estimate_filled_posts_schema,
+            Schemas.join_estimates_schema,
         )
         self.returned_care_home_df = job.join_capacity_tracker_data(
             self.join_capacity_tracker_care_home_df,

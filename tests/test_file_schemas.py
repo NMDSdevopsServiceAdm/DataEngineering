@@ -4417,6 +4417,19 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(Keys.import_date, StringType(), True),
         ]
     )
+    join_estimates_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
 
     capacity_tracker_care_home_schema = StructType(
         [
@@ -4449,7 +4462,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
 
     expected_joined_care_home_schema = StructType(
         [
-            *estimate_filled_posts_schema,
+            *join_estimates_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),

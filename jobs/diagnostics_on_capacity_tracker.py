@@ -115,8 +115,9 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
+    list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df, column_for_comparison
+        care_home_diagnostics_df, column_for_comparison, list_of_models
     )
     care_home_diagnostics_df = dUtils.filter_to_known_values(
         care_home_diagnostics_df, IndCQC.estimate_value
