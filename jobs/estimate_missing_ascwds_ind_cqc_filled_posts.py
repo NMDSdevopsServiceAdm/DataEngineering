@@ -1,21 +1,19 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.column_values.categorical_column_values import PrimaryServiceType
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -64,12 +62,7 @@ def main(
         IndCQC.imputed_ratio_rolling_avg_model,
         care_home=True,
     )
-    """
-    estimate_missing_ascwds_df = model_extrapolation(
-        estimate_missing_ascwds_df, IndCQC.rolling_average_model
-    )  # TODO remove
 
-    """
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(

@@ -68,7 +68,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-            # IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,  # temporarily removed as extrapolation rolling model is always used before extrapolation ML model, so that model is never chosen (only finds 8 of the 9 distinct options)
+            IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,
         },
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }
