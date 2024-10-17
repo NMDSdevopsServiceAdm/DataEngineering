@@ -84,7 +84,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
+    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
     def test_calculate_first_and_final_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -164,7 +164,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
+    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
     def test_extrapolation_forwards_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -244,7 +244,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation_new.get_selected_value")
+    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
     def test_extrapolation_backwards_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,

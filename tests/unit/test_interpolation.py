@@ -183,7 +183,7 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.interpolation_new.get_selected_value")
+    @patch("utils.estimate_filled_posts.models.interpolation.get_selected_value")
     def test_calculate_proportion_of_time_between_submissions_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
