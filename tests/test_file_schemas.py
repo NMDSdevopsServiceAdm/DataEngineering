@@ -2432,31 +2432,6 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         ]
     )
 
-    merge_interpolated_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-                FloatType(),
-                True,
-            ),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-        ]
-    )
-
-    expected_merge_interpolated_values_schema = StructType(
-        [
-            *merge_interpolated_values_schema,
-            StructField(IndCQC.interpolation_model, FloatType(), True),
-        ]
-    )
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -2930,53 +2905,6 @@ class MLModelMetrics:
     )
 
     r2_metric_schema = predictions_schema
-
-
-@dataclass
-class ModelInterpolation:
-    interpolation_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    calculating_submission_dates_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    creating_timeseries_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.first_submission_time, IntegerType(), False),
-            StructField(IndCQC.final_submission_time, IntegerType(), True),
-        ]
-    )
-    merging_exploded_data_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-        ]
-    )
-    merging_known_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-        ]
-    )
-    calculating_interpolated_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.unix_time, LongType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.value_unix_time, LongType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -4209,11 +4137,6 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
             StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
-            StructField(
-                IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-                DoubleType(),
-                True,
-            ),
             StructField(IndCQC.non_res_model, DoubleType(), True),
         ]
     )
