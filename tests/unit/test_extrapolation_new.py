@@ -4,13 +4,13 @@ import warnings
 
 from pyspark.sql import Window, WindowSpec
 
-import utils.estimate_filled_posts.models.extrapolation_new as job
+import utils.estimate_filled_posts.models.extrapolation as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-from tests.test_file_data import ModelExtrapolationNew as Data
-from tests.test_file_schemas import ModelExtrapolationNew as Schemas
+from tests.test_file_data import ModelExtrapolation as Data
+from tests.test_file_schemas import ModelExtrapolation as Schemas
 
 
 class ModelExtrapolationTests(unittest.TestCase):

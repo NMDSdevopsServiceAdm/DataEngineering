@@ -2514,7 +2514,7 @@ class ModelImputationWithExtrapolationAndInterpolationSchemas:
 
 
 @dataclass
-class ModelExtrapolationNew:
+class ModelExtrapolation:
     extrapolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
