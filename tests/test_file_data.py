@@ -4667,20 +4667,20 @@ class EstimateIndCQCFilledPostsData:
 class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-1783948", date(2022, 2, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-1783948", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None),
-        ("1-348374832", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None),
-        ("1-683746776", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10478686", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10235302415", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
-        ("1-1060912125", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None),
-        ("1-107095666", date(2022, 3, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
-        ("1-108369587", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10758359583", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None),
-        ("1-000000001", date(2022, 3, 8), 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None),
-        ("1-10894414510", date(2022, 3, 8), 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5),
-        ("1-108950835", date(2022, 3, 15), 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None),
-        ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
+        ("1-1783948", date(2022, 2, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-1783948", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None, None),
+        ("1-348374832", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None, None),
+        ("1-683746776", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10478686", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10235302415", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
+        ("1-1060912125", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None, None),
+        ("1-107095666", date(2022, 3, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
+        ("1-108369587", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10758359583", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None, None),
+        ("1-000000001", date(2022, 3, 8), 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None, None),
+        ("1-10894414510", date(2022, 3, 8), 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5, 10.0),
+        ("1-108950835", date(2022, 3, 15), 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None, None),
+        ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
     ]
     # fmt: on
 
