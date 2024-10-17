@@ -5025,7 +5025,6 @@ class ModelInterpolationNew:
     ]
 
 
-
 @dataclass
 class ModelFeatures:
     vectorise_input_rows = [
