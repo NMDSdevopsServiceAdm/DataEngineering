@@ -50,8 +50,9 @@ def main(
     filled_posts_df = dUtils.filter_to_known_values(
         filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
+    list_of_models = dUtils.create_list_of_models()
     filled_posts_df = dUtils.restructure_dataframe_to_column_wise(
-        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean
+        filled_posts_df, IndCQC.ascwds_filled_posts_dedup_clean, list_of_models
     )
     filled_posts_df = dUtils.filter_to_known_values(
         filled_posts_df, IndCQC.estimate_value
