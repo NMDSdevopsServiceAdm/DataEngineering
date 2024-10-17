@@ -4,13 +4,13 @@ import warnings
 
 from pyspark.sql import Window, WindowSpec
 
-import utils.estimate_filled_posts.models.interpolation_new as job
+import utils.estimate_filled_posts.models.interpolation as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-from tests.test_file_data import ModelInterpolationNew as Data
-from tests.test_file_schemas import ModelInterpolationNew as Schemas
+from tests.test_file_data import ModelInterpolation as Data
+from tests.test_file_schemas import ModelInterpolation as Schemas
 
 
 class ModelInterpolationTests(unittest.TestCase):
@@ -183,7 +183,7 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.interpolation_new.get_selected_value")
+    @patch("utils.estimate_filled_posts.models.interpolation.get_selected_value")
     def test_calculate_proportion_of_time_between_submissions_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
