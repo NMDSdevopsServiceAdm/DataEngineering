@@ -450,14 +450,11 @@ class EstimateFilledPostsSource(ColumnValues):
 
     ascwds_filled_posts_dedup_clean: str = IndCQC.ascwds_filled_posts_dedup_clean
     care_home_model: str = IndCQC.care_home_model
-    extrapolation_care_home_model: str = IndCQC.extrapolation_care_home_model
-    extrapolation_non_res_with_dormancy_model: str = (
-        IndCQC.extrapolation_non_res_with_dormancy_model
+    imputed_posts_care_home_model: str = IndCQC.imputed_posts_care_home_model
+    imputed_posts_rolling_avg_model: str = IndCQC.imputed_posts_rolling_avg_model
+    imputed_posts_non_res_with_dormancy_model: str = (
+        IndCQC.imputed_posts_non_res_with_dormancy_model
     )
-    extrapolation_rolling_average_model: str = (
-        IndCQC.extrapolation_rolling_average_model
-    )
-    interpolation_model: str = IndCQC.interpolation_model
     non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model
     non_res_without_dormancy_model: str = IndCQC.non_res_without_dormancy_model
     rolling_average_model: str = IndCQC.rolling_average_model

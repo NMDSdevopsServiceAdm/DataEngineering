@@ -11,8 +11,8 @@ def model_imputation_with_extrapolation_and_interpolation(
     df: DataFrame,
     column_with_null_values: str,
     model_column_name: str,
-    care_home: bool,
     imputed_column_name: str,
+    care_home: bool,
 ) -> DataFrame:
     """
     Create a new column of imputed values based on known values and null values being extrapolated and interpolated.
@@ -30,8 +30,8 @@ def model_imputation_with_extrapolation_and_interpolation(
         df (DataFrame): The input DataFrame containing the columns to be extrapolated and interpolated.
         column_with_null_values (str): The name of the column containing null values to be extrapolated and interpolated.
         model_column_name (str): The name of the column containing the model values used for extrapolation and interpolation.
-        care_home (bool): True if imputation is for care homes, False if it is for non residential.
         imputed_column_name (str): The name of the new imputated column.
+        care_home (bool): True if imputation is for care homes, False if it is for non residential.
 
     Returns:
         DataFrame: The DataFrame with the added column for imputed values.
