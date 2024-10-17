@@ -25,7 +25,6 @@ estimate_filled_posts_columns: list = [
     IndCQC.rolling_average_model,
     IndCQC.care_home_model,
     IndCQC.extrapolation_care_home_model,
-    IndCQC.interpolation_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.extrapolation_non_res_with_dormancy_model,

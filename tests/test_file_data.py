@@ -4684,57 +4684,6 @@ class EstimateMissingAscwdsFilledPostsData:
     ]
     # fmt: on
 
-    merge_interpolated_values_rows = [
-        (
-            "loc 1",
-            PrimaryServiceType.care_home_only,
-            10.0,
-            1.8,
-            5,
-        ),
-        (
-            "loc 2",
-            PrimaryServiceType.care_home_with_nursing,
-            10.0,
-            1.8,
-            5,
-        ),
-        (
-            "loc 3",
-            PrimaryServiceType.non_residential,
-            10.0,
-            1.8,
-            5,
-        ),
-    ]
-
-    expected_merge_interpolated_values_rows = [
-        (
-            "loc 1",
-            PrimaryServiceType.care_home_only,
-            10.0,
-            1.8,
-            5,
-            9.0,
-        ),
-        (
-            "loc 2",
-            PrimaryServiceType.care_home_with_nursing,
-            10.0,
-            1.8,
-            5,
-            9.0,
-        ),
-        (
-            "loc 3",
-            PrimaryServiceType.non_residential,
-            10.0,
-            1.8,
-            5,
-            10.0,
-        ),
-    ]
-
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
@@ -5561,62 +5510,6 @@ class MLModelMetrics:
     expected_predictions_with_dependent_rows = [
         ("1-00001", 50.0, 56.89),
         ("1-00003", 10.0, 12.34),
-    ]
-
-
-@dataclass
-class ModelInterpolation:
-    interpolation_rows = [
-        ("1-000000001", date(2023, 1, 1), 1672531200, None),
-        ("1-000000001", date(2023, 1, 2), 1672617600, 30.0),
-        ("1-000000001", date(2023, 1, 3), 1672704000, None),
-        ("1-000000002", date(2023, 1, 1), 1672531200, None),
-        ("1-000000002", date(2023, 1, 3), 1672704000, 4.0),
-        ("1-000000002", date(2023, 1, 5), 1672876800, None),
-        ("1-000000002", date(2023, 1, 7), 1673049600, 5.0),
-        ("1-000000002", date(2023, 1, 9), 1673222400, 5.0),
-        ("1-000000002", date(2023, 1, 11), 1673395200, None),
-        ("1-000000002", date(2023, 1, 13), 1673568000, None),
-        ("1-000000002", date(2023, 1, 15), 1673740800, 20.0),
-        ("1-000000002", date(2023, 1, 17), 1673913600, None),
-        ("1-000000002", date(2023, 1, 19), 1674086400, None),
-    ]
-
-    calculating_submission_dates_rows = [
-        ("1-000000001", 1672617600, 1.0),
-        ("1-000000002", 1672704000, 1.0),
-        ("1-000000002", 1673049600, 1.0),
-        ("1-000000002", 1673222400, 1.0),
-    ]
-
-    creating_timeseries_rows = [
-        ("1-000000001", 1672617600, 1672617600),
-        ("1-000000002", 1672704000, 1673049600),
-    ]
-
-    merging_exploded_data_rows = [
-        ("1-000000001", 1672617600),
-        ("1-000000002", 1672704000),
-        ("1-000000002", 1672790400),
-        ("1-000000002", 1672876800),
-        ("1-000000003", 1672790400),
-    ]
-
-    merging_known_values_rows = [
-        ("1-000000002", 1672704000, 1.0),
-        ("1-000000002", 1672876800, 2.5),
-        ("1-000000003", 1672790400, 15.0),
-    ]
-
-    calculating_interpolated_values_rows = [
-        ("1-000000001", 1, 30.0, 1),
-        ("1-000000002", 1, 4.0, 1),
-        ("1-000000002", 2, None, None),
-        ("1-000000002", 3, 5.0, 3),
-        ("1-000000003", 2, 5.0, 2),
-        ("1-000000003", 3, None, None),
-        ("1-000000003", 4, None, None),
-        ("1-000000003", 5, 8.5, 5),
     ]
 
 
@@ -7250,10 +7143,10 @@ class ValidateEstimatedIndCqcFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
     ]
     # fmt: on
 

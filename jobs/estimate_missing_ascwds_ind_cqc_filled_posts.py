@@ -15,7 +15,6 @@ from utils.estimate_filled_posts.models.primary_service_rolling_average import (
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 
 
@@ -65,29 +64,12 @@ def main(
         IndCQC.imputed_ratio_rolling_avg_model,
         care_home=True,
     )
-
+    """
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
     )  # TODO remove
 
-    estimate_missing_ascwds_df = model_interpolation(
-        estimate_missing_ascwds_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean,
-    )  # TODO remove
-
-    estimate_missing_ascwds_df = model_interpolation(
-        estimate_missing_ascwds_df,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.interpolation_model_filled_posts_per_bed_ratio,
-    )  # TODO remove
-
-    estimate_missing_ascwds_df = (
-        merge_interpolated_values_into_interpolated_filled_posts(
-            estimate_missing_ascwds_df
-        )
-    )  # TODO function no longer required
-
+    """
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
@@ -98,36 +80,6 @@ def main(
     )
 
     print("Completed estimate missing ASCWDS independent CQC filled posts")
-
-
-def merge_interpolated_values_into_interpolated_filled_posts(
-    df: DataFrame,
-) -> DataFrame:
-    """
-    Use the interpolated value columns to create a single column with interpolated values for care homes and non-res.
-
-    Args:
-        df (DataFrame): A dataframe with interpolated values.
-
-    Returns:
-        DataFrame: A dataframe with a single column with interpolated filled posts values.
-    """
-    df = df.withColumn(
-        IndCQC.interpolation_model,
-        F.when(
-            df[IndCQC.primary_service_type] == PrimaryServiceType.non_residential,
-            F.col(IndCQC.interpolation_model_ascwds_filled_posts_dedup_clean),
-        ).when(
-            (df[IndCQC.primary_service_type] == PrimaryServiceType.care_home_only)
-            | (
-                df[IndCQC.primary_service_type]
-                == PrimaryServiceType.care_home_with_nursing
-            ),
-            F.col(IndCQC.interpolation_model_filled_posts_per_bed_ratio)
-            * F.col(IndCQC.number_of_beds),
-        ),
-    )
-    return df
 
 
 if __name__ == "__main__":
