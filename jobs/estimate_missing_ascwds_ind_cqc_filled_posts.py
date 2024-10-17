@@ -66,6 +66,14 @@ def main(
         care_home=True,
     )
 
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.people_directly_employed_dedup,
+        IndCQC.rolling_average_model,
+        IndCQC.imputed_people_directly_employed,
+        care_home=True,
+    )
+
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
     )  # TODO remove
