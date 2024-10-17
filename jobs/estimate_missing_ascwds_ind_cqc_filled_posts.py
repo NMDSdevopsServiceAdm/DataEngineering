@@ -64,12 +64,19 @@ def main(
         IndCQC.imputed_ratio_rolling_avg_model,
         care_home=True,
     )
-    """
+
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.people_directly_employed_dedup,
+        IndCQC.rolling_average_model,
+        IndCQC.imputed_people_directly_employed,
+        care_home=True,
+    )
+
     estimate_missing_ascwds_df = model_extrapolation(
         estimate_missing_ascwds_df, IndCQC.rolling_average_model
     )  # TODO remove
 
-    """
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(

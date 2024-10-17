@@ -2428,6 +2428,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, FloatType(), True),
         ]
     )
 
