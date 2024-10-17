@@ -7744,7 +7744,10 @@ class DiagnosticsUtilsData:
         ),
     ]
     list_of_models = ["model_type_one", "model_type_two"]
-    expected_list_of_models = [*CatValues.estimate_filled_posts_source_column_values.categorical_values, IndCQC.estimate_filled_posts]
+    expected_list_of_models = [
+        *CatValues.estimate_filled_posts_source_column_values.categorical_values,
+        IndCQC.estimate_filled_posts,
+    ]
     restructure_dataframe_rows = [
         (
             "loc 1",
