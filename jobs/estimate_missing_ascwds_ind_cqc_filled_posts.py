@@ -92,10 +92,6 @@ def main(
         estimate_missing_ascwds_df
     )  # TODO function no longer required
 
-    estimate_missing_ascwds_df = null_changing_carehome_status_from_imputed_columns(
-        estimate_missing_ascwds_df
-    )  # TODO check if the function is still required
-
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
@@ -161,51 +157,6 @@ def merge_imputed_columns(df: DataFrame) -> DataFrame:
         ),
     )
     return df
-
-
-def null_changing_carehome_status_from_imputed_columns(df: DataFrame) -> DataFrame:
-    """
-    Nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history.
-
-    This function nulls imputed data for locations which change from care home to not care home, or vice-versa at some point in their history. If those locations have a value for ascwds_filled_posts_dedup_clean, that value is used instead, otherwise the value is nulled.
-
-    Args:
-        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, ascwds_filled_posts_dedup_clean and ascwds_filled_posts_imputed.
-
-    Returns:
-        DataFrame: A dataframe with locations changing care home status nulled, unless they have ascwds_filled_posts_dedup_clean data available.
-    """
-    list_of_locations = create_list_of_locations_with_changing_care_home_status(df)
-    df = df.withColumn(
-        IndCQC.ascwds_filled_posts_imputed,
-        F.when(
-            ~df[IndCQC.location_id].isin(list_of_locations),
-            F.col(IndCQC.ascwds_filled_posts_imputed),
-        ).otherwise(
-            F.col(IndCQC.ascwds_filled_posts_dedup_clean),
-        ),
-    )
-    return df
-
-
-def create_list_of_locations_with_changing_care_home_status(df: DataFrame) -> list:
-    """
-    Creates a list of location ids for locations which change from care home to not care home, or vice-versa at some point in their history.
-
-    Args:
-        df (DataFrame): A dataframe contianing the columns location_id, cqc_location_import_date, carehome, and ascwds_filled_posts_imputed.
-
-    Returns:
-        list: A list of locations ids of locations with a changing care home status.
-    """
-    previous_carehome = "previous_carehome"
-    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
-    df = df.withColumn(previous_carehome, F.lag(IndCQC.care_home).over(w))
-    df = df.where(df[IndCQC.care_home] != df[previous_carehome])
-    list_of_locations = (
-        df.select(IndCQC.location_id).distinct().rdd.flatMap(lambda x: x).collect()
-    )
-    return list_of_locations
 
 
 if __name__ == "__main__":
