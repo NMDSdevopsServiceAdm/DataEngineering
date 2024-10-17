@@ -4,7 +4,7 @@ from typing import Tuple
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.extrapolation_new import model_extrapolation
-from utils.estimate_filled_posts.models.interpolation_new import model_interpolation
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 def model_imputation_with_extrapolation_and_interpolation(

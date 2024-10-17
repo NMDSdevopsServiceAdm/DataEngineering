@@ -2606,7 +2606,7 @@ class ModelExtrapolationNew:
 
 
 @dataclass
-class ModelInterpolationNew:
+class ModelInterpolation:
     interpolation_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

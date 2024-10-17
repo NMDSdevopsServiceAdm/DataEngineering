@@ -4952,7 +4952,7 @@ class ModelExtrapolationNew:
 
 
 @dataclass
-class ModelInterpolationNew:
+class ModelInterpolation:
     interpolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, None, None),
         ("1-001", date(2023, 2, 1), 1675209600, None, None),
