@@ -4491,20 +4491,8 @@ class DiagnosticsUtilsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
-            StructField(IndCQC.care_home_model, FloatType(), True),
-            StructField(IndCQC.imputed_posts_care_home_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_rolling_avg_model,
-                FloatType(),
-                True,
-            ),
-            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField("model_type_one", FloatType(), True),
+            StructField("model_type_two", FloatType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
