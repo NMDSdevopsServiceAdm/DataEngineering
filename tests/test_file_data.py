@@ -8083,36 +8083,135 @@ class NullGroupedProvidersData:
 @dataclass
 class CleanAscwdsAndPirOutliersData:
     clean_ascwds_and_pir_when_pir_greater_rows = [
-        ("loc 1", date(2024, 1, 1), 10.0, 11.0, AscwdsFilteringRule.populated),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
     ]
     expected_clean_ascwds_and_pir_when_pir_greater_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
+            CareHome.not_care_home,
             None,
             None,
             AscwdsFilteringRule.less_than_people_directly_employed,
         ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
     ]
 
     clean_ascwds_and_pir_when_pir_less_rows = [
-        ("loc 1", date(2024, 1, 1), 10.0, 9.0, AscwdsFilteringRule.populated),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            9.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            9.0,
+            AscwdsFilteringRule.populated,
+        ),
     ]
     expected_clean_ascwds_and_pir_when_pir_less_rows = (
         clean_ascwds_and_pir_when_pir_less_rows
     )
 
     clean_ascwds_and_pir_when_pir_equal_rows = [
-        ("loc 1", date(2024, 1, 1), 10.0, 10.0, AscwdsFilteringRule.populated),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
     ]
     expected_clean_ascwds_and_pir_when_pir_equal_rows = (
         clean_ascwds_and_pir_when_pir_equal_rows
     )
 
     clean_ascwds_and_pir_when_missing_rows = [
-        ("loc 1", date(2024, 1, 1), 10.0, None, AscwdsFilteringRule.populated),
-        ("loc 2", date(2024, 1, 1), None, 10.0, AscwdsFilteringRule.missing_data),
-        ("loc 3", date(2024, 1, 1), None, None, AscwdsFilteringRule.missing_data),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            None,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            None,
+            10.0,
+            AscwdsFilteringRule.missing_data,
+        ),
+        (
+            "loc 3",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            None,
+            None,
+            AscwdsFilteringRule.missing_data,
+        ),
+        (
+            "loc 4",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            None,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 5",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            None,
+            10.0,
+            AscwdsFilteringRule.missing_data,
+        ),
+        (
+            "loc 6",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            None,
+            None,
+            AscwdsFilteringRule.missing_data,
+        ),
     ]
     expected_clean_ascwds_and_pir_when_missing_rows = (
         clean_ascwds_and_pir_when_missing_rows
