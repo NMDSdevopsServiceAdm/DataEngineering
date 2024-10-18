@@ -49,6 +49,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.imputed_posts_rolling_avg_model: 0.0,
             IndCqcColumns.imputed_ratio_rolling_avg_model: 0.0,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
+            IndCqcColumns.imputed_non_res_people_directly_employed: 0.0,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
@@ -60,6 +61,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.imputed_posts_rolling_avg_model: 3000.0,
             IndCqcColumns.imputed_ratio_rolling_avg_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
+            IndCqcColumns.imputed_non_res_people_directly_employed: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
