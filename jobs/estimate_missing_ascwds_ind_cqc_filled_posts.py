@@ -70,7 +70,7 @@ def main(
         IndCQC.people_directly_employed_dedup,
         IndCQC.rolling_average_model,
         IndCQC.imputed_people_directly_employed,
-        care_home=True,
+        care_home=False,
     )
 
     estimate_missing_ascwds_df = model_extrapolation(
