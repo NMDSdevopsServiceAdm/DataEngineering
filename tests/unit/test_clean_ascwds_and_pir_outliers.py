@@ -54,72 +54,72 @@ class NullRowsWhereAscwdsLessThanPeopleDirectlyEmployedTests(
     def setUp(self) -> None:
         super().setUp()
 
-    def test_null_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_greater_than_ascwds_data(
+    def test_check_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_greater_than_ascwds_data(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.people_directly_employed_greater_than_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_people_directly_employed_greater_than_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
-        returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
+        returned_df = job.check_rows_where_ascwds_less_than_people_directly_employed(
             test_df
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_null_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_less_than_ascwds_data(
+    def test_check_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_less_than_ascwds_data(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.people_directly_employed_less_than_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_people_directly_employed_less_than_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
-        returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
+        returned_df = job.check_rows_where_ascwds_less_than_people_directly_employed(
             test_df
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_null_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_equal_to_ascwds_data(
+    def test_check_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_pir_data_is_equal_to_ascwds_data(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.people_directly_employed_equals_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_people_directly_employed_equals_ascwds_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
-        returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
+        returned_df = job.check_rows_where_ascwds_less_than_people_directly_employed(
             test_df
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
-    def test_null_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_missing_data(
+    def test_check_rows_where_ascwds_less_than_people_directly_employed_nulls_rows_when_missing_data(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.missing_data_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_missing_data_rows,
-            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
+            Schemas.check_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
-        returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
+        returned_df = job.check_rows_where_ascwds_less_than_people_directly_employed(
             test_df
         )
         self.assertEqual(

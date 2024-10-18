@@ -8112,16 +8112,9 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    expected_people_directly_employed_greater_than_ascwds_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            10.0,
-            None,
-            None,
-            AscwdsFilteringRule.less_than_people_directly_employed,
-        ),
-    ]
+    expected_people_directly_employed_greater_than_ascwds_rows = (
+        people_directly_employed_greater_than_ascwds_rows
+    )
 
     people_directly_employed_less_than_ascwds_rows = [
         (

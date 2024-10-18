@@ -526,7 +526,6 @@ class AscwdsFilteringRule(ColumnValues):
         "care_home_location_was_grouped_provider"
     )
     winsorized_beds_ratio_outlier: str = "winsorized_beds_ratio_outlier"
-    less_than_people_directly_employed: str = "less_than_people_directly_employed"
 
 
 @dataclass

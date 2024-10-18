@@ -4898,7 +4898,7 @@ class CleanAscwdsAndPirOutliersSchemas:
         ]
     )
 
-    null_rows_where_ascwds_less_than_people_directly_employed_schema = StructType(
+    check_rows_where_ascwds_less_than_people_directly_employed_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),

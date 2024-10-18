@@ -24,49 +24,40 @@ def clean_ascwds_and_pir_outliers(df: DataFrame) -> DataFrame:
     """
     care_home_df = select_rows_with_value(df, IndCQC.care_home, CareHome.care_home)
     non_res_df = select_rows_with_value(df, IndCQC.care_home, CareHome.not_care_home)
-    non_res_df = null_rows_where_ascwds_less_than_people_directly_employed(non_res_df)
+    non_res_df = check_rows_where_ascwds_less_than_people_directly_employed(non_res_df)
     cleaned_df = care_home_df.unionByName(non_res_df)
     return cleaned_df
 
 
-def null_rows_where_ascwds_less_than_people_directly_employed(
+def check_rows_where_ascwds_less_than_people_directly_employed(
     non_res_df: DataFrame,
 ) -> DataFrame:
     """
-    Compares ascwds_filled_posts_dedup_clean and people_directly_employed_dedup and removes outliers.
+    Compares ascwds_filled_posts_dedup_clean and people_directly_employed_dedup but does not change the data.
 
-    This function compares ascwds_filled_posts_dedup_clean and people_directly_employed_dedup and nulls
-    both columns when ascwds data is lower than people directly employed. This is because people directly
-    employed should be a subset of all filled posts at a location.
+    This function is an example to set up the code for PIR filtering and will be replaced.
 
     Args:
         df(DataFrame): A dataframe containing the columns ascwds_filled_posts_dedup_clean and people_directly_employed_dedup
 
     Returns:
-        DataFrame: A dataframe with outliers nulled.
+        DataFrame: An unchanged dataframe.
     """
     non_res_df = non_res_df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
-            (non_res_df[IndCQC.ascwds_filled_posts_dedup_clean].isNull())
-            | (non_res_df[IndCQC.people_directly_employed_dedup].isNull())
-            | (
-                non_res_df[IndCQC.ascwds_filled_posts_dedup_clean]
-                >= non_res_df[IndCQC.people_directly_employed_dedup]
-            ),
+            non_res_df[IndCQC.ascwds_filled_posts_dedup_clean]
+            >= non_res_df[IndCQC.people_directly_employed_dedup],
             F.col(IndCQC.ascwds_filled_posts_dedup_clean),
-        ),
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
-    non_res_df = update_filtering_rule(
-        non_res_df, AscwdsFilteringRule.less_than_people_directly_employed
-    )
+    # Update filtering rule here
     non_res_df = non_res_df.withColumn(
         IndCQC.people_directly_employed_dedup,
         F.when(
-            non_res_df[IndCQC.ascwds_filtering_rule]
-            != AscwdsFilteringRule.less_than_people_directly_employed,
+            non_res_df[IndCQC.ascwds_filtering_rule] != "example_rule",
             F.col(IndCQC.people_directly_employed_dedup),
-        ),
+        ).otherwise(F.col(IndCQC.people_directly_employed_dedup)),
     )
 
     return non_res_df
