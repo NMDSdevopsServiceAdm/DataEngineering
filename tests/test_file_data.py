@@ -7874,3 +7874,96 @@ class NullGroupedProvidersData:
         ("loc 5", CareHome.care_home, 9.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
     ]
     # fmt: on
+
+
+@dataclass
+class CleanAscwdsAndPirOutliersData:
+    clean_ascwds_and_pir_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    people_directly_employed_greater_than_ascwds_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    expected_people_directly_employed_greater_than_ascwds_rows = (
+        people_directly_employed_greater_than_ascwds_rows
+    )
+
+    people_directly_employed_less_than_ascwds_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            10.0,
+            9.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    expected_people_directly_employed_less_than_ascwds_rows = (
+        people_directly_employed_less_than_ascwds_rows
+    )
+
+    people_directly_employed_equals_ascwds_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            10.0,
+            10.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    expected_people_directly_employed_equals_ascwds_rows = (
+        people_directly_employed_equals_ascwds_rows
+    )
+
+    missing_data_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            10.0,
+            10.0,
+            None,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            None,
+            None,
+            10.0,
+            AscwdsFilteringRule.missing_data,
+        ),
+        (
+            "loc 3",
+            date(2024, 1, 1),
+            None,
+            None,
+            None,
+            AscwdsFilteringRule.missing_data,
+        ),
+    ]
+    expected_missing_data_rows = missing_data_rows

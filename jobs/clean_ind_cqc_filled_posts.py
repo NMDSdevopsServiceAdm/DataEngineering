@@ -8,6 +8,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 from utils.column_values.categorical_column_values import CareHome
+from utils.ind_cqc_filled_posts_utils.clean_ascwds_and_pir_outliers import (
+    clean_ascwds_and_pir_outliers,
+)
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -53,14 +56,16 @@ def main(
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
-    )
-
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
         IndCQC.people_directly_employed,
         IndCQC.people_directly_employed_dedup,
+    )
+
+    locations_df = clean_ascwds_and_pir_outliers(locations_df)
+
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
