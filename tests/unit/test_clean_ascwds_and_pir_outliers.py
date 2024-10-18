@@ -26,6 +26,8 @@ class CleanAscwdsAndPirOutliersTests(unittest.TestCase):
             Schemas.clean_ascwds_and_pir_schema,
         )
         returned_df = job.clean_ascwds_and_pir_outliers(test_df)
+        returned_df.sort(IndCQC.location_id).show()
+        expected_df.sort(IndCQC.location_id).show()
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
@@ -74,6 +76,8 @@ class CleanAscwdsAndPirOutliersTests(unittest.TestCase):
             Schemas.clean_ascwds_and_pir_schema,
         )
         returned_df = job.clean_ascwds_and_pir_outliers(test_df)
+        returned_df.sort(IndCQC.location_id).show()
+        expected_df.sort(IndCQC.location_id).show()
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )

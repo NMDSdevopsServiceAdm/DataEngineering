@@ -4883,6 +4883,7 @@ class NullGroupedProvidersSchema:
         ]
     )
 
+
 @dataclass
 class CleanAscwdsAndPirOutliersSchemas:
     clean_ascwds_and_pir_schema = StructType(
@@ -4890,6 +4891,7 @@ class CleanAscwdsAndPirOutliersSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, FloatType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.people_directly_employed_dedup, FloatType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
