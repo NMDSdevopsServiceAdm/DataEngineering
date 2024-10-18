@@ -760,7 +760,7 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--estimate_missing_ascwds_filled_posts_data_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
     "--care_home_features_source"                        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
-    "--care_home_model_source"                           = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/4.0.0/"
+    "--care_home_model_source"                           = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/4.0.1/"
     "--non_res_with_dormancy_features_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
     "--non_res_with_dormancy_model_source"               = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.0/"
     "--non_res_without_dormancy_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
