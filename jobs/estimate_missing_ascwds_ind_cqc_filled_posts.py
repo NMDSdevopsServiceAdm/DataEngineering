@@ -11,6 +11,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
+from utils.estimate_filled_posts.models.non_res_time_registered_for import (
+    model_non_res_time_registered_for,
+)
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
@@ -68,6 +71,18 @@ def main(
         IndCQC.people_directly_employed_dedup,
         IndCQC.rolling_average_model,
         IndCQC.imputed_non_res_people_directly_employed,
+        care_home=False,
+    )
+
+    estimate_missing_ascwds_df = model_non_res_time_registered_for(
+        estimate_missing_ascwds_df, 3
+    )
+
+    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_missing_ascwds_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        "rolling_average_posts_by_time_registered_for_model",
+        "imputed_posts_time_registered_for_model",
         care_home=False,
     )
 
