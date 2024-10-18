@@ -4670,14 +4670,14 @@ class EstimateIndCQCFilledPostsData:
 class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2022, 2, 1), date(2020, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
-        ("1-001", date(2022, 1, 1), date(2020, 1, 1), 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None, None),
-        ("1-002", date(2022, 1, 2), date(2020, 1, 1), 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None, None),
-        ("1-003", date(2022, 1, 1), date(2020, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
-        ("1-004", date(2022, 3, 8), date(2020, 1, 1), 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None, None),
-        ("1-005", date(2022, 3, 8), date(2020, 1, 1), 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5, 10.0),
-        ("1-006", date(2022, 3, 5), date(2020, 1, 1), 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None, None),
-        ("1-007", date(2022, 4, 2), date(2020, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
+        ("1-001", date(2022, 2, 1), date(2020, 1, 1), RelatedLocation.no_related_location, 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-001", date(2022, 1, 1), date(2020, 1, 1), RelatedLocation.no_related_location, 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None, None),
+        ("1-002", date(2022, 1, 2), date(2020, 1, 1), RelatedLocation.no_related_location, 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None, None),
+        ("1-003", date(2022, 1, 1), date(2020, 1, 1), RelatedLocation.no_related_location, 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-004", date(2022, 3, 8), date(2020, 1, 1), RelatedLocation.no_related_location, 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None, None),
+        ("1-005", date(2022, 3, 8), date(2020, 1, 1), RelatedLocation.no_related_location, 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5, 10.0),
+        ("1-006", date(2022, 3, 5), date(2020, 1, 1), RelatedLocation.no_related_location, 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None, None),
+        ("1-007", date(2022, 4, 2), date(2020, 1, 1), RelatedLocation.no_related_location, 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
     ]
     # fmt: on
 
