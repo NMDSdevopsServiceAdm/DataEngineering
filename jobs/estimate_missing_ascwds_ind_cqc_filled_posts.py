@@ -67,7 +67,7 @@ def main(
         estimate_missing_ascwds_df,
         IndCQC.people_directly_employed_dedup,
         IndCQC.rolling_average_model,
-        IndCQC.imputed_people_directly_employed,
+        IndCQC.imputed_non_res_people_directly_employed,
         care_home=False,
     )
 
