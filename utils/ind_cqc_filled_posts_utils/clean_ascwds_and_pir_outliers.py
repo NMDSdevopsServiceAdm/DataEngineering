@@ -38,20 +38,17 @@ def clean_ascwds_and_pir_outliers(df):
             F.col(IndCQC.ascwds_filled_posts_dedup_clean),
         ),
     )
-    non_res_df = non_res_df.withColumn(
-        IndCQC.people_directly_employed_dedup,
-        F.when(
-            (non_res_df[IndCQC.ascwds_filled_posts_dedup_clean].isNull())
-            | (non_res_df[IndCQC.people_directly_employed_dedup].isNull())
-            | (
-                non_res_df[IndCQC.ascwds_filled_posts_dedup_clean]
-                >= non_res_df[IndCQC.people_directly_employed_dedup]
-            ),
-            F.col(IndCQC.people_directly_employed_dedup),
-        ),
-    )
     non_res_df = update_filtering_rule(
         non_res_df, AscwdsFilteringRule.less_than_people_directly_employed
     )
+    non_res_df = non_res_df.withColumn(
+        IndCQC.people_directly_employed_dedup,
+        F.when(
+            non_res_df[IndCQC.ascwds_filtering_rule]
+            != AscwdsFilteringRule.less_than_people_directly_employed,
+            F.col(IndCQC.people_directly_employed_dedup),
+        ),
+    )
+
     cleaned_df = care_home_df.unionByName(non_res_df)
     return cleaned_df
