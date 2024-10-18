@@ -8,7 +8,6 @@ from tests.test_file_data import EstimateMissingAscwdsFilledPostsData as Data
 from tests.test_file_schemas import EstimateMissingAscwdsFilledPostsSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 
