@@ -10,7 +10,28 @@ from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_f
 from utils.utils import select_rows_with_value
 
 
-def clean_ascwds_and_pir_outliers(df):
+def clean_ascwds_and_pir_outliers(df: DataFrame) -> DataFrame:
+    """
+    Handles the steps for cleaning outliers when comparing ascwds_fillde_posts_dedup_clean and people_directly_employed_dedup.
+
+    This function applies the cleaning steps to non res data only.
+
+    Args:
+        df(DataFrame): A dataframe containing the columns ascwds_filled_posts_dedup_clean and people_directly_employed_dedup
+
+    Returns:
+        DataFrame: A dataframe with outliers cleaned
+    """
+    care_home_df = select_rows_with_value(df, IndCQC.care_home, CareHome.care_home)
+    non_res_df = select_rows_with_value(df, IndCQC.care_home, CareHome.not_care_home)
+    non_res_df = null_rows_where_ascwds_less_than_people_directly_employed(non_res_df)
+    cleaned_df = care_home_df.unionByName(non_res_df)
+    return cleaned_df
+
+
+def null_rows_where_ascwds_less_than_people_directly_employed(
+    non_res_df: DataFrame,
+) -> DataFrame:
     """
     Compares ascwds_filled_posts_dedup_clean and people_directly_employed_dedup and removes outliers.
 
@@ -24,8 +45,6 @@ def clean_ascwds_and_pir_outliers(df):
     Returns:
         DataFrame: A dataframe with outliers nulled.
     """
-    care_home_df = select_rows_with_value(df, IndCQC.care_home, CareHome.care_home)
-    non_res_df = select_rows_with_value(df, IndCQC.care_home, CareHome.not_care_home)
     non_res_df = non_res_df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
@@ -50,5 +69,4 @@ def clean_ascwds_and_pir_outliers(df):
         ),
     )
 
-    cleaned_df = care_home_df.unionByName(non_res_df)
-    return cleaned_df
+    return non_res_df
