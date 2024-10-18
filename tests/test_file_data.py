@@ -8177,6 +8177,4 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.missing_data,
         ),
     ]
-    expected_missing_data_rows = (
-        missing_data_rows
-    )
+    expected_missing_data_rows = missing_data_rows
