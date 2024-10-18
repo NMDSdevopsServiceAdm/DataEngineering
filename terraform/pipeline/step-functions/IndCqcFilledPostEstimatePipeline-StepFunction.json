@@ -12,11 +12,11 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-clean_ascwds_workplace_data_job",
+                "JobName": "${clean_ascwds_workplace_job_name}",
                 "Arguments": {
-                  "--ascwds_workplace_source": "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/",
-                  "--cleaned_ascwds_workplace_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--workplace_for_reconciliation_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=workplace_for_reconciliation/"
+                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
                 }
               },
               "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
@@ -31,11 +31,11 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-clean_ascwds_worker_data_job",
+                        "JobName": "${clean_ascwds_worker_job_name}",
                         "Arguments": {
-                          "--ascwds_worker_source": "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/",
-                          "--ascwds_workplace_cleaned_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--ascwds_worker_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ASCWDS/dataset=worker_cleaned/"
+                          "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                          "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                          "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
                         }
                       },
                       "End": true
@@ -49,12 +49,12 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-reconciliation_job",
+                        "JobName": "${reconciliation_job_name}",
                         "Arguments": {
-                          "--cqc_location_api_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.0/",
-                          "--ascwds_reconciliation_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=workplace_for_reconciliation/",
-                          "--reconciliation_single_and_subs_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=reconciliation/singles_and_subs",
-                          "--reconciliation_parents_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=reconciliation/parents"
+                          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0/",
+                          "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/",
+                          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/singles_and_subs",
+                          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=reconciliation/parents"
                         }
                       },
                       "End": true
@@ -73,10 +73,10 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-clean_cqc_pir_data_job",
+                "JobName": "${clean_cqc_pir_data_job_name}",
                 "Arguments": {
-                  "--cqc_pir_source": "s3://sfc-main-datasets/domain=CQC/dataset=pir/",
-                  "--cleaned_cqc_pir_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=pir_cleaned/"
+                  "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
+                  "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
                 }
               },
               "ResultPath": null,
@@ -97,10 +97,10 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-clean_ons_data_job",
+                        "JobName": "${clean_ons_data_job_name}",
                         "Arguments": {
-                          "--ons_source": "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory/",
-                          "--cleaned_ons_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
+                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
                         }
                       },
                       "End": true
@@ -114,10 +114,10 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-clean_cqc_provider_data_job",
+                        "JobName": "${clean_cqc_provider_data_job_name}",
                         "Arguments": {
-                          "--cqc_provider_source": "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/",
-                          "--cqc_provider_cleaned": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=providers_api_cleaned/"
+                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
+                          "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
                         }
                       },
                       "End": true
@@ -131,12 +131,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-clean_cqc_location_data_job",
+                "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.0",
-                  "--cleaned_cqc_provider_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=providers_api_cleaned/",
-                  "--cleaned_ons_postcode_directory_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=locations_api_cleaned/"
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0",
+                  "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
+                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
                 }
               },
               "End": true
@@ -167,12 +167,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-merge_ind_cqc_data_job",
+                "JobName": "${merge_ind_cqc_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=locations_api_cleaned/",
-                  "--cleaned_cqc_pir_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=pir_cleaned/",
-                  "--cleaned_ascwds_workplace_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
+                  "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/"
                 }
               },
               "Next": "Run clean ind cqc data job"
@@ -181,10 +181,10 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-clean_ind_cqc_filled_posts_job",
+                "JobName": "${clean_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
-                  "--merged_ind_cqc_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                  "--cleaned_ind_cqc_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
+                  "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
+                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/"
                 }
               },
               "Next": "Run estimate missing ascwds ind cqc filled posts job"
@@ -193,20 +193,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-estimate_missing_ascwds_ind_cqc_filled_posts_job",
+                "JobName": "${estimate_missing_ascwds_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
-                  "--cleaned_ind_cqc_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                  "--estimated_missing_ascwds_ind_cqc_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+                  "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
+                  "--estimated_missing_ascwds_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
                 }
               },
-              "Next": "Run ind crawler"
-            },
-            "Run ind crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "add-extrap-interp-into-missing-data_engineering_ind_cqc_filled_posts"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Next": "Feature engineering"
             },
             "Feature engineering": {
@@ -219,10 +211,10 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-prepare_care_home_ind_cqc_features_job",
+                        "JobName": "${prepare_care_home_ind_cqc_features_job_name}",
                         "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
-                          "--care_home_ind_cqc_features_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
+                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
+                          "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
                         }
                       },
                       "End": true
@@ -236,11 +228,11 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "add-extrap-interp-into-missing-prepare_non_res_ascwds_ind_cqc_features_job",
+                        "JobName": "${prepare_non_res_ascwds_ind_cqc_features_job_name}",
                         "Arguments": {
-                          "--ind_cqc_filled_posts_cleaned_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
-                          "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",
-                          "--non_res_ascwds_without_dormancy_ind_cqc_features_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
+                          "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
+                          "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",
+                          "--non_res_ascwds_without_dormancy_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
                         }
                       },
                       "End": true
@@ -254,17 +246,17 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-estimate_ind_cqc_filled_posts_job",
+                "JobName": "${estimate_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
-                  "--estimate_missing_ascwds_filled_posts_data_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
-                  "--care_home_features_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/",
-                  "--care_home_model_source": "s3://sfc-add-extrap-interp-into-missing-pipeline-resources/models/care_home_filled_posts_prediction/4.0.1/",
-                  "--non_res_with_dormancy_features_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",
-                  "--non_res_with_dormancy_model_source": "s3://sfc-add-extrap-interp-into-missing-pipeline-resources/models/non_residential_with_dormancy_prediction/2.0.0/",
-                  "--non_res_without_dormancy_features_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/",
-                  "--non_res_without_dormancy_model_source": "s3://sfc-add-extrap-interp-into-missing-pipeline-resources/models/non_residential_without_dormancy_prediction/1.0.0/",
-                  "--estimated_ind_cqc_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                  "--ml_model_metrics_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
+                  "--estimate_missing_ascwds_filled_posts_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
+                  "--care_home_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/",
+                  "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/4.0.1/",
+                  "--non_res_with_dormancy_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",
+                  "--non_res_with_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.0/",
+                  "--non_res_without_dormancy_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/",
+                  "--non_res_without_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_without_dormancy_prediction/1.0.0/",
+                  "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }
               },
               "Next": "Run estimate ind cqc filled posts by job role job"
@@ -273,11 +265,11 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-estimate_ind_cqc_filled_posts_by_job_role_job",
+                "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
                 "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                  "--cleaned_ascwds_worker_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
                 }
               },
               "Next": "Run diagnostics on known filled posts job"
@@ -286,53 +278,69 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-diagnostics_on_known_filled_posts_job",
+                "JobName": "${diagnostics_on_known_filled_posts_job_name}",
                 "Arguments": {
-                  "--estimate_filled_posts_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                  "--diagnostics_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/",
-                  "--summary_diagnostics_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/",
-                  "--charts_destination": "sfc-add-extrap-interp-into-missing-datasets"
+                  "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/",
+                  "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/",
+                  "--charts_destination": "${dataset_bucket_name}"
                 }
               },
               "Next": "Validation and crawler"
-            },
-            "Validation and crawler": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Start gold validation",
-                  "States": {
-                    "Start gold validation": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::states:startExecution.sync:2",
-                      "Parameters": {
-                        "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:add-extrap-interp-into-missing-Gold-Validation-Pipeline",
-                        "Input": {
-                          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                        }
-                      },
-                      "End": true
+              },
+              "Validation and crawler": {
+                "Type": "Parallel",
+                "Branches": [
+                  {
+                    "StartAt": "Start gold validation",
+                    "States": {
+                      "Start gold validation": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                        "Parameters": {
+                          "StateMachineArn": "${run_gold_validation_state_machine_arn}",
+                          "Input": {
+                            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                          }
+                        },
+                        "End": true
+                      }
                     }
+                  },
+                  {
+                    "StartAt": "run ind crawler",
+                    "States": {
+                      "run ind crawler": {
+                        "Type": "Task",
+                        "Parameters": {
+                          "Name": "${ind_cqc_filled_posts_crawler_name}"
+                        },
+                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                        "End": true
+                      }
+                    }
+                  }
+                ],
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "Start silver validation",
+            "States": {
+              "Start silver validation": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Parameters": {
+                  "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                   }
                 },
-                {
-                  "StartAt": "run ind crawler",
-                  "States": {
-                    "run ind crawler": {
-                      "Type": "Task",
-                      "Parameters": {
-                        "Name": "add-extrap-interp-into-missing-data_engineering_ind_cqc_filled_posts"
-                      },
-                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-                      "End": true
-                    }
-                  }
-                }
-              ],
-              "End": true
+                "End": true
+              }
             }
-          }
-        },
+          },
         {
           "StartAt": "Run merge coverage data job",
           "States": {
@@ -340,12 +348,12 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "add-extrap-interp-into-missing-merge_coverage_data_job",
+                "JobName": "${merge_coverage_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=CQC/dataset=locations_api_cleaned/",
-                  "--workplace_for_reconciliation_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=workplace_for_reconciliation/",
-                  "--cqc_ratings_source": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=cqc_ratings/",
-                  "--merged_coverage_destination": "s3://sfc-add-extrap-interp-into-missing-datasets/domain=SfC/dataset=merged_coverage_data/"
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/",
+                  "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=cqc_ratings/",
+                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=merged_coverage_data/"
                 }
               },
               "Next": "Run sfc crawler"
@@ -354,7 +362,7 @@
               "Type": "Task",
               "End": true,
               "Parameters": {
-                "Name": "add-extrap-interp-into-missing-data_engineering_SfC"
+                "Name": "${sfc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
@@ -366,7 +374,7 @@
             "Run ascwds crawler": {
               "Type": "Task",
               "Parameters": {
-                "Name": "add-extrap-interp-into-missing-data_engineering_ASCWDS"
+                "Name": "${ascwds_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "End": true
@@ -380,7 +388,7 @@
               "Type": "Task",
               "End": true,
               "Parameters": {
-                "Name": "add-extrap-interp-into-missing-data_engineering_ONS"
+                "Name": "${ons_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
@@ -393,7 +401,7 @@
               "Type": "Task",
               "End": true,
               "Parameters": {
-                "Name": "add-extrap-interp-into-missing-data_engineering_CQC"
+                "Name": "${cqc_crawler_name}"
               },
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
@@ -415,7 +423,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
       "Parameters": {
-        "FunctionName": "arn:aws:lambda:eu-west-2:344210435447:function:add-extrap-interp-into-missing-glue-failure-notification:$LATEST",
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
         "Payload": {
           "Error.$": "$.error.Cause",
           "ExecutionId.$": "$$.Execution.Id",
