@@ -2421,6 +2421,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
