@@ -32,7 +32,7 @@ def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
 
 
 def restructure_dataframe_to_column_wise(
-    df: DataFrame, column_for_comparison: str
+    df: DataFrame, column_for_comparison: str, list_of_models: list
 ) -> DataFrame:
     """
     Reshapes the dataframe so that all estimated values are in one column.
@@ -46,12 +46,12 @@ def restructure_dataframe_to_column_wise(
     Args:
         df (DataFrame): A dataframe of estimates with each model's values in a different column.
         column_for_comparison (str): The column of values to use for calculating residuals.
+        list_of_models (list): A list of strings of column names corresponding to the models to include.
 
     Returns:
         DataFrame: A dataframe of estimates with each model's values in a single column and a column of corresponding model names.
     """
     reshaped_df = create_empty_reshaped_dataframe(column_for_comparison)
-    list_of_models = create_list_of_models()
     for model in list_of_models:
         model_df = df.select(
             IndCQC.location_id,
@@ -70,7 +70,7 @@ def restructure_dataframe_to_column_wise(
     return reshaped_df
 
 
-def create_list_of_models():
+def create_list_of_models() -> list:
     """
     Creates a list of models to include in the reshaping of the dataframe.
 

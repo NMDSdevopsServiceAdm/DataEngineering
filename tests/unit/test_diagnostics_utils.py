@@ -48,6 +48,18 @@ class FilterToKnownValuesTests(DiagnosticsUtilsTests):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
 
+class CreateListOfModelsTests(DiagnosticsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.expected_list_of_models = Data.expected_list_of_models
+        self.returned_list_of_models = job.create_list_of_models()
+
+    def test_create_list_of_models_creates_list_using_estimate_source_column(self):
+        self.assertEqual(
+            sorted(self.expected_list_of_models), sorted(self.returned_list_of_models)
+        )
+
+
 class RestructureDataframeToColumnWiseTests(DiagnosticsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -58,8 +70,9 @@ class RestructureDataframeToColumnWiseTests(DiagnosticsUtilsTests):
             Data.expected_restructure_dataframe_rows,
             Schemas.expected_restructure_dataframe_schema,
         )
+        self.list_of_models = Data.list_of_models
         self.returned_df = job.restructure_dataframe_to_column_wise(
-            self.test_df, IndCQC.ascwds_filled_posts_dedup_clean
+            self.test_df, IndCQC.ascwds_filled_posts_dedup_clean, self.list_of_models
         )
 
     def test_restructure_dataframe_to_column_wise_has_correct_values(self):
