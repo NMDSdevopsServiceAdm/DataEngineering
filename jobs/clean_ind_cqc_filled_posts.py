@@ -56,16 +56,16 @@ def main(
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
-    locations_df = clean_ascwds_and_pir_outliers(locations_df)
-
-    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
-    )
-
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
         IndCQC.people_directly_employed,
         IndCQC.people_directly_employed_dedup,
+    )
+
+    locations_df = clean_ascwds_and_pir_outliers(locations_df)
+
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
