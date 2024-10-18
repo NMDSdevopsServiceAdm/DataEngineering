@@ -1,5 +1,8 @@
 import unittest
 import warnings
+from unittest.mock import Mock, patch
+
+from pyspark.sql import DataFrame
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from tests.test_file_data import CleanAscwdsAndPirOutliersData as Data
@@ -18,12 +21,36 @@ class CleanAscwdsAndPirOutliersTests(unittest.TestCase):
 class MainTests(CleanAscwdsAndPirOutliersTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.clean_ascwds_and_pir_rows, Schemas.clean_ascwds_and_pir_schema
+        )
 
-    def test_main_function_completes(self):
-        pass
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.clean_ascwds_and_pir_outliers.clean_ascwds_and_pir_outliers"
+    )
+    def test_main_calls_all_functions(
+        self,
+        clean_ascwds_and_pir_outliers_mock: Mock,
+    ):
+        returned_df = job.clean_ascwds_and_pir_outliers(self.test_df)
+        clean_ascwds_and_pir_outliers_mock.assert_called_once()
+
+    def test_main_returns_dataframe(
+        self,
+    ):
+        returned_df = job.clean_ascwds_and_pir_outliers(self.test_df)
+        self.assertIsInstance(returned_df, DataFrame)
+
+    def test_main_returns_unchanged_row_count(
+        self,
+    ):
+        returned_df = job.clean_ascwds_and_pir_outliers(self.test_df)
+        self.assertEqual(self.test_df.count(), returned_df.count())
 
 
-class CleanAscwdsAndPirOutliersTests(CleanAscwdsAndPirOutliersTests):
+class NullRowsWhereAscwdsLessThanPeopleDirectlyEmployedTests(
+    CleanAscwdsAndPirOutliersTests
+):
     def setUp(self) -> None:
         super().setUp()
 
@@ -31,12 +58,12 @@ class CleanAscwdsAndPirOutliersTests(CleanAscwdsAndPirOutliersTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_ascwds_and_pir_when_pir_greater_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.people_directly_employed_greater_than_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_ascwds_and_pir_when_pir_greater_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.expected_people_directly_employed_greater_than_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
             test_df
@@ -49,12 +76,12 @@ class CleanAscwdsAndPirOutliersTests(CleanAscwdsAndPirOutliersTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_ascwds_and_pir_when_pir_less_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.people_directly_employed_less_than_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_ascwds_and_pir_when_pir_less_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.expected_people_directly_employed_less_than_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
             test_df
@@ -67,12 +94,12 @@ class CleanAscwdsAndPirOutliersTests(CleanAscwdsAndPirOutliersTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_ascwds_and_pir_when_pir_equal_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.people_directly_employed_equals_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_ascwds_and_pir_when_pir_equal_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.expected_people_directly_employed_equals_ascwds_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
             test_df
@@ -85,12 +112,12 @@ class CleanAscwdsAndPirOutliersTests(CleanAscwdsAndPirOutliersTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.clean_ascwds_and_pir_when_missing_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.missing_data_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_ascwds_and_pir_when_missing_rows,
-            Schemas.clean_ascwds_and_pir_schema,
+            Data.expected_missing_data_rows,
+            Schemas.null_rows_where_ascwds_less_than_people_directly_employed_schema,
         )
         returned_df = job.null_rows_where_ascwds_less_than_people_directly_employed(
             test_df

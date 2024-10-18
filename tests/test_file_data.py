@@ -8082,7 +8082,27 @@ class NullGroupedProvidersData:
 
 @dataclass
 class CleanAscwdsAndPirOutliersData:
-    clean_ascwds_and_pir_when_pir_greater_rows = [
+    clean_ascwds_and_pir_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            CareHome.care_home,
+            10.0,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            10.0,
+            11.0,
+            AscwdsFilteringRule.populated,
+        ),
+    ]
+    people_directly_employed_greater_than_ascwds_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -8092,7 +8112,7 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    expected_clean_ascwds_and_pir_when_pir_greater_rows = [
+    expected_people_directly_employed_greater_than_ascwds_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -8103,7 +8123,7 @@ class CleanAscwdsAndPirOutliersData:
         ),
     ]
 
-    clean_ascwds_and_pir_when_pir_less_rows = [
+    people_directly_employed_less_than_ascwds_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -8113,11 +8133,11 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    expected_clean_ascwds_and_pir_when_pir_less_rows = (
-        clean_ascwds_and_pir_when_pir_less_rows
+    expected_people_directly_employed_less_than_ascwds_rows = (
+        people_directly_employed_less_than_ascwds_rows
     )
 
-    clean_ascwds_and_pir_when_pir_equal_rows = [
+    people_directly_employed_equals_ascwds_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -8127,11 +8147,11 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.populated,
         ),
     ]
-    expected_clean_ascwds_and_pir_when_pir_equal_rows = (
-        clean_ascwds_and_pir_when_pir_equal_rows
+    expected_people_directly_employed_equals_ascwds_rows = (
+        people_directly_employed_equals_ascwds_rows
     )
 
-    clean_ascwds_and_pir_when_missing_rows = [
+    missing_data_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -8157,6 +8177,6 @@ class CleanAscwdsAndPirOutliersData:
             AscwdsFilteringRule.missing_data,
         ),
     ]
-    expected_clean_ascwds_and_pir_when_missing_rows = (
-        clean_ascwds_and_pir_when_missing_rows
+    expected_missing_data_rows = (
+        missing_data_rows
     )
