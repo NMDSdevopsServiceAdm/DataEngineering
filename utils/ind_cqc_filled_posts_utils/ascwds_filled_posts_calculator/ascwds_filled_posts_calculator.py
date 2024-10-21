@@ -1,6 +1,5 @@
-import pyspark.sql.functions as F
 from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     calculate_ascwds_filled_posts_absolute_difference_within_range,
@@ -17,6 +16,23 @@ def calculate_ascwds_filled_posts(
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
+    """
+    This function calculates the number of filled posts based on the total staff and worker records columns.
+
+    This function calculates the number of filled posts based on the total staff and worker records columns
+    and creates two new columns in the DataFrame: one for the output of the filled posts calculation and
+    another for the source of this calculation.
+
+    Args:
+        input_df (DataFrame): The input DataFrame containing total staff and worker record values.
+        total_staff_column (str): The name of the column representing the total number of staff.
+        worker_records_column (str): The name of the column representing the worker record count.
+        output_column_name (str): The name of the column to store the calculated filled posts.
+        source_output_column_name (str): The name of the column to store the source of the calculated filled post output.
+
+    Returns:
+        DataFrame: The DataFrame with the calculated filled posts and source columns added.
+    """
     print("Calculating ascwds_filled_posts...")
 
     input_df = input_df.withColumn(output_column_name, F.lit(None).cast(IntegerType()))
