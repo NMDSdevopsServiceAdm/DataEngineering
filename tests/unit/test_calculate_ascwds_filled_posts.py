@@ -21,7 +21,7 @@ class TestAscwdsFilledPostsCalculator(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    def test_calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs_values(
+    def test_calculate_ascwds_filled_posts_returns_expected_data(
         self,
     ):
         returned_df = job.calculate_ascwds_filled_posts(
