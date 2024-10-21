@@ -87,23 +87,6 @@ class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
         self.assertEqual(result_df[0]["result"], True)
         self.assertEqual(result_df[1]["result"], False)
 
-    def test_selected_column_is_below_the_min_permitted_value(self):
-        result = self.df.withColumn(
-            "result",
-            F.when(
-                (
-                    job.selected_column_is_below_the_min_permitted_value(
-                        IndCQC.total_staff_bounded
-                    )
-                ),
-                True,
-            ).otherwise(False),
-        )
-
-        result_df = result.sort(IndCQC.location_id).collect()
-        self.assertEqual(result_df[0]["result"], False)
-        self.assertEqual(result_df[1]["result"], True)
-
     def test_absolute_difference_between_total_staff_and_worker_records_below_cut_off(
         self,
     ):
