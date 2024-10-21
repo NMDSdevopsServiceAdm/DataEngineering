@@ -26,7 +26,7 @@ def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
     """
     When total staff and worker record values match, use that value as the output value.
 
-    This function enter the worker record value when the total staff and worker record values match each other and are
+    This function enters the worker record value when the total staff and worker record values match each other and are
     at least the minimum permitted value. The source column is updated to identify that both values matched.
 
     Args:

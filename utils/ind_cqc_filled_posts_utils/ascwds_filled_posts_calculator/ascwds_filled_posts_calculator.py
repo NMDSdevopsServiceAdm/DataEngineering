@@ -1,8 +1,8 @@
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql import DataFrame, functions as F
 
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
-    calculate_ascwds_filled_posts_absolute_difference_within_range,
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
+    calculate_ascwds_filled_posts_difference_within_range,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs,
@@ -48,7 +48,7 @@ def calculate_ascwds_filled_posts(
         source_output_column_name,
     )
 
-    input_df = calculate_ascwds_filled_posts_absolute_difference_within_range(
+    input_df = calculate_ascwds_filled_posts_difference_within_range(
         input_df,
         total_staff_column,
         worker_records_column,
