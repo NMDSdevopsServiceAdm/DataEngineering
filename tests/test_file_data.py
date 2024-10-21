@@ -35,9 +35,6 @@ from utils.column_values.categorical_column_values import (
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
     ascwds_filled_posts_absolute_difference_within_range_source_description,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_only_permitted_value import (
-    ascwds_filled_posts_select_only_value_source_description,
-)
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
