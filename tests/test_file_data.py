@@ -3798,7 +3798,7 @@ class CleanIndCQCData:
         # worker_record_count below min permitted: return None
         ("1-000004", 23, 1, None, None,),
         # Only know worker_records: Return None
-        ("1-000005", None, 100, 100.0, None, None,),
+        ("1-000005", None, 100, None, None,),
         # None of the rules apply: Return None
         ("1-000006", 900, 600, None, None,),
         # Absolute difference is within absolute bounds: Return Average
