@@ -1,8 +1,10 @@
 import unittest
 import warnings
 
-from tests.test_file_data import CleanIndCQCData as Data
-from tests.test_file_schemas import CleanIndCQCData as Schemas
+from tests.test_file_data import CalculateAscwdsFilledPostsDifferenceInRangeData as Data
+from tests.test_file_schemas import (
+    CalculateAscwdsFilledPostsDifferenceInRangeSchemas as Schemas,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
