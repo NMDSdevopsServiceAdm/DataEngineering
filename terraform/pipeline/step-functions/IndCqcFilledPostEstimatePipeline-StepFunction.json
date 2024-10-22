@@ -133,7 +133,7 @@
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.0",
+                  "--cqc_location_source": "$s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.0",
                   "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
