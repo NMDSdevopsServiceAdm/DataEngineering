@@ -23,6 +23,22 @@ def calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs(
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
+    """
+    When total staff and worker record values match, use that value as the output value.
+
+    This function enters the worker record value when the total staff and worker record values match each other and are
+    at least the minimum permitted value. The source column is updated to identify that both values matched.
+
+    Args:
+        input_df (DataFrame): The input DataFrame containing total staff and worker record values.
+        total_staff_column (str): The name of the column representing the total number of staff.
+        worker_records_column (str): The name of the column representing the worker record count.
+        output_column_name (str): The name of the column to store the calculated filled posts.
+        source_output_column_name (str): The name of the column to store the source of the calculated filled post output.
+
+    Returns:
+        DataFrame: The DataFrame with the calculated filled posts and source columns added.
+    """
     df = df.withColumn(
         output_column_name,
         F.when(

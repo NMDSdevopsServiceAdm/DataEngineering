@@ -14,18 +14,35 @@ from utils.ind_cqc_filled_posts_utils.utils import (
     add_source_description_to_source_column,
 )
 
-ascwds_filled_posts_absolute_difference_within_range_source_description = (
+ascwds_filled_posts_difference_within_range_source_description = (
     Source.average_of_total_staff_and_worker_records
 )
 
 
-def calculate_ascwds_filled_posts_absolute_difference_within_range(
+def calculate_ascwds_filled_posts_difference_within_range(
     df: DataFrame,
     total_staff_column: str,
     worker_records_column: str,
     output_column_name: str,
     source_output_column_name: str,
 ) -> DataFrame:
+    """
+    When total staff and worker record values are within an acceptable range of each other, use the average as the output value.
+
+    This function checks that both the total staff and worker record values are at least the minimum permitted value and are within an
+    acceptable range of each other, in either absolute or percentage terms. The source column is updated to identify that the average
+    value was used as both values were similar.
+
+    Args:
+        input_df (DataFrame): The input DataFrame containing total staff and worker record values.
+        total_staff_column (str): The name of the column representing the total number of staff.
+        worker_records_column (str): The name of the column representing the worker record count.
+        output_column_name (str): The name of the column to store the calculated filled posts.
+        source_output_column_name (str): The name of the column to store the source of the calculated filled post output.
+
+    Returns:
+        DataFrame: The DataFrame with the calculated filled posts and source columns added.
+    """
     df = df.withColumn(
         output_column_name,
         F.when(
@@ -50,6 +67,6 @@ def calculate_ascwds_filled_posts_absolute_difference_within_range(
         df,
         output_column_name,
         source_output_column_name,
-        ascwds_filled_posts_absolute_difference_within_range_source_description,
+        ascwds_filled_posts_difference_within_range_source_description,
     )
     return df
