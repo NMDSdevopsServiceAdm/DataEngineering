@@ -49,7 +49,7 @@
                 "Parameters": {
                   "JobName": "${validate_locations_api_cleaned_data_job_name}",
                   "Arguments": {
-                    "--raw_cqc_location_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.0/",
+                    "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0/",
                     "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_cleaned_data_report/"
                   }
@@ -67,7 +67,7 @@
                 "Parameters": {
                   "JobName": "${validate_providers_api_cleaned_data_job_name}",
                   "Arguments": {
-                    "--raw_cqc_provider_source": "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/",
+                    "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
                     "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
                   }
@@ -102,7 +102,7 @@
                 "Parameters": {
                   "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
                   "Arguments": {
-                    "--raw_postcode_directory_source": "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory/",
+                    "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
                     "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_cleaned_data_report/"
                   }
