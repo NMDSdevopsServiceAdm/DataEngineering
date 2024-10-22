@@ -3789,7 +3789,6 @@ class CleanIndCQCData:
 
 @dataclass
 class CalculateAscwdsFilledPostsData:
-
     # fmt: off
     calculate_ascwds_filled_posts_rows = [
         # Both 0: Return None
@@ -3839,7 +3838,6 @@ class CalculateAscwdsFilledPostsData:
 
 @dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeData:
-
     # fmt: off
     calculate_ascwds_filled_posts_rows = [
         # Both 0: Return None
