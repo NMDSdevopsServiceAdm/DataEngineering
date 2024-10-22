@@ -3837,6 +3837,32 @@ class CalculateAscwdsFilledPostsData:
 
 
 @dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+
+@dataclass
 class CalculateAscwdsFilledPostsDifferenceInRangeData:
     # fmt: off
     calculate_ascwds_filled_posts_rows = [
