@@ -1781,16 +1781,6 @@ class CleanIndCQCData:
         ]
     )
 
-    calculate_ascwds_filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-        ]
-    )
-
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -1805,6 +1795,45 @@ class CleanIndCQCData:
             StructField("integer_column", IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField("integer_column_deduplicated", IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsSchemas:
+    calculate_ascwds_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
+    calculate_ascwds_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
+    calculate_ascwds_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
         ]
     )
 

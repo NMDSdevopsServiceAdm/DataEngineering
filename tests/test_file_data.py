@@ -3764,6 +3764,31 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
+    repeated_value_rows = [
+        ("1", 1, date(2023, 2, 1)),
+        ("1", 2, date(2023, 3, 1)),
+        ("1", 2, date(2023, 4, 1)),
+        ("1", 3, date(2023, 8, 1)),
+        ("2", 3, date(2023, 2, 1)),
+        ("2", 9, date(2023, 4, 1)),
+        ("2", 3, date(2024, 1, 1)),
+        ("2", 3, date(2024, 2, 1)),
+    ]
+
+    expected_without_repeated_values_rows = [
+        ("1", 1, date(2023, 2, 1), 1),
+        ("1", 2, date(2023, 3, 1), 2),
+        ("1", 2, date(2023, 4, 1), None),
+        ("1", 3, date(2023, 8, 1), 3),
+        ("2", 3, date(2023, 2, 1), 3),
+        ("2", 9, date(2023, 4, 1), 9),
+        ("2", 3, date(2024, 1, 1), 3),
+        ("2", 3, date(2024, 2, 1), None),
+    ]
+
+
+@dataclass
+class CalculateAscwdsFilledPostsData:
     # fmt: off
     calculate_ascwds_filled_posts_rows = [
         # Both 0: Return None
@@ -3810,27 +3835,80 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
-    repeated_value_rows = [
-        ("1", 1, date(2023, 2, 1)),
-        ("1", 2, date(2023, 3, 1)),
-        ("1", 2, date(2023, 4, 1)),
-        ("1", 3, date(2023, 8, 1)),
-        ("2", 3, date(2023, 2, 1)),
-        ("2", 9, date(2023, 4, 1)),
-        ("2", 3, date(2024, 1, 1)),
-        ("2", 3, date(2024, 2, 1)),
-    ]
 
-    expected_without_repeated_values_rows = [
-        ("1", 1, date(2023, 2, 1), 1),
-        ("1", 2, date(2023, 3, 1), 2),
-        ("1", 2, date(2023, 4, 1), None),
-        ("1", 3, date(2023, 8, 1), 3),
-        ("2", 3, date(2023, 2, 1), 3),
-        ("2", 9, date(2023, 4, 1), 9),
-        ("2", 3, date(2024, 1, 1), 3),
-        ("2", 3, date(2024, 2, 1), None),
+@dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
     ]
+    # fmt: on
+
+
+@dataclass
+class CalculateAscwdsFilledPostsDifferenceInRangeData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: Return None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+    ]
+    # fmt: on
 
 
 @dataclass
