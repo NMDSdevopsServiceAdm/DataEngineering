@@ -4089,7 +4089,6 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
             StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
-            StructField(IndCQC.non_res_model, DoubleType(), True),
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
