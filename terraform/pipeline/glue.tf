@@ -423,6 +423,7 @@ module "merge_coverage_data_job" {
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=merged_coverage_data/"
+    "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=monthly_coverage_data/"
   }
 }
 
