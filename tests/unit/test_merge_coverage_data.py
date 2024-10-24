@@ -28,7 +28,8 @@ class SetupForTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
-    TEST_DESTINATION = "some/other/directory"
+    TEST_MERGED_DESTINATION = "some/other/directory"
+    TEST_REDUCED_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -51,6 +52,7 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.utils.filter_df_to_maximum_value_in_column")
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -59,6 +61,7 @@ class MainTests(SetupForTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
         join_ascwds_data_into_cqc_location_df: Mock,
+        filter_to_maximum_value_in_column: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -70,16 +73,25 @@ class MainTests(SetupForTests):
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_SOURCE,
-            self.TEST_DESTINATION,
+            self.TEST_MERGED_DESTINATION,
+            self.TEST_REDUCED_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
+        filter_to_maximum_value_in_column.assert_called_once()
 
-        write_to_parquet_patch.assert_called_once_with(
+        write_to_parquet_patch.assert_called_with(
             ANY,
-            self.TEST_DESTINATION,
+            self.TEST_MERGED_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
+
+        write_to_parquet_patch.assert_called_with(
+            ANY,
+            self.TEST_REDUCED_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
