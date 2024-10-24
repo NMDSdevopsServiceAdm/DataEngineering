@@ -353,7 +353,8 @@
                   "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
                   "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/",
                   "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=cqc_ratings/",
-                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=merged_coverage_data/"
+                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=merged_coverage_data/",
+                  "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=monthly_coverage_data/"
                 }
               },
               "Next": "Run sfc crawler"
