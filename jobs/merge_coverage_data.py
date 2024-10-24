@@ -59,6 +59,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.master_update_date,
     AWPClean.master_update_date_org,
     AWPClean.establishment_created_date,
+    AWPClean.nmds_id,
 ]
 cqc_ratings_columns_to_import = [
     AWPClean.location_id,
