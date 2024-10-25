@@ -552,7 +552,7 @@ class CapacityTrackerNonResSchema:
             StructField(CTNR.legacy_covid_confirmed, StringType(), True),
             StructField(CTNR.legacy_covid_suspected, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
-            StructField(CTNR.cqc_car_eworkers_absent, StringType(), True),
+            StructField(CTNR.cqc_care_workers_absent, StringType(), True),
             StructField(CTNR.can_provider_more_hours, StringType(), True),
             StructField(CTNR.extra_hours_count, StringType(), True),
             StructField(CTNR.covid_vaccination_full_course, StringType(), True),

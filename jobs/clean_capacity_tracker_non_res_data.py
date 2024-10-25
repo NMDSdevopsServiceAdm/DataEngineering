@@ -7,6 +7,9 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
 
 CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
@@ -18,6 +21,7 @@ CAPACITY_TRACKER_NON_RES_COLUMNS = [
     Keys.import_date,
 ]
 OUTLIER_CUTOFF = 5000
+NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -44,6 +48,13 @@ def main(
         columns_to_bound,
         columns_to_bound,
         upper_limit=OUTLIER_CUTOFF,
+    )
+    capacity_tracker_non_res_df = model_primary_service_rolling_average(
+        capacity_tracker_non_res_df,
+        care_home_column_to_average=CTNRClean.service_user_count,
+        non_res_column_to_average=CTNRClean.cqc_care_workers_employed,
+        number_of_days=NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        model_column_name=CTNRClean.capacity_tracker_rolling_average,
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")

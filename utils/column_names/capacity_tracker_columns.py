@@ -63,7 +63,7 @@ class CapacityTrackerNonResColumns:
     covid19_suspected_count: str = "covid19suspectedcount"
     covid_confirmed_and_suspected: str = "covidconfirmedandsuspected"
     covid_notes: str = "covidnotes"
-    cqc_car_eworkers_absent: str = "cqccareworkersabsent"
+    cqc_care_workers_absent: str = "cqccareworkersabsent"
     cqc_care_workers_employed: str = "cqccareworkersemployed"
     cqc_id: str = "cqcid"
     cqc_survey_last_updated_bst: str = "cqcsurveylastupdatedbst"
@@ -107,3 +107,4 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )
+    capacity_tracker_rolling_average: str = "capacity_tracker_rolling_average"
