@@ -19,6 +19,33 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 
 *"INSERT MISSION STATEMENT*
 
+## Local development using a container
+
+This is a proof of concept, attempting to resolve performance issues running unit tests on Skills for Care Windows laptops.
+
+We're using (Podman)[https://podman.io] an open source alternative to Docker.
+
+@todo For now, the source files are copied into the container on build. This means the unit test can be run, but any changes made to the files outside the container will no be reflected inside the container. We can fix this by mounting the local files in the container - but this will do as a proof of concept.
+
+## Install prerequisites
+Install Podman - https://podman.io/docs/installation
+
+### Clone the project
+```
+git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
+```
+
+### Build the container
+
+```
+podman build --tag sfc-data-engineering .
+```
+
+### Run unit tests
+```
+podman run -w=/DataEngineering sfc-data-engineering:latest pipenv run python -m unittest discover tests/unit
+```
+
 ## Building the project
 
 ### Download the following prerequisite installs:
