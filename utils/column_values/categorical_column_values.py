@@ -455,6 +455,9 @@ class EstimateFilledPostsSource(ColumnValues):
     imputed_posts_rolling_avg_model_model: str = IndCQC.imputed_posts_rolling_avg_model
     non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model
     non_res_without_dormancy_model: str = IndCQC.non_res_without_dormancy_model
+    non_res_pir_linear_regression_model: str = (
+        IndCQC.non_res_pir_linear_regression_model
+    )
     rolling_average_model: str = IndCQC.rolling_average_model
 
 
