@@ -57,24 +57,24 @@ class MainTests(CapacityTrackerNonResTests):
 class CalculateCapacityTrackerRollingAverageTests(CapacityTrackerNonResTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
+
+    def test_calculate_capacity_tracker_rolling_average(self):
+        test_df = self.spark.createDataFrame(
             Data.capacity_tracker_non_res_rolling_average_rows,
             Schemas.capacity_tracker_non_res_rolling_average_schema,
         )
-        self.expected_df = self.spark.createDataFrame(
+        expected_df = self.spark.createDataFrame(
             Data.expected_capacity_tracker_non_res_rolling_average_rows,
             Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
         )
-
-    def test_calcaulte_capacity_tracker_rolling_average(self):
-        returned_df = job.calculate_capacity_tracker_rolling_average(self.test_df)
+        returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
         returned_df.show()
-        self.expected_df.show()
+        expected_df.show()
         self.assertEqual(
             returned_df.sort(
                 CTNR.cqc_id, CTNRClean.capacity_tracker_import_date
             ).collect(),
-            self.expected_df.collect(),
+            expected_df.collect(),
         )
 
 
