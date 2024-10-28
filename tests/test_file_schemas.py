@@ -4233,6 +4233,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
             StructField(
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),
@@ -4263,6 +4264,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
             StructField(
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),
