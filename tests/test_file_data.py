@@ -3255,17 +3255,13 @@ class UtilsData:
     ]
 
     select_rows_with_non_null_values_rows = [
-        ("1-00001", "Y", None),
-        ("1-00002", None, 12.34),
-        ("1-00003", "N", -1.0),
+        ("1-00001", None),
+        ("1-00002", 12.34),
+        ("1-00003", -1.0),
     ]
-    expected_select_rows_with_non_null_string_values_rows = [
-        ("1-00001", "Y", None),
-        ("1-00003", "N", -1.0),
-    ]
-    expected_select_rows_with_non_null_numeric_values_rows = [
-        ("1-00002", None, 12.34),
-        ("1-00003", "N", -1.0),
+    expected_select_rows_with_non_null_values_rows = [
+        ("1-00002", 12.34),
+        ("1-00003", -1.0),
     ]
 
 
