@@ -2,7 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch, call
 
-import jobs.prepare_non_res_ascwds_ind_cqc_features as job
+import jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from utils import utils
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -25,14 +25,14 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.vectorise_dataframe")
-    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.add_date_diff_into_df")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_diff_into_df")
     @patch(
-        "jobs.prepare_non_res_ascwds_ind_cqc_features.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
+        "jobs.prepare_features_non_res_ascwds_ind_cqc.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
     )
-    @patch("jobs.prepare_non_res_ascwds_ind_cqc_features.column_expansion_with_dict")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.column_expansion_with_dict")
     @patch(
-        "jobs.prepare_non_res_ascwds_ind_cqc_features.add_array_column_count_to_data"
+        "jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count_to_data"
     )
     @patch("utils.utils.read_from_parquet")
     def test_main(

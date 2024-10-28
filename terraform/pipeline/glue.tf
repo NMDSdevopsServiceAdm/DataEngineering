@@ -180,9 +180,9 @@ module "clean_ons_data_job" {
 }
 
 
-module "prepare_non_res_ascwds_ind_cqc_features_job" {
+module "prepare_features_non_res_ascwds_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_non_res_ascwds_ind_cqc_features.py"
+  script_name     = "prepare_features_non_res_ascwds_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
