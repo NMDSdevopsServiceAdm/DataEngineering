@@ -242,7 +242,7 @@
                 {
                   "StartAt": "Run non res pir features job",
                   "States": {
-                    "Run non res ascwds features job": {
+                    "Run non res pir features job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
