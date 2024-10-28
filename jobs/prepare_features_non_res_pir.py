@@ -19,13 +19,13 @@ non_res_pir_columns = [
 
 
 def main(
-    ind_cqc_filled_posts_cleaned_source: str,
+    ind_cqc_cleaned_data_source: str,
     non_res_pir_features_destination: str,
 ) -> DataFrame:
     print("Creating non res PIR features dataset...")
 
     locations_df = utils.read_from_parquet(
-        ind_cqc_filled_posts_cleaned_source, non_res_pir_columns
+        ind_cqc_cleaned_data_source, non_res_pir_columns
     )
     non_res_df = utils.select_rows_with_value(
         locations_df, IndCqc.care_home, CareHome.not_care_home
@@ -52,12 +52,12 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        ind_cqc_filled_posts_cleaned_source,
+        ind_cqc_cleaned_data_source,
         non_res_pir_features_destination,
     ) = utils.collect_arguments(
         (
-            "--ind_cqc_filled_posts_cleaned_source",
-            "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
+            "--ind_cqc_cleaned_data_source",
+            "Source s3 directory for input dataset containing imputed PIR data",
         ),
         (
             "--non_res_pir_features_destination",
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     )
 
     main(
-        ind_cqc_filled_posts_cleaned_source,
+        ind_cqc_cleaned_data_source,
         non_res_pir_features_destination,
     )
 
