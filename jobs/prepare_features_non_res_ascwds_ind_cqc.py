@@ -240,7 +240,7 @@ def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:
 
 
 if __name__ == "__main__":
-    print("Spark job 'prepare_non_res_ascwds_ind_cqc_features' starting...")
+    print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -268,4 +268,4 @@ if __name__ == "__main__":
         non_res_ascwds_without_dormancy_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_non_res_ascwds_ind_cqc_features' complete")
+    print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' complete")
