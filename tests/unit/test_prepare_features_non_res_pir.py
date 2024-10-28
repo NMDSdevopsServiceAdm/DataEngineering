@@ -2,6 +2,8 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
+from pyspark.sql import DataFrame
+
 import jobs.prepare_features_non_res_pir as job
 from tests.test_file_data import NonResPirFeaturesData as Data
 from tests.test_file_schemas import NonResPirFeaturesSchema as Schemas
@@ -50,6 +52,23 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.NON_RES_PIR_FEATURE_DESTINATION,
             mode="overwrite",
         )
+
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_from_parquet")
+    def test_main_is_filtering_out_rows_missing_data_for_features(
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(
+            self.CLEANED_IMPORT_DATA,
+            self.NON_RES_PIR_FEATURE_DESTINATION,
+        )
+
+        result: DataFrame = write_to_parquet_mock.call_args[0][0]
+
+        self.assertEqual(self.test_df.count(), 4)
+        self.assertEqual(result.count(), 2)
 
 
 if __name__ == "__main__":
