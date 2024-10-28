@@ -41,7 +41,9 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    non_res_locations_df = filter_df_to_non_res_only(locations_df)
+    non_res_locations_df = utils.select_rows_with_value(
+        locations_df, IndCQC.care_home, CareHome.not_care_home
+    )
 
     features_df = add_array_column_count_to_data(
         df=non_res_locations_df,
@@ -207,21 +209,6 @@ def main(
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
-
-
-def filter_df_to_non_res_only(df: DataFrame) -> DataFrame:
-    """
-    Removes rows where primary service type is not non-residential.
-
-    The function filters the dataframe to rows where primary service type is non-residential.
-
-    Args:
-        df (DataFrame): A dataframe containing features data.
-
-    Returns:
-        DataFrame: A dataframe containing non-residential features data.
-    """
-    return df.filter(F.col(IndCQC.care_home) == CareHome.not_care_home)
 
 
 def filter_df_to_non_null_dormancy(df: DataFrame) -> DataFrame:

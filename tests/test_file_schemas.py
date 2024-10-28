@@ -2363,13 +2363,6 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         ]
     )
 
-    filter_to_non_care_home_schema = StructType(
-        [
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-        ]
-    )
-
     filter_to_dormancy_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

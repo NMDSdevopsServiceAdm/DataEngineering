@@ -34,10 +34,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch(
         "jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count_to_data"
     )
+    @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
+        select_rows_with_value_mock: Mock,
         add_array_column_count_to_data_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
@@ -53,6 +55,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.WITHOUT_DORMANCY_DESTINATION,
         )
 
+        self.assertEqual(select_rows_with_value_mock, 1)
         self.assertEqual(add_array_column_count_to_data_mock.call_count, 3)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
@@ -98,19 +101,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(self.test_df.count(), 10)
         self.assertEqual(result_with_dormancy.count(), 6)
         self.assertEqual(result_without_dormancy.count(), 7)
-
-    def test_filter_df_for_non_res_care_home_data(self):
-        ind_cqc_df = self.spark.createDataFrame(
-            Data.filter_to_non_care_home_rows, Schemas.filter_to_non_care_home_schema
-        )
-        returned_df = job.filter_df_to_non_res_only(ind_cqc_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filtered_to_non_care_home_rows,
-            Schemas.filter_to_non_care_home_schema,
-        )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
 
     def test_filter_df_non_null_dormancy_data(self):
         ind_cqc_df = self.spark.createDataFrame(

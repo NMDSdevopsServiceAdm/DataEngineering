@@ -4544,15 +4544,6 @@ class NonResAscwdsWithDormancyFeaturesData(object):
     ]
     # fmt: on
 
-    filter_to_non_care_home_rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
-
-    expected_filtered_to_non_care_home_rows = [
-        ("N", Sector.independent),
-    ]
-
     filter_to_dormancy_rows = [
         ("1-00001", "Y"),
         ("1-00002", None),
