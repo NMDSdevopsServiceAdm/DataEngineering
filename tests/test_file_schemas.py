@@ -4074,6 +4074,28 @@ class ValidateNonResASCWDSIndCqcFeaturesSchema:
 
 
 @dataclass
+class ValidateNonResPirIndCqcFeaturesSchema:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
+        ]
+    )
+    non_res_pir_ind_cqc_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
 class ValidateEstimatedIndCqcFilledPostsData:
     cleaned_ind_cqc_schema = StructType(
         [
