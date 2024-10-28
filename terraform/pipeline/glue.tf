@@ -195,16 +195,16 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 }
 
 
-module "prepare_features_non_res_pir_job" {
+module "prepare_features_non_res_pir_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_features_non_res_pir.py"
+  script_name     = "prepare_features_non_res_pir_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_cleaned_data_source"      = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
-    "--non_res_pir_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_features/"
+    "--ind_cqc_cleaned_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+    "--non_res_pir_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
   }
 }
 

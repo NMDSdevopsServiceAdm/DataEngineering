@@ -246,10 +246,10 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${prepare_features_non_res_pir_job_name}",
+                        "JobName": "${prepare_features_non_res_pir_ind_cqc_job_name}",
                         "Arguments": {
                           "--ind_cqc_cleaned_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
-                          "--non_res_pir_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_features/"
+                          "--non_res_pir_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
                         }
                       },
                       "End": true

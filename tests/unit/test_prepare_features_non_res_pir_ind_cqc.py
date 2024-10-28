@@ -4,7 +4,7 @@ from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import DataFrame, functions as F
 
-import jobs.prepare_features_non_res_pir as job
+import jobs.prepare_features_non_res_pir_ind_cqc as job
 from tests.test_file_data import NonResPirFeaturesData as Data
 from tests.test_file_schemas import NonResPirFeaturesSchema as Schemas
 from utils import utils
@@ -24,7 +24,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_features_non_res_pir.vectorise_dataframe")
+    @patch("jobs.prepare_features_non_res_pir_ind_cqc.vectorise_dataframe")
     @patch("utils.utils.select_rows_with_non_null_value")
     @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")

@@ -20,7 +20,7 @@ non_res_pir_columns = [
 
 def main(
     ind_cqc_cleaned_data_source: str,
-    non_res_pir_features_destination: str,
+    non_res_pir_ind_cqc_features_destination: str,
 ) -> DataFrame:
     print("Creating non res PIR features dataset...")
 
@@ -38,36 +38,36 @@ def main(
         list_for_vectorisation=[IndCqc.imputed_non_res_people_directly_employed],
     )
 
-    print(f"Exporting as parquet to {non_res_pir_features_destination}")
+    print(f"Exporting as parquet to {non_res_pir_ind_cqc_features_destination}")
 
     utils.write_to_parquet(
         vectorised_features_df,
-        non_res_pir_features_destination,
+        non_res_pir_ind_cqc_features_destination,
         mode="overwrite",
     )
 
 
 if __name__ == "__main__":
-    print("Spark job 'prepare_features_non_res_pir' starting...")
+    print("Spark job 'prepare_features_non_res_pir_ind_cqc' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         ind_cqc_cleaned_data_source,
-        non_res_pir_features_destination,
+        non_res_pir_ind_cqc_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_cleaned_data_source",
             "Source s3 directory for input dataset containing imputed PIR data",
         ),
         (
-            "--non_res_pir_features_destination",
+            "--non_res_pir_ind_cqc_features_destination",
             "A destination directory for outputting non-res PIR features",
         ),
     )
 
     main(
         ind_cqc_cleaned_data_source,
-        non_res_pir_features_destination,
+        non_res_pir_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_features_non_res_pir' complete")
+    print("Spark job 'prepare_features_non_res_pir_ind_cqc' complete")
