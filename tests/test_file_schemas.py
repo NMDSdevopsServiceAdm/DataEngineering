@@ -1314,6 +1314,13 @@ class UtilsSchema:
         ]
     )
 
+    select_rows_with_non_null_values_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+            StructField("column_with_nulls", FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleaningUtilsSchemas:

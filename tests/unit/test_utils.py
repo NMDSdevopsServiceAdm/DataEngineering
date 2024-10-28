@@ -786,5 +786,28 @@ class SelectRowsWithValueTests(UtilsTests):
         )
 
 
+class SelectRowsWithNonNullValueTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            UtilsData.select_rows_with_non_null_values_rows,
+            UtilsSchema.select_rows_with_non_null_values_schema,
+        )
+
+    def test_select_rows_returns_expected_non_null_rows(self):
+        returned_df = utils.select_rows_with_non_null_value(
+            self.test_df, "column_with_nulls"
+        )
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_select_rows_with_non_null_values_rows,
+            UtilsSchema.select_rows_with_non_null_values_schema,
+        )
+
+        returned_data = returned_df.sort("id").collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
