@@ -194,6 +194,20 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
   }
 }
 
+
+module "prepare_features_non_res_pir_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_features_non_res_pir.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_cleaned_data_source"      = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+    "--non_res_pir_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_features/"
+  }
+}
+
 module "clean_ind_cqc_filled_posts_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_ind_cqc_filled_posts.py"
