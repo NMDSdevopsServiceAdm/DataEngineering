@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
+    PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
 from utils.features.helper import vectorise_dataframe
@@ -15,6 +16,10 @@ non_res_pir_columns = [
     IndCqc.care_home,
     IndCqc.people_directly_employed_dedup,
     IndCqc.imputed_non_res_people_directly_employed,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 
 
@@ -44,6 +49,7 @@ def main(
         vectorised_features_df,
         non_res_pir_ind_cqc_features_destination,
         mode="overwrite",
+        partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
 

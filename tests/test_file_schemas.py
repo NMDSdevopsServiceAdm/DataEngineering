@@ -2425,6 +2425,10 @@ class NonResPirFeaturesSchema:
             StructField(
                 IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
             ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
