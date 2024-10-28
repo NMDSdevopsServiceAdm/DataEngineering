@@ -1317,8 +1317,7 @@ class UtilsSchema:
     select_rows_with_non_null_values_schema = StructType(
         [
             StructField("id", StringType(), True),
-            StructField("column_with_string_nulls", StringType(), True),
-            StructField("column_with_numeric_nulls", FloatType(), True),
+            StructField("column_with_nulls", FloatType(), True),
         ]
     )
 

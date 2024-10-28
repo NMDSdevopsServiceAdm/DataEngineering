@@ -794,33 +794,19 @@ class SelectRowsWithNonNullValueTests(UtilsTests):
             UtilsSchema.select_rows_with_non_null_values_schema,
         )
 
-    def test_select_rows_returns_expected_non_null_string_rows(self):
-        returned_string_df = utils.select_rows_with_non_null_value(
-            self.test_df, "column_with_string_nulls"
+    def test_select_rows_returns_expected_non_null_rows(self):
+        returned_df = utils.select_rows_with_non_null_value(
+            self.test_df, "column_with_nulls"
         )
-        expected_string_df = self.spark.createDataFrame(
-            UtilsData.expected_select_rows_with_non_null_string_values_rows,
+        expected_df = self.spark.createDataFrame(
+            UtilsData.expected_select_rows_with_non_null_values_rows,
             UtilsSchema.select_rows_with_non_null_values_schema,
         )
 
-        returned_string_data = returned_string_df.sort("ID").collect()
-        expected_string_data = expected_string_df.collect()
+        returned_data = returned_df.sort("id").collect()
+        expected_data = expected_df.collect()
 
-        self.assertEqual(returned_string_data, expected_string_data)
-
-    def test_select_rows_returns_expected_non_null_numeric_rows(self):
-        returned_numeric_df = utils.select_rows_with_non_null_value(
-            self.test_df, "column_with_numeric_nulls"
-        )
-        expected_numeric_df = self.spark.createDataFrame(
-            UtilsData.expected_select_rows_with_non_null_numeric_values_rows,
-            UtilsSchema.select_rows_with_non_null_values_schema,
-        )
-
-        returned_numeric_data = returned_numeric_df.sort("ID").collect()
-        expected_numeric_data = expected_numeric_df.collect()
-
-        self.assertEqual(returned_numeric_data, expected_numeric_data)
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":
