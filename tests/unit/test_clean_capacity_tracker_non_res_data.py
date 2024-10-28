@@ -68,6 +68,8 @@ class CalculateCapacityTrackerRollingAverageTests(CapacityTrackerNonResTests):
 
     def test_calcaulte_capacity_tracker_rolling_average(self):
         returned_df = job.calculate_capacity_tracker_rolling_average(self.test_df)
+        returned_df.show()
+        self.expected_df.show()
         self.assertEqual(
             returned_df.sort(
                 CTNR.cqc_id, CTNRClean.capacity_tracker_import_date

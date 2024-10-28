@@ -67,6 +67,24 @@ def main(
 
 
 def calculate_capacity_tracker_rolling_average(df: DataFrame) -> DataFrame:
+    df = utils.create_unix_timestamp_variable_from_date_column(
+        df,
+        date_col=CTNRClean.capacity_tracker_import_date,
+        date_format="yyyy-MM-dd",
+        new_col_name=CTNRClean.unix_timestamp,
+    )
+    window = (
+        Window.partitionBy(F.col(CTNR.cqc_id))
+        .orderBy(F.col(CTNRClean.unix_timestamp))
+        .rangeBetween(
+            -utils.convert_days_to_unix_time(NUMBER_OF_DAYS_IN_ROLLING_AVERAGE), 0
+        )
+    )
+    df = df.withColumn(
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        F.avg(CTNRClean.cqc_care_workers_employed).over(window),
+    )
+    df = df.drop(CTNRClean.unix_timestamp)
     return df
 
 

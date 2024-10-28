@@ -937,17 +937,17 @@ class CapacityTrackerNonResData:
 
     capacity_tracker_non_res_rolling_average_rows = [
         ("loc 1", date(2024, 1, 1), 10),
-        ("loc 1", date(2024, 2, 1), 15),
-        ("loc 1", date(2024, 3, 1), 20),
-        ("loc 1", date(2024, 4, 1), None),
+        ("loc 1", date(2024, 3, 1), 15),
+        ("loc 1", date(2024, 5, 1), 20),
+        ("loc 1", date(2024, 8, 1), None),
         ("loc 2", date(2024, 1, 1), 10),
         ("loc 2", date(2024, 2, 1), 15),
     ]
-    expected_capacity_tracker_non_res_rolling_average_rows =[
+    expected_capacity_tracker_non_res_rolling_average_rows = [
         ("loc 1", date(2024, 1, 1), 10, 10.0),
         ("loc 1", date(2024, 3, 1), 15, 12.5),
         ("loc 1", date(2024, 5, 1), 20, 15.0),
-        ("loc 1", date(2024, 7, 1), None, 17.5),
+        ("loc 1", date(2024, 8, 1), None, 17.5),
         ("loc 2", date(2024, 1, 1), 10, 10.0),
         ("loc 2", date(2024, 2, 1), 15, 12.5),
     ]

@@ -110,3 +110,4 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     cqc_care_workers_employed_rolling_avg: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_rolling_avg"
     )
+    unix_timestamp: str = "unix_timestamp"
