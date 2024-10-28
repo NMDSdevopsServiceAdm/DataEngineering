@@ -2379,20 +2379,6 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         ]
     )
 
-    filter_to_non_care_home_schema = StructType(
-        [
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-        ]
-    )
-
-    filter_to_dormancy_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class CareHomeFeaturesSchema:
@@ -2427,10 +2413,18 @@ class CareHomeFeaturesSchema:
         ]
     )
 
-    filter_to_care_home_schema = StructType(
+
+@dataclass
+class NonResPirFeaturesSchema:
+    features_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
         ]
     )
 

@@ -4577,26 +4577,6 @@ class NonResAscwdsWithDormancyFeaturesData(object):
     ]
     # fmt: on
 
-    filter_to_non_care_home_rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
-
-    expected_filtered_to_non_care_home_rows = [
-        ("N", Sector.independent),
-    ]
-
-    filter_to_dormancy_rows = [
-        ("1-00001", "Y"),
-        ("1-00002", None),
-        ("1-00003", "N"),
-    ]
-
-    expected_filtered_to_dormancy_rows = [
-        ("1-00001", "Y"),
-        ("1-00003", "N"),
-    ]
-
 
 @dataclass
 class CareHomeFeaturesData:
@@ -4752,13 +4732,14 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
 
-    expected_filtered_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
+@dataclass
+class NonResPirFeaturesData:
+    feature_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10, 10.0),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, None, 10.25),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None, None),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 10, 10.0),
     ]
 
 
