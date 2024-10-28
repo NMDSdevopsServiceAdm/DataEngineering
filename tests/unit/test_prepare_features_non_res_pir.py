@@ -2,12 +2,13 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 import jobs.prepare_features_non_res_pir as job
 from tests.test_file_data import NonResPirFeaturesData as Data
 from tests.test_file_schemas import NonResPirFeaturesSchema as Schemas
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
@@ -37,10 +38,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        job.main(
-            self.CLEANED_IMPORT_DATA,
-            self.NON_RES_PIR_FEATURE_DESTINATION,
-        )
+        job.main(self.CLEANED_IMPORT_DATA, self.NON_RES_PIR_FEATURE_DESTINATION)
 
         self.assertEqual(read_from_parquet_mock.call_count, 1)
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
@@ -60,15 +58,26 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     ):
         read_from_parquet_mock.return_value = self.test_df
 
-        job.main(
-            self.CLEANED_IMPORT_DATA,
-            self.NON_RES_PIR_FEATURE_DESTINATION,
-        )
+        job.main(self.CLEANED_IMPORT_DATA, self.NON_RES_PIR_FEATURE_DESTINATION)
 
         result: DataFrame = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(self.test_df.count(), 4)
         self.assertEqual(result.count(), 2)
+
+    @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.read_from_parquet")
+    def test_main_produces_dataframe_with_features(
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(self.CLEANED_IMPORT_DATA, self.NON_RES_PIR_FEATURE_DESTINATION)
+
+        result: DataFrame = write_to_parquet_mock.call_args[0][0]
+
+        self.assertTrue(IndCqc.features in result.columns)
+        self.assertTrue(result.filter(F.col(IndCqc.features).isNull()).count() == 0)
 
 
 if __name__ == "__main__":
