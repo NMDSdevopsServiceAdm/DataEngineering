@@ -89,8 +89,6 @@ class CalculateCapacityTrackerRollingAverageTests(CapacityTrackerNonResTests):
             Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
         )
         returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(
             returned_df.sort(
                 CTNR.cqc_id, CTNRClean.capacity_tracker_import_date
@@ -110,8 +108,6 @@ class CalculateCapacityTrackerRollingAverageTests(CapacityTrackerNonResTests):
             Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
         )
         returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
-        returned_df.show()
-        expected_df.show()
         self.assertEqual(
             returned_df.sort(
                 CTNR.cqc_id, CTNRClean.capacity_tracker_import_date
