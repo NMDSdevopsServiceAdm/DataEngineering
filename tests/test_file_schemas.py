@@ -587,7 +587,6 @@ class CapacityTrackerNonResSchema:
             StructField(CTNR.cqc_id, StringType(), True),
             StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTNR.cqc_care_workers_employed, IntegerType(), True),
-            
         ]
     )
     expected_capacity_tracker_non_res_rolling_average_schema = StructType(
