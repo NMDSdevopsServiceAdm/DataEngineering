@@ -36,7 +36,9 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    filtered_loc_data = filter_df_to_care_home_only(locations_df)
+    filtered_loc_data = utils.select_rows_with_value(
+        locations_df, IndCQC.care_home, CareHome.care_home
+    )
 
     features_df = add_array_column_count_to_data(
         df=filtered_loc_data,
@@ -111,10 +113,6 @@ def main(
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
-
-
-def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(IndCQC.care_home) == CareHome.care_home)
 
 
 if __name__ == "__main__":

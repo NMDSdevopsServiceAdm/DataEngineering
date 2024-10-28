@@ -37,10 +37,12 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
     )
     @patch("jobs.prepare_features_care_home_ind_cqc.column_expansion_with_dict")
     @patch("jobs.prepare_features_care_home_ind_cqc.add_array_column_count_to_data")
+    @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
+        select_rows_with_value_mock: Mock,
         add_array_column_count_to_data_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
@@ -55,6 +57,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             self.CARE_HOME_FEATURES_DIR,
         )
 
+        self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_to_data_mock.call_count, 1)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
         self.assertEqual(
@@ -67,7 +70,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.CARE_HOME_FEATURES_DIR,
-            mode=ANY,
+            mode="overwrite",
             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
 
@@ -106,19 +109,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         result = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(result.count(), 1)
-
-    def test_filter_df_to_care_home_only(self):
-        filter_to_ind_care_home_df = self.spark.createDataFrame(
-            Data.filter_to_care_home_rows, Schemas.filter_to_care_home_schema
-        )
-        returned_df = job.filter_df_to_care_home_only(filter_to_ind_care_home_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filtered_to_care_home_rows,
-            Schemas.filter_to_care_home_schema,
-        )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":

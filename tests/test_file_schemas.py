@@ -2411,13 +2411,6 @@ class CareHomeFeaturesSchema:
         ]
     )
 
-    filter_to_care_home_schema = StructType(
-        [
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class EstimateIndCQCFilledPostsSchemas:

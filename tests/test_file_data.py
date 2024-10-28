@@ -4719,15 +4719,6 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
-
-    expected_filtered_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
-    ]
-
 
 @dataclass
 class EstimateIndCQCFilledPostsData:
