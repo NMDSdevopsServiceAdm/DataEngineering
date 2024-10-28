@@ -107,4 +107,6 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )
-    capacity_tracker_rolling_average: str = "capacity_tracker_rolling_average"
+    cqc_care_workers_employed_rolling_avg: str = (
+        CapacityTrackerNonResColumns.cqc_care_workers_employed + "_rolling_avg"
+    )

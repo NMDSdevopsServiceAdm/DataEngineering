@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import DataFrame, functions as F, Window
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.capacity_tracker_columns import (
@@ -7,9 +9,6 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
-    model_primary_service_rolling_average,
-)
 
 CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
@@ -49,12 +48,8 @@ def main(
         columns_to_bound,
         upper_limit=OUTLIER_CUTOFF,
     )
-    capacity_tracker_non_res_df = model_primary_service_rolling_average(
+    capacity_tracker_non_res_df = calculate_capacity_tracker_rolling_average(
         capacity_tracker_non_res_df,
-        care_home_column_to_average=CTNRClean.service_user_count,
-        non_res_column_to_average=CTNRClean.cqc_care_workers_employed,
-        number_of_days=NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        model_column_name=CTNRClean.capacity_tracker_rolling_average,
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
@@ -69,6 +64,10 @@ def main(
             Keys.import_date,
         ],
     )
+
+
+def calculate_capacity_tracker_rolling_average(df: DataFrame) -> DataFrame:
+    return df
 
 
 if __name__ == "__main__":
