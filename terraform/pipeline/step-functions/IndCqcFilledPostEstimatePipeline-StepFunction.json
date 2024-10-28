@@ -211,7 +211,7 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${prepare_care_home_ind_cqc_features_job_name}",
+                        "JobName": "${prepare_features_care_home_ind_cqc_job_name}",
                         "Arguments": {
                           "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
                           "--care_home_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
@@ -228,7 +228,7 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${prepare_non_res_ascwds_ind_cqc_features_job_name}",
+                        "JobName": "${prepare_features_non_res_ascwds_ind_cqc_job_name}",
                         "Arguments": {
                           "--ind_cqc_filled_posts_cleaned_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
                           "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",

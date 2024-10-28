@@ -118,7 +118,7 @@ def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
 
 
 if __name__ == "__main__":
-    print("Spark job 'prepare_care_home_ind_cqc_features' starting...")
+    print("Spark job 'prepare_features_care_home_ind_cqc' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -140,4 +140,4 @@ if __name__ == "__main__":
         care_home_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_care_home_ind_cqc_features' complete")
+    print("Spark job 'prepare_features_care_home_ind_cqc' complete")
