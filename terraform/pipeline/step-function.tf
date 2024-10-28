@@ -236,6 +236,7 @@ resource "aws_sfn_state_machine" "gold_validation_state_machine" {
     validate_care_home_ind_cqc_features_data_job_name                       = module.validate_care_home_ind_cqc_features_data_job.job_name
     validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job_name     = module.validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job.job_name
     validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job_name = module.validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job.job_name
+    validate_non_res_pir_ind_cqc_features_data_job_name                     = module.validate_non_res_pir_ind_cqc_features_data_job.job_name
     validate_estimated_ind_cqc_filled_posts_data_job_name                   = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
     validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name       = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
     data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name
