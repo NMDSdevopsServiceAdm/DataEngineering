@@ -67,6 +67,17 @@ def main(
 
 
 def calculate_capacity_tracker_rolling_average(df: DataFrame) -> DataFrame:
+    """
+    Calculates the rolling average of cqc_care_workers_employed as a new column in the dataset.
+
+    Args:
+        df(DataFrame): Non residential capacity tracker dataframe, including columns: cqc_id,
+        capacity_tracker_import_date, cqc_care_workers_employed.
+
+    Returns:
+        DataFrame: Non residential capactity tracker dataframe with an additional column containing
+        the rolling average of cqc_care_workers_employed.
+    """
     df = utils.create_unix_timestamp_variable_from_date_column(
         df,
         date_col=CTNRClean.capacity_tracker_import_date,
