@@ -23,7 +23,7 @@ class NonResPirIndCqcFeaturesValidationRules:
         ],
         RuleName.min_values: {
             IndCqc.people_directly_employed_dedup: 1.0,
-            IndCqc.imputed_non_res_people_directly_employed: 1.0,
+            IndCqc.imputed_non_res_people_directly_employed: 0.01,
         },
         RuleName.max_values: {
             IndCqc.people_directly_employed_dedup: 3000.0,
