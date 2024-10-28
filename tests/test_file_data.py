@@ -935,6 +935,39 @@ class CapacityTrackerNonResData:
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
     ]
 
+    capacity_tracker_non_res_rolling_average_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 3, 1), 15),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 3, 1), 15, 12.5),
+    ]
+
+    capacity_tracker_non_res_rolling_average_over_six_months_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 2, 1), 15),
+        ("loc 1", date(2024, 8, 1), None),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_over_six_months_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 2, 1), 15, 12.5),
+        ("loc 1", date(2024, 8, 1), None, 15.0),
+    ]
+
+    capacity_tracker_non_res_rolling_average_by_location_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 3, 1), 15),
+        ("loc 2", date(2024, 1, 1), 20),
+        ("loc 2", date(2024, 2, 1), 25),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_by_location_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 3, 1), 15, 12.5),
+        ("loc 2", date(2024, 1, 1), 20, 20.0),
+        ("loc 2", date(2024, 2, 1), 25, 22.5),
+    ]
+
     remove_invalid_characters_from_column_names_rows = [
         ("loc 1", "some data", "other data", "another data", "more data"),
     ]
