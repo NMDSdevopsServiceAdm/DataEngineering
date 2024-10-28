@@ -2,7 +2,7 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.linalg import SparseVector
 
 import jobs.prepare_features_care_home_ind_cqc as job
@@ -83,7 +83,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
 
-        result = write_to_parquet_mock.call_args[0][0].orderBy(
+        result: DataFrame = write_to_parquet_mock.call_args[0][0].orderBy(
             F.col(IndCQC.location_id)
         )
 
@@ -106,7 +106,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
 
-        result = write_to_parquet_mock.call_args[0][0]
+        result: DataFrame = write_to_parquet_mock.call_args[0][0]
 
         self.assertEqual(result.count(), 1)
 
