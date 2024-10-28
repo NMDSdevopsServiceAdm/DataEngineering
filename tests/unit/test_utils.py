@@ -803,7 +803,7 @@ class SelectRowsWithNonNullValueTests(UtilsTests):
             UtilsSchema.select_rows_with_non_null_values_schema,
         )
 
-        returned_string_data = returned_string_df.sort("ID").collect()
+        returned_string_data = returned_string_df.sort("id").collect()
         expected_string_data = expected_string_df.collect()
 
         self.assertEqual(returned_string_data, expected_string_data)
@@ -817,7 +817,7 @@ class SelectRowsWithNonNullValueTests(UtilsTests):
             UtilsSchema.select_rows_with_non_null_values_schema,
         )
 
-        returned_numeric_data = returned_numeric_df.sort("ID").collect()
+        returned_numeric_data = returned_numeric_df.sort("id").collect()
         expected_numeric_data = expected_numeric_df.collect()
 
         self.assertEqual(returned_numeric_data, expected_numeric_data)
