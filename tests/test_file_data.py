@@ -3253,7 +3253,7 @@ class UtilsData:
         ("id_1", "keep"),
         ("id_2", "remove"),
     ]
-    
+
     select_rows_with_non_null_values_rows = [
         ("1-00001", "Y", None),
         ("1-00002", None, 12.34),
@@ -3267,7 +3267,6 @@ class UtilsData:
         ("1-00002", None, 12.34),
         ("1-00003", "N", -1.0),
     ]
-
 
 
 @dataclass
