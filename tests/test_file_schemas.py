@@ -552,7 +552,7 @@ class CapacityTrackerNonResSchema:
             StructField(CTNR.legacy_covid_confirmed, StringType(), True),
             StructField(CTNR.legacy_covid_suspected, StringType(), True),
             StructField(CTNR.cqc_care_workers_employed, StringType(), True),
-            StructField(CTNR.cqc_car_eworkers_absent, StringType(), True),
+            StructField(CTNR.cqc_care_workers_absent, StringType(), True),
             StructField(CTNR.can_provider_more_hours, StringType(), True),
             StructField(CTNR.extra_hours_count, StringType(), True),
             StructField(CTNR.covid_vaccination_full_course, StringType(), True),
@@ -579,6 +579,22 @@ class CapacityTrackerNonResSchema:
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField("other column", StringType(), True),
+        ]
+    )
+
+    capacity_tracker_non_res_rolling_average_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTNR.cqc_care_workers_employed, IntegerType(), True),
+        ]
+    )
+    expected_capacity_tracker_non_res_rolling_average_schema = StructType(
+        [
+            *capacity_tracker_non_res_rolling_average_schema,
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
+            ),
         ]
     )
 
@@ -2363,20 +2379,6 @@ class NonResAscwdsWithDormancyFeaturesSchema(object):
         ]
     )
 
-    filter_to_non_care_home_schema = StructType(
-        [
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-        ]
-    )
-
-    filter_to_dormancy_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-        ]
-    )
-
 
 @dataclass
 class CareHomeFeaturesSchema:
@@ -2408,13 +2410,6 @@ class CareHomeFeaturesSchema:
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    filter_to_care_home_schema = StructType(
-        [
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
 
