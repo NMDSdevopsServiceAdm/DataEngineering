@@ -4734,6 +4734,16 @@ class CareHomeFeaturesData:
 
 
 @dataclass
+class NonResPirFeaturesData:
+    feature_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10, 10.0),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, None, 10.25),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, 10, 10.0),
+    ]
+
+
+@dataclass
 class EstimateIndCQCFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
