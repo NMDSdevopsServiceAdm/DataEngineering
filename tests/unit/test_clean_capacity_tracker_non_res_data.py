@@ -58,13 +58,55 @@ class CalculateCapacityTrackerRollingAverageTests(CapacityTrackerNonResTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_capacity_tracker_rolling_average(self):
+    def test_calculate_capacity_tracker_rolling_average_calculates_a_rolling_average(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.capacity_tracker_non_res_rolling_average_rows,
             Schemas.capacity_tracker_non_res_rolling_average_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_capacity_tracker_non_res_rolling_average_rows,
+            Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
+        )
+        returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
+        self.assertEqual(
+            returned_df.sort(
+                CTNR.cqc_id, CTNRClean.capacity_tracker_import_date
+            ).collect(),
+            expected_df.collect(),
+        )
+
+    def test_calculate_capacity_tracker_rolling_average_calculates_rolling_average_correctly_when_date_spans_over_185_days(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.capacity_tracker_non_res_rolling_average_over_six_months_rows,
+            Schemas.capacity_tracker_non_res_rolling_average_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_capacity_tracker_non_res_rolling_average_over_six_months_rows,
+            Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
+        )
+        returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
+        returned_df.show()
+        expected_df.show()
+        self.assertEqual(
+            returned_df.sort(
+                CTNR.cqc_id, CTNRClean.capacity_tracker_import_date
+            ).collect(),
+            expected_df.collect(),
+        )
+
+    def test_calculate_capacity_tracker_rolling_average_calculates_rolling_average_separately_for_each_location(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.capacity_tracker_non_res_rolling_average_by_location_rows,
+            Schemas.capacity_tracker_non_res_rolling_average_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_capacity_tracker_non_res_rolling_average_by_location_rows,
             Schemas.expected_capacity_tracker_non_res_rolling_average_schema,
         )
         returned_df = job.calculate_capacity_tracker_rolling_average(test_df)
