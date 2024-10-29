@@ -2836,6 +2836,37 @@ class ModelNonResWithoutDormancy:
 
 
 @dataclass
+class ModelNonResPirLinearRegressionSchemas:
+    non_res_pir_cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
+        ]
+    )
+    non_res_pir_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+    expected_non_res_pir_prediction_schema = StructType(
+        [
+            *non_res_pir_cleaned_ind_cqc_schema,
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
+        ]
+    )
+
+
+@dataclass
 class InsertPredictionsIntoLocations:
     cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
     care_home_features_schema = ModelCareHomes.care_homes_features_schema

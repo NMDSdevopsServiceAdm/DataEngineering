@@ -5361,6 +5361,53 @@ class ModelNonResWithoutDormancy:
 
 
 @dataclass
+class ModelNonResPirLinearRegressionRows:
+    non_res_pir_cleaned_ind_cqc_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 10.25),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
+    ]
+    non_res_pir_features_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            Vectors.dense([10.0]),
+        ),
+        (
+            "1-001",
+            date(2024, 2, 1),
+            CareHome.not_care_home,
+            10.25,
+            Vectors.dense([10.25]),
+        ),
+    ]
+
+    non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+    ]
+    expected_non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0, 10.64385),
+    ]
+
+    non_res_location_without_pir_row = [
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+    ]
+    expected_non_res_location_without_pir_row = [
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None, None),
+    ]
+
+    care_home_location_row = [
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
+    ]
+    expected_care_home_location_row = [
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0, None),
+    ]
+
+
+@dataclass
 class InsertPredictionsIntoLocations:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
 
