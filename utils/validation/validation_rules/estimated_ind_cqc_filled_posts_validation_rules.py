@@ -39,7 +39,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.people_directly_employed_dedup: 1,
-            IndCqcColumns.non_res_pir_linear_regression_model: 1.0,
+            IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
         RuleName.max_values: {
