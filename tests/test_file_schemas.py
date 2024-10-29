@@ -2734,18 +2734,6 @@ class ModelFeatures:
             StructField(IndCQC.time_registered, IntegerType(), True),
         ]
     )
-    add_import_month_index_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    expected_add_import_month_index_schema = StructType(
-        [
-            *add_import_month_index_schema,
-            StructField(IndCQC.import_month_index, IntegerType(), True),
-        ]
-    )
 
 
 @dataclass
