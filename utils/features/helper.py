@@ -93,4 +93,3 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
         ),
     )
     return loc_df
-
