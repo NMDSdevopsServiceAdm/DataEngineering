@@ -1,7 +1,6 @@
 from typing import List, Dict
 
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -94,31 +93,3 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
         ),
     )
     return loc_df
-
-
-def add_import_month_index_into_df(df: DataFrame) -> DataFrame:
-    """
-    Adds a column containing the number of whole months since the earliest cqc_location_import_date.
-
-    This function adds a column containing the number of whole months since the earliest cqc_location_import_date. The files usually arrive on the first of each month, but the data refers to the previous month. Adjusting by -5 accounts for delays in acquiring the data.
-
-    Args:
-        df (DataFrame): A dataframe containing cqc_location_import_date.
-
-    Returns:
-        DataFrame: A dataframe with an additional column conatining the number of whole months since the earliest cqc_location_import_date.
-    """
-    first_date = df.agg(F.min(IndCQC.cqc_location_import_date)).first()[0]
-    import_date_adjustment: int = -5
-    df = df.withColumn(
-        IndCQC.import_month_index,
-        (
-            F.months_between(
-                F.date_add(
-                    F.col(IndCQC.cqc_location_import_date), import_date_adjustment
-                ),
-                F.lit(first_date),
-            )
-        ).cast(IntegerType()),
-    )
-    return df

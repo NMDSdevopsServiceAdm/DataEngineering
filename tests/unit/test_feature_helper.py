@@ -11,7 +11,6 @@ from utils.features.helper import (
     add_array_column_count_to_data,
     vectorise_dataframe,
     add_time_registered_into_df,
-    add_import_month_index_into_df,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -131,14 +130,3 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
         self.assertEqual(output_data, expected_data)
-
-    def test_add_import_month_index_into_df(self):
-        test_df = self.spark.createDataFrame(
-            Data.add_import_month_index_rows, Schemas.add_import_month_index_schema
-        )
-        returned_df = add_import_month_index_into_df(test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_add_import_month_index_rows,
-            Schemas.expected_add_import_month_index_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())

@@ -24,7 +24,6 @@ from utils.features.helper import (
     column_expansion_with_dict,
     add_array_column_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_import_month_index_into_df,
 )
 
 
@@ -70,7 +69,6 @@ def main(
             lookup_dict=RegionFeatures.labels_dict,
         )
     )
-    features_df = add_import_month_index_into_df(df=features_df)
 
     list_for_vectorisation: List[str] = sorted(
         [
