@@ -17,7 +17,7 @@ def model_non_res_pir_linear_regression(
     metrics_destination: str,
 ) -> DataFrame:
     """
-    Runs the non residential model to convert PIR people values to estimated filled posts.
+    Runs the non residential model to convert people directly employed values to estimated filled posts.
 
     This function loads and runs the non residential PIR linear regression model on non residential with
     PIR features data. It then saves the model metrics and adds the predictions into the main dataset.
