@@ -78,3 +78,47 @@ class TestModelNonResPirLinearRegression(unittest.TestCase):
             expected_data[0][IndCqc.non_res_pir_linear_regression_model],
             places=5,
         )
+
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_pir_linear_regression.save_model_metrics"
+    )
+    def test_model_non_res_pir_linear_regression_doesnt_return_prediction_when_features_not_known(
+        self,
+        save_model_metrics_mock: Mock,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.non_res_location_without_pir_row,
+            Schemas.non_res_pir_cleaned_ind_cqc_schema,
+        )
+        returned_data = job.model_non_res_pir_linear_regression(
+            test_df,
+            self.non_res_pir_features_df,
+            self.NON_RES_PIR_MODEL,
+            self.METRICS_DESTINATION,
+        ).collect()
+
+        self.assertEqual(
+            returned_data[0][IndCqc.non_res_pir_linear_regression_model], None
+        )
+
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_pir_linear_regression.save_model_metrics"
+    )
+    def test_model_non_res_pir_linear_regression_doesnt_return_prediction_when_its_a_care_home(
+        self,
+        save_model_metrics_mock: Mock,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.care_home_location_row,
+            Schemas.non_res_pir_cleaned_ind_cqc_schema,
+        )
+        returned_data = job.model_non_res_pir_linear_regression(
+            test_df,
+            self.non_res_pir_features_df,
+            self.NON_RES_PIR_MODEL,
+            self.METRICS_DESTINATION,
+        ).collect()
+
+        self.assertEqual(
+            returned_data[0][IndCqc.non_res_pir_linear_regression_model], None
+        )
