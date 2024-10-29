@@ -4737,10 +4737,10 @@ class CareHomeFeaturesData:
 class NonResPirFeaturesData:
     # fmt: off
     feature_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10, 10.0, "2024", "01", "01", "20240101"),
-        ("1-001", date(2024, 2, 1), CareHome.not_care_home, None, 10.25, "2024", "02", "01", "20240201"),
-        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None, None, "2024", "03", "01", "20240301"),
-        ("1-003", date(2024, 4, 1), CareHome.care_home, 10, 10.0, "2024", "04", "01", "20240401"),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 5.0, 10, 10.0, "2024", "01", "01", "20240101"),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 5.0, None, 10.25, "2024", "02", "01", "20240201"),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, 5.0, None, None, "2024", "03", "01", "20240301"),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 10, 5.0, 10.0, "2024", "04", "01", "20240401"),
     ]
     # fmt: on
 

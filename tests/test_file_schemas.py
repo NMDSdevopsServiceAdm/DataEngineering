@@ -2421,6 +2421,7 @@ class NonResPirFeaturesSchema:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
             StructField(
                 IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
