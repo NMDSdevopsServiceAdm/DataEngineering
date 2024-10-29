@@ -5145,7 +5145,6 @@ class ModelFeatures:
     ]
 
 
-
 @dataclass
 class ModelCareHomes:
     care_homes_cleaned_ind_cqc_rows = [
