@@ -1,7 +1,6 @@
 from typing import List, Dict
 
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
 
 from utils.column_names.ind_cqc_pipeline_columns import (
