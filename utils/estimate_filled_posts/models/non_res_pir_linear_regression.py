@@ -1,4 +1,4 @@
-from pyspark.ml.regression import LinearRegression
+from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from utils.estimate_filled_posts.insert_predictions_into_locations import (
@@ -31,9 +31,9 @@ def model_non_res_pir_linear_regression(
     Returns:
         DataFrame: A dataframe with non residential PIR linear regression model estimates added.
     """
-    lr_trained_model = LinearRegression.load(model_source)
+    lr_trained_model = LinearRegressionModel.load(model_source)
 
-    non_res_predictions = lr_trained_model.fit(features_df)
+    non_res_predictions = lr_trained_model.transform(features_df)
 
     save_model_metrics(
         non_res_predictions,
