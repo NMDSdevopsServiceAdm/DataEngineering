@@ -4735,12 +4735,14 @@ class CareHomeFeaturesData:
 
 @dataclass
 class NonResPirFeaturesData:
+    # fmt: off
     feature_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10, 10.0),
-        ("1-001", date(2024, 2, 1), CareHome.not_care_home, None, 10.25),
-        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None, None),
-        ("1-003", date(2024, 4, 1), CareHome.care_home, 10, 10.0),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 5.0, 10, 10.0, "2024", "01", "01", "20240101"),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 5.0, None, 10.25, "2024", "02", "01", "20240201"),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, 5.0, None, None, "2024", "03", "01", "20240301"),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 5.0, 10, 10.0, "2024", "04", "01", "20240401"),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -5345,6 +5347,45 @@ class ModelNonResWithoutDormancy:
             None,
             0,
         ),
+    ]
+
+
+@dataclass
+class ModelNonResPirLinearRegressionRows:
+    non_res_pir_cleaned_ind_cqc_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 10.25),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
+    ]
+    non_res_pir_features_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            Vectors.dense([10.0]),
+        ),
+        (
+            "1-001",
+            date(2024, 2, 1),
+            CareHome.not_care_home,
+            10.25,
+            Vectors.dense([10.25]),
+        ),
+    ]
+
+    non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+    ]
+    expected_non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0, 10.64385),
+    ]
+    non_res_location_without_pir_row = [
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+    ]
+    care_home_location_row = [
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
     ]
 
 
@@ -7057,10 +7098,10 @@ class ValidateEstimatedIndCqcFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
     ]
     # fmt: on
 
@@ -7274,6 +7315,7 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7298,6 +7340,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7316,6 +7359,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7330,6 +7374,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,
@@ -7422,6 +7467,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            10.0,
             "2024",
             "01",
             "01",
@@ -7437,6 +7483,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,

@@ -8,7 +8,10 @@ import jobs.prepare_features_non_res_pir_ind_cqc as job
 from tests.test_file_data import NonResPirFeaturesData as Data
 from tests.test_file_schemas import NonResPirFeaturesSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+    PartitionKeys as Keys,
+)
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
@@ -49,6 +52,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             ANY,
             self.NON_RES_PIR_FEATURE_DESTINATION,
             mode="overwrite",
+            partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
 
     @patch("utils.utils.write_to_parquet")

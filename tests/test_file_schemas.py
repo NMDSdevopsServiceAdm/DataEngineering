@@ -2421,10 +2421,15 @@ class NonResPirFeaturesSchema:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
             StructField(
                 IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
             ),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 
@@ -2815,6 +2820,37 @@ class ModelNonResWithoutDormancy:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelNonResPirLinearRegressionSchemas:
+    non_res_pir_cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
+        ]
+    )
+    non_res_pir_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+            ),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+    expected_non_res_pir_prediction_schema = StructType(
+        [
+            *non_res_pir_cleaned_ind_cqc_schema,
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
         ]
     )
 
@@ -4116,7 +4152,6 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
             StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
-            StructField(IndCQC.non_res_model, DoubleType(), True),
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
@@ -4261,6 +4296,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
             StructField(
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),
@@ -4291,6 +4327,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
             StructField(
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),

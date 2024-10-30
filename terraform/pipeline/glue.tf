@@ -796,6 +796,8 @@ module "estimate_ind_cqc_filled_posts_job" {
     "--non_res_with_dormancy_model_source"               = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.1/"
     "--non_res_without_dormancy_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
     "--non_res_without_dormancy_model_source"            = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/1.0.0/"
+    "--non_res_pir_linear_regression_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
+    "--non_res_pir_linear_regression_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/1.0.0/"
     "--estimated_ind_cqc_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--ml_model_metrics_destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
   }

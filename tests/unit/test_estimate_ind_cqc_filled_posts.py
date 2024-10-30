@@ -26,6 +26,10 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     NON_RES_WITHOUT_DORMANCY_MODEL = (
         "tests/test_models/non_residential_without_dormancy_prediction/1.0.0/"
     )
+    NON_RES_PIR_LINEAR_REGRESSION_FEATURES = "non res pir linear regression features"
+    NON_RES_PIR_LINEAR_REGRESSION_MODEL = (
+        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
+    )
     ESTIMATES_DESTINATION = "estimates destination"
     METRICS_DESTINATION = "metrics destination"
     partition_keys = [
@@ -44,6 +48,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_pir_linear_regression")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
@@ -54,6 +59,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_care_homes_patch: Mock,
         model_non_res_with_dormancy_patch: Mock,
         model_non_res_without_dormancy_patch: Mock,
+        model_non_res_pir_linear_regression_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -61,6 +67,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.CARE_HOMES_FEATURES,
             self.NON_RES_WITH_DORMANCY_FEATURES,
             self.NON_RES_WITHOUT_DORMANCY_FEATURES,
+            self.NON_RES_PIR_LINEAR_REGRESSION_FEATURES,
         ]
 
         job.main(
@@ -71,14 +78,17 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.NON_RES_WITH_DORMANCY_MODEL,
             self.NON_RES_WITHOUT_DORMANCY_FEATURES,
             self.NON_RES_WITHOUT_DORMANCY_MODEL,
+            self.NON_RES_PIR_LINEAR_REGRESSION_FEATURES,
+            self.NON_RES_PIR_LINEAR_REGRESSION_MODEL,
             self.ESTIMATES_DESTINATION,
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 4)
+        self.assertEqual(read_from_parquet_patch.call_count, 5)
         self.assertEqual(model_care_homes_patch.call_count, 1)
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
         self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
+        self.assertEqual(model_non_res_pir_linear_regression_patch.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
