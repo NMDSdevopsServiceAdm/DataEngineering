@@ -115,8 +115,8 @@ module "clean_capacity_tracker_care_home_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home/"
-    "--cleaned_capacity_tracker_care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
+    "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+    "--cleaned_capacity_tracker_care_home_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
   }
 }
 
@@ -129,8 +129,8 @@ module "clean_capacity_tracker_non_res_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--capacity_tracker_non_res_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential/"
-    "--cleaned_capacity_tracker_non_res_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential_cleaned/"
+    "--capacity_tracker_non_res_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
+    "--cleaned_capacity_tracker_non_res_destination" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
   }
 }
 
@@ -180,9 +180,9 @@ module "clean_ons_data_job" {
 }
 
 
-module "prepare_non_res_ascwds_ind_cqc_features_job" {
+module "prepare_features_non_res_ascwds_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_non_res_ascwds_ind_cqc_features.py"
+  script_name     = "prepare_features_non_res_ascwds_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -191,6 +191,20 @@ module "prepare_non_res_ascwds_ind_cqc_features_job" {
     "--ind_cqc_filled_posts_cleaned_source"                          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
     "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
     "--non_res_ascwds_without_dormancy_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
+  }
+}
+
+
+module "prepare_features_non_res_pir_ind_cqc_job" {
+  source          = "../modules/glue-job"
+  script_name     = "prepare_features_non_res_pir_ind_cqc.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--ind_cqc_cleaned_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+    "--non_res_pir_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
   }
 }
 
@@ -423,6 +437,7 @@ module "merge_coverage_data_job" {
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=workplace_for_reconciliation/"
     "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=cqc_ratings/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=merged_coverage_data/"
+    "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=monthly_coverage_data/"
   }
 }
 
@@ -605,6 +620,22 @@ module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
 }
 
 
+module "validate_non_res_pir_ind_cqc_features_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_non_res_pir_ind_cqc_features_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_ind_cqc_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
+    "--non_res_pir_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
+    "--report_destination"                  = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=non_res_pir_ind_cqc_features_data_report/"
+  }
+}
+
+
 module "validate_estimated_ind_cqc_filled_posts_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
@@ -720,9 +751,9 @@ module "validate_postcode_directory_raw_data_job" {
   }
 }
 
-module "prepare_care_home_ind_cqc_features_job" {
+module "prepare_features_care_home_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_name     = "prepare_care_home_ind_cqc_features.py"
+  script_name     = "prepare_features_care_home_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -760,11 +791,13 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--estimate_missing_ascwds_filled_posts_data_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/"
     "--care_home_features_source"                        = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/"
-    "--care_home_model_source"                           = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/4.0.0/"
+    "--care_home_model_source"                           = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/4.0.1/"
     "--non_res_with_dormancy_features_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/"
-    "--non_res_with_dormancy_model_source"               = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.0/"
+    "--non_res_with_dormancy_model_source"               = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.1/"
     "--non_res_without_dormancy_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/"
     "--non_res_without_dormancy_model_source"            = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/1.0.0/"
+    "--non_res_pir_linear_regression_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
+    "--non_res_pir_linear_regression_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/1.0.0/"
     "--estimated_ind_cqc_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
     "--ml_model_metrics_destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
   }
@@ -807,8 +840,8 @@ module "diagnostics_on_capacity_tracker_job" {
 
   job_parameters = {
     "--estimate_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
-    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=care_home_cleaned/"
-    "--capacity_tracker_non_res_source"           = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=non_residential_cleaned/"
+    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+    "--capacity_tracker_non_res_source"           = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
     "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
     "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/"
     "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"

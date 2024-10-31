@@ -17,6 +17,9 @@ from utils.estimate_filled_posts.models.non_res_with_dormancy import (
 from utils.estimate_filled_posts.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
+from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
+    model_non_res_pir_linear_regression,
+)
 
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -63,6 +66,8 @@ def main(
     non_res_with_dormancy_model_source: str,
     non_res_without_dormancy_features_source: str,
     non_res_without_dormancy_model_source: str,
+    non_res_pir_linear_regression_features_source: str,
+    non_res_pir_linear_regression_model_source: str,
     estimated_ind_cqc_destination: str,
     ml_model_metrics_destination: str,
 ) -> DataFrame:
@@ -82,6 +87,9 @@ def main(
     non_res_without_dormancy_features_df = utils.read_from_parquet(
         non_res_without_dormancy_features_source
     )
+    non_res_pir_linear_regression_features_df = utils.read_from_parquet(
+        non_res_pir_linear_regression_features_source
+    )
 
     estimate_filled_posts_df = model_care_homes(
         estimate_missing_ascwds_df,
@@ -100,6 +108,13 @@ def main(
         estimate_filled_posts_df,
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
+        ml_model_metrics_destination,
+    )
+
+    estimate_filled_posts_df = model_non_res_pir_linear_regression(
+        estimate_filled_posts_df,
+        non_res_pir_linear_regression_features_df,
+        non_res_pir_linear_regression_model_source,
         ml_model_metrics_destination,
     )
 
@@ -161,6 +176,8 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
+        non_res_pir_linear_regression_features_source,
+        non_res_pir_linear_regression_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     ) = utils.collect_arguments(
@@ -193,6 +210,14 @@ if __name__ == "__main__":
             "Source s3 directory for the non res without dormancy ML model",
         ),
         (
+            "--non_res_pir_linear_regression_features_source",
+            "Source s3 directory for non res pir linear regression features dataset",
+        ),
+        (
+            "--non_res_pir_linear_regression_model_source",
+            "Source s3 directory for the non res pir linear regression model",
+        ),
+        (
             "--estimated_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
@@ -210,6 +235,8 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
+        non_res_pir_linear_regression_features_source,
+        non_res_pir_linear_regression_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     )

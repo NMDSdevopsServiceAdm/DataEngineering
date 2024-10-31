@@ -262,5 +262,29 @@ def filter_df_to_maximum_value_in_column(
 
 
 def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> DataFrame:
-    df = df.where(df[column] == value_to_keep)
-    return df
+    """
+    Select rows from a DataFrame where the specified column matches the given value.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column (str): The name of the column to filter on.
+        value_to_keep (str): The value to keep in the specified column.
+
+    Returns:
+        DataFrame: A DataFrame containing only the rows where the specified column matches the given value.
+    """
+    return df.filter(F.col(column) == value_to_keep)
+
+
+def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
+    """
+    Select rows from a DataFrame where the specified column has non-null values.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column (str): The name of the column to filter on.
+
+    Returns:
+        DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
+    """
+    return df.filter(F.col(column).isNotNull())

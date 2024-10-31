@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
 
 
 from utils import utils
@@ -24,7 +24,6 @@ from utils.features.helper import (
     column_expansion_with_dict,
     add_array_column_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_import_month_index_into_df,
 )
 
 
@@ -36,7 +35,9 @@ def main(
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    filtered_loc_data = filter_df_to_care_home_only(locations_df)
+    filtered_loc_data = utils.select_rows_with_value(
+        locations_df, IndCQC.care_home, CareHome.care_home
+    )
 
     features_df = add_array_column_count_to_data(
         df=filtered_loc_data,
@@ -68,7 +69,6 @@ def main(
             lookup_dict=RegionFeatures.labels_dict,
         )
     )
-    features_df = add_import_month_index_into_df(df=features_df)
 
     list_for_vectorisation: List[str] = sorted(
         [
@@ -113,12 +113,8 @@ def main(
     )
 
 
-def filter_df_to_care_home_only(df: DataFrame) -> DataFrame:
-    return df.filter(F.col(IndCQC.care_home) == CareHome.care_home)
-
-
 if __name__ == "__main__":
-    print("Spark job 'prepare_care_home_ind_cqc_features' starting...")
+    print("Spark job 'prepare_features_care_home_ind_cqc' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -140,4 +136,4 @@ if __name__ == "__main__":
         care_home_ind_cqc_features_destination,
     )
 
-    print("Spark job 'prepare_care_home_ind_cqc_features' complete")
+    print("Spark job 'prepare_features_care_home_ind_cqc' complete")

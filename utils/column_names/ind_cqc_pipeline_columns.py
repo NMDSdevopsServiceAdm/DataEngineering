@@ -151,7 +151,7 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
-    non_res_model: str = "non_res_with_pir_model"
+    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
