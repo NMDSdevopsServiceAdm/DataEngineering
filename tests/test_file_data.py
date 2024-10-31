@@ -8050,3 +8050,8 @@ class ArchiveFilledPostsEstimates:
     expected_create_archive_date_partitions_rows = [
         ("loc 1", date(2024, 1, 2), "02", "01", "2024"),
     ]
+
+    single_digit_number = 9
+    expected_single_digit_number_as_string = "9"
+    double_digit_number = 10
+    expected_double_digit_number_as_string = "10"

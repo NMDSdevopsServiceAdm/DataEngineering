@@ -73,7 +73,27 @@ class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
         returned_df = job.create_archive_date_partition_columns(
             test_df, IndCQC.cqc_location_import_date
         )
+        returned_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class AddLeadingZeroTests(ArchiveFilledPostsEstimatesTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_leading_zero_returns_correct_value_when_passed_single_digit_int(self):
+        test_number = Data.single_digit_number
+        expected_string = Data.expected_single_digit_number_as_string
+        returned_value = job.add_leading_zero(test_number)
+        self.assertEqual(returned_value, expected_string)
+        self.assertIsInstance(returned_value, str)
+
+    def test_add_leading_zero_returns_correct_value_when_passed_double_digit_int(self):
+        test_number = Data.double_digit_number
+        expected_string = Data.expected_double_digit_number_as_string
+        returned_value = job.add_leading_zero(test_number)
+        self.assertEqual(returned_value, expected_string)
+        self.assertIsInstance(returned_value, str)
 
 
 if __name__ == "__main__":
