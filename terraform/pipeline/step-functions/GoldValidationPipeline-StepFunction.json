@@ -170,7 +170,7 @@
             }
           }
         ],
-        "Next": "Start crawler when success",
+        "Next": "StartCrawler",
         "Comment": "A state machine for validating Gold layer data",
         "Catch": [
           {
@@ -182,13 +182,22 @@
           }
         ]
       },
-      "Start crawler when success": {
+      "StartCrawler": {
         "Type": "Task",
         "Parameters": {
           "Name": "${data_validation_reports_crawler_name}"
         },
         "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success"
+        "Next": "Success",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Publish error notification",
+            "ResultPath": "$.error"
+          }
+        ]
       },
       "Publish error notification": {
         "Type": "Task",
@@ -204,14 +213,6 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
-        "Next": "Start crawler when failed"
-      },
-      "Start crawler when failed": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${data_validation_reports_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {
