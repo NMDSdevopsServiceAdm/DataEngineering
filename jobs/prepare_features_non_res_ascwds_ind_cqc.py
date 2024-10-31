@@ -26,7 +26,6 @@ from utils.features.helper import (
     column_expansion_with_dict,
     add_array_column_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_date_diff_into_df,
     add_time_registered_into_df,
 )
 
@@ -94,12 +93,6 @@ def main(
         )
     )
 
-    features_df = add_date_diff_into_df(
-        df=features_df,
-        new_col_name=IndCQC.date_diff,
-        import_date_col=IndCQC.cqc_location_import_date,
-    )
-
     features_df = add_time_registered_into_df(
         df=features_df,
     )
@@ -165,7 +158,6 @@ def main(
         [
             IndCQC.service_count,
             IndCQC.time_registered,
-            IndCQC.date_diff,
         ]
         + service_keys
         + regions
