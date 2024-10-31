@@ -23,6 +23,7 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     estimate_ind_cqc_filled_posts_job_name                = module.estimate_ind_cqc_filled_posts_job.job_name
     estimate_ind_cqc_filled_posts_by_job_role_job_name    = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
     diagnostics_on_known_filled_posts_job_name            = module.diagnostics_on_known_filled_posts_job.job_name
+    archive_filled_posts_estimates_job_name               = module.archive_filled_posts_estimates_job.job_name
     ascwds_crawler_name                                   = module.ascwds_crawler.crawler_name
     cqc_crawler_name                                      = module.cqc_crawler.crawler_name
     sfc_crawler_name                                      = module.sfc_crawler.crawler_name

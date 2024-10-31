@@ -278,88 +278,122 @@
                   "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }
               },
-              "Next": "Run estimate ind cqc filled posts by job role job"
+              "Next": "Run diagnotics and archive data"
             },
-            "Run estimate ind cqc filled posts by job role job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
-                "Arguments": {
-                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                  "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
-                }
-              },
-              "Next": "Run diagnostics on known filled posts job"
-            },
-            "Run diagnostics on known filled posts job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${diagnostics_on_known_filled_posts_job_name}",
-                "Arguments": {
-                  "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                  "--diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/",
-                  "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/",
-                  "--charts_destination": "${dataset_bucket_name}"
-                }
-              },
-              "Next": "Validation and crawler"
-              },
-              "Validation and crawler": {
-                "Type": "Parallel",
-                "Branches": [
-                  {
-                    "StartAt": "Start gold validation",
-                    "States": {
-                      "Start gold validation": {
-                        "Type": "Task",
-                        "Resource": "arn:aws:states:::states:startExecution.sync:2",
-                        "Parameters": {
-                          "StateMachineArn": "${run_gold_validation_state_machine_arn}",
-                          "Input": {
-                            "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                          }
-                        },
-                        "End": true
-                      }
+            "Run diagnotics and archive data": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Run estimate ind cqc filled posts by job role job",
+                  "States": {
+                    "Run estimate ind cqc filled posts by job role job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
+                        "Arguments": {
+                          "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                          "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                          "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                        }
+                      },
+                      "End": true
                     }
-                  },
-                  {
-                    "StartAt": "run ind crawler",
-                    "States": {
-                      "run ind crawler": {
-                        "Type": "Task",
-                        "Parameters": {
-                          "Name": "${ind_cqc_filled_posts_crawler_name}"
-                        },
-                        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-                        "End": true
-                      }
-                    }
-                  }
-                ],
-                "End": true
-              }
-            }
-          },
-          {
-            "StartAt": "Start silver validation",
-            "States": {
-              "Start silver validation": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution.sync:2",
-                "Parameters": {
-                  "StateMachineArn": "${run_silver_validation_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                   }
                 },
-                "End": true
-              }
+                {
+                  "StartAt": "Run diagnostics on known filled posts job",
+                  "States": {
+                    "Run diagnostics on known filled posts job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${diagnostics_on_known_filled_posts_job_name}",
+                        "Arguments": {
+                          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                          "--diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics/",
+                          "--summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_diagnostics_summary/",
+                          "--charts_destination": "${dataset_bucket_name}"
+                        }
+                      },
+                      "Next": "Validation and crawler"
+                    },
+                    "Validation and crawler": {
+                      "Type": "Parallel",
+                      "Branches": [
+                        {
+                          "StartAt": "Start gold validation",
+                          "States": {
+                            "Start gold validation": {
+                              "Type": "Task",
+                              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                              "Parameters": {
+                                "StateMachineArn": "${run_gold_validation_state_machine_arn}",
+                                "Input": {
+                                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                                }
+                              },
+                              "End": true
+                            }
+                          }
+                        },
+                        {
+                          "StartAt": "run ind crawler",
+                          "States": {
+                            "run ind crawler": {
+                              "Type": "Task",
+                              "Parameters": {
+                                "Name": "${ind_cqc_filled_posts_crawler_name}"
+                              },
+                              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+                              "End": true
+                            }
+                          }
+                        }
+                      ],
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run archive filled posts estimates",
+                  "States": {
+                    "Run archive filled posts estimates": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${archive_filled_posts_estimates_job_name}",
+                        "Arguments": {
+                          "--estimate_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                          "--monthly_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=monthly_filled_posts_archive/",
+                          "--annual_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=annual_filled_posts_archive/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "End": true
             }
-          },
+          }
+        },
+        {
+          "StartAt": "Start silver validation",
+          "States": {
+            "Start silver validation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
         {
           "StartAt": "Run merge coverage data job",
           "States": {
