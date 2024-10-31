@@ -9,6 +9,7 @@ from tests.test_file_schemas import ArchiveFilledPostsEstimates as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
 
 
@@ -19,11 +20,15 @@ class ArchiveFilledPostsEstimatesTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+class MainTests(ArchiveFilledPostsEstimatesTests):
+    def setUp(self) -> None:
+        super().setUp()
         self.test_filled_posts_estimates_df = self.spark.createDataFrame(
             Data.filled_posts_rows, Schemas.filled_posts_schema
         )
-
-        warnings.filterwarnings("ignore", category=ResourceWarning)
 
     # @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -50,6 +55,25 @@ class ArchiveFilledPostsEstimatesTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
         """
+
+
+class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_create_archive_date_partition_columns_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_archive_date_partitions_rows,
+            Schemas.create_archive_date_partitions_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_archive_date_partitions_rows,
+            Schemas.expected_create_archive_date_partitions_schema,
+        )
+        returned_df = job.create_archive_date_partition_columns(
+            test_df, IndCQC.cqc_location_import_date
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 if __name__ == "__main__":

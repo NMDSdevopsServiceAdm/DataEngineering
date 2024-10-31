@@ -43,6 +43,7 @@ from utils.column_names.cqc_ratings_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
@@ -4907,5 +4908,21 @@ class ArchiveFilledPostsEstimates:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    create_archive_date_partitions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    expected_create_archive_date_partitions_schema = StructType(
+        [
+            *create_archive_date_partitions_schema,
+            StructField(ArchiveKeys.archive_day, StringType(), True),
+            StructField(ArchiveKeys.archive_month, StringType(), True),
+            StructField(ArchiveKeys.archive_year, StringType(), True),
         ]
     )

@@ -8043,3 +8043,10 @@ class ArchiveFilledPostsEstimates:
     filled_posts_rows = [
         ("loc 1", date(2024, 1, 1)),
     ]
+
+    create_archive_date_partitions_rows = [
+        ("loc 1", date(2024, 1, 2)),
+    ]
+    expected_create_archive_date_partitions_rows = [
+        ("loc 1", date(2024, 1, 2), "02", "01", "2024"),
+    ]
