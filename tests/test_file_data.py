@@ -4561,7 +4561,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
 
 @dataclass
-class NonResAscwdsWithDormancyFeaturesData(object):
+class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
         ("1-00001", date(2022, 2, 1), date(2019, 2, 1), "South East", "Y", ["Domiciliary care service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),

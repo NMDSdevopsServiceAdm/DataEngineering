@@ -2303,7 +2303,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
 
 @dataclass
-class NonResAscwdsWithDormancyFeaturesSchema(object):
+class NonResAscwdsFeaturesSchema(object):
     basic_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
