@@ -278,29 +278,24 @@
                   "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }
               },
+              "Next": "Run estimate ind cqc filled posts by job role job"
+            },
+            "Run estimate ind cqc filled posts by job role job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
+                "Arguments": {
+                  "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
+                  "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                  "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
+                }
+              },
               "Next": "Run diagnostics and archive data"
             },
             "Run diagnostics and archive data": {
               "Type": "Parallel",
               "Branches": [
-                {
-                  "StartAt": "Run estimate ind cqc filled posts by job role job",
-                  "States": {
-                    "Run estimate ind cqc filled posts by job role job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${estimate_ind_cqc_filled_posts_by_job_role_job_name}",
-                        "Arguments": {
-                          "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                          "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                          "--estimated_ind_cqc_filled_posts_by_job_role_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
                 {
                   "StartAt": "Run diagnostics on known filled posts job",
                   "States": {
