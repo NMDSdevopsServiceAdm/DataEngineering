@@ -157,7 +157,10 @@ def main(
     list_for_vectorisation_without_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
+            IndCQC.activity_count,
+            IndCQC.specialism_count,
             IndCQC.time_registered,
+            IndCQC.rolling_average_model,
         ]
         + service_keys
         + regions
