@@ -278,9 +278,9 @@
                   "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ml_model_metrics/"
                 }
               },
-              "Next": "Run diagnotics and archive data"
+              "Next": "Run diagnostics and archive data"
             },
-            "Run diagnotics and archive data": {
+            "Run diagnostics and archive data": {
               "Type": "Parallel",
               "Branches": [
                 {
