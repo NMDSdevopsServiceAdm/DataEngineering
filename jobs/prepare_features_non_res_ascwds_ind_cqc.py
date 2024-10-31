@@ -36,6 +36,7 @@ vectorised_features_column_list: List[str] = [
     IndCQC.current_region,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.dormancy,
+    IndCQC.care_home,
     IndCQC.service_count,
     IndCQC.activity_count,
     IndCQC.specialism_count,
