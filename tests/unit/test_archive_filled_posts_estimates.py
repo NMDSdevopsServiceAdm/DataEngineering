@@ -25,7 +25,7 @@ class ArchiveFilledPostsEstimatesTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
+    # @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
