@@ -5,14 +5,12 @@ from unittest.mock import ANY, Mock, patch, call
 from pyspark.sql import DataFrame
 
 import jobs.prepare_features_non_res_ascwds_ind_cqc as job
+from tests.test_file_data import NonResAscwdsFeaturesData as Data
+from tests.test_file_schemas import NonResAscwdsFeaturesSchema as Schemas
 from utils import utils
-
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-
-from tests.test_file_data import NonResAscwdsWithDormancyFeaturesData as Data
-from tests.test_file_schemas import NonResAscwdsWithDormancyFeaturesSchema as Schemas
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
