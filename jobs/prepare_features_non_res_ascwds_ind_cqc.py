@@ -134,7 +134,7 @@ def main(
         + rui_indicators
     )
     list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation_without_dormancy + [dormancy]
+        list_for_vectorisation_without_dormancy + dormancy
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
