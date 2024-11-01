@@ -2,11 +2,9 @@ import sys
 from datetime import datetime
 
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import StringType
 
-from utils import utils, cleaning_utils as CUtils
+from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
     ArchivePartitionKeys as ArchiveKeys,
 )

@@ -9,8 +9,7 @@ from tests.test_file_data import ArchiveFilledPostsEstimates as Data
 from tests.test_file_schemas import ArchiveFilledPostsEstimates as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
+    ArchivePartitionKeys as ArchiveKeys,
 )
 
 
