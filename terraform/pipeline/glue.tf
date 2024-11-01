@@ -629,7 +629,7 @@ module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
     "--non_res_ascwds_without_dormancy_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
-    "--report_destination"                                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy_data_report/"
+    "--report_destination"                                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
   }
 }
 
@@ -645,7 +645,7 @@ module "validate_non_res_pir_ind_cqc_features_data_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/"
     "--non_res_pir_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_pir/"
-    "--report_destination"                  = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=non_res_pir_ind_cqc_features_data_report/"
+    "--report_destination"                  = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_non_res_pir_ind_cqc_features/"
   }
 }
 
