@@ -53,6 +53,12 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.total_staff_bounded,
     IndCQC.worker_records_bounded,
 ]
+partition_keys = [
+    ArchiveKeys.archive_year,
+    ArchiveKeys.archive_month,
+    ArchiveKeys.archive_day,
+    ArchiveKeys.archive_timestamp,
+]
 
 
 def main(
@@ -62,7 +68,7 @@ def main(
 ):
     print("Archiving independent CQC filled posts...")
 
-    spark = utils.get_spark()
+    timestamp = datetime.now()
 
     estimate_filled_posts_df = utils.read_from_parquet(
         estimate_ind_cqc_filled_posts_source,
@@ -74,10 +80,17 @@ def main(
     )
 
     monthly_estimates_df = create_archive_date_partition_columns(
-        monthly_estimates_df, IndCQC.cqc_location_import_date
+        monthly_estimates_df, timestamp
     )
 
     print(f"Exporting as parquet to {monthly_filled_posts_archive_destination}")
+
+    utils.write_to_parquet(
+        monthly_estimates_df,
+        monthly_filled_posts_archive_destination,
+        mode="append",
+        partitionKeys=partition_keys,
+    )
 
     print("Completed archive independent CQC filled posts")
 
@@ -95,12 +108,15 @@ def create_archive_date_partition_columns(
     Returns:
         DataFrame: A dataframe with archive day, month, and year columns added.
     """
-    day = add_leading_zero(str(datetime.day))
-    month = add_leading_zero(str(datetime.month))
-    year = str(datetime.year)
+
+    day = add_leading_zero(str(date_time.day))
+    month = add_leading_zero(str(date_time.month))
+    year = str(date_time.year)
+    timestamp = str(date_time)[:16]
     df = df.withColumn(ArchiveKeys.archive_day, F.lit(day))
     df = df.withColumn(ArchiveKeys.archive_month, F.lit(month))
     df = df.withColumn(ArchiveKeys.archive_year, F.lit(year))
+    df = df.withColumn(ArchiveKeys.archive_timestamp, F.lit(timestamp))
     return df
 
 

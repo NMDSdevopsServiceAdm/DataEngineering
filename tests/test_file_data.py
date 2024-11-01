@@ -8048,7 +8048,7 @@ class ArchiveFilledPostsEstimates:
         ("loc 1", date(2024, 1, 2)),
     ]
     expected_create_archive_date_partitions_rows = [
-        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00", "01"),
+        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00"),
     ]
 
     single_digit_number = 9

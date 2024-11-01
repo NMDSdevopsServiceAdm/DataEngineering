@@ -1,5 +1,6 @@
 import unittest
 import warnings
+from datetime import datetime
 from unittest.mock import ANY, Mock, patch
 
 
@@ -60,6 +61,7 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
 class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
     def setUp(self) -> None:
         super().setUp()
+        self.test_date_time = datetime(2024, 1, 2, 12, 0)
 
     def test_create_archive_date_partition_columns_returns_correct_values(self):
         test_df = self.spark.createDataFrame(
@@ -71,7 +73,7 @@ class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
             Schemas.expected_create_archive_date_partitions_schema,
         )
         returned_df = job.create_archive_date_partition_columns(
-            test_df, IndCQC.cqc_location_import_date
+            test_df, self.test_date_time
         )
         returned_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
