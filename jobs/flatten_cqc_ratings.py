@@ -1,4 +1,3 @@
-import hashlib
 import sys
 
 from pyspark.sql import (
