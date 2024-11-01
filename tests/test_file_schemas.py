@@ -4924,5 +4924,7 @@ class ArchiveFilledPostsEstimates:
             StructField(ArchiveKeys.archive_day, StringType(), True),
             StructField(ArchiveKeys.archive_month, StringType(), True),
             StructField(ArchiveKeys.archive_year, StringType(), True),
+            StructField(ArchiveKeys.archive_timestamp, StringType(), True),
+            StructField(ArchiveKeys.archive_daily_run_count, StringType(), True),
         ]
     )

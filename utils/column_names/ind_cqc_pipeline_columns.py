@@ -26,6 +26,8 @@ class ArchivePartitionKeys:
     archive_day: str = "archive_day"
     archive_month: str = "archive_month"
     archive_year: str = "archive_year"
+    archive_timestamp: str = "archive_timestamp"
+    archive_daily_run_count: str = "archive_daily_run_count"
 
 
 @dataclass
