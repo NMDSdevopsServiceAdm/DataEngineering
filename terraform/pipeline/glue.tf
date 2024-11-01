@@ -179,6 +179,20 @@ module "clean_ons_data_job" {
   }
 }
 
+module "archive_filled_posts_estimates_job" {
+  source          = "../modules/glue-job"
+  script_name     = "archive_filled_posts_estimates.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+
+  job_parameters = {
+    "--estimate_ind_cqc_filled_posts_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--monthly_filled_posts_archive_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_monthly_filled_posts/"
+    "--annual_filled_posts_archive_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
+  }
+}
+
 
 module "prepare_features_non_res_ascwds_ind_cqc_job" {
   source          = "../modules/glue-job"

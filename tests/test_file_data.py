@@ -8044,3 +8044,10 @@ class NullGroupedProvidersData:
         ("loc 5", CareHome.care_home, 9.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
     ]
     # fmt: on
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    filled_posts_rows = [
+        ("loc 1", date(2024, 1, 1)),
+    ]
