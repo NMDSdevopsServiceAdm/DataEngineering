@@ -4561,7 +4561,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
 
 @dataclass
-class NonResAscwdsWithDormancyFeaturesData(object):
+class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
         ("1-00001", date(2022, 2, 1), date(2019, 2, 1), "South East", "Y", ["Domiciliary care service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
@@ -4594,6 +4594,7 @@ class CareHomeFeaturesData:
             "Rural hamlet and isolated dwellings in a sparse setting",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4611,6 +4612,7 @@ class CareHomeFeaturesData:
             "Independent",
             "Rural hamlet and isolated dwellings in a sparse setting",
             67.0,
+            None,
             None,
             "2023",
             "01",
@@ -4630,6 +4632,7 @@ class CareHomeFeaturesData:
             "Rural hamlet and isolated dwellings",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4646,6 +4649,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Rural hamlet and isolated dwellings",
+            None,
             None,
             None,
             "2023",
@@ -4670,6 +4674,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4686,6 +4691,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Rural town and fringe in a sparse setting",
+            None,
             None,
             None,
             "2023",
@@ -4706,6 +4712,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             25.0,
             2.5,
+            2.5,
             "2023",
             "01",
             "01",
@@ -4722,6 +4729,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Urban city and town",
+            None,
             None,
             None,
             "2023",

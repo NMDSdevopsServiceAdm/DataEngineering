@@ -82,7 +82,6 @@ class IndCqcColumns:
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
-    date_diff: str = "date_diff"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -117,7 +116,6 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
-    import_month_index: str = "import_month_index"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_non_res_people_directly_employed: str = (
         "imputed_non_res_people_directly_employed"
