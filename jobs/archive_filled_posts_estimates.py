@@ -1,5 +1,5 @@
 import sys
-from datetime import date
+from datetime import datetime
 
 from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import StringType
@@ -82,22 +82,22 @@ def main(
     print("Completed archive independent CQC filled posts")
 
 
-def create_archive_date_partition_columns(df: DataFrame, date_column: str) -> DataFrame:
+def create_archive_date_partition_columns(
+    df: DataFrame, date_time: datetime
+) -> DataFrame:
     """
-    Creates columns for archive day, month, and year based on the given data column.
+    Creates columns for archive day, month, year, timestamp, and run count based on the given datetime.
 
     Args:
         df(DataFrame): A dataframe with a data column.
-        date_column(str): A date type column name to be used to construct the partition columns.
+        date_time(datetime): A date time to be used to construct the partition columns.
 
     Returns:
         DataFrame: A dataframe with archive day, month, and year columns added.
     """
-    date = df.select(date_column).distinct().collect()[0][0]
-
-    day = add_leading_zero(date.day)
-    month = add_leading_zero(date.month)
-    year = str(date.year)
+    day = add_leading_zero(str(datetime.day))
+    month = add_leading_zero(str(datetime.month))
+    year = str(datetime.year)
     df = df.withColumn(ArchiveKeys.archive_day, F.lit(day))
     df = df.withColumn(ArchiveKeys.archive_month, F.lit(month))
     df = df.withColumn(ArchiveKeys.archive_year, F.lit(year))
@@ -116,10 +116,10 @@ def add_leading_zero(date_as_number: int):
     """
     leading_zero: str = "0"
     largest_single_digit_integer: int = 9
-    if date_as_number > largest_single_digit_integer:
+    if int(date_as_number) > largest_single_digit_integer:
         date_as_string = str(date_as_number)
     else:
-        leading_zero + str(date_as_number)
+        date_as_string = leading_zero + str(date_as_number)
     return date_as_string
 
 

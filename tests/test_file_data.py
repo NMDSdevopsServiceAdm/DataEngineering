@@ -8052,6 +8052,6 @@ class ArchiveFilledPostsEstimates:
     ]
 
     single_digit_number = 9
-    expected_single_digit_number_as_string = "9"
+    expected_single_digit_number_as_string = "09"
     double_digit_number = 10
     expected_double_digit_number_as_string = "10"
