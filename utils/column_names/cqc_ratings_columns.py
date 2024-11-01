@@ -25,3 +25,4 @@ class CQCRatingsColumns:
     benchmarks_location_id: str = "cqc_location_id"
     benchmarks_establishment_id: str = "ascwds_establishment_id"
     benchmarks_overall_rating: str = "overall_rating"
+    location_id_hash: str = "Identifier"

@@ -82,6 +82,7 @@ def main(
     ratings_df = add_latest_rating_flag_column(ratings_df)
     ratings_df = add_numerical_ratings(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
+    standard_ratings_df = add_location_id_hash(standard_ratings_df)
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
@@ -331,6 +332,21 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.total_rating_value,
     ).distinct()
     return standard_ratings_df
+
+
+def add_location_id_hash(df: DataFrame) -> DataFrame:
+    """
+    Adds a column with a hashed version of the location ID.
+
+    Adds a column with a hashed version of the location ID. This hash is used for linking with anonymised files.
+
+    Args:
+        df(DataFrame): A prepared standard ratings dataframe containing the column location_id.
+
+    Returns:
+        DataFrame: The same dataframe with an additional column containing the hashed location id.
+    """
+    return df
 
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:

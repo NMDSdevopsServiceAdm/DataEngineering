@@ -3694,6 +3694,19 @@ class FlattenCQCRatings:
         ]
     )
 
+    location_id_hash_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+        ]
+    )
+
+    expected_location_id_hash_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCRatings.location_id_hash, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidationUtils:

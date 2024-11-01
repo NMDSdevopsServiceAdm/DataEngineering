@@ -369,6 +369,87 @@ class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
         self.assertEqual(returned_rows, expected_rows)
 
 
+class AddLocationIdHash(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_ratings_df = self.spark.createDataFrame(
+            Data.location_id_hash_rows,
+            Schema.location_id_hash_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_location_id_hash_rows,
+            Schema.expected_location_id_hash_schema,
+        )
+        self.returned_df = job.add_location_id_hash(self.test_ratings_df)
+
+    def test_add_location_id_hash_adds_a_column_called_identifier(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_spaces(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.sort(CQCL.location_id).collect(),
+            self.expected_df.collect(),
+        )
+
+    def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_ten_digits(
+        self,
+    ):
+        test_ratings_df = self.spark.createDataFrame(
+            Data.location_id_hash_ten_digit_rows,
+            Schema.location_id_hash_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_location_id_hash_ten_digit_rows,
+            Schema.expected_location_id_hash_schema,
+        )
+        returned_df = job.add_location_id_hash(test_ratings_df)
+
+        self.assertEqual(
+            returned_df.sort(CQCL.location_id).collect(),
+            expected_df.collect(),
+        )
+
+    def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_eleven_digits(
+        self,
+    ):
+        test_ratings_df = self.spark.createDataFrame(
+            Data.location_id_hash_eleven_digit_rows,
+            Schema.location_id_hash_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_location_id_hash_eleven_digit_rows,
+            Schema.expected_location_id_hash_schema,
+        )
+        returned_df = job.add_location_id_hash(test_ratings_df)
+
+        self.assertEqual(
+            returned_df.sort(CQCL.location_id).collect(),
+            expected_df.collect(),
+        )
+
+    def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_twelve_digits(
+        self,
+    ):
+        test_ratings_df = self.spark.createDataFrame(
+            Data.location_id_hash_twelve_digit_rows,
+            Schema.location_id_hash_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_location_id_hash_twelve_digit_rows,
+            Schema.expected_location_id_hash_schema,
+        )
+        returned_df = job.add_location_id_hash(test_ratings_df)
+
+        self.assertEqual(
+            returned_df.sort(CQCL.location_id).collect(),
+            expected_df.collect(),
+        )
+
+
 class SelectRatingsForBenchmarks(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()

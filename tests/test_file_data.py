@@ -6254,6 +6254,31 @@ class FlattenCQCRatings:
         ),
     ]
 
+    location_id_hash_rows = [
+        ("1 -123",),
+    ]
+    expected_location_id_hash_rows = [
+        ("1 -123", "c182e5fb91e350cf01bd"),
+    ]
+    location_id_hash_ten_digit_rows = [
+        ("1-123456789",),
+    ]
+    expected_location_id_hash_ten_digit_rows = [
+        ("1-123456789", "4a5a7fdc6afede351ffd"),
+    ]
+    location_id_hash_eleven_digit_rows = [
+        ("1-1234567890",),
+    ]
+    expected_location_id_hash_eleven_digit_rows = [
+        ("1-1234567890", "b94f53fe43669911a4f5"),
+    ]
+    location_id_hash_twelve_digit_rows = [
+        ("1-12345678901",),
+    ]
+    expected_location_id_hash_twelve_digit_rows = [
+        ("1-12345678901", "8413638069d8acee43b0"),
+    ]
+
 
 @dataclass
 class ValidationUtils:
