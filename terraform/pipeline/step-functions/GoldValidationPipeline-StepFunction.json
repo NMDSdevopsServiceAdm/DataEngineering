@@ -15,8 +15,8 @@
                   "JobName": "${validate_merged_ind_cqc_data_job_name}",
                   "Arguments": {
                     "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                    "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=merged_ind_cqc_data_report/"
+                    "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_merged_data/"
                   }
                 },
                 "End": true
@@ -32,9 +32,9 @@
                 "Parameters": {
                   "JobName": "${validate_cleaned_ind_cqc_data_job_name  }",
                   "Arguments": {
-                    "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=merged_ind_cqc_data/",
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=cleaned_ind_cqc_data_report/"
+                    "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/",
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_cleaned_data/"
                   }
                 },
                 "ResultPath": null,
@@ -51,9 +51,9 @@
                 "Parameters": {
                   "JobName": "${validate_estimated_missing_ascwds_filled_posts_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--estimated_missing_ascwds_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_missing_ascwds_filled_posts_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--estimated_missing_ascwds_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_estimated_missing_ascwds_filled_posts/"
                   }
                 },
                 "ResultPath": null,
@@ -70,9 +70,9 @@
                 "Parameters": {
                   "JobName": "${validate_care_home_ind_cqc_features_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--care_home_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=care_home_ind_cqc_features/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=care_home_ind_cqc_features_data_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--care_home_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_care_home/"
                   }
                 },
                 "End": true
@@ -88,9 +88,9 @@
                 "Parameters": {
                   "JobName": "${validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--non_res_ascwds_inc_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=non_res_ascwds_inc_dormancy_ind_cqc_features_data_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--non_res_ascwds_inc_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_inc_dormancy/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_inc_dormancy/"
                   }
                 },
                 "End": true
@@ -106,9 +106,9 @@
                 "Parameters": {
                   "JobName": "${validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_ascwds_without_dormancy_ind_cqc_features/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=non_res_ascwds_without_dormancy_ind_cqc_features_data_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy_data_report/"
                   }
                 },
                 "End": true
@@ -124,7 +124,7 @@
                 "Parameters": {
                   "JobName": "${validate_non_res_pir_ind_cqc_features_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_missing_ascwds_filled_posts/",
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
                     "--non_res_pir_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=non_res_pir_ind_cqc_features_data_report/"
                   }
@@ -142,9 +142,9 @@
                 "Parameters": {
                   "JobName": "${validate_estimated_ind_cqc_filled_posts_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_cqc_filled_posts_data_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--estimated_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_estimated_filled_posts/"
                   }
                 },
                 "End": true
@@ -160,9 +160,9 @@
                 "Parameters": {
                   "JobName": "${validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=cleaned_ind_cqc_data/",
-                    "--estimated_ind_cqc_filled_posts_by_job_role_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts_by_job_role/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=estimated_ind_cqc_filled_posts_by_job_role_data_report/"
+                    "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+                    "--estimated_ind_cqc_filled_posts_by_job_role_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_estimated_filled_posts_by_job_role/"
                   }
                 },
                 "End": true
@@ -170,7 +170,7 @@
             }
           }
         ],
-        "Next": "StartCrawler",
+        "Next": "Start crawler when success",
         "Comment": "A state machine for validating Gold layer data",
         "Catch": [
           {
@@ -182,22 +182,13 @@
           }
         ]
       },
-      "StartCrawler": {
+      "Start crawler when success": {
         "Type": "Task",
         "Parameters": {
           "Name": "${data_validation_reports_crawler_name}"
         },
         "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success",
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "Publish error notification",
-            "ResultPath": "$.error"
-          }
-        ]
+        "Next": "Success"
       },
       "Publish error notification": {
         "Type": "Task",
@@ -213,6 +204,14 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
+        "Next": "Start crawler when failed"
+      },
+      "Start crawler when failed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {

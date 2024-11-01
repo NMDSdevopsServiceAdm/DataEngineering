@@ -2304,7 +2304,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 
 
 @dataclass
-class NonResAscwdsWithDormancyFeaturesSchema(object):
+class NonResAscwdsFeaturesSchema(object):
     basic_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -2404,6 +2404,11 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(
                 IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio,
                 FloatType(),
                 True,
             ),

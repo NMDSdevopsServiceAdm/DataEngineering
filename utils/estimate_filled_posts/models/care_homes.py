@@ -24,7 +24,7 @@ def model_care_homes(
 
     save_model_metrics(
         care_home_predictions,
-        IndCqc.ascwds_filled_posts_dedup_clean,
+        IndCqc.filled_posts_per_bed_ratio,
         model_source,
         metrics_destination,
     )

@@ -57,17 +57,6 @@ def add_array_column_count_to_data(
     return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
 
 
-def add_date_diff_into_df(
-    df: DataFrame, new_col_name: str, import_date_col: str
-) -> DataFrame:
-    max_d = df.agg(F.max(import_date_col)).first()[0]
-
-    loc_df = df.withColumn(
-        new_col_name, F.datediff(F.lit(max_d), F.col(import_date_col))
-    )
-    return loc_df
-
-
 def add_time_registered_into_df(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered.
