@@ -93,6 +93,7 @@ def main(
         IndCQC.care_home,
         IndCQC.features,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
         Keys.year,
         Keys.month,
         Keys.day,

@@ -28,7 +28,7 @@ def save_model_metrics(
     r2_value = generate_r2_metric(
         data_for_metrics,
         IndCqc.prediction,
-        IndCqc.ascwds_filled_posts_dedup_clean,
+        dependent_variable_column_name,
     )
 
     model_name, model_version = get_model_name_and_version_from_s3_filepath(

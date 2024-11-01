@@ -2406,6 +2406,11 @@ class CareHomeFeaturesSchema:
                 FloatType(),
                 True,
             ),
+            StructField(
+                IndCQC.filled_posts_per_bed_ratio,
+                FloatType(),
+                True,
+            ),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
