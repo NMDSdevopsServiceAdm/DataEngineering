@@ -30,13 +30,19 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
         self.test_filled_posts_estimates_df = self.spark.createDataFrame(
             Data.filled_posts_rows, Schemas.filled_posts_schema
         )
+        self.partition_keys = [
+            ArchiveKeys.archive_year,
+            ArchiveKeys.archive_month,
+            ArchiveKeys.archive_day,
+            ArchiveKeys.archive_timestamp,
+        ]
 
-    # @patch("utils.utils.write_to_parquet")
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
-        # write_to_parquet_patch: Mock,
+        write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_filled_posts_estimates_df
 
@@ -47,15 +53,14 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
-        """
-        self.assertEqual(write_to_parquet_patch.call_count, 2)
+
+        self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
-            self.ESTIMATES_DESTINATION,
-            mode="overwrite",
+            self.MONTHLY_ARCHIVE_DESTINATION,
+            mode="append",
             partitionKeys=self.partition_keys,
         )
-        """
 
 
 class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
