@@ -204,7 +204,7 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
   job_parameters = {
     "--ind_cqc_filled_posts_cleaned_source"                          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/"
     "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_inc_dormancy/"
-    "--non_res_ascwds_without_dormancy_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
+    "--non_res_ascwds_without_dormancy_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
   }
 }
 
@@ -628,7 +628,7 @@ module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
-    "--non_res_ascwds_without_dormancy_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
+    "--non_res_ascwds_without_dormancy_ind_cqc_features_source" = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
     "--report_destination"                                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy_data_report/"
   }
 }
@@ -808,7 +808,7 @@ module "estimate_ind_cqc_filled_posts_job" {
     "--care_home_model_source"                           = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/4.0.1/"
     "--non_res_with_dormancy_features_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_inc_dormancy/"
     "--non_res_with_dormancy_model_source"               = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/2.0.1/"
-    "--non_res_without_dormancy_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
+    "--non_res_without_dormancy_features_source"         = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
     "--non_res_without_dormancy_model_source"            = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/2.0.0/"
     "--non_res_pir_linear_regression_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/"
     "--non_res_pir_linear_regression_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/1.0.0/"
