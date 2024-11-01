@@ -4712,7 +4712,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             25.0,
             2.5,
-            None,
+            2.5,
             "2023",
             "01",
             "01",
