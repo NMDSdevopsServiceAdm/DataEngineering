@@ -6258,7 +6258,7 @@ class FlattenCQCRatings:
         ("1 -123",),
     ]
     expected_location_id_hash_rows = [
-        ("1 -123", "c182e5fb91e350cf01bd"),
+        ("1 -123", "b2268351ad41a49e5928"),
     ]
     location_id_hash_ten_digit_rows = [
         ("1-123456789",),
@@ -6270,13 +6270,13 @@ class FlattenCQCRatings:
         ("1-1234567890",),
     ]
     expected_location_id_hash_eleven_digit_rows = [
-        ("1-1234567890", "b94f53fe43669911a4f5"),
+        ("1-1234567890", "133d74f156c4fba255e9"),
     ]
     location_id_hash_twelve_digit_rows = [
         ("1-12345678901",),
     ]
     expected_location_id_hash_twelve_digit_rows = [
-        ("1-12345678901", "8413638069d8acee43b0"),
+        ("1-12345678901", "cf16d3a6b6648d845fda"),
     ]
 
 

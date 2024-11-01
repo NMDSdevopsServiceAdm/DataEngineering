@@ -1,4 +1,6 @@
+import hashlib
 import sys
+
 from pyspark.sql import (
     DataFrame,
     functions as F,
@@ -9,13 +11,15 @@ from utils import (
     utils,
     cleaning_utils as cUtils,
 )
-
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
     PartitionKeys as Keys,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.cqc_ratings_columns import (
+    CQCRatingsColumns as CQCRatings,
 )
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -23,13 +27,9 @@ from utils.column_values.categorical_column_values import (
     CQCRatingsValues,
     CQCCurrentOrHistoricValues,
 )
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
 from utils.value_labels.cqc_ratings.label_dictionary import (
     unknown_ratings_labels_dict as UnknownRatings,
 )
-
 
 cqc_location_columns = [
     CQCL.location_id,
@@ -346,6 +346,10 @@ def add_location_id_hash(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The same dataframe with an additional column containing the hashed location id.
     """
+    df = df.withColumn(CQCRatings.location_id_hash, F.sha2(df[CQCL.location_id], 256))
+    df = df.withColumn(
+        CQCRatings.location_id_hash, df[CQCRatings.location_id_hash].substr(1, 20)
+    )
     return df
 
 
