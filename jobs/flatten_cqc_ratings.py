@@ -336,9 +336,9 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
 
 def add_location_id_hash(df: DataFrame) -> DataFrame:
     """
-    Adds a column with a hashed version of the location ID.
+    Adds a column with a 20 character hashed version of the location ID.
 
-    Adds a column with a hashed version of the location ID. This hash is used for linking with anonymised files.
+    Adds a column with a 20 character hashed version of the location ID. This hash is used for linking with anonymised files.
 
     Args:
         df(DataFrame): A prepared standard ratings dataframe containing the column location_id.
