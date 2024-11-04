@@ -187,7 +187,7 @@ module "archive_filled_posts_estimates_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--estimate_ind_cqc_filled_posts_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=estimated_ind_cqc_filled_posts/"
+    "--estimate_ind_cqc_filled_posts_source"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
     "--monthly_filled_posts_archive_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_monthly_filled_posts/"
     "--annual_filled_posts_archive_destination"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
   }
