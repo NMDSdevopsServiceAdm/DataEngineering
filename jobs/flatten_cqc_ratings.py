@@ -1,4 +1,5 @@
 import sys
+
 from pyspark.sql import (
     DataFrame,
     functions as F,
@@ -9,13 +10,15 @@ from utils import (
     utils,
     cleaning_utils as cUtils,
 )
-
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
     PartitionKeys as Keys,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.cqc_ratings_columns import (
+    CQCRatingsColumns as CQCRatings,
 )
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -23,13 +26,9 @@ from utils.column_values.categorical_column_values import (
     CQCRatingsValues,
     CQCCurrentOrHistoricValues,
 )
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
 from utils.value_labels.cqc_ratings.label_dictionary import (
     unknown_ratings_labels_dict as UnknownRatings,
 )
-
 
 cqc_location_columns = [
     CQCL.location_id,
@@ -82,6 +81,7 @@ def main(
     ratings_df = add_latest_rating_flag_column(ratings_df)
     ratings_df = add_numerical_ratings(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
+    standard_ratings_df = add_location_id_hash(standard_ratings_df)
 
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
@@ -331,6 +331,25 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.total_rating_value,
     ).distinct()
     return standard_ratings_df
+
+
+def add_location_id_hash(df: DataFrame) -> DataFrame:
+    """
+    Adds a column with a 20 character hashed version of the location ID.
+
+    Adds a column with a 20 character hashed version of the location ID. This hash is used for linking with anonymised files.
+
+    Args:
+        df(DataFrame): A prepared standard ratings dataframe containing the column location_id.
+
+    Returns:
+        DataFrame: The same dataframe with an additional column containing the hashed location id.
+    """
+    df = df.withColumn(CQCRatings.location_id_hash, F.sha2(df[CQCL.location_id], 256))
+    df = df.withColumn(
+        CQCRatings.location_id_hash, df[CQCRatings.location_id_hash].substr(1, 20)
+    )
+    return df
 
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:

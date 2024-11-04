@@ -15,7 +15,7 @@
                   "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
                   "Arguments": {
                     "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=workplace_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
                   }
                 },
                 "End": true
@@ -32,7 +32,7 @@
                   "JobName": "${validate_ascwds_worker_raw_data_job_name}",
                   "Arguments": {
                     "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=worker_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
                   }
                 },
                 "ResultPath": null,
@@ -50,7 +50,7 @@
                   "JobName": "${validate_locations_api_raw_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_raw/"
                   }
                 },
                 "End": true
@@ -67,7 +67,7 @@
                   "JobName": "${validate_providers_api_raw_data_job_name}",
                   "Arguments": {
                     "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_providers_api_raw/"
                   }
                 },
                 "End": true
@@ -84,7 +84,7 @@
                   "JobName": "${validate_pir_raw_data_job_name }",
                   "Arguments": {
                     "--raw_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=pir_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_raw/"
                   }
                 },
                 "End": true
@@ -101,7 +101,7 @@
                   "JobName": "${validate_postcode_directory_raw_data_job_name}",
                   "Arguments": {
                     "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_raw_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_raw/"
                   }
                 },
                 "End": true

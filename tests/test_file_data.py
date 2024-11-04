@@ -32,11 +32,8 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     RelatedLocation,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_absolute_difference_within_range import (
-    ascwds_filled_posts_absolute_difference_within_range_source_description,
-)
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_only_permitted_value import (
-    ascwds_filled_posts_select_only_value_source_description,
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
+    ascwds_filled_posts_difference_within_range_source_description,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
@@ -936,6 +933,39 @@ class CapacityTrackerNonResData:
 
     capacity_tracker_non_res_rows = [
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
+    ]
+
+    capacity_tracker_non_res_rolling_average_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 3, 1), 15),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 3, 1), 15, 12.5),
+    ]
+
+    capacity_tracker_non_res_rolling_average_over_six_months_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 2, 1), 15),
+        ("loc 1", date(2024, 8, 1), None),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_over_six_months_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 2, 1), 15, 12.5),
+        ("loc 1", date(2024, 8, 1), None, 15.0),
+    ]
+
+    capacity_tracker_non_res_rolling_average_by_location_rows = [
+        ("loc 1", date(2024, 1, 1), 10),
+        ("loc 1", date(2024, 3, 1), 15),
+        ("loc 2", date(2024, 1, 1), 20),
+        ("loc 2", date(2024, 2, 1), 25),
+    ]
+    expected_capacity_tracker_non_res_rolling_average_by_location_rows = [
+        ("loc 1", date(2024, 1, 1), 10, 10.0),
+        ("loc 1", date(2024, 3, 1), 15, 12.5),
+        ("loc 2", date(2024, 1, 1), 20, 20.0),
+        ("loc 2", date(2024, 2, 1), 25, 22.5),
     ]
 
     remove_invalid_characters_from_column_names_rows = [
@@ -3257,6 +3287,16 @@ class UtilsData:
         ("id_2", "remove"),
     ]
 
+    select_rows_with_non_null_values_rows = [
+        ("1-00001", None),
+        ("1-00002", 12.34),
+        ("1-00003", -1.0),
+    ]
+    expected_select_rows_with_non_null_values_rows = [
+        ("1-00002", 12.34),
+        ("1-00003", -1.0),
+    ]
+
 
 @dataclass
 class CleaningUtilsData:
@@ -3767,52 +3807,6 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
-    # fmt: off
-    calculate_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, None, None,),
-        # Only know total_staff: Return totalstaff (10)
-        ("1-000003", 10, None, None, None,),
-        # worker_record_count below min permitted: return totalstaff (23)
-        ("1-000004", 23, 1, None, None,),
-        # Only know worker_records: Return worker_record_count (100)
-        ("1-000005", None, 100, None, None,),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, None, None,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, None, None,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 8.0, "already populated"),
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_ascwds_filled_posts_rows = [
-        # Both 0: Return None
-        ("1-000001", 0, None, None, None,),
-        # Both 500: Return 500
-        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
-        # Only know total_staff: Return totalstaff (10)
-        ("1-000003", 10, None, 10.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
-        # worker_record_count below min permitted: return totalstaff (23)
-        ("1-000004", 23, 1, 23.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.total_staff_bounded),),
-        # Only know worker_records: Return worker_record_count (100)
-        ("1-000005", None, 100, 100.0, ascwds_filled_posts_select_only_value_source_description(IndCQC.worker_records_bounded),),
-        # None of the rules apply: Return None
-        ("1-000006", 900, 600, None, None,),
-        # Absolute difference is within absolute bounds: Return Average
-        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
-        # Absolute difference is within percentage bounds: Return Average
-        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_absolute_difference_within_range_source_description,),
-        # Already populated, shouldn't change it
-        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
-    ]
-    # fmt: on
-
     repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),
         ("1", 2, date(2023, 3, 1)),
@@ -3834,6 +3828,130 @@ class CleanIndCQCData:
         ("2", 3, date(2024, 1, 1), 3),
         ("2", 3, date(2024, 2, 1), None),
     ]
+
+
+@dataclass
+class CalculateAscwdsFilledPostsData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: Return None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+    ]
+    # fmt: on
+
+
+@dataclass
+class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+
+@dataclass
+class CalculateAscwdsFilledPostsDifferenceInRangeData:
+    # fmt: off
+    calculate_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, None, None,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, None, None,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, None, None,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 8.0, "already populated"),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_ascwds_filled_posts_rows = [
+        # Both 0: Return None
+        ("1-000001", 0, None, None, None,),
+        # Both 500: Return 500
+        ("1-000002", 500, 500, 500.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,),
+        # Only know total_staff: Return None
+        ("1-000003", 10, None, None, None,),
+        # worker_record_count below min permitted: return None
+        ("1-000004", 23, 1, None, None,),
+        # Only know worker_records: Return None
+        ("1-000005", None, 100, None, None,),
+        # None of the rules apply: Return None
+        ("1-000006", 900, 600, None, None,),
+        # Absolute difference is within absolute bounds: Return Average
+        ("1-000007", 12, 11, 11.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Absolute difference is within percentage bounds: Return Average
+        ("1-000008", 500, 475, 487.5, ascwds_filled_posts_difference_within_range_source_description,),
+        # Already populated, shouldn't change it
+        ("1-000009", 10, 10, 10.0, ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description),
+    ]
+    # fmt: on
 
 
 @dataclass
@@ -4002,8 +4120,8 @@ class ReconciliationData:
             "No",
             "Internal",
             "Priority 5",
-            "Workplace",
-            "Reports",
+            "CQC work",
+            "CQC work",
             "Yes",
             "N/A",
             "ASC-WDS",
@@ -4443,7 +4561,7 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 
 
 @dataclass
-class NonResAscwdsWithDormancyFeaturesData(object):
+class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
         ("1-00001", date(2022, 2, 1), date(2019, 2, 1), "South East", "Y", ["Domiciliary care service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
@@ -4458,26 +4576,6 @@ class NonResAscwdsWithDormancyFeaturesData(object):
         ("1-00010", date(2022, 4, 2), date(2019, 2, 1), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Urban city and town", '2022', '04', '22', '20220422'),
     ]
     # fmt: on
-
-    filter_to_non_care_home_rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
-
-    expected_filtered_to_non_care_home_rows = [
-        ("N", Sector.independent),
-    ]
-
-    filter_to_dormancy_rows = [
-        ("1-00001", "Y"),
-        ("1-00002", None),
-        ("1-00003", "N"),
-    ]
-
-    expected_filtered_to_dormancy_rows = [
-        ("1-00001", "Y"),
-        ("1-00003", "N"),
-    ]
 
 
 @dataclass
@@ -4494,6 +4592,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Rural hamlet and isolated dwellings in a sparse setting",
+            None,
             None,
             None,
             "2023",
@@ -4514,6 +4613,7 @@ class CareHomeFeaturesData:
             "Rural hamlet and isolated dwellings in a sparse setting",
             67.0,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4532,6 +4632,7 @@ class CareHomeFeaturesData:
             "Rural hamlet and isolated dwellings",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4548,6 +4649,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Rural hamlet and isolated dwellings",
+            None,
             None,
             None,
             "2023",
@@ -4572,6 +4674,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4588,6 +4691,7 @@ class CareHomeFeaturesData:
             "N",
             "Independent",
             "Rural town and fringe in a sparse setting",
+            None,
             None,
             None,
             "2023",
@@ -4608,6 +4712,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             25.0,
             2.5,
+            2.5,
             "2023",
             "01",
             "01",
@@ -4626,6 +4731,7 @@ class CareHomeFeaturesData:
             "Urban city and town",
             None,
             None,
+            None,
             "2023",
             "01",
             "01",
@@ -4634,14 +4740,17 @@ class CareHomeFeaturesData:
     ]
     # fmt: on
 
-    filter_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
-        ("N", Sector.independent),
-    ]
 
-    expected_filtered_to_care_home_rows = rows = [
-        ("Y", Sector.independent),
+@dataclass
+class NonResPirFeaturesData:
+    # fmt: off
+    feature_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 5.0, 10, 10.0, "2024", "01", "01", "20240101"),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 5.0, None, 10.25, "2024", "02", "01", "20240201"),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, 5.0, None, None, "2024", "03", "01", "20240301"),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 5.0, 10, 10.0, "2024", "04", "01", "20240401"),
     ]
+    # fmt: on
 
 
 @dataclass
@@ -4670,20 +4779,20 @@ class EstimateIndCQCFilledPostsData:
 class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-1783948", date(2022, 2, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-1783948", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None),
-        ("1-348374832", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None),
-        ("1-683746776", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10478686", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10235302415", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
-        ("1-1060912125", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None),
-        ("1-107095666", date(2022, 3, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
-        ("1-108369587", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None),
-        ("1-10758359583", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None),
-        ("1-000000001", date(2022, 3, 8), 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None),
-        ("1-10894414510", date(2022, 3, 8), 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5),
-        ("1-108950835", date(2022, 3, 15), 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None),
-        ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None),
+        ("1-1783948", date(2022, 2, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-1783948", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, 67.0, 67.0, "N", "rule_2", None, None),
+        ("1-348374832", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, 34.0, 34.0, "N", "rule_3", None, None),
+        ("1-683746776", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10478686", date(2022, 1, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10235302415", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
+        ("1-1060912125", date(2022, 1, 12), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None, None),
+        ("1-107095666", date(2022, 3, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
+        ("1-108369587", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),
+        ("1-10758359583", date(2022, 3, 8), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_2", None, None),
+        ("1-000000001", date(2022, 3, 8), 67, PrimaryServiceType.care_home_with_nursing, None, None, "Y", "rule_1", None, None),
+        ("1-10894414510", date(2022, 3, 8), 10, PrimaryServiceType.care_home_with_nursing, 25.0, 25.0, "Y", "rule_3", 2.5, 10.0),
+        ("1-108950835", date(2022, 3, 15), 20, PrimaryServiceType.care_home_only, None, None, "Y", "rule_1", None, None),
+        ("1-108967195", date(2022, 4, 22), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_3", None, None),
     ]
     # fmt: on
 
@@ -4853,7 +4962,7 @@ class ModelImputationWithExtrapolationAndInterpolationData:
 
 
 @dataclass
-class ModelExtrapolationNew:
+class ModelExtrapolation:
     extrapolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, 15.0, 15.0),
         ("1-001", date(2023, 2, 1), 1675209600, None, 15.1),
@@ -4952,7 +5061,7 @@ class ModelExtrapolationNew:
 
 
 @dataclass
-class ModelInterpolationNew:
+class ModelInterpolation:
     interpolation_rows = [
         ("1-001", date(2023, 1, 1), 1672531200, None, None),
         ("1-001", date(2023, 2, 1), 1675209600, None, None),
@@ -5029,210 +5138,6 @@ class ModelInterpolationNew:
 
 
 @dataclass
-class ModelExtrapolation:
-    extrapolation_rows = [
-        ("1-000000001", "2023-01-01", 1672531200, 15.0, "Care home with nursing", 15.0),
-        ("1-000000001", "2023-02-01", 1675209600, None, "Care home with nursing", 15.1),
-        ("1-000000001", "2023-03-01", 1677628800, 30.0, "Care home with nursing", 15.2),
-        ("1-000000002", "2023-01-01", 1672531200, 4.0, "non-residential", 50.3),
-        ("1-000000002", "2023-02-01", 1675209600, None, "non-residential", 50.5),
-        ("1-000000002", "2023-03-01", 1677628800, None, "non-residential", 50.7),
-        ("1-000000002", "2023-04-01", 1680303600, None, "non-residential", 50.1),
-        ("1-000000003", "2023-01-01", 1672531200, None, "non-residential", 50.3),
-        ("1-000000003", "2023-02-01", 1675209600, 20.0, "non-residential", 50.5),
-        ("1-000000003", "2023-03-01", 1677628800, None, "non-residential", 50.7),
-        ("1-000000004", "2023-03-01", 1677628800, None, "non-residential", 50.7),
-    ]
-    data_to_filter_rows = [
-        ("1-000000001", "2023-01-01", 15.0, "Care home with nursing"),
-        ("1-000000002", "2023-01-01", None, "non-residential"),
-        ("1-000000002", "2023-02-01", None, "non-residential"),
-        ("1-000000003", "2023-01-01", 20.0, "non-residential"),
-        ("1-000000003", "2023-02-01", None, "non-residential"),
-    ]
-    first_and_last_submission_rows = [
-        ("1-000000001", "2023-01-01", 1672531200, None, 12.0),
-        ("1-000000001", "2023-02-01", 1675209600, 5.0, 15.0),
-        ("1-000000001", "2023-03-01", 1677628800, None, 18.0),
-        ("1-000000002", "2023-01-01", 1672531200, 4.0, 12.0),
-        ("1-000000002", "2023-02-01", 1675209600, 6.0, 15.0),
-        ("1-000000002", "2023-03-01", 1677628800, None, 18.0),
-    ]
-    extrapolated_values_rows = [
-        (
-            "1-000000001",
-            "2023-01-01",
-            1672531200,
-            15.0,
-            5.0,
-            1672531200,
-            1677628800,
-            15.0,
-            5.0,
-            30.0,
-            5.0,
-        ),
-        (
-            "1-000000001",
-            "2023-02-01",
-            1675209600,
-            None,
-            5.0,
-            1672531200,
-            1677628800,
-            15.0,
-            5.0,
-            30.0,
-            5.0,
-        ),
-        (
-            "1-000000001",
-            "2023-03-01",
-            1677628800,
-            30.0,
-            5.0,
-            1672531200,
-            1677628800,
-            15.0,
-            5.0,
-            30.0,
-            5.0,
-        ),
-        (
-            "1-000000002",
-            "2023-01-01",
-            1672531200,
-            40.0,
-            1.0,
-            1672531200,
-            1672531200,
-            40.0,
-            1.0,
-            40.0,
-            1.0,
-        ),
-        (
-            "1-000000002",
-            "2023-02-01",
-            1675209600,
-            None,
-            1.5,
-            1672531200,
-            1672531200,
-            40.0,
-            1.0,
-            40.0,
-            1.0,
-        ),
-        (
-            "1-000000002",
-            "2023-03-01",
-            1677628800,
-            None,
-            0.5,
-            1672531200,
-            1672531200,
-            40.0,
-            1.0,
-            40.0,
-            1.0,
-        ),
-        (
-            "1-000000003",
-            "2023-01-01",
-            1672531200,
-            None,
-            1.0,
-            1675209600,
-            1675209600,
-            20.0,
-            1.7,
-            20.0,
-            1.7,
-        ),
-        (
-            "1-000000003",
-            "2023-02-01",
-            1675209600,
-            20.0,
-            1.7,
-            1675209600,
-            1675209600,
-            20.0,
-            1.7,
-            20.0,
-            1.7,
-        ),
-        (
-            "1-000000003",
-            "2023-03-01",
-            1677628800,
-            None,
-            2.0,
-            1675209600,
-            1675209600,
-            20.0,
-            1.7,
-            20.0,
-            1.7,
-        ),
-    ]
-    extrapolated_values_to_be_added_rows = [
-        ("1-000000001", "2023-01-01", 1672531200),
-        ("1-000000001", "2023-02-01", 1675209600),
-        ("1-000000001", "2023-03-01", 1677628800),
-        ("1-000000002", "2023-01-01", 1672531200),
-        ("1-000000002", "2023-02-01", 1675209600),
-        ("1-000000002", "2023-03-01", 1677628800),
-        ("1-000000003", "2023-01-01", 1672531200),
-        ("1-000000003", "2023-02-01", 1675209600),
-        ("1-000000003", "2023-03-01", 1677628800),
-        ("1-000000003", "2023-04-01", 1680303600),
-        ("1-000000004", "2023-01-01", 1672531200),
-    ]
-    extrapolated_ratios_rows = [
-        ("1-000000001", 1675000000, 1.0, 1678000000, 1680000000, 2.0, 3.0),
-        ("1-000000002", 1675000000, 1.0, 1678000000, 1680000000, 1.0, 3.0),
-        ("1-000000003", 1675000000, 2.0, 1670000000, 1672000000, 3.0, 1.7),
-    ]
-    extrapolated_model_outputs_rows = [
-        (
-            "1-000000001",
-            "2023-01-01",
-            1675000000,
-            1.0,
-            1678000000,
-            1680000000,
-            15.0,
-            10.0,
-            0.5,
-        ),
-        (
-            "1-000000002",
-            "2023-02-01",
-            1675000000,
-            1.0,
-            1678000000,
-            1680000000,
-            15.0,
-            10.0,
-            1.0,
-        ),
-        (
-            "1-000000003",
-            "2023-03-01",
-            1675000000,
-            2.0,
-            1670000000,
-            1672000000,
-            10.0,
-            15.0,
-            1.46882452,
-        ),
-    ]
-
-
-@dataclass
 class ModelFeatures:
     vectorise_input_rows = [
         ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
@@ -5247,16 +5152,6 @@ class ModelFeatures:
     ]
     expected_add_time_registered_rows = [
         (date(2013, 1, 10), date(2023, 1, 10), 20),
-    ]
-    add_import_month_index_rows = [
-        ("loc 1", date(2023, 1, 1)),
-        ("loc 1", date(2023, 2, 5)),
-        ("loc 1", date(2023, 2, 6)),
-    ]
-    expected_add_import_month_index_rows = [
-        ("loc 1", date(2023, 1, 1), 0),
-        ("loc 1", date(2023, 2, 5), 0),
-        ("loc 1", date(2023, 2, 6), 1),
     ]
 
 
@@ -5460,6 +5355,45 @@ class ModelNonResWithoutDormancy:
             None,
             0,
         ),
+    ]
+
+
+@dataclass
+class ModelNonResPirLinearRegressionRows:
+    non_res_pir_cleaned_ind_cqc_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 10.25),
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
+    ]
+    non_res_pir_features_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            CareHome.not_care_home,
+            10.0,
+            Vectors.dense([10.0]),
+        ),
+        (
+            "1-001",
+            date(2024, 2, 1),
+            CareHome.not_care_home,
+            10.25,
+            Vectors.dense([10.25]),
+        ),
+    ]
+
+    non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+    ]
+    expected_non_res_location_with_pir_row = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0, 10.64385),
+    ]
+    non_res_location_without_pir_row = [
+        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
+    ]
+    care_home_location_row = [
+        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
     ]
 
 
@@ -6320,6 +6254,31 @@ class FlattenCQCRatings:
         ),
     ]
 
+    location_id_hash_rows = [
+        ("1-123",),
+    ]
+    expected_location_id_hash_rows = [
+        ("1-123", "b022a7e5cc45cf3dc578"),
+    ]
+    location_id_hash_ten_digit_rows = [
+        ("1-123456789",),
+    ]
+    expected_location_id_hash_ten_digit_rows = [
+        ("1-123456789", "4a5a7fdc6afede351ffd"),
+    ]
+    location_id_hash_eleven_digit_rows = [
+        ("1-1234567890",),
+    ]
+    expected_location_id_hash_eleven_digit_rows = [
+        ("1-1234567890", "133d74f156c4fba255e9"),
+    ]
+    location_id_hash_twelve_digit_rows = [
+        ("1-12345678901",),
+    ]
+    expected_location_id_hash_twelve_digit_rows = [
+        ("1-12345678901", "cf16d3a6b6648d845fda"),
+    ]
+
 
 @dataclass
 class ValidationUtils:
@@ -7136,6 +7095,32 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
 
 
 @dataclass
+class ValidateNonResPirIndCqcFeaturesData:
+    cleaned_ind_cqc_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, 10.0),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, 10.0),
+    ]
+
+    non_res_pir_ind_cqc_features_rows = [
+        ("1-001", date(2024, 1, 1)),
+        ("1-002", date(2024, 1, 1)),
+        ("1-001", date(2024, 1, 9)),
+        ("1-002", date(2024, 1, 9)),
+    ]
+
+    calculate_expected_size_rows = [
+        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, 10.0),
+        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-005", date(2024, 1, 1), None, 10.0),
+        ("1-006", date(2024, 1, 1), None, None),
+    ]
+
+
+@dataclass
 class ValidateEstimatedIndCqcFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
@@ -7146,10 +7131,10 @@ class ValidateEstimatedIndCqcFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
     ]
     # fmt: on
 
@@ -7363,6 +7348,7 @@ class DiagnosticsOnKnownFilledPostsData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7387,6 +7373,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7405,6 +7392,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             None,
+            None,
             10.0,
             "2024",
             "01",
@@ -7419,6 +7407,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,
@@ -7511,6 +7500,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            10.0,
             "2024",
             "01",
             "01",
@@ -7526,6 +7516,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,
@@ -8078,6 +8069,25 @@ class NullGroupedProvidersData:
         ("loc 5", CareHome.care_home, 9.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
     ]
     # fmt: on
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    filled_posts_rows = [
+        ("loc 1", date(2024, 1, 1)),
+    ]
+
+    create_archive_date_partitions_rows = [
+        ("loc 1", date(2024, 1, 2)),
+    ]
+    expected_create_archive_date_partitions_rows = [
+        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00"),
+    ]
+
+    single_digit_number = 9
+    expected_single_digit_number_as_string = "09"
+    double_digit_number = 10
+    expected_double_digit_number_as_string = "10"
 
 
 @dataclass

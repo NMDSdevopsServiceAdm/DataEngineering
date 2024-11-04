@@ -59,6 +59,7 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.master_update_date,
     AWPClean.master_update_date_org,
     AWPClean.establishment_created_date,
+    AWPClean.nmds_id,
 ]
 cqc_ratings_columns_to_import = [
     AWPClean.location_id,
@@ -73,6 +74,7 @@ def main(
     workplace_for_reconciliation_source: str,
     cqc_ratings_source: str,
     merged_coverage_destination: str,
+    reduced_coverage_destination: str,
 ):
     spark = utils.get_spark()
     spark.sql(
@@ -110,6 +112,20 @@ def main(
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
+        mode="overwrite",
+        partitionKeys=PartitionKeys,
+    )
+
+    reduced_coverage_df = cUtils.reduce_dataset_to_earliest_file_per_month(
+        merged_coverage_df
+    )
+    reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
+        reduced_coverage_df, CQCLClean.cqc_location_import_date
+    )
+
+    utils.write_to_parquet(
+        reduced_coverage_df,
+        reduced_coverage_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -252,6 +268,7 @@ if __name__ == "__main__":
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         merged_coverage_destination,
+        reduced_coverage_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_cqc_location_source",
@@ -264,7 +281,11 @@ if __name__ == "__main__":
         ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
             "--merged_coverage_destination",
-            "Destination s3 directory for parquet",
+            "Destination s3 directory for full parquet",
+        ),
+        (
+            "--reduced_coverage_destination",
+            "Destination s3 directory for single month parquet",
         ),
     )
     main(
@@ -272,6 +293,7 @@ if __name__ == "__main__":
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         merged_coverage_destination,
+        reduced_coverage_destination,
     )
 
     print("Spark job 'merge_coverage_data' complete")

@@ -39,6 +39,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.people_directly_employed_dedup: 1,
+            IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
         RuleName.max_values: {
@@ -51,7 +52,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
-            IndCqcColumns.people_directly_employed_dedup: 10000,
+            # IndCqcColumns.people_directly_employed_dedup: 3000, # temporarily removed until PIR data is cleaned
+            IndCqcColumns.non_res_pir_linear_regression_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
         },
         RuleName.categorical_values_in_columns: {
@@ -68,7 +70,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
-            # IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values,  # temporarily removed as extrapolation rolling model is always used before extrapolation ML model, so that model is never chosen (only finds 8 of the 9 distinct options)
+            # IndCqcColumns.estimate_filled_posts_source: CatValues.estimate_filled_posts_source_column_values.count_of_categorical_values, # temporarily removed whilst working on non res models - imputed_posts_non_res_with_dormancy_model not currently being selected
         },
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }

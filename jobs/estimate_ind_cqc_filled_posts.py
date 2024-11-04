@@ -17,6 +17,9 @@ from utils.estimate_filled_posts.models.non_res_with_dormancy import (
 from utils.estimate_filled_posts.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
+from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
+    model_non_res_pir_linear_regression,
+)
 
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -31,20 +34,33 @@ estimate_missing_ascwds_columns = [
     IndCQC.services_offered,
     IndCQC.primary_service_type,
     IndCQC.care_home,
+    IndCQC.dormancy,
     IndCQC.number_of_beds,
+    IndCQC.imputed_gac_service_types,
+    IndCQC.imputed_registration_date,
+    IndCQC.related_location,
     IndCQC.cqc_pir_import_date,
     IndCQC.people_directly_employed_dedup,
     IndCQC.ascwds_workplace_import_date,
+    IndCQC.establishment_id,
+    IndCQC.organisation_id,
+    IndCQC.total_staff_bounded,
+    IndCQC.worker_records_bounded,
     IndCQC.ascwds_filled_posts,
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filled_posts_dedup,
     IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_filtering_rule,
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
     IndCQC.current_region,
+    IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.rolling_average_model,
     IndCQC.imputed_posts_rolling_avg_model,
+    IndCQC.imputed_non_res_people_directly_employed,
+    IndCQC.imputed_ratio_rolling_avg_model,
+    IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
     IndCQC.unix_time,
     Keys.year,
     Keys.month,
@@ -63,6 +79,8 @@ def main(
     non_res_with_dormancy_model_source: str,
     non_res_without_dormancy_features_source: str,
     non_res_without_dormancy_model_source: str,
+    non_res_pir_linear_regression_features_source: str,
+    non_res_pir_linear_regression_model_source: str,
     estimated_ind_cqc_destination: str,
     ml_model_metrics_destination: str,
 ) -> DataFrame:
@@ -82,6 +100,9 @@ def main(
     non_res_without_dormancy_features_df = utils.read_from_parquet(
         non_res_without_dormancy_features_source
     )
+    non_res_pir_linear_regression_features_df = utils.read_from_parquet(
+        non_res_pir_linear_regression_features_source
+    )
 
     estimate_filled_posts_df = model_care_homes(
         estimate_missing_ascwds_df,
@@ -100,6 +121,13 @@ def main(
         estimate_filled_posts_df,
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
+        ml_model_metrics_destination,
+    )
+
+    estimate_filled_posts_df = model_non_res_pir_linear_regression(
+        estimate_filled_posts_df,
+        non_res_pir_linear_regression_features_df,
+        non_res_pir_linear_regression_model_source,
         ml_model_metrics_destination,
     )
 
@@ -161,6 +189,8 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
+        non_res_pir_linear_regression_features_source,
+        non_res_pir_linear_regression_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     ) = utils.collect_arguments(
@@ -193,6 +223,14 @@ if __name__ == "__main__":
             "Source s3 directory for the non res without dormancy ML model",
         ),
         (
+            "--non_res_pir_linear_regression_features_source",
+            "Source s3 directory for non res pir linear regression features dataset",
+        ),
+        (
+            "--non_res_pir_linear_regression_model_source",
+            "Source s3 directory for the non res pir linear regression model",
+        ),
+        (
             "--estimated_ind_cqc_destination",
             "Destination s3 directory for outputting estimates for filled posts",
         ),
@@ -210,6 +248,8 @@ if __name__ == "__main__":
         non_res_with_dormancy_model_source,
         non_res_without_dormancy_features_source,
         non_res_without_dormancy_model_source,
+        non_res_pir_linear_regression_features_source,
+        non_res_pir_linear_regression_model_source,
         estimated_ind_cqc_destination,
         ml_model_metrics_destination,
     )
