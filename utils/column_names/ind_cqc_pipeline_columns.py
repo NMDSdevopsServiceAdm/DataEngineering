@@ -22,6 +22,13 @@ class PartitionKeys:
     year: str = "year"
 
 
+class ArchivePartitionKeys:
+    archive_day: str = "archive_day"
+    archive_month: str = "archive_month"
+    archive_year: str = "archive_year"
+    archive_timestamp: str = "archive_timestamp"
+
+
 @dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
