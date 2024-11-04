@@ -17,6 +17,7 @@ openpyxl = "==3.1.2"
 pydeequ = "==1.4.0"
 pyspark = "==3.3.4"
 matplotlib = "==3.9.2"
+pydoclint = "*"
 
 [dev-packages]
 pylint = "==2.17.4"
