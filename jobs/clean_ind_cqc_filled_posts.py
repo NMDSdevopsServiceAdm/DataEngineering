@@ -1,4 +1,6 @@
 import sys
+from typing import Optional
+
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
@@ -117,7 +119,7 @@ def replace_null_beds_with_average(df: DataFrame) -> DataFrame:
 def create_column_with_repeated_values_removed(
     df: DataFrame,
     column_to_clean: str,
-    new_column_name: str = None,
+    new_column_name: Optional[str] = None,
 ) -> DataFrame:
     """
     Some data we have (such as ASCWDS) repeats data until it is changed. This function creates a new column which converts repeated
@@ -129,12 +131,12 @@ def create_column_with_repeated_values_removed(
     Otherwise null the value in the new column as it is a previously submitted value which has been repeated.
 
     Args:
-        df: The dataframe to use
-        column_to_clean: The name of the column to convert
-        new_column_name: (optional) If not provided, "_deduplicated" will be appended onto the original column name
+        df (DataFrame): The dataframe to use
+        column_to_clean (str): The name of the column to convert
+        new_column_name (Optional [str]): If not provided, "_deduplicated" will be appended onto the original column name
 
     Returns:
-        A DataFrame with an addional column with repeated values changed to nulls.
+        DataFrame: A DataFrame with an addional column with repeated values changed to nulls.
     """
     PREVIOUS_VALUE: str = "previous_value"
 
