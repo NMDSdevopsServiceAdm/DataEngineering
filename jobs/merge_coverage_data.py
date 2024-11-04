@@ -149,8 +149,8 @@ def join_ascwds_data_into_cqc_location_df(
     Args:
         cqc_location_df (DataFrame): A dataframe of cleaned CQC locations.
         ascwds_workplace_df (DataFrame): A dataframe of ASC-WDS workplaces which includes workplaces last updated or logged into within 2 years of snapshot.
-        cqc_location_import_date_column (String): The name of the import date column in the clean CQC locations dataframe.
-        ascwds_workplace_import_date_column (String): The name of the import date column in the ASC-WDS reconciliation dataframe.
+        cqc_location_import_date_column (str): The name of the import date column in the clean CQC locations dataframe.
+        ascwds_workplace_import_date_column (str): The name of the import date column in the ASC-WDS reconciliation dataframe.
 
     Returns:
         DataFrame: The clean CQC locations dataframe with all columns from the ASC-WDS reconciliation dataframe added to it.
@@ -239,8 +239,8 @@ def join_latest_cqc_rating_into_coverage_df(
     All columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid.
 
     Args:
-        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
 
     Returns:
         DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
