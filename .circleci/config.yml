@@ -56,6 +56,7 @@ jobs:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
+
   lint-python:
     docker:
       - image: circleci/python:3.9.6
@@ -68,6 +69,19 @@ jobs:
       - run:
           name: Check Python fomatting
           command: black . --check
+  
+  lint-docstrings:
+    docker:
+      - image: circleci/python:3.9.6
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install pydoclint
+          command: pip install pydoclint==0.5.9
+      - run:
+          name: Check docstring fomatting
+          command: pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
@@ -241,6 +255,10 @@ workflows:
             branches:
               ignore: main
       - lint-terraform:
+          filters:
+            branches:
+              ignore: main
+      - lint-docstrings:
           filters:
             branches:
               ignore: main
