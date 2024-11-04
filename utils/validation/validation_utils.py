@@ -58,6 +58,9 @@ def add_checks_to_run(
 
     Returns:
         VerificationRunBuilder: A verification run containing all the listed checks.
+
+    Raises:
+        ValueError: If rule in rules_to_check is not recognised.
     """
     for rule_name in rules_to_check.keys():
         rule = rules_to_check[rule_name]
@@ -307,7 +310,7 @@ def add_column_with_length_of_string(
     return df
 
 
-def raise_exception_if_any_checks_failed(df: DataFrame):
+def raise_exception_if_any_checks_failed(df: DataFrame) -> None:
     """
     Checks the results of the validation checks and raises an error if any checks have failed.
 
