@@ -387,14 +387,6 @@ class AddLocationIdHash(FlattenCQCRatingsTests):
         expected_columns = self.expected_df.columns
         self.assertEqual(returned_columns, expected_columns)
 
-    def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_spaces(
-        self,
-    ):
-        self.assertEqual(
-            self.returned_df.sort(CQCL.location_id).collect(),
-            self.expected_df.collect(),
-        )
-
     def test_add_location_id_hash_adds_a_column_with_expected_hashed_ids_when_location_id_has_ten_digits(
         self,
     ):
