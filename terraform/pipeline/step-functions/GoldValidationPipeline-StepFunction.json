@@ -107,8 +107,8 @@
                   "JobName": "${validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job_name}",
                   "Arguments": {
                     "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
-                    "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy_data_report/"
+                    "--non_res_ascwds_without_dormancy_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_features_non_res_ascwds_without_dormancy/"
                   }
                 },
                 "End": true
@@ -125,8 +125,8 @@
                   "JobName": "${validate_non_res_pir_ind_cqc_features_data_job_name}",
                   "Arguments": {
                     "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
-                    "--non_res_pir_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=non_res_pir_ind_cqc_features/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=non_res_pir_ind_cqc_features_data_report/"
+                    "--non_res_pir_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_pir/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_non_res_pir_ind_cqc_features/"
                   }
                 },
                 "End": true
