@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pyspark.sql import (
     DataFrame,
     Window,
@@ -35,23 +37,27 @@ def apply_categorical_labels(
 
 
 def set_column_bounds(
-    df: DataFrame, col_name: str, new_col_name: str, lower_limit=None, upper_limit=None
+    df: DataFrame,
+    col_name: str,
+    new_col_name: str,
+    lower_limit: Optional[int | float] = None,
+    upper_limit: Optional[int | float] = None,
 ) -> DataFrame:
     """
     Creates a new column based on a previous column, dropping values that exist outside of the lower and upper limits, where provided.
 
-        Args:
-            df: The DataFrame containing the column to bound
-            col_name: The name of the column to be bounded, as a string
-            new_col_name: What the newly created column will be called, as a string
-            lower_limit: The value of the lower limit. Must be an integer or float value if provided, and is otherwise defaulted to None
-            upper_limit: The value of the upper limit. Must be an integer or float value if provided, and is otherwise defaulted to None
+    Args:
+        df (DataFrame): The DataFrame containing the column to bound
+        col_name (str): The name of the column to be bounded, as a string
+        new_col_name (str): What the newly created column will be called, as a string
+        lower_limit (Optional[int|float]): The value of the lower limit.
+        upper_limit (Optional[int|float]): The value of the upper limit.
 
-        Returns:
-            df: The DataFrame with the new column only containing numerical values that fell within the bounds.
+    Returns:
+        DataFrame: The DataFrame with the new column only containing numerical values that fell within the bounds.
 
-        Raises:
-            ValueError: If both limits are comparable numerical types, and the upper limit is lower than the lower limit.
+    Raises:
+        ValueError: If both limits are comparable numerical types, and the upper limit is lower than the lower limit.
     """
     if lower_limit is None and upper_limit is None:
         return df
@@ -217,7 +223,8 @@ def calculate_filled_posts_per_bed_ratio(
         input_df (DataFrame): A dataframe containing the given column, care_home and numberofbeds.
         filled_posts_column (str): The name of the column to use for calculating the ratio.
 
-    Returns (DataFrame): The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
+    Returns:
+        DataFrame: The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
     """
     input_df = input_df.withColumn(
         IndCQC.filled_posts_per_bed_ratio,
