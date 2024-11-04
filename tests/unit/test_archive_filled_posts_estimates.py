@@ -54,7 +54,7 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
         self.assertEqual(read_from_parquet_patch.call_count, 1)
 
         self.assertEqual(write_to_parquet_patch.call_count, 1)
-        write_to_parquet_patch.assert_any_call(
+        write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.MONTHLY_ARCHIVE_DESTINATION,
             mode="append",
@@ -79,7 +79,6 @@ class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
         returned_df = job.create_archive_date_partition_columns(
             test_df, self.test_date_time
         )
-        returned_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
