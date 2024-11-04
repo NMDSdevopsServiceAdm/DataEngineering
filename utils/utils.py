@@ -2,7 +2,7 @@ import os
 import re
 import csv
 import argparse
-from typing import List, Any
+from typing import List, Any, Generator
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
@@ -188,7 +188,7 @@ def convert_days_to_unix_time(days: int):
     return days * NUMBER_OF_SECONDS_IN_ONE_DAY
 
 
-def collect_arguments(*args: Any) -> argparse.Generator[Any, None, None]:
+def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     """
     Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
     where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
@@ -197,7 +197,7 @@ def collect_arguments(*args: Any) -> argparse.Generator[Any, None, None]:
         *args (Any): This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
 
     Returns:
-        argparse.Generator[Any, None, None]: A generator used for parsing parsed parameters.
+        Generator[Any, None, None]: A generator used for parsing parsed parameters.
 
     Examples:
     >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
