@@ -6255,10 +6255,10 @@ class FlattenCQCRatings:
     ]
 
     location_id_hash_rows = [
-        ("1 -123",),
+        ("1-123",),
     ]
     expected_location_id_hash_rows = [
-        ("1 -123", "b2268351ad41a49e5928"),
+        ("1-123", "b022a7e5cc45cf3dc578"),
     ]
     location_id_hash_ten_digit_rows = [
         ("1-123456789",),
