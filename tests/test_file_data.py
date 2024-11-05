@@ -3725,10 +3725,11 @@ class MergeCoverageData:
     sample_cqc_locations_rows = [("1-000000001",), ("1-000000002",)]
 
     sample_cqc_ratings_for_merge_rows = [
-        ("1-000000001", "2024-01-01", "Good", 0),
-        ("1-000000001", "2024-01-02", "Good", 1),
-        ("1-000000001", None, "Good", None),
-        ("1-000000002", "2024-01-01", None, 1),
+        ("1-000000001", "2024-01-01", "Good", 0, CQCCurrentOrHistoricValues.historic),
+        ("1-000000001", "2024-01-02", "Good", 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000001", None, "Good", None, None),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.historic),
     ]
 
     # fmt: off

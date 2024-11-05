@@ -1728,6 +1728,7 @@ class MergeCoverageData:
             StructField(CQCRatingsColumns.date, StringType(), True),
             StructField(CQCRatingsColumns.overall_rating, StringType(), True),
             StructField(CQCRatingsColumns.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatingsColumns.current_or_historic, StringType(), True),
         ]
     )
 

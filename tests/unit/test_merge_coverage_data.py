@@ -21,7 +21,10 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
-from utils.column_values.categorical_column_values import CQCLatestRating
+from utils.column_values.categorical_column_values import (
+    CQCLatestRating,
+    CQCCurrentOrHistoricValues,
+)
 
 
 class SetupForTests(unittest.TestCase):
@@ -175,8 +178,20 @@ class FilterForLatestCqcRatings(SetupForTests):
             distinct_latest_rating_rows[0][0], CQCLatestRating.is_latest_rating
         )
 
+    def test_filter_for_latest_cqc_ratings_contains_current_ratings(self):
+        latest_rating_column_df = self.returned_in_ascwds_df.select(
+            CQCRatingsColumns.current_or_historic
+        )
+
+        distinct_latest_rating_rows = latest_rating_column_df.distinct().collect()
+
+        self.assertEqual(len(distinct_latest_rating_rows), 1)
+        self.assertEqual(
+            distinct_latest_rating_rows[0][0], CQCCurrentOrHistoricValues.current
+        )
+
     def test_filter_for_latest_cqc_ratings_has_expected_row_count(self):
-        self.assertEqual(self.returned_in_ascwds_df.count(), 2)
+        self.assertEqual(self.returned_in_ascwds_df.count(), 3)
 
 
 class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):
