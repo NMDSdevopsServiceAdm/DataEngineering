@@ -357,47 +357,22 @@
               }
             }
           },
-        {
-          "StartAt": "Run merge coverage data job",
-          "States": {
-            "Run merge coverage data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${merge_coverage_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
-                  "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/",
-                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
-                  "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
-                }
-              },
-              "Next": "Run sfc crawler"
-            },
-            "Run sfc crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${sfc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+          {
+            "StartAt": "Start coverage pipeline",
+            "States": {
+              "Start coverage pipeline": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Parameters": {
+                  "StateMachineArn": "${run_coverage_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
+                "End": true
+              }
             }
-          }
-        },
-        {
-          "StartAt": "Run ascwds crawler",
-          "States": {
-            "Run ascwds crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${ascwds_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "End": true
-            }
-          }
-        },
+          },
         {
           "StartAt": "Run ons crawler",
           "States": {
