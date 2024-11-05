@@ -124,7 +124,9 @@ def prepare_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_historic_ratings(cqc_location_df)
-    ratings_df = recode_unknown_codes_to_null(ratings_df)
+    ratings_df = recode_unknown_codes_to_null(
+        ratings_df
+    )  # creates duplicates as differenct codes are reduced to the same (null) value
     ratings_df = add_current_or_historic_column(
         ratings_df, CQCCurrentOrHistoricValues.historic
     )
@@ -216,7 +218,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
             ],
             "outer",
         )
-
+    # cleaned_historic_ratings_df = cleaned_historic_ratings_df.drop_duplicates()
     return cleaned_historic_ratings_df
 
 
@@ -227,6 +229,7 @@ def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
         UnknownRatings.keys(),
         add_as_new_column=False,
     )
+    ratings_df = ratings_df.drop_duplicates()
     return ratings_df
 
 
