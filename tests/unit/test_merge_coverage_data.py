@@ -191,7 +191,7 @@ class FilterForLatestCqcRatings(SetupForTests):
         )
 
     def test_filter_for_latest_cqc_ratings_has_expected_row_count(self):
-        self.assertEqual(self.returned_in_ascwds_df.count(), 3)
+        self.assertEqual(self.returned_in_ascwds_df.count(), 2)
 
 
 class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):

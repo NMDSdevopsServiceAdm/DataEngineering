@@ -18,7 +18,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_values.categorical_column_values import CQCLatestRating, InAscwds
+from utils.column_values.categorical_column_values import (
+    CQCLatestRating,
+    InAscwds,
+    CQCCurrentOrHistoricValues,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -211,20 +215,26 @@ def filter_for_latest_cqc_ratings(
     """
     Filter the CQC ratings dataframe to latest rating per location only.
 
-    Requirements that are not arguments: latest_rating_flag.
+    Requirements that are not arguments: latest_rating_flag, current_or_historic.
     The CQC ratings dataset shows 1 for the latest rating in the latest_rating_flag column.
-    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0.
+    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0 and current_or_historic = 'current'.
 
     Args:
         cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
 
     Returns:
-        DataFrame: The cqc ratings dataframe with only the latest rating per location.
+        DataFrame: The cqc ratings dataframe with only the latest current rating per location.
     """
 
     return cqc_ratings_df.where(
-        cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
-        == CQCLatestRating.is_latest_rating
+        (
+            cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
+            == CQCLatestRating.is_latest_rating
+        )
+        & (
+            cqc_ratings_df[CQCRatingsColumns.current_or_historic]
+            == CQCCurrentOrHistoricValues.current
+        )
     )
 
 
