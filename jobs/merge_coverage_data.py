@@ -70,6 +70,7 @@ cqc_ratings_columns_to_import = [
     CQCRatingsColumns.date,
     CQCRatingsColumns.overall_rating,
     CQCRatingsColumns.latest_rating_flag,
+    CQCRatingsColumns.current_or_historic,
 ]
 
 
@@ -225,8 +226,8 @@ def filter_for_latest_cqc_ratings(
     Returns:
         DataFrame: The cqc ratings dataframe with only the latest current rating per location.
     """
-
-    return cqc_ratings_df.where(
+    cqc_ratings_df = cqc_ratings_df.dropDuplicates()
+    cqc_ratings_df = cqc_ratings_df.where(
         (
             cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
             == CQCLatestRating.is_latest_rating
@@ -236,6 +237,7 @@ def filter_for_latest_cqc_ratings(
             == CQCCurrentOrHistoricValues.current
         )
     )
+    return cqc_ratings_df
 
 
 def join_latest_cqc_rating_into_coverage_df(
@@ -246,7 +248,9 @@ def join_latest_cqc_rating_into_coverage_df(
     Join latest rating to coverage dataframe using locationid as key.
 
     Requirements that are not arguments: CQC locationid.
-    All columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid.
+    Columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid. The cqc ratings
+    data pulled through will contain duplicates, because it is a subset of the columns. This has been addressed in
+    the filtering function.
 
     Args:
         cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
@@ -264,9 +268,13 @@ def join_latest_cqc_rating_into_coverage_df(
         how="left",
     )
 
-    return merged_coverage_with_latest_rating_df.drop(
+    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
         CQCRatingsColumns.latest_rating_flag
     )
+    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
+        CQCRatingsColumns.current_or_historic
+    )
+    return merged_coverage_with_latest_rating_df
 
 
 if __name__ == "__main__":

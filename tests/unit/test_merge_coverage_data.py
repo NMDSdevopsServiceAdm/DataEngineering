@@ -211,6 +211,8 @@ class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):
             Data.expected_cqc_locations_and_latest_cqc_rating_rows,
             Schemas.expected_cqc_locations_and_latest_cqc_rating_schema,
         )
+        self.returned_df.show()
+        self.expected_df.show()
 
     def test_join_latest_cqc_rating_into_coverage_df_adds_expected_columns(self):
         self.assertEqual(len(self.returned_df.columns), len(self.expected_df.columns))

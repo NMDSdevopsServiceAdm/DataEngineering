@@ -3730,6 +3730,13 @@ class MergeCoverageData:
         ("1-000000001", None, "Good", None, None),
         ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.current),
         ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.historic),
+        (
+            "1-000000002",
+            "2024-01-01",
+            None,
+            1,
+            CQCCurrentOrHistoricValues.historic,
+        ),  # CQC ratings data will contain duplicates so this needs to be handled correctly
     ]
 
     # fmt: off
