@@ -358,13 +358,13 @@
             }
           },
           {
-            "StartAt": "Start coverage pipeline",
+            "StartAt": "Trigger coverage pipeline",
             "States": {
-              "Start coverage pipeline": {
+              "Trigger coverage pipeline": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Resource": "arn:aws:states:::states:startExecution",
                 "Parameters": {
-                  "StateMachineArn": "${run_coverage_state_machine_arn}",
+                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
                   "Input": {
                     "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                   }
