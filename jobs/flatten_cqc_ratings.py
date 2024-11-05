@@ -218,7 +218,6 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
             ],
             "outer",
         )
-    # cleaned_historic_ratings_df = cleaned_historic_ratings_df.drop_duplicates()
     return cleaned_historic_ratings_df
 
 
@@ -318,6 +317,7 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     standard_ratings_df = ratings_df.select(
         CQCL.location_id,
         CQCRatings.date,
+        CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
         CQCRatings.well_led_rating,
