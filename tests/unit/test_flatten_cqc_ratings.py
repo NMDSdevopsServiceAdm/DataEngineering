@@ -196,10 +196,8 @@ class RecodeUnknownToNull(FlattenCQCRatingsTests):
         )
 
     def test_recode_unknown_codes_to_null_returns_correct_values(self):
-        returned_data = self.returned_df.collect()
+        returned_data = self.returned_df.sort(CQCL.location_id).collect()
         expected_data = self.expected_df.collect()
-        self.expected_df.show()
-        self.returned_df.show()
         self.assertEqual(returned_data, expected_data)
 
 
