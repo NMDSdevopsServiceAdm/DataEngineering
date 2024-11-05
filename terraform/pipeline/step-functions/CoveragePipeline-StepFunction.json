@@ -1,6 +1,6 @@
 {
   "Comment": "A state machine for running and validating coverage data",
-    "StartAt": "Run merge coverage data job",
+  "StartAt": "Run merge coverage data job",
   "States": {
     "Run merge coverage data job": {
       "Type": "Task",
@@ -24,7 +24,7 @@
         "JobName": "${validate_merge_coverage_data_job_name}",
         "Arguments": {
           "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-          "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+          "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_merged_coverage_data/"
         }
       },
