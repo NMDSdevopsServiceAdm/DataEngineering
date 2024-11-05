@@ -97,7 +97,7 @@ def filter_latest_submission_date(df: DataFrame) -> DataFrame:
         df (DataFrame): A cqc pir dataframe that must contain at least the columns above
 
     Returns:
-        single_row_per_grouping_df (DataFrame): A filtered form of the input df,
+        DataFrame: A filtered form of the input df,
         where there is now only the latest submission date per grouping of the other 3 fields
     """
 

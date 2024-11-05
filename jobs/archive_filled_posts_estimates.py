@@ -118,7 +118,7 @@ def create_archive_date_partition_columns(
     return df
 
 
-def add_leading_zero(date_as_number: int):
+def add_leading_zero(date_as_number: int) -> str:
     """
     Adds a leading zero to single digit values.
 

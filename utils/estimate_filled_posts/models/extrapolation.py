@@ -22,7 +22,6 @@ def model_extrapolation(
         df (DataFrame): The input DataFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be extrapolated.
         model_to_extrapolate_from (str): The model used for extrapolation.
-        extrapolated_column_name (str): The name of the new column to store extrapolated values.
 
     Returns:
         DataFrame: The DataFrame with the extrapolated values in the 'extrapolation_model' column.

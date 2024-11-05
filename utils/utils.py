@@ -2,10 +2,11 @@ import os
 import re
 import csv
 import argparse
+from typing import List, Any, Generator
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
-from typing import List
+
 
 import boto3
 
@@ -97,6 +98,9 @@ def read_from_parquet(
     Args:
         data_source (str): Path to the Parquet file.
         selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
+
+    Returns:
+        DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
     """
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
@@ -184,13 +188,13 @@ def convert_days_to_unix_time(days: int):
     return days * NUMBER_OF_SECONDS_IN_ONE_DAY
 
 
-def collect_arguments(*args):
+def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     """
     Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
     where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
 
     Args:
-        *args: This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
+        *args (Any): This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
 
     Returns:
         Generator[Any, None, None]: A generator used for parsing parsed parameters.
