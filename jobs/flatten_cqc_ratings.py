@@ -275,10 +275,10 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
     Adds numerical ratings columns for each of the key ratings and a total column.
 
     Args:
-        df (Dataframe): A dataframe with flattened CQC key ratings columns.
+        df (DataFrame): A dataframe with flattened CQC key ratings columns.
 
     Returns:
-        Dataframe: The given data frame with additional columns containing the key ratings as numerical values and a total of all the values.
+        DataFrame: The given data frame with additional columns containing the key ratings as numerical values and a total of all the values.
     """
     rating_columns_dict = {
         CQCRatings.safe_rating: CQCRatings.safe_rating_value,
