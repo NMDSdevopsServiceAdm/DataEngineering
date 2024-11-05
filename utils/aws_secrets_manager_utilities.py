@@ -1,10 +1,11 @@
+from typing import Union
 import boto3
 from botocore.exceptions import ClientError
 
 
 def get_secret(
     secret_name: str = "cqc_api_primary_key", region_name: str = "eu-west-2"
-) -> str | bytes:
+) -> Union[str, bytes]:
     """
     A provided AWS function from the [AWS Secrets Manager](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/secrets-manager.html) python documentation for retrieving an AWS secret value.
     Leverages the [get_secret_value](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secretsmanager/client/get_secret_value.html) request and response syntax.
@@ -18,7 +19,7 @@ def get_secret(
         region_name (str): The name of the region the secret is stored in. Defaults to eu-west-2 - London.
 
     Returns:
-        str | bytes: The string or binary version of the secret value (if applicable)
+        Union[str, bytes]: The string or binary version of the secret value (if applicable)
 
     Raises:
         Exception: Handles Client Error responses.

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from pyspark.sql import (
     DataFrame,
@@ -40,8 +40,8 @@ def set_column_bounds(
     df: DataFrame,
     col_name: str,
     new_col_name: str,
-    lower_limit: Optional[int | float] = None,
-    upper_limit: Optional[int | float] = None,
+    lower_limit: Optional[Union[int, float]] = None,
+    upper_limit: Optional[Union[int, float]] = None,
 ) -> DataFrame:
     """
     Creates a new column based on a previous column, dropping values that exist outside of the lower and upper limits, where provided.
@@ -50,8 +50,8 @@ def set_column_bounds(
         df (DataFrame): The DataFrame containing the column to bound
         col_name (str): The name of the column to be bounded, as a string
         new_col_name (str): What the newly created column will be called, as a string
-        lower_limit (Optional[int|float]): The value of the lower limit.
-        upper_limit (Optional[int|float]): The value of the upper limit.
+        lower_limit (Optional[Union[int,float]]): The value of the lower limit.
+        upper_limit (Optional[Union[int,float]]): The value of the upper limit.
 
     Returns:
         DataFrame: The DataFrame with the new column only containing numerical values that fell within the bounds.
