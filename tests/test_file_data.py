@@ -5797,6 +5797,28 @@ class FlattenCQCRatings:
             "Good",
             "Good",
         ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+        ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Insufficient evidence to rate",
+        ),
     ]
     expected_recode_unknown_to_null_rows = [
         (
@@ -5831,6 +5853,17 @@ class FlattenCQCRatings:
             "Good",
             "Good",
             "Good",
+        ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         ),
     ]
 
