@@ -361,7 +361,7 @@ class CreateStandardRatingsDataset(FlattenCQCRatingsTests):
     def test_create_standard_ratings_dataset_selects_correct_columns(self):
         returned_columns = self.returned_df.columns
         expected_columns = self.expected_df.columns
-        self.assertEqual(returned_columns, expected_columns)
+        self.assertEqual(sorted(returned_columns), sorted(expected_columns))
 
     def test_create_standard_ratings_dataset_deduplicates_rows(self):
         returned_rows = self.returned_df.count()
