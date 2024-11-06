@@ -144,6 +144,26 @@
           }
         }
       ],
+      "Next": "Start silver validation",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Start silver validation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
       "Next": "Silver to Gold Transformation Layer",
       "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer",
       "Catch": [
@@ -342,13 +362,13 @@
             }
           },
           {
-            "StartAt": "Start silver validation",
+            "StartAt": "Trigger coverage pipeline",
             "States": {
-              "Start silver validation": {
+              "Trigger coverage pipeline": {
                 "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Resource": "arn:aws:states:::states:startExecution",
                 "Parameters": {
-                  "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
                   "Input": {
                     "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                   }
@@ -357,32 +377,6 @@
               }
             }
           },
-        {
-          "StartAt": "Run sfc crawler",
-          "States": {
-            "Run sfc crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${sfc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run ascwds crawler",
-          "States": {
-            "Run ascwds crawler": {
-              "Type": "Task",
-              "Parameters": {
-                "Name": "${ascwds_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "End": true
-            }
-          }
-        },
         {
           "StartAt": "Run ons crawler",
           "States": {
