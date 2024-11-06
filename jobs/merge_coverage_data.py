@@ -27,6 +27,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.provider_name,
     CQCLClean.cqc_sector,
@@ -117,7 +118,7 @@ def main(
         [
             CQCLClean.cqc_location_import_date,
             CQCLClean.name,
-            CQCLClean.postcode,
+            CQCLClean.postal_code,
             CQCLClean.care_home,
         ],
         CoverageColumns.in_ascwds,
@@ -171,7 +172,7 @@ def remove_duplicates_based_on_column_order(
     sorted_df = df.orderBy(
         columns_to_identify_duplicates + [F.col(column_to_sort_on).desc()],
     )
-    deduped_df = sorted_df.dropDuplicates([columns_to_identify_duplicates])
+    deduped_df = sorted_df.dropDuplicates(columns_to_identify_duplicates)
     return deduped_df
 
 

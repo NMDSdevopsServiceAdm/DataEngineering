@@ -1677,6 +1677,8 @@ class MergeCoverageData:
         [
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
@@ -1698,6 +1700,8 @@ class MergeCoverageData:
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
