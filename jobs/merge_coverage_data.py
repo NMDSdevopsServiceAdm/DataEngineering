@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 from pyspark.sql import DataFrame, functions as F
 
@@ -96,7 +97,11 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
-    ascwds_workplace_df = remove_duplicate_locationids(ascwds_workplace_df)
+    ascwds_workplace_df = remove_duplicates_based_on_column_order(
+        ascwds_workplace_df,
+        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
+        AWPClean.master_update_date,
+    )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
@@ -106,6 +111,12 @@ def main(
     )
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
+
+    merged_coverage_df = remove_duplicates_based_on_column_order(
+        merged_coverage_df,
+        [CQCLClean.cqc_location_import_date, CQCLClean.name, CQCLClean.postcode],
+        CoverageColumns.in_ascwds,
+    )
 
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
         merged_coverage_df, cqc_ratings_df
@@ -133,7 +144,11 @@ def main(
     )
 
 
-def remove_duplicate_locationids(df: DataFrame) -> DataFrame:
+def remove_duplicates_based_on_column_order(
+    df: DataFrame,
+    columns_to_identify_duplicates: List[str],
+    column_to_sort_on: str,
+) -> DataFrame:
     """
     Remove duplicate locationid rows.
 
@@ -142,18 +157,16 @@ def remove_duplicate_locationids(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): The input ASCWDS workplace DataFrame.
+        columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
+        column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
 
     Returns:
         DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
     """
     sorted_df = df.orderBy(
-        F.col(AWPClean.ascwds_workplace_import_date),
-        F.col(AWPClean.location_id),
-        F.col(AWPClean.master_update_date).desc(),
+        columns_to_identify_duplicates + [F.col(column_to_sort_on).desc()],
     )
-    deduped_df = sorted_df.dropDuplicates(
-        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id]
-    )
+    deduped_df = sorted_df.dropDuplicates([columns_to_identify_duplicates])
     return deduped_df
 
 
