@@ -96,7 +96,12 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
-    ascwds_workplace_df = remove_duplicate_locationids(ascwds_workplace_df)
+    ascwds_workplace_df = remove_duplicates(
+        ascwds_workplace_df,
+        AWPClean.ascwds_workplace_import_date,
+        AWPClean.location_id,
+        AWPClean.master_update_date,
+    )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
@@ -106,6 +111,13 @@ def main(
     )
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
+
+    merged_coverage_df = remove_duplicates(
+        merged_coverage_df,
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.location_id,
+        CoverageColumns.in_ascwds,
+    )
 
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
         merged_coverage_df, cqc_ratings_df
@@ -133,26 +145,34 @@ def main(
     )
 
 
-def remove_duplicate_locationids(df: DataFrame) -> DataFrame:
+def remove_duplicates(
+    df: DataFrame,
+    import_date_column_name: str,
+    location_id_column_name: str,
+    column_to_sort_on: str,
+) -> DataFrame:
     """
-    Remove duplicate locationid rows.
+    Remove duplicate rows in the file based on a combination of import_date and ID columns, keeping the highest value in column_to_sort_on.
 
-    The ASCWDS dataframe used in this job is also used for reconciliation process which contains duplicate locationids.
-    This function removes duplicates from a DataFrame based on 'location_id' and 'ascwds_workplace_import_date' columns, keeping the row with the most recent 'master_update_date'.
+    Remove duplicate rows in the file based on a combination of import_date and ID columns.
+    The keeping the highest value in column_to_sort_on (this could be the most recent date, or keeping 1 instead of 0).
 
     Args:
         df (DataFrame): The input ASCWDS workplace DataFrame.
+        import_date_column_name (str): The name of the import_date column.
+        location_id_column (str): The name of the location ID column.
+        column_to_sort_on (str): The name of the column to sort on (sorted in descending order)
 
     Returns:
         DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
     """
     sorted_df = df.orderBy(
-        F.col(AWPClean.ascwds_workplace_import_date),
-        F.col(AWPClean.location_id),
-        F.col(AWPClean.master_update_date).desc(),
+        F.col(import_date_column_name),
+        F.col(location_id_column_name),
+        F.col(column_to_sort_on).desc(),
     )
     deduped_df = sorted_df.dropDuplicates(
-        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id]
+        [import_date_column_name, location_id_column_name]
     )
     return deduped_df
 
