@@ -1693,14 +1693,6 @@ class MergeCoverageData:
         ]
     )
 
-    remove_duplicate_locationids_schema = StructType(
-        [
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.master_update_date, DateType(), True),
-        ]
-    )
-
     expected_cqc_and_ascwds_merged_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
@@ -1709,8 +1701,17 @@ class MergeCoverageData:
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    remove_duplicate_locationids_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
         ]
     )
 

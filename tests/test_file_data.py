@@ -3694,6 +3694,20 @@ class MergeCoverageData:
         (date(2024, 3, 1), "1-000000003", date(2024, 1, 1), "4", 6),
     ]
 
+    # fmt: off
+    expected_cqc_and_ascwds_merged_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, date(2024, 1, 1), "1", 1),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, date(2024, 1, 1), "3", 2),
+        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, date(2024, 1, 1), "1", 4),
+        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, date(2024, 1, 1), "3", 5),
+        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None, None),
+        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, date(2024, 1, 1), "4", 6),
+    ]
+    # fmt: on
+
     remove_duplicate_locationids_rows = [
         (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
         (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
@@ -3706,20 +3720,6 @@ class MergeCoverageData:
         (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
         (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
     ]
-
-    # fmt: off
-    expected_cqc_and_ascwds_merged_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4,),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5,),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None,),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6,),
-    ]
-    # fmt: on
 
     sample_in_ascwds_rows = [
         (None,),
