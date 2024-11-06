@@ -3673,30 +3673,26 @@ class MergeIndCQCData:
 
 @dataclass
 class MergeCoverageData:
-    # fmt: off
     clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None),
     ]
-    # fmt: on
 
-    # fmt: off
     clean_ascwds_workplace_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "1", 1,),
-        (date(2024, 1, 1), "1-000000003", "3", 2,),
-        (date(2024, 1, 5), "1-000000001", "1", 3,),
-        (date(2024, 1, 9), "1-000000001", "1", 4,),
-        (date(2024, 1, 9), "1-000000003", "3", 5,),
-        (date(2024, 3, 1), "1-000000003", "4", 6,),
+        (date(2024, 1, 1), "1-000000001", date(2024, 1, 1), "1", 1),
+        (date(2024, 1, 1), "1-000000003", date(2024, 1, 1), "3", 2),
+        (date(2024, 1, 5), "1-000000001", date(2024, 1, 1), "1", 3),
+        (date(2024, 1, 9), "1-000000001", date(2024, 1, 1), "1", 4),
+        (date(2024, 1, 9), "1-000000003", date(2024, 1, 1), "3", 5),
+        (date(2024, 3, 1), "1-000000003", date(2024, 1, 1), "4", 6),
     ]
-    # fmt: on
 
     remove_duplicate_locationids_rows = [
         (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
