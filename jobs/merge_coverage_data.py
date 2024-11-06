@@ -114,7 +114,12 @@ def main(
 
     merged_coverage_df = remove_duplicates_based_on_column_order(
         merged_coverage_df,
-        [CQCLClean.cqc_location_import_date, CQCLClean.name, CQCLClean.postcode],
+        [
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.name,
+            CQCLClean.postcode,
+            CQCLClean.care_home,
+        ],
         CoverageColumns.in_ascwds,
     )
 
