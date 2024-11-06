@@ -1692,6 +1692,14 @@ class MergeCoverageData:
         ]
     )
 
+    remove_duplicate_locationids_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
+        ]
+    )
+
     expected_cqc_and_ascwds_merged_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),

@@ -96,6 +96,8 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
+    ascwds_workplace_df = remove_duplicate_locationids(ascwds_workplace_df)
+
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
         ascwds_workplace_df,
@@ -129,6 +131,30 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def remove_duplicate_locationids(df: DataFrame) -> DataFrame:
+    """
+    Remove duplicate locationid rows.
+
+    The ASCWDS dataframe used in this job is also used for reconciliation process which contains duplicate locationids.
+    This function removes duplicates from a DataFrame based on 'location_id' and 'ascwds_workplace_import_date' columns, keeping the row with the most recent 'master_update_date'.
+
+    Args:
+        df (DataFrame): The input ASCWDS workplace DataFrame.
+
+    Returns:
+        DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
+    """
+    sorted_df = df.orderBy(
+        F.col(AWPClean.ascwds_workplace_import_date),
+        F.col(AWPClean.location_id),
+        F.col(AWPClean.master_update_date),
+    )
+    deduped_df = sorted_df.dropDuplicates(
+        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id]
+    )
+    return deduped_df
 
 
 def join_ascwds_data_into_cqc_location_df(

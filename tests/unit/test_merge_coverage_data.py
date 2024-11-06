@@ -97,6 +97,30 @@ class MainTests(SetupForTests):
         )
 
 
+class RemoveDuplicateLocationidsTests(SetupForTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_duplicate_locationids_returns_expected_rows(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_duplicate_locationids_rows,
+            Schemas.remove_duplicate_locationids_schema,
+        )
+        returned_df = job.remove_duplicate_locationids(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_duplicate_locationids_rows,
+            Schemas.remove_duplicate_locationids_schema,
+        )
+
+        returned_data = returned_df.sort(
+            AWPClean.ascwds_workplace_import_date, AWPClean.location_id
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class JoinAscwdsIntoCqcLocationsTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()

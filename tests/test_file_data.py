@@ -3698,6 +3698,19 @@ class MergeCoverageData:
     ]
     # fmt: on
 
+    remove_duplicate_locationids_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
+        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+    expected_remove_duplicate_locationids_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+
     # fmt: off
     expected_cqc_and_ascwds_merged_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
