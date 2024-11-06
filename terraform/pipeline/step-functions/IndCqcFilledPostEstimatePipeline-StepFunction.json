@@ -156,6 +156,26 @@
         }
       ]
     },
+    "Start silver validation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_silver_validation_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Silver to Gold Transformation Layer",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
       "Next": "Success",
@@ -337,22 +357,6 @@
                   "Name": "${ind_cqc_filled_posts_crawler_name}"
                 },
                 "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-                "End": true
-              }
-            }
-          },
-          {
-            "StartAt": "Start silver validation",
-            "States": {
-              "Start silver validation": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution.sync:2",
-                "Parameters": {
-                  "StateMachineArn": "${run_silver_validation_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
                 "End": true
               }
             }
