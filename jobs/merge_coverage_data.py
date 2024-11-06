@@ -149,7 +149,7 @@ def remove_duplicate_locationids(df: DataFrame) -> DataFrame:
     sorted_df = df.orderBy(
         F.col(AWPClean.ascwds_workplace_import_date),
         F.col(AWPClean.location_id),
-        F.col(AWPClean.master_update_date),
+        F.col(AWPClean.master_update_date).desc(),
     )
     deduped_df = sorted_df.dropDuplicates(
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id]
