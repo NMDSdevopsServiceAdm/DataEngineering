@@ -3882,7 +3882,7 @@ class CleanIndCQCData:
             10,
             date(2018, 1, 1),
         ),
-        # add test data for if they have different asc value?
+        # add test data for if they have different asc value? and non res? and data in earlier or later duplicate?
     ]
 
     repeated_value_rows = [
