@@ -181,6 +181,7 @@ class IndCqcColumns:
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
+    postcode: str = CQCLClean.postal_code
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"

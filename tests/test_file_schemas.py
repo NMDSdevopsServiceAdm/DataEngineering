@@ -1819,6 +1819,19 @@ class CleanIndCQCData:
         ]
     )
 
+    remove_cqc_duplicates_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(IndCQC.postcode, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
+            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
+        ]
+    )
+
     repeated_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

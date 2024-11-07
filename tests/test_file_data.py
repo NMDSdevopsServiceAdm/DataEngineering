@@ -3818,6 +3818,30 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
+    remove_cqc_duplicates_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_rows = []
+
     repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),
         ("1", 2, date(2023, 3, 1)),

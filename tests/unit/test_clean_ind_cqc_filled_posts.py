@@ -212,6 +212,24 @@ class MainTests(CleanIndFilledPostsTests):
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
 
 
+class RemoveDuplicateCqcCareHomesTests(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_remove_duplicate_cqc_care_homes_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_cqc_duplicates_rows, Schemas.remove_cqc_duplicates_schema
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_cqc_duplicates_rows,
+            Schemas.remove_cqc_duplicates_schema,
+        )
+        returned_df = job.remove_duplicate_cqc_care_homes(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+
 class AddColumnWithRepeatedValuesRemovedTests(CleanIndFilledPostsTests):
     def setUp(self):
         super().setUp()
