@@ -1742,6 +1742,7 @@ class MergeCoverageData:
             StructField(CQCRatingsColumns.date, StringType(), True),
             StructField(CQCRatingsColumns.overall_rating, StringType(), True),
             StructField(CQCRatingsColumns.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatingsColumns.current_or_historic, StringType(), True),
         ]
     )
 
@@ -3626,6 +3627,7 @@ class FlattenCQCRatings:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
             StructField(CQCRatings.caring_rating, StringType(), True),
