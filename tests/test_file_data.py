@@ -3841,7 +3841,7 @@ class CleanIndCQCData:
         ),
         (
             "loc 3",
-            date(2024, 1, 1),
+            date(2024, 2, 1),
             "care home",
             "AB1 2CD",
             CareHome.care_home,
@@ -3851,7 +3851,7 @@ class CleanIndCQCData:
         ),
         (
             "loc 4",
-            date(2024, 1, 1),
+            date(2024, 2, 1),
             "care home",
             "AB1 2CD",
             CareHome.care_home,
@@ -3874,7 +3874,7 @@ class CleanIndCQCData:
         ),
         (
             "loc 3",
-            date(2024, 1, 1),
+            date(2024, 2, 1),
             "care home",
             "AB1 2CD",
             CareHome.care_home,

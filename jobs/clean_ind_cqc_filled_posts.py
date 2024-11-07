@@ -92,7 +92,57 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with dual regestrations deduplicated and ascwds data retained.
     """
     # identify duplicates
+    duplicate_columns = [
+        IndCQC.cqc_location_import_date,
+        IndCQC.name,
+        IndCQC.postcode,
+        IndCQC.care_home,
+    ]
+    duplicates_df = (
+        df.groupBy(duplicate_columns)
+        .agg(F.count("*").alias("count"))
+        .filter(F.col("count") > 1)
+    )
+    duplicates_df.show()
     # copy ascwds data
+    window = (
+        Window.partitionBy(duplicate_columns)
+        .orderBy(IndCQC.imputed_registration_date)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+    df = df.withColumn(
+        IndCQC.total_staff_bounded,
+        F.when(
+            (df[IndCQC.care_home] == CareHome.care_home)
+            & (df[IndCQC.total_staff_bounded].isNull()),
+            F.first(IndCQC.total_staff_bounded).over(window),
+        ).otherwise(F.col(IndCQC.total_staff_bounded)),
+    )
+    df = df.withColumn(
+        IndCQC.total_staff_bounded,
+        F.when(
+            (df[IndCQC.care_home] == CareHome.care_home)
+            & (df[IndCQC.total_staff_bounded].isNull()),
+            F.last(IndCQC.total_staff_bounded).over(window),
+        ).otherwise(F.col(IndCQC.total_staff_bounded)),
+    )
+    df = df.withColumn(
+        IndCQC.worker_records_bounded,
+        F.when(
+            (df[IndCQC.care_home] == CareHome.care_home)
+            & (df[IndCQC.worker_records_bounded].isNull()),
+            F.first(IndCQC.worker_records_bounded).over(window),
+        ).otherwise(F.col(IndCQC.worker_records_bounded)),
+    )
+    df = df.withColumn(
+        IndCQC.worker_records_bounded,
+        F.when(
+            (df[IndCQC.care_home] == CareHome.care_home)
+            & (df[IndCQC.worker_records_bounded].isNull()),
+            F.last(IndCQC.worker_records_bounded).over(window),
+        ).otherwise(F.col(IndCQC.worker_records_bounded)),
+    )
+    df.show()
     # remove newer registration
     return df
 
