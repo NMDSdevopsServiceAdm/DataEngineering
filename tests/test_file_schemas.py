@@ -2969,6 +2969,30 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
+class ValidateMergedCoverageData:
+    cqc_locations_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
+    merged_coverage_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class FlattenCQCRatings:
     test_cqc_locations_schema = StructType(
         [

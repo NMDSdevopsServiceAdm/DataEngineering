@@ -17,6 +17,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
     ONScol as ONS,
 )
+from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -38,6 +39,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     AscwdsFilteringRule,
     RelatedLocation,
+    InAscwds,
 )
 
 
@@ -125,6 +127,22 @@ class MergedIndCQCCategoricalValues:
         IndCQC.contemporary_cssr, value_to_remove=ContemporaryCSSR.isles_of_scilly
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
+
+
+@dataclass
+class MergedCoverageCategoricalValues:
+    care_home_column_values = CareHome(IndCQC.care_home)
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
+    current_region_column_values = Region(IndCQC.current_region)
+    current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
+    sector_column_values = Sector(IndCQC.cqc_sector)
+    dormancy_column_values = Dormancy(IndCQC.dormancy, contains_null_values=True)
+    in_ascwds_column_values = InAscwds(CoverageColumns.in_ascwds)
+    primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    registration_status_column_values = RegistrationStatus(
+        IndCQC.registration_status,
+        value_to_remove=RegistrationStatus.deregistered,
+    )
 
 
 @dataclass
