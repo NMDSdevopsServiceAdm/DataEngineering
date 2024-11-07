@@ -29,7 +29,7 @@ def clean_ascwds_filled_post_outliers(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe containing 'ascwds_filled_posts_dedup'.
 
     Returns:
-        (DataFrame): A dataframe containing 'ascwds_filled_posts_dedup_clean'.
+        DataFrame: A dataframe containing 'ascwds_filled_posts_dedup_clean'.
     """
     print("Cleaning ascwds_filled_posts_dedup...")
 

@@ -26,7 +26,7 @@ def model_non_res_pir_linear_regression(
         locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
         features_df (DataFrame): A dataframe containing model features for the non res with PIR model (where PIR is not null and primary service type is non-res).
         model_source (str): The file path to the non residential pir linear regression model.
-        metrics_destination: str: The file path to the destination for saving metrics.
+        metrics_destination (str): The file path to the destination for saving metrics.
 
     Returns:
         DataFrame: A dataframe with non residential PIR linear regression model estimates added.

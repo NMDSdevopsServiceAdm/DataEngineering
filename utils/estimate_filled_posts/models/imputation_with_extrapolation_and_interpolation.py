@@ -148,7 +148,7 @@ def model_imputation(
         imputation_model_column_name (str): The name of the new column.
 
     Returns:
-        Dataframe: A dataframe with a new merged column called '<imputation_model_column_name>'.
+        DataFrame: A dataframe with a new merged column called '<imputation_model_column_name>'.
     """
     df = df.withColumn(
         imputation_model_column_name,

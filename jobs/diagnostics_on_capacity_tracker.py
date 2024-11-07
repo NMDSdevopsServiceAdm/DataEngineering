@@ -99,9 +99,9 @@ def run_diagnostics_for_care_homes(
     Controls the steps to generate the care home diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        ct_care_home_df(DataFrame): A dataframe containing cleaned capacity tracker data for care homes.
-        column_for_comparison(str): A column to use from the capacity tracker data for calculating residuals.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        ct_care_home_df (DataFrame): A dataframe containing cleaned capacity tracker data for care homes.
+        column_for_comparison (str): A column to use from the capacity tracker data for calculating residuals.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for care homes using capacity tracker values.
@@ -149,8 +149,8 @@ def run_diagnostics_for_non_residential(
     Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        ct_non_res_df(DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        ct_non_res_df (DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
@@ -166,14 +166,14 @@ def run_diagnostics_for_non_residential(
 
 def join_capacity_tracker_data(
     filled_posts_df: DataFrame, capacity_tracker_df: DataFrame, care_home: bool
-):
+) -> DataFrame:
     """
     Joins capacity tracker dataframes on correct columns depending on whether they are for care home data or non res data.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        capacity_tracker_df(DataFrame): A dataframe containing cleaned capacity tracker data.
-        care_home(bool): True if the capaccity tracker data is for care homes, false if it is for non residential.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        capacity_tracker_df (DataFrame): A dataframe containing cleaned capacity tracker data.
+        care_home (bool): True if the capaccity tracker data is for care homes, false if it is for non residential.
     Returns:
         DataFrame: A dataframe containing filled posts data with capacity tracker data joined in.
     """

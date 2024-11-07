@@ -41,7 +41,9 @@ def model_primary_service_rolling_average(
     return df
 
 
-def allocate_averages_to_columns(df: DataFrame, model_column_name: str, temp_col: str):
+def allocate_averages_to_columns(
+    df: DataFrame, model_column_name: str, temp_col: str
+) -> DataFrame:
     """
     Allocates values from a temporary column to the correctly labelled columns.
 
@@ -77,7 +79,7 @@ def run_window_calculations(
     non_res_column_to_average: str,
     window: Window,
     temp_col: str,
-):
+) -> DataFrame:
     """
     Calculates the rolling average of a specified column over a given window of days for care home and non residential separately.
 
