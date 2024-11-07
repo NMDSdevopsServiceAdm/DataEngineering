@@ -2971,28 +2971,24 @@ class ValidateMergedIndCqcData:
 
 @dataclass
 class ValidateMergedCoverageData:
-    cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
+    cqc_locations_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
     merged_coverage_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.provider_name, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
         ]
     )
 

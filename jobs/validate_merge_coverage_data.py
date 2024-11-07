@@ -21,6 +21,9 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
+    CQCLClean.name,
+    CQCLClean.postal_code,
+    CQCLClean.care_home,
 ]
 
 
@@ -38,7 +41,14 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = cqc_location_df.count()
+    rules[RuleName.size_of_dataset] = cqc_location_df.dropDuplicates(
+        [
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.name,
+            CQCLClean.postal_code,
+            CQCLClean.care_home,
+        ]
+    ).count()
 
     check_result_df = validate_dataset(merged_coverage_df, rules)
 
