@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 from pyspark.sql import DataFrame, functions as F
 
@@ -26,6 +27,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.provider_name,
     CQCLClean.cqc_sector,
@@ -96,6 +98,12 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
+    ascwds_workplace_df = remove_duplicates_based_on_column_order(
+        ascwds_workplace_df,
+        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
+        AWPClean.master_update_date,
+    )
+
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
         ascwds_workplace_df,
@@ -104,6 +112,17 @@ def main(
     )
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
+
+    merged_coverage_df = remove_duplicates_based_on_column_order(
+        merged_coverage_df,
+        [
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.name,
+            CQCLClean.postal_code,
+            CQCLClean.care_home,
+        ],
+        CoverageColumns.in_ascwds,
+    )
 
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
         merged_coverage_df, cqc_ratings_df
@@ -129,6 +148,32 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def remove_duplicates_based_on_column_order(
+    df: DataFrame,
+    columns_to_identify_duplicates: List[str],
+    column_to_sort_on: str,
+) -> DataFrame:
+    """
+    Remove duplicate locationid rows.
+
+    The ASCWDS dataframe used in this job is also used for reconciliation process which contains duplicate locationids.
+    This function removes duplicates from a DataFrame based on 'location_id' and 'ascwds_workplace_import_date' columns, keeping the row with the most recent 'master_update_date'.
+
+    Args:
+        df (DataFrame): The input ASCWDS workplace DataFrame.
+        columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
+        column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
+
+    Returns:
+        DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
+    """
+    sorted_df = df.orderBy(
+        columns_to_identify_duplicates + [F.col(column_to_sort_on).desc()],
+    )
+    deduped_df = sorted_df.dropDuplicates(columns_to_identify_duplicates)
+    return deduped_df
 
 
 def join_ascwds_data_into_cqc_location_df(
