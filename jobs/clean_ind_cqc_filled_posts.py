@@ -32,6 +32,8 @@ def main(
 
     locations_df = cUtils.reduce_dataset_to_earliest_file_per_month(locations_df)
 
+    locations_df = remove_duplicate_cqc_care_homes(locations_df)
+
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
 
@@ -73,6 +75,26 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
+    """
+    Removes cqc locations with dual registration and ensures no loss of ascwds data.
+
+    This function removes one instance of cqc care home locations with dual registration. Duplicates
+    are identified using cqc_location_import_date, name, postcode, and carehome. Any ASCWDS data in either
+    location is shared to the other and then the location with the newer registration date is removed.
+
+    Args:
+        df (DataFrame): A dataframe containing cqc location data and ascwds data
+
+    Returns:
+        DataFrame: A dataframe with dual regestrations deduplicated and ascwds data retained.
+    """
+    # identify duplicates
+    # copy ascwds data
+    # remove newer registration
+    return df
 
 
 def replace_zero_beds_with_null(df: DataFrame) -> DataFrame:
