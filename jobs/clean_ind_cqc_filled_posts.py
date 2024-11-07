@@ -98,13 +98,6 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
         IndCQC.postcode,
         IndCQC.care_home,
     ]
-    duplicates_df = (
-        df.groupBy(duplicate_columns)
-        .agg(F.count("*").alias("count"))
-        .filter(F.col("count") > 1)
-    )
-    duplicates_df.show()
-    # copy ascwds data
     window = (
         Window.partitionBy(duplicate_columns)
         .orderBy(IndCQC.imputed_registration_date)
@@ -142,8 +135,17 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
             F.last(IndCQC.worker_records_bounded).over(window),
         ).otherwise(F.col(IndCQC.worker_records_bounded)),
     )
+
+    df = df.withColumn(
+        "row_number",
+        F.row_number().over(
+            Window.partitionBy(duplicate_columns).orderBy(
+                IndCQC.imputed_registration_date
+            )
+        ),
+    )
+    df = df.where(F.col("row_number") == 1).drop("row_number")
     df.show()
-    # remove newer registration
     return df
 
 
