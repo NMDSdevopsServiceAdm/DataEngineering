@@ -132,9 +132,7 @@ class MergedIndCQCCategoricalValues:
 @dataclass
 class MergedCoverageCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
-    current_cssr_column_values = CurrentCSSR(
-        IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly
-    )
+    current_cssr_column_values = CurrentCSSR(IndCQC.current_cssr)
     current_region_column_values = Region(IndCQC.current_region)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     sector_column_values = Sector(IndCQC.cqc_sector)
