@@ -5489,17 +5489,17 @@ class ValidateMergedIndCqcData:
 @dataclass
 class ValidateMergedCoverageData:
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
+        (date(2024, 1, 1), "1-002", "Name", "EF3 4GH", "N", None),
+        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
+        (date(2024, 2, 1), "1-002", "Name", "EF3 4GH", "N", None),
     ]
 
     merged_coverage_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1)),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1)),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1)),
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
     ]
 
 
