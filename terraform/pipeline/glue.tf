@@ -557,6 +557,21 @@ module "validate_merged_ind_cqc_data_job" {
   }
 }
 
+module "validate_merge_coverage_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_merge_coverage_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
+    "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_merged_coverage_data/"
+  }
+}
+
 module "validate_cleaned_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_cleaned_ind_cqc_data.py"
