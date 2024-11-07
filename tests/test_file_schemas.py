@@ -2962,22 +2962,6 @@ class ValidateMergedCoverageData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.provider_name, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
         ]
     )
 
