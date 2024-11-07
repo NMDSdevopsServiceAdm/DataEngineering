@@ -42,7 +42,7 @@
     "Run sfc crawler": {
       "Type": "Task",
       "Parameters": {
-        "Name": "{sfc_crawler_name}"
+        "Name": "${sfc_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Start validation crawler when success"
