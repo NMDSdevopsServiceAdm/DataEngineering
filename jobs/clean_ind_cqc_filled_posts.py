@@ -126,14 +126,12 @@ def deduplicate_care_homes(
             Window.partitionBy(duplicate_columns).orderBy(distinguishing_column)
         ),
     )
-    df.show()
     df = df.where(
         (
             (F.col(IndCQC.care_home) == CareHome.care_home) & (F.col(temp_col) == 1)
             | ((F.col(IndCQC.care_home) == CareHome.not_care_home))
         )
     ).drop(temp_col)
-    df.show()
     return df
 
 
@@ -155,39 +153,18 @@ def copy_ascwds_data_across_duplicate_rows(
         .orderBy(IndCQC.imputed_registration_date)
         .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     )
-    df = df.withColumn(
-        IndCQC.total_staff_bounded,
-        F.when(
-            (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.total_staff_bounded].isNull()),
-            F.first(IndCQC.total_staff_bounded).over(window),
-        ).otherwise(F.col(IndCQC.total_staff_bounded)),
-    )
-    df = df.withColumn(
-        IndCQC.total_staff_bounded,
-        F.when(
-            (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.total_staff_bounded].isNull()),
-            F.last(IndCQC.total_staff_bounded).over(window),
-        ).otherwise(F.col(IndCQC.total_staff_bounded)),
-    )
-    df = df.withColumn(
-        IndCQC.worker_records_bounded,
-        F.when(
-            (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.worker_records_bounded].isNull()),
-            F.first(IndCQC.worker_records_bounded).over(window),
-        ).otherwise(F.col(IndCQC.worker_records_bounded)),
-    )
-    df = df.withColumn(
-        IndCQC.worker_records_bounded,
-        F.when(
-            (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.worker_records_bounded].isNull()),
-            F.last(IndCQC.worker_records_bounded).over(window),
-        ).otherwise(F.col(IndCQC.worker_records_bounded)),
-    )
-
+    columns_to_copy = [IndCQC.total_staff_bounded, IndCQC.worker_records_bounded]
+    functions_to_run = [F.first, F.last]
+    for column in columns_to_copy:
+        for function in functions_to_run:
+            df = df.withColumn(
+                column,
+                F.when(
+                    (df[IndCQC.care_home] == CareHome.care_home)
+                    & (df[column].isNull()),
+                    function(column).over(window),
+                ).otherwise(F.col(column)),
+            )
     return df
 
 
