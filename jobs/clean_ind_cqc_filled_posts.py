@@ -144,7 +144,13 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
             )
         ),
     )
-    df = df.where(F.col("row_number") == 1).drop("row_number")
+    df.show()
+    df = df.where(
+        (
+            (F.col(IndCQC.care_home) == CareHome.care_home) & (F.col("row_number") == 1)
+            | ((F.col(IndCQC.care_home) == CareHome.not_care_home))
+        )
+    ).drop("row_number")
     df.show()
     return df
 

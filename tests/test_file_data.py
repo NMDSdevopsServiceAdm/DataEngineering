@@ -3818,7 +3818,7 @@ class CleanIndCQCData:
     ]
     # fmt: on
 
-    remove_cqc_duplicates_rows = [
+    remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3839,29 +3839,8 @@ class CleanIndCQCData:
             10,
             date(2022, 1, 1),
         ),
-        (
-            "loc 3",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            None,
-            None,
-            date(2018, 1, 1),
-        ),
-        (
-            "loc 4",
-            date(2024, 2, 1),
-            "care home",
-            "AB1 2CD",
-            CareHome.care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
-        # add test data for if they have different asc value?
     ]
-    expected_remove_cqc_duplicates_rows = [
+    expected_remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3872,8 +3851,33 @@ class CleanIndCQCData:
             10,
             date(2018, 1, 1),
         ),
+    ]
+
+    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
         (
-            "loc 3",
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            None,
+            None,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
+        (
+            "loc 1",
             date(2024, 2, 1),
             "care home",
             "AB1 2CD",
@@ -3882,8 +3886,173 @@ class CleanIndCQCData:
             10,
             date(2018, 1, 1),
         ),
-        # add test data for if they have different asc value? and non res? and data in earlier or later duplicate? And tiebreak?  - probably split up tests
     ]
+
+    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            None,
+            None,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+    ]
+
+    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            None,
+            None,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            None,
+            None,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            None,
+            None,
+            date(2018, 1, 1),
+        ),
+    ]
+
+    remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            11,
+            11,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+    ]
+
+    remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
+
+    remove_cqc_duplicates_when_non_res_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "not care home",
+            "AB1 2CD",
+            CareHome.not_care_home,
+            None,
+            None,
+            date(2022, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 1, 1),
+            "not care home",
+            "AB1 2CD",
+            CareHome.not_care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_duplicates_when_non_res_rows = (
+        remove_cqc_duplicates_when_non_res_rows
+    )
 
     repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),
