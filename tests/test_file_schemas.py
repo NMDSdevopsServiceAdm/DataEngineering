@@ -1742,6 +1742,7 @@ class MergeCoverageData:
             StructField(CQCRatingsColumns.date, StringType(), True),
             StructField(CQCRatingsColumns.overall_rating, StringType(), True),
             StructField(CQCRatingsColumns.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatingsColumns.current_or_historic, StringType(), True),
         ]
     )
 
@@ -2985,6 +2986,30 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
+class ValidateMergedCoverageData:
+    cqc_locations_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
+    merged_coverage_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class FlattenCQCRatings:
     test_cqc_locations_schema = StructType(
         [
@@ -3618,6 +3643,7 @@ class FlattenCQCRatings:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
             StructField(CQCRatings.caring_rating, StringType(), True),

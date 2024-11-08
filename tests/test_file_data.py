@@ -3736,10 +3736,18 @@ class MergeCoverageData:
     sample_cqc_locations_rows = [("1-000000001",), ("1-000000002",)]
 
     sample_cqc_ratings_for_merge_rows = [
-        ("1-000000001", "2024-01-01", "Good", 0),
-        ("1-000000001", "2024-01-02", "Good", 1),
-        ("1-000000001", None, "Good", None),
-        ("1-000000002", "2024-01-01", None, 1),
+        ("1-000000001", "2024-01-01", "Good", 0, CQCCurrentOrHistoricValues.historic),
+        ("1-000000001", "2024-01-02", "Good", 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000001", None, "Good", None, None),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.historic),
+        (
+            "1-000000002",
+            "2024-01-01",
+            None,
+            1,
+            CQCCurrentOrHistoricValues.historic,
+        ),  # CQC ratings data will contain duplicates so this needs to be handled correctly
     ]
 
     # fmt: off
@@ -5723,6 +5731,23 @@ class ValidateMergedIndCqcData:
 
 
 @dataclass
+class ValidateMergedCoverageData:
+    cqc_locations_rows = [
+        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
+        (date(2024, 1, 1), "1-002", "Name", "EF3 4GH", "N", None),
+        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
+        (date(2024, 2, 1), "1-002", "Name", "EF3 4GH", "N", None),
+    ]
+
+    merged_coverage_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+    ]
+
+
+@dataclass
 class FlattenCQCRatings:
     test_cqc_locations_rows = [
         (
@@ -6044,6 +6069,28 @@ class FlattenCQCRatings:
             "Good",
             "Good",
         ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+        ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Inspected but not rated",
+            "Insufficient evidence to rate",
+        ),
     ]
     expected_recode_unknown_to_null_rows = [
         (
@@ -6078,6 +6125,17 @@ class FlattenCQCRatings:
             "Good",
             "Good",
             "Good",
+        ),
+        (
+            "loc_4",
+            "deregistered",
+            "report_date",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
         ),
     ]
 
@@ -6409,6 +6467,26 @@ class FlattenCQCRatings:
         (
             "loc_1",
             "2024-01-01",
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            1,
+            1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
+        ),
+        (
+            "loc_1",
+            "2024-01-01",
+            "Historic",
             "Good",
             "Good",
             "Good",
