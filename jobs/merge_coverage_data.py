@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -159,6 +159,7 @@ def remove_duplicates_based_on_column_order(
     df: DataFrame,
     columns_to_identify_duplicates: List[str],
     column_to_sort_on: str,
+    sort_descending: bool = False,
 ) -> DataFrame:
     """
     Remove duplicate locationid rows.
@@ -170,15 +171,32 @@ def remove_duplicates_based_on_column_order(
         df (DataFrame): The input ASCWDS workplace DataFrame.
         columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
         column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
+        sort_descending (bool): If true, the column to sort on is sorted descending, otherwise ascending.
 
     Returns:
         DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
     """
-    sorted_df = df.orderBy(
-        columns_to_identify_duplicates + [F.col(column_to_sort_on).desc()],
-    )
-    deduped_df = sorted_df.dropDuplicates(columns_to_identify_duplicates)
-    return deduped_df
+    temp_col = "row_number"
+    if sort_descending == False:
+        df = df.withColumn(
+            temp_col,
+            F.row_number().over(
+                Window.partitionBy(columns_to_identify_duplicates).orderBy(
+                    column_to_sort_on
+                )
+            ),
+        )
+    else:
+        df = df.withColumn(
+            temp_col,
+            F.row_number().over(
+                Window.partitionBy(columns_to_identify_duplicates).orderBy(
+                    F.desc(column_to_sort_on)
+                )
+            ),
+        )
+    df = df.where(F.col(temp_col) == 1).drop(temp_col)
+    return df
 
 
 def join_ascwds_data_into_cqc_location_df(

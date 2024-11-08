@@ -104,7 +104,35 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_remove_duplicate_locationids_returns_expected_rows(self):
+    def test_remove_duplicate_locationids_returns_expected_rows_when_descending(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_duplicate_locationids_rows,
+            Schemas.remove_duplicate_locationids_schema,
+        )
+        returned_df = job.remove_duplicates_based_on_column_order(
+            test_df,
+            [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
+            AWPClean.master_update_date,
+            sort_descending=True,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_duplicate_locationids_descending_rows,
+            Schemas.remove_duplicate_locationids_schema,
+        )
+        test_df.show()
+        expected_df.show()
+        returned_df.show()
+        returned_data = returned_df.sort(
+            AWPClean.ascwds_workplace_import_date, AWPClean.location_id
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_remove_duplicate_locationids_returns_expected_rows_when_order_not_specified(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.remove_duplicate_locationids_rows,
             Schemas.remove_duplicate_locationids_schema,
@@ -119,7 +147,9 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
             Data.expected_remove_duplicate_locationids_rows,
             Schemas.remove_duplicate_locationids_schema,
         )
-
+        test_df.show()
+        expected_df.show()
+        returned_df.show()
         returned_data = returned_df.sort(
             AWPClean.ascwds_workplace_import_date, AWPClean.location_id
         ).collect()

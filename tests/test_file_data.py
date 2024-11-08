@@ -3717,8 +3717,13 @@ class MergeCoverageData:
         (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
         (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
     ]
-    expected_remove_duplicate_locationids_rows = [
+    expected_remove_duplicate_locationids_descending_rows = [
         (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+    expected_remove_duplicate_locationids_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
         (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
         (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
     ]
