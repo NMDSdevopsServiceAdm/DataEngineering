@@ -91,13 +91,65 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with dual regestrations deduplicated and ascwds data retained.
     """
-    # identify duplicates
     duplicate_columns = [
         IndCQC.cqc_location_import_date,
         IndCQC.name,
         IndCQC.postcode,
         IndCQC.care_home,
     ]
+    distinguishing_column = IndCQC.imputed_registration_date
+    df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
+    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_column)
+    return df
+
+
+def deduplicate_care_homes(
+    df: DataFrame, duplicate_columns: list, distinguishing_column: str
+) -> DataFrame:
+    """
+    Removes cqc locations with dual registration.
+
+    This function removes the more recently registered instance of cqc care home locations with dual registration.
+
+    Args:
+        df (DataFrame): A dataframe containing cqc location data and ascwds data.
+        duplicate_columns (list): A list of column names to identify duplicates.
+        distinguishing_column (str): The name of the column which will decide which of the duplicates to keep.
+
+    Returns:
+        DataFrame: A dataframe with dual regestrations deduplicated.
+    """
+    temp_col = "row_number"
+    df = df.withColumn(
+        temp_col,
+        F.row_number().over(
+            Window.partitionBy(duplicate_columns).orderBy(distinguishing_column)
+        ),
+    )
+    df.show()
+    df = df.where(
+        (
+            (F.col(IndCQC.care_home) == CareHome.care_home) & (F.col(temp_col) == 1)
+            | ((F.col(IndCQC.care_home) == CareHome.not_care_home))
+        )
+    ).drop(temp_col)
+    df.show()
+    return df
+
+
+def copy_ascwds_data_across_duplicate_rows(
+    df: DataFrame, duplicate_columns: list
+) -> DataFrame:
+    """
+    Copies total_staff_bounded and worker_records_bounded across duplicate rows.
+
+    Args:
+        df (DataFrame): A dataframe containing cqc location data and ascwds data.
+        duplicate_columns (list): A list of column names to identify duplicates.
+
+    Returns:
+        DataFrame: A dataframe with total_staff_bounded and worker_records_bounded copied across duplicate rows.
+    """
     window = (
         Window.partitionBy(duplicate_columns)
         .orderBy(IndCQC.imputed_registration_date)
@@ -136,22 +188,6 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
         ).otherwise(F.col(IndCQC.worker_records_bounded)),
     )
 
-    df = df.withColumn(
-        "row_number",
-        F.row_number().over(
-            Window.partitionBy(duplicate_columns).orderBy(
-                IndCQC.imputed_registration_date
-            )
-        ),
-    )
-    df.show()
-    df = df.where(
-        (
-            (F.col(IndCQC.care_home) == CareHome.care_home) & (F.col("row_number") == 1)
-            | ((F.col(IndCQC.care_home) == CareHome.not_care_home))
-        )
-    ).drop("row_number")
-    df.show()
     return df
 
 
