@@ -55,7 +55,9 @@ class ASCWDSWorkerCleanedCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
         AWKClean.main_job_role_labelled
     )
-    main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_id)
+    main_job_role_id_column_values = MainJobRoleID(
+        AWKClean.main_job_role_id, value_to_remove="8"
+    )
 
 
 @dataclass
