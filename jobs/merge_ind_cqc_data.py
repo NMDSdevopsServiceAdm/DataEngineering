@@ -28,6 +28,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.provider_name,
     CQCLClean.cqc_sector,
