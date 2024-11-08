@@ -3,13 +3,15 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
+from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rules.cleaned_ind_cqc_validation_rules import (
     CleanedIndCqcValidationRules as Rules,
 )
@@ -35,9 +37,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_ind_cqc_dataset(merged_ind_cqc_df)
+    )
 
     check_result_df = validate_dataset(cleaned_ind_cqc_df, rules)
 
@@ -50,7 +52,22 @@ def main(
 def calculate_expected_size_of_cleaned_ind_cqc_dataset(
     merged_ind_cqc_df: DataFrame,
 ) -> int:
-    expected_size = reduce_dataset_to_earliest_file_per_month(merged_ind_cqc_df).count()
+    merged_ind_cqc_df = reduce_dataset_to_earliest_file_per_month(merged_ind_cqc_df)
+    expected_size_care_home = (
+        merged_ind_cqc_df.where(F.col(IndCQC.care_home) == CareHome.care_home)
+        .drop_duplicates(
+            [
+                IndCQC.cqc_location_import_date,
+                IndCQC.name,
+                IndCQC.postcode,
+            ]
+        )
+        .count()
+    )
+    expected_size_non_res = merged_ind_cqc_df.where(
+        F.col(IndCQC.care_home) == CareHome.not_care_home
+    ).count()
+    expected_size = expected_size_care_home + expected_size_non_res
     return expected_size
 
 

@@ -7274,10 +7274,10 @@ class ValidatePostcodeDirectoryCleanedData:
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), "2024", "01", "01"),
-        ("1-000000002", date(2024, 1, 1), "2024", "01", "01"),
-        ("1-000000001", date(2024, 2, 1), "2024", "02", "01"),
-        ("1-000000002", date(2024, 2, 1), "2024", "02", "01"),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "name", "postcode", "2024", "01", "01"),
+        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "name", "postcode", "2024", "01", "01"),
+        ("1-000000001", date(2024, 2, 1), CareHome.care_home, "name", "postcode", "2024", "02", "01"),
+        ("1-000000002", date(2024, 2, 1), CareHome.not_care_home, "name", "postcode", "2024", "02", "01"),
     ]
 
     cleaned_ind_cqc_rows = [
@@ -7292,6 +7292,9 @@ class ValidateCleanedIndCqcData:
         (
             "1-000000001",
             date(2024, 1, 1),
+            CareHome.care_home,
+            "name",
+            "postcode",
             "2024",
             "01",
             "01",
