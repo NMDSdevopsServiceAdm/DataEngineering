@@ -7,9 +7,6 @@ from utils.column_values.categorical_columns_by_dataset import (
     ASCWDSWorkerCleanedCategoricalValues as CatValues,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
-from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid as ValueCodes,
-)
 
 
 @dataclass
