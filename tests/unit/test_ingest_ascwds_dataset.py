@@ -80,5 +80,23 @@ class RemoveWhiteSpaceFromNmdsidTests(IngestASCWDSDatasetTests):
         self.assertEqual(df[2]["nmdsid"], "A12345")
 
 
+class RaiseErrorIfMainjridIncludesUnknownValuesTests(IngestASCWDSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_returns_original_df_and_doesnt_raise_error_if_mainjrid_column_not_present(
+        self,
+    ):
+        pass
+
+    def test_returns_original_df_and_doesnt_raise_error_if_all_mainjrid_values_known(
+        self,
+    ):
+        pass
+
+    def test_raises_error_if_mainjrid_includes_unknown_values(self):
+        pass
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
