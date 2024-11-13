@@ -9,6 +9,11 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+
+class FilterTestAccountsTests(IngestASCWDSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_filter_test_accounts(self):
         columns = [
             "locationid",
@@ -48,6 +53,11 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
 
         df = job.filter_test_accounts(df)
         self.assertEqual(df.count(), 4)
+
+
+class RemoveWhiteSpaceFromNmdsidTests(IngestASCWDSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_remove_white_space_from_nmdsid(self):
         columns = [
