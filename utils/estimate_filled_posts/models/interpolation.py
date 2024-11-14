@@ -32,7 +32,9 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-    window_spec_backwards, window_spec_forwards = define_window_specs()
+    window_spec_backwards, window_spec_forwards, window_spec_lagged = (
+        define_window_specs()
+    )
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
@@ -45,7 +47,6 @@ def model_interpolation(
             IndCqc.extrapolation_forwards,
             window_spec_forwards,
         )
-
         df = df.withColumn(
             new_column_name,
             F.col(IndCqc.extrapolation_forwards)
@@ -62,15 +63,16 @@ def model_interpolation(
     return df
 
 
-def define_window_specs() -> Tuple[Window, Window]:
+def define_window_specs() -> Tuple[Window, Window, Window]:
     """
-    Defines two window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
+    Defines three window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
 
     The first window specification ('window_spec_backwards') includes all rows up to the current row.
     The second window specification ('window_spec_forward') includes all rows from the current row onwards.
+    The third window specification ('window_spec_lagged') includes all rows from the start of the partition up to the current row, excluding the current row.
 
     Returns:
-        Tuple[Window, Window]: A tuple containing the two window specifications.
+        Tuple[Window, Window, Window]: A tuple containing the three window specifications.
     """
     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
 
@@ -80,8 +82,9 @@ def define_window_specs() -> Tuple[Window, Window]:
     window_spec_forward = window_spec.rowsBetween(
         Window.currentRow, Window.unboundedFollowing
     )
+    window_spec_lagged = window_spec.rowsBetween(Window.unboundedPreceding, -1)
 
-    return window_spec_backwards, window_spec_forward
+    return window_spec_backwards, window_spec_forward, window_spec_lagged
 
 
 def calculate_residuals(
