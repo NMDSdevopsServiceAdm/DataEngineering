@@ -5398,6 +5398,23 @@ class ModelInterpolation:
         ("1-001", date(2024, 2, 1), 12345, None, 12345, 12345),
     ]
 
+    calculate_interpolated_values_rows = [
+        ("1-001", 100001, 20.0, None, None, None),
+        ("1-001", 100002, None, 20.0, 10.0, 0.25),
+        ("1-001", 100003, None, 20.0, 10.0, 0.5),
+        ("1-001", 100004, None, 20.0, 10.0, 0.75),
+        ("1-001", 100005, 30.0, 20.0, 10.0, None),
+        ("1-001", 100006, None, None, None, None),
+    ]
+    expected_calculate_interpolated_values_rows = [
+        ("1-001", 100001, 20.0, None, None, None, None),
+        ("1-001", 100002, None, 20.0, 10.0, 0.25, 22.5),
+        ("1-001", 100003, None, 20.0, 10.0, 0.5, 25.0),
+        ("1-001", 100004, None, 20.0, 10.0, 0.75, 27.5),
+        ("1-001", 100005, 30.0, 20.0, 10.0, None, None),
+        ("1-001", 100006, None, None, None, None, None),
+    ]
+
 
 @dataclass
 class ModelFeatures:

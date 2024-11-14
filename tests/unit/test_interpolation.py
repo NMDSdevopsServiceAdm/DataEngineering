@@ -257,3 +257,33 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
         self,
     ):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class CalculateInterpolatedValuesTests(ModelInterpolationTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_calculate_interpolated_values_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_interpolated_values_rows,
+            Schemas.calculate_interpolated_values_schema,
+        )
+        returned_df = job.calculate_interpolated_values(
+            test_df,
+            IndCqc.previous_non_null_value,
+            IndCqc.interpolation_model,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_interpolated_values_rows,
+            Schemas.expected_calculate_interpolated_values_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.interpolation_model],
+                expected_data[i][IndCqc.interpolation_model],
+                f"Returned value in row {i} does not match expected",
+            )

@@ -47,11 +47,8 @@ def model_interpolation(
             IndCqc.extrapolation_forwards,
             window_spec_forwards,
         )
-        df = df.withColumn(
-            new_column_name,
-            F.col(IndCqc.extrapolation_forwards)
-            + F.col(IndCqc.residual)
-            * F.col(IndCqc.proportion_of_time_between_submissions),
+        df = calculate_interpolated_values(
+            df, IndCqc.extrapolation_forwards, new_column_name
         )
 
     elif method == "straight":
@@ -69,12 +66,10 @@ def model_interpolation(
             IndCqc.previous_non_null_value,
             window_spec_forwards,
         )
-        df = df.withColumn(
-            new_column_name,
-            F.col(IndCqc.previous_non_null_value)
-            + F.col(IndCqc.residual)
-            * F.col(IndCqc.proportion_of_time_between_submissions),
+        df = calculate_interpolated_values(
+            df, IndCqc.previous_non_null_value, new_column_name
         )
+        df = df.drop(IndCqc.previous_non_null_value)
 
     else:
         raise ValueError("Error: method must be either 'straight' or 'trend'")
@@ -193,4 +188,29 @@ def calculate_proportion_of_time_between_submissions(
         ),
     ).drop(IndCqc.previous_submission_time, IndCqc.next_submission_time)
 
+    return df
+
+
+def calculate_interpolated_values(
+    df: DataFrame, column_to_interpolate_from: str, new_column_name: str
+) -> DataFrame:
+    """
+    Calculate interpolated values for a new column in a DataFrame.
+
+    This function takes a DataFrame and interpolates values from an existing column to create a new column.
+    The interpolation is based on the residual and the proportion of time between submissions.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        column_to_interpolate_from (str): The name of the column from which to interpolate values.
+        new_column_name (str): The name of the new column to be created with interpolated values.
+
+    Returns:
+        DataFrame: A new DataFrame with the interpolated values added as a new column.
+    """
+    df = df.withColumn(
+        new_column_name,
+        F.col(column_to_interpolate_from)
+        + F.col(IndCqc.residual) * F.col(IndCqc.proportion_of_time_between_submissions),
+    )
     return df

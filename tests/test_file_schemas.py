@@ -2762,6 +2762,25 @@ class ModelInterpolation:
         ]
     )
 
+    calculate_interpolated_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.previous_non_null_value, DoubleType(), True),
+            StructField(IndCQC.residual, DoubleType(), True),
+            StructField(
+                IndCQC.proportion_of_time_between_submissions, DoubleType(), True
+            ),
+        ]
+    )
+    expected_calculate_interpolated_values_schema = StructType(
+        [
+            *calculate_interpolated_values_schema,
+            StructField(IndCQC.interpolation_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelFeatures:
