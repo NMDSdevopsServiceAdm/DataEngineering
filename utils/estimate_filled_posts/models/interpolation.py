@@ -28,6 +28,9 @@ def model_interpolation(
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
+
+    Raises:
+        ValueError: If chosen method does not match 'straight' or 'trend'.
     """
     if method not in ["straight", "trend"]:
         raise ValueError("method must be either 'straight' or 'trend'")
