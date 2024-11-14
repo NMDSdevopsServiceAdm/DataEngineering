@@ -39,7 +39,12 @@ def model_interpolation(
     )
 
     if method == "trend":
-        df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
+        df = calculate_residuals(
+            df,
+            column_with_null_values,
+            IndCqc.extrapolation_forwards,
+            window_spec_forwards,
+        )
 
         df = df.withColumn(
             new_column_name,
@@ -80,18 +85,19 @@ def define_window_specs() -> Tuple[Window, Window]:
 
 
 def calculate_residuals(
-    df: DataFrame, column_with_null_values: str, window_spec_forward: Window
+    df: DataFrame, first_column: str, second_column: str, window_spec_forward: Window
 ) -> DataFrame:
     """
-    Calculate the residual between non-null values and the extrapolation_forwards value.
+    Calculate the residual between two non-null values (first_column minus second_column).
 
-    This function computes the residuals between non-null values in a specified column and the forward extrapolated values.
-    It creates a temporary column to store the difference between the non-null values and the extrapolated values, then calculates
-    the first non-null residual over a specified window and assigns it to a new column.
+    This function computes the residuals between two non-null values in the specified columns.
+    It creates a temporary column to store the difference between the non-null values, then duplicates
+    the first non-null residual over a specified window and assigns it to a new column called 'residual'.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
-        column_with_null_values (str): The name of the column that contains null values.
+        first_column (str): The name of the first column that contains values.
+        second_column (str): The name of the second column that contains values.
         window_spec_forward (Window): The window specification for getting the next residual value.
 
     Returns:
@@ -101,20 +107,16 @@ def calculate_residuals(
     df = df.withColumn(
         temp_col,
         F.when(
-            F.col(column_with_null_values).isNotNull()
-            & F.col(IndCqc.extrapolation_forwards).isNotNull(),
-            F.col(column_with_null_values) - F.col(IndCqc.extrapolation_forwards),
+            F.col(first_column).isNotNull() & F.col(second_column).isNotNull(),
+            F.col(first_column) - F.col(second_column),
         ),
     )
 
     df = df.withColumn(
         IndCqc.residual,
         F.when(
-            F.col(IndCqc.extrapolation_forwards).isNotNull(),
-            F.first(
-                F.col(temp_col),
-                ignorenulls=True,
-            ).over(window_spec_forward),
+            F.col(second_column).isNotNull(),
+            F.first(F.col(temp_col), ignorenulls=True).over(window_spec_forward),
         ),
     ).drop(temp_col)
 

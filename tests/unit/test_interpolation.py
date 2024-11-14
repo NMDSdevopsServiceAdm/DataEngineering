@@ -93,6 +93,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         self.returned_df = job.calculate_residuals(
             self.test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -127,6 +128,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         returned_df = job.calculate_residuals(
             test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         expected_df = self.spark.createDataFrame(
@@ -152,6 +154,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         returned_df = job.calculate_residuals(
             test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         expected_df = self.spark.createDataFrame(
