@@ -32,9 +32,11 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-    window_spec_backwards, window_spec_forwards, window_spec_lagged = (
-        define_window_specs()
-    )
+    (
+        window_spec_backwards,
+        window_spec_forwards,
+        window_spec_lagged,
+    ) = define_window_specs()
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
