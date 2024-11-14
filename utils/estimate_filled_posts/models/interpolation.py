@@ -55,7 +55,26 @@ def model_interpolation(
         )
 
     elif method == "straight":
-        df = df
+        df = get_selected_value(
+            df,
+            window_spec_lagged,
+            column_with_null_values,
+            column_with_null_values,
+            IndCqc.previous_non_null_value,
+            "last",
+        )
+        df = calculate_residuals(
+            df,
+            column_with_null_values,
+            IndCqc.previous_non_null_value,
+            window_spec_forwards,
+        )
+        df = df.withColumn(
+            new_column_name,
+            F.col(IndCqc.previous_non_null_value)
+            + F.col(IndCqc.residual)
+            * F.col(IndCqc.proportion_of_time_between_submissions),
+        )
 
     else:
         raise ValueError("Error: method must be either 'straight' or 'trend'")
