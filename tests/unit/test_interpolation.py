@@ -32,6 +32,7 @@ class MainTests(ModelInterpolationTests):
         self.returned_df = job.model_interpolation(
             self.interpolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            "straight",
         )
 
     def test_model_interpolation_row_count_unchanged(self):

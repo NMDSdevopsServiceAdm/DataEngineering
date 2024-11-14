@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from typing import Tuple
+from typing import Optional, Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
@@ -10,30 +10,38 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 def model_interpolation(
     df: DataFrame,
     column_with_null_values: str,
+    method: str,
+    new_column_name: Optional[str] = IndCqc.interpolation_model,
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
 
-    This function uses the extrapolation_forwards values as a trend line to guide interpolated predictions
-    between two non-null values and inputs the interpolated results into a new column called 'interpolation_model'.
+    This function can produce two styles of interpolation:
+        - straight line interpolation
+        - trend line interpolation (as part of imputation model), where it uses the extrapolation_forwards values as a trend line to guide interpolated predictions.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
+        method (str): The choice of method. Must be either 'straight' or 'trend'
+        new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
     """
-    window_spec_backwards, window_spec_forwards = define_window_specs()
+    if method not in ["straight", "trend"]:
+        raise ValueError("method must be either 'straight' or 'trend'")
 
-    df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
+    window_spec_backwards, window_spec_forwards = define_window_specs()
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
     )
 
+    df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
+
     df = df.withColumn(
-        IndCqc.interpolation_model,
+        new_column_name,
         F.col(IndCqc.extrapolation_forwards)
         + F.col(IndCqc.extrapolation_residual)
         * F.col(IndCqc.proportion_of_time_between_submissions),
