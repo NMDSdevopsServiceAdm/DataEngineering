@@ -108,7 +108,6 @@ class IndCqcColumns:
         "extrapolation_non_res_with_dormancy_model"
     )
     extrapolation_ratio: str = "extrapolation_ratio"
-    extrapolation_residual: str = "extrapolation_residual"
     extrapolation_rolling_average_model: str = "extrapolation_rolling_average_model"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"

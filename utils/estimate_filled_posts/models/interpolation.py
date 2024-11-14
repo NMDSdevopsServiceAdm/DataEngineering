@@ -44,7 +44,7 @@ def model_interpolation(
         df = df.withColumn(
             new_column_name,
             F.col(IndCqc.extrapolation_forwards)
-            + F.col(IndCqc.extrapolation_residual)
+            + F.col(IndCqc.residual)
             * F.col(IndCqc.proportion_of_time_between_submissions),
         )
 
@@ -108,7 +108,7 @@ def calculate_residuals(
     )
 
     df = df.withColumn(
-        IndCqc.extrapolation_residual,
+        IndCqc.residual,
         F.when(
             F.col(IndCqc.extrapolation_forwards).isNotNull(),
             F.first(

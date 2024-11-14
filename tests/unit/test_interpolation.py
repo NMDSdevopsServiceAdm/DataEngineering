@@ -112,8 +112,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = self.expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 
@@ -137,8 +137,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 
@@ -162,8 +162,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 

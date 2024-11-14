@@ -59,7 +59,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
-        IndCqc.extrapolation_residual,
+        IndCqc.residual,
         IndCqc.proportion_of_time_between_submissions,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,

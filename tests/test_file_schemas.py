@@ -2718,7 +2718,7 @@ class ModelInterpolation:
     expected_calculate_residual_schema = StructType(
         [
             *calculate_residual_schema,
-            StructField(IndCQC.extrapolation_residual, DoubleType(), True),
+            StructField(IndCQC.residual, DoubleType(), True),
         ]
     )
 
