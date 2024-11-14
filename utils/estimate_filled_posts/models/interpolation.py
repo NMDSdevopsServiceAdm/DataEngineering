@@ -74,6 +74,8 @@ def model_interpolation(
     else:
         raise ValueError("Error: method must be either 'straight' or 'trend'")
 
+    df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
+
     return df
 
 
