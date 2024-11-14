@@ -4,6 +4,9 @@ import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
 from utils import utils
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 def main(source: str, destination: str):
@@ -40,6 +43,7 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
     df = utils.read_csv(source, delimiter)
     df = filter_test_accounts(df)
     df = remove_white_space_from_nmdsid(df)
+    df = raise_error_if_mainjrid_includes_unknown_values(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
@@ -67,6 +71,35 @@ def filter_test_accounts(df: DataFrame) -> DataFrame:
 
 def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
     return df.withColumn("nmdsid", F.trim(F.col("nmdsid")))
+
+
+def raise_error_if_mainjrid_includes_unknown_values(df: DataFrame) -> DataFrame:
+    """
+    Checks for unknown main job role IDs in the DataFrame and raises an error if any are found.
+
+    This function runs for both workplace and worker files so the function first checks that the file contains the main job role column.
+    If it does (worker file), it checks for unknown main job role IDs in the DataFrame and raises an error if any are found.
+
+
+    Args:
+        df (DataFrame): The DataFrame to check for unknown main job role IDs.
+
+    Returns:
+        DataFrame: The original DataFrame if no unknown values are found.
+
+    Raises:
+        ValueError: If the DataFrame contains unknown main job role IDs.
+    """
+    if AWK.main_job_role_id in df.columns:
+        unknown_records = df.filter(F.col(AWK.main_job_role_id) == "-1")
+        count_unknown = unknown_records.count()
+
+        if count_unknown > 0:
+            raise ValueError(
+                f"Error: this file contains {count_unknown} unknown mainjrid record(s)"
+            )
+
+    return df
 
 
 def collect_arguments():

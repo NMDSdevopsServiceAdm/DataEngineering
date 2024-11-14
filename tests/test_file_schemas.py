@@ -107,6 +107,22 @@ class CalculatePaRatioSchemas:
 
 
 @dataclass
+class IngestASCWDSData:
+    raise_mainjrid_error_when_mainjrid_not_in_df_schema = StructType(
+        [
+            StructField(AWK.establishment_id, StringType(), True),
+            StructField(AWK.location_id, StringType(), True),
+        ]
+    )
+    raise_mainjrid_error_when_mainjrid_in_df_schema = StructType(
+        [
+            *raise_mainjrid_error_when_mainjrid_not_in_df_schema,
+            StructField(AWK.main_job_role_id, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class ASCWDSWorkerSchemas:
     worker_schema = StructType(
         [

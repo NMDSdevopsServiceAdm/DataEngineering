@@ -106,6 +106,13 @@ class CalculatePaRatioData:
 
 
 @dataclass
+class IngestASCWDSData:
+    raise_mainjrid_error_col_not_present_rows = [("123", "1-001")]
+    raise_mainjrid_error_with_known_value_rows = [("123", "1-001", "1")]
+    raise_mainjrid_error_with_unknown_value_rows = [("123", "1-001", "-1")]
+
+
+@dataclass
 class ASCWDSWorkerData:
     worker_rows = [
         ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
