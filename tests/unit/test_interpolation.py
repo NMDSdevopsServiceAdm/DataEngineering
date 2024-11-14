@@ -41,6 +41,29 @@ class MainTests(ModelInterpolationTests):
     def test_model_interpolation_returns_new_column(self):
         self.assertIn(IndCqc.interpolation_model, self.returned_df.columns)
 
+    def test_main_doesnt_raise_error_if_method_is_a_valid_option(self):
+        try:
+            job.model_interpolation(
+                self.interpolation_df,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                "trend",
+            )
+
+        except ValueError:
+            self.fail("Chosen 'method' raised ValueError unexpectedly")
+
+    def test_main_raises_error_if_method_not_a_valid_option(self):
+        with self.assertRaises(ValueError) as context:
+            job.model_interpolation(
+                self.interpolation_df,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                "invalid",
+            )
+
+        self.assertIn(
+            "Error: method must be either 'straight' or 'trend'", str(context.exception)
+        )
+
 
 class DefineWindowSpecsTests(ModelInterpolationTests):
     def setUp(self) -> None:

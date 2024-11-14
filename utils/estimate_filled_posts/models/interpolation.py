@@ -32,23 +32,27 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-    if method not in ["straight", "trend"]:
-        raise ValueError("method must be either 'straight' or 'trend'")
-
     window_spec_backwards, window_spec_forwards = define_window_specs()
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
     )
 
-    df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
+    if method == "trend":
+        df = calculate_residuals(df, column_with_null_values, window_spec_forwards)
 
-    df = df.withColumn(
-        new_column_name,
-        F.col(IndCqc.extrapolation_forwards)
-        + F.col(IndCqc.extrapolation_residual)
-        * F.col(IndCqc.proportion_of_time_between_submissions),
-    )
+        df = df.withColumn(
+            new_column_name,
+            F.col(IndCqc.extrapolation_forwards)
+            + F.col(IndCqc.extrapolation_residual)
+            * F.col(IndCqc.proportion_of_time_between_submissions),
+        )
+
+    elif method == "straight":
+        df = df
+
+    else:
+        raise ValueError("Error: method must be either 'straight' or 'trend'")
 
     return df
 
