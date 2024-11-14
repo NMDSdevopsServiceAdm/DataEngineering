@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_event_rule" "ascwds_csv_added" {
-  state       = "ENABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   name        = "${local.workspace_prefix}-ascwds-csv-added"
   description = "Captures when a new ASC WDS worker or workspace CSV is uploaded to sfc-data-engineering-raw bucket"
 
