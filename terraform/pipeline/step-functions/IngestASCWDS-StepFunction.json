@@ -22,6 +22,22 @@
             ],
             "Next": "Run Data Engineering ASC WDS Crawler"
         },
+        "Publish error notification": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                "Error.$": "$.error.Cause",
+                "ExecutionId.$": "$$.Execution.Id",
+                "StateMachineName.$": "$$.StateMachine.Name",
+                "StateMachineId.$": "$$.StateMachine.Id",
+                "ExecutionStartTime.$": "$$.Execution.StartTime",
+                "CallbackToken.$": "$$.Task.Token"
+                }
+            },
+            "Next": "Fail"
+        },
         "Run Data Engineering ASC WDS Crawler": {
             "Type": "Task",
             "Resource": "arn:aws:states:::states:startExecution.sync:2",
