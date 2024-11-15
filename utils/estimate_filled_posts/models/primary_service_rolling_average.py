@@ -33,6 +33,18 @@ def model_primary_service_rolling_average(
     """
     window = define_window_specifications(number_of_days)
     temp_col = "temp_col"
+
+    # TODO - only include places in rolling avg with at least 2 ascwds clean submissions
+
+    # TODO - create new versions of rolling average based on rate of change (and keep posts/ratio?)
+    """
+    - calculate rate of change column (CH-ratio, NR-filled posts)
+    - interpolate rate of change column
+    - combine interpolated col with known rate of change
+    - convert rate of change to a number (1 * (1 - rate of change))
+    - maybe add another column which creates a filled post/ratio equivalent? Overall average posts/ratio multiplied by rate of change?!
+    """
+
     df = run_window_calculations(
         df, care_home_column_to_average, non_res_column_to_average, window, temp_col
     )
