@@ -48,7 +48,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputed_df = model_interpolation(
         imputed_df,
         column_with_null_values,
-        "trend",
+        method="trend",
     )
     imputed_df = model_imputation(
         imputed_df, column_with_null_values, imputed_column_name
