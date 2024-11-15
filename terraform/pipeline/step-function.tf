@@ -155,6 +155,7 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
     data_engineering_ascwds_crawler_name = module.ascwds_crawler.crawler_name
     dataset_bucket_name                  = module.datasets_bucket.bucket_name
     run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
+    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
