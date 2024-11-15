@@ -72,9 +72,10 @@ class DefineWindowSpecsTests(ModelInterpolationTests):
     def test_define_window_spec_return_type(self):
         returned_window_specs = job.define_window_specs()
         self.assertIsInstance(returned_window_specs, tuple)
-        self.assertEqual(len(returned_window_specs), 2)
+        self.assertEqual(len(returned_window_specs), 3)
         self.assertIsInstance(returned_window_specs[0], WindowSpec)
         self.assertIsInstance(returned_window_specs[1], WindowSpec)
+        self.assertIsInstance(returned_window_specs[2], WindowSpec)
 
 
 class CalculateResidualsTests(ModelInterpolationTests):
