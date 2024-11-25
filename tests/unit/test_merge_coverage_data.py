@@ -120,9 +120,6 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
             Data.expected_remove_duplicate_locationids_descending_rows,
             Schemas.remove_duplicate_locationids_schema,
         )
-        test_df.show()
-        expected_df.show()
-        returned_df.show()
         returned_data = returned_df.sort(
             AWPClean.ascwds_workplace_import_date, AWPClean.location_id
         ).collect()
@@ -147,9 +144,6 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
             Data.expected_remove_duplicate_locationids_rows,
             Schemas.remove_duplicate_locationids_schema,
         )
-        test_df.show()
-        expected_df.show()
-        returned_df.show()
         returned_data = returned_df.sort(
             AWPClean.ascwds_workplace_import_date, AWPClean.location_id
         ).collect()
