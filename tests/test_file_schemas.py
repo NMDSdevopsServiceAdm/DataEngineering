@@ -4495,6 +4495,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             *estimate_filled_posts_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, IntegerType(), True
+            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
