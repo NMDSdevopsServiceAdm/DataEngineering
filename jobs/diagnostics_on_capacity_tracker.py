@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -13,8 +13,10 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_values.categorical_column_values import CareHome
-
 from utils.diagnostics_utils import diagnostics_utils as dUtils
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -33,6 +35,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.estimate_filled_posts,
     IndCQC.current_region,
     IndCQC.current_cssr,
+    IndCQC.unix_time,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -115,6 +118,7 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
+    # imputation here?
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df, column_for_comparison, list_of_models
@@ -161,12 +165,12 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
-    # Fill forwards
-    non_res_diagnostics_df = impute_missing_capacity_tracker_data(
-        non_res_diagnostics_df, CTNRClean.cqc_care_workers_employed
-    )
-    non_res_diagnostics_df = impute_missing_capacity_tracker_data(
-        non_res_diagnostics_df, CTNRClean.service_user_count
+    non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_imputed,
+        care_home=False,
     )
     return non_res_diagnostics_df
 
@@ -212,22 +216,6 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
-
-
-def impute_missing_capacity_tracker_data(
-    df: DataFrame, column_to_impute: str
-) -> DataFrame:
-    """
-    Fills missing capacity tracker data with the most recent previous value in the dataset.
-
-    Args:
-        df (DataFrame): A dataframe with missing capacity tracker data.
-        column_to_impute (str): The name of a column in the dataframe to impute.
-
-    Returns:
-        DataFrame: A dataframe with missing data imputed.
-    """
-    return df
 
 
 if __name__ == "__main__":

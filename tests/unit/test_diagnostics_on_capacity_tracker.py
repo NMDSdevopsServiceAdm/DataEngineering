@@ -140,24 +140,5 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
         )
 
 
-class ImputeMissingCapacityTrackerDataTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_impute_missing_capacity_tracker_data_returns_correct_values(self):
-        test_df = self.spark.createDataFrame(
-            Data.impute_missing_data, Schemas.impute_missing_data_schema
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_impute_missing_data, Schemas.impute_missing_data_schema
-        )
-        returned_df = job.impute_missing_capacity_tracker_data(
-            test_df, CTNRClean.cqc_care_workers_employed
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

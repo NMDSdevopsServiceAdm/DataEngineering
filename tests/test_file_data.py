@@ -7710,6 +7710,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
+            1704067200,
             "2024",
             "01",
             "01",
@@ -7729,6 +7730,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
+            1706832000,
             "2024",
             "01",
             "01",
@@ -7748,6 +7750,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            1704067200,
             "2024",
             "01",
             "01",
@@ -7760,7 +7763,7 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 1", date(2024, 2, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
     ]
     capacity_tracker_non_res_rows = [
-        ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
+        ("loc 2", date(2024, 1, 1), 10, 15, 80, "2024", "01", "01", "20240101"),
     ]
 
     join_capacity_tracker_care_home_rows = [
@@ -7865,32 +7868,6 @@ class DiagnosticsOnCapacityTrackerData:
             10,
             80,
         ),
-    ]
-    impute_missing_data = [
-        ("loc 1", date(2024, 1, 1), 20),
-        ("loc 1", date(2024, 2, 1), None),
-        ("loc 2", date(2024, 1, 1), None),
-        ("loc 2", date(2024, 2, 1), 20),
-        ("loc 3", date(2024, 1, 1), 20),
-        ("loc 3", date(2024, 2, 1), None),
-        ("loc 3", date(2024, 3, 1), 30),
-        ("loc 4", date(2024, 1, 1), None),
-        ("loc 4", date(2024, 2, 1), None),
-        ("loc 5", date(2024, 1, 1), 20),
-        ("loc 5", date(2024, 2, 1), 20),
-    ]
-    expected_impute_missing_data = [
-        ("loc 1", date(2024, 1, 1), 20),
-        ("loc 1", date(2024, 2, 1), 20),
-        ("loc 2", date(2024, 1, 1), None),
-        ("loc 2", date(2024, 2, 1), 20),
-        ("loc 3", date(2024, 1, 1), 20),
-        ("loc 3", date(2024, 2, 1), 20),
-        ("loc 3", date(2024, 3, 1), 30),
-        ("loc 4", date(2024, 1, 1), None),
-        ("loc 4", date(2024, 2, 1), None),
-        ("loc 5", date(2024, 1, 1), 20),
-        ("loc 5", date(2024, 2, 1), 20),
     ]
 
 
