@@ -109,7 +109,7 @@
             }
           }
         ],
-        "Next": "StartCrawler",
+        "Next": "Start crawler when success",
         "Comment": "A state machine for validating Bronze layer data",
         "Catch": [
           {
@@ -121,22 +121,13 @@
           }
         ]
       },
-      "StartCrawler": {
+      "Start crawler when success": {
         "Type": "Task",
         "Parameters": {
           "Name": "${data_validation_reports_crawler_name}"
         },
         "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success",
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "Publish error notification",
-            "ResultPath": "$.error"
-          }
-        ]
+        "Next": "Success"
       },
       "Publish error notification": {
         "Type": "Task",
@@ -152,6 +143,14 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
+        "Next": "Start crawler when failed"
+      },
+      "Start crawler when failed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {
