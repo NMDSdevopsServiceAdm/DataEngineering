@@ -4494,6 +4494,13 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
+    impute_missing_data_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+        ]
+    )
 
 
 @dataclass
