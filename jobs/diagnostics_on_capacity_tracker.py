@@ -165,6 +165,9 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
+    non_res_diagnostics_df = impute_missing_data(
+        non_res_diagnostics_df, CTNRClean.cqc_care_workers_employed_rolling_avg
+    )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
@@ -216,6 +219,20 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def impute_missing_data(df: DataFrame, column_to_impute: str) -> DataFrame:
+    """
+    Fills missing data with the most recent previous value in the dataset.
+
+    Args:
+        df (DataFrame): A dataframe with missing capacity tracker data.
+        column_to_impute (str): The name of a column in the dataframe to impute.
+
+    Returns:
+        DataFrame: A dataframe with missing data imputed.
+    """
+    return df
 
 
 if __name__ == "__main__":

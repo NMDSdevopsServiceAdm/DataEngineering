@@ -7873,6 +7873,33 @@ class DiagnosticsOnCapacityTrackerData:
         ),
     ]
 
+    impute_missing_data = [
+        ("loc 1", date(2024, 1, 1), 20),
+        ("loc 1", date(2024, 2, 1), None),
+        ("loc 2", date(2024, 1, 1), None),
+        ("loc 2", date(2024, 2, 1), 20),
+        ("loc 3", date(2024, 1, 1), 20),
+        ("loc 3", date(2024, 2, 1), None),
+        ("loc 3", date(2024, 3, 1), 30),
+        ("loc 4", date(2024, 1, 1), None),
+        ("loc 4", date(2024, 2, 1), None),
+        ("loc 5", date(2024, 1, 1), 20),
+        ("loc 5", date(2024, 2, 1), 20),
+    ]
+    expected_impute_missing_data = [
+        ("loc 1", date(2024, 1, 1), 20),
+        ("loc 1", date(2024, 2, 1), 20),
+        ("loc 2", date(2024, 1, 1), None),
+        ("loc 2", date(2024, 2, 1), 20),
+        ("loc 3", date(2024, 1, 1), 20),
+        ("loc 3", date(2024, 2, 1), 20),
+        ("loc 3", date(2024, 3, 1), 30),
+        ("loc 4", date(2024, 1, 1), None),
+        ("loc 4", date(2024, 2, 1), None),
+        ("loc 5", date(2024, 1, 1), 20),
+        ("loc 5", date(2024, 2, 1), 20),
+    ]
+
 
 @dataclass
 class DiagnosticsUtilsData:
