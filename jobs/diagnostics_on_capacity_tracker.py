@@ -231,28 +231,6 @@ def join_capacity_tracker_data(
     return joined_df
 
 
-def impute_missing_data(df: DataFrame, column_to_impute: str) -> DataFrame:
-    """
-    Fills missing data with the most recent previous value in the dataset.
-
-    Args:
-        df (DataFrame): A dataframe with missing capacity tracker data.
-        column_to_impute (str): The name of a column in the dataframe to impute.
-
-    Returns:
-        DataFrame: A dataframe with missing data imputed.
-    """
-    w = (
-        Window.partitionBy(IndCQC.location_id)
-        .orderBy(IndCQC.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, 0)
-    )
-    df = df.withColumn(
-        column_to_impute, F.last(column_to_impute, ignorenulls=True).over(w)
-    )
-    return df
-
-
 if __name__ == "__main__":
     print("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
     print(f"Job parameters: {sys.argv}")
