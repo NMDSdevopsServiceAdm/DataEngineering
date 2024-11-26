@@ -141,7 +141,7 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_remove_duplicate_locationids_rows,
+            Data.expected_remove_duplicate_locationids_ascending_rows,
             Schemas.remove_duplicate_locationids_schema,
         )
         returned_data = returned_df.sort(
