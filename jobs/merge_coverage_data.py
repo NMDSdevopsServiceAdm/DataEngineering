@@ -166,9 +166,6 @@ def remove_duplicates_based_on_column_order(
     """
     Remove duplicate locationid rows.
 
-    The ASCWDS dataframe used in this job is also used for reconciliation process which contains duplicate locationids.
-    This function removes duplicates from a DataFrame based on 'location_id' and 'ascwds_workplace_import_date' columns, keeping the row with the most recent 'master_update_date'.
-
     Args:
         df (DataFrame): The input ASCWDS workplace DataFrame.
         columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
