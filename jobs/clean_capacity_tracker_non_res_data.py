@@ -1,7 +1,5 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F, Window
-
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.capacity_tracker_columns import (

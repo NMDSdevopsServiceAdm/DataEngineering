@@ -13,9 +13,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 
 
 class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
