@@ -13,6 +13,7 @@ def model_primary_service_rolling_average(
     care_home_column_to_average: str,
     non_res_column_to_average: str,
     number_of_days: int,
+    care_home_ratio_column_name: str,
     model_column_name: str,
 ) -> DataFrame:
     """
@@ -26,6 +27,7 @@ def model_primary_service_rolling_average(
         care_home_column_to_average (str): The name of the column to average for care homes.
         non_res_column_to_average (str): The name of the column to average for non residential locations.
         number_of_days (int): The number of days to include in the rolling average time period.
+        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
         model_column_name (str): The name of the new column to store the rolling average.
 
     Returns:
@@ -36,13 +38,18 @@ def model_primary_service_rolling_average(
     df = run_window_calculations(
         df, care_home_column_to_average, non_res_column_to_average, window, temp_col
     )
-    df = allocate_averages_to_columns(df, model_column_name, temp_col)
+    df = allocate_averages_to_columns(
+        df, model_column_name, care_home_ratio_column_name, temp_col
+    )
 
     return df
 
 
 def allocate_averages_to_columns(
-    df: DataFrame, model_column_name: str, temp_col: str
+    df: DataFrame,
+    model_column_name: str,
+    care_home_ratio_column_name: str,
+    temp_col: str,
 ) -> DataFrame:
     """
     Allocates values from a temporary column to the correctly labelled columns.
@@ -52,13 +59,14 @@ def allocate_averages_to_columns(
     Args:
         df (DataFrame): The input DataFrame.
         model_column_name (str): The name of the new column to store the rolling average.
+        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
         temp_col (str): A temporary column containing the values before they are correctly allocated.
 
     Returns:
         DataFrame: The input DataFrame with the correctly labelled columns and without the temporary column.
     """
     df = df.withColumn(
-        IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
+        care_home_ratio_column_name,
         F.when(F.col(IndCqc.care_home) == CareHome.care_home, (F.col(temp_col))),
     )
     df = df.withColumn(
