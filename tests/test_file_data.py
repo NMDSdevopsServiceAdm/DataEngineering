@@ -7677,6 +7677,8 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
+            10,
+            1704067200,
             "2024",
             "01",
             "01",
@@ -7696,6 +7698,8 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
+            10,
+            1706832000,
             "2024",
             "01",
             "01",
@@ -7715,6 +7719,8 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            None,
+            1704067200,
             "2024",
             "01",
             "01",
@@ -7727,7 +7733,7 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 1", date(2024, 2, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
     ]
     capacity_tracker_non_res_rows = [
-        ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
+        ("loc 2", date(2024, 1, 1), 10, 10.0, 80, "2024", "01", "01", "20240101"),
     ]
 
     join_capacity_tracker_care_home_rows = [
@@ -7803,6 +7809,8 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            None,
+            1704067200,
             "2024",
             "01",
             "01",
@@ -7824,12 +7832,15 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            None,
+            1704067200,
             "2024",
             "01",
             "01",
             "20240101",
             date(2024, 1, 1),
             10,
+            10.0,
             80,
         ),
     ]

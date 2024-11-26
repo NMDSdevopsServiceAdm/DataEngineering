@@ -4410,6 +4410,8 @@ class DiagnosticsOnCapacityTrackerSchemas:
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -4451,6 +4453,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(CTNRClean.cqc_id, StringType(), False),
             StructField(CTNRClean.capacity_tracker_import_date, DateType(), False),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
+            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -4475,6 +4480,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             *estimate_filled_posts_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
+            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )

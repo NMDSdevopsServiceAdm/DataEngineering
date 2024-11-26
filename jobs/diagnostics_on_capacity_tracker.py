@@ -36,6 +36,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.number_of_beds,
     IndCQC.current_region,
     IndCQC.current_cssr,
+    IndCQC.unix_time,
     Keys.year,
     Keys.month,
     Keys.day,
