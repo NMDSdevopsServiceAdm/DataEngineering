@@ -152,7 +152,7 @@ class ImputeMissingDataTests(DiagnosticsOnCapacityTrackerTests):
             Data.expected_impute_missing_data, Schemas.impute_missing_data_schema
         )
         returned_df = job.impute_missing_data(
-            test_df, CTNRClean.cqc_care_workers_employed
+            test_df, CTNRClean.cqc_care_workers_employed_rolling_avg
         )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()

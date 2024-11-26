@@ -232,6 +232,14 @@ def impute_missing_data(df: DataFrame, column_to_impute: str) -> DataFrame:
     Returns:
         DataFrame: A dataframe with missing data imputed.
     """
+    w = (
+        Window.partitionBy(IndCQC.location_id)
+        .orderBy(IndCQC.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, 0)
+    )
+    df = df.withColumn(
+        column_to_impute, F.last(column_to_impute, ignorenulls=True).over(w)
+    )
     return df
 
 
