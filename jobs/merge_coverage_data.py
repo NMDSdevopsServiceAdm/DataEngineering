@@ -1,7 +1,6 @@
 import sys
-from typing import List
 
-from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -103,7 +102,7 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
-    ascwds_workplace_df = remove_duplicates_based_on_column_order(
+    ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
         AWPClean.master_update_date,
@@ -119,7 +118,7 @@ def main(
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
 
-    merged_coverage_df = remove_duplicates_based_on_column_order(
+    merged_coverage_df = cUtils.remove_duplicates_based_on_column_order(
         merged_coverage_df,
         [
             CQCLClean.cqc_location_import_date,
@@ -155,47 +154,6 @@ def main(
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
-
-
-def remove_duplicates_based_on_column_order(
-    df: DataFrame,
-    columns_to_identify_duplicates: List[str],
-    column_to_sort_on: str,
-    sort_ascending: bool = True,
-) -> DataFrame:
-    """
-    Remove duplicate locationid rows.
-
-    Args:
-        df (DataFrame): The input ASCWDS workplace DataFrame.
-        columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
-        column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
-        sort_ascending (bool): If true, the column to sort on is sorted ascending, otherwise descending.
-
-    Returns:
-        DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
-    """
-    temp_col = "row_number"
-    if sort_ascending == True:
-        df = df.withColumn(
-            temp_col,
-            F.row_number().over(
-                Window.partitionBy(columns_to_identify_duplicates).orderBy(
-                    column_to_sort_on
-                )
-            ),
-        )
-    else:
-        df = df.withColumn(
-            temp_col,
-            F.row_number().over(
-                Window.partitionBy(columns_to_identify_duplicates).orderBy(
-                    F.desc(column_to_sort_on)
-                )
-            ),
-        )
-    df = df.where(F.col(temp_col) == 1).drop(temp_col)
-    return df
 
 
 def join_ascwds_data_into_cqc_location_df(

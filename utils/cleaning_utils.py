@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from pyspark.sql import (
     DataFrame,
@@ -255,4 +255,45 @@ def calculate_filled_posts_from_beds_and_ratio(
         new_column_name,
         F.col(ratio_column) * F.col(IndCQC.number_of_beds),
     )
+    return df
+
+
+def remove_duplicates_based_on_column_order(
+    df: DataFrame,
+    columns_to_identify_duplicates: List[str],
+    column_to_sort_on: str,
+    sort_ascending: bool = True,
+) -> DataFrame:
+    """
+    Remove duplicate rows once columns are sorted.
+
+    Args:
+        df (DataFrame): The DataFrame to remove duplicates from.
+        columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
+        column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
+        sort_ascending (bool): If true, the column to sort on is sorted ascending, otherwise descending.
+
+    Returns:
+        DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
+    """
+    temp_col = "row_number"
+    if sort_ascending == True:
+        df = df.withColumn(
+            temp_col,
+            F.row_number().over(
+                Window.partitionBy(columns_to_identify_duplicates).orderBy(
+                    column_to_sort_on
+                )
+            ),
+        )
+    else:
+        df = df.withColumn(
+            temp_col,
+            F.row_number().over(
+                Window.partitionBy(columns_to_identify_duplicates).orderBy(
+                    F.desc(column_to_sort_on)
+                )
+            ),
+        )
+    df = df.where(F.col(temp_col) == 1).drop(temp_col)
     return df
