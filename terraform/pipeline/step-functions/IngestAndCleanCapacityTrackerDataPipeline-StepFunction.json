@@ -52,7 +52,23 @@
             }
           }
         ],
-        "Next": "Run capacity tracker crawler"
+        "Next": "Run diagnostics on capacity tracker data job"
+    },
+    "Run diagnostics on capacity tracker data job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${diagnostics_on_capacity_tracker_job_name}",
+        "Arguments": {
+          "--estimate_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+          "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
+          "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+          "--care_home_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/",
+          "--care_home_summary_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/",
+          "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
+        }
+      },
+      "Next": "Run capacity tracker crawler"
     },
     "Run capacity tracker crawler": {
       "Type": "Task",
@@ -61,6 +77,18 @@
         "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
         "Input": {
           "crawler_name": "${capacity_tracker_crawler_name}",
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Run ind cqc crawler"
+    },
+    "Run ind cqc crawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+        "Input": {
+          "crawler_name": "${ind_cqc_filled_posts_crawler_name}",
           "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
         }
       },
