@@ -599,22 +599,6 @@ class CapacityTrackerNonResSchema:
         ]
     )
 
-    capacity_tracker_non_res_rolling_average_schema = StructType(
-        [
-            StructField(CTNR.cqc_id, StringType(), True),
-            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
-            StructField(CTNR.cqc_care_workers_employed, IntegerType(), True),
-        ]
-    )
-    expected_capacity_tracker_non_res_rolling_average_schema = StructType(
-        [
-            *capacity_tracker_non_res_rolling_average_schema,
-            StructField(
-                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
-            ),
-        ]
-    )
-
     remove_invalid_characters_from_column_names_schema = StructType(
         [
             StructField(CTNR.cqc_id, StringType(), True),
