@@ -113,7 +113,7 @@ class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
             test_df,
             [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
             AWPClean.master_update_date,
-            sort_descending=True,
+            sort_ascending=False,
         )
 
         expected_df = self.spark.createDataFrame(

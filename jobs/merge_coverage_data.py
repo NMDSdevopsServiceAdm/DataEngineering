@@ -107,6 +107,7 @@ def main(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
         AWPClean.master_update_date,
+        sort_ascending=False,
     )
 
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
@@ -127,6 +128,7 @@ def main(
             CQCLClean.care_home,
         ],
         CoverageColumns.in_ascwds,
+        sort_ascending=False,
     )
 
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
@@ -159,7 +161,7 @@ def remove_duplicates_based_on_column_order(
     df: DataFrame,
     columns_to_identify_duplicates: List[str],
     column_to_sort_on: str,
-    sort_descending: bool = False,
+    sort_ascending: bool = True,
 ) -> DataFrame:
     """
     Remove duplicate locationid rows.
@@ -171,13 +173,13 @@ def remove_duplicates_based_on_column_order(
         df (DataFrame): The input ASCWDS workplace DataFrame.
         columns_to_identify_duplicates (List[str]): List of column names used to highlight duplicates.
         column_to_sort_on (str): The name of the column to sort on (sorted in descending order).
-        sort_descending (bool): If true, the column to sort on is sorted descending, otherwise ascending.
+        sort_ascending (bool): If true, the column to sort on is sorted ascending, otherwise descending.
 
     Returns:
         DataFrame: A DataFrame with duplicate location_ids in the same import date removed.
     """
     temp_col = "row_number"
-    if sort_descending == False:
+    if sort_ascending == True:
         df = df.withColumn(
             temp_col,
             F.row_number().over(
