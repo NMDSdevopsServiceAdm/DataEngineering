@@ -479,7 +479,7 @@ def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
     return cqc_loc_df
 
 
-def allocate_primary_service_type(df: DataFrame):
+def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
 
@@ -515,7 +515,7 @@ def allocate_primary_service_type(df: DataFrame):
     return df
 
 
-def realign_carehome_column_with_primary_service(df: DataFrame):
+def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     """
     Allocates the location as a care_home if primary_service_type is a care home.
 
@@ -568,7 +568,7 @@ def add_column_related_location(df: DataFrame) -> DataFrame:
     return df
 
 
-def remove_specialist_colleges(df: DataFrame):
+def remove_specialist_colleges(df: DataFrame) -> DataFrame:
     """
     Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
 
@@ -579,7 +579,7 @@ def remove_specialist_colleges(df: DataFrame):
         df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        (DataFrame): A cleaned locations dataframe with locations which are only specialist colleges removed.
+        DataFrame: A cleaned locations dataframe with locations which are only specialist colleges removed.
     """
     df = df.where(
         (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
@@ -662,10 +662,10 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         column_to_check_for_nulls (str): Default - current_ons_import_date, should be any one of the left-joined columns to check for null entries.
 
     Returns:
-        cleaned_locations_df (DataFrame): If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
+        DataFrame: If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
 
     Raises:
-        AnalysisException: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
+        ValueError: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
         TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
     """
 

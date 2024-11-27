@@ -437,8 +437,6 @@ class ASCWDSFilledPostsSource(ColumnValues):
     worker_records_and_total_staff: str = (
         "wkrrecs_bounded and totalstaff_bounded were the same"
     )
-    only_total_staff: str = "only totalstaff_bounded was provided"
-    only_worker_records: str = "only wkrrecs_bounded was provided"
     average_of_total_staff_and_worker_records: str = (
         "average of totalstaff_bounded and wkrrecs_bounded as both were similar"
     )
@@ -457,6 +455,9 @@ class EstimateFilledPostsSource(ColumnValues):
     imputed_posts_rolling_avg_model_model: str = IndCQC.imputed_posts_rolling_avg_model
     non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model
     non_res_without_dormancy_model: str = IndCQC.non_res_without_dormancy_model
+    non_res_pir_linear_regression_model: str = (
+        IndCQC.non_res_pir_linear_regression_model
+    )
     rolling_average_model: str = IndCQC.rolling_average_model
 
 

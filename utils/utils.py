@@ -2,10 +2,11 @@ import os
 import re
 import csv
 import argparse
+from typing import List, Any, Generator
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
-from typing import List
+
 
 import boto3
 
@@ -97,6 +98,9 @@ def read_from_parquet(
     Args:
         data_source (str): Path to the Parquet file.
         selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
+
+    Returns:
+        DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
     """
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
@@ -184,13 +188,13 @@ def convert_days_to_unix_time(days: int):
     return days * NUMBER_OF_SECONDS_IN_ONE_DAY
 
 
-def collect_arguments(*args):
+def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     """
     Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
     where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
 
     Args:
-        *args: This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
+        *args (Any): This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
 
     Returns:
         Generator[Any, None, None]: A generator used for parsing parsed parameters.
@@ -262,5 +266,29 @@ def filter_df_to_maximum_value_in_column(
 
 
 def select_rows_with_value(df: DataFrame, column: str, value_to_keep: str) -> DataFrame:
-    df = df.where(df[column] == value_to_keep)
-    return df
+    """
+    Select rows from a DataFrame where the specified column matches the given value.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column (str): The name of the column to filter on.
+        value_to_keep (str): The value to keep in the specified column.
+
+    Returns:
+        DataFrame: A DataFrame containing only the rows where the specified column matches the given value.
+    """
+    return df.filter(F.col(column) == value_to_keep)
+
+
+def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
+    """
+    Select rows from a DataFrame where the specified column has non-null values.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column (str): The name of the column to filter on.
+
+    Returns:
+        DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
+    """
+    return df.filter(F.col(column).isNotNull())

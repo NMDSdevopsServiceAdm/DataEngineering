@@ -13,8 +13,13 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_values.categorical_column_values import CareHome
-
 from utils.diagnostics_utils import diagnostics_utils as dUtils
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
+from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -27,11 +32,14 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_rolling_avg_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
+    IndCQC.non_res_pir_linear_regression_model,
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_with_dormancy_model,
     IndCQC.estimate_filled_posts,
+    IndCQC.number_of_beds,
     IndCQC.current_region,
     IndCQC.current_cssr,
+    IndCQC.unix_time,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -40,6 +48,7 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
+number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -98,9 +107,9 @@ def run_diagnostics_for_care_homes(
     Controls the steps to generate the care home diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        ct_care_home_df(DataFrame): A dataframe containing cleaned capacity tracker data for care homes.
-        column_for_comparison(str): A column to use from the capacity tracker data for calculating residuals.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        ct_care_home_df (DataFrame): A dataframe containing cleaned capacity tracker data for care homes.
+        column_for_comparison (str): A column to use from the capacity tracker data for calculating residuals.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for care homes using capacity tracker values.
@@ -114,6 +123,7 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
+    # imputation here?
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df, column_for_comparison, list_of_models
@@ -148,8 +158,8 @@ def run_diagnostics_for_non_residential(
     Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        ct_non_res_df(DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        ct_non_res_df (DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
@@ -160,19 +170,34 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
+    non_res_diagnostics_df = model_primary_service_rolling_average(
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed,
+        CTNRClean.cqc_care_workers_employed,
+        number_of_days_in_rolling_average,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+    )
+    non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_imputed,
+        care_home=False,
+    )
     return non_res_diagnostics_df
 
 
 def join_capacity_tracker_data(
     filled_posts_df: DataFrame, capacity_tracker_df: DataFrame, care_home: bool
-):
+) -> DataFrame:
     """
     Joins capacity tracker dataframes on correct columns depending on whether they are for care home data or non res data.
 
     Args:
-        filled_posts_df(Dataframe): A dataframe containing pipeline estimates.
-        capacity_tracker_df(DataFrame): A dataframe containing cleaned capacity tracker data.
-        care_home(bool): True if the capaccity tracker data is for care homes, false if it is for non residential.
+        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        capacity_tracker_df (DataFrame): A dataframe containing cleaned capacity tracker data.
+        care_home (bool): True if the capaccity tracker data is for care homes, false if it is for non residential.
     Returns:
         DataFrame: A dataframe containing filled posts data with capacity tracker data joined in.
     """

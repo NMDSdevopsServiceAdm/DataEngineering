@@ -1,8 +1,8 @@
 import unittest
 import warnings
 
-from tests.test_file_data import CleanIndCQCData as Data
-from tests.test_file_schemas import CleanIndCQCData as Schemas
+from tests.test_file_data import CalculateAscwdsFilledPostsData as Data
+from tests.test_file_schemas import CalculateAscwdsFilledPostsSchemas as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -21,7 +21,7 @@ class TestAscwdsFilledPostsCalculator(unittest.TestCase):
         )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    def test_calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs_values(
+    def test_calculate_ascwds_filled_posts_returns_expected_data(
         self,
     ):
         returned_df = job.calculate_ascwds_filled_posts(

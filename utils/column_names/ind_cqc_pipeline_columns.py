@@ -22,6 +22,13 @@ class PartitionKeys:
     year: str = "year"
 
 
+class ArchivePartitionKeys:
+    archive_day: str = "archive_day"
+    archive_month: str = "archive_month"
+    archive_year: str = "archive_year"
+    archive_timestamp: str = "archive_timestamp"
+
+
 @dataclass
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
@@ -82,7 +89,6 @@ class IndCqcColumns:
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
-    date_diff: str = "date_diff"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -117,7 +123,6 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
-    import_month_index: str = "import_month_index"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_non_res_people_directly_employed: str = (
         "imputed_non_res_people_directly_employed"
@@ -151,7 +156,7 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
-    non_res_model: str = "non_res_with_pir_model"
+    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
@@ -176,6 +181,7 @@ class IndCqcColumns:
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
+    postcode: str = CQCLClean.postal_code
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"

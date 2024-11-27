@@ -15,7 +15,7 @@
                   "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
                   "Arguments": {
                     "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=workplace_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
                   }
                 },
                 "End": true
@@ -32,7 +32,7 @@
                   "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
                   "Arguments": {
                     "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=worker_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
                   }
                 },
                 "ResultPath": null,
@@ -51,7 +51,7 @@
                   "Arguments": {
                     "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.0/",
                     "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=locations_api_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_cleaned/"
                   }
                 },
                 "End": true
@@ -69,7 +69,7 @@
                   "Arguments": {
                     "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
                     "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=providers_api_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_providers_api_cleaned/"
                   }
                 },
                 "End": true
@@ -86,7 +86,7 @@
                   "JobName": "${validate_pir_cleaned_data_job_name }",
                   "Arguments": {
                     "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=pir_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_cleaned/"
                   }
                 },
                 "End": true
@@ -104,7 +104,7 @@
                   "Arguments": {
                     "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
                     "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=postcode_directory_cleaned_data_report/"
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_cleaned/"
                   }
                 },
                 "End": true
@@ -112,7 +112,7 @@
             }
           }
         ],
-        "Next": "StartCrawler",
+        "Next": "Start crawler when success",
         "Comment": "A state machine for validating Silver layer data",
         "Catch": [
           {
@@ -124,22 +124,13 @@
           }
         ]
       },
-      "StartCrawler": {
+      "Start crawler when success": {
         "Type": "Task",
         "Parameters": {
           "Name": "${data_validation_reports_crawler_name}"
         },
         "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success",
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "Publish error notification",
-            "ResultPath": "$.error"
-          }
-        ]
+        "Next": "Success"
       },
       "Publish error notification": {
         "Type": "Task",
@@ -155,6 +146,14 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
+        "Next": "Start crawler when failed"
+      },
+      "Start crawler when failed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {

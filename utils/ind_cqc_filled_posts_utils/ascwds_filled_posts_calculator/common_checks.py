@@ -18,18 +18,10 @@ def selected_column_is_not_null(col_name: str) -> bool:
     return F.col(col_name).isNotNull()
 
 
-def selected_column_is_null(col_name: str) -> bool:
-    return F.col(col_name).isNull()
-
-
 def selected_column_is_at_least_the_min_permitted_value(col_name: str) -> bool:
     return selected_column_is_not_null(col_name) & (
         F.col(col_name) >= calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
     )
-
-
-def selected_column_is_below_the_min_permitted_value(col_name: str) -> bool:
-    return F.col(col_name) < calculation_constant.MIN_ASCWDS_FILLED_POSTS_PERMITTED
 
 
 def absolute_difference_between_total_staff_and_worker_records_below_cut_off() -> bool:

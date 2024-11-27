@@ -78,7 +78,7 @@ def create_list_of_models() -> list:
     the dataframe.
 
     Returns:
-        List(str): A list of strings of column names corresponding to the models to include.
+        list: A list of strings of column names corresponding to the models to include.
     """
     list_of_models = (
         CatValues.estimate_filled_posts_source_column_values.categorical_values
@@ -87,7 +87,7 @@ def create_list_of_models() -> list:
     return list_of_models
 
 
-def create_empty_reshaped_dataframe(column_for_comparison: str):
+def create_empty_reshaped_dataframe(column_for_comparison: str) -> DataFrame:
     """
     Creates an empty dataframe to define it's structure.
 
@@ -148,13 +148,11 @@ def calculate_distribution_metrics(df: DataFrame, window: Window) -> DataFrame:
     deviation, kurtosis, and skewness. These are aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and estimate_value.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and estimate_value.
         window (Window): A window for aggregating the metrics.
 
     Returns:
-        DataFrame: A dataframe with four additional columns containing distribution
-        metrics aggregated over the given window.
+        DataFrame: A dataframe with four additional columns containing distribution metrics aggregated over the given window.
     """
     df = calculate_mean_over_window(df, window)
     df = calculate_standard_deviation_over_window(df, window)
@@ -170,8 +168,7 @@ def calculate_mean_over_window(df: DataFrame, window: Window) -> DataFrame:
     This function adds a columns to the dataset containing the mean, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and estimate_value.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and estimate_value.
         window (Window): A window for aggregating the metrics.
 
     Returns:
@@ -192,8 +189,7 @@ def calculate_standard_deviation_over_window(
     This function adds a columns to the dataset containing the standard deviation, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and estimate_value.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and estimate_value.
         window (Window): A window for aggregating the metrics.
 
     Returns:
@@ -213,8 +209,7 @@ def calculate_kurtosis_over_window(df: DataFrame, window: Window) -> DataFrame:
     This function adds a columns to the dataset containing the kurtosis, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and estimate_value.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and estimate_value.
         window (Window): A window for aggregating the metrics.
 
     Returns:
@@ -233,8 +228,7 @@ def calculate_skewness_over_window(df: DataFrame, window: Window) -> DataFrame:
     This function adds a columns to the dataset containing the skewness, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and estimate_value.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and estimate_value.
         window (Window): A window for aggregating the metrics.
 
     Returns:
@@ -381,8 +375,7 @@ def calculate_average_absolute_residual(df: DataFrame, window: Window) -> DataFr
     This function adds a columns to the dataset containing the average absolute residual, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and absolute_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
         window (Window): A window for aggregating the residuals.
 
     Returns:
@@ -402,8 +395,7 @@ def calculate_average_percentage_residual(df: DataFrame, window: Window) -> Data
     This function adds a columns to the dataset containing the average percentage residual, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and percentage_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and percentage_residual.
         window (Window): A window for aggregating the residuals.
 
     Returns:
@@ -423,8 +415,7 @@ def calculate_max_residual(df: DataFrame, window: Window) -> DataFrame:
     This function adds a columns to the dataset containing the maximum residual, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and absolute_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
         window (Window): A window for aggregating the residuals.
 
     Returns:
@@ -444,8 +435,7 @@ def calculate_min_residual(df: DataFrame, window: Window) -> DataFrame:
     This function adds a columns to the dataset containing the minimum residual, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and absolute_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
         window (Window): A window for aggregating the residuals.
 
     Returns:
@@ -467,8 +457,7 @@ def calculate_percentage_of_residuals_within_absolute_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within an absolute value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and absolute_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
         window (Window): A window for aggregating the residuals.
         absolute_value_cutoff (float): The threshold absolute value.
 
@@ -494,8 +483,7 @@ def calculate_percentage_of_residuals_within_percentage_value_of_actual(
     This function adds a columns to the dataset containing the percentage of residuals which are within a percentage value of the actual value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source
-        and percentage_residual.
+        df (DataFrame): A dataframe with primary_service_type, estimate_source and percentage_residual.
         window (Window): A window for aggregating the residuals.
         percentage_value_cutoff (float): The threshold percentage.
 

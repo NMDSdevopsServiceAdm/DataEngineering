@@ -27,7 +27,7 @@ def model_non_res_without_dormancy(
         locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
         features_df (DataFrame): A dataframe containing model features for the non res without dormancy model. This should only contain rows where the primary service type is non-residential.
         model_source (str): The file path to the non residential without dormancy model.
-        metrics_destination: str: The file path to the destination for saving metrics.
+        metrics_destination (str): The file path to the destination for saving metrics.
 
     Returns:
         DataFrame: A dataframe with non residential without dormancy model estimates added.

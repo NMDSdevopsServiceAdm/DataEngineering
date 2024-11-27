@@ -8,7 +8,6 @@ from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-from utils.column_values.categorical_column_values import CareHome
 
 
 def model_non_res_with_dormancy(
@@ -28,7 +27,7 @@ def model_non_res_with_dormancy(
         locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
         features_df (DataFrame): A dataframe containing model features for the non res with dormancy model. This should only contain rows where dormancy is not null and the primary service type is non-residential.
         model_source (str): The file path to the non residential with dormancy model.
-        metrics_destination: str: The file path to the destination for saving metrics.
+        metrics_destination (str): The file path to the destination for saving metrics.
 
     Returns:
         DataFrame: A dataframe with non residential with dormancy model estimates added.

@@ -18,7 +18,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-from utils.column_values.categorical_column_values import CQCLatestRating, InAscwds
+from utils.column_values.categorical_column_values import (
+    CQCLatestRating,
+    InAscwds,
+    CQCCurrentOrHistoricValues,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -26,6 +30,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
+    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.provider_name,
     CQCLClean.cqc_sector,
@@ -59,12 +64,14 @@ cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.master_update_date,
     AWPClean.master_update_date_org,
     AWPClean.establishment_created_date,
+    AWPClean.nmds_id,
 ]
 cqc_ratings_columns_to_import = [
     AWPClean.location_id,
     CQCRatingsColumns.date,
     CQCRatingsColumns.overall_rating,
     CQCRatingsColumns.latest_rating_flag,
+    CQCRatingsColumns.current_or_historic,
 ]
 
 
@@ -73,6 +80,7 @@ def main(
     workplace_for_reconciliation_source: str,
     cqc_ratings_source: str,
     merged_coverage_destination: str,
+    reduced_coverage_destination: str,
 ):
     spark = utils.get_spark()
     spark.sql(
@@ -94,6 +102,13 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
+    ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
+        ascwds_workplace_df,
+        [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
+        AWPClean.master_update_date,
+        sort_ascending=False,
+    )
+
     merged_coverage_df = join_ascwds_data_into_cqc_location_df(
         cqc_location_df,
         ascwds_workplace_df,
@@ -103,6 +118,18 @@ def main(
 
     merged_coverage_df = add_flag_for_in_ascwds(merged_coverage_df)
 
+    merged_coverage_df = cUtils.remove_duplicates_based_on_column_order(
+        merged_coverage_df,
+        [
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.name,
+            CQCLClean.postal_code,
+            CQCLClean.care_home,
+        ],
+        CoverageColumns.in_ascwds,
+        sort_ascending=False,
+    )
+
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
         merged_coverage_df, cqc_ratings_df
     )
@@ -110,6 +137,20 @@ def main(
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
+        mode="overwrite",
+        partitionKeys=PartitionKeys,
+    )
+
+    reduced_coverage_df = cUtils.reduce_dataset_to_earliest_file_per_month(
+        merged_coverage_df
+    )
+    reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
+        reduced_coverage_df, CQCLClean.cqc_location_import_date
+    )
+
+    utils.write_to_parquet(
+        reduced_coverage_df,
+        reduced_coverage_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
@@ -133,8 +174,8 @@ def join_ascwds_data_into_cqc_location_df(
     Args:
         cqc_location_df (DataFrame): A dataframe of cleaned CQC locations.
         ascwds_workplace_df (DataFrame): A dataframe of ASC-WDS workplaces which includes workplaces last updated or logged into within 2 years of snapshot.
-        cqc_location_import_date_column (String): The name of the import date column in the clean CQC locations dataframe.
-        ascwds_workplace_import_date_column (String): The name of the import date column in the ASC-WDS reconciliation dataframe.
+        cqc_location_import_date_column (str): The name of the import date column in the clean CQC locations dataframe.
+        ascwds_workplace_import_date_column (str): The name of the import date column in the ASC-WDS reconciliation dataframe.
 
     Returns:
         DataFrame: The clean CQC locations dataframe with all columns from the ASC-WDS reconciliation dataframe added to it.
@@ -195,21 +236,28 @@ def filter_for_latest_cqc_ratings(
     """
     Filter the CQC ratings dataframe to latest rating per location only.
 
-    Requirements that are not arguments: latest_rating_flag.
+    Requirements that are not arguments: latest_rating_flag, current_or_historic.
     The CQC ratings dataset shows 1 for the latest rating in the latest_rating_flag column.
-    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0.
+    This function removes rows from the cqc ratings dataframe when latest_rating_flag = 0 and current_or_historic = 'current'.
 
     Args:
         cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
 
     Returns:
-        DataFrame: The cqc ratings dataframe with only the latest rating per location.
+        DataFrame: The cqc ratings dataframe with only the latest current rating per location.
     """
-
-    return cqc_ratings_df.where(
-        cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
-        == CQCLatestRating.is_latest_rating
+    cqc_ratings_df = cqc_ratings_df.dropDuplicates()
+    cqc_ratings_df = cqc_ratings_df.where(
+        (
+            cqc_ratings_df[CQCRatingsColumns.latest_rating_flag]
+            == CQCLatestRating.is_latest_rating
+        )
+        & (
+            cqc_ratings_df[CQCRatingsColumns.current_or_historic]
+            == CQCCurrentOrHistoricValues.current
+        )
     )
+    return cqc_ratings_df
 
 
 def join_latest_cqc_rating_into_coverage_df(
@@ -220,11 +268,13 @@ def join_latest_cqc_rating_into_coverage_df(
     Join latest rating to coverage dataframe using locationid as key.
 
     Requirements that are not arguments: CQC locationid.
-    All columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid.
+    Columns from the CQC ratings dataframe are joined to the coverage dataframe using locationid. The cqc ratings
+    data pulled through will contain duplicates, because it is a subset of the columns. This has been addressed in
+    the filtering function.
 
     Args:
-        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+        cqc_ratings_df (DataFrame): A dataframe of cqc ratings.
 
     Returns:
         DataFrame: The coverage dataframe with the latest overall CQC rating and the rating date added to it.
@@ -238,9 +288,13 @@ def join_latest_cqc_rating_into_coverage_df(
         how="left",
     )
 
-    return merged_coverage_with_latest_rating_df.drop(
+    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
         CQCRatingsColumns.latest_rating_flag
     )
+    merged_coverage_with_latest_rating_df = merged_coverage_with_latest_rating_df.drop(
+        CQCRatingsColumns.current_or_historic
+    )
+    return merged_coverage_with_latest_rating_df
 
 
 if __name__ == "__main__":
@@ -252,6 +306,7 @@ if __name__ == "__main__":
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         merged_coverage_destination,
+        reduced_coverage_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_cqc_location_source",
@@ -264,7 +319,11 @@ if __name__ == "__main__":
         ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
             "--merged_coverage_destination",
-            "Destination s3 directory for parquet",
+            "Destination s3 directory for full parquet",
+        ),
+        (
+            "--reduced_coverage_destination",
+            "Destination s3 directory for single month parquet",
         ),
     )
     main(
@@ -272,6 +331,7 @@ if __name__ == "__main__":
         workplace_for_reconciliation_source,
         cqc_ratings_source,
         merged_coverage_destination,
+        reduced_coverage_destination,
     )
 
     print("Spark job 'merge_coverage_data' complete")

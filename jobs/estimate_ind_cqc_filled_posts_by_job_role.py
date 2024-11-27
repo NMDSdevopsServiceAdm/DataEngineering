@@ -11,11 +11,13 @@ def main(
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
 ):
-    """creates job role estimates
+    """
+    Creates job role estimates
 
     Args:
-        source: path to the estimates ind cqc filled posts data
-        output_dir: path to the output directory
+        estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
+        cleaned_ascwds_worker_source (str): path to the cleaned worker data
+        estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
     """
     df_estimated_ind_cqc_filled_posts_data = utils.read_from_parquet(
         estimated_ind_cqc_filled_posts_source

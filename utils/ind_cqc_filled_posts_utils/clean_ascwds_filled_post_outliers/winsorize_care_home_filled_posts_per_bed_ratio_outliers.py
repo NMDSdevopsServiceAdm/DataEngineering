@@ -48,20 +48,18 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     homes and winsorize those outliers. Winsorization is the process of replacing outliers with a less extreme value.
     Non-care home data is not included in this particular filter so this part of the dataset will remain unchanged.
 
-    Outlier detection:
-        The number of beds at each location are banded into categorical groups and the average 'filled post per bed' ratio
-        in each band is used to determine the 'expected filled posts' for each location. The residuals (the difference
-        between actual and expected filled posts) are calculated, followed by the standardised residuals (residuals divided
-        by the squart root of the filled post figure). The values at the top and bottom end of the standarised residuals
-        are deemed to be outliers. The proportion of data to be identified as outliers is determined by the value of
-        PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS.
+    Outlier detection - The number of beds at each location are banded into categorical groups and the average 'filled post per bed' ratio
+    in each band is used to determine the 'expected filled posts' for each location. The residuals (the difference
+    between actual and expected filled posts) are calculated, followed by the standardised residuals (residuals divided
+    by the squart root of the filled post figure). The values at the top and bottom end of the standarised residuals
+    are deemed to be outliers. The proportion of data to be identified as outliers is determined by the value of
+    PERCENTAGE_OF_DATA_TO_REMOVE_AS_OUTLIERS.
 
-    Winsorization:
-        Filled post figures deemed outliers will be replaced by less extreme values calculated during the winsorization
-        process.
+    Winsorization - Filled post figures deemed outliers will be replaced by less extreme values calculated during the winsorization
+    process.
 
     Args:
-        df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
+        input_df (DataFrame): The input dataframe containing merged ASCWDS and CQC data.
 
     Returns:
         DataFrame: A dataFrame with outlier values winsorized.
@@ -283,11 +281,13 @@ def calculate_lower_and_upper_standardised_residual_percentile_cutoffs(
 
     Args:
         df (DataFrame): Input DataFrame.
-        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as
-        outliers). Must be less than 1 (equivalent to 100%).
+        percentage_of_data_to_filter_out (float): Percentage of data to filter out (eg, 0.05 will idenfity 5% of data as outliers).
 
     Returns:
         DataFrame: DataFrame with additional columns for both the lower and upper percentile values for standardised residuals.
+
+    Raises:
+        ValueError: If percentage of data provided is greater than 1 (equivalent to 100%).
     """
     if percentage_of_data_to_filter_out >= 1:
         raise ValueError(

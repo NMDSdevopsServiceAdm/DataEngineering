@@ -18,7 +18,7 @@ def add_filtering_rule_column(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe containing ascwds_filled_posts_dedup_clean before any filters have been applied to the column.
 
     Returns:
-        (DataFrame) : A dataframe with an additional column that states whether data is present or missing before filters are applied.
+        DataFrame: A dataframe with an additional column that states whether data is present or missing before filters are applied.
     """
     df = df.withColumn(
         IndCQC.ascwds_filtering_rule,
@@ -45,7 +45,7 @@ def update_filtering_rule(df: DataFrame, rule_name: str) -> DataFrame:
         rule_name (str): The name of the rule that has just been applied.
 
     Returns:
-        (DataFrame) : A dataframe with the ascwds_filtering_rule column updated.
+        DataFrame: A dataframe with the ascwds_filtering_rule column updated.
     """
     df = df.withColumn(
         IndCQC.ascwds_filtering_rule,

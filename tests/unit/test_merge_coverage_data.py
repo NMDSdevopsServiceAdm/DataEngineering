@@ -21,14 +21,18 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
 
-from utils.column_values.categorical_column_values import CQCLatestRating
+from utils.column_values.categorical_column_values import (
+    CQCLatestRating,
+    CQCCurrentOrHistoricValues,
+)
 
 
 class SetupForTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
-    TEST_DESTINATION = "some/other/directory"
+    TEST_MERGED_DESTINATION = "some/other/directory"
+    TEST_REDUCED_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -51,6 +55,8 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.cleaning_utils.remove_duplicates_based_on_column_order")
+    @patch("utils.utils.filter_df_to_maximum_value_in_column")
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
@@ -59,6 +65,8 @@ class MainTests(SetupForTests):
         read_from_parquet_patch: Mock,
         write_to_parquet_patch: Mock,
         join_ascwds_data_into_cqc_location_df: Mock,
+        filter_to_maximum_value_in_column: Mock,
+        remove_duplicates_based_on_column_order: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -70,16 +78,26 @@ class MainTests(SetupForTests):
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_SOURCE,
-            self.TEST_DESTINATION,
+            self.TEST_MERGED_DESTINATION,
+            self.TEST_REDUCED_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
+        filter_to_maximum_value_in_column.assert_called_once()
+        self.assertEqual(remove_duplicates_based_on_column_order.call_count, 2)
 
-        write_to_parquet_patch.assert_called_once_with(
+        write_to_parquet_patch.assert_called_with(
             ANY,
-            self.TEST_DESTINATION,
+            self.TEST_MERGED_DESTINATION,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
+
+        write_to_parquet_patch.assert_called_with(
+            ANY,
+            self.TEST_REDUCED_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
@@ -161,6 +179,18 @@ class FilterForLatestCqcRatings(SetupForTests):
         self.assertEqual(len(distinct_latest_rating_rows), 1)
         self.assertEqual(
             distinct_latest_rating_rows[0][0], CQCLatestRating.is_latest_rating
+        )
+
+    def test_filter_for_latest_cqc_ratings_contains_current_ratings(self):
+        latest_rating_column_df = self.returned_in_ascwds_df.select(
+            CQCRatingsColumns.current_or_historic
+        )
+
+        distinct_latest_rating_rows = latest_rating_column_df.distinct().collect()
+
+        self.assertEqual(len(distinct_latest_rating_rows), 1)
+        self.assertEqual(
+            distinct_latest_rating_rows[0][0], CQCCurrentOrHistoricValues.current
         )
 
     def test_filter_for_latest_cqc_ratings_has_expected_row_count(self):

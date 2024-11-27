@@ -162,8 +162,8 @@ def create_purged_dfs_for_reconciliation_and_data(
         df (DataFrame): The ascwds_workplace_df to be purged
 
     Returns:
-        ascwds_workplace_df (DataFrame): a dataframe where old data has been removed based on mupddate date
-        reconciliation_df (DataFrame): a dataframe where old data has been removed based on the maximum of mupddate and lastloggedin date
+        Tuple[DataFrame, DataFrame]: A tuple of two dataframes: ascwds_workplace_df where old data has been removed based on
+        mupddate date and reconciliation_df where old data has been removed based on the maximum of mupddate and lastloggedin date
 
     """
     df = calculate_maximum_master_update_date_for_organisation(df)
