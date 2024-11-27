@@ -31,7 +31,7 @@ resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
   "detail": {
     "bucket": {
       "name": ["sfc-data-engineering-raw/domain=CQC/dataset=pir"]
-    },
+    }
   }
 }
 EOF
