@@ -7863,6 +7863,15 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 4", None, None),
     ]
 
+    convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 10.0, 13.513),
+        ("loc 2", None, None),
+    ]
+
 
 @dataclass
 class DiagnosticsUtilsData:

@@ -163,5 +163,34 @@ class FillGapsWithFilledPostEstimatesTests(DiagnosticsOnCapacityTrackerTests):
         )
 
 
+class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_convert_to_all_posts_using_ratio_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.convert_to_all_posts_using_ratio_rows,
+            Schemas.convert_to_all_posts_using_ratio_schema,
+        )
+        expected_data = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_rows,
+            Schemas.expected_convert_to_all_posts_using_ratio_schema,
+        ).collect()
+        returned_data = (
+            job.convert_to_all_posts_using_ratio(
+                test_df,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEquals(
+                returned_data[i][2],
+                expected_data[i][2],
+                places=2,
+            )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
