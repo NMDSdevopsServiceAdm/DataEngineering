@@ -3602,6 +3602,24 @@ class CleaningUtilsData:
         ("loc 3", 0.5, None, None),
     ]
 
+    remove_duplicate_locationids_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
+        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+    expected_remove_duplicate_locationids_descending_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+    expected_remove_duplicate_locationids_ascending_rows = [
+        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
+        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
+        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
+    ]
+
 
 @dataclass
 class MergeIndCQCData:
@@ -3716,19 +3734,6 @@ class MergeCoverageData:
         ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "4", 6),
     ]
     # fmt: on
-
-    remove_duplicate_locationids_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 1, 1)),
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-    ]
-    expected_remove_duplicate_locationids_rows = [
-        (date(2024, 1, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-001", date(2023, 2, 1)),
-        (date(2024, 2, 1), "1-002", date(2023, 2, 1)),
-    ]
 
     sample_in_ascwds_rows = [
         (None,),
