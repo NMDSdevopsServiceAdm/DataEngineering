@@ -7850,6 +7850,28 @@ class DiagnosticsOnCapacityTrackerData:
         ),
     ]
 
+    fill_gaps_with_filled_posts_rows = [
+        ("loc 1", 10.0, 15.0),
+        ("loc 2", None, 20.0),
+        ("loc 3", 25.0, None),
+        ("loc 4", None, None),
+    ]
+    expected_fill_gaps_with_filled_posts_rows = [
+        ("loc 1", 10.0, 15.0),
+        ("loc 2", 20.0, 20.0),
+        ("loc 3", 25.0, None),
+        ("loc 4", None, None),
+    ]
+
+    convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 10.0),
+        ("loc 2", None),
+    ]
+    expected_convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 10.0, 13.513),
+        ("loc 2", None, None),
+    ]
+
 
 @dataclass
 class DiagnosticsUtilsData:

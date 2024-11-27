@@ -2,13 +2,16 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_schemas import (
-    DiagnosticsOnCapacityTrackerSchemas as Schemas,
-)
 from tests.test_file_data import (
     DiagnosticsOnCapacityTrackerData as Data,
 )
+from tests.test_file_schemas import (
+    DiagnosticsOnCapacityTrackerSchemas as Schemas,
+)
 from utils import utils
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
@@ -135,6 +138,58 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
                 IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
         )
+
+
+class FillGapsWithFilledPostEstimatesTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_fill_gaps_with_filled_post_estimates_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.fill_gaps_with_filled_posts_rows,
+            Schemas.fill_gaps_with_filled_posts_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_fill_gaps_with_filled_posts_rows,
+            Schemas.fill_gaps_with_filled_posts_schema,
+        )
+        returned_df = job.fill_gaps_with_filled_post_estimates(
+            test_df,
+            CTNRClean.cqc_care_workers_employed_imputed,
+            IndCQC.estimate_filled_posts,
+        )
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+
+class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_convert_to_all_posts_using_ratio_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.convert_to_all_posts_using_ratio_rows,
+            Schemas.convert_to_all_posts_using_ratio_schema,
+        )
+        expected_data = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_rows,
+            Schemas.expected_convert_to_all_posts_using_ratio_schema,
+        ).collect()
+        returned_data = (
+            job.convert_to_all_posts_using_ratio(
+                test_df,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEquals(
+                returned_data[i][2],
+                expected_data[i][2],
+                places=2,
+            )
 
 
 if __name__ == "__main__":
