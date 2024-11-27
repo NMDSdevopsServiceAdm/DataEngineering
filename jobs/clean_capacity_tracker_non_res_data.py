@@ -17,7 +17,8 @@ CAPACITY_TRACKER_NON_RES_COLUMNS = [
     Keys.day,
     Keys.import_date,
 ]
-OUTLIER_CUTOFF = 5000
+OUTLIER_CUTOFF: int = 5000
+MIN_NUMBER_OF_WORKERS: int = 1
 
 
 def main(
@@ -43,6 +44,7 @@ def main(
         capacity_tracker_non_res_df,
         columns_to_bound,
         columns_to_bound,
+        lower_limit=MIN_NUMBER_OF_WORKERS,
         upper_limit=OUTLIER_CUTOFF,
     )
 
