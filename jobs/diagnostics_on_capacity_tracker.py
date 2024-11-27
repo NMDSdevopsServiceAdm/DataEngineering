@@ -185,6 +185,9 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
+    non_res_diagnostics_df = fill_gaps_with_filled_post_estimates(
+        non_res_diagnostics_df
+    )
     return non_res_diagnostics_df
 
 
@@ -229,6 +232,22 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def fill_gaps_with_filled_post_estimates(df: DataFrame) -> DataFrame:
+    """
+    Fill gaps in imputed capacity tracker data with filled posts estimates.
+
+    Filling gaps with the filled posts estimates means that the only residuals calculated will be where we know
+    the capacity tracker values.
+
+    Args:
+        df (DataFrame): A dataframe with capacity tracker data and filled posts estimates.
+
+    Returns:
+        DataFrame: A dataframe with imputed capacity tracker column gaps filled with filled posts estimates.
+    """
+    return df
 
 
 if __name__ == "__main__":

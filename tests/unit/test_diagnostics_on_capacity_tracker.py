@@ -137,5 +137,24 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
         )
 
 
+class FillGapsWithFilledPostEstimatesTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_fill_gaps_with_filled_post_estimates_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.fill_gaps_with_filled_posts_rows,
+            Schemas.fill_gaps_with_filled_posts_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_fill_gaps_with_filled_posts_rows,
+            Schemas.fill_gaps_with_filled_posts_schema,
+        )
+        returned_df = job.fill_gaps_with_filled_post_estimates(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
