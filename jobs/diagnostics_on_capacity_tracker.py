@@ -50,6 +50,8 @@ percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
 
+care_worker_ratio: float = 0.74
+
 
 def main(
     estimate_filled_posts_source,
@@ -185,6 +187,9 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
+    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
+        non_res_diagnostics_df,
+    )
     non_res_diagnostics_df = fill_gaps_with_filled_post_estimates(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed_imputed,
@@ -234,6 +239,23 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
+    """
+    Convert the cqc_care_workers_employed figures to all workers.
+
+    Args:
+        df (DataFrame): A dataframe with non res capacity tracker data.
+
+    Returns:
+        DataFrame: A dataframe with a new column containing the all-workers estimate.
+    """
+    df = df.withColumn(
+        CTNRClean.capacity_tracker_filled_post_estimate,
+        F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
+    )
+    return df
 
 
 def fill_gaps_with_filled_post_estimates(
