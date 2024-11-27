@@ -55,6 +55,7 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.cleaning_utils.remove_duplicates_based_on_column_order")
     @patch("utils.utils.filter_df_to_maximum_value_in_column")
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
     @patch("utils.utils.write_to_parquet")
@@ -65,6 +66,7 @@ class MainTests(SetupForTests):
         write_to_parquet_patch: Mock,
         join_ascwds_data_into_cqc_location_df: Mock,
         filter_to_maximum_value_in_column: Mock,
+        remove_duplicates_based_on_column_order: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -84,6 +86,7 @@ class MainTests(SetupForTests):
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
         filter_to_maximum_value_in_column.assert_called_once()
+        self.assertEqual(remove_duplicates_based_on_column_order.call_count, 2)
 
         write_to_parquet_patch.assert_called_with(
             ANY,
@@ -98,34 +101,6 @@ class MainTests(SetupForTests):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-
-
-class RemoveDuplicatesBasedOnColumnOrderTests(SetupForTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_remove_duplicate_locationids_returns_expected_rows(self):
-        test_df = self.spark.createDataFrame(
-            Data.remove_duplicate_locationids_rows,
-            Schemas.remove_duplicate_locationids_schema,
-        )
-        returned_df = job.remove_duplicates_based_on_column_order(
-            test_df,
-            [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
-            AWPClean.master_update_date,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_remove_duplicate_locationids_rows,
-            Schemas.remove_duplicate_locationids_schema,
-        )
-
-        returned_data = returned_df.sort(
-            AWPClean.ascwds_workplace_import_date, AWPClean.location_id
-        ).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
 
 
 class JoinAscwdsIntoCqcLocationsTests(SetupForTests):
