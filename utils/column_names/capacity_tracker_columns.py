@@ -105,6 +105,9 @@ class CapacityTrackerNonResColumns:
 @dataclass
 class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_filled_post_estimate: str = "capacity_tracker_filled_post_estimate"
+    capacity_tracker_filled_post_estimate_source: str = (
+        capacity_tracker_filled_post_estimate + "_source"
+    )
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )

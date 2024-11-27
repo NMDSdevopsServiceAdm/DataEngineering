@@ -20,6 +20,9 @@ from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interp
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
+from utils.ind_cqc_filled_posts_utils.utils import (
+    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -190,10 +193,13 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = convert_to_all_posts_using_ratio(
         non_res_diagnostics_df,
     )
-    non_res_diagnostics_df = fill_gaps_with_filled_post_estimates(
-        non_res_diagnostics_df,
-        CTNRClean.capacity_tracker_filled_post_estimate,
-        IndCQC.estimate_filled_posts,
+    non_res_diagnostics_df = (
+        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+            non_res_diagnostics_df,
+            [CTNRClean.cqc_care_workers_employed_imputed, IndCQC.estimate_filled_posts],
+            CTNRClean.capacity_tracker_filled_post_estimate,
+            CTNRClean.capacity_tracker_filled_post_estimate_source,
+        )
     )
     return non_res_diagnostics_df
 
@@ -254,33 +260,6 @@ def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         CTNRClean.capacity_tracker_filled_post_estimate,
         F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
-    )
-    return df
-
-
-def fill_gaps_with_filled_post_estimates(
-    df: DataFrame, column_with_gaps: str, column_with_data: str
-) -> DataFrame:
-    """
-    Fill gaps in imputed capacity tracker data with filled posts estimates.
-
-    Filling gaps with the filled posts estimates means that the only residuals calculated will be where we know
-    the capacity tracker values.
-
-    Args:
-        df (DataFrame): A dataframe with capacity tracker data and filled posts estimates.
-        column_with_gaps (str): The name of the column with gaps that want to be filled.
-        column_with_data (str): The name of the column with data to fill the gaps in the first column.
-
-    Returns:
-        DataFrame: A dataframe with imputed capacity tracker column gaps filled with filled posts estimates.
-    """
-    df = df.withColumn(
-        column_with_gaps,
-        F.coalesce(
-            F.col(column_with_gaps),
-            F.col(column_with_data),
-        ),
     )
     return df
 
