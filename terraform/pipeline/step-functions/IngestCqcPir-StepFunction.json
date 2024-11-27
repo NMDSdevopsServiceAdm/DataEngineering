@@ -8,8 +8,8 @@
             "Parameters": {
                 "JobName": "${ingest_cqc_pir_job_name}",
                 "Arguments": {
-                    "--destination": "s3://${dataset_bucket_name}/domain=CQC/",
-                    "--source.$": "$.jobs.ingest_cqc_pir_data.source"
+                    "--source.$": "$.jobs.ingest_cqc_pir_data.source",
+                    "--destination": "s3://${dataset_bucket_name}/domain=CQC/dataset=pir/"
                 }
             },
             "Catch": [
