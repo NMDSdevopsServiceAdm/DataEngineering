@@ -186,7 +186,9 @@ def run_diagnostics_for_non_residential(
         care_home=False,
     )
     non_res_diagnostics_df = fill_gaps_with_filled_post_estimates(
-        non_res_diagnostics_df
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed_imputed,
+        IndCQC.estimate_filled_posts,
     )
     return non_res_diagnostics_df
 
@@ -234,7 +236,9 @@ def join_capacity_tracker_data(
     return joined_df
 
 
-def fill_gaps_with_filled_post_estimates(df: DataFrame) -> DataFrame:
+def fill_gaps_with_filled_post_estimates(
+    df: DataFrame, column_with_gaps: str, column_with_data: str
+) -> DataFrame:
     """
     Fill gaps in imputed capacity tracker data with filled posts estimates.
 
@@ -243,15 +247,17 @@ def fill_gaps_with_filled_post_estimates(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe with capacity tracker data and filled posts estimates.
+        column_with_gaps (str): The name of the column with gaps that want to be filled.
+        column_with_data (str): The name of the column with data to fill the gaps in the first column.
 
     Returns:
         DataFrame: A dataframe with imputed capacity tracker column gaps filled with filled posts estimates.
     """
     df = df.withColumn(
-        CTNRClean.cqc_care_workers_employed_imputed,
+        column_with_gaps,
         F.coalesce(
-            F.col(CTNRClean.cqc_care_workers_employed_imputed),
-            F.col(IndCQC.estimate_filled_posts),
+            F.col(column_with_gaps),
+            F.col(column_with_data),
         ),
     )
     return df

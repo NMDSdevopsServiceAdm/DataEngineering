@@ -2,13 +2,16 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_schemas import (
-    DiagnosticsOnCapacityTrackerSchemas as Schemas,
-)
 from tests.test_file_data import (
     DiagnosticsOnCapacityTrackerData as Data,
 )
+from tests.test_file_schemas import (
+    DiagnosticsOnCapacityTrackerSchemas as Schemas,
+)
 from utils import utils
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
@@ -150,7 +153,11 @@ class FillGapsWithFilledPostEstimatesTests(DiagnosticsOnCapacityTrackerTests):
             Data.expected_fill_gaps_with_filled_posts_rows,
             Schemas.fill_gaps_with_filled_posts_schema,
         )
-        returned_df = job.fill_gaps_with_filled_post_estimates(test_df)
+        returned_df = job.fill_gaps_with_filled_post_estimates(
+            test_df,
+            CTNRClean.cqc_care_workers_employed_imputed,
+            IndCQC.estimate_filled_posts,
+        )
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
