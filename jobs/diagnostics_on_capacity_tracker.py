@@ -14,6 +14,9 @@ from utils.column_names.capacity_tracker_columns import (
 )
 from utils.column_values.categorical_column_values import CareHome
 from utils.diagnostics_utils import diagnostics_utils as dUtils
+from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
 )
@@ -120,6 +123,7 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
+    # imputation here?
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df, column_for_comparison, list_of_models
@@ -173,6 +177,13 @@ def run_diagnostics_for_non_residential(
         number_of_days_in_rolling_average,
         CTNRClean.cqc_care_workers_employed_rolling_avg,
         CTNRClean.cqc_care_workers_employed_rolling_avg,
+    )
+    non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_imputed,
+        care_home=False,
     )
     return non_res_diagnostics_df
 
