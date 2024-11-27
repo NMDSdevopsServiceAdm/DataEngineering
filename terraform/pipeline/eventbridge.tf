@@ -30,11 +30,8 @@ resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
   "detail-type": ["Object Created"],
   "detail": {
     "bucket": {
-      "name": ["sfc-data-engineering-raw"]
+      "name": ["sfc-data-engineering-raw/domain=CQC/dataset=pir"]
     },
-    "object": {
-      "key": [ {"prefix": "domain=CQC/dataset=pir" } ]
-    }
   }
 }
 EOF
@@ -113,13 +110,12 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
   input_transformer {
     input_paths = {
       bucket_name = "$.detail.bucket.name",
-      key         = "$.detail.object.key",
     }
     input_template = <<EOF
     {
         "jobs": {
             "ingest_cqc_pir_dataset" : {
-                "source": "s3://<bucket_name>/<key>"
+                "source": "s3://<bucket_name>"
             }
         }
     }
