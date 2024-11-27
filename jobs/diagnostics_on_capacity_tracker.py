@@ -13,8 +13,10 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_values.categorical_column_values import CareHome
-
 from utils.diagnostics_utils import diagnostics_utils as dUtils
+from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+    model_primary_service_rolling_average,
+)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -31,8 +33,10 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_with_dormancy_model,
     IndCQC.estimate_filled_posts,
+    IndCQC.number_of_beds,
     IndCQC.current_region,
     IndCQC.current_cssr,
+    IndCQC.unix_time,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -41,6 +45,7 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
+number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -160,6 +165,14 @@ def run_diagnostics_for_non_residential(
     )
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
+    )
+    non_res_diagnostics_df = model_primary_service_rolling_average(
+        non_res_diagnostics_df,
+        CTNRClean.cqc_care_workers_employed,
+        CTNRClean.cqc_care_workers_employed,
+        number_of_days_in_rolling_average,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_rolling_avg,
     )
     return non_res_diagnostics_df
 

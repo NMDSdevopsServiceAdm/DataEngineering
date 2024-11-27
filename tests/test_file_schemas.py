@@ -599,22 +599,6 @@ class CapacityTrackerNonResSchema:
         ]
     )
 
-    capacity_tracker_non_res_rolling_average_schema = StructType(
-        [
-            StructField(CTNR.cqc_id, StringType(), True),
-            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
-            StructField(CTNR.cqc_care_workers_employed, IntegerType(), True),
-        ]
-    )
-    expected_capacity_tracker_non_res_rolling_average_schema = StructType(
-        [
-            *capacity_tracker_non_res_rolling_average_schema,
-            StructField(
-                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
-            ),
-        ]
-    )
-
     remove_invalid_characters_from_column_names_schema = StructType(
         [
             StructField(CTNR.cqc_id, StringType(), True),
@@ -1494,6 +1478,14 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    remove_duplicate_locationids_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
@@ -1724,14 +1716,6 @@ class MergeCoverageData:
             StructField(AWPClean.master_update_date, DateType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(AWPClean.total_staff, IntegerType(), True),
-        ]
-    )
-
-    remove_duplicate_locationids_schema = StructType(
-        [
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.master_update_date, DateType(), True),
         ]
     )
 
@@ -4445,6 +4429,8 @@ class DiagnosticsOnCapacityTrackerSchemas:
                 IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
             ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -4486,6 +4472,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(CTNRClean.cqc_id, StringType(), False),
             StructField(CTNRClean.capacity_tracker_import_date, DateType(), False),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
+            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -4510,6 +4499,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             *estimate_filled_posts_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(
+                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
+            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
