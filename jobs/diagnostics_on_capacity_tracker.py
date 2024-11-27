@@ -192,7 +192,7 @@ def run_diagnostics_for_non_residential(
     )
     non_res_diagnostics_df = fill_gaps_with_filled_post_estimates(
         non_res_diagnostics_df,
-        CTNRClean.cqc_care_workers_employed_imputed,
+        CTNRClean.capacity_tracker_filled_post_estimate,
         IndCQC.estimate_filled_posts,
     )
     return non_res_diagnostics_df
