@@ -46,8 +46,8 @@ resource "aws_iam_policy" "start_state_machines" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["states:StartExecution"]
+        Effect = "Allow"
+        Action = ["states:StartExecution"]
         Resource = [
           aws_sfn_state_machine.ingest_ascwds_state_machine.arn,
           aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn
