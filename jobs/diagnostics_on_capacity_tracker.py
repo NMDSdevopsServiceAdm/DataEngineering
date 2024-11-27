@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -247,6 +247,13 @@ def fill_gaps_with_filled_post_estimates(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with imputed capacity tracker column gaps filled with filled posts estimates.
     """
+    df = df.withColumn(
+        CTNRClean.cqc_care_workers_employed_imputed,
+        F.coalesce(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed),
+            F.col(IndCQC.estimate_filled_posts),
+        ),
+    )
     return df
 
 
