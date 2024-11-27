@@ -114,7 +114,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
     input_template = <<EOF
     {
         "jobs": {
-            "ingest_cqc_pir_dataset" : {
+            "ingest_cqc_pir_data" : {
                 "source": "s3://<bucket_name>"
             }
         }
