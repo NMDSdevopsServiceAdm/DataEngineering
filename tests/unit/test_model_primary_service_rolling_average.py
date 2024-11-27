@@ -27,6 +27,7 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
+            IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
             IndCqc.rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
