@@ -20,7 +20,7 @@ EOF
 }
 
 resource "aws_cloudwatch_event_rule" "cqc_pir_csv_added" {
-  state       = terraform.workspace == "main" || terraform.workspace == "trigger-pir-ingest" ? "ENABLED" : "DISABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   name        = "${local.workspace_prefix}-cqc-pir-csv-added"
   description = "Captures when a new CQC PIR CSV is uploaded to sfc-data-engineering-raw bucket"
 
