@@ -196,7 +196,10 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             non_res_diagnostics_df,
-            [CTNRClean.cqc_care_workers_employed_imputed, IndCQC.estimate_filled_posts],
+            [
+                CTNRClean.cqc_care_workers_employed_imputed_all_posts,
+                IndCQC.estimate_filled_posts,
+            ],
             CTNRClean.capacity_tracker_filled_post_estimate,
             CTNRClean.capacity_tracker_filled_post_estimate_source,
         )
@@ -258,7 +261,7 @@ def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with a new column containing the all-workers estimate.
     """
     df = df.withColumn(
-        CTNRClean.capacity_tracker_filled_post_estimate,
+        CTNRClean.cqc_care_workers_employed_imputed_all_posts,
         F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
     )
     return df
