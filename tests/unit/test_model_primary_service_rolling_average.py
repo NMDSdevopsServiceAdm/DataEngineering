@@ -17,6 +17,11 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
+
+class MainTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
         number_of_days = 88
         self.estimates_df = self.spark.createDataFrame(
             Data.primary_service_rolling_average_rows,
