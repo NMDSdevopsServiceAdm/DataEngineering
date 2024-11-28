@@ -2557,7 +2557,7 @@ class ModelPrimaryServiceRollingAverage:
     expected_single_column_to_average_schema = StructType(
         [
             *single_column_to_average_schema,
-            StructField(IndCQC.temp_column_to_average, DoubleType(), True),
+            StructField("temp_column_to_average", DoubleType(), True),
         ]
     )
 
@@ -2566,13 +2566,13 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.temp_column_to_average, DoubleType(), True),
+            StructField("temp_column_to_average", DoubleType(), True),
         ]
     )
     expected_calculate_rolling_average_schema = StructType(
         [
             *calculate_rolling_average_schema,
-            StructField(IndCQC.temp_rolling_average, DoubleType(), True),
+            StructField("temp_rolling_average", DoubleType(), True),
         ]
     )
 

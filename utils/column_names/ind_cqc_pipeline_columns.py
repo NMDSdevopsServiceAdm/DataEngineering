@@ -218,8 +218,6 @@ class IndCqcColumns:
     specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
     standardised_residual: str = "standardised_residual"
-    temp_column_to_average: str = "temp_column_to_average"
-    temp_rolling_average: str = "temp_rolling_average"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"

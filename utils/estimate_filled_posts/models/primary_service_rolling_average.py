@@ -1,10 +1,18 @@
+from dataclasses import dataclass
+
 from pyspark.sql import DataFrame, functions as F, Window
 
-from utils.utils import convert_days_to_unix_time
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
+from utils.utils import convert_days_to_unix_time
+
+
+@dataclass
+class TempCol:
+    """The names of the temporary columns created during the rolling average process."""
+
+    temp_column_to_average: str = "temp_column_to_average"
+    temp_rolling_average: str = "temp_rolling_average"
 
 
 def model_primary_service_rolling_average(
@@ -32,19 +40,14 @@ def model_primary_service_rolling_average(
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
     """
-    temp_col = "temp_col"
-
     df = create_single_column_to_average(
         df, filled_posts_per_bed_ratio_column_to_average, filled_post_column_to_average
     )
     df = calculate_rolling_average(df, number_of_days)
-    df = allocate_averages_to_columns(
-        df,
-        model_filled_posts_column_name,
-        model_filled_posts_per_bed_ratio_column_name,
-        temp_col,
+    df = create_final_model_columns(
+        df, model_filled_posts_column_name, model_filled_posts_per_bed_ratio_column_name
     )
-    df = df.drop(IndCqc.temp_column_to_average, IndCqc.temp_rolling_average)
+    df = df.drop(TempCol.temp_column_to_average, TempCol.temp_rolling_average)
 
     return df
 
@@ -66,7 +69,7 @@ def create_single_column_to_average(
         DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
     """
     df = df.withColumn(
-        IndCqc.temp_column_to_average,
+        TempCol.temp_column_to_average,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             F.col(filled_posts_per_bed_ratio_column_to_average),
@@ -99,43 +102,43 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     )
 
     df = df.withColumn(
-        IndCqc.temp_rolling_average,
-        F.avg(IndCqc.temp_column_to_average).over(window),
+        TempCol.temp_rolling_average,
+        F.avg(TempCol.temp_column_to_average).over(window),
     )
     return df
 
 
-def allocate_averages_to_columns(
+def create_final_model_columns(
     df: DataFrame,
     model_filled_posts_column_name: str,
     model_filled_posts_per_bed_ratio_column_name: str,
-    temp_col: str,
 ) -> DataFrame:
     """
-    Allocates values from a temporary column to the correctly labelled columns.
+    Allocates values from temp_column_to_average to the correctly labelled columns.
 
-    A temporary column is used so that the window functions can be run simultaneously to improve spark performance.
+    If the location is a care home, copy the .
 
     Args:
         df (DataFrame): The input DataFrame.
         model_filled_posts_column_name (str): The name of the new column to store the rolling average.
         model_filled_posts_per_bed_ratio_column_name (str): The name of the column to store the care home ratio.
-        temp_col (str): A temporary column containing the values before they are correctly allocated.
 
     Returns:
         DataFrame: The input DataFrame with the correctly labelled columns and without the temporary column.
     """
     df = df.withColumn(
         model_filled_posts_per_bed_ratio_column_name,
-        F.when(F.col(IndCqc.care_home) == CareHome.care_home, (F.col(temp_col))),
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(TempCol.temp_column_to_average),
+        ),
     )
     df = df.withColumn(
         model_filled_posts_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            (F.col(temp_col)) * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.col(temp_col)),
+            F.col(TempCol.temp_column_to_average) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(TempCol.temp_column_to_average)),
     )
-    df = df.drop(temp_col)
 
     return df

@@ -105,8 +105,8 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][IndCqc.temp_column_to_average],
-                self.expected_data[i][IndCqc.temp_column_to_average],
+                self.returned_data[i][job.TempCol.temp_column_to_average],
+                self.expected_data[i][job.TempCol.temp_column_to_average],
                 f"Returned row {i} does not match expected",
             )
 
@@ -140,8 +140,8 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.temp_rolling_average],
-                self.expected_data[i][IndCqc.temp_rolling_average],
+                self.returned_data[i][job.TempCol.temp_rolling_average],
+                self.expected_data[i][job.TempCol.temp_rolling_average],
                 2,
                 f"Returned row {i} does not match expected",
             )
