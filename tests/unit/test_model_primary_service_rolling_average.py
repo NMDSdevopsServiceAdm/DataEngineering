@@ -72,3 +72,40 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
                 self.expected_row_object[i][IndCqc.rolling_average_model],
                 f"Returned row {i} does not match expected",
             )
+
+
+class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.single_column_to_average_rows,
+            Schemas.single_column_to_average_schema,
+        )
+        self.returned_df = job.create_single_column_to_average(
+            test_df,
+            IndCqc.filled_posts_per_bed_ratio,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_single_column_to_average_rows,
+            Schemas.expected_single_column_to_average_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+
+    def test_model_primary_service_rolling_average_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_rolling_average_model_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCqc.column_to_average],
+                self.expected_data[i][IndCqc.column_to_average],
+                f"Returned row {i} does not match expected",
+            )

@@ -51,6 +51,7 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
+    column_to_average: str = "column_to_average"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy

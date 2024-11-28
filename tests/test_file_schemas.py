@@ -2546,6 +2546,21 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    single_column_to_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+    expected_single_column_to_average_schema = StructType(
+        [
+            *single_column_to_average_schema,
+            StructField(IndCQC.column_to_average, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

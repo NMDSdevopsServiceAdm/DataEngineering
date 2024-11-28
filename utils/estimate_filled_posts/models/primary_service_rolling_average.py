@@ -34,6 +34,11 @@ def model_primary_service_rolling_average(
     """
     window = define_window_specifications(number_of_days)
     temp_col = "temp_col"
+
+    df = create_single_column_to_average(
+        df, filled_posts_per_bed_ratio_column_to_average, filled_post_column_to_average
+    )
+
     df = run_window_calculations(
         df,
         filled_posts_per_bed_ratio_column_to_average,
@@ -47,7 +52,51 @@ def model_primary_service_rolling_average(
         model_filled_posts_per_bed_ratio_column_name,
         temp_col,
     )
+    df = df.drop(IndCqc.column_to_average)
 
+    return df
+
+
+def define_window_specifications(number_of_days: int) -> Window:
+    """
+    Define the Window specification partitioned by primary service column.
+
+    Args:
+        number_of_days (int): The number of days to use for the rolling average calculations.
+
+    Returns:
+        Window: The required Window specification partitioned by primary service column.
+    """
+    return (
+        Window.partitionBy(IndCqc.primary_service_type)
+        .orderBy(F.col(IndCqc.unix_time))
+        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
+    )
+
+
+def create_single_column_to_average(
+    df: DataFrame,
+    filled_posts_per_bed_ratio_column_to_average: str,
+    filled_post_column_to_average: str,
+) -> DataFrame:
+    """
+    Creates one column to average using the ratio if the location is a care home and filled posts if not.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        filled_posts_per_bed_ratio_column_to_average (str): The name of the column to average for care homes.
+        filled_post_column_to_average (str): The name of the column to average for non residential locations.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
+    """
+    df = df.withColumn(
+        IndCqc.column_to_average,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(filled_posts_per_bed_ratio_column_to_average),
+        ).otherwise(F.col(filled_post_column_to_average)),
+    )
     return df
 
 
@@ -118,20 +167,3 @@ def run_window_calculations(
     )
 
     return df
-
-
-def define_window_specifications(number_of_days: int) -> Window:
-    """
-    Define the Window specification partitioned by primary service column.
-
-    Args:
-        number_of_days (int): The number of days to use for the rolling average calculations.
-
-    Returns:
-        Window: The required Window specification partitioned by primary service column.
-    """
-    return (
-        Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
-    )
