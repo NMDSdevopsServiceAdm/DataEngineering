@@ -32,8 +32,8 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
-            IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
-            IndCqc.rolling_average_model,
+            IndCqc.ratio_rolling_average_model,
+            IndCqc.posts_rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_primary_service_rolling_average_rows,
@@ -46,8 +46,8 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
                 IndCqc.unix_time,
                 IndCqc.ascwds_filled_posts_dedup_clean,
                 IndCqc.primary_service_type,
-                IndCqc.rolling_average_model,
-                IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
+                IndCqc.posts_rolling_average_model,
+                IndCqc.ratio_rolling_average_model,
             )
             .sort(IndCqc.location_id)
             .collect()
@@ -63,13 +63,13 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_rolling_average_model_values_match_expected(
+    def test_returned_posts_rolling_average_model_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_row_object)):
             self.assertEqual(
-                self.returned_row_object[i][IndCqc.rolling_average_model],
-                self.expected_row_object[i][IndCqc.rolling_average_model],
+                self.returned_row_object[i][IndCqc.posts_rolling_average_model],
+                self.expected_row_object[i][IndCqc.posts_rolling_average_model],
                 f"Returned row {i} does not match expected",
             )
 
@@ -157,8 +157,8 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
         )
         self.returned_df = job.create_final_model_columns(
             test_df,
-            IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
-            IndCqc.rolling_average_model,
+            IndCqc.ratio_rolling_average_model,
+            IndCqc.posts_rolling_average_model,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_create_final_model_columns_rows,
@@ -178,12 +178,8 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][
-                    IndCqc.rolling_average_model_filled_posts_per_bed_ratio
-                ],
-                self.expected_data[i][
-                    IndCqc.rolling_average_model_filled_posts_per_bed_ratio
-                ],
+                self.returned_data[i][IndCqc.ratio_rolling_average_model],
+                self.expected_data[i][IndCqc.ratio_rolling_average_model],
                 2,
                 f"Returned row {i} does not match expected",
             )
@@ -193,7 +189,7 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][IndCqc.rolling_average_model],
-                self.expected_data[i][IndCqc.rolling_average_model],
+                self.returned_data[i][IndCqc.posts_rolling_average_model],
+                self.expected_data[i][IndCqc.posts_rolling_average_model],
                 f"Returned row {i} does not match expected",
             )
