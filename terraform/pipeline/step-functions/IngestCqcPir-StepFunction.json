@@ -1,0 +1,61 @@
+{
+    "Comment": "A step function to ingest CQC PIR data and run the CQC crawler",
+    "StartAt": "Ingest CQC PIR",
+    "States": {
+        "Ingest CQC PIR": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::glue:startJobRun.sync",
+            "Parameters": {
+                "JobName": "${ingest_cqc_pir_job_name}",
+                "Arguments": {
+                    "--source.$": "$.jobs.ingest_cqc_pir_data.source",
+                    "--destination": "s3://${dataset_bucket_name}/domain=CQC/dataset=pir/"
+                }
+            },
+            "Catch": [
+                {
+                    "ErrorEquals": [
+                        "States.ALL"
+                    ],
+                    "Next": "Publish error notification",
+                    "ResultPath": "$.error"
+                }
+            ],
+            "Next": "Run CQC crawler"
+        },
+        "Publish error notification": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                "Error.$": "$.error.Cause",
+                "ExecutionId.$": "$$.Execution.Id",
+                "StateMachineName.$": "$$.StateMachine.Name",
+                "StateMachineId.$": "$$.StateMachine.Id",
+                "ExecutionStartTime.$": "$$.Execution.StartTime",
+                "CallbackToken.$": "$$.Task.Token"
+                }
+            },
+            "Next": "Fail"
+        },
+        "Run CQC crawler": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::states:startExecution.sync:2",
+            "Parameters": {
+              "StateMachineArn": "${run_crawler_state_machine_arn}",
+              "Input": {
+                "crawler_name": "${cqc_crawler_name}",
+                "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+              }
+            },
+            "Next": "Success"
+        },
+        "Success": {
+            "Type": "Succeed"
+        },
+        "Fail": {
+            "Type": "Fail"
+        }
+    }
+}
