@@ -17,35 +17,37 @@ class TempCol:
 
 def model_primary_service_rolling_average(
     df: DataFrame,
-    filled_posts_per_bed_ratio_column_to_average: str,
-    filled_post_column_to_average: str,
+    ratio_column_to_average: str,
+    posts_column_to_average: str,
     number_of_days: int,
-    model_filled_posts_per_bed_ratio_column_name: str,
-    model_filled_posts_column_name: str,
+    ratio_rolling_average_model_column_name: str,
+    posts_rolling_average_model_column_name: str,
 ) -> DataFrame:
     """
     Calculates the rolling average of specified columns over a given window of days (where three days refers to the current day plus the previous two).
 
     Calculates the rolling average of specified columns over a given window of days for care homes and non residential locations separately. The
-    additional columns will be added with the column names 'model_filled_posts_column_name' and 'model_filled_posts_per_bed_ratio_column_name'.
+    additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
-        filled_posts_per_bed_ratio_column_to_average (str): The name of the column to average for care homes.
-        filled_post_column_to_average (str): The name of the column to average for non residential locations.
+        ratio_column_to_average (str): The name of the column to average for care homes.
+        posts_column_to_average (str): The name of the column to average for non residential locations.
         number_of_days (int): The number of days to include in the rolling average time period.
-        model_filled_posts_per_bed_ratio_column_name (str): The name of the column to store the care home ratio rolling average.
-        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
+        ratio_rolling_average_model_column_name (str): The name of the column to store the care home ratio rolling average.
+        posts_rolling_average_model_column_name (str): The name of the new column to store the rolling average.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
     """
     df = create_single_column_to_average(
-        df, filled_posts_per_bed_ratio_column_to_average, filled_post_column_to_average
+        df, ratio_column_to_average, posts_column_to_average
     )
     df = calculate_rolling_average(df, number_of_days)
     df = create_final_model_columns(
-        df, model_filled_posts_per_bed_ratio_column_name, model_filled_posts_column_name
+        df,
+        ratio_rolling_average_model_column_name,
+        posts_rolling_average_model_column_name,
     )
     df = df.drop(TempCol.temp_column_to_average, TempCol.temp_rolling_average)
 
@@ -54,16 +56,16 @@ def model_primary_service_rolling_average(
 
 def create_single_column_to_average(
     df: DataFrame,
-    filled_posts_per_bed_ratio_column_to_average: str,
-    filled_post_column_to_average: str,
+    ratio_column_to_average: str,
+    posts_column_to_average: str,
 ) -> DataFrame:
     """
     Creates one column to average using the ratio if the location is a care home and filled posts if not.
 
     Args:
         df (DataFrame): The input DataFrame.
-        filled_posts_per_bed_ratio_column_to_average (str): The name of the column to average for care homes.
-        filled_post_column_to_average (str): The name of the column to average for non residential locations.
+        ratio_column_to_average (str): The name of the column to average for care homes.
+        posts_column_to_average (str): The name of the column to average for non residential locations.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
@@ -72,8 +74,8 @@ def create_single_column_to_average(
         TempCol.temp_column_to_average,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(filled_posts_per_bed_ratio_column_to_average),
-        ).otherwise(F.col(filled_post_column_to_average)),
+            F.col(ratio_column_to_average),
+        ).otherwise(F.col(posts_column_to_average)),
     )
     return df
 
@@ -110,32 +112,32 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
 
 def create_final_model_columns(
     df: DataFrame,
-    model_filled_posts_per_bed_ratio_column_name: str,
-    model_filled_posts_column_name: str,
+    ratio_rolling_average_model_column_name: str,
+    posts_rolling_average_model_column_name: str,
 ) -> DataFrame:
     """
     Allocates values from temp_column_to_average to the correctly labelled columns.
 
-    `model_filled_posts_per_bed_ratio_column_name` is only populated for care homes and replicates what is in the `temp_column_to_average`.
-    `model_filled_posts_column_name`  replicates what is in the `temp_column_to_average` for non-care homes and for care homes, the column is multiplied by number of beds to get the equivalent filled posts.
+    `ratio_rolling_average_model_column_name` is only populated for care homes and replicates what is in the `temp_column_to_average`.
+    `posts_rolling_average_model_column_name`  replicates what is in the `temp_column_to_average` for non-care homes and for care homes, the column is multiplied by number of beds to get the equivalent filled posts.
 
     Args:
         df (DataFrame): The input DataFrame.
-        model_filled_posts_per_bed_ratio_column_name (str): The name of the column to store the care home ratio.
-        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
+        ratio_rolling_average_model_column_name (str): The name of the column to store the care home ratio.
+        posts_rolling_average_model_column_name (str): The name of the new column to store the rolling average.
 
     Returns:
         DataFrame: The input DataFrame with the two model columns added.
     """
     df = df.withColumn(
-        model_filled_posts_per_bed_ratio_column_name,
+        ratio_rolling_average_model_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             F.col(TempCol.temp_rolling_average),
         ),
     )
     df = df.withColumn(
-        model_filled_posts_column_name,
+        posts_rolling_average_model_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             F.col(TempCol.temp_rolling_average) * F.col(IndCqc.number_of_beds),
