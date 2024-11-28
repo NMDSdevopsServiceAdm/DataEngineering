@@ -121,8 +121,8 @@ def create_final_model_columns(
 
     Args:
         df (DataFrame): The input DataFrame.
-        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
         model_filled_posts_per_bed_ratio_column_name (str): The name of the column to store the care home ratio.
+        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
 
     Returns:
         DataFrame: The input DataFrame with the two model columns added.
