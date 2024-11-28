@@ -45,7 +45,7 @@ def model_primary_service_rolling_average(
     )
     df = calculate_rolling_average(df, number_of_days)
     df = create_final_model_columns(
-        df, model_filled_posts_column_name, model_filled_posts_per_bed_ratio_column_name
+        df, model_filled_posts_per_bed_ratio_column_name, model_filled_posts_column_name
     )
     df = df.drop(TempCol.temp_column_to_average, TempCol.temp_rolling_average)
 
@@ -131,15 +131,15 @@ def create_final_model_columns(
         model_filled_posts_per_bed_ratio_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(TempCol.temp_column_to_average),
+            F.col(TempCol.temp_rolling_average),
         ),
     )
     df = df.withColumn(
         model_filled_posts_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(TempCol.temp_column_to_average) * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.col(TempCol.temp_column_to_average)),
+            F.col(TempCol.temp_rolling_average) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(TempCol.temp_rolling_average)),
     )
 
     return df

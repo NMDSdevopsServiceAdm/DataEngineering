@@ -2581,7 +2581,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField("temp_column_to_average", DoubleType(), True),
+            StructField("temp_rolling_average", DoubleType(), True),
         ]
     )
     expected_create_final_model_columns_schema = StructType(
