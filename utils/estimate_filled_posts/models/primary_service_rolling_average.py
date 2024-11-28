@@ -1,5 +1,4 @@
-from pyspark.sql import DataFrame, Window
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.utils import convert_days_to_unix_time
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -35,6 +34,9 @@ def model_primary_service_rolling_average(
     """
     window = define_window_specifications(number_of_days)
     temp_col = "temp_col"
+
+    # Only include data for locations who have at least 2 submissions and have only ever been a CH or NR
+
     df = run_window_calculations(
         df,
         care_home_ratio_column_to_average,
