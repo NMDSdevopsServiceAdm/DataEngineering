@@ -1,5 +1,4 @@
-from pyspark.sql import DataFrame, Window
-import pyspark.sql.functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.utils import convert_days_to_unix_time
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -10,25 +9,25 @@ from utils.column_values.categorical_column_values import CareHome
 
 def model_primary_service_rolling_average(
     df: DataFrame,
-    care_home_column_to_average: str,
+    care_home_ratio_column_to_average: str,
     non_res_column_to_average: str,
     number_of_days: int,
-    care_home_ratio_column_name: str,
-    model_column_name: str,
+    model_ratio_column_name: str,
+    model_filled_posts_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average of a specified column over a given window of days.
+    Calculates the rolling average of specified columns over a given window of days.
 
-    Calculates the rolling average of a specified column over a given window of days for care homes and non residential locations separately. The
-    additional column will be added with the column name 'model_column_name'.
+    Calculates the rolling average of specified columns over a given window of days for care homes and non residential locations separately. The
+    additional columns will be added with the column names 'model_filled_posts_column_name' and 'model_ratio_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
-        care_home_column_to_average (str): The name of the column to average for care homes.
+        care_home_ratio_column_to_average (str): The name of the column to average for care homes.
         non_res_column_to_average (str): The name of the column to average for non residential locations.
         number_of_days (int): The number of days to include in the rolling average time period.
-        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
-        model_column_name (str): The name of the new column to store the rolling average.
+        model_ratio_column_name (str): The name of the column to store the care home ratio rolling average.
+        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average.
@@ -36,10 +35,14 @@ def model_primary_service_rolling_average(
     window = define_window_specifications(number_of_days)
     temp_col = "temp_col"
     df = run_window_calculations(
-        df, care_home_column_to_average, non_res_column_to_average, window, temp_col
+        df,
+        care_home_ratio_column_to_average,
+        non_res_column_to_average,
+        window,
+        temp_col,
     )
     df = allocate_averages_to_columns(
-        df, model_column_name, care_home_ratio_column_name, temp_col
+        df, model_filled_posts_column_name, model_ratio_column_name, temp_col
     )
 
     return df
@@ -47,8 +50,8 @@ def model_primary_service_rolling_average(
 
 def allocate_averages_to_columns(
     df: DataFrame,
-    model_column_name: str,
-    care_home_ratio_column_name: str,
+    model_filled_posts_column_name: str,
+    model_ratio_column_name: str,
     temp_col: str,
 ) -> DataFrame:
     """
@@ -58,19 +61,19 @@ def allocate_averages_to_columns(
 
     Args:
         df (DataFrame): The input DataFrame.
-        model_column_name (str): The name of the new column to store the rolling average.
-        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
+        model_filled_posts_column_name (str): The name of the new column to store the rolling average.
+        model_ratio_column_name (str): The name of the column to store the care home ratio.
         temp_col (str): A temporary column containing the values before they are correctly allocated.
 
     Returns:
         DataFrame: The input DataFrame with the correctly labelled columns and without the temporary column.
     """
     df = df.withColumn(
-        care_home_ratio_column_name,
+        model_ratio_column_name,
         F.when(F.col(IndCqc.care_home) == CareHome.care_home, (F.col(temp_col))),
     )
     df = df.withColumn(
-        model_column_name,
+        model_filled_posts_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             (F.col(temp_col)) * F.col(IndCqc.number_of_beds),
