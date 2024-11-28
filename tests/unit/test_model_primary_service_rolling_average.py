@@ -94,18 +94,54 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
         self.returned_data = self.returned_df.collect()
         self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
 
-    def test_model_primary_service_rolling_average_returns_expected_columns(self):
+    def test_create_single_column_to_average_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_rolling_average_model_values_match_expected(
+    def test_returned_column_to_average_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][IndCqc.column_to_average],
-                self.expected_data[i][IndCqc.column_to_average],
+                self.returned_data[i][IndCqc.temp_column_to_average],
+                self.expected_data[i][IndCqc.temp_column_to_average],
+                f"Returned row {i} does not match expected",
+            )
+
+
+class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        number_of_days: int = 3
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_rolling_average_rows,
+            Schemas.calculate_rolling_average_schema,
+        )
+        self.returned_df = job.calculate_rolling_average(test_df, number_of_days)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_rolling_average_rows,
+            Schemas.expected_calculate_rolling_average_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+
+    def test_calculate_rolling_average_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_rolling_average_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCqc.temp_rolling_average],
+                self.expected_data[i][IndCqc.temp_rolling_average],
+                2,
                 f"Returned row {i} does not match expected",
             )

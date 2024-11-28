@@ -51,7 +51,6 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
-    column_to_average: str = "column_to_average"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
@@ -219,6 +218,8 @@ class IndCqcColumns:
     specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
     standardised_residual: str = "standardised_residual"
+    temp_column_to_average: str = "temp_column_to_average"
+    temp_rolling_average: str = "temp_rolling_average"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"

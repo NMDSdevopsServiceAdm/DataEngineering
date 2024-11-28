@@ -2527,7 +2527,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -2557,7 +2557,22 @@ class ModelPrimaryServiceRollingAverage:
     expected_single_column_to_average_schema = StructType(
         [
             *single_column_to_average_schema,
-            StructField(IndCQC.column_to_average, DoubleType(), True),
+            StructField(IndCQC.temp_column_to_average, DoubleType(), True),
+        ]
+    )
+
+    calculate_rolling_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.temp_column_to_average, DoubleType(), True),
+        ]
+    )
+    expected_calculate_rolling_average_schema = StructType(
+        [
+            *calculate_rolling_average_schema,
+            StructField(IndCQC.temp_rolling_average, DoubleType(), True),
         ]
     )
 
