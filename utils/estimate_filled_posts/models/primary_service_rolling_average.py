@@ -110,13 +110,14 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
 
 def create_final_model_columns(
     df: DataFrame,
-    model_filled_posts_column_name: str,
     model_filled_posts_per_bed_ratio_column_name: str,
+    model_filled_posts_column_name: str,
 ) -> DataFrame:
     """
     Allocates values from temp_column_to_average to the correctly labelled columns.
 
-    If the location is a care home, copy the .
+    `model_filled_posts_per_bed_ratio_column_name` is only populated for care homes and replicates what is in the `temp_column_to_average`.
+    `model_filled_posts_column_name`  replicates what is in the `temp_column_to_average` for non-care homes and for care homes, the column is multiplied by number of beds to get the equivalent filled posts.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -124,7 +125,7 @@ def create_final_model_columns(
         model_filled_posts_per_bed_ratio_column_name (str): The name of the column to store the care home ratio.
 
     Returns:
-        DataFrame: The input DataFrame with the correctly labelled columns and without the temporary column.
+        DataFrame: The input DataFrame with the two model columns added.
     """
     df = df.withColumn(
         model_filled_posts_per_bed_ratio_column_name,

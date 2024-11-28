@@ -5152,6 +5152,23 @@ class ModelPrimaryServiceRollingAverage:
     ]
     # fmt: on
 
+    create_final_model_columns_rows = [
+        ("1-001", CareHome.care_home, 10, 1.6),
+        ("1-002", CareHome.care_home, 12, None),
+        ("1-003", CareHome.care_home, None, 1.8),
+        ("1-004", CareHome.not_care_home, 10, 45.0),
+        ("1-005", CareHome.not_care_home, 12, None),
+        ("1-006", CareHome.not_care_home, None, 50.0),
+    ]
+    expected_create_final_model_columns_rows = [
+        ("1-001", CareHome.care_home, 10, 1.6, 1.6, 16.0),
+        ("1-002", CareHome.care_home, 12, None, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8, None),
+        ("1-004", CareHome.not_care_home, 10, 45.0, None, 45.0),
+        ("1-005", CareHome.not_care_home, 12, None, None, None),
+        ("1-006", CareHome.not_care_home, None, 50.0, None, 50.0),
+    ]
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:

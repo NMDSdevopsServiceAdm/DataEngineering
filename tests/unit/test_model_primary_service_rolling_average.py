@@ -145,3 +145,55 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
                 2,
                 f"Returned row {i} does not match expected",
             )
+
+
+class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.create_final_model_columns_rows,
+            Schemas.create_final_model_columns_schema,
+        )
+        self.returned_df = job.create_final_model_columns(
+            test_df,
+            IndCqc.rolling_average_model_filled_posts_per_bed_ratio,
+            IndCqc.rolling_average_model,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_final_model_columns_rows,
+            Schemas.expected_create_final_model_columns_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+
+    def test_create_final_model_columns_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_model_filled_posts_per_bed_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    IndCqc.rolling_average_model_filled_posts_per_bed_ratio
+                ],
+                self.expected_data[i][
+                    IndCqc.rolling_average_model_filled_posts_per_bed_ratio
+                ],
+                2,
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_model_filled_posts_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCqc.rolling_average_model],
+                self.expected_data[i][IndCqc.rolling_average_model],
+                f"Returned row {i} does not match expected",
+            )
