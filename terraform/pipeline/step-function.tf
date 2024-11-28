@@ -171,6 +171,29 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
+  name     = "${local.workspace_prefix}-IngestCqcPir"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/IngestCqcPir-StepFunction.json", {
+    ingest_cqc_pir_job_name              = module.ingest_cqc_pir_data_job.job_name
+    cqc_crawler_name                     = module.cqc_crawler.crawler_name
+    dataset_bucket_name                  = module.datasets_bucket.bucket_name
+    run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
+    pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
 resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
   name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn

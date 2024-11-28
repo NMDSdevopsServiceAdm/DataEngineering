@@ -107,6 +107,9 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )
+    cqc_care_workers_employed_imputed: str = (
+        CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
+    )
     cqc_care_workers_employed_rolling_avg: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_rolling_avg"
     )

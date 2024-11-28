@@ -5,10 +5,6 @@ import jobs.clean_capacity_tracker_non_res_data as job
 from tests.test_file_data import CapacityTrackerNonResData as Data
 from tests.test_file_schemas import CapacityTrackerNonResSchema as Schemas
 from utils import utils
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResColumns as CTNR,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
