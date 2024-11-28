@@ -20,7 +20,7 @@ def model_primary_service_rolling_average(
     Calculates the rolling average of specified columns over a given window of days.
 
     Calculates the rolling average of specified columns over a given window of days for care homes and non residential locations separately. The
-    additional column will be added with the column names 'model_filled_posts_column_name' and 'model_ratio_column_name'.
+    additional columns will be added with the column names 'model_filled_posts_column_name' and 'model_ratio_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -35,7 +35,6 @@ def model_primary_service_rolling_average(
     """
     window = define_window_specifications(number_of_days)
     temp_col = "temp_col"
-
     df = run_window_calculations(
         df,
         care_home_ratio_column_to_average,
