@@ -154,7 +154,9 @@ def run_diagnostics_for_care_homes(
     )
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df, column_for_comparison, list_of_models
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        list_of_models,
     )
     care_home_diagnostics_df = dUtils.filter_to_known_values(
         care_home_diagnostics_df, IndCQC.estimate_value
@@ -166,7 +168,8 @@ def run_diagnostics_for_care_homes(
         care_home_diagnostics_df, window
     )
     care_home_diagnostics_df = dUtils.calculate_residuals(
-        care_home_diagnostics_df, column_for_comparison
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed_imputed,
     )
     care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
         care_home_diagnostics_df,
