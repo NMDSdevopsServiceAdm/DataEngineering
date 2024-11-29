@@ -117,8 +117,8 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][job.TempCol.temp_column_to_average],
-                self.expected_data[i][job.TempCol.temp_column_to_average],
+                self.returned_data[i][job.TempCol.column_to_average],
+                self.expected_data[i][job.TempCol.column_to_average],
                 f"Returned row {i} does not match expected",
             )
 
