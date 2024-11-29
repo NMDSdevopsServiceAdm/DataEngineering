@@ -287,7 +287,7 @@ resource "aws_sfn_state_machine" "capacity_tracker_validation_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/CapacityTrackerValidationPipeline-StepFunction.json", {
     dataset_bucket_uri                                = module.datasets_bucket.bucket_uri
-    validate_capacity_tracker_care_home_data_job_name = module.validate_capacity_tracker_care_home_data_job.job_name
+    validate_cleaned_capacity_tracker_care_home_data_job_name = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
     data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
   })

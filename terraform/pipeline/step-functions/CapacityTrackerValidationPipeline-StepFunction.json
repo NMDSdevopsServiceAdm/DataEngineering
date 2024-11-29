@@ -12,7 +12,7 @@
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_capacity_tracker_care_home_data_job_name}",
+                  "JobName": "${validate_cleaned_capacity_tracker_care_home_data_job_name}",
                   "Arguments": {
                     "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
                     "--capacity_tracker_care_home_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
