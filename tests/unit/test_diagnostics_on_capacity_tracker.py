@@ -22,6 +22,7 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
     CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
     NON_RES_DIAGNOSTICS_DESTINATION = "some/other/directory"
+    NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION = "yet/another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
@@ -63,10 +64,11 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
             self.CARE_HOME_DIAGNOSTICS_DESTINATION,
             self.CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION,
             self.NON_RES_DIAGNOSTICS_DESTINATION,
+            self.NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 3)
+        self.assertEqual(write_to_parquet_patch.call_count, 4)
 
 
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):

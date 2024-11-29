@@ -70,6 +70,7 @@ def main(
     care_home_diagnostics_destination,
     care_home_summary_diagnostics_destination,
     non_res_diagnostics_destination,
+    non_res_summary_diagnostics_destination,
 ):
     print("Creating diagnostics for capacity tracker data")
 
@@ -85,12 +86,13 @@ def main(
         filled_posts_df, ct_care_home_df, CTCHClean.agency_and_non_agency_total_employed
     )
     non_res_diagnostics_df = run_diagnostics_for_non_residential(
-        filled_posts_df, ct_non_res_df
+        filled_posts_df, ct_non_res_df, CTNRClean.capacity_tracker_filled_post_estimate
     )
 
     care_home_summary_df = dUtils.create_summary_diagnostics_table(
         care_home_diagnostics_df
     )
+    non_res_summary_df = dUtils.create_summary_diagnostics_table(non_res_diagnostics_df)
 
     utils.write_to_parquet(
         care_home_diagnostics_df,
@@ -109,6 +111,12 @@ def main(
         non_res_diagnostics_destination,
         mode="overwrite",
         partitionKeys=partition_keys,
+    )
+    utils.write_to_parquet(
+        non_res_summary_df,
+        non_res_summary_diagnostics_destination,
+        mode="overwrite",
+        partitionKeys=[IndCQC.primary_service_type],
     )
 
 
@@ -165,6 +173,7 @@ def run_diagnostics_for_care_homes(
 def run_diagnostics_for_non_residential(
     filled_posts_df: DataFrame,
     ct_non_res_df: DataFrame,
+    column_for_comparison: str,
 ) -> DataFrame:
     """
     Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
@@ -172,6 +181,7 @@ def run_diagnostics_for_non_residential(
     Args:
         filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
         ct_non_res_df (DataFrame): A dataframe containing cleaned capacity tracker data for non residential locations.
+        column_for_comparison (str): A column to use from the capacity tracker data for calculating residuals.
 
     Returns:
         DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
@@ -210,6 +220,29 @@ def run_diagnostics_for_non_residential(
             CTNRClean.capacity_tracker_filled_post_estimate,
             CTNRClean.capacity_tracker_filled_post_estimate_source,
         )
+    )
+    list_of_models = dUtils.create_list_of_models()
+    non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
+        non_res_diagnostics_df, column_for_comparison, list_of_models
+    )
+    non_res_diagnostics_df = dUtils.filter_to_known_values(
+        non_res_diagnostics_df, IndCQC.estimate_value
+    )
+
+    window = dUtils.create_window_for_model_and_service_splits()
+
+    non_res_diagnostics_df = dUtils.calculate_distribution_metrics(
+        non_res_diagnostics_df, window
+    )
+    non_res_diagnostics_df = dUtils.calculate_residuals(
+        non_res_diagnostics_df, column_for_comparison
+    )
+    non_res_diagnostics_df = dUtils.calculate_aggregate_residuals(
+        non_res_diagnostics_df,
+        window,
+        absolute_value_cutoff,
+        percentage_value_cutoff,
+        standardised_value_cutoff,
     )
     return non_res_diagnostics_df
 
@@ -300,6 +333,7 @@ if __name__ == "__main__":
         care_home_diagnostics_destination,
         care_home_summary_diagnostics_destination,
         non_res_diagnostics_destination,
+        non_res_summary_diagnostics_destination,
     ) = utils.collect_arguments(
         (
             "--estimate_filled_posts_source",
@@ -325,6 +359,10 @@ if __name__ == "__main__":
             "--non_res_diagnostics_destination",
             "A destination directory for outputting full non_residential diagnostics tables.",
         ),
+        (
+            "--non_res_summary_diagnostics_destination",
+            "A destination directory for outputting summary non residential diagnostics tables.",
+        ),
     )
 
     main(
@@ -334,6 +372,7 @@ if __name__ == "__main__":
         care_home_diagnostics_destination,
         care_home_summary_diagnostics_destination,
         non_res_diagnostics_destination,
+        non_res_summary_diagnostics_destination,
     )
 
     print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
