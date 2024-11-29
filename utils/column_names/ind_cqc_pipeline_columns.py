@@ -101,12 +101,8 @@ class IndCqcColumns:
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
     extrapolation_backwards: str = "extrapolation_backwards"
-    extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_forwards: str = "extrapolation_forwards"
     extrapolation_model: str = "extrapolation_model"
-    extrapolation_non_res_with_dormancy_model: str = (
-        "extrapolation_non_res_with_dormancy_model"
-    )
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
@@ -207,7 +203,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_count: str = "rolling_count"
     rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
