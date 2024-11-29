@@ -12,8 +12,8 @@ class TempCol:
     """The names of the temporary columns created during the rolling average process."""
 
     care_home_status_count: str = "care_home_status_count"
+    column_to_average: str = "column_to_average"
     submission_count: str = "submission_count"
-    temp_column_to_average: str = "temp_column_to_average"
     temp_rolling_average: str = "temp_rolling_average"
 
 
@@ -53,7 +53,7 @@ def model_primary_service_rolling_average(
         ratio_rolling_average_model_column_name,
         posts_rolling_average_model_column_name,
     )
-    df = df.drop(TempCol.temp_column_to_average, TempCol.temp_rolling_average)
+    df = df.drop(TempCol.column_to_average, TempCol.temp_rolling_average)
 
     return df
 
@@ -75,7 +75,7 @@ def create_single_column_to_average(
         DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
     """
     df = df.withColumn(
-        TempCol.temp_column_to_average,
+        TempCol.column_to_average,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             F.col(ratio_column_to_average),
@@ -86,7 +86,7 @@ def create_single_column_to_average(
 
 def clean_column_to_average(df: DataFrame) -> DataFrame:
     """
-    Only keep values in the temp_column_to_average for locations who have only submitted at least twice and only had one care home status.
+    Only keep values in the column_to_average for locations who have only submitted at least twice and only had one care home status.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -100,11 +100,11 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
     df = calculate_care_home_status_count(df)
     df = calculate_submission_count(df)
     df = df.withColumn(
-        TempCol.temp_column_to_average,
+        TempCol.column_to_average,
         F.when(
             (F.col(TempCol.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
-            F.col(TempCol.temp_column_to_average),
+            F.col(TempCol.column_to_average),
         ).otherwise(F.lit(None)),
     )
     df = df.drop(TempCol.care_home_status_count, TempCol.submission_count)
@@ -143,7 +143,7 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = df.withColumn(
-        TempCol.submission_count, F.count(TempCol.temp_column_to_average).over(w)
+        TempCol.submission_count, F.count(TempCol.column_to_average).over(w)
     )
     return df
 
@@ -173,7 +173,7 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
 
     df = df.withColumn(
         TempCol.temp_rolling_average,
-        F.avg(TempCol.temp_column_to_average).over(window),
+        F.avg(TempCol.column_to_average).over(window),
     )
     return df
 
