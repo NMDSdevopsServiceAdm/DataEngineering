@@ -111,6 +111,24 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
+class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
+        pass
+
+    def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
+        self,
+    ):
+        pass
+
+    def test_clean_column_to_average_is_not_nulled_when_submitted_submitted_more_than_once_and_consistent_care_home_status(
+        self,
+    ):
+        pass
+
+
 class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()

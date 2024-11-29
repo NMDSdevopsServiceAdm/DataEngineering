@@ -24,10 +24,11 @@ def model_primary_service_rolling_average(
     posts_rolling_average_model_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average of specified columns over a given window of days (where three days refers to the current day plus the previous two).
+    Calculates the rolling average split by primary service type of specified columns over a given window of days (where three days refers to the current day plus the previous two).
 
-    Calculates the rolling average of specified columns over a given window of days for care homes and non residential locations separately. The
-    additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
+    Calculates the rolling average of specified columns over a given window of days partitioned by primary service type.
+    Only data from locations who have at least 2 submissions and a consistent care_home status throughout time are included in the calculations.
+    The additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -43,9 +44,7 @@ def model_primary_service_rolling_average(
     df = create_single_column_to_average(
         df, ratio_column_to_average, posts_column_to_average
     )
-
-    # Only include data for locations who have at least 2 submissions and have only ever been a CH or NR
-
+    df = clean_column_to_average(df)
     df = calculate_rolling_average(df, number_of_days)
     df = create_final_model_columns(
         df,
@@ -80,6 +79,19 @@ def create_single_column_to_average(
             F.col(ratio_column_to_average),
         ).otherwise(F.col(posts_column_to_average)),
     )
+    return df
+
+
+def clean_column_to_average(df: DataFrame) -> DataFrame:
+    """
+    This function will null values in the temp_column_to_average for locations who have only submitted once or have changed their care home status at some point.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with unwanted data nulled.
+    """
     return df
 
 
