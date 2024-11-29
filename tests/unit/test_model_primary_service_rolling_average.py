@@ -91,8 +91,8 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_single_column_to_average_rows,
             Schemas.expected_single_column_to_average_schema,
         )
-        self.returned_data = self.returned_df.collect()
-        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_create_single_column_to_average_returns_expected_columns(self):
         self.assertEqual(
@@ -131,8 +131,8 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     def test_clean_column_to_average_is_not_nulled_when_submitted_submitted_more_than_once_and_consistent_care_home_status(
         self,
     ):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.sort(IndCqc.unix_time).collect()
+        returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
     def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
@@ -145,8 +145,8 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_clean_column_to_average_one_submission_rows,
             Schemas.clean_column_to_average_schema,
         )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.sort(IndCqc.unix_time).collect()
+        returned_data = returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
     def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
@@ -161,8 +161,8 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_clean_column_to_average_both_statuses_rows,
             Schemas.clean_column_to_average_schema,
         )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.sort(IndCqc.unix_time).collect()
+        returned_data = returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
 
@@ -179,8 +179,8 @@ class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_calculate_care_home_status_count_rows,
             Schemas.expected_calculate_care_home_status_count_schema,
         )
-        self.returned_data = self.returned_df.collect()
-        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_calculate_care_home_status_count_returns_expected_columns(self):
         self.assertEqual(
@@ -212,8 +212,8 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_calculate_submission_count_same_care_home_status_rows,
             Schemas.expected_calculate_submission_count_schema,
         )
-        self.returned_data = self.returned_df.collect()
-        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_calculate_submission_count_returns_expected_columns(self):
         self.assertEqual(
@@ -243,8 +243,8 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_calculate_submission_count_mixed_care_home_status_rows,
             Schemas.expected_calculate_submission_count_schema,
         )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.sort(IndCqc.care_home).collect()
+        returned_data = returned_df.sort(IndCqc.care_home).collect()
+        expected_data = expected_df.collect()
 
         for i in range(len(returned_data)):
             self.assertEqual(
@@ -269,8 +269,8 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_calculate_rolling_average_rows,
             Schemas.expected_calculate_rolling_average_schema,
         )
-        self.returned_data = self.returned_df.collect()
-        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_calculate_rolling_average_returns_expected_columns(self):
         self.assertEqual(
@@ -307,8 +307,8 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_create_final_model_columns_rows,
             Schemas.expected_create_final_model_columns_schema,
         )
-        self.returned_data = self.returned_df.collect()
-        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_create_final_model_columns_returns_expected_columns(self):
         self.assertEqual(
