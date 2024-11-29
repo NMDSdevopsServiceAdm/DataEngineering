@@ -52,8 +52,11 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
-
-care_worker_ratio: float = 0.74
+care_worker_ratio: dict = {"micro": 0.61, "small": 0.74, "medium_or_large": 0.79}
+org_size_care_worker_upper_limit: dict = {
+    "micro": 10 * care_worker_ratio["micro"],
+    "small": 50 * care_worker_ratio["small"],
+}
 
 
 def main(
@@ -197,7 +200,7 @@ def run_diagnostics_for_non_residential(
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             non_res_diagnostics_df,
             [
-                CTNRClean.cqc_care_workers_employed_imputed_all_posts,
+                CTNRClean.capacity_tracker_all_posts,
                 IndCQC.estimate_filled_posts,
             ],
             CTNRClean.capacity_tracker_filled_post_estimate,
@@ -261,8 +264,23 @@ def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with a new column containing the all-workers estimate.
     """
     df = df.withColumn(
-        CTNRClean.cqc_care_workers_employed_imputed_all_posts,
-        F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
+        CTNRClean.capacity_tracker_all_posts,
+        F.when(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            < org_size_care_worker_upper_limit["micro"],
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["micro"],
+        )
+        .when(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            < org_size_care_worker_upper_limit["small"],
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["small"],
+        )
+        .otherwise(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["medium_or_large"]
+        ),
     )
     return df
 
