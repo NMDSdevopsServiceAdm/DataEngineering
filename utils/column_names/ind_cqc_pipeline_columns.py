@@ -101,12 +101,8 @@ class IndCqcColumns:
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
     extrapolation_backwards: str = "extrapolation_backwards"
-    extrapolation_care_home_model: str = "extrapolation_" + care_home_model
     extrapolation_forwards: str = "extrapolation_forwards"
     extrapolation_model: str = "extrapolation_model"
-    extrapolation_non_res_with_dormancy_model: str = (
-        "extrapolation_non_res_with_dormancy_model"
-    )
     extrapolation_ratio: str = "extrapolation_ratio"
     extrapolation_residual: str = "extrapolation_residual"
     features: str = "features"
