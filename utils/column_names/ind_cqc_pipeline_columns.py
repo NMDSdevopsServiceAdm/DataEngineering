@@ -109,9 +109,6 @@ class IndCqcColumns:
     )
     extrapolation_ratio: str = "extrapolation_ratio"
     extrapolation_residual: str = "extrapolation_residual"
-    extrapolation_posts_rolling_average_model: str = (
-        "extrapolation_posts_rolling_average_model"
-    )
     features: str = "features"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
