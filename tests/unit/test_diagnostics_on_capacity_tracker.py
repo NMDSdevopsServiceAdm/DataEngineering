@@ -9,9 +9,6 @@ from tests.test_file_schemas import (
     DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
 from utils import utils
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
