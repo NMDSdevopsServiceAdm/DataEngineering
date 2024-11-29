@@ -49,12 +49,7 @@ def model_primary_service_rolling_average(
         df, ratio_column_to_average, posts_column_to_average
     )
     df = clean_column_to_average(df)
-    df = model_interpolation(
-        df,
-        TempCol.column_to_average,
-        "straight",
-        TempCol.column_to_average_interpolated,
-    )
+    df = interpolate_column_to_average(df)
     df = calculate_rolling_average(df, number_of_days)
     df = create_final_model_columns(
         df,
@@ -63,8 +58,8 @@ def model_primary_service_rolling_average(
     )
     df = df.drop(
         TempCol.column_to_average,
-        TempCol.temp_rolling_average,
         TempCol.column_to_average_interpolated,
+        TempCol.temp_rolling_average,
     )
 
     return df
@@ -156,6 +151,29 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(
         TempCol.submission_count, F.count(TempCol.column_to_average).over(w)
+    )
+    return df
+
+
+def interpolate_column_to_average(df: DataFrame) -> DataFrame:
+    """
+    Interpolate column_to_average and coalesce known column_to_average values with interpolated values.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with submission count.
+    """
+    df = model_interpolation(
+        df,
+        TempCol.column_to_average,
+        "straight",
+        TempCol.column_to_average_interpolated,
+    )
+    df = df.withColumn(
+        TempCol.column_to_average_interpolated,
+        F.coalesce(TempCol.column_to_average, TempCol.column_to_average_interpolated),
     )
     return df
 

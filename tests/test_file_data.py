@@ -5155,6 +5155,19 @@ class ModelPrimaryServiceRollingAverage:
         ("1-001", CareHome.care_home, 10.0, 2),
     ]
 
+    interpolate_column_to_average_rows = [
+        ("1-001", 1704067200, 30.0),
+        ("1-001", 1704153600, None),
+        ("1-001", 1704240000, 34.0),
+        ("1-001", 1704326400, None),
+    ]
+    expected_interpolate_column_to_average_rows = [
+        ("1-001", 1704067200, 30.0, 30.0),
+        ("1-001", 1704153600, None, 32.0),
+        ("1-001", 1704240000, 34.0, 34.0),
+        ("1-001", 1704326400, None, None),
+    ]
+
     # fmt: off
     calculate_rolling_average_rows = [
         ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1),

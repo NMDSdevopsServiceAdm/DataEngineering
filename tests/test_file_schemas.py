@@ -2603,6 +2603,20 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    interpolate_column_to_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(column_to_average, DoubleType(), True),
+        ]
+    )
+    expected_interpolate_column_to_average_schema = StructType(
+        [
+            *interpolate_column_to_average_schema,
+            StructField(column_to_average_interpolated, DoubleType(), True),
+        ]
+    )
+
     calculate_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

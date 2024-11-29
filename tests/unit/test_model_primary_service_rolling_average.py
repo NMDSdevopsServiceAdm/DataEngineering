@@ -266,6 +266,39 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
+class InterpolateColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.interpolate_column_to_average_rows,
+            Schemas.interpolate_column_to_average_schema,
+        )
+        self.returned_df = job.interpolate_column_to_average(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_column_to_average_rows,
+            Schemas.expected_interpolate_column_to_average_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_interpolate_column_to_average_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_column_to_average_interpolated_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][job.TempCol.column_to_average_interpolated],
+                self.expected_data[i][job.TempCol.column_to_average_interpolated],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
