@@ -130,7 +130,7 @@ def main(
             IndCQC.activity_count,
             IndCQC.specialism_count,
             IndCQC.time_registered,
-            IndCQC.rolling_average_model,
+            IndCQC.posts_rolling_average_model,
         ]
         + service_keys
         + regions

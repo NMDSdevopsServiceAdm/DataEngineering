@@ -5106,6 +5106,69 @@ class ModelPrimaryServiceRollingAverage:
     ]
     # fmt: on
 
+    single_column_to_average_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None),
+        ("1-003", CareHome.care_home, None, 1.8),
+        ("1-004", CareHome.care_home, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6),
+        ("1-006", CareHome.not_care_home, 10.0, None),
+        ("1-007", CareHome.not_care_home, None, 1.6),
+        ("1-008", CareHome.not_care_home, None, None),
+    ]
+    expected_single_column_to_average_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
+        ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
+        ("1-007", CareHome.not_care_home, None, 1.8, None),
+        ("1-008", CareHome.not_care_home, None, None, None),
+    ]
+
+    # fmt: off
+    calculate_rolling_average_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1),
+        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.2),
+        ("1-003", PrimaryServiceType.care_home_only, 1672704000, 1.3),
+        ("1-004", PrimaryServiceType.care_home_only, 1672790400, 1.4),
+        ("1-005", PrimaryServiceType.care_home_only, 1672876800, 1.4),
+        ("1-006", PrimaryServiceType.care_home_only, 1672876800, 1.3),
+        ("1-007", PrimaryServiceType.non_residential, 1672531200, 10.0),
+        ("1-008", PrimaryServiceType.non_residential, 1672704000, 20.0),
+        ("1-009", PrimaryServiceType.non_residential, 1672876800, 30.0),
+    ]
+    expected_calculate_rolling_average_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, 1.1),
+        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.15),
+        ("1-003", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2),
+        ("1-004", PrimaryServiceType.care_home_only, 1672790400, 1.4, 1.3),
+        ("1-005", PrimaryServiceType.care_home_only, 1672876800, 1.4, 1.35),
+        ("1-006", PrimaryServiceType.care_home_only, 1672876800, 1.3, 1.35),
+        ("1-007", PrimaryServiceType.non_residential, 1672531200, 10.0, 10.0),
+        ("1-008", PrimaryServiceType.non_residential, 1672704000, 20.0, 15.0),
+        ("1-009", PrimaryServiceType.non_residential, 1672876800, 30.0, 25.0),
+    ]
+    # fmt: on
+
+    create_final_model_columns_rows = [
+        ("1-001", CareHome.care_home, 10, 1.6),
+        ("1-002", CareHome.care_home, 12, None),
+        ("1-003", CareHome.care_home, None, 1.8),
+        ("1-004", CareHome.not_care_home, 10, 45.0),
+        ("1-005", CareHome.not_care_home, 12, None),
+        ("1-006", CareHome.not_care_home, None, 50.0),
+    ]
+    expected_create_final_model_columns_rows = [
+        ("1-001", CareHome.care_home, 10, 1.6, 1.6, 16.0),
+        ("1-002", CareHome.care_home, 12, None, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8, None),
+        ("1-004", CareHome.not_care_home, 10, 45.0, None, 45.0),
+        ("1-005", CareHome.not_care_home, 12, None, None, None),
+        ("1-006", CareHome.not_care_home, None, 50.0, None, 50.0),
+    ]
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:
