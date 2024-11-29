@@ -33,7 +33,7 @@ def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
     """
     Populate the estimates and source columns using the hierarchy provided in the list.
 
-    The first item in the list is populated first. Subsequent gaps are filled by the following items in the list.
+    The first item in the list is populated first. Subsequent null values are filled by the following items in the list.
 
     Args:
         df(DataFrame): A data frame with estimates that need merging into a single column.
