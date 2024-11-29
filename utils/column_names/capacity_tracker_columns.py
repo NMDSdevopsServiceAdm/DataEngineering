@@ -51,6 +51,12 @@ class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
+    agency_and_non_agency_total_employed_rolling_avg: str = (
+        agency_and_non_agency_total_employed + "_rolling_avg"
+    )
+    agency_and_non_agency_total_employed_imputed: str = (
+        agency_and_non_agency_total_employed + "_imputed"
+    )
 
 
 @dataclass
