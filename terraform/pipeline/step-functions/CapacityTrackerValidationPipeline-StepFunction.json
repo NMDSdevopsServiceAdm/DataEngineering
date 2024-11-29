@@ -1,0 +1,78 @@
+{
+    "Comment": "A state machine for validating Capacity Tracker data",
+    "StartAt": "Capacity Tracker validation",
+    "States": {
+      "Capacity Tracker validation": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "Run validate capacity tracker care home data",
+            "States": {
+              "Run validate capacity tracker care home data": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_capacity_tracker_care_home_data_job_name}",
+                  "Arguments": {
+                    "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
+                    "--capacity_tracker_care_home_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_care_home_cleaned_data/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "Start crawler when success",
+        "Comment": "A state machine for validating Capacity Tracker data",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Publish error notification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "Start crawler when success": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Success"
+      },
+      "Publish error notification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+        "Parameters": {
+          "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+          "Payload": {
+            "Error.$": "$.error.Cause",
+            "ExecutionId.$": "$$.Execution.Id",
+            "StateMachineName.$": "$$.StateMachine.Name",
+            "StateMachineId.$": "$$.StateMachine.Id",
+            "ExecutionStartTime.$": "$$.Execution.StartTime",
+            "CallbackToken.$": "$$.Task.Token"
+          }
+        },
+        "Next": "Start crawler when failed"
+      },
+      "Start crawler when failed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Fail"
+      },
+      "Fail": {
+        "Type": "Fail"
+      },
+      "Success": {
+        "Type": "Succeed"
+      }
+    }
+  }
