@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -19,6 +19,9 @@ from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interp
 )
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
     model_primary_service_rolling_average,
+)
+from utils.ind_cqc_filled_posts_utils.utils import (
+    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
 )
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -49,6 +52,15 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
+care_worker_ratio: dict = {
+    "micro": 0.61,
+    "small": 0.74,
+    "medium_or_large": 0.79,
+}  # Ratios based on exploration of SPSS estimates of care workers to filled posts by org size in 2023 and 2024.
+org_size_care_worker_upper_limit: dict = {
+    "micro": 10 * care_worker_ratio["micro"],  # We define micro orgs as 1-9 posts
+    "small": 50 * care_worker_ratio["small"],  # We define small orgs as 10-49 posts
+}
 
 
 def main(
@@ -185,6 +197,20 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
+    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
+        non_res_diagnostics_df,
+    )
+    non_res_diagnostics_df = (
+        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+            non_res_diagnostics_df,
+            [
+                CTNRClean.capacity_tracker_all_posts,
+                IndCQC.estimate_filled_posts,
+            ],
+            CTNRClean.capacity_tracker_filled_post_estimate,
+            CTNRClean.capacity_tracker_filled_post_estimate_source,
+        )
+    )
     return non_res_diagnostics_df
 
 
@@ -229,6 +255,38 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
+    """
+    Convert the cqc_care_workers_employed figures to all workers.
+
+    Args:
+        df (DataFrame): A dataframe with non res capacity tracker data.
+
+    Returns:
+        DataFrame: A dataframe with a new column containing the all-workers estimate.
+    """
+    df = df.withColumn(
+        CTNRClean.capacity_tracker_all_posts,
+        F.when(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            < org_size_care_worker_upper_limit["micro"],
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["micro"],
+        )
+        .when(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            < org_size_care_worker_upper_limit["small"],
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["small"],
+        )
+        .otherwise(
+            F.col(CTNRClean.cqc_care_workers_employed_imputed)
+            / care_worker_ratio["medium_or_large"]
+        ),
+    )
+    return df
 
 
 if __name__ == "__main__":

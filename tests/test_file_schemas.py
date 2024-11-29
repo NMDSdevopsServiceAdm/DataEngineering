@@ -4595,6 +4595,20 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
+    convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+        ]
+    )
+    expected_convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            *convert_to_all_posts_using_ratio_schema,
+            StructField(
+                CTNRClean.capacity_tracker_filled_post_estimate, FloatType(), True
+            ),
+        ]
+    )
 
 
 @dataclass

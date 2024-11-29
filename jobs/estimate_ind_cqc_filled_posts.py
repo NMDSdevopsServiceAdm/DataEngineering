@@ -162,6 +162,8 @@ def main(
                 IndCQC.non_res_without_dormancy_model,
                 IndCQC.posts_rolling_average_model,
             ],
+            IndCQC.estimate_filled_posts,
+            IndCQC.estimate_filled_posts_source,
         )
     )
 
