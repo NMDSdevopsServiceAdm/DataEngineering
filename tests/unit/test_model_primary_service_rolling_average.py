@@ -22,7 +22,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days = 89
+        number_of_days: int = 89
         self.estimates_df = self.spark.createDataFrame(
             Data.primary_service_rolling_average_rows,
             Schemas.primary_service_rolling_average_schema,
