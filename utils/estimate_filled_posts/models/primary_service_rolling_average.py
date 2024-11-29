@@ -1,131 +1,147 @@
-from pyspark.sql import DataFrame, Window
-import pyspark.sql.functions as F
+from dataclasses import dataclass
 
-from utils.utils import convert_days_to_unix_time
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from pyspark.sql import DataFrame, functions as F, Window
+
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
+from utils.utils import convert_days_to_unix_time
+
+
+@dataclass
+class TempCol:
+    """The names of the temporary columns created during the rolling average process."""
+
+    temp_column_to_average: str = "temp_column_to_average"
+    temp_rolling_average: str = "temp_rolling_average"
 
 
 def model_primary_service_rolling_average(
     df: DataFrame,
-    care_home_column_to_average: str,
-    non_res_column_to_average: str,
+    ratio_column_to_average: str,
+    posts_column_to_average: str,
     number_of_days: int,
-    care_home_ratio_column_name: str,
-    model_column_name: str,
+    ratio_rolling_average_model_column_name: str,
+    posts_rolling_average_model_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average of a specified column over a given window of days.
+    Calculates the rolling average of specified columns over a given window of days (where three days refers to the current day plus the previous two).
 
-    Calculates the rolling average of a specified column over a given window of days for care homes and non residential locations separately. The
-    additional column will be added with the column name 'model_column_name'.
+    Calculates the rolling average of specified columns over a given window of days for care homes and non residential locations separately. The
+    additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
-        care_home_column_to_average (str): The name of the column to average for care homes.
-        non_res_column_to_average (str): The name of the column to average for non residential locations.
-        number_of_days (int): The number of days to include in the rolling average time period.
-        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
-        model_column_name (str): The name of the new column to store the rolling average.
+        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
+        posts_column_to_average (str): The name of the filled posts column to average.
+        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
+        ratio_rolling_average_model_column_name (str): The name of the new column to store the care home filled posts per bed ratio rolling average.
+        posts_rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing the rolling average.
+        DataFrame: The input DataFrame with the new column containing the two new rolling average columns.
     """
-    window = define_window_specifications(number_of_days)
-    temp_col = "temp_col"
-    df = run_window_calculations(
-        df, care_home_column_to_average, non_res_column_to_average, window, temp_col
+    df = create_single_column_to_average(
+        df, ratio_column_to_average, posts_column_to_average
     )
-    df = allocate_averages_to_columns(
-        df, model_column_name, care_home_ratio_column_name, temp_col
+    df = calculate_rolling_average(df, number_of_days)
+    df = create_final_model_columns(
+        df,
+        ratio_rolling_average_model_column_name,
+        posts_rolling_average_model_column_name,
     )
+    df = df.drop(TempCol.temp_column_to_average, TempCol.temp_rolling_average)
 
     return df
 
 
-def allocate_averages_to_columns(
+def create_single_column_to_average(
     df: DataFrame,
-    model_column_name: str,
-    care_home_ratio_column_name: str,
-    temp_col: str,
+    ratio_column_to_average: str,
+    posts_column_to_average: str,
 ) -> DataFrame:
     """
-    Allocates values from a temporary column to the correctly labelled columns.
-
-    A temporary column is used so that the window functions can be run simultaneously to improve spark performance.
+    Creates one column to average using the ratio if the location is a care home and filled posts if not.
 
     Args:
         df (DataFrame): The input DataFrame.
-        model_column_name (str): The name of the new column to store the rolling average.
-        care_home_ratio_column_name (str): The name of the column to store the care home ratio.
-        temp_col (str): A temporary column containing the values before they are correctly allocated.
+        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
+        posts_column_to_average (str): The name of the filled posts column to average.
 
     Returns:
-        DataFrame: The input DataFrame with the correctly labelled columns and without the temporary column.
+        DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
     """
     df = df.withColumn(
-        care_home_ratio_column_name,
-        F.when(F.col(IndCqc.care_home) == CareHome.care_home, (F.col(temp_col))),
-    )
-    df = df.withColumn(
-        model_column_name,
+        TempCol.temp_column_to_average,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            (F.col(temp_col)) * F.col(IndCqc.number_of_beds),
-        ).otherwise(F.col(temp_col)),
+            F.col(ratio_column_to_average),
+        ).otherwise(F.col(posts_column_to_average)),
     )
-    df = df.drop(temp_col)
-
     return df
 
 
-def run_window_calculations(
-    df: DataFrame,
-    care_home_column_to_average: str,
-    non_res_column_to_average: str,
-    window: Window,
-    temp_col: str,
-) -> DataFrame:
+def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     """
-    Calculates the rolling average of a specified column over a given window of days for care home and non residential separately.
+    Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
 
-    A temporary column is used so that the window functions can be run simultaneously to improve spark performance.
+    Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
+    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
+    For example, for a 3 day rolling average we want the current day plus the two days prior (not the three days prior).
 
     Args:
         df (DataFrame): The input DataFrame.
-        care_home_column_to_average (str): The name of the column to average for care homes.
-        non_res_column_to_average (str): The name of the column to average for non residential locations.
-        window (Window): The window spec to use.
-        temp_col (str): A temporary column to store the values before they are correctly allocated.
+        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
 
     Returns:
-        DataFrame: The input DataFrame with the new temporary column.
+        DataFrame: The input DataFrame with the new column containing the calculated rolling average.
     """
-    df = df.withColumn(
-        temp_col,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            (F.avg(care_home_column_to_average).over(window)),
-        ).otherwise(F.avg(non_res_column_to_average).over(window)),
-    )
+    number_of_days_for_window: int = number_of_days - 1
 
-    return df
-
-
-def define_window_specifications(number_of_days: int) -> Window:
-    """
-    Define the Window specification partitioned by primary service column.
-
-    Args:
-        number_of_days (int): The number of days to use for the rolling average calculations.
-
-    Returns:
-        Window: The required Window specification partitioned by primary service column.
-    """
-    return (
+    window = (
         Window.partitionBy(IndCqc.primary_service_type)
         .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
+        .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
     )
+
+    df = df.withColumn(
+        TempCol.temp_rolling_average,
+        F.avg(TempCol.temp_column_to_average).over(window),
+    )
+    return df
+
+
+def create_final_model_columns(
+    df: DataFrame,
+    ratio_rolling_average_model_column_name: str,
+    posts_rolling_average_model_column_name: str,
+) -> DataFrame:
+    """
+    Allocates values from temp_rolling_average to the correctly labelled columns.
+
+    `ratio_rolling_average_model_column_name` is only populated for care homes and replicates what is in the `temp_rolling_average`.
+    `posts_rolling_average_model_column_name` replicates what is in the `temp_rolling_average` for non-care homes and for care homes, the column is multiplied by number of beds to get the equivalent filled posts.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        ratio_rolling_average_model_column_name (str): The name of the new column to store the care home filled posts per bed ratio rolling average.
+        posts_rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
+
+    Returns:
+        DataFrame: The input DataFrame with the two model columns added.
+    """
+    df = df.withColumn(
+        ratio_rolling_average_model_column_name,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(TempCol.temp_rolling_average),
+        ),
+    )
+    df = df.withColumn(
+        posts_rolling_average_model_column_name,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(TempCol.temp_rolling_average) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(TempCol.temp_rolling_average)),
+    )
+
+    return df
