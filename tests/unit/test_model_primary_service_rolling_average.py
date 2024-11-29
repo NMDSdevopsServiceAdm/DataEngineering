@@ -22,7 +22,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days: int = 89
+        number_of_days: int = 3
         self.estimates_df = self.spark.createDataFrame(
             Data.primary_service_rolling_average_rows,
             Schemas.primary_service_rolling_average_schema,
@@ -63,13 +63,25 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             sorted(self.expected_df.columns),
         )
 
+    def test_returned_ratio_rolling_average_model_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_row_object)):
+            self.assertAlmostEqual(
+                self.returned_row_object[i][IndCqc.ratio_rolling_average_model],
+                self.expected_row_object[i][IndCqc.ratio_rolling_average_model],
+                3,
+                f"Returned row {i} does not match expected",
+            )
+
     def test_returned_posts_rolling_average_model_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_row_object)):
-            self.assertEqual(
+            self.assertAlmostEqual(
                 self.returned_row_object[i][IndCqc.posts_rolling_average_model],
                 self.expected_row_object[i][IndCqc.posts_rolling_average_model],
+                3,
                 f"Returned row {i} does not match expected",
             )
 
@@ -307,7 +319,9 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_create_final_model_columns_rows,
             Schemas.expected_create_final_model_columns_schema,
         )
-        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
         self.expected_data = self.expected_df.collect()
 
     def test_create_final_model_columns_returns_expected_columns(self):
