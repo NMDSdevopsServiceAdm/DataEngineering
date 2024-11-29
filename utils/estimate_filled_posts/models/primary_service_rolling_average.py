@@ -102,8 +102,8 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempCol.temp_column_to_average,
         F.when(
-            (TempCol.care_home_status_count == one_care_home_status)
-            & (TempCol.submission_count >= two_submissions),
+            (F.col(TempCol.care_home_status_count) == one_care_home_status)
+            & (F.col(TempCol.submission_count) >= two_submissions),
             F.col(TempCol.temp_column_to_average),
         ).otherwise(F.lit(None)),
     )
