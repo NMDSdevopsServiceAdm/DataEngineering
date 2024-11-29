@@ -286,10 +286,10 @@ resource "aws_sfn_state_machine" "capacity_tracker_validation_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/CapacityTrackerValidationPipeline-StepFunction.json", {
-    dataset_bucket_uri                                = module.datasets_bucket.bucket_uri
+    dataset_bucket_uri                                        = module.datasets_bucket.bucket_uri
     validate_cleaned_capacity_tracker_care_home_data_job_name = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
-    data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
+    data_validation_reports_crawler_name                      = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn                      = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
