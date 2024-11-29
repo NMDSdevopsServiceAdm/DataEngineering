@@ -48,6 +48,9 @@ def main(
         IndCQC.ratio_rolling_average_model,
         IndCQC.posts_rolling_average_model,
     )
+    estimate_missing_ascwds_df.sort(
+        IndCQC.primary_service_type, IndCQC.cqc_location_import_date
+    ).show(200)
 
     # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
