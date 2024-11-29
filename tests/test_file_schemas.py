@@ -2525,7 +2525,8 @@ class EstimateMissingAscwdsFilledPostsSchemas:
 class ModelPrimaryServiceRollingAverage:
     care_home_status_count: str = "care_home_status_count"
     submission_count: str = "submission_count"
-    temp_column_to_average: str = "temp_column_to_average"
+    column_to_average: str = "column_to_average"
+    column_to_average_interpolated: str = "column_to_average_interpolated"
     temp_rolling_average: str = "temp_rolling_average"
 
     primary_service_rolling_average_schema = StructType(
@@ -2562,7 +2563,7 @@ class ModelPrimaryServiceRollingAverage:
     expected_single_column_to_average_schema = StructType(
         [
             *single_column_to_average_schema,
-            StructField(temp_column_to_average, DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
         ]
     )
 
@@ -2571,7 +2572,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(temp_column_to_average, DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
         ]
     )
 
@@ -2592,7 +2593,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(temp_column_to_average, DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
@@ -2607,7 +2608,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(temp_column_to_average, DoubleType(), True),
+            StructField(column_to_average_interpolated, DoubleType(), True),
         ]
     )
     expected_calculate_rolling_average_schema = StructType(

@@ -319,9 +319,7 @@ class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
             Data.expected_create_final_model_columns_rows,
             Schemas.expected_create_final_model_columns_schema,
         )
-        self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
-        ).collect()
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
         self.expected_data = self.expected_df.collect()
 
     def test_create_final_model_columns_returns_expected_columns(self):
