@@ -25,7 +25,7 @@ class CleanedCapacityTrackerCareHomeValidationRules:
             CTCHClean.agency_nurses_employed: 0,
             CTCHClean.agency_care_workers_employed: 0,
             CTCHClean.agency_non_care_workers_employed: 0,
-            CTCHClean.non_agency_total_employed: 1,
+            CTCHClean.non_agency_total_employed: 0,
             CTCHClean.agency_total_employed: 0,
             CTCHClean.agency_and_non_agency_total_employed: 1,
         },
