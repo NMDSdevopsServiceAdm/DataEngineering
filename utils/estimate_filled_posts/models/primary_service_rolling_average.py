@@ -82,10 +82,10 @@ def create_single_column_to_average(
 
 def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     """
-    Calculates the rolling average of a specified column over a given window of days.
+    Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
 
-    Calculates the rolling average of a specified column over a given window of days.
-    One day is removed from the provided number_of_days value to reflect that the range is inclusive.
+    Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
+    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
     For example, for a 3 day rolling average we want the current day plus the two days prior (not the three days prior).
 
     Args:
