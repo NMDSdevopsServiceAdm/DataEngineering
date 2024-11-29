@@ -83,7 +83,9 @@ def main(
     ct_non_res_df: DataFrame = utils.read_from_parquet(capacity_tracker_non_res_source)
 
     care_home_diagnostics_df = run_diagnostics_for_care_homes(
-        filled_posts_df, ct_care_home_df, CTCHClean.agency_and_non_agency_total_employed
+        filled_posts_df,
+        ct_care_home_df,
+        CTCHClean.agency_and_non_agency_total_employed,
     )
     non_res_diagnostics_df = run_diagnostics_for_non_residential(
         filled_posts_df, ct_non_res_df, CTNRClean.capacity_tracker_filled_post_estimate
@@ -143,10 +145,26 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    # imputation here?
+    care_home_diagnostics_df = model_primary_service_rolling_average(
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed,
+        CTCHClean.agency_and_non_agency_total_employed,
+        number_of_days_in_rolling_average,
+        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
+        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
+    )
+    care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed,
+        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
+        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        care_home=True,
+    )
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df, column_for_comparison, list_of_models
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        list_of_models,
     )
     care_home_diagnostics_df = dUtils.filter_to_known_values(
         care_home_diagnostics_df, IndCQC.estimate_value
@@ -158,7 +176,8 @@ def run_diagnostics_for_care_homes(
         care_home_diagnostics_df, window
     )
     care_home_diagnostics_df = dUtils.calculate_residuals(
-        care_home_diagnostics_df, column_for_comparison
+        care_home_diagnostics_df,
+        CTCHClean.agency_and_non_agency_total_employed_imputed,
     )
     care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
         care_home_diagnostics_df,
