@@ -5,10 +5,10 @@ os.environ["SPARK_VERSION"] = "3.3"
 
 from pyspark.sql import DataFrame
 
-from jobs.clean_capacity_tracker_care_home_data import (
-    remove_rows_where_agency_and_non_agency_values_match,
-)
 from utils import utils
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -37,10 +37,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
-        care_home_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
+            care_home_df
+        )
     )
 
     check_result_df = validate_dataset(care_home_cleaned_df, rules)
@@ -54,7 +54,20 @@ def main(
 def calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
     care_home_df: DataFrame,
 ) -> int:
-    care_home_df = remove_rows_where_agency_and_non_agency_values_match(care_home_df)
+    care_home_df = care_home_df.where(
+        (
+            care_home_df[CTCH.nurses_employed]
+            != care_home_df[CTCH.agency_nurses_employed]
+        )
+        | (
+            care_home_df[CTCH.care_workers_employed]
+            != care_home_df[CTCH.agency_care_workers_employed]
+        )
+        | (
+            care_home_df[CTCH.non_care_workers_employed]
+            != care_home_df[CTCH.agency_non_care_workers_employed]
+        )
+    )
     expected_size = care_home_df.count()
     return expected_size
 
