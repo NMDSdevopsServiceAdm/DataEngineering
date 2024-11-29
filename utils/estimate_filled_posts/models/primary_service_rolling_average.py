@@ -11,6 +11,8 @@ from utils.utils import convert_days_to_unix_time
 class TempCol:
     """The names of the temporary columns created during the rolling average process."""
 
+    care_home_status_count: str = "care_home_status_count"
+    submission_count: str = "submission_count"
     temp_column_to_average: str = "temp_column_to_average"
     temp_rolling_average: str = "temp_rolling_average"
 
@@ -84,7 +86,7 @@ def create_single_column_to_average(
 
 def clean_column_to_average(df: DataFrame) -> DataFrame:
     """
-    This function will null values in the temp_column_to_average for locations who have only submitted once or have changed their care home status at some point.
+    Only keep values in the temp_column_to_average for locations who have only submitted at least twice and only had one care home status.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -92,6 +94,57 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The input DataFrame with unwanted data nulled.
     """
+    one_care_home_status: int = 1
+    two_submissions: int = 2
+
+    df = calculate_care_home_status_count(df)
+    df = calculate_submission_count(df)
+    df = df.withColumn(
+        TempCol.temp_column_to_average,
+        F.when(
+            (TempCol.care_home_status_count == one_care_home_status)
+            & (TempCol.submission_count >= two_submissions),
+            F.col(TempCol.temp_column_to_average),
+        ).otherwise(F.lit(None)),
+    )
+    df = df.drop(TempCol.care_home_status_count, TempCol.submission_count)
+    return df
+
+
+def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
+    """
+    Calculate how many care home statuses each location has had.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with care home status count.
+    """
+    w = Window.partitionBy(IndCqc.location_id)
+
+    df = df.withColumn(
+        TempCol.care_home_status_count,
+        F.size((F.collect_set(IndCqc.care_home).over(w))),
+    )
+    return df
+
+
+def calculate_submission_count(df: DataFrame) -> DataFrame:
+    """
+    Calculate how many submissions each location has made.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The input DataFrame with submission count.
+    """
+    w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
+
+    df = df.withColumn(
+        TempCol.submission_count, F.count(TempCol.temp_column_to_average).over(w)
+    )
     return df
 
 

@@ -2566,6 +2566,42 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    clean_column_to_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(temp_column_to_average, DoubleType(), True),
+        ]
+    )
+
+    calculate_care_home_status_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = StructType(
+        [
+            *calculate_care_home_status_count_schema,
+            StructField(care_home_status_count, IntegerType(), True),
+        ]
+    )
+
+    calculate_submission_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(temp_column_to_average, DoubleType(), True),
+        ]
+    )
+    expected_calculate_submission_count_schema = StructType(
+        [
+            *calculate_submission_count_schema,
+            StructField(submission_count, IntegerType(), True),
+        ]
+    )
+
     calculate_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -4303,7 +4339,6 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
             StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
-            StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema

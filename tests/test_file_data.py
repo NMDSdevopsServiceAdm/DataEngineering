@@ -5127,6 +5127,78 @@ class ModelPrimaryServiceRollingAverage:
         ("1-008", CareHome.not_care_home, None, None, None),
     ]
 
+    clean_column_to_average_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, None),
+        ("1-001", 1000000003, CareHome.care_home, 10.0),
+    ]
+    expected_clean_column_to_average_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, None),
+        ("1-001", 1000000003, CareHome.care_home, 10.0),
+    ]
+
+    clean_column_to_average_one_submission_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, None),
+    ]
+    expected_clean_column_to_average_one_submission_rows = [
+        ("1-001", 1000000001, CareHome.care_home, None),
+        ("1-001", 1000000002, CareHome.care_home, None),
+    ]
+
+    clean_column_to_average_both_statuses_rows = [
+        ("1-001", 1000000001, CareHome.care_home, 10.0),
+        ("1-001", 1000000002, CareHome.care_home, 10.0),
+        ("1-001", 1000000003, CareHome.not_care_home, 10.0),
+    ]
+    expected_clean_column_to_average_both_statuses_rows = [
+        ("1-001", 1000000001, CareHome.care_home, None),
+        ("1-001", 1000000002, CareHome.care_home, None),
+        ("1-001", 1000000003, CareHome.not_care_home, None),
+    ]
+
+    calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home),
+        ("1-001", CareHome.care_home),
+        ("1-002", CareHome.care_home),
+        ("1-002", CareHome.not_care_home),
+    ]
+    expected_calculate_care_home_status_count_rows = [
+        ("1-001", CareHome.care_home, 1),
+        ("1-001", CareHome.care_home, 1),
+        ("1-002", CareHome.care_home, 2),
+        ("1-002", CareHome.not_care_home, 2),
+    ]
+
+    calculate_submission_count_same_care_home_status_rows = [
+        ("1-001", CareHome.care_home, None),
+        ("1-001", CareHome.care_home, None),
+        ("1-002", CareHome.care_home, None),
+        ("1-002", CareHome.care_home, 10.0),
+        ("1-003", CareHome.care_home, 10.0),
+        ("1-003", CareHome.care_home, 10.0),
+    ]
+    expected_calculate_submission_count_same_care_home_status_rows = [
+        ("1-001", CareHome.care_home, None, 0),
+        ("1-001", CareHome.care_home, None, 0),
+        ("1-002", CareHome.care_home, None, 1),
+        ("1-002", CareHome.care_home, 10.0, 1),
+        ("1-003", CareHome.care_home, 10.0, 2),
+        ("1-003", CareHome.care_home, 10.0, 2),
+    ]
+
+    calculate_submission_count_mixed_care_home_status_rows = [
+        ("1-001", CareHome.not_care_home, 10.0),
+        ("1-001", CareHome.care_home, 10.0),
+        ("1-001", CareHome.care_home, 10.0),
+    ]
+    expected_calculate_submission_count_mixed_care_home_status_rows = [
+        ("1-001", CareHome.not_care_home, 10.0, 1),
+        ("1-001", CareHome.care_home, 10.0, 2),
+        ("1-001", CareHome.care_home, 10.0, 2),
+    ]
+
     # fmt: off
     calculate_rolling_average_rows = [
         ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1),
@@ -7518,10 +7590,10 @@ class ValidateEstimatedIndCqcFilledPostsData:
     ]
 
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", Sector.independent, 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", 5, 5, 5, "source", 5.0, 5.0, 5, 123456789, 5.0, "source", 5.0, 5.0),
     ]
     # fmt: on
 

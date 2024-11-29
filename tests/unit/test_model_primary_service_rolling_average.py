@@ -115,18 +115,143 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
-        pass
+        self.test_df = self.spark.createDataFrame(
+            Data.clean_column_to_average_rows,
+            Schemas.clean_column_to_average_schema,
+        )
+        self.returned_df = job.clean_column_to_average(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_to_average_rows,
+            Schemas.clean_column_to_average_schema,
+        )
 
-    def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
-        self,
-    ):
-        pass
+    def test_clean_column_to_average_returns_original_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
 
     def test_clean_column_to_average_is_not_nulled_when_submitted_submitted_more_than_once_and_consistent_care_home_status(
         self,
     ):
-        pass
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.sort(IndCqc.unix_time).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
+        one_submission_df = self.spark.createDataFrame(
+            Data.clean_column_to_average_one_submission_rows,
+            Schemas.clean_column_to_average_schema,
+        )
+        returned_df = job.clean_column_to_average(one_submission_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_to_average_one_submission_rows,
+            Schemas.clean_column_to_average_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.sort(IndCqc.unix_time).collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
+        self,
+    ):
+        both_statuses_df = self.spark.createDataFrame(
+            Data.clean_column_to_average_both_statuses_rows,
+            Schemas.clean_column_to_average_schema,
+        )
+        returned_df = job.clean_column_to_average(both_statuses_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_to_average_both_statuses_rows,
+            Schemas.clean_column_to_average_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.sort(IndCqc.unix_time).collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_care_home_status_count_rows,
+            Schemas.calculate_care_home_status_count_schema,
+        )
+        self.returned_df = job.calculate_care_home_status_count(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_care_home_status_count_rows,
+            Schemas.expected_calculate_care_home_status_count_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+
+    def test_calculate_care_home_status_count_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_care_home_status_count_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][job.TempCol.care_home_status_count],
+                self.expected_data[i][job.TempCol.care_home_status_count],
+                f"Returned row {i} does not match expected",
+            )
+
+
+class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_submission_count_same_care_home_status_rows,
+            Schemas.calculate_submission_count_schema,
+        )
+        self.returned_df = job.calculate_submission_count(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_submission_count_same_care_home_status_rows,
+            Schemas.expected_calculate_submission_count_schema,
+        )
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.sort(IndCqc.location_id).collect()
+
+    def test_calculate_submission_count_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_submission_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][job.TempCol.submission_count],
+                self.expected_data[i][job.TempCol.submission_count],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_submission_values_match_expected_when_location_has_multiple_care_home_statuses(
+        self,
+    ):
+        mixed_status_df = self.spark.createDataFrame(
+            Data.calculate_submission_count_mixed_care_home_status_rows,
+            Schemas.calculate_submission_count_schema,
+        )
+        returned_df = job.calculate_submission_count(mixed_status_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_submission_count_mixed_care_home_status_rows,
+            Schemas.expected_calculate_submission_count_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.sort(IndCqc.care_home).collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][job.TempCol.submission_count],
+                expected_data[i][job.TempCol.submission_count],
+                f"Returned row {i} does not match expected",
+            )
 
 
 class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
