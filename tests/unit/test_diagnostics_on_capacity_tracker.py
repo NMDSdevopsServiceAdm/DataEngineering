@@ -72,6 +72,42 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
         self.assertEqual(write_to_parquet_patch.call_count, 3)
 
 
+class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_absolute_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.absolute_value_cutoff, 10.0)
+        self.assertIsInstance(job.absolute_value_cutoff, float)
+
+    def test_percentage_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.percentage_value_cutoff, 0.25)
+        self.assertIsInstance(job.percentage_value_cutoff, float)
+
+    def test_standardised_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.standardised_value_cutoff, 1.0)
+        self.assertIsInstance(job.standardised_value_cutoff, float)
+
+    def test_number_of_days_in_rolling_average_is_expected_value(self):
+        self.assertEqual(job.number_of_days_in_rolling_average, 185)
+        self.assertIsInstance(job.number_of_days_in_rolling_average, int)
+
+    def test_care_worker_ratio_is_expected_value(self):
+        self.assertEqual(
+            job.care_worker_ratio,
+            {"micro": 0.61, "small": 0.74, "medium_or_large": 0.79},
+        )
+
+    def test_org_size_care_worker_upper_limit_is_expected_value(self):
+        self.assertEqual(
+            job.org_size_care_worker_upper_limit,
+            {
+                "micro": 10 * job.care_worker_ratio["micro"],
+                "small": 50 * job.care_worker_ratio["small"],
+            },
+        )
+
+
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
@@ -144,13 +180,67 @@ class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_convert_to_all_posts_using_ratio_returns_correct_values(self):
+    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_micro(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
-            Data.convert_to_all_posts_using_ratio_rows,
+            Data.convert_to_all_posts_using_ratio_micro_rows,
             Schemas.convert_to_all_posts_using_ratio_schema,
         )
         expected_data = self.spark.createDataFrame(
-            Data.expected_convert_to_all_posts_using_ratio_rows,
+            Data.expected_convert_to_all_posts_using_ratio_micro_rows,
+            Schemas.expected_convert_to_all_posts_using_ratio_schema,
+        ).collect()
+        returned_data = (
+            job.convert_to_all_posts_using_ratio(
+                test_df,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEquals(
+                returned_data[i][2],
+                expected_data[i][2],
+                places=2,
+            )
+
+    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_small(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_to_all_posts_using_ratio_small_rows,
+            Schemas.convert_to_all_posts_using_ratio_schema,
+        )
+        expected_data = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_small_rows,
+            Schemas.expected_convert_to_all_posts_using_ratio_schema,
+        ).collect()
+        returned_data = (
+            job.convert_to_all_posts_using_ratio(
+                test_df,
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+
+        for i in range(len(returned_data)):
+            self.assertAlmostEquals(
+                returned_data[i][2],
+                expected_data[i][2],
+                places=2,
+            )
+
+    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_medium_or_large(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_to_all_posts_using_ratio_medium_or_large_rows,
+            Schemas.convert_to_all_posts_using_ratio_schema,
+        )
+        expected_data = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_medium_or_large_rows,
             Schemas.expected_convert_to_all_posts_using_ratio_schema,
         ).collect()
         returned_data = (
