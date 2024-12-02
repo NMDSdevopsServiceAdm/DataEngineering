@@ -5,6 +5,7 @@ from pyspark.sql import DataFrame, functions as F, Window
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
@@ -50,15 +51,65 @@ def model_primary_service_rolling_average(
     )
     df = clean_column_to_average(df)
     df = interpolate_column_to_average(df)
+
+    # New approach A
     df = calculate_rolling_average(df, number_of_days)
     df = create_final_model_columns(
         df,
         ratio_rolling_average_model_column_name,
         posts_rolling_average_model_column_name,
     )
+
+    # New approach B
+    window_spec_lagged = (
+        Window.partitionBy(IndCqc.location_id)
+        .orderBy(IndCqc.unix_time)
+        .rowsBetween(Window.unboundedPreceding, -1)
+    )
+    df = get_selected_value(
+        df,
+        window_spec_lagged,
+        TempCol.column_to_average_interpolated,
+        TempCol.column_to_average_interpolated,
+        "prev_column_to_average_interpolated",
+        "last",
+    )
+    number_of_days_for_window: int = number_of_days - 1
+
+    one_window = Window.partitionBy(IndCqc.primary_service_type, IndCqc.unix_time)
+    both_periods_not_null = (
+        F.col(TempCol.column_to_average_interpolated).isNotNull()
+        & F.col("prev_column_to_average_interpolated").isNotNull()
+    )
+
+    df = df.withColumn(
+        "current_period_sum",
+        F.sum(
+            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
+        ).over(one_window),
+    )
+    df = df.withColumn(
+        "previous_period_sum",
+        F.sum(
+            F.when(both_periods_not_null, F.col("prev_column_to_average_interpolated"))
+        ).over(one_window),
+    )
+
+    rolling_roc_window = (
+        Window.partitionBy(IndCqc.location_id)
+        .orderBy(F.col(IndCqc.unix_time))
+        .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
+    )
+
+    df = df.withColumn(
+        "rate_of_change",
+        F.sum(F.col("current_period_sum")).over(rolling_roc_window)
+        / F.sum(F.col("previous_period_sum")).over(rolling_roc_window),
+    )
+
     df = df.drop(
         TempCol.column_to_average,
-        TempCol.column_to_average_interpolated,
+        # TempCol.column_to_average_interpolated,
         TempCol.temp_rolling_average,
     )
 
