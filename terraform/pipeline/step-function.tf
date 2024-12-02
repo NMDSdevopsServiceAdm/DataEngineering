@@ -136,6 +136,7 @@ resource "aws_sfn_state_machine" "ingest_and_clean_capacity_tracker_data_state_m
     dataset_bucket_uri                                = module.datasets_bucket.bucket_uri
     run_capacity_tracker_validation_state_machine_arn = aws_sfn_state_machine.capacity_tracker_validation_state_machine.arn
     run_crawler_state_machine_arn                     = aws_sfn_state_machine.run_crawler.arn
+    pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
