@@ -5132,8 +5132,8 @@ class ValidateCleanedCapacityTrackerNonResData:
     cleaned_ct_non_res_schema = StructType(
         [
             StructField(CTNRClean.cqc_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
-            StructField(CTNRClean.service_user_count, IntegerType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNRClean.service_user_count, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
