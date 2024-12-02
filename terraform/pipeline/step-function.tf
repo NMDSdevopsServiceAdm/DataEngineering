@@ -134,6 +134,7 @@ resource "aws_sfn_state_machine" "ingest_and_clean_capacity_tracker_data_state_m
     capacity_tracker_crawler_name             = module.capacity_tracker_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name         = module.ind_cqc_filled_posts_crawler.crawler_name
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
+    run_capacity_tracker_validation_state_machine_arn               = aws_sfn_state_machine.capacity_tracker_validation_state_machine.arn
     run_crawler_state_machine_arn             = aws_sfn_state_machine.run_crawler.arn
   })
 

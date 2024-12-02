@@ -68,6 +68,17 @@
           "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
         }
       },
+      "Next": "Start capacity tracker validation"
+    },
+    "Start capacity tracker validation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${run_capacity_tracker_validation_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
       "Next": "Run capacity tracker crawler"
     },
     "Run capacity tracker crawler": {
