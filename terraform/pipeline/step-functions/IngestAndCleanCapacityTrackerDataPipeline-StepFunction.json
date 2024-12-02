@@ -114,16 +114,18 @@
           }
         }
       ],
-      "End": true,
       "Catch": [
         {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "Publish error notification",
-          "ResultPath": "$.error"
+          "Next": "Publish error notification"
         }
-      ]
+      ],
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
     },
     "Publish error notification": {
       "Type": "Task",
@@ -143,9 +145,6 @@
     },
     "Fail": {
       "Type": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
     }
   }
 }
