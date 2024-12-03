@@ -42,7 +42,7 @@ cols_required_for_reconciliation_df = [
     AWPClean.region_id,
     AWPClean.total_staff,
     AWPClean.worker_records,
-    AWPClean.last_logged_in,
+    AWPClean.last_logged_in_date,
     Keys.year,
     Keys.month,
     Keys.day,
