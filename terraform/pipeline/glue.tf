@@ -904,7 +904,7 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
   job_parameters = {
     "--capacity_tracker_non_res_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
     "--capacity_tracker_non_res_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-    "--report_destination"                        = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_non_residential_cleaned_data/"
+    "--report_destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_non_residential_cleaned_data/"
   }
 }
 
