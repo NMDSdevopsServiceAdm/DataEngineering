@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from utils.reconciliation import reconciliation_utils as rUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -131,6 +132,10 @@ def main(
         ],
         CoverageColumns.in_ascwds,
         sort_ascending=False,
+    )
+
+    merged_coverage_df = rUtils.add_parents_or_singles_and_subs_col_to_df(
+        merged_coverage_df
     )
 
     merged_coverage_df = join_latest_cqc_rating_into_coverage_df(
