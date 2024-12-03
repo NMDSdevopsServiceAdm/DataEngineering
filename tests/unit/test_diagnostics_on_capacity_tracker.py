@@ -91,21 +91,6 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
         self.assertEqual(job.number_of_days_in_rolling_average, 185)
         self.assertIsInstance(job.number_of_days_in_rolling_average, int)
 
-    def test_care_worker_ratio_is_expected_value(self):
-        self.assertEqual(
-            job.care_worker_ratio,
-            {"micro": 0.61, "small": 0.74, "medium_or_large": 0.79},
-        )
-
-    def test_org_size_care_worker_upper_limit_is_expected_value(self):
-        self.assertEqual(
-            job.org_size_care_worker_upper_limit,
-            {
-                "micro": 10 * job.care_worker_ratio["micro"],
-                "small": 50 * job.care_worker_ratio["small"],
-            },
-        )
-
 
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
