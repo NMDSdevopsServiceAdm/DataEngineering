@@ -30,9 +30,9 @@ class CleanedCapacityTrackerCareHomeValidationRules:
             CTCHClean.agency_and_non_agency_total_employed: 1,
         },
         RuleName.max_values: {
-            CTCHClean.nurses_employed: 300,
+            CTCHClean.nurses_employed: 1000,
             CTCHClean.care_workers_employed: 1000,
-            CTCHClean.non_care_workers_employed: 300,
+            CTCHClean.non_care_workers_employed: 1000,
             CTCHClean.agency_nurses_employed: 1000,
             CTCHClean.agency_care_workers_employed: 2500,
             CTCHClean.agency_non_care_workers_employed: 1000,
