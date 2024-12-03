@@ -9,9 +9,6 @@ from utils import utils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.validation.validation_rules.cleaned_capacity_tracker_care_home_validation_rules import (
     CleanedCapacityTrackerCareHomeValidationRules as Rules,
 )
@@ -20,8 +17,6 @@ from utils.validation.validation_utils import (
     raise_exception_if_any_checks_failed,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
@@ -37,10 +32,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
-        care_home_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
+            care_home_df
+        )
     )
 
     check_result_df = validate_dataset(care_home_cleaned_df, rules)
