@@ -24,6 +24,6 @@ class CleanedCapacityTrackerNonResValidationRules:
         },
         RuleName.max_values: {
             CTNRClean.cqc_care_workers_employed: 5000,
-            CTNRClean.service_user_count: 1000,
+            CTNRClean.service_user_count: 5000,
         },
     }
