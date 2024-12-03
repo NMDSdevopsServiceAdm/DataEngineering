@@ -314,14 +314,24 @@ def join_capacity_tracker_data(
 
 def calculate_care_worker_ratio(df: DataFrame) -> float:
     """
-    Calculate the overall ratio of care workers to all posts and print it to the output.
+    Calculate the overall ratio of care workers to all posts and print it.
 
     Args:
         df (DataFrame): A dataframe containing the columns estimate_filled_posts and cqc_care_workers_employed_imputed.
     Returns:
         float: A float representing the ratio between care workers and all posts.
     """
-    return df
+    df = df.where(
+        (df[CTNRClean.cqc_care_workers_employed_imputed].isNotNull())
+        & (df[IndCQC.estimate_filled_posts].isNotNull())
+    )
+    total_care_workers = df.agg(
+        F.sum(df[CTNRClean.cqc_care_workers_employed_imputed])
+    ).collect()[0][0]
+    total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
+    care_worker_ratio = total_care_workers / total_posts
+    print(f"The care worker ratio used is: {care_worker_ratio}.")
+    return care_worker_ratio
 
 
 def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
