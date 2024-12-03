@@ -192,83 +192,24 @@ class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_micro(
+    def test_convert_to_all_posts_using_ratio_returns_correct_values(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.convert_to_all_posts_using_ratio_micro_rows,
+            Data.convert_to_all_posts_using_ratio_rows,
             Schemas.convert_to_all_posts_using_ratio_schema,
         )
-        expected_data = self.spark.createDataFrame(
-            Data.expected_convert_to_all_posts_using_ratio_micro_rows,
+        test_ratio = Data.expected_care_worker_ratio
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_rows,
             Schemas.expected_convert_to_all_posts_using_ratio_schema,
-        ).collect()
-        returned_data = (
-            job.convert_to_all_posts_using_ratio(
-                test_df,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
         )
+        returned_df = job.convert_to_all_posts_using_ratio(test_df, test_ratio)
 
-        for i in range(len(returned_data)):
-            self.assertAlmostEquals(
-                returned_data[i][2],
-                expected_data[i][2],
-                places=2,
-            )
-
-    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_small(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.convert_to_all_posts_using_ratio_small_rows,
-            Schemas.convert_to_all_posts_using_ratio_schema,
+        self.assertEquals(
+            returned_df.sort(IndCQC.location_id).collect(),
+            expected_df.collect(),
         )
-        expected_data = self.spark.createDataFrame(
-            Data.expected_convert_to_all_posts_using_ratio_small_rows,
-            Schemas.expected_convert_to_all_posts_using_ratio_schema,
-        ).collect()
-        returned_data = (
-            job.convert_to_all_posts_using_ratio(
-                test_df,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-
-        for i in range(len(returned_data)):
-            self.assertAlmostEquals(
-                returned_data[i][2],
-                expected_data[i][2],
-                places=2,
-            )
-
-    def test_convert_to_all_posts_using_ratio_returns_correct_values_when_org_is_medium_or_large(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.convert_to_all_posts_using_ratio_medium_or_large_rows,
-            Schemas.convert_to_all_posts_using_ratio_schema,
-        )
-        expected_data = self.spark.createDataFrame(
-            Data.expected_convert_to_all_posts_using_ratio_medium_or_large_rows,
-            Schemas.expected_convert_to_all_posts_using_ratio_schema,
-        ).collect()
-        returned_data = (
-            job.convert_to_all_posts_using_ratio(
-                test_df,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-
-        for i in range(len(returned_data)):
-            self.assertAlmostEquals(
-                returned_data[i][2],
-                expected_data[i][2],
-                places=2,
-            )
 
 
 if __name__ == "__main__":
