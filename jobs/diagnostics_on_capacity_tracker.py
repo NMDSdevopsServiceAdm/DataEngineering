@@ -52,15 +52,6 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
-care_worker_ratio: dict = {
-    "micro": 0.61,
-    "small": 0.74,
-    "medium_or_large": 0.79,
-}  # Ratios based on exploration of SPSS estimates of care workers to filled posts by org size in 2023 and 2024.
-org_size_care_worker_upper_limit: dict = {
-    "micro": 10 * care_worker_ratio["micro"],  # We define micro orgs as 1-9 posts
-    "small": 50 * care_worker_ratio["small"],  # We define small orgs as 10-49 posts
-}
 
 
 def main(
@@ -226,8 +217,11 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
-    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
+    care_worker_ratio = calculate_care_worker_ratio(
         non_res_diagnostics_df,
+    )
+    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
+        non_res_diagnostics_df, care_worker_ratio
     )
     non_res_diagnostics_df = (
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
@@ -309,34 +303,44 @@ def join_capacity_tracker_data(
     return joined_df
 
 
-def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:
+def calculate_care_worker_ratio(df: DataFrame) -> float:
+    """
+    Calculate the overall ratio of care workers to all posts and print it.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns estimate_filled_posts and cqc_care_workers_employed_imputed.
+    Returns:
+        float: A float representing the ratio between care workers and all posts.
+    """
+    df = df.where(
+        (df[CTNRClean.cqc_care_workers_employed_imputed].isNotNull())
+        & (df[IndCQC.estimate_filled_posts].isNotNull())
+    )
+    total_care_workers = df.agg(
+        F.sum(df[CTNRClean.cqc_care_workers_employed_imputed])
+    ).collect()[0][0]
+    total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
+    care_worker_ratio = total_care_workers / total_posts
+    print(f"The care worker ratio used is: {care_worker_ratio}.")
+    return care_worker_ratio
+
+
+def convert_to_all_posts_using_ratio(
+    df: DataFrame, care_worker_ratio: float
+) -> DataFrame:
     """
     Convert the cqc_care_workers_employed figures to all workers.
 
     Args:
         df (DataFrame): A dataframe with non res capacity tracker data.
+        care_worker_ratio (float): The ratio of all care workers divided by all posts.
 
     Returns:
         DataFrame: A dataframe with a new column containing the all-workers estimate.
     """
     df = df.withColumn(
         CTNRClean.capacity_tracker_all_posts,
-        F.when(
-            F.col(CTNRClean.cqc_care_workers_employed_imputed)
-            < org_size_care_worker_upper_limit["micro"],
-            F.col(CTNRClean.cqc_care_workers_employed_imputed)
-            / care_worker_ratio["micro"],
-        )
-        .when(
-            F.col(CTNRClean.cqc_care_workers_employed_imputed)
-            < org_size_care_worker_upper_limit["small"],
-            F.col(CTNRClean.cqc_care_workers_employed_imputed)
-            / care_worker_ratio["small"],
-        )
-        .otherwise(
-            F.col(CTNRClean.cqc_care_workers_employed_imputed)
-            / care_worker_ratio["medium_or_large"]
-        ),
+        F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
     )
     return df
 

@@ -7913,34 +7913,26 @@ class DiagnosticsOnCapacityTrackerData:
         ),
     ]
 
-    convert_to_all_posts_using_ratio_micro_rows = [
+    convert_to_all_posts_using_ratio_rows = [
         ("loc 1", 1.0),
         ("loc 2", 6.0),
         ("loc 3", None),
     ]
-    expected_convert_to_all_posts_using_ratio_micro_rows = [
-        ("loc 1", 1.0, 1.6393),
-        ("loc 2", 6.0, 9.8361),
+    expected_convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 1.0, 1.25),
+        ("loc 2", 6.0, 7.5),
         ("loc 3", None, None),
     ]
-    convert_to_all_posts_using_ratio_small_rows = [
-        ("loc 1", 7.0),
-        ("loc 2", 36.0),
-        ("loc 3", None),
+
+    calculate_care_worker_ratio_rows = [
+        ("loc 1", 8.0, 10.0),
+        ("loc 2", 16.0, 20.0),
+        ("loc 3", 24.0, 30.0),
+        ("loc 4", None, 40.0),
+        ("loc 5", 40.0, None),
+        ("loc 6", None, None),
     ]
-    expected_convert_to_all_posts_using_ratio_small_rows = [
-        ("loc 1", 7.0, 9.4595),
-        ("loc 2", 36.0, 48.6486),
-        ("loc 3", None, None),
-    ]
-    convert_to_all_posts_using_ratio_medium_or_large_rows = [
-        ("loc 1", 37.0),
-        ("loc 2", None),
-    ]
-    expected_convert_to_all_posts_using_ratio_medium_or_large_rows = [
-        ("loc 1", 37.0, 46.8354),
-        ("loc 2", None, None),
-    ]
+    expected_care_worker_ratio = 0.8
 
 
 @dataclass
