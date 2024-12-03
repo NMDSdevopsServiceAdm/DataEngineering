@@ -52,15 +52,6 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
-care_worker_ratio: dict = {
-    "micro": 0.61,
-    "small": 0.74,
-    "medium_or_large": 0.79,
-}  # Ratios based on exploration of SPSS estimates of care workers to filled posts by org size in 2023 and 2024.
-org_size_care_worker_upper_limit: dict = {
-    "micro": 10 * care_worker_ratio["micro"],  # We define micro orgs as 1-9 posts
-    "small": 50 * care_worker_ratio["small"],  # We define small orgs as 10-49 posts
-}
 
 
 def main(
