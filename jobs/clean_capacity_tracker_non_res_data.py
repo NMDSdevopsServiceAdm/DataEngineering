@@ -30,6 +30,7 @@ def main(
     )
     columns_to_cast_to_integers = [
         CTNR.cqc_care_workers_employed,
+        CTNR.service_user_count,
     ]
     capacity_tracker_non_res_df = cUtils.cast_to_int(
         capacity_tracker_non_res_df, columns_to_cast_to_integers
