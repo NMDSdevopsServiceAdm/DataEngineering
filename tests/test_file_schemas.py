@@ -5096,16 +5096,7 @@ class ValidateCleanedCapacityTrackerCareHomeData:
     )
     cleaned_ct_care_home_schema = StructType(
         [
-            StructField(CTCH.cqc_id, StringType(), True),
-            StructField(CTCH.nurses_employed, StringType(), True),
-            StructField(CTCH.care_workers_employed, StringType(), True),
-            StructField(CTCH.non_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_nurses_employed, StringType(), True),
-            StructField(CTCH.agency_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
+            *ct_care_home_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
