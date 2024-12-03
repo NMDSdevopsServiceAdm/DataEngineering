@@ -95,16 +95,34 @@ def model_primary_service_rolling_average(
         ).over(one_window),
     )
 
+    df = df.withColumn(
+        "rate_of_change_one_period",
+        F.sum(F.col("current_period_sum")) / F.sum(F.col("previous_period_sum")),
+    )
+
     rolling_roc_window = (
-        Window.partitionBy(IndCqc.location_id)
+        Window.partitionBy(IndCqc.primary_service_type)
         .orderBy(F.col(IndCqc.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
     )
 
     df = df.withColumn(
-        "rate_of_change",
-        F.sum(F.col("current_period_sum")).over(rolling_roc_window)
-        / F.sum(F.col("previous_period_sum")).over(rolling_roc_window),
+        "rolling_current_period_sum",
+        F.sum(
+            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
+        ).over(rolling_roc_window),
+    )
+    df = df.withColumn(
+        "rolling_previous_period_sum",
+        F.sum(
+            F.when(both_periods_not_null, F.col("prev_column_to_average_interpolated"))
+        ).over(rolling_roc_window),
+    )
+
+    df = df.withColumn(
+        "rolling_rate_of_change",
+        F.sum(F.col("rolling_current_period_sum"))
+        / F.sum(F.col("rolling_previous_period_sum")),
     )
 
     df = df.drop(
