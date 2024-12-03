@@ -4550,6 +4550,13 @@ class DiagnosticsOnCapacityTrackerSchemas:
             ),
         ]
     )
+    calculate_care_worker_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+        ]
+    )
 
 
 @dataclass

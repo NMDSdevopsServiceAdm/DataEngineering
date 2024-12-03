@@ -175,6 +175,19 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
         )
 
 
+class CalculateCareWorkerRatioTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_care_worker_ratio_returns_correct_ratio(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_care_worker_ratio_rows, Schemas.calculate_care_worker_schema
+        )
+        expected_ratio = Data.expected_care_worker_ratio
+        returned_ratio = job.calculate_care_worker_ratio(test_df)
+        self.assertEqual(returned_ratio, expected_ratio)
+
+
 class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()

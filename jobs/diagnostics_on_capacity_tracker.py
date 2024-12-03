@@ -226,6 +226,9 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
+    non_res_diagnostics_df = calculate_care_worker_ratio(
+        non_res_diagnostics_df,
+    )
     non_res_diagnostics_df = convert_to_all_posts_using_ratio(
         non_res_diagnostics_df,
     )
@@ -307,6 +310,18 @@ def join_capacity_tracker_data(
         how="left",
     )
     return joined_df
+
+
+def calculate_care_worker_ratio(df: DataFrame) -> float:
+    """
+    Calculate the overall ratio of care workers to all posts and print it to the output.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns estimate_filled_posts and cqc_care_workers_employed_imputed.
+    Returns:
+        float: A float representing the ratio between care workers and all posts.
+    """
+    return df
 
 
 def convert_to_all_posts_using_ratio(df: DataFrame) -> DataFrame:

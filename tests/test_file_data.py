@@ -7942,6 +7942,13 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 2", None, None),
     ]
 
+    calculate_care_worker_ratio_rows = [
+        ("loc 1", 8.0, 10.0),
+        ("loc 2", 16.0, 20.0),
+        ("loc 2", 24.0, 30.0),
+    ]
+    expected_care_worker_ratio = 0.8
+
 
 @dataclass
 class DiagnosticsUtilsData:
