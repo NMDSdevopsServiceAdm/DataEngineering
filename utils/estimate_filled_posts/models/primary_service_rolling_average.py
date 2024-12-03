@@ -97,7 +97,7 @@ def model_primary_service_rolling_average(
 
     df = df.withColumn(
         "rate_of_change_one_period",
-        F.sum(F.col("current_period_sum")) / F.sum(F.col("previous_period_sum")),
+        F.col("current_period_sum") / F.col("previous_period_sum"),
     )
 
     rolling_roc_window = (
@@ -121,8 +121,7 @@ def model_primary_service_rolling_average(
 
     df = df.withColumn(
         "rolling_rate_of_change",
-        F.sum(F.col("rolling_current_period_sum"))
-        / F.sum(F.col("rolling_previous_period_sum")),
+        F.col("rolling_current_period_sum") / F.col("rolling_previous_period_sum"),
     )
 
     df = df.drop(
