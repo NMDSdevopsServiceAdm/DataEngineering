@@ -27,6 +27,7 @@ def model_primary_service_rolling_average(
     number_of_days: int,
     ratio_rolling_average_model_column_name: str,
     posts_rolling_average_model_column_name: str,
+    rate_of_change_model_column_name: str,
 ) -> DataFrame:
     """
     Calculates the rolling average split by primary service type of specified columns over a given window of days (where three days refers to the current day plus the previous two).
@@ -103,14 +104,17 @@ def model_primary_service_rolling_average(
     )
 
     df = df.withColumn(
-        "rolling_rate_of_change",
+        rate_of_change_model_column_name,
         F.col("rolling_current_period_sum") / F.col("rolling_previous_period_sum"),
     )
 
     df = df.drop(
         TempCol.column_to_average,
-        # TempCol.column_to_average_interpolated,
+        TempCol.column_to_average_interpolated,
         TempCol.temp_rolling_average,
+        "prev_column_to_average_interpolated",
+        "rolling_current_period_sum",
+        "rolling_previous_period_sum",
     )
 
     return df

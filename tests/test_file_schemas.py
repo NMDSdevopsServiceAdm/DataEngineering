@@ -2549,6 +2549,7 @@ class ModelPrimaryServiceRollingAverage:
                 True,
             ),
             StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
         ]
     )
 

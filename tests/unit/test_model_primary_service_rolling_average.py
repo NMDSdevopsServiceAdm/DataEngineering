@@ -34,42 +34,33 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             number_of_days,
             IndCqc.ratio_rolling_average_model,
             IndCqc.posts_rolling_average_model,
+            IndCqc.rolling_rate_of_change_model,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_primary_service_rolling_average_rows,
             Schemas.expected_primary_service_rolling_average_schema,
         )
-        self.returned_row_object = (
-            self.returned_df.select(
-                IndCqc.location_id,
-                IndCqc.care_home,
-                IndCqc.unix_time,
-                IndCqc.ascwds_filled_posts_dedup_clean,
-                IndCqc.primary_service_type,
-                IndCqc.posts_rolling_average_model,
-                IndCqc.ratio_rolling_average_model,
-            )
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        self.expected_row_object = self.expected_df.sort(IndCqc.location_id).collect()
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    # def test_model_primary_service_rolling_average_returns_expected_columns(self):
-    #     self.assertEqual(
-    #         sorted(self.returned_df.columns),
-    #         sorted(self.expected_df.columns),
-    #     )
+    def test_model_primary_service_rolling_average_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
 
     def test_returned_ratio_rolling_average_model_values_match_expected(
         self,
     ):
-        for i in range(len(self.returned_row_object)):
+        for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_row_object[i][IndCqc.ratio_rolling_average_model],
-                self.expected_row_object[i][IndCqc.ratio_rolling_average_model],
+                self.returned_data[i][IndCqc.ratio_rolling_average_model],
+                self.expected_data[i][IndCqc.ratio_rolling_average_model],
                 3,
                 f"Returned row {i} does not match expected",
             )
@@ -77,10 +68,21 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     def test_returned_posts_rolling_average_model_values_match_expected(
         self,
     ):
-        for i in range(len(self.returned_row_object)):
+        for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_row_object[i][IndCqc.posts_rolling_average_model],
-                self.expected_row_object[i][IndCqc.posts_rolling_average_model],
+                self.returned_data[i][IndCqc.posts_rolling_average_model],
+                self.expected_data[i][IndCqc.posts_rolling_average_model],
+                3,
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_rolling_rate_of_change_model_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
+                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
                 3,
                 f"Returned row {i} does not match expected",
             )
