@@ -46,6 +46,7 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.ratio_rolling_average_model,
         IndCQC.posts_rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
