@@ -204,7 +204,6 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
-    rolling_sum: str = "rolling_sum"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
     specialism_count: str = "specialism_count"
