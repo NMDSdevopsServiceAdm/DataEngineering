@@ -9,7 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts.models.primary_service_rolling_average import (
-    model_primary_service_rolling_average,
+    model_primary_service_rolling_average_and_rate_of_change,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -39,14 +39,16 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    estimate_missing_ascwds_df = model_primary_service_rolling_average(
-        estimate_missing_ascwds_df,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.ascwds_filled_posts_dedup_clean,
-        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        IndCQC.ratio_rolling_average_model,
-        IndCQC.posts_rolling_average_model,
-        IndCQC.rolling_rate_of_change_model,
+    estimate_missing_ascwds_df = (
+        model_primary_service_rolling_average_and_rate_of_change(
+            estimate_missing_ascwds_df,
+            IndCQC.filled_posts_per_bed_ratio,
+            IndCQC.ascwds_filled_posts_dedup_clean,
+            NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+            IndCQC.ratio_rolling_average_model,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.rolling_rate_of_change_model,
+        )
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(

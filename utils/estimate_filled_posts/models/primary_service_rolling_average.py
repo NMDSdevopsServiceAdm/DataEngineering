@@ -20,7 +20,7 @@ class TempCol:
     temp_rolling_average: str = "temp_rolling_average"
 
 
-def model_primary_service_rolling_average(
+def model_primary_service_rolling_average_and_rate_of_change(
     df: DataFrame,
     ratio_column_to_average: str,
     posts_column_to_average: str,

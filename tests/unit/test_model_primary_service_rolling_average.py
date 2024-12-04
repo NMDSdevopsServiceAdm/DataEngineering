@@ -27,7 +27,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             Data.primary_service_rolling_average_rows,
             Schemas.primary_service_rolling_average_schema,
         )
-        self.returned_df = job.model_primary_service_rolling_average(
+        self.returned_df = job.model_primary_service_rolling_average_and_rate_of_change(
             self.estimates_df,
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
@@ -48,7 +48,9 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    def test_model_primary_service_rolling_average_returns_expected_columns(self):
+    def test_model_primary_service_rolling_average_and_rate_of_change_returns_expected_columns(
+        self,
+    ):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
