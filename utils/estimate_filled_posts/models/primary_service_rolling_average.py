@@ -33,6 +33,8 @@ def model_primary_service_rolling_average(
 
     Calculates the rolling average of specified columns over a given window of days partitioned by primary service type.
     Only data from locations who have at least 2 submissions and a consistent care_home status throughout time are included in the calculations.
+    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
+    For example, for a 3 day rolling average we want the current day plus the two days prior.
     The additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
 
     Args:
@@ -46,14 +48,15 @@ def model_primary_service_rolling_average(
     Returns:
         DataFrame: The input DataFrame with the new column containing the two new rolling average columns.
     """
+    number_of_days_for_window: int = number_of_days - 1
+
     df = create_single_column_to_average(
         df, ratio_column_to_average, posts_column_to_average
     )
     df = clean_column_to_average(df)
     df = interpolate_column_to_average(df)
 
-    # New approach A
-    df = calculate_rolling_average(df, number_of_days)
+    df = calculate_rolling_average(df, number_of_days_for_window)
     df = create_final_model_columns(
         df,
         ratio_rolling_average_model_column_name,
@@ -74,30 +77,10 @@ def model_primary_service_rolling_average(
         "prev_column_to_average_interpolated",
         "last",
     )
-    number_of_days_for_window: int = number_of_days - 1
 
-    one_window = Window.partitionBy(IndCqc.primary_service_type, IndCqc.unix_time)
     both_periods_not_null = (
         F.col(TempCol.column_to_average_interpolated).isNotNull()
         & F.col("prev_column_to_average_interpolated").isNotNull()
-    )
-
-    df = df.withColumn(
-        "current_period_sum",
-        F.sum(
-            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
-        ).over(one_window),
-    )
-    df = df.withColumn(
-        "previous_period_sum",
-        F.sum(
-            F.when(both_periods_not_null, F.col("prev_column_to_average_interpolated"))
-        ).over(one_window),
-    )
-
-    df = df.withColumn(
-        "rate_of_change_one_period",
-        F.col("current_period_sum") / F.col("previous_period_sum"),
     )
 
     rolling_roc_window = (
@@ -250,10 +233,6 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     """
     Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
 
-    Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
-    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
-    For example, for a 3 day rolling average we want the current day plus the two days prior (not the three days prior).
-
     Args:
         df (DataFrame): The input DataFrame.
         number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
@@ -261,12 +240,10 @@ def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     Returns:
         DataFrame: The input DataFrame with the new column containing the calculated rolling average.
     """
-    number_of_days_for_window: int = number_of_days - 1
-
     window = (
         Window.partitionBy(IndCqc.primary_service_type)
         .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
+        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
 
     df = df.withColumn(
