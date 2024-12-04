@@ -16,6 +16,11 @@ class TempCol:
     care_home_status_count: str = "care_home_status_count"
     column_to_average: str = "column_to_average"
     column_to_average_interpolated: str = "column_to_average_interpolated"
+    previous_column_to_average_interpolated: str = (
+        "previous_column_to_average_interpolated"
+    )
+    rolling_current_period_sum: str = "rolling_current_period_sum"
+    rolling_previous_period_sum: str = "rolling_previous_period_sum"
     submission_count: str = "submission_count"
     temp_rolling_average: str = "temp_rolling_average"
 
@@ -75,13 +80,13 @@ def model_primary_service_rolling_average_and_rate_of_change(
         window_spec_lagged,
         TempCol.column_to_average_interpolated,
         TempCol.column_to_average_interpolated,
-        "prev_column_to_average_interpolated",
+        TempCol.previous_column_to_average_interpolated,
         "last",
     )
 
     both_periods_not_null = (
         F.col(TempCol.column_to_average_interpolated).isNotNull()
-        & F.col("prev_column_to_average_interpolated").isNotNull()
+        & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
     )
 
     rolling_roc_window = (
@@ -91,30 +96,34 @@ def model_primary_service_rolling_average_and_rate_of_change(
     )
 
     df = df.withColumn(
-        "rolling_current_period_sum",
+        TempCol.rolling_current_period_sum,
         F.sum(
             F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
         ).over(rolling_roc_window),
     )
     df = df.withColumn(
-        "rolling_previous_period_sum",
+        TempCol.rolling_previous_period_sum,
         F.sum(
-            F.when(both_periods_not_null, F.col("prev_column_to_average_interpolated"))
+            F.when(
+                both_periods_not_null,
+                F.col(TempCol.previous_column_to_average_interpolated),
+            )
         ).over(rolling_roc_window),
     )
 
     df = df.withColumn(
         rate_of_change_model_column_name,
-        F.col("rolling_current_period_sum") / F.col("rolling_previous_period_sum"),
+        F.col(TempCol.rolling_current_period_sum)
+        / F.col(TempCol.rolling_previous_period_sum),
     )
 
     df = df.drop(
         TempCol.column_to_average,
         TempCol.column_to_average_interpolated,
         TempCol.temp_rolling_average,
-        "prev_column_to_average_interpolated",
-        "rolling_current_period_sum",
-        "rolling_previous_period_sum",
+        TempCol.previous_column_to_average_interpolated,
+        TempCol.rolling_current_period_sum,
+        TempCol.rolling_previous_period_sum,
     )
 
     return df
