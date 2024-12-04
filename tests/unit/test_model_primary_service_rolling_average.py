@@ -305,7 +305,7 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        number_of_days: int = 3
+        number_of_days: int = 2
 
         test_df = self.spark.createDataFrame(
             Data.calculate_rolling_average_rows,
