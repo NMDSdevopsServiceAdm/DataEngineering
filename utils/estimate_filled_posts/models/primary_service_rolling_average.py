@@ -68,53 +68,8 @@ def model_primary_service_rolling_average_and_rate_of_change(
         ratio_rolling_average_model_column_name,
         posts_rolling_average_model_column_name,
     )
-
-    # New approach B
-    window_spec_lagged = (
-        Window.partitionBy(IndCqc.location_id)
-        .orderBy(IndCqc.unix_time)
-        .rowsBetween(Window.unboundedPreceding, -1)
-    )
-    df = get_selected_value(
-        df,
-        window_spec_lagged,
-        TempCol.column_to_average_interpolated,
-        TempCol.column_to_average_interpolated,
-        TempCol.previous_column_to_average_interpolated,
-        "last",
-    )
-
-    both_periods_not_null = (
-        F.col(TempCol.column_to_average_interpolated).isNotNull()
-        & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
-    )
-
-    rolling_roc_window = (
-        Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
-    )
-
-    df = df.withColumn(
-        TempCol.rolling_current_period_sum,
-        F.sum(
-            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
-        ).over(rolling_roc_window),
-    )
-    df = df.withColumn(
-        TempCol.rolling_previous_period_sum,
-        F.sum(
-            F.when(
-                both_periods_not_null,
-                F.col(TempCol.previous_column_to_average_interpolated),
-            )
-        ).over(rolling_roc_window),
-    )
-
-    df = df.withColumn(
-        rate_of_change_model_column_name,
-        F.col(TempCol.rolling_current_period_sum)
-        / F.col(TempCol.rolling_previous_period_sum),
+    df = calculate_rolling_rate_of_change(
+        df, number_of_days_for_window, rate_of_change_model_column_name
     )
 
     df = df.drop(
@@ -242,6 +197,7 @@ def interpolate_column_to_average(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO in next PR - rolling ratio no longer required so can create posts_rolling_average_model_column_name straight away
 def calculate_rolling_average(df: DataFrame, number_of_days: int) -> DataFrame:
     """
     Calculates the rolling average of a specified column over a given window of days partitioned by primary service type.
@@ -300,4 +256,75 @@ def create_final_model_columns(
         ).otherwise(F.col(TempCol.temp_rolling_average)),
     )
 
+    return df
+
+
+# TODO - untested
+def calculate_rolling_rate_of_change(
+    df: DataFrame, number_of_days: int, rate_of_change_model_column_name: str
+) -> DataFrame:
+    df = add_previous_value_column(df)
+    df = add_rolling_sums(df, number_of_days)
+    df = calculate_rate_of_change(df, rate_of_change_model_column_name)
+    return df
+
+
+# TODO - untested
+def add_previous_value_column(df: DataFrame) -> DataFrame:
+    location_window = (
+        Window.partitionBy(IndCqc.location_id)
+        .orderBy(IndCqc.unix_time)
+        .rowsBetween(Window.unboundedPreceding, -1)
+    )
+    df = get_selected_value(
+        df,
+        location_window,
+        TempCol.column_to_average_interpolated,
+        TempCol.column_to_average_interpolated,
+        TempCol.previous_column_to_average_interpolated,
+        "last",
+    )
+    return df
+
+
+# TODO - untested
+def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
+    both_periods_not_null = (
+        F.col(TempCol.column_to_average_interpolated).isNotNull()
+        & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
+    )
+
+    rolling_sum_window = (
+        Window.partitionBy(IndCqc.primary_service_type)
+        .orderBy(F.col(IndCqc.unix_time))
+        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
+    )
+
+    df = df.withColumn(
+        TempCol.rolling_current_period_sum,
+        F.sum(
+            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
+        ).over(rolling_sum_window),
+    )
+    df = df.withColumn(
+        TempCol.rolling_previous_period_sum,
+        F.sum(
+            F.when(
+                both_periods_not_null,
+                F.col(TempCol.previous_column_to_average_interpolated),
+            )
+        ).over(rolling_sum_window),
+    )
+    return df
+
+
+# TODO - untested
+def calculate_rate_of_change(
+    df: DataFrame, rate_of_change_model_column_name: str
+) -> DataFrame:
+    df = df.withColumn(
+        rate_of_change_model_column_name,
+        F.col(TempCol.rolling_current_period_sum)
+        / F.col(TempCol.rolling_previous_period_sum),
+    )
     return df
