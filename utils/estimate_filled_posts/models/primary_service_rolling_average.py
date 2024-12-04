@@ -30,13 +30,12 @@ def model_primary_service_rolling_average(
     rate_of_change_model_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average split by primary service type of specified columns over a given window of days (where three days refers to the current day plus the previous two).
+    Calculates the rolling average and rate of change split by primary service type of specified columns over a given window of days.
 
-    Calculates the rolling average of specified columns over a given window of days partitioned by primary service type.
+    Calculates the rolling average and rate of change of specified columns over a given window of days partitioned by primary service type.
     Only data from locations who have at least 2 submissions and a consistent care_home status throughout time are included in the calculations.
     One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
     For example, for a 3 day rolling average we want the current day plus the two days prior.
-    The additional columns will be added with the column names 'posts_rolling_average_model_column_name' and 'ratio_rolling_average_model_column_name'.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -45,9 +44,10 @@ def model_primary_service_rolling_average(
         number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
         ratio_rolling_average_model_column_name (str): The name of the new column to store the care home filled posts per bed ratio rolling average.
         posts_rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
+        rate_of_change_model_column_name (str): The name of the new column to store the rate of change model values.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing the two new rolling average columns.
+        DataFrame: The input DataFrame with the new column containing the two new rolling average columns and the rate of change model.
     """
     number_of_days_for_window: int = number_of_days - 1
 
