@@ -7975,34 +7975,26 @@ class DiagnosticsOnCapacityTrackerData:
         ),
     ]
 
-    convert_to_all_posts_using_ratio_micro_rows = [
+    convert_to_all_posts_using_ratio_rows = [
         ("loc 1", 1.0),
         ("loc 2", 6.0),
         ("loc 3", None),
     ]
-    expected_convert_to_all_posts_using_ratio_micro_rows = [
-        ("loc 1", 1.0, 1.6393),
-        ("loc 2", 6.0, 9.8361),
+    expected_convert_to_all_posts_using_ratio_rows = [
+        ("loc 1", 1.0, 1.25),
+        ("loc 2", 6.0, 7.5),
         ("loc 3", None, None),
     ]
-    convert_to_all_posts_using_ratio_small_rows = [
-        ("loc 1", 7.0),
-        ("loc 2", 36.0),
-        ("loc 3", None),
+
+    calculate_care_worker_ratio_rows = [
+        ("loc 1", 8.0, 10.0),
+        ("loc 2", 16.0, 20.0),
+        ("loc 3", 24.0, 30.0),
+        ("loc 4", None, 40.0),
+        ("loc 5", 40.0, None),
+        ("loc 6", None, None),
     ]
-    expected_convert_to_all_posts_using_ratio_small_rows = [
-        ("loc 1", 7.0, 9.4595),
-        ("loc 2", 36.0, 48.6486),
-        ("loc 3", None, None),
-    ]
-    convert_to_all_posts_using_ratio_medium_or_large_rows = [
-        ("loc 1", 37.0),
-        ("loc 2", None),
-    ]
-    expected_convert_to_all_posts_using_ratio_medium_or_large_rows = [
-        ("loc 1", 37.0, 46.8354),
-        ("loc 2", None, None),
-    ]
+    expected_care_worker_ratio = 0.8
 
 
 @dataclass
@@ -8560,3 +8552,67 @@ class ArchiveFilledPostsEstimates:
     expected_single_digit_number_as_string = "09"
     double_digit_number = 10
     expected_double_digit_number_as_string = "10"
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerCareHomeData:
+    # fmt: off
+    ct_care_home_rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
+    ]
+
+    cleaned_ct_care_home_rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "2024",
+            "01",
+            "01",
+        ),
+    ]
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerNonResData:
+    # fmt: off
+    ct_non_res_rows = [
+        ("1-000000001", "1", "2", "2024", "01", "01"),
+        ("1-000000002", "1", "2", "2024", "01", "01"),
+        ("1-000000001", "1", "2", "2024", "02", "01"),
+        ("1-000000002", "1", "2", "2024", "02", "01"),
+    ]
+
+    cleaned_ct_non_res_rows = [
+        ("1-000000001", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
+        ("1-000000002", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
+        ("1-000000001", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
+        ("1-000000002", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            "1",
+            "2",
+            "2024",
+            "01",
+            "01",
+        ),
+    ]
