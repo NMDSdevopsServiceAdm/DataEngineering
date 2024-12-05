@@ -5093,9 +5093,9 @@ class ModelPrimaryServiceRollingAverage:
         ("1-001", 1000000003, CareHome.care_home, 10.0),
     ]
     expected_clean_column_to_average_rows = [
-        ("1-001", 1000000001, CareHome.care_home, 10.0),
-        ("1-001", 1000000002, CareHome.care_home, None),
-        ("1-001", 1000000003, CareHome.care_home, 10.0),
+        ("1-001", 1000000001, CareHome.care_home, 10.0, 1, 2),
+        ("1-001", 1000000002, CareHome.care_home, None, 1, 2),
+        ("1-001", 1000000003, CareHome.care_home, 10.0, 1, 2),
     ]
 
     clean_column_to_average_one_submission_rows = [
@@ -5103,8 +5103,8 @@ class ModelPrimaryServiceRollingAverage:
         ("1-001", 1000000002, CareHome.care_home, None),
     ]
     expected_clean_column_to_average_one_submission_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None),
-        ("1-001", 1000000002, CareHome.care_home, None),
+        ("1-001", 1000000001, CareHome.care_home, None, 1, 1),
+        ("1-001", 1000000002, CareHome.care_home, None, 1, 1),
     ]
 
     clean_column_to_average_both_statuses_rows = [
@@ -5113,9 +5113,9 @@ class ModelPrimaryServiceRollingAverage:
         ("1-001", 1000000003, CareHome.not_care_home, 10.0),
     ]
     expected_clean_column_to_average_both_statuses_rows = [
-        ("1-001", 1000000001, CareHome.care_home, None),
-        ("1-001", 1000000002, CareHome.care_home, None),
-        ("1-001", 1000000003, CareHome.not_care_home, None),
+        ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
+        ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
+        ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
     ]
 
     calculate_care_home_status_count_rows = [

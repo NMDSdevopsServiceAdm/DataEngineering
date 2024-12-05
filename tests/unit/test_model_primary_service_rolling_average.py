@@ -131,18 +131,18 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.test_df = self.spark.createDataFrame(
+        test_df = self.spark.createDataFrame(
             Data.clean_column_to_average_rows,
             Schemas.clean_column_to_average_schema,
         )
-        self.returned_df = job.clean_column_to_average(self.test_df)
+        self.returned_df = job.clean_column_to_average(test_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_clean_column_to_average_rows,
-            Schemas.clean_column_to_average_schema,
+            Schemas.expected_clean_column_to_average_schema,
         )
 
-    def test_clean_column_to_average_returns_original_columns(self):
-        self.assertEqual(self.returned_df.columns, self.test_df.columns)
+    def test_clean_column_to_average_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_clean_column_to_average_is_not_nulled_when_submitted_submitted_more_than_once_and_consistent_care_home_status(
         self,
@@ -159,7 +159,7 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
         returned_df = job.clean_column_to_average(one_submission_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_column_to_average_one_submission_rows,
-            Schemas.clean_column_to_average_schema,
+            Schemas.expected_clean_column_to_average_schema,
         )
         returned_data = returned_df.sort(IndCqc.unix_time).collect()
         expected_data = expected_df.collect()
@@ -175,7 +175,7 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
         returned_df = job.clean_column_to_average(both_statuses_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_clean_column_to_average_both_statuses_rows,
-            Schemas.clean_column_to_average_schema,
+            Schemas.expected_clean_column_to_average_schema,
         )
         returned_data = returned_df.sort(IndCqc.unix_time).collect()
         expected_data = expected_df.collect()

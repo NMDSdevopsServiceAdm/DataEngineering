@@ -2573,6 +2573,13 @@ class ModelPrimaryServiceRollingAverage:
             StructField(RA_TempCol.column_to_average, DoubleType(), True),
         ]
     )
+    expected_clean_column_to_average_schema = StructType(
+        [
+            *clean_column_to_average_schema,
+            StructField(RA_TempCol.care_home_status_count, IntegerType(), True),
+            StructField(RA_TempCol.submission_count, IntegerType(), True),
+        ]
+    )
 
     calculate_care_home_status_count_schema = StructType(
         [
