@@ -332,8 +332,5 @@ def calculate_rolling_rate_of_change_model(
     cumulative_product = F.exp(
         F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
     )
-
     df = df.withColumn(rate_of_change_model_column_name, cumulative_product)
-
-    df.sort(IndCqc.location_id, IndCqc.unix_time).show()
     return df
