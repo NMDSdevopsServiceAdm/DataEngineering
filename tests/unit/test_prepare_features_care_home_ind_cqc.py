@@ -86,7 +86,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            51, [0, 1, 10, 17, 24, 31], [10.0, 2.5, 1.0, 1.0, 1.0, 1.0]
+            51, [0, 9, 10, 17, 24, 31], [10.0, 1.0, 2.5, 1.0, 1.0, 1.0]
         )
         actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
