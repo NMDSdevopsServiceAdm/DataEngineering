@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from pyspark.sql import DataFrame, functions as F, Window
 
@@ -21,6 +21,7 @@ class TempCol:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
     temp_rolling_average: str = "temp_rolling_average"
 
@@ -72,14 +73,8 @@ def model_primary_service_rolling_average_and_rate_of_change(
         df, number_of_days_for_window, rate_of_change_model_column_name
     )
 
-    df = df.drop(
-        TempCol.column_to_average,
-        TempCol.column_to_average_interpolated,
-        TempCol.temp_rolling_average,
-        TempCol.previous_column_to_average_interpolated,
-        TempCol.rolling_current_period_sum,
-        TempCol.rolling_previous_period_sum,
-    )
+    columns_to_drop = [field.name for field in fields(TempCol())]
+    df = df.drop(*columns_to_drop)
 
     return df
 
@@ -133,7 +128,6 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
             F.col(TempCol.column_to_average),
         ).otherwise(F.lit(None)),
     )
-    df = df.drop(TempCol.care_home_status_count, TempCol.submission_count)
     return df
 
 
@@ -265,7 +259,8 @@ def calculate_rolling_rate_of_change(
 ) -> DataFrame:
     df = add_previous_value_column(df)
     df = add_rolling_sums(df, number_of_days)
-    df = calculate_rate_of_change(df, rate_of_change_model_column_name)
+    df = calculate_single_period_rate_of_change(df)
+    df = calculate_rolling_rate_of_change_model(df, rate_of_change_model_column_name)
     return df
 
 
@@ -319,12 +314,26 @@ def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
 
 
 # TODO - untested
-def calculate_rate_of_change(
-    df: DataFrame, rate_of_change_model_column_name: str
-) -> DataFrame:
+def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
     df = df.withColumn(
-        rate_of_change_model_column_name,
+        TempCol.single_period_rate_of_change,
         F.col(TempCol.rolling_current_period_sum)
         / F.col(TempCol.rolling_previous_period_sum),
     )
+    return df
+
+
+# TODO - untested
+def calculate_rolling_rate_of_change_model(
+    df: DataFrame, rate_of_change_model_column_name: str
+) -> DataFrame:
+    w = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+
+    cumulative_product = F.exp(
+        F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
+    )
+
+    df = df.withColumn(rate_of_change_model_column_name, cumulative_product)
+
+    df.sort(IndCqc.location_id, IndCqc.unix_time).show()
     return df
