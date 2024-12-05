@@ -320,6 +320,7 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
         F.col(TempCol.rolling_current_period_sum)
         / F.col(TempCol.rolling_previous_period_sum),
     )
+    df = df.na.fill({TempCol.single_period_rate_of_change: 1.0})
     return df
 
 
