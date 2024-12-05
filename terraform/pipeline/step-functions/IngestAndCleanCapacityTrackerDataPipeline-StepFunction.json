@@ -58,7 +58,19 @@
                     }
                   }
                 ],
-                "Next": "Start capacity tracker silver validation"
+                "Next": "Run capacity tracker crawler"
+            },
+            "Run capacity tracker crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
+                "Input": {
+                  "crawler_name": "${capacity_tracker_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "Next": "Start capacity tracker silver validation"
             },
             "Start capacity tracker silver validation": {
               "Type": "Task",
@@ -85,29 +97,6 @@
                   "--non_res_diagnostics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
                 }
               },
-              "Next": "Start capacity tracker gold validation"
-            },
-            "Start capacity tracker gold validation": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution.sync:2",
-              "Parameters": {
-                "StateMachineArn": "${run_capacity_tracker_gold_validation_state_machine_arn}",
-                "Input": {
-                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                }
-              },
-              "Next": "Run capacity tracker crawler"
-            },
-            "Run capacity tracker crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution.sync:2",
-              "Parameters": {
-                "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
-                "Input": {
-                  "crawler_name": "${capacity_tracker_crawler_name}",
-                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                }
-              },
               "Next": "Run ind cqc crawler"
             },
             "Run ind cqc crawler": {
@@ -117,6 +106,17 @@
                 "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
                 "Input": {
                   "crawler_name": "${ind_cqc_filled_posts_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "Next": "Start capacity tracker gold validation"
+            },
+            "Start capacity tracker gold validation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_capacity_tracker_gold_validation_state_machine_arn}",
+                "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
               },
