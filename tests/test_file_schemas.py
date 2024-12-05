@@ -2346,13 +2346,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
-            StructField(
-                IndCQC.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
+            StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(
                 IndCQC.regulated_activities,
                 ArrayType(
@@ -2403,8 +2397,8 @@ class NonResAscwdsFeaturesSchema(object):
                 True,
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(Keys.year, StringType(), True),
@@ -2600,6 +2594,7 @@ class ModelPrimaryServiceRollingAverage:
     calculate_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),

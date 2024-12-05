@@ -5172,28 +5172,30 @@ class ModelPrimaryServiceRollingAverage:
         ("1-001", 1704326400, None, None),
     ]
 
+    # fmt: off
     calculate_rolling_average_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 10, 1.1),
-        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 10, 1.2),
-        ("1-003", PrimaryServiceType.care_home_only, 1672704000, 10, 1.3),
-        ("1-004", PrimaryServiceType.care_home_only, 1672790400, 10, 1.4),
-        ("1-005", PrimaryServiceType.care_home_only, 1672876800, 10, 1.4),
-        ("1-006", PrimaryServiceType.care_home_only, 1672876800, 10, 1.3),
-        ("1-007", PrimaryServiceType.non_residential, 1672531200, None, 10.0),
-        ("1-008", PrimaryServiceType.non_residential, 1672704000, None, 20.0),
-        ("1-009", PrimaryServiceType.non_residential, 1672876800, None, 30.0),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3),
+        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4),
+        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4),
+        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3),
+        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0),
+        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0),
+        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0),
     ]
     expected_calculate_rolling_average_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 10, 1.1, 11.0),
-        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 10, 1.2, 11.5),
-        ("1-003", PrimaryServiceType.care_home_only, 1672704000, 10, 1.3, 12.0),
-        ("1-004", PrimaryServiceType.care_home_only, 1672790400, 10, 1.4, 13.0),
-        ("1-005", PrimaryServiceType.care_home_only, 1672876800, 10, 1.4, 13.5),
-        ("1-006", PrimaryServiceType.care_home_only, 1672876800, 10, 1.3, 13.5),
-        ("1-007", PrimaryServiceType.non_residential, 1672531200, None, 10.0, 10.0),
-        ("1-008", PrimaryServiceType.non_residential, 1672704000, None, 20.0, 15.0),
-        ("1-009", PrimaryServiceType.non_residential, 1672876800, None, 30.0, 25.0),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1, 11.0),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2, 11.5),
+        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3, 12.0),
+        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4, 13.0),
+        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4, 13.5),
+        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3, 13.5),
+        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0, 10.0),
+        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0, 15.0),
+        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0, 25.0),
     ]
+    # fmt: on
 
 
 @dataclass
