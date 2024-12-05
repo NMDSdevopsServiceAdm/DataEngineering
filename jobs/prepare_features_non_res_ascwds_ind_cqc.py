@@ -30,7 +30,6 @@ from utils.features.helper import (
 )
 
 
-# TODO - add new rolling avg col into df
 vectorised_features_column_list: List[str] = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
@@ -42,6 +41,8 @@ vectorised_features_column_list: List[str] = [
     IndCQC.activity_count,
     IndCQC.specialism_count,
     IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.rolling_average_model,
+    IndCQC.rolling_rate_of_change_model,
     IndCQC.imputed_registration_date,
     IndCQC.time_registered,
     IndCQC.features,
@@ -123,14 +124,13 @@ def main(
         features_df, IndCQC.dormancy
     )
 
-    # TODO - amend in line with rolling avg change
     list_for_vectorisation_without_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.activity_count,
             IndCQC.specialism_count,
             IndCQC.time_registered,
-            IndCQC.posts_rolling_average_model,
+            IndCQC.rolling_rate_of_change_model,
         ]
         + service_keys
         + regions

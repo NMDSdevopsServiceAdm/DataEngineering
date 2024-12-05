@@ -70,12 +70,11 @@ def main(
         )
     )
 
-    # TODO - amend in line with rolling avg change
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.ratio_rolling_average_model,
+            IndCQC.rolling_rate_of_change_model,
         ]
         + service_keys
         + regions
@@ -85,7 +84,6 @@ def main(
     vectorised_dataframe = vectorise_dataframe(
         df=features_df, list_for_vectorisation=list_for_vectorisation
     )
-    # TODO - add new col into df
     vectorised_features_df = vectorised_dataframe.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
@@ -96,6 +94,7 @@ def main(
         IndCQC.features,
         IndCQC.ascwds_filled_posts_dedup_clean,
         IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.rolling_rate_of_change_model,
         Keys.year,
         Keys.month,
         Keys.day,

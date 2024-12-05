@@ -30,9 +30,9 @@ estimate_filled_posts_columns: list = [
     IndCQC.cqc_location_import_date,
     IndCQC.care_home,
     IndCQC.primary_service_type,
-    IndCQC.posts_rolling_average_model,
+    IndCQC.rolling_average_model,
     IndCQC.care_home_model,
-    IndCQC.imputed_posts_rolling_average_model,
+    IndCQC.imputed_filled_post_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.non_res_pir_linear_regression_model,
@@ -142,13 +142,12 @@ def run_diagnostics_for_care_homes(
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_rolling_average,
         CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
         CTCHClean.agency_and_non_agency_total_employed_rolling_rate_of_change,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
+        CTCHClean.agency_and_non_agency_total_employed_rolling_rate_of_change,
         CTCHClean.agency_and_non_agency_total_employed_imputed,
         care_home=True,
     )
@@ -209,13 +208,12 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_rolling_average,
         CTNRClean.cqc_care_workers_employed_rolling_avg,
-        CTNRClean.cqc_care_workers_employed_rolling_avg,
         CTNRClean.cqc_care_workers_employed_rolling_rate_of_change,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
-        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        CTNRClean.cqc_care_workers_employed_rolling_rate_of_change,
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
