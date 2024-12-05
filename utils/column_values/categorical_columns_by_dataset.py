@@ -40,6 +40,7 @@ from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     RelatedLocation,
     InAscwds,
+    EstimateSourceCareHome,
 )
 
 
@@ -242,4 +243,14 @@ class DiagnosticOnKnownFilledPostsCategoricalValues:
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source,
         value_to_remove=EstimateFilledPostsSource.ascwds_filled_posts_dedup_clean,
+    )
+
+
+@dataclass
+class DiagnosticsOnCapacityTrackerCareHomeCategoricalValues:
+    estimate_source_column_values = EstimateSourceCareHome(
+        IndCQC.estimate_source,
+    )
+    primary_service_type_column_values = PrimaryServiceType(
+        IndCQC.primary_service_type, value_to_remove=PrimaryServiceType.non_residential
     )

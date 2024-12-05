@@ -8561,3 +8561,31 @@ class ReconciliationUtilsData:
         ("loc_1", "estab_1", "name"),
         ("loc_3", "estab_2", None),
     ]
+
+
+@dataclass
+class ValidateDiagnosticsOnCapacityTrackerCareHomeData:
+    diagnostics_ct_care_home_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            PrimaryServiceType.care_home_only,
+            EstimateFilledPostsSource.care_home_model,
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            10.0,
+            11.0,
+            12.0,
+            13.0,
+            14.0,
+            15.0,
+            16.0,
+        )
+    ]
