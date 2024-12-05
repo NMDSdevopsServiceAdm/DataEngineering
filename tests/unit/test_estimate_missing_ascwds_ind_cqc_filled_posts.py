@@ -7,10 +7,7 @@ import jobs.estimate_missing_ascwds_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateMissingAscwdsFilledPostsData as Data
 from tests.test_file_schemas import EstimateMissingAscwdsFilledPostsSchemas as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
