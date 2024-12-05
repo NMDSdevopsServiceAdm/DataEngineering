@@ -125,8 +125,10 @@ class IndCqcColumns:
     imputed_posts_non_res_with_dormancy_model: str = (
         "imputed_posts_non_res_with_dormancy_model"
     )
-    imputed_posts_rolling_average_model: str = "imputed_posts_rolling_average_model"
-    imputed_ratio_rolling_average_model: str = "imputed_ratio_rolling_average_model"
+    imputed_filled_post_model: str = "imputed_filled_post_model"
+    imputed_filled_posts_per_bed_ratio_model: str = (
+        "imputed_filled_posts_per_bed_ratio_model"
+    )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
     last_filled_posts: str = "last_filled_posts"
