@@ -2540,12 +2540,7 @@ class ModelPrimaryServiceRollingAverage:
     expected_primary_service_rolling_average_schema = StructType(
         [
             *primary_service_rolling_average_schema,
-            StructField(
-                IndCQC.ratio_rolling_average_model,
-                DoubleType(),
-                True,
-            ),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
         ]
     )
@@ -2627,33 +2622,14 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
         ]
     )
     expected_calculate_rolling_average_schema = StructType(
         [
             *calculate_rolling_average_schema,
-            StructField(RA_TempCol.temp_rolling_average, DoubleType(), True),
-        ]
-    )
-
-    create_final_model_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(RA_TempCol.temp_rolling_average, DoubleType(), True),
-        ]
-    )
-    expected_create_final_model_columns_schema = StructType(
-        [
-            *create_final_model_columns_schema,
-            StructField(
-                IndCQC.ratio_rolling_average_model,
-                DoubleType(),
-                True,
-            ),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.rolling_average_model, DoubleType(), True),
         ]
     )
 
