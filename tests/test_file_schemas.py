@@ -5149,41 +5149,41 @@ class ReconciliationUtilsSchema:
 
 @dataclass
 class ValidateDiagnosticsOnCapacityTrackerCareHomeData:
-    diagnostics_ct_care_home_schema = expected_calculate_distribution_metrics_schema = (
-        StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), False),
-                StructField(IndCQC.cqc_location_import_date, DateType(), False),
-                StructField(IndCQC.primary_service_type, StringType(), True),
-                StructField(IndCQC.estimate_source, StringType(), True),
-                StructField(IndCQC.estimate_value, FloatType(), True),
-                StructField(IndCQC.distribution_mean, FloatType(), True),
-                StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
-                StructField(IndCQC.distribution_kurtosis, FloatType(), True),
-                StructField(IndCQC.distribution_skewness, FloatType(), True),
-                StructField(IndCQC.residual, FloatType(), True),
-                StructField(IndCQC.absolute_residual, FloatType(), True),
-                StructField(IndCQC.percentage_residual, FloatType(), True),
-                StructField(IndCQC.standardised_residual, FloatType(), True),
-                StructField(IndCQC.average_absolute_residual, FloatType(), True),
-                StructField(IndCQC.average_percentage_residual, FloatType(), True),
-                StructField(IndCQC.max_residual, FloatType(), True),
-                StructField(IndCQC.min_residual, FloatType(), True),
-                StructField(
-                    IndCQC.percentage_of_residuals_within_absolute_value,
-                    FloatType(),
-                    True,
-                ),
-                StructField(
-                    IndCQC.percentage_of_residuals_within_percentage_value,
-                    FloatType(),
-                    True,
-                ),
-                StructField(
-                    IndCQC.percentage_of_standardised_residuals_within_limit,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
+    diagnostics_ct_care_home_schema = (
+        expected_calculate_distribution_metrics_schema
+    ) = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.estimate_source, StringType(), True),
+            StructField(IndCQC.estimate_value, FloatType(), True),
+            StructField(IndCQC.distribution_mean, FloatType(), True),
+            StructField(IndCQC.distribution_standard_deviation, FloatType(), True),
+            StructField(IndCQC.distribution_kurtosis, FloatType(), True),
+            StructField(IndCQC.distribution_skewness, FloatType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
+            StructField(IndCQC.absolute_residual, FloatType(), True),
+            StructField(IndCQC.percentage_residual, FloatType(), True),
+            StructField(IndCQC.standardised_residual, FloatType(), True),
+            StructField(IndCQC.average_absolute_residual, FloatType(), True),
+            StructField(IndCQC.average_percentage_residual, FloatType(), True),
+            StructField(IndCQC.max_residual, FloatType(), True),
+            StructField(IndCQC.min_residual, FloatType(), True),
+            StructField(
+                IndCQC.percentage_of_residuals_within_absolute_value,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.percentage_of_residuals_within_percentage_value,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.percentage_of_standardised_residuals_within_limit,
+                FloatType(),
+                True,
+            ),
+        ]
     )
