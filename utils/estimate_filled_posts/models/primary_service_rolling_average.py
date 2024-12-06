@@ -242,7 +242,18 @@ def calculate_rolling_rate_of_change(
         DataFrame: The DataFrame with the calculated rolling rate of change.
     """
     df = add_previous_value_column(df)
-    df = add_rolling_sums(df, number_of_days)
+    df = add_rolling_sum(
+        df,
+        number_of_days,
+        TempCol.column_to_average_interpolated,
+        TempCol.rolling_current_period_sum,
+    )
+    df = add_rolling_sum(
+        df,
+        number_of_days,
+        TempCol.previous_column_to_average_interpolated,
+        TempCol.rolling_previous_period_sum,
+    )
     df = calculate_single_period_rate_of_change(df)
     df = calculate_rolling_rate_of_change_model(df, rate_of_change_model_column_name)
     return df
@@ -276,7 +287,25 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
 
 
 # TODO - untested
-def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
+def add_rolling_sum(
+    df: DataFrame, number_of_days: int, column_to_sum: str, rolling_sum_column_name: str
+) -> DataFrame:
+    """
+    Adds a rolling sum column to a DataFrame based on a specified number of days.
+
+    Adds a rolling sum column to a DataFrame based on a specified number of days.
+    Only values where both the current and previously interpolated values are known are included in the sum.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        number_of_days (int): The number of days to include in the rolling time period.
+        column_to_sum (str): The name of the column to sum.
+        rolling_sum_column_name (str): The name of the new column to store the rolling sum.
+
+    Returns:
+        DataFrame: The DataFrame with the new rolling sum column added.
+
+    """
     both_periods_not_null = (
         F.col(TempCol.column_to_average_interpolated).isNotNull()
         & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
@@ -289,19 +318,10 @@ def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
     )
 
     df = df.withColumn(
-        TempCol.rolling_current_period_sum,
-        F.sum(
-            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
-        ).over(rolling_sum_window),
-    )
-    df = df.withColumn(
-        TempCol.rolling_previous_period_sum,
-        F.sum(
-            F.when(
-                both_periods_not_null,
-                F.col(TempCol.previous_column_to_average_interpolated),
-            )
-        ).over(rolling_sum_window),
+        rolling_sum_column_name,
+        F.sum(F.when(both_periods_not_null, F.col(column_to_sum))).over(
+            rolling_sum_window
+        ),
     )
     return df
 
