@@ -2334,6 +2334,8 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    calculate_rolling_rate_of_change_schema = calculate_rolling_average_schema
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

@@ -4937,6 +4937,8 @@ class ModelPrimaryServiceRollingAverage:
     ]
     # fmt: on
 
+    calculate_rolling_rate_of_change_rows = calculate_rolling_average_rows
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:

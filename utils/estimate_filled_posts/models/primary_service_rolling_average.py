@@ -221,7 +221,6 @@ def calculate_rolling_average(
     return df
 
 
-# TODO - untested
 def calculate_rolling_rate_of_change(
     df: DataFrame, number_of_days: int, rate_of_change_model_column_name: str
 ) -> DataFrame:

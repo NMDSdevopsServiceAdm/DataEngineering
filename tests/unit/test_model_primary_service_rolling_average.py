@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 import warnings
 
 import utils.estimate_filled_posts.models.primary_service_rolling_average as job
@@ -327,3 +328,53 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
                 2,
                 f"Returned row {i} does not match expected",
             )
+
+
+class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.number_of_days: int = 2
+        self.calculate_roc_df = self.spark.createDataFrame(
+            Data.calculate_rolling_rate_of_change_rows,
+            Schemas.calculate_rolling_rate_of_change_schema,
+        )
+
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_previous_value_column"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_rolling_sums"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_single_period_rate_of_change"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_rolling_rate_of_change_model"
+    )
+    def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
+        self,
+        calculate_rolling_rate_of_change_model: Mock,
+        calculate_single_period_rate_of_change: Mock,
+        add_rolling_sums: Mock,
+        add_previous_value_column: Mock,
+    ):
+        job.calculate_rolling_rate_of_change(
+            self.calculate_roc_df,
+            self.number_of_days,
+            IndCqc.rolling_rate_of_change_model,
+        )
+
+        self.assertEqual(add_previous_value_column.call_count, 1)
+        self.assertEqual(add_rolling_sums.call_count, 1)
+        self.assertEqual(calculate_single_period_rate_of_change.call_count, 1)
+        self.assertEqual(calculate_rolling_rate_of_change_model.call_count, 1)
+
+    def test_rate_of_change_model_column_name_in_returned_column_list(self):
+        returned_df = job.calculate_rolling_rate_of_change(
+            self.calculate_roc_df,
+            self.number_of_days,
+            IndCqc.rolling_rate_of_change_model,
+        )
+
+        self.assertTrue(IndCqc.rolling_rate_of_change_model in returned_df.columns)
