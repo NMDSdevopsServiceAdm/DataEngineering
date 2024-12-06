@@ -2252,26 +2252,31 @@ class EstimateMissingAscwdsFilledPostsSchemas:
 
 @dataclass
 class ModelPrimaryServiceRollingAverage:
+    care_home_status_count: str = "care_home_status_count"
+    submission_count: str = "submission_count"
+    column_to_average: str = "column_to_average"
+    temp_rolling_average: str = "temp_rolling_average"
+
     primary_service_rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
     expected_primary_service_rolling_average_schema = StructType(
         [
             *primary_service_rolling_average_schema,
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(
                 IndCQC.ratio_rolling_average_model,
                 DoubleType(),
                 True,
             ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
         ]
     )
 
@@ -2286,7 +2291,43 @@ class ModelPrimaryServiceRollingAverage:
     expected_single_column_to_average_schema = StructType(
         [
             *single_column_to_average_schema,
-            StructField("temp_column_to_average", DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
+        ]
+    )
+
+    clean_column_to_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_to_average, DoubleType(), True),
+        ]
+    )
+
+    calculate_care_home_status_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = StructType(
+        [
+            *calculate_care_home_status_count_schema,
+            StructField(care_home_status_count, IntegerType(), True),
+        ]
+    )
+
+    calculate_submission_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_to_average, DoubleType(), True),
+        ]
+    )
+    expected_calculate_submission_count_schema = StructType(
+        [
+            *calculate_submission_count_schema,
+            StructField(submission_count, IntegerType(), True),
         ]
     )
 
@@ -2295,13 +2336,13 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField("temp_column_to_average", DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
         ]
     )
     expected_calculate_rolling_average_schema = StructType(
         [
             *calculate_rolling_average_schema,
-            StructField("temp_rolling_average", DoubleType(), True),
+            StructField(temp_rolling_average, DoubleType(), True),
         ]
     )
 
@@ -2310,7 +2351,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField("temp_rolling_average", DoubleType(), True),
+            StructField(temp_rolling_average, DoubleType(), True),
         ]
     )
     expected_create_final_model_columns_schema = StructType(
