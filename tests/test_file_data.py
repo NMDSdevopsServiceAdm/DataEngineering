@@ -4229,266 +4229,6 @@ class ReconciliationData:
         ("20240401", "1-923", "Deregistered", "2024-03-01"),
         ("20240401", "1-995", "Deregistered", "2024-04-01"),
     ]
-    # fmt: on
-    dates_to_use_mid_month_rows = [
-        ("1-001", date(2024, 3, 28)),
-        ("1-002", date(2023, 1, 1)),
-    ]
-    dates_to_use_first_month_rows = [
-        ("1-001", date(2024, 4, 1)),
-        ("1-002", date(2023, 1, 1)),
-    ]
-
-    expected_prepared_most_recent_cqc_location_rows = [
-        ("1-001", "Registered", None, date(2024, 4, 1)),
-        ("1-002", "Registered", None, date(2024, 4, 1)),
-        ("1-003", "Registered", None, date(2024, 4, 1)),
-        ("1-004", "Registered", None, date(2024, 4, 1)),
-        ("1-902", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
-        ("1-903", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
-        ("1-904", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
-        ("1-912", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
-        ("1-913", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
-        ("1-922", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
-        ("1-923", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
-        ("1-995", "Deregistered", date(2024, 4, 1), date(2024, 4, 1)),
-    ]
-
-    dates_to_use_rows = [
-        ("1-001", date(2024, 3, 28)),
-        ("1-002", date(2023, 1, 1)),
-    ]
-
-    regtype_rows = [
-        ("1", "Not regulated"),
-        ("2", "CQC regulated"),
-        ("3", None),
-    ]
-
-    remove_head_office_accounts_rows = [
-        ("1", "1-001", "Head office services"),
-        ("2", "1-002", "any non-head office service"),
-        ("3", None, "any non-head office service"),
-        ("4", None, "Head office services"),
-    ]
-
-    first_of_most_recent_month = date(2024, 4, 1)
-    first_of_previous_month = date(2024, 3, 1)
-    # fmt: off
-    filter_to_relevant_rows = [
-        ("loc_1", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_2", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_3", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_4", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_5", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_6", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_7", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_8", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_9", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # remove
-        ("loc_10", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-        ("loc_11", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # remove
-        ("loc_12", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-        ("loc_13", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # remove
-        ("loc_14", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-        ("loc_15", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
-        ("loc_16", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-        ("loc_17", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_18", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_19", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_20", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
-        ("loc_21", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
-        ("loc_22", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-        ("loc_23", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
-        ("loc_24", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
-    ]
-    # fmt: on
-
-    parents_or_singles_and_subs_rows = [
-        ("1", "Yes", "Parent has ownership"),
-        ("2", "Yes", "Workplace has ownership"),
-        ("3", "No", "Workplace has ownership"),
-        ("4", "No", "Parent has ownership"),
-    ]
-    expected_parents_or_singles_and_subs_rows = [
-        ("1", "Yes", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
-        ("2", "Yes", "Workplace has ownership", ParentsOrSinglesAndSubs.parents),
-        (
-            "3",
-            "No",
-            "Workplace has ownership",
-            ParentsOrSinglesAndSubs.singles_and_subs,
-        ),
-        ("4", "No", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
-    ]
-
-    add_singles_and_subs_description_rows = [
-        ("loc_1", date(2024, 3, 28)),
-        ("loc_2", None),
-    ]
-
-    expected_singles_and_subs_description_rows = [
-        (
-            "loc_1",
-            date(2024, 3, 28),
-            SingleSubDescription.single_sub_deregistered_description,
-        ),
-        ("loc_2", None, SingleSubDescription.single_sub_reg_type_description),
-    ]
-
-    create_missing_columns_rows = [
-        ("id_1", "care_home", "region", "Care Home Name"),
-    ]
-
-    expected_create_missing_columns_rows = [
-        (
-            "id_1",
-            "care_home",
-            "region",
-            "Care Home Name",
-            "id_1",
-            "id_1",
-            "id_1 Care Home Name",
-            "id_1 Care Home Name",
-            "Open",
-            "_",
-            "No",
-            "Internal",
-            "Priority 5",
-            "CQC work",
-            "CQC work",
-            "Yes",
-            "N/A",
-            "ASC-WDS",
-            "CQC work",
-            0,
-        ),
-    ]
-    # fmt: off
-    final_column_selection_rows = [
-        (
-            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "",
-        ),
-        (
-            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "",
-        ),
-        (
-            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "",
-        ),
-        (
-            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "",
-        ),
-    ]
-
-    expected_final_column_selection_rows = [
-        (
-             "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
-        ),
-        (
-             "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
-        ),
-        (
-             "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
-        ),
-        (
-             "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
-        ),
-    ]
-    # fmt: on
-    add_subject_column_rows = [
-        ("loc_1",),
-    ]
-
-    expected_add_subject_column_rows = [
-        ("loc_1", "test_subject"),
-    ]
-
-    new_issues_rows = [
-        ("org 1", "loc 1", ""),
-        ("org 1", "loc 2", ""),
-        ("org 1", "loc 3", ""),
-        ("org 2", "loc 4", ""),
-        ("org 2", "loc 5", ""),
-        ("org 3", "loc 6", ""),
-        ("org 5", "loc 7", ""),
-    ]
-
-    unique_rows = [
-        ("org 1", ""),
-        ("org 2", ""),
-        ("org 3", ""),
-        ("org 6", ""),
-    ]
-
-    expected_join_array_of_nmdsids_rows = [
-        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
-        ("org 2", "", "new_column: loc 5, loc 4"),
-        ("org 3", "", "new_column: loc 6"),
-        ("org 6", "", None),
-    ]
-
-    new_column = "new_column"
-
-    create_parents_description_rows = [
-        ("org 1", None, None, None),
-        ("org 2", None, None, "missing"),
-        ("org 3", None, "old", None),
-        ("org 4", None, "old", "missing"),
-        ("org 5", "new", None, None),
-        ("org 6", "new", None, "missing"),
-        ("org 7", "new", "old", None),
-        ("org 8", "new", "old", "missing"),
-    ]
-
-    expected_create_parents_description_rows = [
-        ("org 1", None, None, None, ""),
-        ("org 2", None, None, "missing", "missing "),
-        ("org 3", None, "old", None, "old "),
-        ("org 4", None, "old", "missing", "old missing "),
-        ("org 5", "new", None, None, "new "),
-        ("org 6", "new", None, "missing", "new missing "),
-        ("org 7", "new", "old", None, "new old "),
-        ("org 8", "new", "old", "missing", "new old missing "),
-    ]
-
-    get_ascwds_parent_accounts_rows = [
-        (
-            "nmds_1",
-            "estab_1",
-            "name",
-            "org_1",
-            "type",
-            "region_id",
-            IsParent.is_parent,
-            "other",
-        ),
-        (
-            "nmds_2",
-            "estab_2",
-            "name",
-            "org_2",
-            "type",
-            "region_id",
-            IsParent.is_not_parent,
-            "other",
-        ),
-        ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
-    ]
-    expected_get_ascwds_parent_accounts_rows = [
-        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
-    ]
-
-    cqc_data_for_join_rows = [
-        ("loc_1", "name"),
-        ("loc_2", "name"),
-    ]
-    ascwds_data_for_join_rows = [
-        ("loc_1", "estab_1"),
-        ("loc_3", "estab_2"),
-    ]
-    expected_data_for_join_rows = [
-        ("loc_1", "estab_1", "name"),
-        ("loc_3", "estab_2", None),
-    ]
 
 
 @dataclass
@@ -8598,4 +8338,271 @@ class ValidateCleanedCapacityTrackerNonResData:
             "01",
             "01",
         ),
+    ]
+
+
+@dataclass
+class ReconciliationUtilsData:
+    # fmt: off
+    input_ascwds_workplace_rows = ReconciliationData.input_ascwds_workplace_rows
+    input_cqc_location_api_rows = ReconciliationData.input_cqc_location_api_rows
+    # fmt: on
+    dates_to_use_mid_month_rows = [
+        ("1-001", date(2024, 3, 28)),
+        ("1-002", date(2023, 1, 1)),
+    ]
+    dates_to_use_first_month_rows = [
+        ("1-001", date(2024, 4, 1)),
+        ("1-002", date(2023, 1, 1)),
+    ]
+
+    expected_prepared_most_recent_cqc_location_rows = [
+        ("1-001", "Registered", None, date(2024, 4, 1)),
+        ("1-002", "Registered", None, date(2024, 4, 1)),
+        ("1-003", "Registered", None, date(2024, 4, 1)),
+        ("1-004", "Registered", None, date(2024, 4, 1)),
+        ("1-902", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-903", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-904", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-912", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-913", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-922", "Deregistered", date(2024, 1, 1), date(2024, 4, 1)),
+        ("1-923", "Deregistered", date(2024, 3, 1), date(2024, 4, 1)),
+        ("1-995", "Deregistered", date(2024, 4, 1), date(2024, 4, 1)),
+    ]
+
+    dates_to_use_rows = [
+        ("1-001", date(2024, 3, 28)),
+        ("1-002", date(2023, 1, 1)),
+    ]
+
+    regtype_rows = [
+        ("1", "Not regulated"),
+        ("2", "CQC regulated"),
+        ("3", None),
+    ]
+
+    remove_head_office_accounts_rows = [
+        ("1", "1-001", "Head office services"),
+        ("2", "1-002", "any non-head office service"),
+        ("3", None, "any non-head office service"),
+        ("4", None, "Head office services"),
+    ]
+
+    first_of_most_recent_month = date(2024, 4, 1)
+    first_of_previous_month = date(2024, 3, 1)
+    # fmt: off
+    filter_to_relevant_rows = [
+        ("loc_1", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_2", None, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_3", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_4", None, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_5", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_6", None, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_7", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_8", None, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_9", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_10", RegistrationStatus.registered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_11", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_12", RegistrationStatus.registered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_13", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_14", RegistrationStatus.registered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_15", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_16", RegistrationStatus.registered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_17", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_18", RegistrationStatus.deregistered, date(2024, 3, 31), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_19", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_20", RegistrationStatus.deregistered, date(2024, 3, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # keep
+        ("loc_21", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.parents),  # keep
+        ("loc_22", RegistrationStatus.deregistered, date(2024, 2, 29), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+        ("loc_23", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.parents),  # remove
+        ("loc_24", RegistrationStatus.deregistered, date(2024, 4, 1), ParentsOrSinglesAndSubs.singles_and_subs),  # remove
+    ]
+    # fmt: on
+
+    parents_or_singles_and_subs_rows = [
+        ("1", "Yes", "Parent has ownership"),
+        ("2", "Yes", "Workplace has ownership"),
+        ("3", "No", "Workplace has ownership"),
+        ("4", "No", "Parent has ownership"),
+    ]
+    expected_parents_or_singles_and_subs_rows = [
+        ("1", "Yes", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
+        ("2", "Yes", "Workplace has ownership", ParentsOrSinglesAndSubs.parents),
+        (
+            "3",
+            "No",
+            "Workplace has ownership",
+            ParentsOrSinglesAndSubs.singles_and_subs,
+        ),
+        ("4", "No", "Parent has ownership", ParentsOrSinglesAndSubs.parents),
+    ]
+
+    add_singles_and_subs_description_rows = [
+        ("loc_1", date(2024, 3, 28)),
+        ("loc_2", None),
+    ]
+
+    expected_singles_and_subs_description_rows = [
+        (
+            "loc_1",
+            date(2024, 3, 28),
+            SingleSubDescription.single_sub_deregistered_description,
+        ),
+        ("loc_2", None, SingleSubDescription.single_sub_reg_type_description),
+    ]
+
+    create_missing_columns_rows = [
+        ("id_1", "care_home", "region", "Care Home Name"),
+    ]
+
+    expected_create_missing_columns_rows = [
+        (
+            "id_1",
+            "care_home",
+            "region",
+            "Care Home Name",
+            "id_1",
+            "id_1",
+            "id_1 Care Home Name",
+            "id_1 Care Home Name",
+            "Open",
+            "_",
+            "No",
+            "Internal",
+            "Priority 5",
+            "CQC work",
+            "CQC work",
+            "Yes",
+            "N/A",
+            "ASC-WDS",
+            "CQC work",
+            0,
+        ),
+    ]
+    # fmt: off
+    final_column_selection_rows = [
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "",
+        ),
+        (
+            "extra_col", "", "", "", "", "", "", "", "", 0, "", "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "",
+        ),
+    ]
+
+    expected_final_column_selection_rows = [
+        (
+             "", "nmds_1", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_2", "", "desc_a", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_1", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+        (
+             "", "nmds_2", "", "desc_b", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 0, "",
+        ),
+    ]
+    # fmt: on
+    add_subject_column_rows = [
+        ("loc_1",),
+    ]
+
+    expected_add_subject_column_rows = [
+        ("loc_1", "test_subject"),
+    ]
+
+    new_issues_rows = [
+        ("org 1", "loc 1", ""),
+        ("org 1", "loc 2", ""),
+        ("org 1", "loc 3", ""),
+        ("org 2", "loc 4", ""),
+        ("org 2", "loc 5", ""),
+        ("org 3", "loc 6", ""),
+        ("org 5", "loc 7", ""),
+    ]
+
+    unique_rows = [
+        ("org 1", ""),
+        ("org 2", ""),
+        ("org 3", ""),
+        ("org 6", ""),
+    ]
+
+    expected_join_array_of_nmdsids_rows = [
+        ("org 1", "", "new_column: loc 2, loc 3, loc 1"),
+        ("org 2", "", "new_column: loc 5, loc 4"),
+        ("org 3", "", "new_column: loc 6"),
+        ("org 6", "", None),
+    ]
+
+    new_column = "new_column"
+
+    create_parents_description_rows = [
+        ("org 1", None, None, None),
+        ("org 2", None, None, "missing"),
+        ("org 3", None, "old", None),
+        ("org 4", None, "old", "missing"),
+        ("org 5", "new", None, None),
+        ("org 6", "new", None, "missing"),
+        ("org 7", "new", "old", None),
+        ("org 8", "new", "old", "missing"),
+    ]
+
+    expected_create_parents_description_rows = [
+        ("org 1", None, None, None, ""),
+        ("org 2", None, None, "missing", "missing "),
+        ("org 3", None, "old", None, "old "),
+        ("org 4", None, "old", "missing", "old missing "),
+        ("org 5", "new", None, None, "new "),
+        ("org 6", "new", None, "missing", "new missing "),
+        ("org 7", "new", "old", None, "new old "),
+        ("org 8", "new", "old", "missing", "new old missing "),
+    ]
+
+    get_ascwds_parent_accounts_rows = [
+        (
+            "nmds_1",
+            "estab_1",
+            "name",
+            "org_1",
+            "type",
+            "region_id",
+            IsParent.is_parent,
+            "other",
+        ),
+        (
+            "nmds_2",
+            "estab_2",
+            "name",
+            "org_2",
+            "type",
+            "region_id",
+            IsParent.is_not_parent,
+            "other",
+        ),
+        ("nmds_3", "estab_3", "name", "org_3", "type", "region_id", None, "other"),
+    ]
+    expected_get_ascwds_parent_accounts_rows = [
+        ("nmds_1", "estab_1", "name", "org_1", "type", "region_id"),
+    ]
+
+    cqc_data_for_join_rows = [
+        ("loc_1", "name"),
+        ("loc_2", "name"),
+    ]
+    ascwds_data_for_join_rows = [
+        ("loc_1", "estab_1"),
+        ("loc_3", "estab_2"),
+    ]
+    expected_data_for_join_rows = [
+        ("loc_1", "estab_1", "name"),
+        ("loc_3", "estab_2", None),
     ]
