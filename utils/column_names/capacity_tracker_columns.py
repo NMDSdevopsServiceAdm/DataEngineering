@@ -51,6 +51,12 @@ class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
+    agency_and_non_agency_total_employed_rolling_avg: str = (
+        agency_and_non_agency_total_employed + "_rolling_avg"
+    )
+    agency_and_non_agency_total_employed_imputed: str = (
+        agency_and_non_agency_total_employed + "_imputed"
+    )
 
 
 @dataclass
@@ -104,12 +110,17 @@ class CapacityTrackerNonResColumns:
 
 @dataclass
 class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
+    capacity_tracker_filled_post_estimate: str = "capacity_tracker_filled_post_estimate"
+    capacity_tracker_filled_post_estimate_source: str = (
+        capacity_tracker_filled_post_estimate + "_source"
+    )
     capacity_tracker_import_date: str = (
         CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
     )
     cqc_care_workers_employed_imputed: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
     )
+    capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
     cqc_care_workers_employed_rolling_avg: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_rolling_avg"
     )

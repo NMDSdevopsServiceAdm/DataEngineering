@@ -23,6 +23,7 @@ CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
     Keys.day,
     Keys.import_date,
 ]
+MAX_BOUND_DIRECTLY_EMPLOYED: int = 1000
 
 
 def main(
@@ -52,6 +53,17 @@ def main(
         remove_rows_where_agency_and_non_agency_values_match(
             capacity_tracker_care_home_df
         )
+    )
+    columns_to_bound = [
+        CTCH.nurses_employed,
+        CTCH.care_workers_employed,
+        CTCH.non_care_workers_employed,
+    ]
+    capacity_tracker_care_home_df = cUtils.set_bounds_for_columns(
+        capacity_tracker_care_home_df,
+        columns_to_bound,
+        columns_to_bound,
+        upper_limit=MAX_BOUND_DIRECTLY_EMPLOYED,
     )
     capacity_tracker_care_home_df = create_new_columns_with_totals(
         capacity_tracker_care_home_df

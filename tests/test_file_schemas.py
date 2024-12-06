@@ -1787,7 +1787,7 @@ class IndCQCDataUtils:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
         ]
     )
     expected_get_selected_value_schema = StructType(
@@ -1917,277 +1917,6 @@ class ReconciliationSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCL.deregistration_date, StringType(), True),
-        ]
-    )
-
-    expected_prepared_most_recent_cqc_location_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
-            StructField(CQCL.deregistration_date, DateType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    dates_to_use_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    dates_to_use_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    regtype_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.registration_type, StringType(), True),
-        ]
-    )
-
-    remove_head_office_accounts_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.main_service_id, StringType(), True),
-        ]
-    )
-
-    filter_to_relevant_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.registration_status, StringType(), True),
-            StructField(CQCLClean.deregistration_date, DateType(), True),
-            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
-        ]
-    )
-
-    parents_or_singles_and_subs_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.is_parent, StringType(), True),
-            StructField(AWPClean.parent_permission, StringType(), True),
-        ]
-    )
-    expected_parents_or_singles_and_subs_schema = StructType(
-        [
-            *parents_or_singles_and_subs_schema,
-            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
-        ]
-    )
-
-    parents_or_singles_and_subs_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.is_parent, StringType(), True),
-            StructField(AWPClean.parent_permission, StringType(), True),
-        ]
-    )
-    expected_parents_or_singles_and_subs_schema = StructType(
-        [
-            *parents_or_singles_and_subs_schema,
-            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
-        ]
-    )
-
-    add_singles_and_subs_description_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.deregistration_date, DateType(), True),
-        ]
-    )
-
-    expected_singles_and_subs_description_schema = StructType(
-        [
-            *add_singles_and_subs_description_schema,
-            StructField(ReconColumn.description, StringType(), True),
-        ]
-    )
-
-    create_missing_columns_schema = StructType(
-        [
-            StructField(AWPClean.nmds_id, StringType(), True),
-            StructField(AWPClean.establishment_type, StringType(), True),
-            StructField(AWPClean.region_id, StringType(), True),
-            StructField(AWPClean.establishment_name, StringType(), True),
-        ]
-    )
-
-    expected_create_missing_columns_schema = StructType(
-        [
-            StructField(AWPClean.nmds_id, StringType(), True),
-            StructField(ReconColumn.sector, StringType(), True),
-            StructField(ReconColumn.sfc_region, StringType(), True),
-            StructField(ReconColumn.name, StringType(), True),
-            StructField(ReconColumn.nmds, StringType(), True),
-            StructField(ReconColumn.workplace_id, StringType(), True),
-            StructField(ReconColumn.requester_name, StringType(), True),
-            StructField(ReconColumn.requester_name_2, StringType(), True),
-            StructField(ReconColumn.status, StringType(), True),
-            StructField(ReconColumn.technician, StringType(), True),
-            StructField(ReconColumn.manual_call_log, StringType(), True),
-            StructField(ReconColumn.mode, StringType(), True),
-            StructField(ReconColumn.priority, StringType(), True),
-            StructField(ReconColumn.category, StringType(), True),
-            StructField(ReconColumn.sub_category, StringType(), True),
-            StructField(ReconColumn.is_requester_named, StringType(), True),
-            StructField(ReconColumn.security_question, StringType(), True),
-            StructField(ReconColumn.website, StringType(), True),
-            StructField(ReconColumn.item, StringType(), True),
-            StructField(ReconColumn.phone, IntegerType(), True),
-        ]
-    )
-
-    final_column_selection_schema = StructType(
-        [
-            StructField("extra_column", StringType(), True),
-            StructField(ReconColumn.mode, StringType(), True),
-            StructField(ReconColumn.priority, StringType(), True),
-            StructField(ReconColumn.category, StringType(), True),
-            StructField(ReconColumn.sub_category, StringType(), True),
-            StructField(ReconColumn.is_requester_named, StringType(), True),
-            StructField(ReconColumn.security_question, StringType(), True),
-            StructField(ReconColumn.website, StringType(), True),
-            StructField(ReconColumn.item, StringType(), True),
-            StructField(ReconColumn.phone, IntegerType(), True),
-            StructField(ReconColumn.workplace_id, StringType(), True),
-            StructField(ReconColumn.subject, StringType(), True),
-            StructField(ReconColumn.nmds, StringType(), True),
-            StructField(ReconColumn.name, StringType(), True),
-            StructField(ReconColumn.description, StringType(), True),
-            StructField(ReconColumn.requester_name, StringType(), True),
-            StructField(ReconColumn.requester_name_2, StringType(), True),
-            StructField(ReconColumn.sector, StringType(), True),
-            StructField(ReconColumn.status, StringType(), True),
-            StructField(ReconColumn.technician, StringType(), True),
-            StructField(ReconColumn.sfc_region, StringType(), True),
-            StructField(ReconColumn.manual_call_log, StringType(), True),
-        ]
-    )
-
-    expected_final_column_selection_schema = StructType(
-        [
-            StructField(ReconColumn.subject, StringType(), True),
-            StructField(ReconColumn.nmds, StringType(), True),
-            StructField(ReconColumn.name, StringType(), True),
-            StructField(ReconColumn.description, StringType(), True),
-            StructField(ReconColumn.requester_name_2, StringType(), True),
-            StructField(ReconColumn.requester_name, StringType(), True),
-            StructField(ReconColumn.sector, StringType(), True),
-            StructField(ReconColumn.status, StringType(), True),
-            StructField(ReconColumn.technician, StringType(), True),
-            StructField(ReconColumn.sfc_region, StringType(), True),
-            StructField(ReconColumn.manual_call_log, StringType(), True),
-            StructField(ReconColumn.mode, StringType(), True),
-            StructField(ReconColumn.priority, StringType(), True),
-            StructField(ReconColumn.category, StringType(), True),
-            StructField(ReconColumn.sub_category, StringType(), True),
-            StructField(ReconColumn.is_requester_named, StringType(), True),
-            StructField(ReconColumn.security_question, StringType(), True),
-            StructField(ReconColumn.website, StringType(), True),
-            StructField(ReconColumn.item, StringType(), True),
-            StructField(ReconColumn.phone, IntegerType(), True),
-            StructField(ReconColumn.workplace_id, StringType(), True),
-        ]
-    )
-
-    add_subject_column_schema = StructType(
-        [
-            StructField("id", StringType(), True),
-        ]
-    )
-
-    expected_add_subject_column_schema = StructType(
-        [
-            *add_subject_column_schema,
-            StructField(ReconColumn.subject, StringType(), True),
-        ]
-    )
-
-    new_issues_schema = StructType(
-        [
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.nmds_id, StringType(), True),
-            StructField("other column", StringType(), True),
-        ]
-    )
-    unique_schema = StructType(
-        [
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField("other column", StringType(), True),
-        ]
-    )
-
-    expected_join_array_of_nmdsids_schema = StructType(
-        [
-            *unique_schema,
-            StructField("new_column", StringType(), True),
-        ]
-    )
-
-    create_parents_description_schema = StructType(
-        [
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(ReconColumn.new_potential_subs, StringType(), True),
-            StructField(ReconColumn.old_potential_subs, StringType(), True),
-            StructField(
-                ReconColumn.missing_or_incorrect_potential_subs, StringType(), True
-            ),
-        ]
-    )
-
-    expected_create_parents_description_schema = StructType(
-        [
-            *create_parents_description_schema,
-            StructField(ReconColumn.description, StringType(), True),
-        ]
-    )
-
-    get_ascwds_parent_accounts_schema = StructType(
-        [
-            StructField(AWPClean.nmds_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.establishment_name, StringType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.establishment_type, StringType(), True),
-            StructField(AWPClean.region_id, StringType(), True),
-            StructField(AWPClean.is_parent, StringType(), True),
-            StructField("other column", StringType(), True),
-        ]
-    )
-
-    expected_get_ascwds_parent_accounts_schema = StructType(
-        [
-            StructField(AWPClean.nmds_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.establishment_name, StringType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.establishment_type, StringType(), True),
-            StructField(AWPClean.region_id, StringType(), True),
-        ]
-    )
-
-    cqc_data_for_join_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.name, StringType(), True),
-        ]
-    )
-    ascwds_data_for_join_schema = StructType(
-        [
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-        ]
-    )
-    expected_data_for_join_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(CQCL.name, StringType(), True),
         ]
     )
 
@@ -2401,7 +2130,7 @@ class NonResAscwdsFeaturesSchema(object):
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(Keys.year, StringType(), True),
@@ -2432,9 +2161,9 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(
-                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                IndCQC.ratio_rolling_average_model,
                 FloatType(),
                 True,
             ),
@@ -2527,7 +2256,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.unix_time, LongType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -2537,12 +2266,62 @@ class ModelPrimaryServiceRollingAverage:
     expected_primary_service_rolling_average_schema = StructType(
         [
             *primary_service_rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(
-                IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
+                IndCQC.ratio_rolling_average_model,
                 DoubleType(),
                 True,
             ),
+        ]
+    )
+
+    single_column_to_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+    expected_single_column_to_average_schema = StructType(
+        [
+            *single_column_to_average_schema,
+            StructField("temp_column_to_average", DoubleType(), True),
+        ]
+    )
+
+    calculate_rolling_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField("temp_column_to_average", DoubleType(), True),
+        ]
+    )
+    expected_calculate_rolling_average_schema = StructType(
+        [
+            *calculate_rolling_average_schema,
+            StructField("temp_rolling_average", DoubleType(), True),
+        ]
+    )
+
+    create_final_model_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField("temp_rolling_average", DoubleType(), True),
+        ]
+    )
+    expected_create_final_model_columns_schema = StructType(
+        [
+            *create_final_model_columns_schema,
+            StructField(
+                IndCQC.ratio_rolling_average_model,
+                DoubleType(),
+                True,
+            ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
         ]
     )
 
@@ -2610,7 +2389,7 @@ class ModelExtrapolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), False),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), False),
         ]
     )
 
@@ -2634,7 +2413,7 @@ class ModelExtrapolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), False),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), False),
         ]
     )
     expected_extrapolation_forwards_schema = StructType(
@@ -2658,7 +2437,7 @@ class ModelExtrapolation:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), False),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), False),
         ]
     )
     expected_extrapolation_backwards_schema = StructType(
@@ -4246,9 +4025,8 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
-            StructField(IndCQC.extrapolation_care_home_model, DoubleType(), True),
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
@@ -4383,11 +4161,11 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_care_home_model, FloatType(), True),
             StructField(
-                IndCQC.imputed_posts_rolling_avg_model,
+                IndCQC.imputed_posts_rolling_average_model,
                 FloatType(),
                 True,
             ),
@@ -4414,11 +4192,11 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_care_home_model, FloatType(), True),
             StructField(
-                IndCQC.imputed_posts_rolling_avg_model,
+                IndCQC.imputed_posts_rolling_average_model,
                 FloatType(),
                 True,
             ),
@@ -4503,6 +4281,27 @@ class DiagnosticsOnCapacityTrackerSchemas:
                 CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
             ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
+        ]
+    )
+    convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+        ]
+    )
+    expected_convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            *convert_to_all_posts_using_ratio_schema,
+            StructField(
+                CTNRClean.capacity_tracker_filled_post_estimate, FloatType(), True
+            ),
+        ]
+    )
+    calculate_care_worker_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
 
@@ -5029,5 +4828,338 @@ class ArchiveFilledPostsEstimates:
             StructField(ArchiveKeys.archive_month, StringType(), True),
             StructField(ArchiveKeys.archive_year, StringType(), True),
             StructField(ArchiveKeys.archive_timestamp, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerCareHomeData:
+    ct_care_home_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+    cleaned_ct_care_home_schema = StructType(
+        [
+            *ct_care_home_schema,
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
+        ]
+    )
+    calculate_expected_size_schema = ct_care_home_schema
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerNonResData:
+    ct_non_res_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNR.service_user_count, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+    cleaned_ct_non_res_schema = StructType(
+        [
+            StructField(CTNRClean.cqc_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNRClean.service_user_count, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
+        ]
+    )
+    calculate_expected_size_schema = ct_non_res_schema
+
+
+@dataclass
+class ReconciliationUtilsSchema:
+    input_ascwds_workplace_schema = ReconciliationSchema.input_ascwds_workplace_schema
+    input_cqc_location_api_schema = ReconciliationSchema.input_cqc_location_api_schema
+
+    expected_prepared_most_recent_cqc_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    dates_to_use_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    regtype_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.registration_type, StringType(), True),
+        ]
+    )
+
+    remove_head_office_accounts_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.main_service_id, StringType(), True),
+        ]
+    )
+
+    filter_to_relevant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.deregistration_date, DateType(), True),
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    parents_or_singles_and_subs_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField(AWPClean.parent_permission, StringType(), True),
+        ]
+    )
+    expected_parents_or_singles_and_subs_schema = StructType(
+        [
+            *parents_or_singles_and_subs_schema,
+            StructField(ReconColumn.parents_or_singles_and_subs, StringType(), True),
+        ]
+    )
+
+    add_singles_and_subs_description_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.deregistration_date, DateType(), True),
+        ]
+    )
+
+    expected_singles_and_subs_description_schema = StructType(
+        [
+            *add_singles_and_subs_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
+
+    create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+        ]
+    )
+
+    expected_create_missing_columns_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+        ]
+    )
+
+    final_column_selection_schema = StructType(
+        [
+            StructField("extra_column", StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+        ]
+    )
+
+    expected_final_column_selection_schema = StructType(
+        [
+            StructField(ReconColumn.subject, StringType(), True),
+            StructField(ReconColumn.nmds, StringType(), True),
+            StructField(ReconColumn.name, StringType(), True),
+            StructField(ReconColumn.description, StringType(), True),
+            StructField(ReconColumn.requester_name_2, StringType(), True),
+            StructField(ReconColumn.requester_name, StringType(), True),
+            StructField(ReconColumn.sector, StringType(), True),
+            StructField(ReconColumn.status, StringType(), True),
+            StructField(ReconColumn.technician, StringType(), True),
+            StructField(ReconColumn.sfc_region, StringType(), True),
+            StructField(ReconColumn.manual_call_log, StringType(), True),
+            StructField(ReconColumn.mode, StringType(), True),
+            StructField(ReconColumn.priority, StringType(), True),
+            StructField(ReconColumn.category, StringType(), True),
+            StructField(ReconColumn.sub_category, StringType(), True),
+            StructField(ReconColumn.is_requester_named, StringType(), True),
+            StructField(ReconColumn.security_question, StringType(), True),
+            StructField(ReconColumn.website, StringType(), True),
+            StructField(ReconColumn.item, StringType(), True),
+            StructField(ReconColumn.phone, IntegerType(), True),
+            StructField(ReconColumn.workplace_id, StringType(), True),
+        ]
+    )
+
+    add_subject_column_schema = StructType(
+        [
+            StructField("id", StringType(), True),
+        ]
+    )
+
+    expected_add_subject_column_schema = StructType(
+        [
+            *add_subject_column_schema,
+            StructField(ReconColumn.subject, StringType(), True),
+        ]
+    )
+
+    new_issues_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    unique_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_join_array_of_nmdsids_schema = StructType(
+        [
+            *unique_schema,
+            StructField("new_column", StringType(), True),
+        ]
+    )
+
+    create_parents_description_schema = StructType(
+        [
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(ReconColumn.new_potential_subs, StringType(), True),
+            StructField(ReconColumn.old_potential_subs, StringType(), True),
+            StructField(
+                ReconColumn.missing_or_incorrect_potential_subs, StringType(), True
+            ),
+        ]
+    )
+
+    expected_create_parents_description_schema = StructType(
+        [
+            *create_parents_description_schema,
+            StructField(ReconColumn.description, StringType(), True),
+        ]
+    )
+
+    get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+            StructField(AWPClean.is_parent, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+    expected_get_ascwds_parent_accounts_schema = StructType(
+        [
+            StructField(AWPClean.nmds_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.establishment_name, StringType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.establishment_type, StringType(), True),
+            StructField(AWPClean.region_id, StringType(), True),
+        ]
+    )
+
+    cqc_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+        ]
+    )
+    ascwds_data_for_join_schema = StructType(
+        [
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
+    )
+    expected_data_for_join_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
         ]
     )

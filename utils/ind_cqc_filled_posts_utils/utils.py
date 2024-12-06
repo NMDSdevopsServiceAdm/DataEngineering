@@ -27,31 +27,47 @@ def add_source_description_to_source_column(
 def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
     df: DataFrame,
     order_of_models_to_populate_estimate_filled_posts_with: list,
+    estimates_column_to_populate: str,
+    estimates_source_column_to_populate: str,
 ) -> DataFrame:
-    df = df.withColumn(IndCQC.estimate_filled_posts, F.lit(None).cast(IntegerType()))
+    """
+    Populate the estimates and source columns using the hierarchy provided in the list.
+
+    The first item in the list is populated first. Subsequent null values are filled by the following items in the list.
+
+    Args:
+        df(DataFrame): A data frame with estimates that need merging into a single column.
+        order_of_models_to_populate_estimate_filled_posts_with (list): A list of column names of models.
+        estimates_column_to_populate (str): The name of the column to populate with estimates.
+        estimates_source_column_to_populate (str): The name of the column to populate with estimate sources.
+
+    Returns:
+        DataFrame: A data frame with estimates and estimates source column populated.
+    """
+    df = df.withColumn(estimates_column_to_populate, F.lit(None).cast(IntegerType()))
     df = df.withColumn(
-        IndCQC.estimate_filled_posts_source, F.lit(None).cast(StringType())
+        estimates_source_column_to_populate, F.lit(None).cast(StringType())
     )
 
     # TODO - replace for loop with better functionality
     # see https://trello.com/c/94jAj8cd/428-update-how-we-populate-estimates
     for model_name in order_of_models_to_populate_estimate_filled_posts_with:
         df = df.withColumn(
-            IndCQC.estimate_filled_posts,
+            estimates_column_to_populate,
             F.when(
                 (
-                    F.col(IndCQC.estimate_filled_posts).isNull()
+                    F.col(estimates_column_to_populate).isNull()
                     & (F.col(model_name).isNotNull())
                     & (F.col(model_name) >= 1.0)
                 ),
                 F.col(model_name),
-            ).otherwise(F.col(IndCQC.estimate_filled_posts)),
+            ).otherwise(F.col(estimates_column_to_populate)),
         )
 
         df = add_source_description_to_source_column(
             df,
-            IndCQC.estimate_filled_posts,
-            IndCQC.estimate_filled_posts_source,
+            estimates_column_to_populate,
+            estimates_source_column_to_populate,
             model_name,
         )
 

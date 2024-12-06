@@ -2,11 +2,11 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_schemas import (
-    DiagnosticsOnCapacityTrackerSchemas as Schemas,
-)
 from tests.test_file_data import (
     DiagnosticsOnCapacityTrackerData as Data,
+)
+from tests.test_file_schemas import (
+    DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -22,6 +22,7 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
     CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
     NON_RES_DIAGNOSTICS_DESTINATION = "some/other/directory"
+    NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION = "yet/another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self):
@@ -63,10 +64,32 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
             self.CARE_HOME_DIAGNOSTICS_DESTINATION,
             self.CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION,
             self.NON_RES_DIAGNOSTICS_DESTINATION,
+            self.NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 3)
+        self.assertEqual(write_to_parquet_patch.call_count, 4)
+
+
+class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_absolute_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.absolute_value_cutoff, 10.0)
+        self.assertIsInstance(job.absolute_value_cutoff, float)
+
+    def test_percentage_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.percentage_value_cutoff, 0.25)
+        self.assertIsInstance(job.percentage_value_cutoff, float)
+
+    def test_standardised_value_cutoff_is_expected_value(self):
+        self.assertEqual(job.standardised_value_cutoff, 1.0)
+        self.assertIsInstance(job.standardised_value_cutoff, float)
+
+    def test_number_of_days_in_rolling_average_is_expected_value(self):
+        self.assertEqual(job.number_of_days_in_rolling_average, 185)
+        self.assertIsInstance(job.number_of_days_in_rolling_average, int)
 
 
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
@@ -134,6 +157,43 @@ class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
             self.expected_non_res_df.sort(
                 IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
+        )
+
+
+class CalculateCareWorkerRatioTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_care_worker_ratio_returns_correct_ratio(self):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_care_worker_ratio_rows, Schemas.calculate_care_worker_schema
+        )
+        expected_ratio = Data.expected_care_worker_ratio
+        returned_ratio = job.calculate_care_worker_ratio(test_df)
+        self.assertEqual(returned_ratio, expected_ratio)
+
+
+class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_convert_to_all_posts_using_ratio_returns_correct_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_to_all_posts_using_ratio_rows,
+            Schemas.convert_to_all_posts_using_ratio_schema,
+        )
+        test_ratio = Data.expected_care_worker_ratio
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_to_all_posts_using_ratio_rows,
+            Schemas.expected_convert_to_all_posts_using_ratio_schema,
+        )
+        returned_df = job.convert_to_all_posts_using_ratio(test_df, test_ratio)
+
+        self.assertEquals(
+            returned_df.sort(IndCQC.location_id).collect(),
+            expected_df.collect(),
         )
 
 

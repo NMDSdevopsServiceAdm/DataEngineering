@@ -30,7 +30,10 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
         )
 
         self.returned_df = job.populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-            self.input_df, ["model_name_1", "model_name_2", "model_name_3"]
+            self.input_df,
+            ["model_name_1", "model_name_2", "model_name_3"],
+            IndCQC.estimate_filled_posts,
+            IndCQC.estimate_filled_posts_source,
         )
 
     def test_populate_estimate_filled_posts_and_source_adds_new_columns(self):
@@ -102,7 +105,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             test_df,
             self.w,
             IndCQC.ascwds_filled_posts_dedup_clean,
-            IndCQC.rolling_average_model,
+            IndCQC.posts_rolling_average_model,
             "new_column",
             selection="first",
         )
@@ -123,7 +126,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             test_df,
             self.w,
             IndCQC.ascwds_filled_posts_dedup_clean,
-            IndCQC.rolling_average_model,
+            IndCQC.posts_rolling_average_model,
             "new_column",
             selection="last",
         )
@@ -142,7 +145,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
                 test_df,
                 self.w,
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                IndCQC.rolling_average_model,
+                IndCQC.posts_rolling_average_model,
                 "new_column",
                 selection="other",
             )
