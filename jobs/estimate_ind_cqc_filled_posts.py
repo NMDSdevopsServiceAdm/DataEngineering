@@ -158,6 +158,7 @@ def main(
                 IndCQC.care_home_model,
                 IndCQC.imputed_posts_rolling_avg_model,
                 IndCQC.imputed_posts_non_res_with_dormancy_model,
+                IndCQC.non_res_pir_linear_regression_model,
                 IndCQC.non_res_with_dormancy_model,
                 IndCQC.non_res_without_dormancy_model,
                 IndCQC.rolling_average_model,
