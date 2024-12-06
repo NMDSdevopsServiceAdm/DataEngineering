@@ -224,6 +224,23 @@ def calculate_rolling_average(
 def calculate_rolling_rate_of_change(
     df: DataFrame, number_of_days: int, rate_of_change_model_column_name: str
 ) -> DataFrame:
+    """
+    Calculates the rolling rate of change of a specified column over a given window of days partitioned by primary service type.
+
+    This function sequentially calls other functions to:
+    1. Add a column with previous values.
+    2. Adds the two rolling sums over a specified number of days.
+    3. Calculate the rate of change for a single period.
+    4. Calculate the rolling rate of change model.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+        number_of_days (int): The number of days to include in the rolling time period.
+        rate_of_change_model_column_name (str): The name of the column to store the rate of change model.
+
+    Returns:
+        DataFrame: The DataFrame with the calculated rolling rate of change.
+    """
     df = add_previous_value_column(df)
     df = add_rolling_sums(df, number_of_days)
     df = calculate_single_period_rate_of_change(df)
@@ -233,6 +250,15 @@ def calculate_rolling_rate_of_change(
 
 # TODO - untested
 def add_previous_value_column(df: DataFrame) -> DataFrame:
+    """
+    Adds the previous interpolated value for that location into a new column.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+
+    Returns:
+        DataFrame: The DataFrame with the previously interpolated value added.
+    """
     location_window = (
         Window.partitionBy(IndCqc.location_id)
         .orderBy(IndCqc.unix_time)
