@@ -125,8 +125,10 @@ class IndCqcColumns:
     imputed_posts_non_res_with_dormancy_model: str = (
         "imputed_posts_non_res_with_dormancy_model"
     )
-    imputed_posts_rolling_average_model: str = "imputed_posts_rolling_average_model"
-    imputed_ratio_rolling_average_model: str = "imputed_ratio_rolling_average_model"
+    imputed_filled_post_model: str = "imputed_filled_post_model"
+    imputed_filled_posts_per_bed_ratio_model: str = (
+        "imputed_filled_posts_per_bed_ratio_model"
+    )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
     last_filled_posts: str = "last_filled_posts"
@@ -176,7 +178,6 @@ class IndCqcColumns:
         CQCPIRClean.people_directly_employed + "_deduplicated"
     )
     postcode: str = CQCLClean.postal_code
-    posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
@@ -191,7 +192,6 @@ class IndCqcColumns:
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
-    ratio_rolling_average_model: str = "ratio_rolling_average_model"
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     regulated_activities: str = CQCLClean.regulated_activities
@@ -203,6 +203,7 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rolling_average_model: str = "rolling_average_model"
     rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered

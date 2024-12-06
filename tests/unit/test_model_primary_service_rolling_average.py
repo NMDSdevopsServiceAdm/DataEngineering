@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 import warnings
 
 import utils.estimate_filled_posts.models.primary_service_rolling_average as job
@@ -32,8 +33,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
-            IndCqc.ratio_rolling_average_model,
-            IndCqc.posts_rolling_average_model,
+            IndCqc.rolling_average_model,
             IndCqc.rolling_rate_of_change_model,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -56,24 +56,13 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_ratio_rolling_average_model_values_match_expected(
+    def test_returned_rolling_average_model_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.ratio_rolling_average_model],
-                self.expected_data[i][IndCqc.ratio_rolling_average_model],
-                3,
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_posts_rolling_average_model_values_match_expected(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.posts_rolling_average_model],
-                self.expected_data[i][IndCqc.posts_rolling_average_model],
+                self.returned_data[i][IndCqc.rolling_average_model],
+                self.expected_data[i][IndCqc.rolling_average_model],
                 3,
                 f"Returned row {i} does not match expected",
             )
@@ -313,7 +302,9 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
             Data.calculate_rolling_average_rows,
             Schemas.calculate_rolling_average_schema,
         )
-        self.returned_df = job.calculate_rolling_average(test_df, number_of_days)
+        self.returned_df = job.calculate_rolling_average(
+            test_df, number_of_days, IndCqc.rolling_average_model
+        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_rolling_average_rows,
             Schemas.expected_calculate_rolling_average_schema,
@@ -332,56 +323,58 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][job.TempCol.temp_rolling_average],
-                self.expected_data[i][job.TempCol.temp_rolling_average],
+                self.returned_data[i][IndCqc.rolling_average_model],
+                self.expected_data[i][IndCqc.rolling_average_model],
                 2,
                 f"Returned row {i} does not match expected",
             )
 
 
-class CreateFinalModelColumnsTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        test_df = self.spark.createDataFrame(
-            Data.create_final_model_columns_rows,
-            Schemas.create_final_model_columns_schema,
-        )
-        self.returned_df = job.create_final_model_columns(
-            test_df,
-            IndCqc.ratio_rolling_average_model,
-            IndCqc.posts_rolling_average_model,
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_create_final_model_columns_rows,
-            Schemas.expected_create_final_model_columns_schema,
-        )
-        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_create_final_model_columns_returns_expected_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
+        self.number_of_days: int = 2
+        self.calculate_roc_df = self.spark.createDataFrame(
+            Data.calculate_rolling_rate_of_change_rows,
+            Schemas.calculate_rolling_rate_of_change_schema,
         )
 
-    def test_returned_model_filled_posts_per_bed_values_match_expected(
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_previous_value_column"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_rolling_sums"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_single_period_rate_of_change"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_rolling_rate_of_change_model"
+    )
+    def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
+        calculate_rolling_rate_of_change_model: Mock,
+        calculate_single_period_rate_of_change: Mock,
+        add_rolling_sums: Mock,
+        add_previous_value_column: Mock,
     ):
-        for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.ratio_rolling_average_model],
-                self.expected_data[i][IndCqc.ratio_rolling_average_model],
-                2,
-                f"Returned row {i} does not match expected",
-            )
+        job.calculate_rolling_rate_of_change(
+            self.calculate_roc_df,
+            self.number_of_days,
+            IndCqc.rolling_rate_of_change_model,
+        )
 
-    def test_returned_model_filled_posts_values_match_expected(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][IndCqc.posts_rolling_average_model],
-                self.expected_data[i][IndCqc.posts_rolling_average_model],
-                f"Returned row {i} does not match expected",
-            )
+        self.assertEqual(add_previous_value_column.call_count, 1)
+        self.assertEqual(add_rolling_sums.call_count, 1)
+        self.assertEqual(calculate_single_period_rate_of_change.call_count, 1)
+        self.assertEqual(calculate_rolling_rate_of_change_model.call_count, 1)
+
+    def test_rate_of_change_model_column_name_in_returned_column_list(self):
+        returned_df = job.calculate_rolling_rate_of_change(
+            self.calculate_roc_df,
+            self.number_of_days,
+            IndCqc.rolling_rate_of_change_model,
+        )
+
+        self.assertTrue(IndCqc.rolling_rate_of_change_model in returned_df.columns)

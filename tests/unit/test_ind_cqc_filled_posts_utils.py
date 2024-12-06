@@ -105,7 +105,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             test_df,
             self.w,
             IndCQC.ascwds_filled_posts_dedup_clean,
-            IndCQC.posts_rolling_average_model,
+            IndCQC.rolling_average_model,
             "new_column",
             selection="first",
         )
@@ -126,7 +126,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             test_df,
             self.w,
             IndCQC.ascwds_filled_posts_dedup_clean,
-            IndCQC.posts_rolling_average_model,
+            IndCQC.rolling_average_model,
             "new_column",
             selection="last",
         )
@@ -145,7 +145,7 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
                 test_df,
                 self.w,
                 IndCQC.ascwds_filled_posts_dedup_clean,
-                IndCQC.posts_rolling_average_model,
+                IndCQC.rolling_average_model,
                 "new_column",
                 selection="other",
             )

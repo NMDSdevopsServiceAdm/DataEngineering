@@ -20,7 +20,7 @@ class ModelExtrapolationTests(unittest.TestCase):
         self.extrapolation_df = self.spark.createDataFrame(
             Data.extrapolation_rows, Schemas.extrapolation_schema
         )
-        self.model_column_name = IndCqc.posts_rolling_average_model
+        self.model_column_name = IndCqc.rolling_average_model
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -138,7 +138,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             Schemas.extrapolation_forwards_schema,
         )
         self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
-        self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
+        self.model_to_extrapolate_from = IndCqc.rolling_average_model
         self.window_spec_lagged = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.unix_time)
@@ -218,7 +218,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             Schemas.extrapolation_backwards_schema,
         )
         self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
-        self.model_to_extrapolate_from = IndCqc.posts_rolling_average_model
+        self.model_to_extrapolate_from = IndCqc.rolling_average_model
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.unix_time)

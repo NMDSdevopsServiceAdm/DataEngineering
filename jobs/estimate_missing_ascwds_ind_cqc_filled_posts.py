@@ -45,32 +45,33 @@ def main(
             IndCQC.filled_posts_per_bed_ratio,
             IndCQC.ascwds_filled_posts_dedup_clean,
             NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-            IndCQC.ratio_rolling_average_model,
-            IndCQC.posts_rolling_average_model,
+            IndCQC.rolling_average_model,
             IndCQC.rolling_rate_of_change_model,
         )
     )
 
+    # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.posts_rolling_average_model,
-        IndCQC.imputed_posts_rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
+        IndCQC.imputed_filled_post_model,
         care_home=False,
     )
 
+    # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.ratio_rolling_average_model,
-        IndCQC.imputed_ratio_rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.people_directly_employed_dedup,
-        IndCQC.posts_rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_non_res_people_directly_employed,
         care_home=False,
     )
