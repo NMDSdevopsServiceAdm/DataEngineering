@@ -92,7 +92,6 @@ def create_single_column_to_average(
     """
     df = df.withColumn(
         TempCol.column_to_average,
-        TempCol.column_to_average,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
             F.col(ratio_column_to_average),
