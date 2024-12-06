@@ -44,30 +44,30 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
-        IndCQC.rolling_average_model,
+        IndCQC.ratio_rolling_average_model,
+        IndCQC.posts_rolling_average_model,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
-        IndCQC.rolling_average_model,
-        IndCQC.imputed_posts_rolling_avg_model,
+        IndCQC.posts_rolling_average_model,
+        IndCQC.imputed_posts_rolling_average_model,
         care_home=False,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_average_model_filled_posts_per_bed_ratio,
-        IndCQC.imputed_ratio_rolling_avg_model,
+        IndCQC.ratio_rolling_average_model,
+        IndCQC.imputed_ratio_rolling_average_model,
         care_home=True,
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.people_directly_employed_dedup,
-        IndCQC.rolling_average_model,
+        IndCQC.posts_rolling_average_model,
         IndCQC.imputed_non_res_people_directly_employed,
         care_home=False,
     )
