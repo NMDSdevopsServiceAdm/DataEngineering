@@ -2293,6 +2293,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             *single_column_to_average_schema,
             StructField(column_to_average, DoubleType(), True),
+            StructField(column_to_average, DoubleType(), True),
         ]
     )
 
@@ -2301,6 +2302,7 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_to_average, DoubleType(), True),
             StructField(column_to_average, DoubleType(), True),
         ]
     )
@@ -2322,6 +2324,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
+            StructField(column_to_average, DoubleType(), True),
             StructField(column_to_average, DoubleType(), True),
         ]
     )
