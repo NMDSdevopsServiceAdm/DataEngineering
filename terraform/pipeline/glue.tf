@@ -874,6 +874,37 @@ module "diagnostics_on_capacity_tracker_job" {
     "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
     "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/"
     "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
+    "--non_res_summary_diagnostics_destination"   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics_summary/"
+  }
+}
+
+module "validate_cleaned_capacity_tracker_care_home_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_cleaned_capacity_tracker_care_home_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
+    "--capacity_tracker_care_home_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+    "--report_destination"                        = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_care_home_cleaned_data/"
+  }
+}
+
+module "validate_cleaned_capacity_tracker_non_res_data_job" {
+  source          = "../modules/glue-job"
+  script_name     = "validate_cleaned_capacity_tracker_non_res_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--capacity_tracker_non_res_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
+    "--capacity_tracker_non_res_cleaned_source" = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+    "--report_destination"                      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_non_residential_cleaned_data/"
   }
 }
 
