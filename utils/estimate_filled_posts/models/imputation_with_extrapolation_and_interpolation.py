@@ -48,6 +48,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     imputed_df = model_interpolation(
         imputed_df,
         column_with_null_values,
+        method="trend",
     )
     imputed_df = model_imputation(
         imputed_df, column_with_null_values, imputed_column_name
@@ -58,8 +59,6 @@ def model_imputation_with_extrapolation_and_interpolation(
     combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
-        IndCqc.extrapolation_residual,
-        IndCqc.proportion_of_time_between_submissions,
         IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
         IndCqc.has_non_null_value,

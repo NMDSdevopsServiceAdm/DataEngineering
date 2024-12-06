@@ -32,6 +32,7 @@ class MainTests(ModelInterpolationTests):
         self.returned_df = job.model_interpolation(
             self.interpolation_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            method="trend",
         )
 
     def test_model_interpolation_row_count_unchanged(self):
@@ -39,6 +40,29 @@ class MainTests(ModelInterpolationTests):
 
     def test_model_interpolation_returns_new_column(self):
         self.assertIn(IndCqc.interpolation_model, self.returned_df.columns)
+
+    def test_main_doesnt_raise_error_if_method_is_a_valid_option(self):
+        try:
+            job.model_interpolation(
+                self.interpolation_df,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                method="straight",
+            )
+
+        except ValueError:
+            self.fail("Chosen 'method' raised ValueError unexpectedly")
+
+    def test_main_raises_error_if_method_not_a_valid_option(self):
+        with self.assertRaises(ValueError) as context:
+            job.model_interpolation(
+                self.interpolation_df,
+                IndCqc.ascwds_filled_posts_dedup_clean,
+                "invalid",
+            )
+
+        self.assertIn(
+            "Error: method must be either 'straight' or 'trend'", str(context.exception)
+        )
 
 
 class DefineWindowSpecsTests(ModelInterpolationTests):
@@ -48,9 +72,10 @@ class DefineWindowSpecsTests(ModelInterpolationTests):
     def test_define_window_spec_return_type(self):
         returned_window_specs = job.define_window_specs()
         self.assertIsInstance(returned_window_specs, tuple)
-        self.assertEqual(len(returned_window_specs), 2)
+        self.assertEqual(len(returned_window_specs), 3)
         self.assertIsInstance(returned_window_specs[0], WindowSpec)
         self.assertIsInstance(returned_window_specs[1], WindowSpec)
+        self.assertIsInstance(returned_window_specs[2], WindowSpec)
 
 
 class CalculateResidualsTests(ModelInterpolationTests):
@@ -69,6 +94,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         self.returned_df = job.calculate_residuals(
             self.test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -88,8 +114,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = self.expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 
@@ -103,6 +129,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         returned_df = job.calculate_residuals(
             test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         expected_df = self.spark.createDataFrame(
@@ -113,8 +140,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 
@@ -128,6 +155,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         returned_df = job.calculate_residuals(
             test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.extrapolation_forwards,
             self.window_spec,
         )
         expected_df = self.spark.createDataFrame(
@@ -138,8 +166,8 @@ class CalculateResidualsTests(ModelInterpolationTests):
         expected_data = expected_df.collect()
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][IndCqc.extrapolation_residual],
-                expected_data[i][IndCqc.extrapolation_residual],
+                returned_data[i][IndCqc.residual],
+                expected_data[i][IndCqc.residual],
                 f"Returned value in row {i} does not match expected",
             )
 
@@ -230,3 +258,33 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
         self,
     ):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class CalculateInterpolatedValuesTests(ModelInterpolationTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_calculate_interpolated_values_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_interpolated_values_rows,
+            Schemas.calculate_interpolated_values_schema,
+        )
+        returned_df = job.calculate_interpolated_values(
+            test_df,
+            IndCqc.previous_non_null_value,
+            IndCqc.interpolation_model,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_interpolated_values_rows,
+            Schemas.expected_calculate_interpolated_values_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.interpolation_model],
+                expected_data[i][IndCqc.interpolation_model],
+                f"Returned value in row {i} does not match expected",
+            )
