@@ -255,7 +255,12 @@ def calculate_rolling_rate_of_change(
         TempCol.rolling_previous_period_sum,
     )
     df = calculate_single_period_rate_of_change(df)
-    df = calculate_rolling_rate_of_change_model(df, rate_of_change_model_column_name)
+    deduped_df = deduplicate_dataframe(df)
+    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
+        deduped_df, rate_of_change_model_column_name
+    )
+    df = join_dataframes(df, cumulative_rate_of_change_df)
+
     return df
 
 
@@ -351,28 +356,16 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
 
 
 # TODO - untested
-def calculate_rolling_rate_of_change_model(
-    df: DataFrame, rate_of_change_model_column_name: str
-) -> DataFrame:
+def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
-    Calculates the rolling rate of change model for a DataFrame.
+    Deduplicates the DataFrame based on primary service type and unix time.
 
     Args:
         df (DataFrame): The input DataFrame.
-        rate_of_change_model_column_name (str): The name of the new column to store the rate of change model.
 
     Returns:
-        DataFrame: The DataFrame with the rate of change model column added.
+        DataFrame: The deduplicated DataFrame.
     """
-    deduped_df = deduplicate_dataframe(df)
-    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
-        deduped_df, rate_of_change_model_column_name
-    )
-    df = join_dataframes(df, cumulative_rate_of_change_df)
-    return df
-
-
-def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     df = df.select(
         IndCqc.primary_service_type,
         IndCqc.unix_time,
@@ -381,9 +374,25 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO - untested
 def calculate_cumulative_rate_of_change(
     df: DataFrame, rate_of_change_model_column_name: str
 ) -> DataFrame:
+    """
+    Calculates the cumulative rate of change for a DataFrame.
+
+    The cumulative rate of change is a multiplication of all the single rates of change up to and including that point.
+    For example, period one is 'a', period two is 'a*b', period three is 'a*b*c', etc.
+    The cumulative product is calculated by taking the exponential of the sum of the logarithms of the values.
+    This approach avoids issues in pyspark with direct multiplication of many numbers.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        rate_of_change_model_column_name (str): The name of the new column to store the cumulative rate of change.
+
+    Returns:
+        DataFrame: The DataFrame with the cumulative rate of change column added.
+    """
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
     cumulative_rate_of_change = F.exp(
@@ -396,9 +405,20 @@ def calculate_cumulative_rate_of_change(
     return df
 
 
+# TODO - untested
 def join_dataframes(
     df: DataFrame, cumulative_rate_of_change_df: DataFrame
 ) -> DataFrame:
+    """
+    Joins the original DataFrame with the cumulative rate of change DataFrame.
+
+    Args:
+        df (DataFrame): The original DataFrame.
+        cumulative_rate_of_change_df (DataFrame): The DataFrame with the cumulative rate of change.
+
+    Returns:
+        DataFrame: The joined DataFrame.
+    """
     return df.join(
         cumulative_rate_of_change_df,
         [IndCqc.primary_service_type, IndCqc.unix_time],
