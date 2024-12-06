@@ -328,6 +328,19 @@ def add_rolling_sum(
 
 # TODO - untested
 def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
+    """
+    Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
+
+    The rate of change is calculated as the ratio of the rolling current period sum to the rolling previous period sum.
+    The rate of change is always null for the first period, so it is replaced with 1 (equivalent to 'no change').
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The DataFrame with the single period rate of change column added.
+
+    """
     df = df.withColumn(
         TempCol.single_period_rate_of_change,
         F.col(TempCol.rolling_current_period_sum)
@@ -341,20 +354,53 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
 def calculate_rolling_rate_of_change_model(
     df: DataFrame, rate_of_change_model_column_name: str
 ) -> DataFrame:
-    deduped_df = df.select(
+    """
+    Calculates the rolling rate of change model for a DataFrame.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        rate_of_change_model_column_name (str): The name of the new column to store the rate of change model.
+
+    Returns:
+        DataFrame: The DataFrame with the rate of change model column added.
+    """
+    deduped_df = deduplicate_dataframe(df)
+    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
+        deduped_df, rate_of_change_model_column_name
+    )
+    df = join_dataframes(df, cumulative_rate_of_change_df)
+    return df
+
+
+def deduplicate_dataframe(df: DataFrame) -> DataFrame:
+    df = df.select(
         IndCqc.primary_service_type,
         IndCqc.unix_time,
         TempCol.single_period_rate_of_change,
     ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
+    return df
 
+
+def calculate_cumulative_rate_of_change(
+    df: DataFrame, rate_of_change_model_column_name: str
+) -> DataFrame:
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
-    cumulative_product = F.exp(
+    cumulative_rate_of_change = F.exp(
         F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
     )
-    deduped_df = deduped_df.withColumn(
-        rate_of_change_model_column_name, cumulative_product
-    ).drop(TempCol.single_period_rate_of_change)
 
-    df = df.join(deduped_df, [IndCqc.primary_service_type, IndCqc.unix_time], "left")
+    df = df.withColumn(
+        rate_of_change_model_column_name, cumulative_rate_of_change
+    ).drop(TempCol.single_period_rate_of_change)
     return df
+
+
+def join_dataframes(
+    df: DataFrame, cumulative_rate_of_change_df: DataFrame
+) -> DataFrame:
+    return df.join(
+        cumulative_rate_of_change_df,
+        [IndCqc.primary_service_type, IndCqc.unix_time],
+        "left",
+    )
