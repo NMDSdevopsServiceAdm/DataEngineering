@@ -133,7 +133,7 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     def test_clean_column_to_average_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_clean_column_to_average_is_not_nulled_when_submitted_submitted_more_than_once_and_consistent_care_home_status(
+    def test_clean_column_to_average_is_not_nulled_when_submitted_more_than_once_and_consistent_care_home_status(
         self,
     ):
         returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
@@ -226,7 +226,7 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_submission_values_match_expected(
+    def test_returned_submission_values_match_expected_when_location_does_not_have_multiple_care_home_statuses(
         self,
     ):
         for i in range(len(self.returned_data)):

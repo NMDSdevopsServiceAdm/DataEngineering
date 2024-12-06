@@ -70,6 +70,7 @@ def main(
         )
     )
 
+    # TODO - amend in line with rolling avg change
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
@@ -84,6 +85,7 @@ def main(
     vectorised_dataframe = vectorise_dataframe(
         df=features_df, list_for_vectorisation=list_for_vectorisation
     )
+    # TODO - add new col into df
     vectorised_features_df = vectorised_dataframe.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
