@@ -328,10 +328,20 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
 def calculate_rolling_rate_of_change_model(
     df: DataFrame, rate_of_change_model_column_name: str
 ) -> DataFrame:
-    w = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+    deduped_df = df.select(
+        IndCqc.primary_service_type,
+        IndCqc.unix_time,
+        TempCol.single_period_rate_of_change,
+    ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
+
+    w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
     cumulative_product = F.exp(
         F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
     )
-    df = df.withColumn(rate_of_change_model_column_name, cumulative_product)
+    deduped_df = deduped_df.withColumn(
+        rate_of_change_model_column_name, cumulative_product
+    ).drop(TempCol.single_period_rate_of_change)
+
+    df = df.join(deduped_df, [IndCqc.primary_service_type, IndCqc.unix_time], "left")
     return df
