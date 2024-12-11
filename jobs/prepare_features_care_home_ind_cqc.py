@@ -70,7 +70,6 @@ def main(
         )
     )
 
-    # TODO - amend in line with rolling avg change
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
