@@ -1,4 +1,4 @@
-from dataclasses import dataclass, fields
+from dataclasses import fields
 
 from pyspark.sql import DataFrame, functions as F, Window
 
