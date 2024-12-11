@@ -2368,6 +2368,20 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    single_period_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RA_TempCol.rolling_previous_period_sum, DoubleType(), True),
+        ]
+    )
+    expected_single_period_rate_of_change_schema = StructType(
+        [
+            *single_period_rate_of_change_schema,
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

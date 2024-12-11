@@ -4979,6 +4979,19 @@ class ModelPrimaryServiceRollingAverage:
         ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0, 50.0),
     ]
 
+    single_period_rate_of_change_rows = [
+        ("1-001", 12.0, 10.0),
+        ("1-002", 15.0, None),
+        ("1-003", None, 20.0),
+        ("1-004", None, None),
+    ]
+    expected_single_period_rate_of_change_rows = [
+        ("1-001", 12.0, 10.0, 1.2),
+        ("1-002", 15.0, None, 1.0),
+        ("1-003", None, 20.0, 1.0),
+        ("1-004", None, None, 1.0),
+    ]
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:

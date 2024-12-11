@@ -316,7 +316,6 @@ def add_rolling_sum(
     return df
 
 
-# TODO - untested
 def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
     """
     Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
