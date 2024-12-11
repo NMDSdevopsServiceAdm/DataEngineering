@@ -355,12 +355,8 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
     @patch(
         "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_cumulative_rate_of_change"
     )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.join_dataframes"
-    )
     def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
-        join_dataframes: Mock,
         calculate_cumulative_rate_of_change: Mock,
         deduplicate_dataframe: Mock,
         calculate_single_period_rate_of_change: Mock,
@@ -378,7 +374,6 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         self.assertEqual(calculate_single_period_rate_of_change.call_count, 1)
         self.assertEqual(deduplicate_dataframe.call_count, 1)
         self.assertEqual(calculate_cumulative_rate_of_change.call_count, 1)
-        self.assertEqual(join_dataframes.call_count, 1)
 
     def test_rate_of_change_model_column_name_in_returned_column_list(self):
         returned_df = job.calculate_rolling_rate_of_change(

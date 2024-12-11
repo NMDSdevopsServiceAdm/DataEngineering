@@ -219,6 +219,7 @@ def calculate_rolling_rate_of_change(
     2. When both current and previous values exist, adds the rolling sum of both columns over a specified number of days into separate columns.
     3. Calculate the rate of change for a single period.
     4. Calculate the rolling rate of change model.
+    The rolling rate of change model values are then joined into the original DataFrame.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
@@ -246,7 +247,11 @@ def calculate_rolling_rate_of_change(
     cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
         deduped_df, rate_of_change_model_column_name
     )
-    df = join_dataframes(df, cumulative_rate_of_change_df)
+    df = df.join(
+        cumulative_rate_of_change_df,
+        [IndCqc.primary_service_type, IndCqc.unix_time],
+        "left",
+    )
 
     return df
 
@@ -386,24 +391,3 @@ def calculate_cumulative_rate_of_change(
         rate_of_change_model_column_name, cumulative_rate_of_change
     ).drop(TempCol.single_period_rate_of_change)
     return df
-
-
-# TODO - untested
-def join_dataframes(
-    df: DataFrame, cumulative_rate_of_change_df: DataFrame
-) -> DataFrame:
-    """
-    Joins the original DataFrame with the cumulative rate of change DataFrame.
-
-    Args:
-        df (DataFrame): The original DataFrame.
-        cumulative_rate_of_change_df (DataFrame): The DataFrame with the cumulative rate of change.
-
-    Returns:
-        DataFrame: The joined DataFrame.
-    """
-    return df.join(
-        cumulative_rate_of_change_df,
-        [IndCqc.primary_service_type, IndCqc.unix_time],
-        "left",
-    )
