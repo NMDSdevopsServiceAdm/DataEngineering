@@ -216,7 +216,7 @@ def calculate_rolling_rate_of_change(
 
     This function sequentially calls other functions to:
     1. Add a column with previous values.
-    2. Adds the two rolling sums over a specified number of days.
+    2. When both current and previous values exist, adds the rolling sum of both columns over a specified number of days into separate columns.
     3. Calculate the rate of change for a single period.
     4. Calculate the rolling rate of change model.
 
