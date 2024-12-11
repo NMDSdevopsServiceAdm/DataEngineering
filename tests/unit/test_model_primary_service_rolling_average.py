@@ -510,3 +510,29 @@ class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRollingAverageTe
                 2,
                 f"Returned row {i} does not match expected",
             )
+
+
+class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.deduplicate_dataframe_rows,
+            Schemas.deduplicate_dataframe_schema,
+        )
+        self.returned_df = job.deduplicate_dataframe(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_deduplicate_dataframe_rows,
+            Schemas.deduplicate_dataframe_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.primary_service_type, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_returned_rate_of_change_values_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)

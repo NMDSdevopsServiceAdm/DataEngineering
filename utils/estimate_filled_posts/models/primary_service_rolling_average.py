@@ -339,10 +339,9 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO - untested
 def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
-    Deduplicates the DataFrame based on primary service type and unix time.
+    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
 
     Args:
         df (DataFrame): The input DataFrame.

@@ -2382,6 +2382,22 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    deduplicate_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+            StructField("another_col", DoubleType(), True),
+        ]
+    )
+    expected_deduplicate_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:
