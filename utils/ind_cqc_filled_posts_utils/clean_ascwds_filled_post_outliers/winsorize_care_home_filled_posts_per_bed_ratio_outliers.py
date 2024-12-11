@@ -158,7 +158,7 @@ def create_banded_bed_count_column(df: DataFrame) -> DataFrame:
     This function uses a Bucketizer to categorise the number of beds into specified bands, where the splits identify the start value of each band.
 
     Args:
-        input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
+        df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
 
     Returns:
         DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
