@@ -151,13 +151,11 @@ def select_data_not_in_subset_df(
     return output_df
 
 
-def create_banded_bed_count_column(
-    input_df: DataFrame,
-) -> DataFrame:
+def create_banded_bed_count_column(df: DataFrame) -> DataFrame:
     """
     Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
 
-    This function uses a Bucketizer to categorise the number of beds into specified bands. The banded bed counts are joined into the original DataFrame.
+    This function uses a Bucketizer to categorise the number of beds into specified bands, where the splits identify the start value of each band.
 
     Args:
         input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
@@ -165,19 +163,15 @@ def create_banded_bed_count_column(
     Returns:
         DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
     """
-    number_of_beds_df = input_df.select(IndCQC.number_of_beds).dropDuplicates()
-
     set_banded_boundaries = Bucketizer(
         splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
         inputCol=IndCQC.number_of_beds,
         outputCol=IndCQC.number_of_beds_banded,
     )
 
-    number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
-        "keep"
-    ).transform(number_of_beds_df)
+    df = set_banded_boundaries.setHandleInvalid("keep").transform(df)
 
-    return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
+    return df
 
 
 def calculate_average_filled_posts_per_banded_bed_count(
