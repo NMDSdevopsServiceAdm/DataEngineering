@@ -523,7 +523,7 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
         self.returned_df = job.deduplicate_dataframe(test_df)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_deduplicate_dataframe_rows,
-            Schemas.deduplicate_dataframe_schema,
+            Schemas.expected_deduplicate_dataframe_schema,
         )
 
         self.returned_data = self.returned_df.sort(
