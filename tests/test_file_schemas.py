@@ -2350,6 +2350,24 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    add_rolling_sum_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+            StructField(
+                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+            ),
+        ]
+    )
+    expected_add_rolling_sum_schema = StructType(
+        [
+            *add_rolling_sum_schema,
+            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

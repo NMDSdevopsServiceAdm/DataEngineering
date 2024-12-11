@@ -420,10 +420,10 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
 
         self.assertEqual(get_selected_value.call_count, 1)
 
-    def test_add_previous_value_column_names_match_expected(self):
+    def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_previous_value_column_values_match_expected(
+    def test_returned_previous_interpolated_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
@@ -434,6 +434,47 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
                 self.expected_data[i][
                     job.TempCol.previous_column_to_average_interpolated
                 ],
+                2,
+                f"Returned row {i} does not match expected",
+            )
+
+
+class AddRollingSumTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        number_of_days: int = 2
+
+        test_df = self.spark.createDataFrame(
+            Data.add_rolling_sum_rows,
+            Schemas.add_rolling_sum_schema,
+        )
+        self.returned_df = job.add_rolling_sum(
+            test_df,
+            number_of_days,
+            job.TempCol.column_to_average_interpolated,
+            job.TempCol.rolling_current_period_sum,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_rolling_sum_rows,
+            Schemas.expected_add_rolling_sum_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_returned_rolling_sum_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][job.TempCol.rolling_current_period_sum],
+                self.expected_data[i][job.TempCol.rolling_current_period_sum],
                 2,
                 f"Returned row {i} does not match expected",
             )

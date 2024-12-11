@@ -277,7 +277,6 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO - untested
 def add_rolling_sum(
     df: DataFrame, number_of_days: int, column_to_sum: str, rolling_sum_column_name: str
 ) -> DataFrame:
