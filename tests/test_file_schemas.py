@@ -45,6 +45,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
+    PrimaryServiceRollingAverageColumns as RA_TempCol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -70,9 +71,6 @@ from utils.column_names.reconciliation_columns import (
 from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
-)
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
-    TempCol as RA_TempCol,
 )
 
 

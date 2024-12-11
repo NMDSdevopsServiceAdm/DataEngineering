@@ -2,27 +2,14 @@ from dataclasses import dataclass, fields
 
 from pyspark.sql import DataFrame, functions as F, Window
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+    PrimaryServiceRollingAverageColumns as TempCol,
+)
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
-
-
-@dataclass
-class TempCol:
-    """The names of the temporary columns created during the rolling average process."""
-
-    care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
-    )
-    rolling_current_period_sum: str = "rolling_current_period_sum"
-    rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
-    submission_count: str = "submission_count"
 
 
 def model_primary_service_rolling_average_and_rate_of_change(
