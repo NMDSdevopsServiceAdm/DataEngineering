@@ -2336,6 +2336,22 @@ class ModelPrimaryServiceRollingAverage:
 
     calculate_rolling_rate_of_change_schema = calculate_rolling_average_schema
 
+    add_previous_value_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+        ]
+    )
+    expected_add_previous_value_column_schema = StructType(
+        [
+            *add_previous_value_column_schema,
+            StructField(
+                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+            ),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

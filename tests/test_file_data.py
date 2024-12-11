@@ -4939,6 +4939,23 @@ class ModelPrimaryServiceRollingAverage:
 
     calculate_rolling_rate_of_change_rows = calculate_rolling_average_rows
 
+    add_previous_value_column_rows = [
+        ("1-001", 1672531200, 1.1),
+        ("1-001", 1672617600, 1.2),
+        ("1-001", 1672704000, 1.3),
+        ("1-001", 1672790400, 1.4),
+        ("1-002", 1672617600, 10.2),
+        ("1-002", 1672704000, 10.3),
+    ]
+    expected_add_previous_value_column_rows = [
+        ("1-001", 1672531200, 1.1, None),
+        ("1-001", 1672617600, 1.2, 1.1),
+        ("1-001", 1672704000, 1.3, 1.2),
+        ("1-001", 1672790400, 1.4, 1.3),
+        ("1-002", 1672617600, 10.2, None),
+        ("1-002", 1672704000, 10.3, 10.2),
+    ]
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:

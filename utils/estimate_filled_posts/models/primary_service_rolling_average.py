@@ -264,7 +264,6 @@ def calculate_rolling_rate_of_change(
     return df
 
 
-# TODO - untested
 def add_previous_value_column(df: DataFrame) -> DataFrame:
     """
     Adds the previous interpolated value for that location into a new column.

@@ -388,3 +388,52 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         )
 
         self.assertTrue(IndCqc.rolling_rate_of_change_model in returned_df.columns)
+
+
+class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.add_previous_value_column_rows,
+            Schemas.add_previous_value_column_schema,
+        )
+        self.returned_df = job.add_previous_value_column(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_previous_value_column_rows,
+            Schemas.expected_add_previous_value_column_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    @patch(
+        "utils.estimate_filled_posts.models.primary_service_rolling_average.get_selected_value"
+    )
+    def test_all_functions_called_in_add_previous_value_column_function(
+        self,
+        get_selected_value: Mock,
+    ):
+        job.add_previous_value_column(self.test_df)
+
+        self.assertEqual(get_selected_value.call_count, 1)
+
+    def test_add_previous_value_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_returned_previous_value_column_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    job.TempCol.previous_column_to_average_interpolated
+                ],
+                self.expected_data[i][
+                    job.TempCol.previous_column_to_average_interpolated
+                ],
+                2,
+                f"Returned row {i} does not match expected",
+            )
