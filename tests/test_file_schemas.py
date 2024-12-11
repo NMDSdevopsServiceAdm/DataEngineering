@@ -2398,6 +2398,21 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
+    cumulative_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+    expected_cumulative_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:

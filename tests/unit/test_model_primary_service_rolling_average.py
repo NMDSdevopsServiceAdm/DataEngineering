@@ -531,3 +531,39 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
 
     def test_returned_rate_of_change_values_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.cumulative_rate_of_change_rows,
+            Schemas.cumulative_rate_of_change_schema,
+        )
+        self.returned_df = job.calculate_cumulative_rate_of_change(
+            test_df, IndCqc.rolling_rate_of_change_model
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_cumulative_rate_of_change_rows,
+            Schemas.expected_cumulative_rate_of_change_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(
+            IndCqc.primary_service_type, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_returned_rolling_rate_of_change_model_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
+                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
+                2,
+                f"Returned row {i} does not match expected",
+            )

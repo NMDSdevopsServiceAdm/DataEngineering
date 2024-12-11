@@ -362,7 +362,6 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO - untested
 def calculate_cumulative_rate_of_change(
     df: DataFrame, rate_of_change_model_column_name: str
 ) -> DataFrame:
