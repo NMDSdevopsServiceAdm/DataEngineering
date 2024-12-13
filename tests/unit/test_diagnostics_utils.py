@@ -303,7 +303,7 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
+class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.window = job.create_window_for_model_and_service_splits()
@@ -404,6 +404,29 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
                 returned_data[i][IndCQC.percentage_of_residuals_within_absolute_value],
                 self.expected_data[i][
                     IndCQC.percentage_of_residuals_within_absolute_value
+                ],
+                places=3,
+            )
+
+    def test_calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs_returns_expected_values(
+        self,
+    ):
+        returned_df = (
+            job.calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs(
+                self.test_df,
+                self.window,
+                absolute_value_cutoff,
+                percentage_value_cutoff,
+            )
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][
+                    IndCQC.percentage_of_residuals_within_absolute_or_percentage_values
+                ],
+                self.expected_data[i][
+                    IndCQC.percentage_of_residuals_within_absolute_or_percentage_values
                 ],
                 places=3,
             )
