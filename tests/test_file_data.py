@@ -4806,21 +4806,26 @@ class ModelPrimaryServiceRollingAverage:
     ]
     # fmt: on
 
-    single_column_to_average_rows = [
+    single_column_to_average_when_care_home_rows = [
         ("1-001", CareHome.care_home, 20.0, 1.6),
         ("1-002", CareHome.care_home, 10.0, None),
         ("1-003", CareHome.care_home, None, 1.8),
         ("1-004", CareHome.care_home, None, None),
+    ]
+    expected_single_column_to_average_when_care_home_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8),
+        ("1-004", CareHome.care_home, None, None, None),
+    ]
+
+    single_column_to_average_when_not_care_home_rows = [
         ("1-005", CareHome.not_care_home, 20.0, 1.6),
         ("1-006", CareHome.not_care_home, 10.0, None),
         ("1-007", CareHome.not_care_home, None, 1.6),
         ("1-008", CareHome.not_care_home, None, None),
     ]
-    expected_single_column_to_average_rows = [
-        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
-        ("1-002", CareHome.care_home, 10.0, None, None),
-        ("1-003", CareHome.care_home, None, 1.8, 1.8),
-        ("1-004", CareHome.care_home, None, None, None),
+    expected_single_column_to_average_when_not_care_home_rows = [
         ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
         ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
         ("1-007", CareHome.not_care_home, None, 1.8, None),

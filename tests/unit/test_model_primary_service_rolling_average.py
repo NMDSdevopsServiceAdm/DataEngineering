@@ -83,35 +83,63 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
-        test_df = self.spark.createDataFrame(
-            Data.single_column_to_average_rows,
+        care_home_df = self.spark.createDataFrame(
+            Data.single_column_to_average_when_care_home_rows,
             Schemas.single_column_to_average_schema,
         )
-        self.returned_df = job.create_single_column_to_average(
-            test_df,
+        self.returned_care_home_df = job.create_single_column_to_average(
+            care_home_df,
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_single_column_to_average_rows,
+        self.expected_care_home_df = self.spark.createDataFrame(
+            Data.expected_single_column_to_average_when_care_home_rows,
             Schemas.expected_single_column_to_average_schema,
         )
-        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = self.expected_df.collect()
+        self.returned_care_home_data = self.returned_care_home_df.sort(
+            IndCqc.location_id
+        ).collect()
+        self.expected_care_home_data = self.expected_care_home_df.collect()
 
     def test_create_single_column_to_average_returns_expected_columns(self):
         self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
+            sorted(self.returned_care_home_df.columns),
+            sorted(self.expected_care_home_df.columns),
         )
 
-    def test_returned_column_to_average_values_match_expected(
+    def test_returned_column_to_average_values_match_expected_when_care_home(
         self,
     ):
-        for i in range(len(self.returned_data)):
+        for i in range(len(self.returned_care_home_data)):
             self.assertEqual(
-                self.returned_data[i][job.TempCol.column_to_average],
-                self.expected_data[i][job.TempCol.column_to_average],
+                self.returned_care_home_data[i][job.TempCol.column_to_average],
+                self.expected_care_home_data[i][job.TempCol.column_to_average],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_returned_column_to_average_values_match_expected_when_not_care_home(
+        self,
+    ):
+        not_care_home_df = self.spark.createDataFrame(
+            Data.single_column_to_average_when_not_care_home_rows,
+            Schemas.single_column_to_average_schema,
+        )
+        returned_df = job.create_single_column_to_average(
+            not_care_home_df,
+            IndCqc.filled_posts_per_bed_ratio,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_single_column_to_average_when_not_care_home_rows,
+            Schemas.expected_single_column_to_average_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][job.TempCol.column_to_average],
+                expected_data[i][job.TempCol.column_to_average],
                 f"Returned row {i} does not match expected",
             )
 
