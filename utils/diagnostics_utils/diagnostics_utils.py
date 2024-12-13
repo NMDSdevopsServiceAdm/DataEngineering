@@ -352,10 +352,42 @@ def calculate_aggregate_residuals(
     percentage_value_cutoff: float,
     standardised_residual_cutoff: float,
 ) -> DataFrame:
-    df = calculate_average_absolute_residual(df, window)
-    df = calculate_average_percentage_residual(df, window)
-    df = calculate_max_residual(df, window)
-    df = calculate_min_residual(df, window)
+    """
+    Calculates various residual aggregations and percentages of residuals within specified cutoffs.
+
+    This function performs multiple calculations on the input DataFrame, including aggregating residuals (mean, max, min) and calculating the percentage of residuals within specified cutoffs.
+    It calls several helper functions to achieve this.
+
+    Args:
+        df (DataFrame): The input DataFrame containing residuals data.
+        window (Window): The window specification for aggregating residuals.
+        absolute_value_cutoff (float): The cutoff value for absolute residuals.
+        percentage_value_cutoff (float): The cutoff value for percentage residuals.
+        standardised_residual_cutoff (float): The cutoff value for standardised residuals.
+
+    Returns:
+        DataFrame: The DataFrame with additional columns for the calculated aggregate residuals and percentages.
+    """
+    df = aggregate_residuals(
+        df,
+        window,
+        IndCQC.average_absolute_residual,
+        IndCQC.absolute_residual,
+        function="mean",
+    )
+    df = aggregate_residuals(
+        df,
+        window,
+        IndCQC.average_percentage_residual,
+        IndCQC.percentage_residual,
+        function="mean",
+    )
+    df = aggregate_residuals(
+        df, window, IndCQC.max_residual, IndCQC.residual, function="max"
+    )
+    df = aggregate_residuals(
+        df, window, IndCQC.min_residual, IndCQC.residual, function="min"
+    )
     df = calculate_percentage_of_residuals_within_absolute_value_of_actual(
         df, window, absolute_value_cutoff
     )
@@ -368,82 +400,40 @@ def calculate_aggregate_residuals(
     return df
 
 
-def calculate_average_absolute_residual(df: DataFrame, window: Window) -> DataFrame:
+def aggregate_residuals(
+    df: DataFrame,
+    window: Window,
+    new_column_name: str,
+    residual_column_name: str,
+    function: str,
+) -> DataFrame:
     """
-    Adds column with the average absolute residual.
-
-    This function adds a columns to the dataset containing the average absolute residual, aggregated over the given window.
+    This function adds a column containing the specified function (mean, min or max) over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
+        df (DataFrame): The input DataFrame containing the required columns.
         window (Window): A window for aggregating the residuals.
+        new_column_name (str): The name of the new column to be added.
+        residual_column_name (str): The name of the residual column to aggregate.
+        function (str): The function to use in the calculation ('mean', 'min' or 'max').
 
     Returns:
-        DataFrame: A dataframe with an additional column containing the average absolute residual aggregated over the given window.
+        DataFrame: A dataframe with an additional column containing the specified aggregation function over the given window.
+
+    Raises:
+        ValueError: If chosen function does not match 'mean', 'min' or 'max'.
     """
+    functions = {"mean": F.mean, "min": F.min, "max": F.max}
+
+    if function not in functions:
+        raise ValueError(
+            f"Error: The function parameter '{function}' was not found. Please use 'mean', 'min' or 'max'."
+        )
+
+    method = functions[function]
+
     df = df.withColumn(
-        IndCQC.average_absolute_residual,
-        F.mean(df[IndCQC.absolute_residual]).over(window),
-    )
-    return df
-
-
-def calculate_average_percentage_residual(df: DataFrame, window: Window) -> DataFrame:
-    """
-    Adds column with the average percentage residual.
-
-    This function adds a columns to the dataset containing the average percentage residual, aggregated over the given window.
-
-    Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and percentage_residual.
-        window (Window): A window for aggregating the residuals.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the average percentage residual aggregated over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.average_percentage_residual,
-        F.mean(df[IndCQC.percentage_residual]).over(window),
-    )
-    return df
-
-
-def calculate_max_residual(df: DataFrame, window: Window) -> DataFrame:
-    """
-    Adds column with the maximum residual.
-
-    This function adds a columns to the dataset containing the maximum residual, aggregated over the given window.
-
-    Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
-        window (Window): A window for aggregating the residuals.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the maximum residual aggregated over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.max_residual,
-        F.max(df[IndCQC.residual]).over(window),
-    )
-    return df
-
-
-def calculate_min_residual(df: DataFrame, window: Window) -> DataFrame:
-    """
-    Adds column with the minimum residual.
-
-    This function adds a columns to the dataset containing the minimum residual, aggregated over the given window.
-
-    Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
-        window (Window): A window for aggregating the residuals.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the minimum residual aggregated over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.min_residual,
-        F.min(df[IndCQC.residual]).over(window),
+        new_column_name, method(F.col(residual_column_name)).over(window)
     )
     return df
 

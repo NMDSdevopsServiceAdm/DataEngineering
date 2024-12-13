@@ -4603,30 +4603,6 @@ class DiagnosticsUtilsSchemas:
             ),
         ]
     )
-    expected_calculate_average_absolute_residual_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.average_absolute_residual, FloatType(), True),
-        ]
-    )
-    expected_calculate_average_percentage_residual_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.average_percentage_residual, FloatType(), True),
-        ]
-    )
-    expected_calculate_max_residual_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.max_residual, FloatType(), True),
-        ]
-    )
-    expected_calculate_min_residual_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.min_residual, FloatType(), True),
-        ]
-    )
     expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
         StructType(
             [
