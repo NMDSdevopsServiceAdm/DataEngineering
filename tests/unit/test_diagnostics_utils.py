@@ -8,16 +8,10 @@ from jobs.diagnostics_on_known_filled_posts import (
     percentage_value_cutoff,
 )
 import utils.diagnostics_utils.diagnostics_utils as job
-from tests.test_file_schemas import (
-    DiagnosticsUtilsSchemas as Schemas,
-)
-from tests.test_file_data import (
-    DiagnosticsUtilsData as Data,
-)
+from tests.test_file_schemas import DiagnosticsUtilsSchemas as Schemas
+from tests.test_file_data import DiagnosticsUtilsData as Data
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class DiagnosticsUtilsTests(unittest.TestCase):
@@ -309,80 +303,116 @@ class CalculateResidualsTests(DiagnosticsUtilsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.window = job.create_window_for_model_and_service_splits()
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_aggregate_residuals_rows,
+            Schemas.calculate_aggregate_residuals_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_aggregate_residuals_rows,
+            Schemas.expected_calculate_aggregate_residuals_schema,
+        )
+        self.expected_data = self.expected_df.collect()
+
+    def test_aggregate_residuals_raises_error_when_aggregate_type_is_not_permitted(
+        self,
+    ):
+        with self.assertRaises(ValueError) as context:
+            job.aggregate_residuals(
+                self.test_df,
+                self.window,
+                IndCQC.average_absolute_residual,
+                IndCQC.absolute_residual,
+                aggregation_type="other",
+            )
+
+        self.assertTrue(
+            "Error: The selection aggregation_type 'other' was not found. Please use 'mean', 'min' or 'max'.",
+            "Exception does not contain the correct error message",
+        )
+
+    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_mean(
+        self,
+    ):
+        returned_df = job.aggregate_residuals(
+            self.test_df,
+            self.window,
+            IndCQC.average_absolute_residual,
+            IndCQC.absolute_residual,
+            aggregation_type="mean",
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.average_absolute_residual],
+                self.expected_data[i][IndCQC.average_absolute_residual],
+                places=3,
+            )
+
+    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_min(
+        self,
+    ):
+        returned_df = job.aggregate_residuals(
+            self.test_df,
+            self.window,
+            IndCQC.min_residual,
+            IndCQC.residual,
+            aggregation_type="min",
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.min_residual],
+                self.expected_data[i][IndCQC.min_residual],
+                places=3,
+            )
+
+    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_max(
+        self,
+    ):
+        returned_df = job.aggregate_residuals(
+            self.test_df,
+            self.window,
+            IndCQC.max_residual,
+            IndCQC.residual,
+            aggregation_type="max",
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][IndCQC.max_residual],
+                self.expected_data[i][IndCQC.max_residual],
+                places=3,
+            )
+
+    def test_calculate_aggregate_residuals_returns_expected_columns(self):
+        returned_df = job.calculate_aggregate_residuals(
+            self.test_df,
+            self.window,
+            absolute_value_cutoff,
+            percentage_value_cutoff,
+            standardised_value_cutoff,
+        )
+        self.assertEqual(returned_df.columns, self.expected_df.columns)
+
+    def test_calculate_aggregate_residuals_returns_expected_row_count(self):
+        returned_df = job.calculate_aggregate_residuals(
+            self.test_df,
+            self.window,
+            absolute_value_cutoff,
+            percentage_value_cutoff,
+            standardised_value_cutoff,
+        )
+        self.assertEqual(returned_df.count(), self.expected_df.count())
+
+
 class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
         self.window = job.create_window_for_model_and_service_splits()
-
-    def test_calculate_average_absolute_residual_returns_expected_values(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = job.calculate_average_absolute_residual(test_df, self.window)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_average_absolute_residual_rows,
-            Schemas.expected_calculate_average_absolute_residual_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
-
-    def test_calculate_average_percentage_residual_returns_expected_values(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = job.calculate_average_percentage_residual(test_df, self.window)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_average_percentage_residual_rows,
-            Schemas.expected_calculate_average_percentage_residual_schema,
-        )
-        returned_data = (
-            returned_df.select(IndCQC.location_id, IndCQC.average_percentage_residual)
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-        expected_data = (
-            expected_df.select(IndCQC.location_id, IndCQC.average_percentage_residual)
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][IndCQC.average_percentage_residual],
-                expected_data[i][IndCQC.average_percentage_residual],
-                places=6,
-            )
-
-    def test_calculate_max_residual_returns_expected_values(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = job.calculate_max_residual(test_df, self.window)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_max_residual_rows,
-            Schemas.expected_calculate_max_residual_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
-
-    def test_calculate_min_residual_returns_expected_values(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = job.calculate_min_residual(test_df, self.window)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_min_residual_rows,
-            Schemas.expected_calculate_min_residual_schema,
-        )
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
 
     def test_calculate_percentage_of_residuals_within_absolute_value_of_actual_returns_expected_values(
         self,
