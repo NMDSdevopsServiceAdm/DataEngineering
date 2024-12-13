@@ -58,7 +58,7 @@ def main(
         IndCQC.imputed_filled_post_model,
         care_home=False,
     )
-
+    """
     # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
@@ -75,7 +75,7 @@ def main(
         IndCQC.imputed_non_res_people_directly_employed,
         care_home=False,
     )
-
+    """
     print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
 
     utils.write_to_parquet(
