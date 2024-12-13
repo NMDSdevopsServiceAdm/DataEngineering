@@ -402,12 +402,6 @@ def calculate_aggregate_residuals(
         IndCQC.percentage_residual,
         percentage_value_cutoff,
     )
-    df = calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs(
-        df,
-        window,
-        absolute_value_cutoff,
-        percentage_value_cutoff,
-    )
     df = calculate_percentage_of_residuals_within_cutoffs(
         df,
         window,
@@ -480,38 +474,6 @@ def calculate_percentage_of_residuals_within_cutoffs(
         new_column_name,
         F.count(F.when(F.col(residual_column_name) <= cutoff_value, True)).over(window)
         / F.count(F.col(residual_column_name)).over(window),
-    )
-    return df
-
-
-def calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs(
-    df: DataFrame,
-    window: Window,
-    absolute_value_cutoff: float,
-    percentage_value_cutoff: float,
-) -> DataFrame:
-    """
-    This function adds a column containing the percentage of residuals which are within either the absolute or percentage cutoff values, aggregated over the given window.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the required columns.
-        window (Window): A window for aggregating the residuals.
-        absolute_value_cutoff (float): The cutoff value for absolute residuals.
-        percentage_value_cutoff (float): The cutoff value for percentage residuals.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within either the absolute or percentage cutoff values over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.percentage_of_residuals_within_absolute_or_percentage_values,
-        F.count(
-            F.when(
-                (F.col(IndCQC.absolute_residual) <= absolute_value_cutoff)
-                | (F.col(IndCQC.percentage_residual) <= percentage_value_cutoff),
-                True,
-            )
-        ).over(window)
-        / F.count(F.col(IndCQC.absolute_residual)).over(window),
     )
     return df
 

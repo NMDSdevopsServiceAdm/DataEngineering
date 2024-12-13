@@ -4520,11 +4520,6 @@ class DiagnosticsUtilsSchemas:
                 True,
             ),
             StructField(
-                IndCQC.percentage_of_residuals_within_absolute_or_percentage_values,
-                FloatType(),
-                True,
-            ),
-            StructField(
                 IndCQC.percentage_of_standardised_residuals_within_limit,
                 FloatType(),
                 True,
