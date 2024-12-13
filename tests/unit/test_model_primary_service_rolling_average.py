@@ -609,7 +609,7 @@ class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTest
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_rolling_rate_of_change_model_values_match_expected(
+    def test_returned_cumulative_rate_of_change_output_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
