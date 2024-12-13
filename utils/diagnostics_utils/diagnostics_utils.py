@@ -352,6 +352,22 @@ def calculate_aggregate_residuals(
     percentage_value_cutoff: float,
     standardised_residual_cutoff: float,
 ) -> DataFrame:
+    """
+    Calculates various residual aggregations and percentages of residuals within specified cutoffs.
+
+    This function performs multiple calculations on the input DataFrame, including aggregating residuals (mean, max, min) and calculating the percentage of residuals within specified cutoffs.
+    It calls several helper functions to achieve this.
+
+    Args:
+        df (DataFrame): The input DataFrame containing residuals data.
+        window (Window): The window specification for aggregating residuals.
+        absolute_value_cutoff (float): The cutoff value for absolute residuals.
+        percentage_value_cutoff (float): The cutoff value for percentage residuals.
+        standardised_residual_cutoff (float): The cutoff value for standardised residuals.
+
+    Returns:
+        DataFrame: The DataFrame with additional columns for the calculated aggregate residuals and percentages.
+    """
     df = aggregate_residuals(
         df,
         window,
@@ -410,17 +426,20 @@ def aggregate_residuals(
     function: str,
 ) -> DataFrame:
     """
-    This function adds a column containing the specified aggregation type (mean, min or max) over the given window.
+    This function adds a column containing the specified function (mean, min or max) over the given window.
 
     Args:
         df (DataFrame): The input DataFrame containing the required columns.
         window (Window): A window for aggregating the residuals.
         new_column_name (str): The name of the new column to be added.
         residual_column_name (str): The name of the residual column to aggregate.
-        function (str): The type of aggregation ('mean', 'min' or 'max').
+        function (str): The function to use in the calculation ('mean', 'min' or 'max').
 
     Returns:
-        DataFrame: A dataframe with an additional column containing the specified aggregation type over the given window.
+        DataFrame: A dataframe with an additional column containing the specified aggregation function over the given window.
+
+    Raises:
+        ValueError: If chosen function does not match 'mean', 'min' or 'max'.
     """
     functions = {"mean": F.mean, "min": F.min, "max": F.max}
 
@@ -477,8 +496,8 @@ def calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs(
     Args:
         df (DataFrame): The input DataFrame containing the required columns.
         window (Window): A window for aggregating the residuals.
-        absolute_value_cutoff (float): The threshold absolute value.
-        percentage_value_cutoff (float): The threshold percentage value.
+        absolute_value_cutoff (float): The cutoff value for absolute residuals.
+        percentage_value_cutoff (float): The cutoff value for percentage residuals.
 
     Returns:
         DataFrame: A dataframe with an additional column containing the percentage of residuals which are within either the absolute or percentage cutoff values over the given window.
