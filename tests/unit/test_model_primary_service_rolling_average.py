@@ -105,7 +105,7 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             .collect()
         )
         self.returned_not_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) == CareHome.not_care_home)
+            self.returned_df.where(F.col(IndCqc.care_home) != CareHome.care_home)
             .sort(IndCqc.location_id)
             .collect()
         )
@@ -113,7 +113,7 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             F.col(IndCqc.care_home) == CareHome.care_home
         ).collect()
         self.expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) == CareHome.not_care_home
+            F.col(IndCqc.care_home) != CareHome.care_home
         ).collect()
 
     def test_create_single_column_to_average_returns_expected_columns(self):
@@ -342,7 +342,7 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
             .collect()
         )
         self.returned_not_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) == CareHome.not_care_home)
+            self.returned_df.where(F.col(IndCqc.care_home) != CareHome.care_home)
             .sort(IndCqc.location_id)
             .collect()
         )
@@ -350,7 +350,7 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
             F.col(IndCqc.care_home) == CareHome.care_home
         ).collect()
         self.expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) == CareHome.not_care_home
+            F.col(IndCqc.care_home) != CareHome.care_home
         ).collect()
 
     def test_calculate_rolling_average_returns_expected_columns(self):
