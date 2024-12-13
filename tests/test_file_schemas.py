@@ -4527,63 +4527,6 @@ class DiagnosticsUtilsSchemas:
         ]
     )
 
-    aggregate_residuals_schema = calculate_aggregate_residuals_schema
-    expected_aggregate_residuals_when_mean_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.average_absolute_residual, FloatType(), True),
-        ]
-    )
-    expected_aggregate_residuals_when_min_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.min_residual, FloatType(), True),
-        ]
-    )
-    expected_aggregate_residuals_when_max_schema = StructType(
-        [
-            *calculate_aggregate_residuals_schema,
-            StructField(IndCQC.max_residual, FloatType(), True),
-        ]
-    )
-
-    expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_residuals_within_absolute_value,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
-    expected_calculate_percentage_of_residuals_within_percentage_value_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_residuals_within_percentage_value,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
-    expected_calculate_percentage_of_standardised_residuals_within_limit_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_standardised_residuals_within_limit,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
-
     create_summary_dataframe_schema = StructType(
         [
             *expected_restructure_dataframe_schema,
