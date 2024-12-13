@@ -459,7 +459,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
     @patch(
         "utils.estimate_filled_posts.models.primary_service_rolling_average.get_selected_value"
     )
-    def test_all_functions_called_in_add_previous_value_column_function(
+    def test_functions_called_in_add_previous_value_column_function(
         self,
         get_selected_value: Mock,
     ):
@@ -547,7 +547,7 @@ class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRollingAverageTe
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_rate_of_change_values_match_expected(
+    def test_returned_single_period_rate_of_change_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
@@ -581,7 +581,7 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_rate_of_change_values_match_expected(self):
+    def test_returned_deduplicated_dataframe_rows_match_expected(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
