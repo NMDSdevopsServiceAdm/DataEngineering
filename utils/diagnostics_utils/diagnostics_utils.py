@@ -357,20 +357,20 @@ def calculate_aggregate_residuals(
         window,
         IndCQC.average_absolute_residual,
         IndCQC.absolute_residual,
-        aggregation_type="mean",
+        function="mean",
     )
     df = aggregate_residuals(
         df,
         window,
         IndCQC.average_percentage_residual,
         IndCQC.percentage_residual,
-        aggregation_type="mean",
+        function="mean",
     )
     df = aggregate_residuals(
-        df, window, IndCQC.max_residual, IndCQC.residual, aggregation_type="max"
+        df, window, IndCQC.max_residual, IndCQC.residual, function="max"
     )
     df = aggregate_residuals(
-        df, window, IndCQC.min_residual, IndCQC.residual, aggregation_type="min"
+        df, window, IndCQC.min_residual, IndCQC.residual, function="min"
     )
     df = calculate_percentage_of_residuals_within_cutoffs(
         df,
@@ -401,7 +401,7 @@ def aggregate_residuals(
     window: Window,
     new_column_name: str,
     residual_column_name: str,
-    aggregation_type: str,
+    function: str,
 ) -> DataFrame:
     """
     This function adds a column containing the specified aggregation type (mean, min or max) over the given window.
@@ -411,19 +411,19 @@ def aggregate_residuals(
         window (Window): A window for aggregating the residuals.
         new_column_name (str): The name of the new column to be added.
         residual_column_name (str): The name of the residual column to aggregate.
-        aggregation_type (str): The type of aggregation ('mean', 'min' or 'max').
+        function (str): The type of aggregation ('mean', 'min' or 'max').
 
     Returns:
         DataFrame: A dataframe with an additional column containing the specified aggregation type over the given window.
     """
-    aggregation_types = {"mean": F.mean, "min": F.min, "max": F.max}
+    functions = {"mean": F.mean, "min": F.min, "max": F.max}
 
-    if aggregation_type not in aggregation_types:
+    if function not in functions:
         raise ValueError(
-            f"Error: The aggregation_type parameter '{aggregation_type}' was not found. Please use 'mean', 'min' or 'max'."
+            f"Error: The function parameter '{function}' was not found. Please use 'mean', 'min' or 'max'."
         )
 
-    method = aggregation_types[aggregation_type]
+    method = functions[function]
 
     df = df.withColumn(
         new_column_name, method(F.col(residual_column_name)).over(window)

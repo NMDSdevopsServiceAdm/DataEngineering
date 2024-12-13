@@ -317,7 +317,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
         )
         self.expected_data = self.expected_df.collect()
 
-    def test_aggregate_residuals_raises_error_when_aggregate_type_is_not_permitted(
+    def test_aggregate_residuals_raises_error_when_function_is_not_permitted(
         self,
     ):
         with self.assertRaises(ValueError) as context:
@@ -326,15 +326,15 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
                 self.window,
                 IndCQC.average_absolute_residual,
                 IndCQC.absolute_residual,
-                aggregation_type="other",
+                function="other",
             )
 
         self.assertTrue(
-            "Error: The selection aggregation_type 'other' was not found. Please use 'mean', 'min' or 'max'.",
+            "Error: The selection function 'other' was not found. Please use 'mean', 'min' or 'max'.",
             "Exception does not contain the correct error message",
         )
 
-    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_mean(
+    def test_aggregate_residuals_returns_expected_values_when_function_is_mean(
         self,
     ):
         returned_df = job.aggregate_residuals(
@@ -342,7 +342,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
             self.window,
             IndCQC.average_absolute_residual,
             IndCQC.absolute_residual,
-            aggregation_type="mean",
+            function="mean",
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         for i in range(len(returned_data)):
@@ -352,7 +352,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
                 places=3,
             )
 
-    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_min(
+    def test_aggregate_residuals_returns_expected_values_when_function_is_min(
         self,
     ):
         returned_df = job.aggregate_residuals(
@@ -360,7 +360,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
             self.window,
             IndCQC.min_residual,
             IndCQC.residual,
-            aggregation_type="min",
+            function="min",
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         for i in range(len(returned_data)):
@@ -370,7 +370,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
                 places=3,
             )
 
-    def test_aggregate_residuals_returns_expected_values_when_aggregation_type_is_max(
+    def test_aggregate_residuals_returns_expected_values_when_function_is_max(
         self,
     ):
         returned_df = job.aggregate_residuals(
@@ -378,7 +378,7 @@ class CalculateAggregateResidualsTests_v2(DiagnosticsUtilsTests):
             self.window,
             IndCQC.max_residual,
             IndCQC.residual,
-            aggregation_type="max",
+            function="max",
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         for i in range(len(returned_data)):
