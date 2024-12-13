@@ -4939,6 +4939,98 @@ class ModelPrimaryServiceRollingAverage:
 
     calculate_rolling_rate_of_change_rows = calculate_rolling_average_rows
 
+    add_previous_value_column_rows = [
+        ("1-001", 1672531200, 1.1),
+        ("1-001", 1672617600, 1.2),
+        ("1-001", 1672704000, 1.3),
+        ("1-001", 1672790400, 1.4),
+        ("1-002", 1672617600, 10.2),
+        ("1-002", 1672704000, 10.3),
+    ]
+    expected_add_previous_value_column_rows = [
+        ("1-001", 1672531200, 1.1, None),
+        ("1-001", 1672617600, 1.2, 1.1),
+        ("1-001", 1672704000, 1.3, 1.2),
+        ("1-001", 1672790400, 1.4, 1.3),
+        ("1-002", 1672617600, 10.2, None),
+        ("1-002", 1672704000, 10.3, 10.2),
+    ]
+
+    add_rolling_sum_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1),
+        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2),
+        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3),
+        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4),
+        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None),
+        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0),
+        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0),
+    ]
+    expected_add_rolling_sum_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1, 2.5),
+        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2, 3.8),
+        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3, 3.8),
+        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4, 2.5),
+        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None, None),
+        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0, 20.0),
+        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0, 50.0),
+    ]
+
+    single_period_rate_of_change_rows = [
+        ("1-001", 12.0, 10.0),
+        ("1-002", 15.0, None),
+        ("1-003", None, 20.0),
+        ("1-004", None, None),
+    ]
+    expected_single_period_rate_of_change_rows = [
+        ("1-001", 12.0, 10.0, 1.2),
+        ("1-002", 15.0, None, 1.0),
+        ("1-003", None, 20.0, 1.0),
+        ("1-004", None, None, 1.0),
+    ]
+
+    deduplicate_dataframe_rows = [
+        (PrimaryServiceType.care_home_only, 1672531200, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1672617600, 1.1, 2.0),
+        (PrimaryServiceType.care_home_only, 1672704000, 1.2, 2.0),
+        (PrimaryServiceType.care_home_only, 1672790400, 1.3, 2.0),
+        (PrimaryServiceType.care_home_only, 1672531200, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1672617600, 1.1, 2.0),
+        (PrimaryServiceType.non_residential, 1672617600, 10.0, 2.0),
+        (PrimaryServiceType.non_residential, 1672617600, 10.0, 2.0),
+    ]
+    expected_deduplicate_dataframe_rows = [
+        (PrimaryServiceType.care_home_only, 1672531200, 1.0),
+        (PrimaryServiceType.care_home_only, 1672617600, 1.1),
+        (PrimaryServiceType.care_home_only, 1672704000, 1.2),
+        (PrimaryServiceType.care_home_only, 1672790400, 1.3),
+        (PrimaryServiceType.non_residential, 1672617600, 10.0),
+    ]
+
+    cumulative_rate_of_change_rows = [
+        (PrimaryServiceType.care_home_only, 1672531200, 1.0),
+        (PrimaryServiceType.care_home_only, 1672617600, 1.5),
+        (PrimaryServiceType.care_home_only, 1672704000, 2.0),
+        (PrimaryServiceType.care_home_only, 1672790400, 1.5),
+        (PrimaryServiceType.non_residential, 1672531200, 1.0),
+        (PrimaryServiceType.non_residential, 1672617600, 1.2),
+        (PrimaryServiceType.non_residential, 1672704000, 1.0),
+        (PrimaryServiceType.non_residential, 1672790400, 1.5),
+    ]
+    expected_cumulative_rate_of_change_rows = [
+        (PrimaryServiceType.care_home_only, 1672531200, 1.0),
+        (PrimaryServiceType.care_home_only, 1672617600, 1.5),
+        (PrimaryServiceType.care_home_only, 1672704000, 3.0),
+        (PrimaryServiceType.care_home_only, 1672790400, 4.5),
+        (PrimaryServiceType.non_residential, 1672531200, 1.0),
+        (PrimaryServiceType.non_residential, 1672617600, 1.2),
+        (PrimaryServiceType.non_residential, 1672704000, 1.2),
+        (PrimaryServiceType.non_residential, 1672790400, 1.8),
+    ]
+
 
 @dataclass
 class ModelImputationWithExtrapolationAndInterpolationData:
