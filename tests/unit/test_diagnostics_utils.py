@@ -8,16 +8,10 @@ from jobs.diagnostics_on_known_filled_posts import (
     percentage_value_cutoff,
 )
 import utils.diagnostics_utils.diagnostics_utils as job
-from tests.test_file_schemas import (
-    DiagnosticsUtilsSchemas as Schemas,
-)
-from tests.test_file_data import (
-    DiagnosticsUtilsData as Data,
-)
+from tests.test_file_schemas import DiagnosticsUtilsSchemas as Schemas
+from tests.test_file_data import DiagnosticsUtilsData as Data
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class DiagnosticsUtilsTests(unittest.TestCase):
@@ -394,165 +388,45 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
                 places=3,
             )
 
-    def test_calculate_percentage_of_residuals_within_absolute_value_of_actual_returns_expected_values(
+    def test_calculate_percentage_of_residuals_within_cutoffs_returns_expected_values(
         self,
     ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
+        returned_df = job.calculate_percentage_of_residuals_within_cutoffs(
+            self.test_df,
+            self.window,
+            IndCQC.percentage_of_residuals_within_absolute_value,
+            IndCQC.absolute_residual,
+            absolute_value_cutoff,
         )
-        returned_df = (
-            job.calculate_percentage_of_residuals_within_absolute_value_of_actual(
-                test_df,
-                self.window,
-                absolute_value_cutoff,
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_percentage_of_residuals_within_absolute_value_rows,
-            Schemas.expected_calculate_percentage_of_residuals_within_absolute_value_schema,
-        )
-        returned_data = (
-            returned_df.select(
-                IndCQC.location_id, IndCQC.percentage_of_residuals_within_absolute_value
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-        expected_data = (
-            expected_df.select(
-                IndCQC.location_id, IndCQC.percentage_of_residuals_within_absolute_value
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
         for i in range(len(returned_data)):
             self.assertAlmostEqual(
                 returned_data[i][IndCQC.percentage_of_residuals_within_absolute_value],
-                expected_data[i][IndCQC.percentage_of_residuals_within_absolute_value],
-                places=6,
-            )
-
-    def test_calculate_percentage_of_residuals_within_percentage_value_of_actual_returns_expected_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = (
-            job.calculate_percentage_of_residuals_within_percentage_value_of_actual(
-                test_df, self.window, percentage_value_cutoff
-            )
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_percentage_of_residuals_within_percentage_value_rows,
-            Schemas.expected_calculate_percentage_of_residuals_within_percentage_value_schema,
-        )
-        returned_data = (
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.percentage_of_residuals_within_percentage_value,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-        expected_data = (
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.percentage_of_residuals_within_percentage_value,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][
-                    IndCQC.percentage_of_residuals_within_percentage_value
+                self.expected_data[i][
+                    IndCQC.percentage_of_residuals_within_absolute_value
                 ],
-                expected_data[i][
-                    IndCQC.percentage_of_residuals_within_percentage_value
-                ],
-                places=6,
-            )
-
-    def test_calculate_percentage_of_standardised_residuals_within_limit_returns_expected_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
-        returned_df = job.calculate_percentage_of_standardised_residuals_within_limit(
-            test_df, self.window, standardised_value_cutoff
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_percentage_of_standardised_residuals_within_limit_rows,
-            Schemas.expected_calculate_percentage_of_standardised_residuals_within_limit_schema,
-        )
-        returned_data = (
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.percentage_of_standardised_residuals_within_limit,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-        expected_data = (
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.percentage_of_standardised_residuals_within_limit,
-            )
-            .sort(IndCQC.location_id)
-            .collect()
-        )
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][
-                    IndCQC.percentage_of_standardised_residuals_within_limit
-                ],
-                expected_data[i][
-                    IndCQC.percentage_of_standardised_residuals_within_limit
-                ],
-                places=6,
+                places=3,
             )
 
     def test_calculate_aggregate_residuals_returns_expected_columns(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
         returned_df = job.calculate_aggregate_residuals(
-            test_df,
+            self.test_df,
             self.window,
             absolute_value_cutoff,
             percentage_value_cutoff,
             standardised_value_cutoff,
         )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_aggregate_residuals_rows,
-            Schemas.expected_calculate_aggregate_residuals_schema,
-        )
-        self.assertEqual(returned_df.columns, expected_df.columns)
+        self.assertEqual(returned_df.columns, self.expected_df.columns)
 
     def test_calculate_aggregate_residuals_returns_expected_row_count(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_aggregate_residuals_rows,
-            Schemas.calculate_aggregate_residuals_schema,
-        )
         returned_df = job.calculate_aggregate_residuals(
-            test_df,
+            self.test_df,
             self.window,
             absolute_value_cutoff,
             percentage_value_cutoff,
             standardised_value_cutoff,
         )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_aggregate_residuals_rows,
-            Schemas.expected_calculate_aggregate_residuals_schema,
-        )
-        self.assertEqual(returned_df.count(), expected_df.count())
+        self.assertEqual(returned_df.count(), self.expected_df.count())
 
 
 class CreateSummaryDataframeTests(DiagnosticsUtilsTests):

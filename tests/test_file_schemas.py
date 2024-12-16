@@ -4603,42 +4603,6 @@ class DiagnosticsUtilsSchemas:
             ),
         ]
     )
-    expected_calculate_percentage_of_residuals_within_absolute_value_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_residuals_within_absolute_value,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
-    expected_calculate_percentage_of_residuals_within_percentage_value_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_residuals_within_percentage_value,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
-    expected_calculate_percentage_of_standardised_residuals_within_limit_schema = (
-        StructType(
-            [
-                *calculate_aggregate_residuals_schema,
-                StructField(
-                    IndCQC.percentage_of_standardised_residuals_within_limit,
-                    FloatType(),
-                    True,
-                ),
-            ]
-        )
-    )
 
     create_summary_dataframe_schema = StructType(
         [

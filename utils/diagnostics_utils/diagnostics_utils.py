@@ -388,14 +388,26 @@ def calculate_aggregate_residuals(
     df = aggregate_residuals(
         df, window, IndCQC.min_residual, IndCQC.residual, function="min"
     )
-    df = calculate_percentage_of_residuals_within_absolute_value_of_actual(
-        df, window, absolute_value_cutoff
+    df = calculate_percentage_of_residuals_within_cutoffs(
+        df,
+        window,
+        IndCQC.percentage_of_residuals_within_absolute_value,
+        IndCQC.absolute_residual,
+        absolute_value_cutoff,
     )
-    df = calculate_percentage_of_residuals_within_percentage_value_of_actual(
-        df, window, percentage_value_cutoff
+    df = calculate_percentage_of_residuals_within_cutoffs(
+        df,
+        window,
+        IndCQC.percentage_of_residuals_within_percentage_value,
+        IndCQC.percentage_residual,
+        percentage_value_cutoff,
     )
-    df = calculate_percentage_of_standardised_residuals_within_limit(
-        df, window, standardised_residual_cutoff
+    df = calculate_percentage_of_residuals_within_cutoffs(
+        df,
+        window,
+        IndCQC.percentage_of_standardised_residuals_within_limit,
+        IndCQC.standardised_residual,
+        standardised_residual_cutoff,
     )
     return df
 
@@ -438,80 +450,30 @@ def aggregate_residuals(
     return df
 
 
-def calculate_percentage_of_residuals_within_absolute_value_of_actual(
-    df: DataFrame, window: Window, absolute_value_cutoff: float
+def calculate_percentage_of_residuals_within_cutoffs(
+    df: DataFrame,
+    window: Window,
+    new_column_name: str,
+    residual_column_name: str,
+    cutoff_value: float,
 ) -> DataFrame:
     """
-    Adds column with the percentage of residuals which are within an absolute value of the actual value.
-
-    This function adds a columns to the dataset containing the percentage of residuals which are within an absolute value of the actual value, aggregated over the given window.
+    This function adds a column containing the percentage of residuals which are within the cutoff value, aggregated over the given window.
 
     Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and absolute_residual.
+        df (DataFrame): The input DataFrame containing the required columns.
         window (Window): A window for aggregating the residuals.
-        absolute_value_cutoff (float): The threshold absolute value.
+        new_column_name (str): The name of the new column to be added.
+        residual_column_name (str): The name of the residual column to compare with cutoff values.
+        cutoff_value (float): The threshold value.
 
     Returns:
-        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within an absolute value of the actual value aggregated over the given window.
+        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within the cutoff value over the given window.
     """
     df = df.withColumn(
-        IndCQC.percentage_of_residuals_within_absolute_value,
-        F.count(
-            F.when(df[IndCQC.absolute_residual] <= absolute_value_cutoff, True)
-        ).over(window)
-        / F.count(df[IndCQC.absolute_residual]).over(window),
-    )
-    return df
-
-
-def calculate_percentage_of_residuals_within_percentage_value_of_actual(
-    df: DataFrame, window: Window, percentage_value_cutoff: float
-) -> DataFrame:
-    """
-    Adds column with the percentage of residuals which are within a percentage value of the actual value.
-
-    This function adds a columns to the dataset containing the percentage of residuals which are within a percentage value of the actual value, aggregated over the given window.
-
-    Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and percentage_residual.
-        window (Window): A window for aggregating the residuals.
-        percentage_value_cutoff (float): The threshold percentage.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the percentage of residuals which are within a percentage value of the actual value aggregated over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.percentage_of_residuals_within_percentage_value,
-        F.count(
-            F.when(df[IndCQC.percentage_residual] <= percentage_value_cutoff, True)
-        ).over(window)
-        / F.count(df[IndCQC.percentage_residual]).over(window),
-    )
-    return df
-
-
-def calculate_percentage_of_standardised_residuals_within_limit(
-    df: DataFrame, window: Window, standardised_value_cutoff: float
-) -> DataFrame:
-    """
-    Adds column with the percentage of standardised residuals which are within a predefined limit.
-
-    This function adds a columns to the dataset containing the percentage of standardised residuals which are within a predefined limit, aggregated over the given window.
-
-    Args:
-        df (DataFrame): A dataframe with primary_service_type, estimate_source and standardised_residual.
-        window (Window): A window for aggregating the residuals.
-        standardised_value_cutoff (float): The threshold standardised value.
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the standardised percentage of residuals which are within a predefinied limit, aggregated over the given window.
-    """
-    df = df.withColumn(
-        IndCQC.percentage_of_standardised_residuals_within_limit,
-        F.count(
-            F.when(df[IndCQC.standardised_residual] <= standardised_value_cutoff, True)
-        ).over(window)
-        / F.count(df[IndCQC.standardised_residual]).over(window),
+        new_column_name,
+        F.count(F.when(F.col(residual_column_name) <= cutoff_value, True)).over(window)
+        / F.count(F.col(residual_column_name)).over(window),
     )
     return df
 
