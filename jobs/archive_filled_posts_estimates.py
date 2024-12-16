@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, date
 
 from pyspark.sql import DataFrame, functions as F
 
@@ -100,6 +100,30 @@ def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
     Returns:
         DataFarame: A dataframe with the most recent monthly estimates, plus historical annual estimates.
     """
+    list_of_import_dates = (
+        df.select(IndCQC.cqc_location_import_date)
+        .distinct()
+        .rdd.flatMap(lambda x: x)
+        .collect()
+    )
+    max_year = 2024
+    annual_estimates_month = 4
+    most_recent_annual_estimates = date(2024, 4, 1)
+    latest_annual_estimate = date(
+        max_year, annual_estimates_month, 1
+    )  # this needs calculating on each run
+    list_of_import_dates_to_archive = []
+    for import_date in list_of_import_dates:
+        if import_date >= most_recent_annual_estimates:
+            list_of_import_dates_to_archive.append(import_date)
+        if (import_date.month == annual_estimates_month) & (
+            import_date < most_recent_annual_estimates
+        ):
+            list_of_import_dates_to_archive.append(import_date)
+    print(list_of_import_dates_to_archive)
+    df = df.where(
+        F.col(IndCQC.cqc_location_import_date).isin(list_of_import_dates_to_archive)
+    )
     return df
 
 

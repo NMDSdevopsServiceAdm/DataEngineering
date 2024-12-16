@@ -8360,11 +8360,11 @@ class ArchiveFilledPostsEstimates:
 
     select_import_dates_to_archive_rows = [
         ("loc 1", date(2024, 6, 8)),
-        ("loc 1", date(2024, 5, 8)),
         ("loc 1", date(2024, 5, 1)),
         ("loc 1", date(2024, 4, 1)),
         ("loc 1", date(2024, 3, 1)),
         ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2023, 3, 1)),
     ]
     expected_select_import_dates_to_archive_rows = [
         ("loc 1", date(2024, 6, 8)),

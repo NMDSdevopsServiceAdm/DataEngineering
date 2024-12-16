@@ -79,7 +79,7 @@ class SelectImportDatesToArchiveTests(ArchiveFilledPostsEstimatesTests):
         ).collect()
         self.returned_data = (
             job.select_import_dates_to_archive(test_df)
-            .sort(F.asc(IndCQC.cqc_location_import_date))
+            .sort(F.desc(IndCQC.cqc_location_import_date))
             .collect()
         )
 
@@ -105,22 +105,18 @@ class SelectImportDatesToArchiveTests(ArchiveFilledPostsEstimatesTests):
             self.returned_data[3][IndCQC.cqc_location_import_date],
         )
 
-    def test_select_import_dates_to_archive_removes_later_monthly_estimates_for_current_year(
+    def test_select_import_dates_to_archive_removes_all_monthly_estimates_before_current_annual_estimates_years(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertNotEqual(
                 self.returned_data[i][IndCQC.cqc_location_import_date],
-                self.test_data[1][IndCQC.cqc_location_import_date],
+                self.test_data[3][IndCQC.cqc_location_import_date],
             )
-
-    def test_select_import_dates_to_archive_removes_all_monthly_estimates_for_previous_years(
-        self,
-    ):
         for i in range(len(self.returned_data)):
             self.assertNotEqual(
                 self.returned_data[i][IndCQC.cqc_location_import_date],
-                self.test_data[4][IndCQC.cqc_location_import_date],
+                self.test_data[5][IndCQC.cqc_location_import_date],
             )
 
 
