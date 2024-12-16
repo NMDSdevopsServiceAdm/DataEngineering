@@ -92,6 +92,19 @@ def main(
     print("Completed archive independent CQC filled posts")
 
 
+def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
+    """
+    Filters dataframe to only include the most recent monthly estimates, plus historical annual estimates.
+
+    Args:
+        df (DataFrame): A dataframe to archive.
+
+    Returns:
+        DataFarame: A dataframe with the most recent monthly estimates, plus historical annual estimates.
+    """
+    return df
+
+
 def create_archive_date_partition_columns(
     df: DataFrame, date_time: datetime
 ) -> DataFrame:

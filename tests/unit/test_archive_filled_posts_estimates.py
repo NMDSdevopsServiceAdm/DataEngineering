@@ -62,6 +62,23 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
         )
 
 
+class SelectImportDatesToArchiveTests(ArchiveFilledPostsEstimatesTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_select_import_dates_to_archive_filters_to_correct_dates(self):
+        test_df = self.spark.createDataFrame(
+            Data.select_import_dates_to_archive_rows,
+            Schemas.select_import_dates_to_archive_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_select_import_dates_to_archive_rows,
+            Schemas.select_import_dates_to_archive_schema,
+        )
+        returned_df = job.select_import_dates_to_archive(test_df)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
     def setUp(self) -> None:
         super().setUp()
