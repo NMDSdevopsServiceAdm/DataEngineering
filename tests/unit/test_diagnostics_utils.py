@@ -408,6 +408,29 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
                 places=3,
             )
 
+    def test_calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs_returns_expected_values(
+        self,
+    ):
+        returned_df = (
+            job.calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs(
+                self.test_df,
+                self.window,
+                absolute_value_cutoff,
+                percentage_value_cutoff,
+            )
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        for i in range(len(returned_data)):
+            self.assertAlmostEqual(
+                returned_data[i][
+                    IndCQC.percentage_of_residuals_within_absolute_or_percentage_values
+                ],
+                self.expected_data[i][
+                    IndCQC.percentage_of_residuals_within_absolute_or_percentage_values
+                ],
+                places=3,
+            )
+
     def test_calculate_aggregate_residuals_returns_expected_columns(self):
         returned_df = job.calculate_aggregate_residuals(
             self.test_df,
