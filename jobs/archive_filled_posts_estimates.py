@@ -72,9 +72,7 @@ def main(
         MONTHLY_ARCHIVE_COLUMNS,
     )
 
-    monthly_estimates_df = utils.filter_df_to_maximum_value_in_column(
-        estimate_filled_posts_df, IndCQC.cqc_location_import_date
-    )
+    monthly_estimates_df = select_import_dates_to_archive(estimate_filled_posts_df)
 
     monthly_estimates_df = create_archive_date_partition_columns(
         monthly_estimates_df, timestamp
