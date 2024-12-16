@@ -162,9 +162,6 @@ class IndCqcColumns:
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
     )
-    percentage_of_residuals_within_absolute_or_percentage_values: str = (
-        "percentage_of_residuals_within_absolute_or_percentage_values"
-    )
     percentage_of_residuals_within_percentage_value: str = (
         "percentage_of_residuals_within_percentage_value"
     )
