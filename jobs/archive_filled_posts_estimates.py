@@ -111,7 +111,7 @@ def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
     most_recent_annual_estimates = date(2024, 4, 1)
     latest_annual_estimate = date(
         max_year, annual_estimates_month, 1
-    )  # this needs calculating on each run
+    )  # this needs calculating on each run - consider both before and after year change
     list_of_import_dates_to_archive = []
     for import_date in list_of_import_dates:
         if import_date >= most_recent_annual_estimates:
