@@ -50,7 +50,6 @@ def main(
         )
     )
 
-    # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.ascwds_filled_posts_dedup_clean,
@@ -59,7 +58,6 @@ def main(
         care_home=False,
     )
 
-    # TODO - amend in line with rolling avg change
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
         IndCQC.filled_posts_per_bed_ratio,

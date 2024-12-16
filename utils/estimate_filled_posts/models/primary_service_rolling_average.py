@@ -1,28 +1,15 @@
-from dataclasses import dataclass, fields
+from dataclasses import fields
 
 from pyspark.sql import DataFrame, functions as F, Window
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+    PrimaryServiceRollingAverageColumns as TempCol,
+)
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
-
-
-@dataclass
-class TempCol:
-    """The names of the temporary columns created during the rolling average process."""
-
-    care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
-    )
-    rolling_current_period_sum: str = "rolling_current_period_sum"
-    rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
-    submission_count: str = "submission_count"
 
 
 def model_primary_service_rolling_average_and_rate_of_change(
@@ -229,9 +216,10 @@ def calculate_rolling_rate_of_change(
 
     This function sequentially calls other functions to:
     1. Add a column with previous values.
-    2. Add rolling sums over a specified number of days.
+    2. When both current and previous values exist, adds the rolling sum of both columns over a specified number of days into separate columns.
     3. Calculate the rate of change for a single period.
     4. Calculate the rolling rate of change model.
+    The rolling rate of change model values are then joined into the original DataFrame.
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
@@ -242,14 +230,42 @@ def calculate_rolling_rate_of_change(
         DataFrame: The DataFrame with the calculated rolling rate of change.
     """
     df = add_previous_value_column(df)
-    df = add_rolling_sums(df, number_of_days)
+    df = add_rolling_sum(
+        df,
+        number_of_days,
+        TempCol.column_to_average_interpolated,
+        TempCol.rolling_current_period_sum,
+    )
+    df = add_rolling_sum(
+        df,
+        number_of_days,
+        TempCol.previous_column_to_average_interpolated,
+        TempCol.rolling_previous_period_sum,
+    )
     df = calculate_single_period_rate_of_change(df)
-    df = calculate_rolling_rate_of_change_model(df, rate_of_change_model_column_name)
+    deduped_df = deduplicate_dataframe(df)
+    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
+        deduped_df, rate_of_change_model_column_name
+    )
+    df = df.join(
+        cumulative_rate_of_change_df,
+        [IndCqc.primary_service_type, IndCqc.unix_time],
+        "left",
+    )
+
     return df
 
 
-# TODO - untested
 def add_previous_value_column(df: DataFrame) -> DataFrame:
+    """
+    Adds the previous interpolated value for that location into a new column.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the data.
+
+    Returns:
+        DataFrame: The DataFrame with the previously interpolated value added.
+    """
     location_window = (
         Window.partitionBy(IndCqc.location_id)
         .orderBy(IndCqc.unix_time)
@@ -266,8 +282,25 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO - untested
-def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
+def add_rolling_sum(
+    df: DataFrame, number_of_days: int, column_to_sum: str, rolling_sum_column_name: str
+) -> DataFrame:
+    """
+    Adds a rolling sum column to a DataFrame based on a specified number of days.
+
+    Adds a rolling sum column to a DataFrame based on a specified number of days.
+    Only values where both the current and previously interpolated values are known are included in the sum.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        number_of_days (int): The number of days to include in the rolling time period.
+        column_to_sum (str): The name of the column to sum.
+        rolling_sum_column_name (str): The name of the new column to store the rolling sum.
+
+    Returns:
+        DataFrame: The DataFrame with the new rolling sum column added.
+
+    """
     both_periods_not_null = (
         F.col(TempCol.column_to_average_interpolated).isNotNull()
         & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
@@ -280,25 +313,28 @@ def add_rolling_sums(df: DataFrame, number_of_days: int) -> DataFrame:
     )
 
     df = df.withColumn(
-        TempCol.rolling_current_period_sum,
-        F.sum(
-            F.when(both_periods_not_null, F.col(TempCol.column_to_average_interpolated))
-        ).over(rolling_sum_window),
-    )
-    df = df.withColumn(
-        TempCol.rolling_previous_period_sum,
-        F.sum(
-            F.when(
-                both_periods_not_null,
-                F.col(TempCol.previous_column_to_average_interpolated),
-            )
-        ).over(rolling_sum_window),
+        rolling_sum_column_name,
+        F.sum(F.when(both_periods_not_null, F.col(column_to_sum))).over(
+            rolling_sum_window
+        ),
     )
     return df
 
 
-# TODO - untested
 def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
+    """
+    Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
+
+    The rate of change is calculated as the ratio of the rolling current period sum to the rolling previous period sum.
+    The rate of change is always null for the first period, so it is replaced with 1 (equivalent to 'no change').
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The DataFrame with the single period rate of change column added.
+
+    """
     df = df.withColumn(
         TempCol.single_period_rate_of_change,
         F.col(TempCol.rolling_current_period_sum)
@@ -308,24 +344,49 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO - untested
-def calculate_rolling_rate_of_change_model(
-    df: DataFrame, rate_of_change_model_column_name: str
-) -> DataFrame:
-    deduped_df = df.select(
+def deduplicate_dataframe(df: DataFrame) -> DataFrame:
+    """
+    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The deduplicated DataFrame.
+    """
+    df = df.select(
         IndCqc.primary_service_type,
         IndCqc.unix_time,
         TempCol.single_period_rate_of_change,
     ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
+    return df
 
+
+def calculate_cumulative_rate_of_change(
+    df: DataFrame, rate_of_change_model_column_name: str
+) -> DataFrame:
+    """
+    Calculates the cumulative rate of change for a DataFrame.
+
+    The cumulative rate of change is a multiplication of all the single rates of change up to and including that point.
+    For example, period one is 'a', period two is 'a*b', period three is 'a*b*c', etc.
+    The cumulative product is calculated by taking the exponential of the sum of the logarithms of the values.
+    This approach avoids issues in pyspark with direct multiplication of many numbers.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        rate_of_change_model_column_name (str): The name of the new column to store the cumulative rate of change.
+
+    Returns:
+        DataFrame: The DataFrame with the cumulative rate of change column added.
+    """
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
-    cumulative_product = F.exp(
+    cumulative_rate_of_change = F.exp(
         F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
     )
-    deduped_df = deduped_df.withColumn(
-        rate_of_change_model_column_name, cumulative_product
-    ).drop(TempCol.single_period_rate_of_change)
 
-    df = df.join(deduped_df, [IndCqc.primary_service_type, IndCqc.unix_time], "left")
+    df = df.withColumn(
+        rate_of_change_model_column_name, cumulative_rate_of_change
+    ).drop(TempCol.single_period_rate_of_change)
     return df

@@ -45,6 +45,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
+    PrimaryServiceRollingAverageColumns as RA_TempCol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -70,9 +71,6 @@ from utils.column_names.reconciliation_columns import (
 from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
-)
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
-    TempCol as RA_TempCol,
 )
 
 
@@ -2335,6 +2333,85 @@ class ModelPrimaryServiceRollingAverage:
     )
 
     calculate_rolling_rate_of_change_schema = calculate_rolling_average_schema
+
+    add_previous_value_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+        ]
+    )
+    expected_add_previous_value_column_schema = StructType(
+        [
+            *add_previous_value_column_schema,
+            StructField(
+                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+            ),
+        ]
+    )
+
+    add_rolling_sum_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+            StructField(
+                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+            ),
+        ]
+    )
+    expected_add_rolling_sum_schema = StructType(
+        [
+            *add_rolling_sum_schema,
+            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
+        ]
+    )
+
+    single_period_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RA_TempCol.rolling_previous_period_sum, DoubleType(), True),
+        ]
+    )
+    expected_single_period_rate_of_change_schema = StructType(
+        [
+            *single_period_rate_of_change_schema,
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+
+    deduplicate_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+            StructField("another_col", DoubleType(), True),
+        ]
+    )
+    expected_deduplicate_dataframe_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+
+    cumulative_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+    expected_cumulative_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+        ]
+    )
 
 
 @dataclass

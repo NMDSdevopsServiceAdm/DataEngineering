@@ -219,3 +219,19 @@ class IndCqcColumns:
     upper_percentile: str = "upper_percentile"
     value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
+
+
+@dataclass
+class PrimaryServiceRollingAverageColumns:
+    """The names of the temporary columns created during the rolling average process."""
+
+    care_home_status_count: str = "care_home_status_count"
+    column_to_average: str = "column_to_average"
+    column_to_average_interpolated: str = "column_to_average_interpolated"
+    previous_column_to_average_interpolated: str = (
+        "previous_column_to_average_interpolated"
+    )
+    rolling_current_period_sum: str = "rolling_current_period_sum"
+    rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    single_period_rate_of_change: str = "single_period_rate_of_change"
+    submission_count: str = "submission_count"
