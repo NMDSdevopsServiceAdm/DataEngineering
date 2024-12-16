@@ -3,6 +3,8 @@ import warnings
 from datetime import datetime
 from unittest.mock import ANY, Mock, patch
 
+from pyspark.sql import functions as F, Row
+
 
 import jobs.archive_filled_posts_estimates as job
 from tests.test_file_data import ArchiveFilledPostsEstimates as Data
@@ -10,6 +12,7 @@ from tests.test_file_schemas import ArchiveFilledPostsEstimates as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
+    IndCqcColumns as IndCQC,
 )
 
 
@@ -65,18 +68,60 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
 class SelectImportDatesToArchiveTests(ArchiveFilledPostsEstimatesTests):
     def setUp(self) -> None:
         super().setUp()
-
-    def test_select_import_dates_to_archive_filters_to_correct_dates(self):
         test_df = self.spark.createDataFrame(
             Data.select_import_dates_to_archive_rows,
             Schemas.select_import_dates_to_archive_schema,
         )
-        expected_df = self.spark.createDataFrame(
+        self.test_data = test_df.collect()
+        self.expected_data = self.spark.createDataFrame(
             Data.expected_select_import_dates_to_archive_rows,
             Schemas.select_import_dates_to_archive_schema,
+        ).collect()
+        self.returned_data = (
+            job.select_import_dates_to_archive(test_df)
+            .sort(F.asc(IndCQC.cqc_location_import_date))
+            .collect()
         )
-        returned_df = job.select_import_dates_to_archive(test_df)
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_select_import_dates_to_archive_keeps_earliest_monthly_estimates_from_current_year(
+        self,
+    ):
+        self.assertEqual(
+            self.expected_data[0][IndCQC.cqc_location_import_date],
+            self.returned_data[0][IndCQC.cqc_location_import_date],
+        )
+        self.assertEqual(
+            self.expected_data[1][IndCQC.cqc_location_import_date],
+            self.returned_data[1][IndCQC.cqc_location_import_date],
+        )
+
+    def test_select_import_dates_to_archive_keeps_annual_estimates_for_all_years(self):
+        self.assertEqual(
+            self.expected_data[2][IndCQC.cqc_location_import_date],
+            self.returned_data[2][IndCQC.cqc_location_import_date],
+        )
+        self.assertEqual(
+            self.expected_data[3][IndCQC.cqc_location_import_date],
+            self.returned_data[3][IndCQC.cqc_location_import_date],
+        )
+
+    def test_select_import_dates_to_archive_removes_later_monthly_estimates_for_current_year(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertNotEqual(
+                self.returned_data[i][IndCQC.cqc_location_import_date],
+                self.test_data[1][IndCQC.cqc_location_import_date],
+            )
+
+    def test_select_import_dates_to_archive_removes_all_monthly_estimates_for_previous_years(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertNotEqual(
+                self.returned_data[i][IndCQC.cqc_location_import_date],
+                self.test_data[4][IndCQC.cqc_location_import_date],
+            )
 
 
 class CreateArchiveDatePartitionColumnsTests(ArchiveFilledPostsEstimatesTests):
