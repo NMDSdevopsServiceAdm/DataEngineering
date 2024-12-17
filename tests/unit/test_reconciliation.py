@@ -33,12 +33,12 @@ class MainTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.reconciliation.reconciliation_utils.write_to_csv")
+    @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_run(
         self,
         read_from_parquet_patch: Mock,
-        write_to_csv_patch: Mock,
+        write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cqc_location_api_df,
@@ -53,4 +53,4 @@ class MainTests(ReconciliationTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_csv_patch.call_count, 2)
+        self.assertEqual(write_to_parquet_patch.call_count, 2)
