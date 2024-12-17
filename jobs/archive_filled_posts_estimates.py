@@ -108,7 +108,7 @@ def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
     )
     most_recent_annual_estimates = identify_date_of_most_recent_annual_estimates(df)
 
-    list_of_import_dates_to_archive = select_import_dates_to_archive(
+    list_of_import_dates_to_archive = identify_import_dates_to_archive(
         list_of_import_dates, most_recent_annual_estimates
     )
 
@@ -118,7 +118,7 @@ def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
     return df
 
 
-def select_import_dates_to_archive(
+def identify_import_dates_to_archive(
     list_of_import_dates: list, most_recent_annual_estimates: date
 ) -> list:
     """
