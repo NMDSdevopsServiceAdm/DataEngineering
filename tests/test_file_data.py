@@ -3735,6 +3735,30 @@ class MergeCoverageData:
         ("1-000000002", "2024-01-01", None,),
     ]
     # fmt: on
+    add_columns_for_locality_manager_dashboard_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1),
+        ("loc 2", date(2024, 1, 1), "cssr 1", 0),
+        ("loc 2", date(2024, 2, 1), "cssr 1", 1),
+        ("loc 3", date(2024, 1, 1), "cssr 1", 1),
+        ("loc 3", date(2024, 2, 1), "cssr 1", 0),
+        ("loc 4", date(2024, 1, 1), "cssr 1", 1),
+        ("loc 4", date(2024, 2, 1), "cssr 1", 1),
+        ("loc 4", date(2024, 1, 1), "cssr 2", 1),
+        ("loc 4", date(2024, 2, 1), "cssr 2", 1),
+    ]
+    expected_add_columns_for_locality_manager_dashboard_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, None, 0),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, 1, 0),
+        ("loc 2", date(2024, 1, 1), "cssr 1", 0, None, 1),
+        ("loc 2", date(2024, 2, 1), "cssr 1", 1, 0, 1),
+        ("loc 3", date(2024, 1, 1), "cssr 1", 1, None, -1),
+        ("loc 3", date(2024, 2, 1), "cssr 1", 0, 1, -1),
+        ("loc 4", date(2024, 1, 1), "cssr 1", 1, None, 0),
+        ("loc 4", date(2024, 2, 1), "cssr 1", 1, 1, 0),
+        ("loc 4", date(2024, 1, 1), "cssr 2", 0, None, 1),
+        ("loc 4", date(2024, 2, 1), "cssr 2", 1, 1, 1),
+    ]
 
 
 @dataclass

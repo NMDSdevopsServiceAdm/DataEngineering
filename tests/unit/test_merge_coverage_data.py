@@ -231,5 +231,24 @@ class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
+class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_columns_for_locality_manager_dashboard_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_columns_for_locality_manager_dashboard_rows,
+            Schemas.add_columns_for_locality_manager_dashboard_schema,
+        )
+
+        returned_df = job.add_columns_for_locality_manager_dashboard(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_columns_for_locality_manager_dashboard_rows,
+            Schemas.expected_add_columns_for_locality_manager_dashboard_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

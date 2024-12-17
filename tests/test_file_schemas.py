@@ -1751,6 +1751,21 @@ class MergeCoverageData:
             StructField(CQCRatings.overall_rating, StringType(), True),
         ]
     )
+    add_columns_for_locality_manager_dashboard_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(CoverageColumns.in_ascwds, StringType(), True),
+        ]
+    )
+    expected_add_columns_for_locality_manager_dashboard_schema = StructType(
+        [
+            *add_columns_for_locality_manager_dashboard_schema,
+            StructField(CoverageColumns.in_ascwds_last_month, StringType(), True),
+            StructField(CoverageColumns.coverage_monthly_change, StringType(), True),
+        ]
+    )
 
 
 @dataclass

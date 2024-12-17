@@ -142,6 +142,8 @@ def main(
         merged_coverage_df, cqc_ratings_df
     )
 
+    merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
+
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
@@ -303,6 +305,19 @@ def join_latest_cqc_rating_into_coverage_df(
         CQCRatingsColumns.current_or_historic
     )
     return merged_coverage_with_latest_rating_df
+
+
+def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
+    """
+    Adds the columns required for the locality manager dashboard.
+
+    Args:
+        df (DataFrame): A dataframe with coverage data
+
+    Returns:
+        DataFrame: The same dataframe with additional columns containing data for the locality manager dashboard
+    """
+    return df
 
 
 if __name__ == "__main__":
