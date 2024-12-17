@@ -22,7 +22,7 @@ class ReconciliationColumns:
     priority: str = "Priority"
     category: str = "Category"
     sub_category: str = "Subcategory"
-    is_requester_named: str = "Is_requester_named_user_on_account?"
+    is_requester_named: str = "Is_requester_named_user_on_account"
     security_question: str = "Correct_answer_to_security_questiom_received"
     website: str = "Website"
     item: str = "Item"
