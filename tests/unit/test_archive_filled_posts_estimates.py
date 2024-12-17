@@ -3,7 +3,7 @@ import warnings
 from datetime import datetime
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import functions as F, Row
+from pyspark.sql import functions as F
 
 
 import jobs.archive_filled_posts_estimates as job
