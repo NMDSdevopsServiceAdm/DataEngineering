@@ -362,7 +362,3 @@ def final_column_selection(df: DataFrame) -> DataFrame:
     ).sort(ReconColumn.description, ReconColumn.nmds)
 
     return df
-
-
-def write_to_csv(df: DataFrame, output_dir: str):
-    df.coalesce(1).write.mode("overwrite").option("header", "true").csv(output_dir)
