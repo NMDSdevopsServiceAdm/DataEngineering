@@ -98,7 +98,7 @@ def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe to archive.
 
     Returns:
-        DataFarame: A dataframe with the most recent monthly estimates, plus historical annual estimates.
+        DataFrame: A dataframe with the most recent monthly estimates, plus historical annual estimates.
     """
     list_of_import_dates = (
         df.select(IndCQC.cqc_location_import_date)
