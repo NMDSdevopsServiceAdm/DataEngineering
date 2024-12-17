@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -317,6 +317,28 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The same dataframe with additional columns containing data for the locality manager dashboard
     """
+    w = Window.partitionBy(CQCLClean.current_cssr).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+    agg_w = (
+        Window.partitionBy(CQCLClean.current_cssr)
+        .orderBy(CQCLClean.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+    df = df.withColumn(
+        CoverageColumns.in_ascwds_last_month,
+        F.lag(CoverageColumns.in_ascwds).over(w),
+    )
+    df = df.withColumn(
+        CoverageColumns.in_ascwds_change,
+        F.col(CoverageColumns.in_ascwds) - F.col(CoverageColumns.in_ascwds_last_month),
+    )
+    df = df.withColumn(
+        CoverageColumns.coverage_monthly_change,
+        F.sum(CoverageColumns.in_ascwds_change).over(agg_w),
+    )
+    df = df.drop(CoverageColumns.in_ascwds_change)
+    df.show()
     return df
 
 

@@ -247,7 +247,28 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_add_columns_for_locality_manager_dashboard_rows,
             Schemas.expected_add_columns_for_locality_manager_dashboard_schema,
         )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        returned_df.sort(
+            CQCLClean.location_id,
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.current_cssr,
+        ).show()
+        expected_df.sort(
+            CQCLClean.location_id,
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.current_cssr,
+        ).show()
+        self.assertEqual(
+            returned_df.sort(
+                CQCLClean.location_id,
+                CQCLClean.cqc_location_import_date,
+                CQCLClean.current_cssr,
+            ).collect(),
+            expected_df.sort(
+                CQCLClean.location_id,
+                CQCLClean.cqc_location_import_date,
+                CQCLClean.current_cssr,
+            ).collect(),
+        )
 
 
 if __name__ == "__main__":
