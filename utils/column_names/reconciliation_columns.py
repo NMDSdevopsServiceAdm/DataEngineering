@@ -23,7 +23,7 @@ class ReconciliationColumns:
     category: str = "Category"
     sub_category: str = "Subcategory"
     is_requester_named: str = "Is_requester_named_user_on_account"
-    security_question: str = "Correct_answer_to_security_questiom_received"
+    security_question: str = "Correct_answer_to_security_question_received"
     website: str = "Website"
     item: str = "Item"
     phone: str = "Phone"
