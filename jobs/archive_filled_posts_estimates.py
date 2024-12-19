@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, date
 
 from pyspark.sql import DataFrame, functions as F
 
@@ -72,9 +72,7 @@ def main(
         MONTHLY_ARCHIVE_COLUMNS,
     )
 
-    monthly_estimates_df = utils.filter_df_to_maximum_value_in_column(
-        estimate_filled_posts_df, IndCQC.cqc_location_import_date
-    )
+    monthly_estimates_df = select_import_dates_to_archive(estimate_filled_posts_df)
 
     monthly_estimates_df = create_archive_date_partition_columns(
         monthly_estimates_df, timestamp
@@ -90,6 +88,85 @@ def main(
     )
 
     print("Completed archive independent CQC filled posts")
+
+
+def select_import_dates_to_archive(df: DataFrame) -> DataFrame:
+    """
+    Filters dataframe to only include the most recent monthly estimates, plus historical annual estimates.
+
+    Args:
+        df (DataFrame): A dataframe to archive.
+
+    Returns:
+        DataFrame: A dataframe with the most recent monthly estimates, plus historical annual estimates.
+    """
+    list_of_import_dates = (
+        df.select(IndCQC.cqc_location_import_date)
+        .distinct()
+        .rdd.flatMap(lambda x: x)
+        .collect()
+    )
+    most_recent_annual_estimates = identify_date_of_most_recent_annual_estimates(df)
+
+    list_of_import_dates_to_archive = identify_import_dates_to_archive(
+        list_of_import_dates, most_recent_annual_estimates
+    )
+
+    df = df.where(
+        F.col(IndCQC.cqc_location_import_date).isin(list_of_import_dates_to_archive)
+    )
+    return df
+
+
+def identify_import_dates_to_archive(
+    list_of_import_dates: list, most_recent_annual_estimates: date
+) -> list:
+    """
+    Selects which import dates should be archived from a list of all import dates in the dataset.
+
+    Args:
+        list_of_import_dates (list): A list of import dates.
+        most_recent_annual_estimates (date): The most recent annual estimates date in the dataframe.
+
+    Returns:
+        list: A list of import dates on which to filter the dataset.
+    """
+    list_of_import_dates_to_archive = []
+    for import_date in list_of_import_dates:
+        if import_date >= most_recent_annual_estimates:
+            list_of_import_dates_to_archive.append(import_date)
+        if (import_date.month == most_recent_annual_estimates.month) & (
+            import_date < most_recent_annual_estimates
+        ):
+            list_of_import_dates_to_archive.append(import_date)
+    return list_of_import_dates_to_archive
+
+
+def identify_date_of_most_recent_annual_estimates(df: DataFrame) -> date:
+    """
+    Identifies the most recent annual estimates date in the dataframe.
+
+    Args:
+        df (DataFrame): A dataframe to archive.
+
+    Returns:
+        date: The most recent annual estimates date in the dataframe.
+    """
+    most_recent_import_date = df.agg(F.max(IndCQC.cqc_location_import_date)).collect()[
+        0
+    ][0]
+    march = 3
+    april = 4
+    first_of_month = 1
+
+    if most_recent_import_date.month <= march:
+        previous_year = most_recent_import_date.year - 1
+        most_recent_annual_estimates = date(previous_year, april, first_of_month)
+    else:
+        most_recent_annual_estimates = date(
+            most_recent_import_date.year, april, first_of_month
+        )
+    return most_recent_annual_estimates
 
 
 def create_archive_date_partition_columns(

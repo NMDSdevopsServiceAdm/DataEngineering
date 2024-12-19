@@ -8301,6 +8301,21 @@ class ArchiveFilledPostsEstimates:
         ("loc 1", date(2024, 1, 1)),
     ]
 
+    select_import_dates_to_archive_rows = [
+        ("loc 1", date(2024, 6, 8)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 3, 1)),
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2023, 3, 1)),
+    ]
+    expected_select_import_dates_to_archive_rows = [
+        ("loc 1", date(2024, 6, 8)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2023, 4, 1)),
+    ]
+
     create_archive_date_partitions_rows = [
         ("loc 1", date(2024, 1, 2)),
     ]
