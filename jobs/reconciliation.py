@@ -64,8 +64,17 @@ def main(
     )
     reconciliation_df.unpersist()
 
-    rUtils.write_to_csv(single_and_sub_df, reconciliation_single_and_subs_destination)
-    rUtils.write_to_csv(parents_df, reconciliation_parents_destination)
+    utils.write_to_parquet(
+        single_and_sub_df,
+        reconciliation_single_and_subs_destination,
+        mode="overwrite",
+    )
+
+    utils.write_to_parquet(
+        parents_df,
+        reconciliation_parents_destination,
+        mode="overwrite",
+    )
 
 
 if __name__ == "__main__":
