@@ -329,6 +329,22 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         Window.unboundedPreceding, Window.unboundedFollowing
     )
     # coverage monthly change - need to confirm method
+    # location id by la monthly count
+    df = df.withColumn(
+        CoverageColumns.la_monthly_locations_count,
+        F.count(F.col(CQCLClean.location_id)).over(agg_w),
+    )
+    # location id in asc by la monthly count
+    df = df.withColumn(
+        CoverageColumns.la_monthly_locations_in_ascwds_count,
+        F.sum(F.col(CoverageColumns.in_ascwds)).over(agg_w),
+    )
+    # la coverage monthly
+    df = df.withColumn(
+        CoverageColumns.la_monthly_coverage,
+        F.col(CoverageColumns.la_monthly_locations_in_ascwds_count)
+        / F.col(CoverageColumns.la_monthly_locations_count),
+    )
 
     # location monthly change
     df = df.withColumn(
@@ -362,7 +378,11 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         CoverageColumns.new_registrations_ytd,
         F.sum(CoverageColumns.new_registration).over(ytd_w),
     )
-    df = df.drop(CoverageColumns.in_ascwds_change)
+    df = df.drop(
+        CoverageColumns.in_ascwds_change,
+        CoverageColumns.la_monthly_locations_count,
+        CoverageColumns.la_monthly_locations_in_ascwds_count,
+    )  # can also drop columns not used for LM engagement once results confirmed
     df.show()
     return df
 
