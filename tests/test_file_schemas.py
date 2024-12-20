@@ -1756,14 +1756,18 @@ class MergeCoverageData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(CoverageColumns.in_ascwds, StringType(), True),
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
         ]
     )
     expected_add_columns_for_locality_manager_dashboard_schema = StructType(
         [
             *add_columns_for_locality_manager_dashboard_schema,
-            StructField(CoverageColumns.in_ascwds_last_month, StringType(), True),
-            StructField(CoverageColumns.coverage_monthly_change, FloatType(), True),
+            StructField(CoverageColumns.in_ascwds_last_month, IntegerType(), True),
+            StructField(CoverageColumns.locations_monthly_change, IntegerType(), True),
+            StructField(CoverageColumns.new_registration, IntegerType(), True),
+            StructField(CoverageColumns.new_registrations_monthly, IntegerType(), True),
+            StructField(CoverageColumns.new_registrations_ytd, IntegerType(), True),
         ]
     )
 

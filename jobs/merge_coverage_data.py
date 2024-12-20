@@ -321,10 +321,16 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         CQCLClean.cqc_location_import_date
     )
     agg_w = (
-        Window.partitionBy(CQCLClean.current_cssr)
+        Window.partitionBy(CQCLClean.current_cssr, CQCLClean.cqc_location_import_date)
         .orderBy(CQCLClean.cqc_location_import_date)
         .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     )
+    ytd_w = Window.partitionBy(CQCLClean.current_cssr, Keys.year).rowsBetween(
+        Window.unboundedPreceding, Window.unboundedFollowing
+    )
+    # coverage monthly change - need to confirm method
+
+    # location monthly change
     df = df.withColumn(
         CoverageColumns.in_ascwds_last_month,
         F.lag(CoverageColumns.in_ascwds).over(w),
@@ -334,8 +340,27 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         F.col(CoverageColumns.in_ascwds) - F.col(CoverageColumns.in_ascwds_last_month),
     )
     df = df.withColumn(
-        CoverageColumns.coverage_monthly_change,
+        CoverageColumns.locations_monthly_change,
         F.sum(CoverageColumns.in_ascwds_change).over(agg_w),
+    )
+    # new_registrations_monthly
+    df = df.withColumn(
+        CoverageColumns.new_registration,
+        F.when(
+            (
+                (F.col(CoverageColumns.in_ascwds) == 1)
+                & (F.col(CoverageColumns.in_ascwds_last_month) == 0)
+            ),
+            F.lit(1),
+        ).otherwise(F.lit(0)),
+    )
+    df = df.withColumn(
+        CoverageColumns.new_registrations_monthly,
+        F.sum(CoverageColumns.new_registration).over(agg_w),
+    )
+    df = df.withColumn(
+        CoverageColumns.new_registrations_ytd,
+        F.sum(CoverageColumns.new_registration).over(ytd_w),
     )
     df = df.drop(CoverageColumns.in_ascwds_change)
     df.show()
