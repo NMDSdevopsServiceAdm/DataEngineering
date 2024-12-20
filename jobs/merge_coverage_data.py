@@ -317,7 +317,7 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The same dataframe with additional columns containing data for the locality manager dashboard
     """
-    w = Window.partitionBy(CQCLClean.current_cssr).orderBy(
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
     agg_w = (
