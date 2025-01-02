@@ -43,7 +43,6 @@ class AscwdsWorkerValueLabelsMainjrid:
         "38": MainJobRoleLabels.nursing_assistant,
         "39": MainJobRoleLabels.assessment_officer,
         "40": MainJobRoleLabels.care_coordinator,
-        "41": MainJobRoleLabels.care_navigator,
         "42": MainJobRoleLabels.childrens_roles,
         "43": MainJobRoleLabels.deputy_manager,
         "44": MainJobRoleLabels.learning_and_development_lead,
