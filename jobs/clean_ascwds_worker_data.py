@@ -71,7 +71,19 @@ def main(
     )
 
 
-def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
+def remove_workers_without_workplaces(
+    worker_df: DataFrame, workplace_df: DataFrame
+) -> DataFrame:
+    """
+    Removes worker records that do not have a corresponding workplace record.
+
+    Args:
+        worker_df (DataFrame): The DataFrame containing the worker records.
+        workplace_df (DataFrame): The DataFrame containing the workplace records.
+
+    Returns:
+        DataFrame: The DataFrame with only the worker records that have a corresponding workplace record.
+    """
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )
