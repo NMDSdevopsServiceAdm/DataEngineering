@@ -7,8 +7,10 @@ import jobs.clean_ascwds_worker_data as job
 from utils.utils import get_spark
 from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
 from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
     PartitionKeys,
 )
 
@@ -82,13 +84,109 @@ class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
             ASCWDSWorkerSchemas.worker_schema,
         )
 
-        expected_rows = expected_df.orderBy(AWK.location_id).collect()
+        expected_rows = expected_df.collect()
         returned_rows = (
-            returned_df.select(*expected_df.columns).orderBy(AWK.location_id).collect()
+            returned_df.select(*expected_df.columns)
+            .orderBy(AWKClean.location_id)
+            .collect()
         )
 
         self.assertCountEqual(returned_df.columns, self.test_ascwds_worker_df.columns)
         self.assertEqual(expected_rows, returned_rows)
+
+
+class CreateCleanMainJobRoleColumnTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_main_job_role_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.create_clean_main_job_role_column_rows,
+            ASCWDSWorkerSchemas.create_clean_main_job_role_column_schema,
+        )
+        returned_df = job.create_clean_main_job_role_column(test_main_job_role_df)
+
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_create_clean_main_job_role_column_rows,
+            ASCWDSWorkerSchemas.expected_create_clean_main_job_role_column_schema,
+        )
+        self.returned_data = returned_df.orderBy(
+            AWKClean.worker_id, AWKClean.ascwds_worker_import_date
+        ).collect()
+        self.expected_data = expected_df.collect()
+
+    def test_create_clean_main_job_role_column_returns_expected_main_job_role_clean_values(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][AWKClean.main_job_role_clean],
+                self.expected_data[i][AWKClean.main_job_role_clean],
+                f"Returned value in row {i} does not match expected",
+            )
+
+    def test_create_clean_main_job_role_column_returns_expected_main_job_role_clean_labels(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][AWKClean.main_job_role_clean_labelled],
+                self.expected_data[i][AWKClean.main_job_role_clean_labelled],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
+class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df_with_care_navigator = self.spark.createDataFrame(
+            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows,
+            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+        )
+        returned_df_with_care_navigator = (
+            job.replace_care_navigator_with_care_coordinator(
+                test_df_with_care_navigator
+            )
+        )
+        expected_df_with_care_navigator = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows,
+            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+        )
+        self.returned_data = returned_df_with_care_navigator.collect()
+        self.expected_data = expected_df_with_care_navigator.collect()
+
+    def test_care_navigator_is_replaced_with_care_coordinator_in_main_job_role_clean_column(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[0][AWKClean.main_job_role_clean],
+            self.expected_data[0][AWKClean.main_job_role_clean],
+        )
+
+    def test_replace_care_navigator_with_care_coordinator_doesnt_replace_the_value_in_other_columns_in_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_data[0][AWKClean.worker_id],
+            self.expected_data[0][AWKClean.worker_id],
+        )
+
+    def test_replace_care_navigator_with_care_coordinator_doesnt_change_data_when_care_navigator_value_not_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows,
+            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+        )
+        returned_df = job.replace_care_navigator_with_care_coordinator(test_df)
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows,
+            ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
+        )
+        returned_data = returned_df.sort(AWKClean.worker_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":
