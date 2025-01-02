@@ -1,4 +1,5 @@
 import sys
+import pickle
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -87,10 +88,29 @@ def remove_workers_without_workplaces(
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )
+    dataset_size = get_dataset_size(workplace_df)
+    print(f"Dataset size: {dataset_size} bytes")
 
     return worker_df.join(
         workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
+
+
+def get_dataset_size(df: DataFrame) -> int:
+    """
+    Calculates the size of a DataFrame in bytes.
+
+    Args:
+        df (DataFrame): The DataFrame for which to calculate the size.
+
+    Returns:
+        int: The size of the DataFrame in bytes.
+    """
+
+    def get_partition_size(partition):
+        return sum(len(pickle.dumps(row)) for row in partition)
+
+    return df.rdd.mapPartitions(lambda partition: [get_partition_size(partition)]).sum()
 
 
 def clean_main_job_role(df: DataFrame) -> DataFrame:
