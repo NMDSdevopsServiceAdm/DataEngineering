@@ -215,6 +215,7 @@ class MainJobRoleID(ColumnValues):
     nursing_assistant: str = "38"
     assessment_officer: str = "39"
     care_coordinator: str = "40"
+    care_navigator: str = "41"
     childrens_roles: str = "42"
     deputy_manager: str = "43"
     learning_and_development_lead: str = "44"

@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -103,6 +103,7 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The DataFrame with the cleaned main job role column .
     """
+    df = df.withColumn(AWKClean.main_job_role_clean, F.col(AWKClean.main_job_role_id))
     df = cUtils.apply_categorical_labels(
         df,
         ascwds_worker_labels_dict,
