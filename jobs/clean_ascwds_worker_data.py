@@ -51,7 +51,7 @@ def main(
         ascwds_worker_df, ascwds_workplace_cleaned_df
     )
 
-    ascwds_worker_df = clean_main_job_role(ascwds_worker_df)
+    ascwds_worker_df = create_clean_main_job_role_column(ascwds_worker_df)
 
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
@@ -93,9 +93,9 @@ def remove_workers_without_workplaces(
     )
 
 
-def clean_main_job_role(df: DataFrame) -> DataFrame:
+def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     """
-    Contains the steps to clean the main job role column and and the categorical labels as a new column.
+    Contains the steps to create the clean the main job role column and and the categorical labels as a new column.
 
     Args:
         df (DataFrame): The DataFrame containing the original main job role column.
