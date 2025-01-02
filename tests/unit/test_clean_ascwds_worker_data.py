@@ -72,7 +72,8 @@ class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
         )
 
         expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_worker_rows, ASCWDSWorkerSchemas.worker_schema
+            ASCWDSWorkerData.expected_remove_workers_without_workplaces_rows,
+            ASCWDSWorkerSchemas.worker_schema,
         )
 
         expected_rows = expected_df.orderBy(AWK.location_id).collect()
