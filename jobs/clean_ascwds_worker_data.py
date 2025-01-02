@@ -1,7 +1,6 @@
 import sys
-import pickle
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -52,7 +51,12 @@ def main(
         ascwds_worker_df, ascwds_workplace_cleaned_df
     )
 
-    ascwds_worker_df = clean_main_job_role(ascwds_worker_df)
+    ascwds_worker_df = cUtils.apply_categorical_labels(
+        ascwds_worker_df,
+        ascwds_worker_labels_dict,
+        ascwds_worker_labels_dict.keys(),
+        add_as_new_column=True,
+    )
 
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
@@ -88,48 +92,10 @@ def remove_workers_without_workplaces(
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )
-    dataset_size = get_dataset_size(workplace_df)
-    print(f"Dataset size: {dataset_size} bytes")
 
     return worker_df.join(
         workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
-
-
-def get_dataset_size(df: DataFrame) -> int:
-    """
-    Calculates the size of a DataFrame in bytes.
-
-    Args:
-        df (DataFrame): The DataFrame for which to calculate the size.
-
-    Returns:
-        int: The size of the DataFrame in bytes.
-    """
-
-    def get_partition_size(partition):
-        return sum(len(pickle.dumps(row)) for row in partition)
-
-    return df.rdd.mapPartitions(lambda partition: [get_partition_size(partition)]).sum()
-
-
-def clean_main_job_role(df: DataFrame) -> DataFrame:
-    """
-    Contains the steps to clean the main job role column and and the categorical labels as a new column.
-
-    Args:
-        df (DataFrame): The DataFrame containing the original main job role column.
-
-    Returns:
-        DataFrame: The DataFrame with the cleaned main job role column .
-    """
-    df = cUtils.apply_categorical_labels(
-        df,
-        ascwds_worker_labels_dict,
-        ascwds_worker_labels_dict.keys(),
-        add_as_new_column=True,
-    )
-    return df
 
 
 if __name__ == "__main__":
