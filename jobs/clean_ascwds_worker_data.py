@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame
 
 from utils import utils
 import utils.cleaning_utils as cUtils

@@ -4,14 +4,13 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 
 import jobs.clean_ascwds_worker_data as job
-
+from utils.utils import get_spark
 from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
 from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
     PartitionKeys,
 )
-from utils.utils import get_spark
 
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
