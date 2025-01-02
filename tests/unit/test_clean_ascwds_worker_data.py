@@ -34,6 +34,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             ASCWDSWorkplaceData.workplace_rows, ASCWDSWorkplaceSchemas.workplace_schema
         )
 
+
+class MainTests(IngestASCWDSWorkerDatasetTests):
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
@@ -56,6 +58,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+
+class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
     def test_remove_invalid_worker_records_returns_df(self):
         returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
