@@ -54,7 +54,7 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
 ):
     """
-    Creates job role estimates
+    Creates estimates of filled posts split by main job role.
 
     Args:
         estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
