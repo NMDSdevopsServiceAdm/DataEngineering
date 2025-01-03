@@ -326,57 +326,57 @@
                 }
               },
               "Next": "Start gold validation"
+            },
+            "Start gold validation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${run_gold_validation_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
               },
-              "Start gold validation": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution.sync:2",
-                "Parameters": {
-                  "StateMachineArn": "${run_gold_validation_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
-                "Next": "Run archive filled posts estimates"
+              "Next": "Run archive filled posts estimates"
+            },
+            "Run archive filled posts estimates": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${archive_filled_posts_estimates_job_name}",
+                "Arguments": {
+                  "--estimate_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+                  "--monthly_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_monthly_filled_posts/",
+                  "--annual_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
+                }
               },
-              "Run archive filled posts estimates": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${archive_filled_posts_estimates_job_name}",
-                  "Arguments": {
-                    "--estimate_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
-                    "--monthly_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_monthly_filled_posts/",
-                    "--annual_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
-                  }
-                },
-                "Next": "run ind crawler"
+              "Next": "run ind crawler"
+            },
+            "run ind crawler": {
+              "Type": "Task",
+              "Parameters": {
+                "Name": "${ind_cqc_filled_posts_crawler_name}"
               },
-              "run ind crawler": {
-                "Type": "Task",
-                "Parameters": {
-                  "Name": "${ind_cqc_filled_posts_crawler_name}"
-                },
-                "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-                "End": true
-              }
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "End": true
             }
-          },
-          {
-            "StartAt": "Trigger coverage pipeline",
-            "States": {
-              "Trigger coverage pipeline": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution",
-                "Parameters": {
-                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
-                "End": true
-              }
+          }
+        },
+        {
+          "StartAt": "Trigger coverage pipeline",
+          "States": {
+            "Trigger coverage pipeline": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${trigger_coverage_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
             }
-          },
+          }
+        },
         {
           "StartAt": "Run ons crawler",
           "States": {
