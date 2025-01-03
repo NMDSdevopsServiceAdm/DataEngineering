@@ -12,7 +12,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     AWKClean.ascwds_worker_import_date,
-    AWKClean.location_id,
+    AWKClean.establishment_id,
+    AWKClean.worker_id,
     AWKClean.main_job_role_clean_labelled,
 ]
 estimated_ind_cqc_filled_posts_columns_to_import = [

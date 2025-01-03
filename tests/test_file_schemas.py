@@ -2227,6 +2227,27 @@ class EstimateIndCQCFilledPostsSchemas:
 
 
 @dataclass
+class EstimateIndCQCFilledPostsByJobRoleSchemas:
+    estimated_ind_cqc_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+        ]
+    )
+    cleaned_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class EstimateMissingAscwdsFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
