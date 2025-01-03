@@ -187,6 +187,13 @@ def get_distinct_list(
 # old process
 def determine_worker_record_to_jobs_ratio(master_df: DataFrame) -> DataFrame:
     master_df = master_df.withColumn(
+        "location_jobs_ratio",
+        F.least(
+            F.lit(1),
+            F.col(IndCQC.estimate_filled_posts) / F.col("location_worker_records"),
+        ),
+    )
+    master_df = master_df.withColumn(
         "location_jobs_to_model",
         F.greatest(
             F.lit(0),
@@ -280,8 +287,14 @@ def calculate_job_count_breakdown_by_jobrole(master_df: DataFrame) -> DataFrame:
     # master_df.show()
 
     master_df = master_df.withColumn(
+        "ascwds_num_of_jobs_rebased",
+        F.col("ascwds_num_of_jobs") * F.col("location_jobs_ratio"),
+    )
+    # master_df.show()
+
+    master_df = master_df.withColumn(
         "estimate_job_role_count",
-        F.col("ascwds_num_of_jobs") + F.col("estimated_num_of_jobs"),
+        F.col("ascwds_num_of_jobs_rebased") + F.col("estimated_num_of_jobs"),
     ).drop("location_worker_records")
 
     return master_df
