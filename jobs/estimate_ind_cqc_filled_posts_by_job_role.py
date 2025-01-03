@@ -79,7 +79,7 @@ def main(
         grouping_field=[AWKClean.establishment_id, AWKClean.ascwds_worker_import_date],
         alias="location_worker_records",
     )
-    worker_record_count_df.show()
+    # worker_record_count_df.show()
 
     master_df = estimated_ind_cqc_filled_posts_df.join(
         worker_record_count_df,
@@ -93,17 +93,17 @@ def main(
         ),
         "left",
     ).drop(worker_record_count_df.establishmentid)
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.na.fill(value=0, subset=["location_worker_records"])
 
     master_df = get_comprehensive_list_of_job_roles_to_locations(
         cleaned_ascwds_worker_df, master_df
     )
-    master_df.show()
+    # master_df.show()
 
     master_df = determine_worker_record_to_jobs_ratio(master_df)
-    master_df.show()
+    # master_df.show()
 
     worker_record_per_location_count_df = count_grouped_by_field(
         cleaned_ascwds_worker_df,
@@ -114,7 +114,7 @@ def main(
         ],
         alias="ascwds_num_of_jobs",
     )
-    worker_record_per_location_count_df.show()
+    # worker_record_per_location_count_df.show()
 
     master_df = master_df.join(
         worker_record_per_location_count_df,
@@ -125,19 +125,19 @@ def main(
         ],
         "left",
     )
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.na.fill(value=0, subset=["ascwds_num_of_jobs"])
-    master_df.show()
+    # master_df.show()
     master_df = calculate_job_count_breakdown_by_service(master_df)
-    master_df.show()
+    # master_df.show()
 
     master_df = calculate_job_count_breakdown_by_jobrole(master_df)
-    master_df.sort(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        AWKClean.main_job_role_clean_labelled,
-    ).show(100)
+    # master_df.sort(
+    #     IndCQC.location_id,
+    #     IndCQC.cqc_location_import_date,
+    #     AWKClean.main_job_role_clean_labelled,
+    # ).show(100)
 
     utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_df,
@@ -213,7 +213,7 @@ def calculate_job_count_breakdown_by_service(master_df: DataFrame) -> DataFrame:
         )
         .agg(F.sum("ascwds_num_of_jobs").alias("ascwds_num_of_jobs_in_service"))
     )
-    job_role_breakdown_by_service.show()
+    # job_role_breakdown_by_service.show()
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "all_ascwds_jobs_in_service",
         F.sum("ascwds_num_of_jobs_in_service").over(
@@ -222,12 +222,12 @@ def calculate_job_count_breakdown_by_service(master_df: DataFrame) -> DataFrame:
             )
         ),
     )
-    job_role_breakdown_by_service.show()
+    # job_role_breakdown_by_service.show()
     job_role_breakdown_by_service = job_role_breakdown_by_service.withColumn(
         "estimated_job_role_percentage",
         F.col("ascwds_num_of_jobs_in_service") / F.col("all_ascwds_jobs_in_service"),
     ).drop("ascwds_num_of_jobs_in_service", "all_ascwds_jobs_in_service")
-    job_role_breakdown_by_service.show()
+    # job_role_breakdown_by_service.show()
 
     master_df = master_df.join(
         job_role_breakdown_by_service,
@@ -248,7 +248,7 @@ def calculate_job_count_breakdown_by_jobrole(master_df: DataFrame) -> DataFrame:
         "estimated_jobs_in_role",
         F.col(IndCQC.estimate_filled_posts) * F.col("estimated_job_role_percentage"),
     ).drop("estimated_job_role_percentage")
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.withColumn(
         "estimated_minus_ascwds",
@@ -256,13 +256,13 @@ def calculate_job_count_breakdown_by_jobrole(master_df: DataFrame) -> DataFrame:
             F.lit(0), F.col("estimated_jobs_in_role") - F.col("ascwds_num_of_jobs")
         ),
     ).drop("estimated_jobs_in_role")
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.withColumn(
         "sum_of_estimated_minus_ascwds",
         F.sum("estimated_minus_ascwds").over(Window.partitionBy(IndCQC.location_id)),
     )
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.withColumn(
         "adjusted_job_role_percentage",
@@ -271,13 +271,13 @@ def calculate_job_count_breakdown_by_jobrole(master_df: DataFrame) -> DataFrame:
             F.lit(0.0),
         ),
     ).drop("estimated_minus_ascwds", "sum_of_estimated_minus_ascwds")
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.withColumn(
         "estimated_num_of_jobs",
         F.col("location_jobs_to_model") * F.col("adjusted_job_role_percentage"),
     ).drop("location_jobs_to_model", "adjusted_job_role_percentage")
-    master_df.show()
+    # master_df.show()
 
     master_df = master_df.withColumn(
         "estimate_job_role_count",
