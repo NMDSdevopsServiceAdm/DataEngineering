@@ -391,6 +391,19 @@
           }
         },
         {
+          "StartAt": "Run ascwds crawler",
+          "States": {
+            "Run ascwds crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${ascwds_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
+            }
+          }
+        },
+        {
           "StartAt": "Run cqc crawler",
           "States": {
             "Run cqc crawler": {
