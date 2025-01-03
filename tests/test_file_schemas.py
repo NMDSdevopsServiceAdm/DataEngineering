@@ -2232,6 +2232,7 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
