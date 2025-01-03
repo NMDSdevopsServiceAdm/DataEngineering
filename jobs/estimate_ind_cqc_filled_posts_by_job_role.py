@@ -140,7 +140,7 @@ def main(
     # ).show(100)
 
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        master_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
         PartitionKeys,
