@@ -58,7 +58,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
 
-    # TODO remove or edit this test once process working
+    # TODO remove (and delete test data and schemas) or edit this test once function working
     # @patch("utils.utils.write_to_parquet")
     # @patch("utils.utils.read_from_parquet")
     # def test_expected_outputs(
