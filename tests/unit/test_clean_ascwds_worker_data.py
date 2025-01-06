@@ -4,14 +4,13 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql.dataframe import DataFrame
 
 import jobs.clean_ascwds_worker_data as job
-
+from utils.utils import get_spark
 from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
 from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
     PartitionKeys,
 )
-from utils.utils import get_spark
 
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
@@ -34,6 +33,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             ASCWDSWorkplaceData.workplace_rows, ASCWDSWorkplaceSchemas.workplace_schema
         )
 
+
+class MainTests(IngestASCWDSWorkerDatasetTests):
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
@@ -56,6 +57,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
+
+class RemoveWorkersWithoutWorkplacesTests(IngestASCWDSWorkerDatasetTests):
     def test_remove_invalid_worker_records_returns_df(self):
         returned_df = job.remove_workers_without_workplaces(
             self.test_ascwds_worker_df, self.test_ascwds_workplace_df
@@ -69,7 +72,8 @@ class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
         )
 
         expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_worker_rows, ASCWDSWorkerSchemas.worker_schema
+            ASCWDSWorkerData.expected_remove_workers_without_workplaces_rows,
+            ASCWDSWorkerSchemas.worker_schema,
         )
 
         expected_rows = expected_df.orderBy(AWK.location_id).collect()

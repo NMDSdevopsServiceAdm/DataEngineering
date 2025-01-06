@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -76,7 +76,21 @@ def main(
     )
 
 
-def remove_workers_without_workplaces(worker_df: DataFrame, workplace_df: DataFrame):
+def remove_workers_without_workplaces(
+    worker_df: DataFrame, workplace_df: DataFrame
+) -> DataFrame:
+    """
+    Removes worker records that do not have a corresponding workplace record.
+
+    Workplaces are cleaned during the workplace cleaning process, so if a workplace has been removed then the worker records for that workplace should also be removed.
+
+    Args:
+        worker_df (DataFrame): The DataFrame containing the worker records.
+        workplace_df (DataFrame): The DataFrame containing the workplace records.
+
+    Returns:
+        DataFrame: The DataFrame with only the worker records that have a corresponding workplace record.
+    """
     workplace_df = workplace_df.select(
         [AWPClean.import_date, AWPClean.establishment_id]
     )
