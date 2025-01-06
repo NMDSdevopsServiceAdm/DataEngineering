@@ -82,6 +82,8 @@ def remove_workers_without_workplaces(
     """
     Removes worker records that do not have a corresponding workplace record.
 
+    Workplaces are cleaned during the workplace cleaning process, so if a workplace has been removed then the worker records for that workplace should also be removed.
+
     Args:
         worker_df (DataFrame): The DataFrame containing the worker records.
         workplace_df (DataFrame): The DataFrame containing the workplace records.
