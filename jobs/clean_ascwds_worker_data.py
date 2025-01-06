@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -51,12 +51,7 @@ def main(
         ascwds_worker_df, ascwds_workplace_cleaned_df
     )
 
-    ascwds_worker_df = cUtils.apply_categorical_labels(
-        ascwds_worker_df,
-        ascwds_worker_labels_dict,
-        ascwds_worker_labels_dict.keys(),
-        add_as_new_column=True,
-    )
+    ascwds_worker_df = create_clean_main_job_role_column(ascwds_worker_df)
 
     ascwds_worker_df = cUtils.column_to_date(
         ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
@@ -98,6 +93,44 @@ def remove_workers_without_workplaces(
     return worker_df.join(
         workplace_df, [AWKClean.import_date, AWKClean.establishment_id], "inner"
     )
+
+
+def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
+    """
+    Contains the steps to create the clean the main job role column and and the categorical labels as a new column.
+
+    Args:
+        df (DataFrame): The DataFrame containing the original main job role column.
+
+    Returns:
+        DataFrame: The DataFrame with the cleaned main job role column .
+    """
+    df = df.withColumn(AWKClean.main_job_role_clean, F.col(AWKClean.main_job_role_id))
+
+    df = replace_care_navigator_with_care_coordinator(df)
+    df = cUtils.apply_categorical_labels(
+        df,
+        ascwds_worker_labels_dict,
+        ascwds_worker_labels_dict.keys(),
+        add_as_new_column=True,
+    )
+    return df
+
+
+def replace_care_navigator_with_care_coordinator(df: DataFrame) -> DataFrame:
+    """
+    Replaces 'Care Navigator' ("41") with 'Care Co-ordinator' ("40") in the main job role column.
+
+    In May 2024, the job role 'Care Navigator' was removed from ASC-WDS and all workers in ASC-WDS in that role at the time were moved to the 'Care Co-ordinator' role.
+    This function backdates this change to the start of the dataset for consistency.
+
+    Args:
+        df (DataFrame): The DataFrame containing the main job role column.
+
+    Returns:
+        DataFrame: The DataFrame with the replaced value.
+    """
+    return df.replace("41", "40", AWKClean.main_job_role_clean)
 
 
 if __name__ == "__main__":

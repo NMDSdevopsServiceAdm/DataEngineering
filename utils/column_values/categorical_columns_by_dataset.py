@@ -53,9 +53,9 @@ class LocationApiRawCategoricalValues:
 @dataclass
 class ASCWDSWorkerCleanedCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
-        AWKClean.main_job_role_labelled
+        AWKClean.main_job_role_clean_labelled
     )
-    main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_id)
+    main_job_role_id_column_values = MainJobRoleID(AWKClean.main_job_role_clean)
 
 
 @dataclass

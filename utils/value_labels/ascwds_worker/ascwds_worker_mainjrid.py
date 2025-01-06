@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
@@ -12,7 +12,7 @@ from utils.column_values.categorical_column_values import (
 class AscwdsWorkerValueLabelsMainjrid:
     """The possible values of the mainjrid column in ascwds worker data"""
 
-    column_name: str = AWK.main_job_role_id
+    column_name: str = AWKClean.main_job_role_clean
 
     labels_dict = {
         "-1": MainJobRoleLabels.not_known,
@@ -43,7 +43,6 @@ class AscwdsWorkerValueLabelsMainjrid:
         "38": MainJobRoleLabels.nursing_assistant,
         "39": MainJobRoleLabels.assessment_officer,
         "40": MainJobRoleLabels.care_coordinator,
-        "41": MainJobRoleLabels.care_navigator,
         "42": MainJobRoleLabels.childrens_roles,
         "43": MainJobRoleLabels.deputy_manager,
         "44": MainJobRoleLabels.learning_and_development_lead,

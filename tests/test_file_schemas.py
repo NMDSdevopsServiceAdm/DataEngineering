@@ -135,6 +135,28 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
+    create_clean_main_job_role_column_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+        ]
+    )
+    expected_create_clean_main_job_role_column_schema = StructType(
+        [
+            *create_clean_main_job_role_column_schema,
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    replace_care_navigator_with_care_coordinator_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkplaceSchemas:
@@ -3862,8 +3884,8 @@ class ValidateASCWDSWorkerCleanedData:
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
             StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-            StructField(AWKClean.main_job_role_labelled, StringType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
         ]
     )
 

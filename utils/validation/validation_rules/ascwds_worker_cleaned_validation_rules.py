@@ -15,8 +15,8 @@ class ASCWDSWorkerCleanedValidationRules:
         RuleName.complete_columns: [
             AWKClean.establishment_id,
             AWKClean.worker_id,
-            AWKClean.main_job_role_id,
-            AWKClean.main_job_role_labelled,
+            AWKClean.main_job_role_clean,
+            AWKClean.main_job_role_clean_labelled,
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.index_columns: [
@@ -24,11 +24,11 @@ class ASCWDSWorkerCleanedValidationRules:
             AWKClean.ascwds_worker_import_date,
         ],
         RuleName.categorical_values_in_columns: {
-            AWKClean.main_job_role_id: CatValues.main_job_role_id_column_values.categorical_values,
-            AWKClean.main_job_role_labelled: CatValues.main_job_role_labels_column_values.categorical_values,
+            AWKClean.main_job_role_clean: CatValues.main_job_role_id_column_values.categorical_values,
+            AWKClean.main_job_role_clean_labelled: CatValues.main_job_role_labels_column_values.categorical_values,
         },
         RuleName.distinct_values: {
-            AWKClean.main_job_role_id: CatValues.main_job_role_id_column_values.count_of_categorical_values,
-            AWKClean.main_job_role_labelled: CatValues.main_job_role_labels_column_values.count_of_categorical_values,
+            AWKClean.main_job_role_clean: CatValues.main_job_role_id_column_values.count_of_categorical_values,
+            AWKClean.main_job_role_clean_labelled: CatValues.main_job_role_labels_column_values.count_of_categorical_values,
         },
     }

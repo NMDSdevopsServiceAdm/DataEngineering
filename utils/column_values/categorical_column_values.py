@@ -170,7 +170,6 @@ class MainJobRoleLabels(ColumnValues):
     nursing_assistant: str = "Nursing Assistant"
     assessment_officer: str = "Assessment officer"
     care_coordinator: str = "Care co-ordinator"
-    care_navigator: str = "Care navigator"
     childrens_roles: str = "Any Childrens/young peoples job role"
     deputy_manager: str = "Deputy manager"
     learning_and_development_lead: str = "Learning and development lead"
