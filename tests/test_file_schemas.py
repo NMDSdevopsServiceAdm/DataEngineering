@@ -2261,7 +2261,7 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField("ascwds_num_of_jobs", IntegerType(), True),
             StructField("estimated_num_of_jobs", DoubleType(), True),
             StructField("ascwds_num_of_jobs_rebased", DoubleType(), True),
-            StructField("estimate_job_role_count", DoubleType(), True),
+            StructField("estimate_filled_posts_by_job_role", DoubleType(), True),
         ]
     )
 
