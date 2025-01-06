@@ -132,6 +132,7 @@ class ASCWDSWorkerData:
         ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
     ]
 
+    # TODO: Simplify test data once the function is fully operational
     create_clean_main_job_role_column_rows = [
         ("101", date(2024, 1, 1), "-1"),
         ("101", date(2025, 1, 1), "1"),
@@ -149,17 +150,17 @@ class ASCWDSWorkerData:
         ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
     ]
 
-    replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows = [
+    replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
         ("41", "41"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows = [
+    expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
         ("41", "40"),
     ]
-    replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows = [
+    replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
         ("25", "25"),
         ("40", "40"),
     ]
-    expected_replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows = [
+    expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
         ("25", "25"),
         ("40", "40"),
     ]

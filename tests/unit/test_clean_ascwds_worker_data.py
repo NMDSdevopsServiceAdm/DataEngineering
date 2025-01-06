@@ -140,7 +140,7 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
         super().setUp()
 
         test_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows,
+            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows,
             ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
         )
         returned_df_with_care_navigator = (
@@ -149,7 +149,7 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
             )
         )
         expected_df_with_care_navigator = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_when_care_navigator_is_present_rows,
+            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows,
             ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
         )
         self.returned_data = returned_df_with_care_navigator.collect()
@@ -175,12 +175,12 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
         self,
     ):
         test_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows,
+            ASCWDSWorkerData.replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows,
             ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
         )
         returned_df = job.replace_care_navigator_with_care_coordinator(test_df)
         expected_df = self.spark.createDataFrame(
-            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_when_care_navigator_not_present_rows,
+            ASCWDSWorkerData.expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows,
             ASCWDSWorkerSchemas.replace_care_navigator_with_care_coordinator_schema,
         )
         returned_data = returned_df.sort(AWKClean.worker_id).collect()
