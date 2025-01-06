@@ -2247,6 +2247,24 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
         ]
     )
 
+    # TODO: Temp test data to check outputs, consider removing or tidying at the end
+    expected_estimated_ind_cqc_filled_posts_by_job_role_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+            StructField("ascwds_num_of_jobs", IntegerType(), True),
+            StructField("estimated_num_of_jobs", DoubleType(), True),
+            StructField("ascwds_num_of_jobs_rebased", DoubleType(), True),
+            StructField("estimate_job_role_count", DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class EstimateMissingAscwdsFilledPostsSchemas:
