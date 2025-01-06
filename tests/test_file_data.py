@@ -4784,6 +4784,31 @@ class EstimateIndCQCFilledPostsData:
 
 
 @dataclass
+class EstimateIndCQCFilledPostsByJobRoleData:
+    estimated_ind_cqc_filled_posts_rows = [
+        ("1-001", date(2023, 1, 1), "101", date(2023, 1, 1), 3.0),
+        ("1-001", date(2024, 1, 1), "101", date(2024, 1, 1), 3.0),
+        ("1-002", date(2025, 1, 1), "101", date(2025, 1, 1), 3.0),
+        ("1-003", date(2025, 1, 1), "103", date(2025, 1, 1), 3.0),
+        ("1-004", date(2025, 1, 1), "104", date(2025, 1, 1), 3.0),
+    ]
+    cleaned_ascwds_worker_rows = [
+        ("101", date(2023, 1, 1), "1", MainJobRoleLabels.senior_management),
+        ("101", date(2023, 1, 1), "2", MainJobRoleLabels.care_worker),
+        ("101", date(2023, 1, 1), "3", MainJobRoleLabels.care_worker),
+        ("101", date(2025, 1, 1), "2", MainJobRoleLabels.care_worker),
+        ("101", date(2025, 1, 1), "3", MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), "4", MainJobRoleLabels.senior_management),
+        ("103", date(2025, 1, 1), "5", MainJobRoleLabels.registered_nurse),
+        ("103", date(2025, 1, 1), "6", MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), "7", MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), "8", MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), "9", MainJobRoleLabels.care_worker),
+        ("111", date(2025, 1, 1), "10", MainJobRoleLabels.care_worker),
+    ]
+
+
+@dataclass
 class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
