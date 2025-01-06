@@ -98,14 +98,6 @@ def main(
         master_df, estimated_ind_cqc_filled_posts_by_job_role_destination, "overwrite"
     )
 
-    # TODO remove this return
-    master_df.sort(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        AWKClean.main_job_role_clean_labelled,
-    ).show()
-    return master_df
-
 
 def count_workers_by_location(df: DataFrame) -> DataFrame:
     return (
