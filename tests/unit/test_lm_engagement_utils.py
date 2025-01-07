@@ -1,13 +1,8 @@
 import unittest
 
-from pyspark.sql import Window
-
 from tests.test_file_data import LmEngagementUtilsData as Data
 from tests.test_file_schemas import LmEngagementUtilsSchemas as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
