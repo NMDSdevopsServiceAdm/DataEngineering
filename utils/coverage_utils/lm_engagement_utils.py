@@ -56,7 +56,6 @@ def calculate_la_coverage_monthly(df: DataFrame, w: Window) -> DataFrame:
         F.col(CoverageColumns.la_monthly_locations_in_ascwds_count)
         / F.col(CoverageColumns.la_monthly_locations_count),
     )
-    df.show()
     df = df.drop(
         CoverageColumns.la_monthly_locations_count,
         CoverageColumns.la_monthly_locations_in_ascwds_count,
@@ -123,7 +122,6 @@ def calculate_new_registrations(
         CoverageColumns.new_registrations_ytd,
         F.sum(CoverageColumns.new_registration).over(ytd_w),
     )
-    df.show()
     df = df.drop(
         CoverageColumns.new_registration,
         CoverageColumns.in_ascwds_last_month,
