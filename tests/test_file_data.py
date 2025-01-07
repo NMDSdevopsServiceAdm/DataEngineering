@@ -3734,7 +3734,12 @@ class MergeCoverageData:
         ("1-000000001", "2024-01-02", "Good",),
         ("1-000000002", "2024-01-01", None,),
     ]
-    
+    # fmt: on
+
+
+@dataclass
+class LmEngagementUtilsData:
+    # fmt: off
     add_columns_for_locality_manager_dashboard_rows = [
         ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024"), # in ascwds on both dates
         ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024"),
