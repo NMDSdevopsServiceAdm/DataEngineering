@@ -18,6 +18,9 @@ class SetupForTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
+        self.w, self.agg_w, self.ytd_w = (
+            job.create_windows_for_lm_engagement_calculations()
+        )
 
 
 class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
@@ -54,15 +57,8 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.add_columns_for_locality_manager_dashboard_rows,
             Schemas.add_columns_for_locality_manager_dashboard_schema,
         )
-        w = (
-            Window.partitionBy(
-                CQCLClean.current_cssr, CQCLClean.cqc_location_import_date
-            )
-            .orderBy(CQCLClean.cqc_location_import_date)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-        )
 
-        returned_df = job.calculate_la_coverage_monthly(test_df, w)
+        returned_df = job.calculate_la_coverage_monthly(test_df, self.agg_w)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_la_coverage_monthly_rows,
@@ -86,11 +82,8 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.calculate_coverage_monthly_change_rows,
             Schemas.calculate_coverage_monthly_change_schema,
         )
-        w = Window.partitionBy(CQCLClean.location_id).orderBy(
-            CQCLClean.cqc_location_import_date
-        )
 
-        returned_df = job.calculate_coverage_monthly_change(test_df, w)
+        returned_df = job.calculate_coverage_monthly_change(test_df, self.w)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_coverage_monthly_change_rows,
@@ -115,18 +108,10 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.calculate_locations_monthly_change_rows,
             Schemas.calculate_locations_monthly_change_schema,
         )
-        w = Window.partitionBy(CQCLClean.location_id).orderBy(
-            CQCLClean.cqc_location_import_date
-        )
-        agg_w = (
-            Window.partitionBy(
-                CQCLClean.current_cssr, CQCLClean.cqc_location_import_date
-            )
-            .orderBy(CQCLClean.cqc_location_import_date)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-        )
 
-        returned_df = job.calculate_locations_monthly_change(test_df, w, agg_w)
+        returned_df = job.calculate_locations_monthly_change(
+            test_df, self.w, self.agg_w
+        )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_locations_monthly_change_rows,
@@ -151,23 +136,8 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.calculate_new_registrations_rows,
             Schemas.calculate_new_registrations_schema,
         )
-        w = Window.partitionBy(CQCLClean.location_id).orderBy(
-            CQCLClean.cqc_location_import_date
-        )
-        agg_w = (
-            Window.partitionBy(
-                CQCLClean.current_cssr, CQCLClean.cqc_location_import_date
-            )
-            .orderBy(CQCLClean.cqc_location_import_date)
-            .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-        )
-        ytd_w = (
-            Window.partitionBy(CQCLClean.current_cssr, Keys.year)
-            .orderBy(CQCLClean.cqc_location_import_date)
-            .rangeBetween(Window.unboundedPreceding, Window.currentRow)
-        )
 
-        returned_df = job.calculate_new_registrations(test_df, agg_w, ytd_w)
+        returned_df = job.calculate_new_registrations(test_df, self.agg_w, self.ytd_w)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_new_registrations_rows,

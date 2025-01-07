@@ -22,6 +22,15 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The same dataframe with additional columns containing data for the locality manager dashboard
     """
+    w, agg_w, ytd_w = create_windows_for_lm_engagement_calculations()
+    df = calculate_la_coverage_monthly(df, agg_w)
+    df = calculate_coverage_monthly_change(df, w)
+    df = calculate_locations_monthly_change(df, w, agg_w)
+    df = calculate_new_registrations(df, agg_w, ytd_w)
+    return df
+
+
+def create_windows_for_lm_engagement_calculations():
     w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
@@ -35,11 +44,7 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         .orderBy(CQCLClean.cqc_location_import_date)
         .rangeBetween(Window.unboundedPreceding, Window.currentRow)
     )
-    df = calculate_la_coverage_monthly(df, agg_w)
-    df = calculate_coverage_monthly_change(df, w)
-    df = calculate_locations_monthly_change(df, w, agg_w)
-    df = calculate_new_registrations(df, agg_w, ytd_w)
-    return df
+    return w, agg_w, ytd_w
 
 
 def calculate_la_coverage_monthly(df: DataFrame, w: Window) -> DataFrame:
