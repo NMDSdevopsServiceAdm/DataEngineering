@@ -4786,16 +4786,15 @@ class EstimateIndCQCFilledPostsData:
 @dataclass
 class EstimateIndCQCFilledPostsByJobRoleData:
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-001", date(2023, 1, 1), "101", date(2023, 1, 1), 3.0),
-        ("1-001", date(2024, 1, 1), "101", date(2024, 1, 1), 3.0),
-        ("1-002", date(2025, 1, 1), "101", date(2025, 1, 1), 3.0),
-        ("1-003", date(2025, 1, 1), "103", date(2025, 1, 1), 3.0),
-        ("1-004", date(2025, 1, 1), "104", date(2025, 1, 1), 3.0),
+        ("1-001", date(2024, 1, 1), "Service A", "101", date(2024, 1, 1), 3.0),
+        ("1-002", date(2025, 1, 1), "Service A", "101", date(2025, 1, 1), 3.0),
+        ("1-003", date(2025, 1, 1), "Service B", "103", date(2025, 1, 1), 3.0),
+        ("1-004", date(2025, 1, 1), "Service A", "104", date(2025, 1, 1), 3.0),
     ]
     cleaned_ascwds_worker_rows = [
-        ("101", date(2023, 1, 1), "1", MainJobRoleLabels.senior_management),
-        ("101", date(2023, 1, 1), "2", MainJobRoleLabels.care_worker),
-        ("101", date(2023, 1, 1), "3", MainJobRoleLabels.care_worker),
+        ("101", date(2024, 1, 1), "1", MainJobRoleLabels.senior_management),
+        ("101", date(2024, 1, 1), "2", MainJobRoleLabels.care_worker),
+        ("101", date(2024, 1, 1), "3", MainJobRoleLabels.care_worker),
         ("101", date(2025, 1, 1), "2", MainJobRoleLabels.care_worker),
         ("101", date(2025, 1, 1), "3", MainJobRoleLabels.care_worker),
         ("103", date(2025, 1, 1), "4", MainJobRoleLabels.senior_management),
@@ -4806,6 +4805,23 @@ class EstimateIndCQCFilledPostsByJobRoleData:
         ("103", date(2025, 1, 1), "9", MainJobRoleLabels.care_worker),
         ("111", date(2025, 1, 1), "10", MainJobRoleLabels.care_worker),
     ]
+    # fmt: off
+    # TODO: Temp test data to check outputs, consider removing or tidying at the end
+    expected_estimated_ind_cqc_filled_posts_by_job_role_rows = [
+        ("Service A", MainJobRoleLabels.care_worker , date(2024, 1, 1), "101", date(2024, 1, 1), "1-001", date(2024, 1, 1), 3.0, 2, 0.0, 2.0, 2.0),
+        ("Service A", MainJobRoleLabels.registered_nurse , date(2024, 1, 1), "101", date(2024, 1, 1), "1-001", date(2024, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
+        ("Service A", MainJobRoleLabels.senior_management , date(2024, 1, 1), "101", date(2024, 1, 1), "1-001", date(2024, 1, 1), 3.0, 1, 0.0, 1.0, 1.0),
+        ("Service A", MainJobRoleLabels.care_worker , date(2025, 1, 1), "101", date(2025, 1, 1), "1-002", date(2025, 1, 1), 3.0, 2, 1.0, 2.0, 3.0),
+        ("Service A", MainJobRoleLabels.registered_nurse , date(2025, 1, 1), "101", date(2025, 1, 1), "1-002", date(2025, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
+        ("Service A", MainJobRoleLabels.senior_management , date(2025, 1, 1), "101", date(2025, 1, 1), "1-002", date(2025, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
+        ("Service B", MainJobRoleLabels.care_worker , date(2025, 1, 1), "103", date(2025, 1, 1), "1-003", date(2025, 1, 1), 3.0, 4, 0.0, 2.0, 2.0),
+        ("Service B", MainJobRoleLabels.registered_nurse , date(2025, 1, 1), "103", date(2025, 1, 1), "1-003", date(2025, 1, 1), 3.0, 1, 0.0, 0.5, 0.5),
+        ("Service B", MainJobRoleLabels.senior_management , date(2025, 1, 1), "103", date(2025, 1, 1), "1-003", date(2025, 1, 1), 3.0, 1, 0.0, 0.5, 0.5),
+        ("Service A", MainJobRoleLabels.care_worker , date(2025, 1, 1), "104", None, "1-004", date(2025, 1, 1), 3.0, 0, 3.0, 0.0, 3.0),
+        ("Service A", MainJobRoleLabels.registered_nurse , date(2025, 1, 1), "104", None, "1-004", date(2025, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
+        ("Service A", MainJobRoleLabels.senior_management , date(2025, 1, 1), "104", None, "1-004", date(2025, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
+    ]
+    # fmt: on
 
 
 @dataclass
