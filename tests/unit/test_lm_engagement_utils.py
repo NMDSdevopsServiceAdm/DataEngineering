@@ -36,16 +36,6 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_add_columns_for_locality_manager_dashboard_rows,
             Schemas.expected_add_columns_for_locality_manager_dashboard_schema,
         )
-        returned_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
-        expected_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
         self.assertEqual(
             returned_df.sort(
                 CQCLClean.location_id,
@@ -78,16 +68,6 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_calculate_la_coverage_monthly_rows,
             Schemas.expected_calculate_la_coverage_monthly_schema,
         )
-        returned_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
-        expected_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
         self.assertEqual(
             returned_df.sort(
                 CQCLClean.location_id,
@@ -116,16 +96,7 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_calculate_coverage_monthly_change_rows,
             Schemas.expected_calculate_coverage_monthly_change_schema,
         )
-        returned_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
-        expected_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
+
         self.assertEqual(
             returned_df.sort(
                 CQCLClean.location_id,
@@ -161,16 +132,7 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_calculate_locations_monthly_change_rows,
             Schemas.expected_calculate_locations_monthly_change_schema,
         )
-        returned_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
-        expected_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
+
         self.assertEqual(
             returned_df.sort(
                 CQCLClean.location_id,
@@ -211,16 +173,7 @@ class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
             Data.expected_calculate_new_registrations_rows,
             Schemas.expected_calculate_new_registrations_schema,
         )
-        returned_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
-        expected_df.sort(
-            CQCLClean.location_id,
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.current_cssr,
-        ).show()
+
         self.assertEqual(
             returned_df.sort(
                 CQCLClean.location_id,
