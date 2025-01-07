@@ -1764,6 +1764,10 @@ class MergeCoverageData:
         [
             *add_columns_for_locality_manager_dashboard_schema,
             StructField(CoverageColumns.la_monthly_coverage, FloatType(), True),
+            StructField(
+                CoverageColumns.la_monthly_coverage_last_month, FloatType(), True
+            ),
+            StructField(CoverageColumns.coverage_monthly_change, FloatType(), True),
             StructField(CoverageColumns.in_ascwds_last_month, IntegerType(), True),
             StructField(CoverageColumns.locations_monthly_change, IntegerType(), True),
             StructField(CoverageColumns.new_registration, IntegerType(), True),

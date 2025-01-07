@@ -328,7 +328,7 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     ytd_w = Window.partitionBy(CQCLClean.current_cssr, Keys.year).rowsBetween(
         Window.unboundedPreceding, Window.unboundedFollowing
     )
-    # coverage monthly change - need to confirm method
+
     # location id by la monthly count
     df = df.withColumn(
         CoverageColumns.la_monthly_locations_count,
@@ -344,6 +344,19 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
         CoverageColumns.la_monthly_coverage,
         F.col(CoverageColumns.la_monthly_locations_in_ascwds_count)
         / F.col(CoverageColumns.la_monthly_locations_count),
+    )
+
+    # coverage monthly change - need to confirm method
+    # get previous la_monthly coverage
+    df = df.withColumn(
+        CoverageColumns.la_monthly_coverage_last_month,
+        F.lag(CoverageColumns.la_monthly_coverage).over(w),
+    )
+    # calculate difference
+    df = df.withColumn(
+        CoverageColumns.coverage_monthly_change,
+        F.col(CoverageColumns.la_monthly_coverage)
+        - F.col(CoverageColumns.la_monthly_coverage_last_month),
     )
 
     # location monthly change
