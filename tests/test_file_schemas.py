@@ -1755,7 +1755,6 @@ class MergeCoverageData:
 
 @dataclass
 class LmEngagementUtilsSchemas:
-
     add_columns_for_locality_manager_dashboard_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

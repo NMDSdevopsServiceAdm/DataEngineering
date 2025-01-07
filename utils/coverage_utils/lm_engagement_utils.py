@@ -30,7 +30,13 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     return df
 
 
-def create_windows_for_lm_engagement_calculations():
+def create_windows_for_lm_engagement_calculations() -> tuple:
+    """
+    Creates the windows required for the locality manager dashboard.
+
+    Returns:
+        tuple: A tuple of windows required for the locality manager dashboard.
+    """
     w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
@@ -47,14 +53,24 @@ def create_windows_for_lm_engagement_calculations():
     return w, agg_w, ytd_w
 
 
-def calculate_la_coverage_monthly(df: DataFrame, w: Window) -> DataFrame:
+def calculate_la_coverage_monthly(df: DataFrame, agg_w: Window) -> DataFrame:
+    """
+    Adds a column with the monthly coverage for the local authority.
+
+    Args:
+        df (DataFrame): A dataframe with coverage data
+        agg_w (Window): A window which aggregates the data over local authorities and import dates
+
+    Returns:
+        DataFrame: The same dataframe with the monthly coverage column added.
+    """
     df = df.withColumn(
         CoverageColumns.la_monthly_locations_count,
-        F.count(F.col(CQCLClean.location_id)).over(w),
+        F.count(F.col(CQCLClean.location_id)).over(agg_w),
     )
     df = df.withColumn(
         CoverageColumns.la_monthly_locations_in_ascwds_count,
-        F.sum(F.col(CoverageColumns.in_ascwds)).over(w),
+        F.sum(F.col(CoverageColumns.in_ascwds)).over(agg_w),
     )
     df = df.withColumn(
         CoverageColumns.la_monthly_coverage,
@@ -69,6 +85,16 @@ def calculate_la_coverage_monthly(df: DataFrame, w: Window) -> DataFrame:
 
 
 def calculate_coverage_monthly_change(df: DataFrame, w: Window) -> DataFrame:
+    """
+    Adds a column with the coverage monthly change for the local authority.
+
+    Args:
+        df (DataFrame): A dataframe with coverage data
+        w (Window): A window which groups the data by location
+
+    Returns:
+        DataFrame: The same dataframe with the coverage monthly change column added.
+    """
     df = df.withColumn(
         CoverageColumns.la_monthly_coverage_last_month,
         F.lag(CoverageColumns.la_monthly_coverage).over(w),
@@ -87,6 +113,17 @@ def calculate_coverage_monthly_change(df: DataFrame, w: Window) -> DataFrame:
 def calculate_locations_monthly_change(
     df: DataFrame, w: Window, agg_w: Window
 ) -> DataFrame:
+    """
+    Adds a column with the locations monthly change for the local authority and in ascwds last month column for the location.
+
+    Args:
+        df (DataFrame): A dataframe with coverage data
+        w (Window): A window which groups the data by location
+        agg_w (Window): A window which aggregates the data over local authorities and import dates
+
+    Returns:
+        DataFrame: The same dataframe with the locations monthly change column and in ascwds last month column added.
+    """
     df = df.withColumn(
         CoverageColumns.in_ascwds_last_month,
         F.lag(CoverageColumns.in_ascwds).over(w),
@@ -109,6 +146,21 @@ def calculate_locations_monthly_change(
 def calculate_new_registrations(
     df: DataFrame, agg_w: Window, ytd_w: Window
 ) -> DataFrame:
+    """
+    Adds columns with the monthly new registrations and the number of new registrations for the year to date for the local authority.
+
+    Adds columns with the monthly new registrations and the number of new registrations for the year to date for the local
+    authority. The in ascwds last month column is also dropped after being used for these calculations. NB: new registrations
+    do not take into account new de-registrations in their calculation.
+
+    Args:
+        df (DataFrame): A dataframe with coverage data
+        agg_w (Window): A window which aggregates the data over local authorities and import dates
+        ytd_w (Window): A window which aggregates the year to date for local authorities and years
+
+    Returns:
+        DataFrame: The same dataframe with with the monthly new registrations and the number of new registrations for the year to date columns added.
+    """
     df = df.withColumn(
         CoverageColumns.new_registration,
         F.when(

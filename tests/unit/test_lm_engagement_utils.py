@@ -10,12 +10,13 @@ import utils.coverage_utils.lm_engagement_utils as job
 
 
 class SetupForTests(unittest.TestCase):
-
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.w, self.agg_w, self.ytd_w = (
-            job.create_windows_for_lm_engagement_calculations()
-        )
+        (
+            self.w,
+            self.agg_w,
+            self.ytd_w,
+        ) = job.create_windows_for_lm_engagement_calculations()
 
 
 class AddColumnsForLocalityManagerDashboardTests(SetupForTests):
