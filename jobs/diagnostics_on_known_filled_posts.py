@@ -7,9 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.diagnostics_utils.create_charts_for_diagnostics import (
-    create_charts_for_care_home_model_diagnostics,
-)
 from utils.diagnostics_utils import diagnostics_utils as dUtils
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -73,8 +70,6 @@ def main(
         standardised_value_cutoff,
     )
     summary_df = dUtils.create_summary_diagnostics_table(filled_posts_df)
-
-    create_charts_for_care_home_model_diagnostics(filled_posts_df, charts_destination)
 
     utils.write_to_parquet(
         filled_posts_df,
