@@ -8197,69 +8197,6 @@ class ASCWDSFilteringUtilsData:
 
 
 @dataclass
-class CreateChartsForDiagnosticsData:
-    test_rows = [
-        (
-            "loc 1",
-            EstimateFilledPostsSource.care_home_model,
-            PrimaryServiceType.care_home_with_nursing,
-            10.0,
-            1.0,
-            1.0,
-            0.7,
-        ),
-        (
-            "loc 2",
-            EstimateFilledPostsSource.care_home_model,
-            PrimaryServiceType.care_home_only,
-            8.0,
-            1.0,
-            1.0,
-            0.7,
-        ),
-        (
-            "loc 3",
-            EstimateFilledPostsSource.imputed_posts_care_home_model,
-            PrimaryServiceType.care_home_only,
-            10.0,
-            5.0,
-            1.0,
-            0.7,
-        ),
-        (
-            "loc 4",
-            EstimateFilledPostsSource.imputed_posts_care_home_model,
-            PrimaryServiceType.non_residential,
-            10.0,
-            5.0,
-            1.0,
-            0.7,
-        ),
-    ]
-
-    expected_filter_to_care_home_model_rows = [
-        (
-            "loc 1",
-            EstimateFilledPostsSource.care_home_model,
-            PrimaryServiceType.care_home_with_nursing,
-            10.0,
-            1.0,
-            1.0,
-            0.7,
-        ),
-        (
-            "loc 2",
-            EstimateFilledPostsSource.care_home_model,
-            PrimaryServiceType.care_home_only,
-            8.0,
-            1.0,
-            1.0,
-            0.7,
-        ),
-    ]
-
-
-@dataclass
 class NullFilledPostsUsingInvalidMissingDataCodeData:
     null_filled_posts_using_invalid_missing_data_code_rows = [
         ("loc 1", 20.0, 20.0, AscwdsFilteringRule.populated),

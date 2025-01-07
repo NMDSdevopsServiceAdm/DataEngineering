@@ -4782,21 +4782,6 @@ class ASCWDSFilteringUtilsSchemas:
 
 
 @dataclass
-class CreateChartsForDiagnosticsSchemas:
-    test_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.estimate_source, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_value, FloatType(), True),
-            StructField(IndCQC.absolute_residual, FloatType(), True),
-            StructField(IndCQC.standardised_residual, FloatType(), True),
-            StructField(IndCQC.percentage_residual, FloatType(), True),
-        ]
-    )
-
-
-@dataclass
 class NullFilledPostsUsingInvalidMissingDataCodeSchema:
     null_filled_posts_using_invalid_missing_data_code_schema = StructType(
         [
