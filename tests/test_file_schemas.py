@@ -1764,13 +1764,48 @@ class MergeCoverageData:
         [
             *add_columns_for_locality_manager_dashboard_schema,
             StructField(CoverageColumns.la_monthly_coverage, FloatType(), True),
-            StructField(
-                CoverageColumns.la_monthly_coverage_last_month, FloatType(), True
-            ),
             StructField(CoverageColumns.coverage_monthly_change, FloatType(), True),
+            StructField(CoverageColumns.locations_monthly_change, IntegerType(), True),
+            StructField(CoverageColumns.new_registrations_monthly, IntegerType(), True),
+            StructField(CoverageColumns.new_registrations_ytd, IntegerType(), True),
+        ]
+    )
+
+    expected_calculate_la_coverage_monthly_schema = StructType(
+        [
+            *add_columns_for_locality_manager_dashboard_schema,
+            StructField(CoverageColumns.la_monthly_coverage, FloatType(), True),
+        ]
+    )
+    calculate_coverage_monthly_change_schema = (
+        expected_calculate_la_coverage_monthly_schema
+    )
+
+    expected_calculate_coverage_monthly_change_schema = StructType(
+        [
+            *expected_calculate_la_coverage_monthly_schema,
+            StructField(CoverageColumns.coverage_monthly_change, FloatType(), True),
+        ]
+    )
+
+    calculate_locations_monthly_change_schema = (
+        expected_calculate_coverage_monthly_change_schema
+    )
+    expected_calculate_locations_monthly_change_schema = StructType(
+        [
+            *expected_calculate_coverage_monthly_change_schema,
             StructField(CoverageColumns.in_ascwds_last_month, IntegerType(), True),
             StructField(CoverageColumns.locations_monthly_change, IntegerType(), True),
-            StructField(CoverageColumns.new_registration, IntegerType(), True),
+        ]
+    )
+
+    calculate_new_registrations_schema = (
+        expected_calculate_locations_monthly_change_schema
+    )
+    expected_calculate_new_registrations_schema = StructType(
+        [
+            *expected_calculate_coverage_monthly_change_schema,
+            StructField(CoverageColumns.locations_monthly_change, IntegerType(), True),
             StructField(CoverageColumns.new_registrations_monthly, IntegerType(), True),
             StructField(CoverageColumns.new_registrations_ytd, IntegerType(), True),
         ]
