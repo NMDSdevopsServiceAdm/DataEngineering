@@ -27,12 +27,6 @@ class LocationsAPIRawValidationRules:
             CQCL.location_id,
             Keys.import_date,
         ],
-        RuleName.min_values: {
-            CQCL.number_of_beds: 0,
-        },
-        RuleName.max_values: {
-            CQCL.number_of_beds: 500,
-        },
         RuleName.categorical_values_in_columns: {
             CQCL.care_home: CatValues.care_home_column_values.categorical_values,
             CQCL.registration_status: CatValues.registration_status_column_values.categorical_values,
