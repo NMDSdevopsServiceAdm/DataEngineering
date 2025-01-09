@@ -26,7 +26,7 @@ jdk-8u....-windows-x64.exe
 
 
 ### Downloading JDBC driver to connect AWS Athena to Tableau (requires IT)
-1. Install JDBC driver on your pc - version JDBC 2.x with AWS SDK. The file name is AthenaJDBC42-2.1.5.1000.
+1. Install JDBC driver on your pc - version JDBC 2.x with AWS SDK. The file name is AthenaJDBC42-2.1.5.1000.jar
 `https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html`
 
 2. Save here: `C:\Program Files\Tableau\Drivers`
