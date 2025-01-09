@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -30,12 +32,12 @@ def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
     return df
 
 
-def create_windows_for_lm_engagement_calculations() -> tuple:
+def create_windows_for_lm_engagement_calculations() -> Tuple[Window, Window, Window]:
     """
     Creates the windows required for the locality manager dashboard.
 
     Returns:
-        tuple: A tuple of windows required for the locality manager dashboard.
+        Tuple[Window, Window, Window]: A tuple of windows required for the locality manager dashboard.
     """
     w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
