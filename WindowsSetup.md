@@ -31,17 +31,17 @@ jdk-8u....-windows-x64.exe
 
 2. Save here: `C:\Program Files\Tableau\Drivers`
 
-3. Open a new Tableau document on the left-hand side and select "Amazon Athena" from the "Connect'" menu under "To a server".
+3. Open a new Tableau document. On the left-hand side, select "Amazon Athena" from the "Connect'" menu under "To a server".
 
 4. This will open a screen where you need to add credentials into the fields:
 
 Field | To be filled with
 --- | --- 
-Server: athena.eu-west-2.amazonaws.com
-Port: 443
-S3 Staging Directory: s3://skillsforcare/tableau-staging-directory/
-Access Key ID: Your specific AWS access key from the AWS credentials page. Around 20 characters long.
-Secret Access Key: Your specific AWS secret key from the AWS credentials page. Around 40 characters long.
+Server | athena.eu-west-2.amazonaws.com
+Port | 443
+S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
+Access Key ID | Your specific AWS access key from the AWS credentials page. Around 20 characters long.
+Secret Access Key | Your specific AWS secret key from the AWS credentials page. Around 40 characters long.
 
 5. Once connected select 'main-data-engineering-database' from the 'Database' dropdown in Tableau. All of the tables should now appear and are now available to analyse. Other databases can be selected.
 
