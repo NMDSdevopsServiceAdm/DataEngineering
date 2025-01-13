@@ -11,10 +11,10 @@ from pyspark.sql.types import (
     DateType,
 )
 
-import jobs.clean_ind_cqc_filled_posts as job
+import utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir as job
 
-from tests.test_file_data import CleanIndCQCData as Data
-from tests.test_file_schemas import CleanIndCQCData as Schemas
+from tests.test_file_data import BlendAscwdsPirData as Data
+from tests.test_file_schemas import BlendAscwdsPirData as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -23,79 +23,105 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
-class CleanIndFilledPostsTests(unittest.TestCase):
-    MERGE_IND_CQC_SOURCE = "input_dir"
-    CLEANED_IND_CQC_DESTINATION = "output_dir"
-    partition_keys = [
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    ]
-
+class BlendAscwdsPirTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-        self.merge_ind_cqc_test_df = self.spark.createDataFrame(
-            Data.merged_rows_for_cleaning_job,
-            Schemas.merged_schema_for_cleaning_job,
-        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class AddColumnWithAscwdsRepeatedTests(CleanIndFilledPostsTests):
+# TODO create test suite for script
+
+
+class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
-        test_rows = [
-            ("loc 1", date(2024, 1, 1), None),
-            ("loc 1", date(2024, 2, 1), 100),
-            ("loc 1", date(2024, 3, 1), None),
-            ("loc 2", date(2024, 1, 1), 50),
-            ("loc 2", date(2024, 2, 1), None),
-            ("loc 2", date(2024, 3, 1), None),
-            ("loc 3", date(2024, 1, 1), 40),
-            ("loc 3", date(2024, 2, 1), None),
-            ("loc 3", date(2024, 3, 1), 60),
-        ]
-        test_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(
-                    IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True
-                ),
-            ]
-        )
-        expected_rows = [
-            ("loc 1", date(2024, 1, 1), None, None),
-            ("loc 1", date(2024, 2, 1), 100, 100),
-            ("loc 1", date(2024, 3, 1), None, 100),
-            ("loc 2", date(2024, 1, 1), 50, 50),
-            ("loc 2", date(2024, 2, 1), None, 50),
-            ("loc 2", date(2024, 3, 1), None, 50),
-            ("loc 3", date(2024, 1, 1), 40, 40),
-            ("loc 3", date(2024, 2, 1), None, 40),
-            ("loc 3", date(2024, 3, 1), 60, 60),
-        ]
-        expected_schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.cqc_location_import_date, DateType(), True),
-                StructField(
-                    IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True
-                ),
-                StructField("ascwds_clean_repeated", IntegerType(), True),
-            ]
-        )
-        self.test_df = self.spark.createDataFrame(test_rows, test_schema)
-        self.expected_df = self.spark.createDataFrame(expected_rows, expected_schema)
-        self.returned_df = job.create_repeated_ascwds_clean_column(self.test_df)
 
-    def test_function_returns_correct_values(self):
-        self.assertEqual(
-            self.returned_df.sort(
-                IndCQC.location_id, IndCQC.cqc_location_import_date
-            ).collect(),
-            self.expected_df.sort(
-                IndCQC.location_id, IndCQC.cqc_location_import_date
-            ).collect(),
+    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_earlier_and_later_data(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows,
+            Schemas.create_repeated_ascwds_clean_column_schema,
         )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+        )
+        returned_df = job.create_repeated_ascwds_clean_column(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
+        )
+
+    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_later_data(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.create_repeated_ascwds_clean_column_when_missing_later_data_rows,
+            Schemas.create_repeated_ascwds_clean_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_repeated_ascwds_clean_column_when_missing_later_data_rows,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+        )
+        returned_df = job.create_repeated_ascwds_clean_column(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
+        )
+
+    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_middle_data(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.create_repeated_ascwds_clean_column_when_missing_middle_data_rows,
+            Schemas.create_repeated_ascwds_clean_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_repeated_ascwds_clean_column_when_missing_middle_data_rows,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+        )
+        returned_df = job.create_repeated_ascwds_clean_column(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
+        )
+
+    def test_create_repeated_ascwds_clean_column_returns_correct_values_when_missing_earlier_data(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.create_repeated_ascwds_clean_column_when_missing_earlier_data_rows,
+            Schemas.create_repeated_ascwds_clean_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_repeated_ascwds_clean_column_when_missing_earlier_data_rows,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+        )
+        returned_df = job.create_repeated_ascwds_clean_column(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
+        )
+
+    def test_create_repeated_ascwds_clean_column_separates_repetition_by_location_id(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows,
+            Schemas.create_repeated_ascwds_clean_column_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows,
+            Schemas.expected_create_repeated_ascwds_clean_column_schema,
+        )
+        returned_df = job.create_repeated_ascwds_clean_column(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
+        )
+
+
+# TODO create test suite for modelled column
+# TODO create test suite for last submission columns
+# TODO create test suite for adding pir modelled values into ascwds

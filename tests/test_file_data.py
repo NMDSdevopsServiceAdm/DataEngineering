@@ -8670,3 +8670,63 @@ class ReconciliationUtilsData:
         ("loc_1", "estab_1", "name"),
         ("loc_3", "estab_2", None),
     ]
+
+
+@dataclass
+class BlendAscwdsPirData:
+    create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
+        ("loc 1", date(2024, 1, 1), None),
+        ("loc 1", date(2024, 2, 1), 100),
+        ("loc 1", date(2024, 3, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
+        ("loc 1", date(2024, 1, 1), None, None),
+        ("loc 1", date(2024, 2, 1), 100, 100),
+        ("loc 1", date(2024, 3, 1), None, 100),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_later_data_rows = [
+        ("loc 2", date(2024, 1, 1), 50),
+        ("loc 2", date(2024, 2, 1), None),
+        ("loc 2", date(2024, 3, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_later_data_rows = [
+        ("loc 2", date(2024, 1, 1), 50, 50),
+        ("loc 2", date(2024, 2, 1), None, 50),
+        ("loc 2", date(2024, 3, 1), None, 50),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
+        ("loc 3", date(2024, 1, 1), 40),
+        ("loc 3", date(2024, 2, 1), None),
+        ("loc 3", date(2024, 3, 1), 60),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
+        ("loc 3", date(2024, 1, 1), 40, 40),
+        ("loc 3", date(2024, 2, 1), None, 40),
+        ("loc 3", date(2024, 3, 1), 60, 60),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_earlier_data_rows = [
+        ("loc 4", date(2024, 1, 1), None),
+        ("loc 4", date(2024, 2, 1), None),
+        ("loc 4", date(2024, 3, 1), 70),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_earlier_data_rows = [
+        ("loc 4", date(2024, 1, 1), None, None),
+        ("loc 4", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 3, 1), 70, 70),
+    ]
+
+    create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
+        ("loc 1", date(2024, 1, 1), 100),
+        ("loc 1", date(2024, 2, 1), None),
+        ("loc 2", date(2024, 1, 1), 50),
+        ("loc 2", date(2024, 2, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
+        ("loc 1", date(2024, 1, 1), 100, 100),
+        ("loc 1", date(2024, 2, 1), None, 100),
+        ("loc 2", date(2024, 1, 1), 50, 50),
+        ("loc 2", date(2024, 2, 1), None, 50),
+    ]

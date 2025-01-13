@@ -5242,3 +5242,20 @@ class ReconciliationUtilsSchema:
             StructField(CQCL.name, StringType(), True),
         ]
     )
+
+
+@dataclass
+class BlendAscwdsPirData:
+    create_repeated_ascwds_clean_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+        ]
+    )
+    expected_create_repeated_ascwds_clean_column_schema = StructType(
+        [
+            *create_repeated_ascwds_clean_column_schema,
+            StructField("ascwds_clean_repeated", IntegerType(), True),
+        ]
+    )
