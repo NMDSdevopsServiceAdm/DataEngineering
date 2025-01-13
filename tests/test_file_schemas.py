@@ -5256,6 +5256,8 @@ class BlendAscwdsPirData:
     expected_create_repeated_ascwds_clean_column_schema = StructType(
         [
             *create_repeated_ascwds_clean_column_schema,
-            StructField("ascwds_clean_repeated", IntegerType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
         ]
     )

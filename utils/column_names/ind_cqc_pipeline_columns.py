@@ -36,6 +36,9 @@ class IndCqcColumns:
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
+    ascwds_filled_posts_dedup_clean_repeated: str = (
+        ascwds_filled_posts_dedup_clean + "_repeated"
+    )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date

@@ -47,7 +47,7 @@ def create_repeated_ascwds_clean_column(df: DataFrame):
         .rowsBetween(Window.unboundedPreceding, Window.currentRow)
     )
     df = df.withColumn(
-        "ascwds_clean_repeated",
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated,
         F.last(IndCQC.ascwds_filled_posts_dedup_clean, ignorenulls=True).over(w),
     )
     return df
