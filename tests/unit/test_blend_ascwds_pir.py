@@ -117,7 +117,9 @@ class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
         )
         returned_df = job.create_repeated_ascwds_clean_column(test_df)
         self.assertEqual(
-            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            returned_df.sort(
+                IndCQC.location_id, IndCQC.cqc_location_import_date
+            ).collect(),
             expected_df.collect(),
         )
 
