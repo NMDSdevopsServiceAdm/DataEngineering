@@ -16,6 +16,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_fill
 from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
+from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
+    blend_pir_and_ascwds_when_ascwds_out_of_date,
+)
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -66,6 +69,7 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.people_directly_employed_dedup,
     )
+    locations_df = blend_pir_and_ascwds_when_ascwds_out_of_date(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
