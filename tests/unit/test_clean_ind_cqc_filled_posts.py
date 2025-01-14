@@ -50,6 +50,9 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch("utils.utils.write_to_parquet")
+    @patch(
+        "jobs.clean_ind_cqc_filled_posts.blend_pir_and_ascwds_when_ascwds_out_of_date"
+    )
     @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
     @patch("jobs.clean_ind_cqc_filled_posts.clean_ascwds_filled_post_outliers")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
@@ -60,6 +63,7 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_ascwds_filled_posts_mock: Mock,
         clean_ascwds_filled_post_outliers: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
+        blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -72,6 +76,7 @@ class MainTests(CleanIndFilledPostsTests):
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
         clean_ascwds_filled_post_outliers.assert_called_once()
+        blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
 
         write_to_parquet_mock.assert_called_once_with(
