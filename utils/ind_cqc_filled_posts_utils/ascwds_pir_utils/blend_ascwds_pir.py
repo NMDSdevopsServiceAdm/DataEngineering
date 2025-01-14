@@ -163,6 +163,9 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
     Returns:
         DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
     """
+    # cast ascwds clean as float
+    # write boolean
+    # when bool is true, fill asc with pir
     return df
 
 
