@@ -230,8 +230,9 @@ module "clean_ind_cqc_filled_posts_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
-    "--cleaned_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
+    "--merged_ind_cqc_source"          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
+    "--cleaned_ind_cqc_destination"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
+    "--linear_regression_model_source" = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
   }
 }
 

@@ -26,6 +26,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 class BlendAscwdsPirTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+        self.NON_RES_PIR_MODEL = (
+            "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
+        )
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
@@ -140,21 +143,27 @@ class CreatePeopleDirectlyEmployedDedupModelledColumnTests(BlendAscwdsPirTests):
             Data.create_people_directly_employed_dedup_modelled_column_rows,
             Schemas.create_people_directly_employed_dedup_modelled_column_schema,
         )
-        self.expected_df = self.spark.createDataFrame(
+        self.expected_data = self.spark.createDataFrame(
             Data.expected_create_people_directly_employed_dedup_modelled_column_rows,
             Schemas.expected_create_people_directly_employed_dedup_modelled_column_schema,
-        )
-        self.returned_df = job.create_people_directly_employed_dedup_modelled_column(
-            test_df
+        ).collect()
+        self.returned_data = (
+            job.create_people_directly_employed_dedup_modelled_column(
+                test_df, self.NON_RES_PIR_MODEL
+            )
+            .sort(IndCQC.location_id)
+            .collect()
         )
 
     def test_create_people_directly_employed_dedup_modelled_column_returns_correct_values(
         self,
     ):
-        self.assertEqual(
-            self.returned_df.sort(IndCQC.location_id).collect(),
-            self.expected_df.collect(),
-        )
+        for i in range(len(self.expected_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCQC.people_directly_employed_filled_posts],
+                self.expected_data[i][IndCQC.people_directly_employed_filled_posts],
+                places=3,
+            )
 
 
 # TODO create test suite for last submission columns

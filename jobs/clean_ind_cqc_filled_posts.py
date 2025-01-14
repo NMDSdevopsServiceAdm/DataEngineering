@@ -28,6 +28,7 @@ average_number_of_beds: str = "avg_beds"
 def main(
     merged_ind_cqc_source: str,
     cleaned_ind_cqc_destination: str,
+    linear_regression_model_source: str,
 ) -> DataFrame:
     print("Cleaning merged_ind_cqc dataset...")
 
@@ -69,7 +70,9 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.people_directly_employed_dedup,
     )
-    locations_df = blend_pir_and_ascwds_when_ascwds_out_of_date(locations_df)
+    locations_df = blend_pir_and_ascwds_when_ascwds_out_of_date(
+        locations_df, linear_regression_model_source
+    )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
@@ -267,6 +270,7 @@ if __name__ == "__main__":
     (
         merged_ind_cqc_source,
         cleaned_ind_cqc_destination,
+        linear_regression_model_source,
     ) = utils.collect_arguments(
         (
             "--merged_ind_cqc_source",
@@ -276,9 +280,14 @@ if __name__ == "__main__":
             "--cleaned_ind_cqc_destination",
             "A destination directory for outputting cleaned_ind_cqc_destination",
         ),
+        (
+            "--linear_regression_model_source",
+            "The location of the linear regression model in s3",
+        ),
     )
 
     main(
         merged_ind_cqc_source,
         cleaned_ind_cqc_destination,
+        linear_regression_model_source,
     )

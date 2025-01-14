@@ -5264,6 +5264,8 @@ class BlendAscwdsPirData:
     create_people_directly_employed_dedup_modelled_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
         ]
     )

@@ -8731,10 +8731,14 @@ class BlendAscwdsPirData:
         ("loc 2", date(2024, 2, 1), None, 50),
     ]
     create_people_directly_employed_dedup_modelled_column_rows = [
-        ("loc 1", 10),
-        ("loc 2", None),
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10),
+        ("loc 4", date(2024, 1, 1), CareHome.care_home, None),
     ]
     expected_create_people_directly_employed_dedup_modelled_column_rows = [
-        ("loc 1", 10, 18.0),
-        ("loc 2", None, None),
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 10.64384),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
+        ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
     ]

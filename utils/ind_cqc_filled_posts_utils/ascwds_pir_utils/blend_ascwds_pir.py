@@ -1,14 +1,24 @@
+from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window, functions as F
 
+
+from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.column_values.categorical_column_values import CareHome
+from utils.estimate_filled_posts.insert_predictions_into_locations import (
+    insert_predictions_into_locations,
+)
+from utils.features.helper import vectorise_dataframe
 from utils.ind_cqc_filled_posts_utils.utils import (
     get_selected_value,
 )
 
 
-def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
+def blend_pir_and_ascwds_when_ascwds_out_of_date(
+    df: DataFrame, linear_regression_model_source: str
+) -> DataFrame:
     """
     Merges people directly employed and ascwds filled posts cleaned when ascwds
     hasn't been updated recently and people directly employed has.
@@ -16,14 +26,17 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
     This function handles the individual steps for this process.
 
     Args:
-        df (DataFrame): A dataframe with cleaned ascwds data and deduplicated pir data
+        df (DataFrame): A dataframe with cleaned ascwds data and deduplicated pir data.
+        linear_regression_model_source (str): The location of the linear regression model in s3.
 
     Returns:
         DataFrame: A dataframe with people directly employed filled posts merged into ascwds values for estimatation.
     """
     df = create_repeated_ascwds_clean_column(df)
     # TODO: create pir dedup modelled column for comparison
-    df = create_people_directly_employed_dedup_modelled_column(df)
+    df = create_people_directly_employed_dedup_modelled_column(
+        df, linear_regression_model_source
+    )
     # TODO: Abstract get selected value functions into function to create last submission dates
     df = create_last_submission_columns()
     # TODO: for rows where pir is more than 2 years later than asc and gap in value is greater than +/- 100 and +/- 50% and pir filled posts is not null, add pir filled posts into ascwds clean column
@@ -57,7 +70,9 @@ def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def create_people_directly_employed_dedup_modelled_column(df: DataFrame) -> DataFrame:
+def create_people_directly_employed_dedup_modelled_column(
+    df: DataFrame, linear_regression_model_source: str
+) -> DataFrame:
     """
     Creates a column containing people directly employed deduplicated values converted to filled posts using the non-res pir model.
 
@@ -65,10 +80,30 @@ def create_people_directly_employed_dedup_modelled_column(df: DataFrame) -> Data
 
     Args:
         df (DataFrame): A dataframe with the column people directly employed deduplicated.
+        linear_regression_model_source (str): The location of the linear regression model in s3.
 
     Returns:
         DataFrame: A dataframe with an extra column containing people directly employed deduplicated values converted to filled posts.
     """
+
+    non_res_df = utils.select_rows_with_value(
+        df, IndCQC.care_home, CareHome.not_care_home
+    )
+    features_df = utils.select_rows_with_non_null_value(
+        non_res_df, IndCQC.people_directly_employed_dedup
+    )
+    vectorised_features_df = vectorise_dataframe(
+        df=features_df,
+        list_for_vectorisation=[IndCQC.people_directly_employed_dedup],
+    )
+    lr_trained_model = LinearRegressionModel.load(linear_regression_model_source)
+
+    predictions = lr_trained_model.transform(vectorised_features_df)
+    df = insert_predictions_into_locations(
+        df,
+        predictions,
+        IndCQC.people_directly_employed_filled_posts,
+    )
     return df
 
 
