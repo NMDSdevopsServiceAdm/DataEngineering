@@ -43,15 +43,11 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(
         DataFrame: A dataframe with people directly employed filled posts merged into ascwds values for estimatation.
     """
     df = create_repeated_ascwds_clean_column(df)
-    # TODO: create pir dedup modelled column for comparison
     df = create_people_directly_employed_dedup_modelled_column(
         df, linear_regression_model_source
     )
-    # TODO: Abstract get selected value functions into function to create last submission dates
     df = create_last_submission_columns()
-    # TODO: for rows where pir is more than 2 years later than asc and gap in value is greater than +/- 100 and +/- 50% and pir filled posts is not null, add pir filled posts into ascwds clean column
     df = merge_people_directly_employed_modelled_into_ascwds_clean_column(df)
-    # TODO: drop unwanted columns
     df = drop_temporary_columns(df)
     return df
 
