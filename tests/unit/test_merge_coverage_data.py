@@ -54,6 +54,7 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch("utils.cleaning_utils.reduce_dataset_to_earliest_file_per_month")
     @patch("utils.cleaning_utils.remove_duplicates_based_on_column_order")
     @patch("utils.utils.filter_df_to_maximum_value_in_column")
     @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
@@ -66,6 +67,7 @@ class MainTests(SetupForTests):
         join_ascwds_data_into_cqc_location_df: Mock,
         filter_to_maximum_value_in_column: Mock,
         remove_duplicates_based_on_column_order: Mock,
+        reduce_dataset_to_earliest_file_per_month: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
@@ -85,6 +87,7 @@ class MainTests(SetupForTests):
 
         join_ascwds_data_into_cqc_location_df.assert_called_once()
         filter_to_maximum_value_in_column.assert_called_once()
+        reduce_dataset_to_earliest_file_per_month.assert_called_once()
         self.assertEqual(remove_duplicates_based_on_column_order.call_count, 2)
 
         write_to_parquet_patch.assert_called_with(
