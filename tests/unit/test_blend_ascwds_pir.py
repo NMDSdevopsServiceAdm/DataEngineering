@@ -43,6 +43,18 @@ class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
         pass
 
 
+class ThresholdValuesTests(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_threshold_values_are_as_expected(
+        self,
+    ):
+        self.assertEqual(job.ThresholdValues.max_absolute_difference, 100)
+        self.assertEqual(job.ThresholdValues.max_percentage_difference, 0.5)
+        self.assertEqual(job.ThresholdValues.months_in_two_years, 24)
+
+
 class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()

@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window, functions as F
 from pyspark.sql.types import FloatType
@@ -15,6 +17,13 @@ from utils.features.helper import vectorise_dataframe
 from utils.ind_cqc_filled_posts_utils.utils import (
     get_selected_value,
 )
+
+
+@dataclass
+class ThresholdValues:
+    max_percentage_difference = 0.5
+    max_absolute_difference = 100
+    months_in_two_years = 24
 
 
 def blend_pir_and_ascwds_when_ascwds_out_of_date(
@@ -164,37 +173,11 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
     Returns:
         DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
     """
-    # cast ascwds clean as float
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
     )
-    # write boolean
-    """
-    use_people_directly_employed = (
-        F.months_between(
-            F.col(IndCQC.last_pir_submission), F.col(IndCQC.last_ascwds_submission)
-        )
-        > 24  # two years
-    ) & (
-        F.abs(
-            (
-                F.col(IndCQC.people_directly_employed_filled_posts)
-                - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-            )
-            > 100  # absolute threshold
-        )
-        & (
-            F.abs(
-                F.col(IndCQC.people_directly_employed_filled_posts)
-                - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-            )
-            / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-        )
-        > 0.5  # percentage threshold
-    )
-    """
-    # when bool is true, fill asc with pir
+
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
@@ -203,14 +186,14 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
                     F.col(IndCQC.last_pir_submission),
                     F.col(IndCQC.last_ascwds_submission),
                 )
-                > 24  # two years
+                > ThresholdValues.months_in_two_years
             )
             & (
                 F.abs(
                     F.col(IndCQC.people_directly_employed_filled_posts)
                     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
                 )
-                > 100  # absolute threshold
+                > ThresholdValues.max_absolute_difference
             )
             & (
                 F.abs(
@@ -218,7 +201,7 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
                     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
                 )
                 / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-                > 0.5  # percentage threshold
+                > ThresholdValues.max_percentage_difference
             ),
             F.col(IndCQC.people_directly_employed_filled_posts),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
