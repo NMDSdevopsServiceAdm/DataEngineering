@@ -134,7 +134,9 @@ class IndCqcColumns:
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
+    last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"
+    last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
     locations_at_provider_count: str = "locations_at_provider_count"
