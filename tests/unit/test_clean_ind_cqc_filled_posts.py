@@ -26,6 +26,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 class CleanIndFilledPostsTests(unittest.TestCase):
     MERGE_IND_CQC_SOURCE = "input_dir"
     CLEANED_IND_CQC_DESTINATION = "output_dir"
+    NON_RES_PIR_MODEL = (
+        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
+    )
     partition_keys = [
         Keys.year,
         Keys.month,
@@ -64,6 +67,7 @@ class MainTests(CleanIndFilledPostsTests):
         job.main(
             self.MERGE_IND_CQC_SOURCE,
             self.CLEANED_IND_CQC_DESTINATION,
+            self.NON_RES_PIR_MODEL,
         )
 
         calculate_ascwds_filled_posts_mock.assert_called_once()
