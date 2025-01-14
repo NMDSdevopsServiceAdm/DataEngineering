@@ -5277,3 +5277,18 @@ class BlendAscwdsPirData:
             ),
         ]
     )
+    create_last_submission_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+        ]
+    )
+    expected_create_last_submission_columns_schema = StructType(
+        [
+            *create_last_submission_columns_schema,
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+        ]
+    )

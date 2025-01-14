@@ -135,7 +135,6 @@ class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
         )
 
 
-# TODO create test suite for modelled column
 class CreatePeopleDirectlyEmployedDedupModelledColumnTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
@@ -170,12 +169,25 @@ class CreatePeopleDirectlyEmployedDedupModelledColumnTests(BlendAscwdsPirTests):
 class CreateLastSubmissionColumnsTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
+        test_df = self.spark.createDataFrame(
+            Data.create_last_submission_columns_rows,
+            Schemas.create_last_submission_columns_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_last_submission_columns_rows,
+            Schemas.expected_create_last_submission_columns_schema,
+        )
+        self.returned_df = job.create_last_submission_columns(test_df)
 
-    @unittest.skip("TODO")
     def test_create_last_submission_columns_returns_correct_values(
         self,
     ):
-        pass
+        self.assertEqual(
+            self.returned_df.sort(
+                IndCQC.location_id, IndCQC.cqc_location_import_date
+            ).collect(),
+            self.expected_df.collect(),
+        )
 
 
 # TODO create test suite for adding pir modelled values into ascwds

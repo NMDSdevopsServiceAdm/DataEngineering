@@ -8742,3 +8742,27 @@ class BlendAscwdsPirData:
         ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
         ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
     ]
+    create_last_submission_columns_rows = [
+        ("loc 1", date(2024, 1, 1), 10, None),
+        ("loc 1", date(2024, 2, 1), None, 20),
+        ("loc 2", date(2024, 1, 1), None, 30),
+        ("loc 2", date(2024, 2, 1), 40, None),
+        ("loc 3", date(2024, 1, 1), None, None),
+        ("loc 3", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 1, 1), 50, None),
+        ("loc 4", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 3, 1), 60, None),
+        ("loc 4", date(2024, 4, 1), None, 70),
+    ]
+    expected_create_last_submission_columns_rows = [
+        ("loc 1", date(2024, 1, 1), 10, None, date(2024, 1, 1), date(2024, 2, 1)),
+        ("loc 1", date(2024, 2, 1), None, 20, date(2024, 1, 1), date(2024, 2, 1)),
+        ("loc 2", date(2024, 1, 1), None, 30, date(2024, 2, 1), date(2024, 1, 1)),
+        ("loc 2", date(2024, 2, 1), 40, None, date(2024, 2, 1), date(2024, 1, 1)),
+        ("loc 3", date(2024, 1, 1), None, None, None, None),
+        ("loc 3", date(2024, 2, 1), None, None, None, None),
+        ("loc 4", date(2024, 1, 1), 50, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 2, 1), None, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 3, 1), 60, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 4, 1), None, 70, date(2024, 3, 1), date(2024, 4, 1)),
+    ]
