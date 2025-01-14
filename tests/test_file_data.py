@@ -8730,3 +8730,11 @@ class BlendAscwdsPirData:
         ("loc 2", date(2024, 1, 1), 50, 50),
         ("loc 2", date(2024, 2, 1), None, 50),
     ]
+    create_people_directly_employed_dedup_modelled_column_rows = [
+        ("loc 1", 10),
+        ("loc 2", None),
+    ]
+    expected_create_people_directly_employed_dedup_modelled_column_rows = [
+        ("loc 1", 10, 18.0),
+        ("loc 2", None, None),
+    ]
