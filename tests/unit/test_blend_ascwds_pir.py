@@ -29,7 +29,15 @@ class BlendAscwdsPirTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-# TODO create test suite for script
+class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+    @unittest.skip("TODO")
+    def test_blend_pir_and_ascwds_when_ascwds_out_of_date_returns_correct_values(
+        self,
+    ):
+        pass
 
 
 class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
@@ -125,5 +133,36 @@ class CreateRepeatedAscwdsCleanColumnTests(BlendAscwdsPirTests):
 
 
 # TODO create test suite for modelled column
+class ModelPIRColumn(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+    @unittest.skip("TODO")
+    def test_model_pir_column_returns_correct_values(
+        self,
+    ):
+        pass
+
+
 # TODO create test suite for last submission columns
+class CreateLastSubmissionColumnsTests(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+    @unittest.skip("TODO")
+    def test_create_last_submission_columns_returns_correct_values(
+        self,
+    ):
+        pass
+
+
 # TODO create test suite for adding pir modelled values into ascwds
+class BlendModelledPirAndAscwds(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+    @unittest.skip("TODO")
+    def test_blend_modelled_pir_and_ascwds_returns_correct_values(
+        self,
+    ):
+        pass
