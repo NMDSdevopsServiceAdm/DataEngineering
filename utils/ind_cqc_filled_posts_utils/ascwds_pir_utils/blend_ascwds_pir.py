@@ -219,4 +219,10 @@ def drop_temporary_columns(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with temporary columns removed.
     """
+    df = df.drop(
+        IndCQC.last_ascwds_submission,
+        IndCQC.last_pir_submission,
+        IndCQC.ascwds_filled_posts_dedup_clean_repeated,
+        IndCQC.people_directly_employed_filled_posts,
+    )
     return df
