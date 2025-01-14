@@ -5292,3 +5292,33 @@ class BlendAscwdsPirData:
             StructField(IndCQC.last_pir_submission, DateType(), True),
         ]
     )
+    blend_modelled_pir_ands_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+        ]
+    )
+    expected_blend_modelled_pir_ands_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+        ]
+    )
