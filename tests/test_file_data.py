@@ -8674,6 +8674,9 @@ class ReconciliationUtilsData:
 
 @dataclass
 class BlendAscwdsPirData:
+    blend_pir_and_ascwds_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 20),
+    ]
     create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
         ("loc 1", date(2024, 1, 1), None),
         ("loc 1", date(2024, 2, 1), 100),

@@ -46,7 +46,7 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(
     df = create_people_directly_employed_dedup_modelled_column(
         df, linear_regression_model_source
     )
-    df = create_last_submission_columns()
+    df = create_last_submission_columns(df)
     df = merge_people_directly_employed_modelled_into_ascwds_clean_column(df)
     df = drop_temporary_columns(df)
     return df

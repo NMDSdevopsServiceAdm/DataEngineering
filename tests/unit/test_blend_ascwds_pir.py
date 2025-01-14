@@ -1,24 +1,14 @@
 import unittest
-import warnings
-from datetime import date
 from unittest.mock import ANY, Mock, patch
+import warnings
 
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-    DateType,
-)
+from pyspark.sql import DataFrame
 
 import utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir as job
-
 from tests.test_file_data import BlendAscwdsPirData as Data
 from tests.test_file_schemas import BlendAscwdsPirData as Schemas
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
 
@@ -35,12 +25,52 @@ class BlendAscwdsPirTests(unittest.TestCase):
 class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.blend_pir_and_ascwds_rows,
+            Schemas.blend_pir_and_ascwds_schema,
+        )
 
-    @unittest.skip("TODO")
-    def test_blend_pir_and_ascwds_when_ascwds_out_of_date_returns_correct_values(
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.drop_temporary_columns"
+    )
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.merge_people_directly_employed_modelled_into_ascwds_clean_column"
+    )
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_last_submission_columns"
+    )
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_people_directly_employed_dedup_modelled_column"
+    )
+    @patch(
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_repeated_ascwds_clean_column"
+    )
+    def test_blend_pir_and_ascwds_when_ascwds_out_of_date_calls_correct_functions(
+        self,
+        create_repeated_ascwds_clean_column_mock: Mock,
+        create_people_directly_employed_dedup_modelled_column_mock: Mock,
+        create_last_submission_columns_mock: Mock,
+        merge_people_directly_employed_modelled_into_ascwds_clean_column_mock: Mock,
+        drop_temporary_columns_mock: Mock,
+    ):
+        job.blend_pir_and_ascwds_when_ascwds_out_of_date(
+            self.test_df, self.NON_RES_PIR_MODEL
+        )
+
+        create_repeated_ascwds_clean_column_mock.assert_called_once()
+        create_people_directly_employed_dedup_modelled_column_mock.assert_called_once()
+        create_last_submission_columns_mock.assert_called_once()
+        merge_people_directly_employed_modelled_into_ascwds_clean_column_mock.assert_called_once()
+        drop_temporary_columns_mock.assert_called_once()
+
+    def test_blend_pir_and_ascwds_when_ascwds_out_of_date_completes(
         self,
     ):
-        pass
+        returned_df = job.blend_pir_and_ascwds_when_ascwds_out_of_date(
+            self.test_df, self.NON_RES_PIR_MODEL
+        )
+
+        self.assertIsInstance(returned_df, DataFrame)
 
 
 class ThresholdValuesTests(BlendAscwdsPirTests):
