@@ -52,7 +52,7 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(
     # TODO: for rows where pir is more than 2 years later than asc and gap in value is greater than +/- 100 and +/- 50% and pir filled posts is not null, add pir filled posts into ascwds clean column
     df = merge_people_directly_employed_modelled_into_ascwds_clean_column(df)
     # TODO: drop unwanted columns
-    df = drop_unwanted_columns(df)
+    df = drop_temporary_columns(df)
     return df
 
 
@@ -209,7 +209,7 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
     return df
 
 
-def drop_unwanted_columns(df: DataFrame) -> DataFrame:
+def drop_temporary_columns(df: DataFrame) -> DataFrame:
     """
     Drops temporary columns from the blend pir and ascwds function.
 

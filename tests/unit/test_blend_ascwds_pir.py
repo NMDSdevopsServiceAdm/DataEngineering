@@ -201,7 +201,7 @@ class CreateLastSubmissionColumnsTests(BlendAscwdsPirTests):
         )
 
 
-class BlendModelledPirAndAscwds(BlendAscwdsPirTests):
+class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
 
@@ -313,3 +313,20 @@ class BlendModelledPirAndAscwds(BlendAscwdsPirTests):
             ).collect(),
             expected_df.collect(),
         )
+
+
+class DropTemporaryColumns(BlendAscwdsPirTests):
+    def setUp(self):
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.drop_temporary_columns_rows,
+            Schemas.drop_temporary_columns_schema,
+        )
+        self.expected_columns = Data.expected_drop_temporary_columns
+        self.returned_columns = job.drop_temporary_columns(test_df).columns
+
+    def test_drop_temporary_columns_removes_temporary_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_columns, self.expected_columns)

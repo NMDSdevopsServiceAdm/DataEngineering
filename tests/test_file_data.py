@@ -8842,3 +8842,7 @@ class BlendAscwdsPirData:
         ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, 10.0, None),
     ]
     # fmt: on
+    drop_temporary_columns_rows = [
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), 10, 20.0),
+    ]
+    expected_drop_temporary_columns = [IndCQC.location_id]

@@ -5322,3 +5322,17 @@ class BlendAscwdsPirData:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
         ]
     )
+
+    drop_temporary_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+        ]
+    )
