@@ -137,7 +137,7 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     df = get_selected_value(
         df,
         w,
-        IndCQC.people_directly_employed_dedup,  # use modelled column instead
+        IndCQC.people_directly_employed_filled_posts,
         IndCQC.cqc_location_import_date,
         "last_pir_submission",
         "last",
