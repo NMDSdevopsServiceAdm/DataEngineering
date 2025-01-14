@@ -12,7 +12,7 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
     w = w = (  # for selected values
         Window.partitionBy(IndCQC.location_id)
         .orderBy(IndCQC.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
     )
     df = create_repeated_ascwds_clean_column(df)
     # TODO: create pir dedup modelled column for comparison
