@@ -9,6 +9,18 @@ from utils.ind_cqc_filled_posts_utils.utils import (
 
 
 def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
+    """
+    Merges people directly employed and ascwds filled posts cleaned when ascwds
+    hasn't been updated recently and people directly employed has.
+
+    This function handles the individual steps for this process.
+
+    Args:
+        df (DataFrame): A dataframe with cleaned ascwds data and deduplicated pir data
+
+    Returns:
+        DataFrame: A dataframe with people directly employed filled posts merged into ascwds values for estimatation.
+    """
     df = create_repeated_ascwds_clean_column(df)
     # TODO: create pir dedup modelled column for comparison
     df = create_people_directly_employed_dedup_modelled_column(df)
@@ -22,6 +34,17 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
 
 
 def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
+    """
+    Creates a column containing cleaned ascwds filled posts filled forwards.
+
+    This column is needed to compare to people directly employed figures to see where they diverge.
+
+    Args:
+        df (DataFrame): A dataframe with cleaned ascwds data
+
+    Returns:
+        DataFrame: A dataframe with an extra column containing ascwds filled posts filled forwards.
+    """
     w = (
         Window.partitionBy(IndCQC.location_id)
         .orderBy(IndCQC.cqc_location_import_date)
@@ -35,10 +58,33 @@ def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
 
 
 def create_people_directly_employed_dedup_modelled_column(df: DataFrame) -> DataFrame:
+    """
+    Creates a column containing people directly employed deduplicated values converted to filled posts using the non-res pir model.
+
+    This column is needed to compare to ascwds filled posts cleaned to see where they diverge.
+
+    Args:
+        df (DataFrame): A dataframe with the column people directly employed deduplicated.
+
+    Returns:
+        DataFrame: A dataframe with an extra column containing people directly employed deduplicated values converted to filled posts.
+    """
     return df
 
 
 def create_last_submission_columns(df: DataFrame) -> DataFrame:
+    """
+    Creates columns containing the latest submission dates by location id for ascwds and pir data.
+
+    This column is needed to identify whether there has been a gap of at least two years
+    between an ascwds submission and a pir submission.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds and pir data.
+
+    Returns:
+        DataFrame: A dataframe with two extra columns containing the latest submission dates.
+    """
     w = w = (
         Window.partitionBy(IndCQC.location_id)
         .orderBy(IndCQC.cqc_location_import_date)
@@ -68,8 +114,31 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
 def merge_people_directly_employed_modelled_into_ascwds_clean_column(
     df: DataFrame,
 ) -> DataFrame:
+    """
+    Merges filled posts estimate from people directly employed into ascwds clean
+    data when ascwds hasn't been updated and the two data sources have very different values.
+
+    Analysis of the datasets has shown that when the two dataset diverge and there is no recent ascwds data,
+    then the PIR value is more likely to align with other data sources, so in this case, we should take that
+    value into account rather than predicting no change from the ascwds data.
+
+    Args:
+        df (DataFrame): A dataframe with ascwds filled posts cleaned and people directly employed converted into a filled posts estimate.
+
+    Returns:
+        DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
+    """
     return df
 
 
 def drop_unwanted_columns(df: DataFrame) -> DataFrame:
+    """
+    Drops temporary columns from the blend pir and ascwds function.
+
+    Args:
+        df (DataFrame): A dataframe which has just had the ascwds and pir data blended.
+
+    Returns:
+        DataFrame: A dataframe with temporary columns removed.
+    """
     return df
