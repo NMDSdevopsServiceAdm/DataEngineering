@@ -1,5 +1,6 @@
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import FloatType
 
 
 from utils import utils
@@ -164,8 +165,64 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
         DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
     """
     # cast ascwds clean as float
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
+    )
     # write boolean
+    """
+    use_people_directly_employed = (
+        F.months_between(
+            F.col(IndCQC.last_pir_submission), F.col(IndCQC.last_ascwds_submission)
+        )
+        > 24  # two years
+    ) & (
+        F.abs(
+            (
+                F.col(IndCQC.people_directly_employed_filled_posts)
+                - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+            )
+            > 100  # absolute threshold
+        )
+        & (
+            F.abs(
+                F.col(IndCQC.people_directly_employed_filled_posts)
+                - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+            )
+            / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+        )
+        > 0.5  # percentage threshold
+    )
+    """
     # when bool is true, fill asc with pir
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        F.when(
+            (
+                F.months_between(
+                    F.col(IndCQC.last_pir_submission),
+                    F.col(IndCQC.last_ascwds_submission),
+                )
+                > 24  # two years
+            )
+            & (
+                F.abs(
+                    F.col(IndCQC.people_directly_employed_filled_posts)
+                    - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                )
+                > 100  # absolute threshold
+            )
+            & (
+                F.abs(
+                    F.col(IndCQC.people_directly_employed_filled_posts)
+                    - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                )
+                / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                > 0.5  # percentage threshold
+            ),
+            F.col(IndCQC.people_directly_employed_filled_posts),
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+    )
     return df
 
 
