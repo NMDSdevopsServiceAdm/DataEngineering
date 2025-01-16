@@ -5770,7 +5770,7 @@ class ValidateMergedIndCqcData:
 @dataclass
 class ValidateMergedCoverageData:
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10, 0, "2024", "01", "01"),
+        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "01", "01"),
         (
             date(2024, 1, 1),
             "1-002",
@@ -5778,12 +5778,11 @@ class ValidateMergedCoverageData:
             "EF3 4GH",
             "N",
             None,
-            0,
             "2024",
             "01",
             "01",
         ),
-        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10, 0, "2024", "02", "01"),
+        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "02", "01"),
         (
             date(2024, 2, 1),
             "1-002",
@@ -5791,7 +5790,6 @@ class ValidateMergedCoverageData:
             "EF3 4GH",
             "N",
             None,
-            0,
             "2024",
             "02",
             "01",
@@ -5805,9 +5803,9 @@ class ValidateMergedCoverageData:
         ("1-002", date(2024, 1, 9), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
     ]
     calculate_expected_size_rows = [
-        ("loc 1", date(2024, 1, 1), "name", "AB1 2CD", "Y", 1, "2024", "01", "01"),
-        ("loc 1", date(2024, 1, 8), "name", "AB1 2CD", "Y", 1, "2024", "01", "08"),
-        ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", 1, "2024", "01", "01"),
+        ("loc 1", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
+        ("loc 1", date(2024, 1, 8), "name", "AB1 2CD", "Y", "2024", "01", "08"),
+        ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
     ]
 
 

@@ -58,16 +58,13 @@ def main(
 def calculate_expected_size_of_merged_coverage_dataset(
     df: DataFrame,
 ) -> int:
-    df = cUtils.remove_duplicates_based_on_column_order(
-        df,
+    df = df.dropDuplicates(
         [
             CQCLClean.cqc_location_import_date,
             CQCLClean.name,
             CQCLClean.postal_code,
             CQCLClean.care_home,
-        ],
-        CoverageColumns.in_ascwds,
-        sort_ascending=False,
+        ]
     )
     df = cUtils.reduce_dataset_to_earliest_file_per_month(df)
     expected_size = df.count()
