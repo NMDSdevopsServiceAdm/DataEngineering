@@ -20,14 +20,6 @@ from utils.validation.validation_utils import (
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
-cleaned_cqc_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
-    CQCLClean.location_id,
-    CQCLClean.name,
-    CQCLClean.postal_code,
-    CQCLClean.care_home,
-]
-
 
 def main(
     cleaned_cqc_location_source: str,
@@ -36,7 +28,6 @@ def main(
 ):
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
-        selected_columns=cleaned_cqc_locations_columns_to_import,
     )
     merged_coverage_df = utils.read_from_parquet(
         merged_coverage_data_source,
