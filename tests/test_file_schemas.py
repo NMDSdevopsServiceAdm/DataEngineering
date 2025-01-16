@@ -2944,6 +2944,10 @@ class ValidateMergedCoverageData:
             StructField(CQCLClean.postal_code, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
     merged_coverage_schema = StructType(
@@ -2954,6 +2958,20 @@ class ValidateMergedCoverageData:
             StructField(IndCQC.name, StringType(), True),
             StructField(CQCLClean.postal_code, StringType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
 

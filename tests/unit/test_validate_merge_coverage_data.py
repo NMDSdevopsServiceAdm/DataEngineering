@@ -54,5 +54,22 @@ class MainTests(ValidateMergedCoverageDatasetTests):
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
+class CalculateExpectedSizeofDataset(ValidateMergedCoverageDatasetTests):
+    def setUp(self) -> None:
+        return super().setUp()
+
+    def test_calculate_expected_size_of_merged_coverage_dataset_returns_correct_row_count(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
+        )
+        expected_row_count = 1
+        returned_row_count = job.calculate_expected_size_of_merged_coverage_dataset(
+            test_df
+        )
+        self.assertEqual(returned_row_count, expected_row_count)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
