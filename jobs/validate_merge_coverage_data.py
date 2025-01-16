@@ -43,9 +43,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_merged_coverage_dataset(cqc_location_df)
-    )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_merged_coverage_dataset(cqc_location_df)
 
     check_result_df = validate_dataset(merged_coverage_df, rules)
 
