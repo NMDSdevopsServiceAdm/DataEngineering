@@ -36,6 +36,9 @@ class IndCqcColumns:
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
     ascwds_filled_posts_dedup_clean: str = ascwds_filled_posts_dedup + "_clean"
+    ascwds_filled_posts_dedup_clean_repeated: str = (
+        ascwds_filled_posts_dedup_clean + "_repeated"
+    )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
@@ -131,7 +134,9 @@ class IndCqcColumns:
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     interpolation_model: str = "interpolation_model"
+    last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"
+    last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
     locations_at_provider_count: str = "locations_at_provider_count"
@@ -179,6 +184,9 @@ class IndCqcColumns:
     people_directly_employed: str = CQCPIRClean.people_directly_employed
     people_directly_employed_dedup: str = (
         CQCPIRClean.people_directly_employed + "_deduplicated"
+    )
+    people_directly_employed_filled_posts: str = (
+        people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
     potential_grouped_provider: str = "potential_grouped_provider"

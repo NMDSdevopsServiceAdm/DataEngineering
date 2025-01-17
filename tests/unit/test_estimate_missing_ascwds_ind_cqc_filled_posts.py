@@ -13,6 +13,9 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
+    NON_RES_PIR_MODEL = (
+        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
+    )
     partition_keys = [
         Keys.year,
         Keys.month,
@@ -31,10 +34,14 @@ class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
 
 class MainTests(EstimateMissingAscwdsFilledPostsTests):
     @patch("utils.utils.write_to_parquet")
+    @patch(
+        "jobs.estimate_missing_ascwds_ind_cqc_filled_posts.blend_pir_and_ascwds_when_ascwds_out_of_date"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -42,9 +49,11 @@ class MainTests(EstimateMissingAscwdsFilledPostsTests):
         job.main(
             self.CLEANED_IND_CQC_TEST_DATA,
             self.ESTIMATES_DESTINATION,
+            self.NON_RES_PIR_MODEL,
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,

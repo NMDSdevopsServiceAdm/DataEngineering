@@ -8670,3 +8670,182 @@ class ReconciliationUtilsData:
         ("loc_1", "estab_1", "name"),
         ("loc_3", "estab_2", None),
     ]
+
+
+@dataclass
+class BlendAscwdsPirData:
+    blend_pir_and_ascwds_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 20),
+    ]
+    create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
+        ("loc 1", date(2024, 1, 1), None),
+        ("loc 1", date(2024, 2, 1), 100),
+        ("loc 1", date(2024, 3, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_earlier_and_later_data_rows = [
+        ("loc 1", date(2024, 1, 1), None, None),
+        ("loc 1", date(2024, 2, 1), 100, 100),
+        ("loc 1", date(2024, 3, 1), None, 100),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_later_data_rows = [
+        ("loc 2", date(2024, 1, 1), 50),
+        ("loc 2", date(2024, 2, 1), None),
+        ("loc 2", date(2024, 3, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_later_data_rows = [
+        ("loc 2", date(2024, 1, 1), 50, 50),
+        ("loc 2", date(2024, 2, 1), None, 50),
+        ("loc 2", date(2024, 3, 1), None, 50),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
+        ("loc 3", date(2024, 1, 1), 40),
+        ("loc 3", date(2024, 2, 1), None),
+        ("loc 3", date(2024, 3, 1), 60),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_middle_data_rows = [
+        ("loc 3", date(2024, 1, 1), 40, 40),
+        ("loc 3", date(2024, 2, 1), None, 40),
+        ("loc 3", date(2024, 3, 1), 60, 60),
+    ]
+
+    create_repeated_ascwds_clean_column_when_missing_earlier_data_rows = [
+        ("loc 4", date(2024, 1, 1), None),
+        ("loc 4", date(2024, 2, 1), None),
+        ("loc 4", date(2024, 3, 1), 70),
+    ]
+    expected_create_repeated_ascwds_clean_column_when_missing_earlier_data_rows = [
+        ("loc 4", date(2024, 1, 1), None, None),
+        ("loc 4", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 3, 1), 70, 70),
+    ]
+
+    create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
+        ("loc 1", date(2024, 1, 1), 100),
+        ("loc 1", date(2024, 2, 1), None),
+        ("loc 2", date(2024, 1, 1), 50),
+        ("loc 2", date(2024, 2, 1), None),
+    ]
+    expected_create_repeated_ascwds_clean_column_separates_repetition_by_location_id_rows = [
+        ("loc 1", date(2024, 1, 1), 100, 100),
+        ("loc 1", date(2024, 2, 1), None, 100),
+        ("loc 2", date(2024, 1, 1), 50, 50),
+        ("loc 2", date(2024, 2, 1), None, 50),
+    ]
+    create_people_directly_employed_dedup_modelled_column_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10),
+        ("loc 4", date(2024, 1, 1), CareHome.care_home, None),
+    ]
+    expected_create_people_directly_employed_dedup_modelled_column_rows = [
+        ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 10.64384),
+        ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
+        ("loc 4", date(2024, 1, 1), CareHome.care_home, None, None),
+    ]
+    create_last_submission_columns_rows = [
+        ("loc 1", date(2024, 1, 1), 10, None),
+        ("loc 1", date(2024, 2, 1), None, 20),
+        ("loc 2", date(2024, 1, 1), None, 30),
+        ("loc 2", date(2024, 2, 1), 40, None),
+        ("loc 3", date(2024, 1, 1), None, None),
+        ("loc 3", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 1, 1), 50, None),
+        ("loc 4", date(2024, 2, 1), None, None),
+        ("loc 4", date(2024, 3, 1), 60, None),
+        ("loc 4", date(2024, 4, 1), None, 70),
+    ]
+    expected_create_last_submission_columns_rows = [
+        ("loc 1", date(2024, 1, 1), 10, None, date(2024, 1, 1), date(2024, 2, 1)),
+        ("loc 1", date(2024, 2, 1), None, 20, date(2024, 1, 1), date(2024, 2, 1)),
+        ("loc 2", date(2024, 1, 1), None, 30, date(2024, 2, 1), date(2024, 1, 1)),
+        ("loc 2", date(2024, 2, 1), 40, None, date(2024, 2, 1), date(2024, 1, 1)),
+        ("loc 3", date(2024, 1, 1), None, None, None, None),
+        ("loc 3", date(2024, 2, 1), None, None, None, None),
+        ("loc 4", date(2024, 1, 1), 50, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 2, 1), None, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 3, 1), 60, None, date(2024, 3, 1), date(2024, 4, 1)),
+        ("loc 4", date(2024, 4, 1), None, 70, date(2024, 3, 1), date(2024, 4, 1)),
+    ]
+    # fmt: off
+    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 200.0, None),
+    ]
+    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 200.0, 200.0),
+    ]
+    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, 10),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, 200.0, None),
+    ]
+    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, 10.0),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, 200.0, None),
+    ]
+    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
+        ("loc 1", date(2020, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, 200.0, None),
+        ("loc 1", date(2021, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
+        ("loc 1", date(2022, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
+        ("loc 1", date(2023, 1, 1), date(2023, 1, 1), date(2020, 1, 1), 10, None, 10),
+    ]
+    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
+        ("loc 1", date(2020, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, 200.0, None),
+        ("loc 1", date(2021, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
+        ("loc 1", date(2022, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
+        ("loc 1", date(2023, 1, 1), date(2023, 1, 1), date(2020, 1, 1), 10, None, 10.0),
+    ]
+    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 110.0, None),
+        ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, 110),
+        ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None),
+        ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None),
+        ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, 10.0, None),
+    ]
+    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 110.0, None),
+        ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, 110.0),
+        ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None),
+        ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None),
+        ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, 10.0, None),
+    ]
+    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 5.0, None),
+        ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, 5),
+        ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, None),
+        ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, None),
+        ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, 10.0, None),
+    ]
+    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
+        ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
+        ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 5.0, None),
+        ("loc 2", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, 5.0),
+        ("loc 2", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, None),
+        ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, None),
+        ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, 10.0, None),
+    ]
+    # fmt: on
+    drop_temporary_columns_rows = [
+        ("loc 1", date(2023, 1, 1), date(2020, 1, 1), 10, 20.0),
+    ]
+    expected_drop_temporary_columns = [IndCQC.location_id]

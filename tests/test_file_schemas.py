@@ -5242,3 +5242,107 @@ class ReconciliationUtilsSchema:
             StructField(CQCL.name, StringType(), True),
         ]
     )
+
+
+@dataclass
+class BlendAscwdsPirData:
+    blend_pir_and_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+        ]
+    )
+
+    create_repeated_ascwds_clean_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+        ]
+    )
+    expected_create_repeated_ascwds_clean_column_schema = StructType(
+        [
+            *create_repeated_ascwds_clean_column_schema,
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+        ]
+    )
+    create_people_directly_employed_dedup_modelled_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+        ]
+    )
+    expected_create_people_directly_employed_dedup_modelled_column_schema = StructType(
+        [
+            *create_people_directly_employed_dedup_modelled_column_schema,
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+        ]
+    )
+    create_last_submission_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+        ]
+    )
+    expected_create_last_submission_columns_schema = StructType(
+        [
+            *create_last_submission_columns_schema,
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+        ]
+    )
+    blend_modelled_pir_ands_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+        ]
+    )
+    expected_blend_modelled_pir_ands_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+        ]
+    )
+
+    drop_temporary_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.last_ascwds_submission, DateType(), True),
+            StructField(IndCQC.last_pir_submission, DateType(), True),
+            StructField(
+                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
+            ),
+            StructField(
+                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+            ),
+        ]
+    )
