@@ -204,8 +204,7 @@
                 "JobName": "${clean_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
                   "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/",
-                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
-                  "--linear_regression_model_source": "${pipeline_resources_bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
+                  "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
                 }
               },
               "Next": "Run estimate missing ascwds ind cqc filled posts job"
@@ -217,7 +216,8 @@
                 "JobName": "${estimate_missing_ascwds_ind_cqc_filled_posts_job_name}",
                 "Arguments": {
                   "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
-                  "--estimated_missing_ascwds_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/"
+                  "--estimated_missing_ascwds_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
+                  "--linear_regression_model_source": "${pipeline_resources_bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
                 }
               },
               "Next": "Feature engineering"

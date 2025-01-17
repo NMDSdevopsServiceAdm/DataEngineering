@@ -232,7 +232,7 @@ module "clean_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--merged_ind_cqc_source"          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
     "--cleaned_ind_cqc_destination"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
-    "--linear_regression_model_source" = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
+    
   }
 }
 
@@ -806,6 +806,7 @@ module "estimate_missing_ascwds_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
     "--estimated_missing_ascwds_ind_cqc_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/"
+    "--linear_regression_model_source" = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
   }
 }
 
