@@ -47,9 +47,6 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch("utils.utils.write_to_parquet")
-    @patch(
-        "jobs.clean_ind_cqc_filled_posts.blend_pir_and_ascwds_when_ascwds_out_of_date"
-    )
     @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
     @patch("jobs.clean_ind_cqc_filled_posts.clean_ascwds_filled_post_outliers")
     @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")

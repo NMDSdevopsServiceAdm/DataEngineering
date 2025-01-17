@@ -54,8 +54,8 @@ def main(
         )
     )
 
-    locations_df = blend_pir_and_ascwds_when_ascwds_out_of_date(
-        locations_df, linear_regression_model_source
+    estimate_missing_ascwds_df = blend_pir_and_ascwds_when_ascwds_out_of_date(
+        estimate_missing_ascwds_df, linear_regression_model_source
     )
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
