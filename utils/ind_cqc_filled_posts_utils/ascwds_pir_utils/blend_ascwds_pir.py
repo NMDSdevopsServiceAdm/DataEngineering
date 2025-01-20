@@ -196,7 +196,10 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
                     F.col(IndCQC.people_directly_employed_filled_posts)
                     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
                 )
-                / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                / F.avg(
+                    F.col(IndCQC.people_directly_employed_filled_posts),
+                    F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated),
+                )
                 > ThresholdValues.max_percentage_difference
             ),
             F.col(IndCQC.people_directly_employed_filled_posts),
