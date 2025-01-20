@@ -126,7 +126,7 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with two extra columns containing the latest submission dates.
     """
-    w = w = (
+    w = (
         Window.partitionBy(IndCQC.location_id)
         .orderBy(IndCQC.cqc_location_import_date)
         .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
