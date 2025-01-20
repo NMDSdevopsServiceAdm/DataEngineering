@@ -21,9 +21,9 @@ from utils.ind_cqc_filled_posts_utils.utils import (
 
 @dataclass
 class ThresholdValues:
-    max_percentage_difference = 0.5
-    max_absolute_difference = 100
-    months_in_two_years = 24
+    max_percentage_difference: float = 0.5
+    max_absolute_difference: int = 100
+    months_in_two_years: int = 24
 
 
 def blend_pir_and_ascwds_when_ascwds_out_of_date(
