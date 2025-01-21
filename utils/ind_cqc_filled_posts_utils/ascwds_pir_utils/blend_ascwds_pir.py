@@ -21,9 +21,9 @@ from utils.ind_cqc_filled_posts_utils.utils import (
 
 @dataclass
 class ThresholdValues:
-    max_percentage_difference = 0.5
-    max_absolute_difference = 100
-    months_in_two_years = 24
+    max_percentage_difference: float = 0.5
+    max_absolute_difference: int = 100
+    months_in_two_years: int = 24
 
 
 def blend_pir_and_ascwds_when_ascwds_out_of_date(
@@ -126,7 +126,7 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with two extra columns containing the latest submission dates.
     """
-    w = w = (
+    w = (
         Window.partitionBy(IndCQC.location_id)
         .orderBy(IndCQC.cqc_location_import_date)
         .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
@@ -196,7 +196,13 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
                     F.col(IndCQC.people_directly_employed_filled_posts)
                     - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
                 )
-                / F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                / (
+                    (
+                        F.col(IndCQC.people_directly_employed_filled_posts)
+                        + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+                    )
+                    / 2
+                )
                 > ThresholdValues.max_percentage_difference
             ),
             F.col(IndCQC.people_directly_employed_filled_posts),
