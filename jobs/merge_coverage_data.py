@@ -24,6 +24,9 @@ from utils.column_values.categorical_column_values import (
     InAscwds,
     CQCCurrentOrHistoricValues,
 )
+from utils.coverage_utils.lm_engagement_utils import (
+    add_columns_for_locality_manager_dashboard,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -106,6 +109,8 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
 
+    cqc_location_df = cUtils.reduce_dataset_to_earliest_file_per_month(cqc_location_df)
+
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
         ascwds_workplace_df,
         [AWPClean.ascwds_workplace_import_date, AWPClean.location_id],
@@ -142,6 +147,8 @@ def main(
         merged_coverage_df, cqc_ratings_df
     )
 
+    merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
+
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
@@ -149,11 +156,8 @@ def main(
         partitionKeys=PartitionKeys,
     )
 
-    reduced_coverage_df = cUtils.reduce_dataset_to_earliest_file_per_month(
-        merged_coverage_df
-    )
     reduced_coverage_df = utils.filter_df_to_maximum_value_in_column(
-        reduced_coverage_df, CQCLClean.cqc_location_import_date
+        merged_coverage_df, CQCLClean.cqc_location_import_date
     )
 
     utils.write_to_parquet(

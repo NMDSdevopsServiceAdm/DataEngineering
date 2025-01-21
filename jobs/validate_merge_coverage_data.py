@@ -6,9 +6,11 @@ os.environ["SPARK_VERSION"] = "3.3"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.coverage_columns import CoverageColumns
 from utils.validation.validation_rules.merged_coverage_validation_rules import (
     MergedCoverageValidationRules as Rules,
 )
@@ -18,14 +20,6 @@ from utils.validation.validation_utils import (
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
-cleaned_cqc_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
-    CQCLClean.location_id,
-    CQCLClean.name,
-    CQCLClean.postal_code,
-    CQCLClean.care_home,
-]
-
 
 def main(
     cleaned_cqc_location_source: str,
@@ -34,21 +28,15 @@ def main(
 ):
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
-        selected_columns=cleaned_cqc_locations_columns_to_import,
     )
     merged_coverage_df = utils.read_from_parquet(
         merged_coverage_data_source,
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = cqc_location_df.dropDuplicates(
-        [
-            CQCLClean.cqc_location_import_date,
-            CQCLClean.name,
-            CQCLClean.postal_code,
-            CQCLClean.care_home,
-        ]
-    ).count()
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_merged_coverage_dataset(cqc_location_df)
 
     check_result_df = validate_dataset(merged_coverage_df, rules)
 
@@ -56,6 +44,22 @@ def main(
 
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
+
+
+def calculate_expected_size_of_merged_coverage_dataset(
+    df: DataFrame,
+) -> int:
+    df = df.dropDuplicates(
+        [
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.name,
+            CQCLClean.postal_code,
+            CQCLClean.care_home,
+        ]
+    )
+    df = cUtils.reduce_dataset_to_earliest_file_per_month(df)
+    expected_size = df.count()
+    return expected_size
 
 
 if __name__ == "__main__":

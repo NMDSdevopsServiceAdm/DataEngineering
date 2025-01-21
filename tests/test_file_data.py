@@ -3772,6 +3772,122 @@ class MergeCoverageData:
 
 
 @dataclass
+class LmEngagementUtilsData:
+    # fmt: off
+    add_columns_for_locality_manager_dashboard_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024"), # in ascwds on both dates
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024"),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, "2024"), # joins ascwds
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, "2024"), 
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, "2024"), # leaves ascwds
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, "2024"),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, "2024"), # multiple locations in one cssr
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, "2024"),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, "2024"),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, "2024"),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, "2024"),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, "2024"),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, "2024"),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, "2024"),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, "2024"),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, "2024"),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, "2024"),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, "2024"),
+    ]
+    expected_add_columns_for_locality_manager_dashboard_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024", 1.0, None, 1, 1, 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024", 1.0, 0.0, 0, 0, 1),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, "2024", 0.0, None, 0, 0, 0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, "2024", 1.0, 1.0, 1, 1, 1),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, "2024", 1.0, None, 1, 1, 1),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, "2024", 0.0, -1.0, -1, 0, 1),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0, 0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 3, 3, 3),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1, 4),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0, 0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 3, 3, 3),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1, 4),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0, 0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 3, 3, 3),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1, 4),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0, 0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, "2024", 0.75, 0.75, 3, 3, 3),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1, 4),
+    ]
+
+    expected_calculate_la_coverage_monthly_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024", 1.0),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024", 1.0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, "2024", 0.0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, "2024", 1.0),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, "2024", 1.0),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, "2024", 0.0),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, "2024", 0.75),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0),
+    ]
+
+    calculate_coverage_monthly_change_rows = expected_calculate_la_coverage_monthly_rows
+
+    expected_calculate_coverage_monthly_change_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024", 1.0, None),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024", 1.0, 0.0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, "2024", 0.0, None),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, "2024", 1.0, 1.0),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, "2024", 1.0, None),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, "2024", 0.0, -1.0),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, "2024", 0.75, 0.75),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25),
+    ]
+    calculate_locations_monthly_change_rows = expected_calculate_coverage_monthly_change_rows
+
+    expected_calculate_locations_monthly_change_rows = [
+        ("loc 1", date(2024, 1, 1), "cssr 1", 1, "2024", 1.0, None, 0, 1),
+        ("loc 1", date(2024, 2, 1), "cssr 1", 1, "2024", 1.0, 0.0, 1, 0),
+        ("loc 2", date(2024, 1, 1), "cssr 2", 0, "2024", 0.0, None, 0, 0),
+        ("loc 2", date(2024, 2, 1), "cssr 2", 1, "2024", 1.0, 1.0, 0, 1),
+        ("loc 3", date(2024, 1, 1), "cssr 3", 1, "2024", 1.0, None, 0, 1),
+        ("loc 3", date(2024, 2, 1), "cssr 3", 0, "2024", 0.0, -1.0, 1, -1),
+        ("loc 4", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0),
+        ("loc 4", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 0, 3),
+        ("loc 4", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1),
+        ("loc 5", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0),
+        ("loc 5", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 0, 3),
+        ("loc 5", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1),
+        ("loc 6", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0),
+        ("loc 6", date(2024, 2, 1), "cssr 4", 1, "2024", 0.75, 0.75, 0, 3),
+        ("loc 6", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 1, 1),
+        ("loc 7", date(2024, 1, 1), "cssr 4", 0, "2024", 0.0, None, 0, 0),
+        ("loc 7", date(2024, 2, 1), "cssr 4", 0, "2024", 0.75, 0.75, 0, 3),
+        ("loc 7", date(2024, 3, 1), "cssr 4", 1, "2024", 1.0, 0.25, 0, 1),
+    ]
+
+    calculate_new_registrations_rows = expected_calculate_locations_monthly_change_rows
+
+    expected_calculate_new_registrations_rows = expected_add_columns_for_locality_manager_dashboard_rows
+    # fmt: on
+
+
+@dataclass
 class IndCQCDataUtils:
     input_rows_for_adding_estimate_filled_posts_and_source = [
         ("1-000001", 10.0, None, 80.0),
@@ -5729,10 +5845,30 @@ class ValidateMergedIndCqcData:
 @dataclass
 class ValidateMergedCoverageData:
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
-        (date(2024, 1, 1), "1-002", "Name", "EF3 4GH", "N", None),
-        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10),
-        (date(2024, 2, 1), "1-002", "Name", "EF3 4GH", "N", None),
+        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "01", "01"),
+        (
+            date(2024, 1, 1),
+            "1-002",
+            "Name",
+            "EF3 4GH",
+            "N",
+            None,
+            "2024",
+            "01",
+            "01",
+        ),
+        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "02", "01"),
+        (
+            date(2024, 2, 1),
+            "1-002",
+            "Name",
+            "EF3 4GH",
+            "N",
+            None,
+            "2024",
+            "02",
+            "01",
+        ),
     ]
 
     merged_coverage_rows = [
@@ -5740,6 +5876,11 @@ class ValidateMergedCoverageData:
         ("1-002", date(2024, 1, 1), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
         ("1-001", date(2024, 1, 9), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
         ("1-002", date(2024, 1, 9), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+    ]
+    calculate_expected_size_rows = [
+        ("loc 1", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
+        ("loc 1", date(2024, 1, 8), "name", "AB1 2CD", "Y", "2024", "01", "08"),
+        ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
     ]
 
 

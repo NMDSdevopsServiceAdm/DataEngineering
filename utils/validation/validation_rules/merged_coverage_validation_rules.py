@@ -32,12 +32,22 @@ class MergedCoverageValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
+            CoverageColumns.la_monthly_coverage,
+            CoverageColumns.locations_monthly_change,
+            CoverageColumns.new_registrations_monthly,
+            CoverageColumns.new_registrations_ytd,
         ],
         RuleName.min_values: {
             CoverageColumns.in_ascwds: 0,
+            CoverageColumns.la_monthly_coverage: 0.0,
+            CoverageColumns.coverage_monthly_change: -1.0,
+            CoverageColumns.new_registrations_monthly: 0,
+            CoverageColumns.new_registrations_ytd: 0,
         },
         RuleName.max_values: {
             CoverageColumns.in_ascwds: 1,
+            CoverageColumns.la_monthly_coverage: 1.0,
+            CoverageColumns.coverage_monthly_change: 1.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
