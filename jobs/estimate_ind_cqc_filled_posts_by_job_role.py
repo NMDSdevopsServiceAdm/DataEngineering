@@ -33,7 +33,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.organisation_id,
     IndCQC.worker_records_bounded,
-    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,

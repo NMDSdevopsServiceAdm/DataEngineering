@@ -13,6 +13,7 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.ascwds_filled_posts,
     IndCQC.ascwds_filled_posts_dedup,
     IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filtering_rule,
     IndCQC.ascwds_workplace_import_date,

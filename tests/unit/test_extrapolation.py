@@ -32,7 +32,7 @@ class MainTests(ModelExtrapolationTests):
 
         self.returned_df = job.model_extrapolation(
             self.extrapolation_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.ascwds_pir_merged,
             self.model_column_name,
         )
 
@@ -63,7 +63,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
             Data.first_and_last_submission_dates_rows,
             Schemas.first_and_final_submission_dates_schema,
         )
-        self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
+        self.column_with_null_values = IndCqc.ascwds_pir_merged
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.unix_time)
@@ -137,7 +137,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
             Data.extrapolation_forwards_rows,
             Schemas.extrapolation_forwards_schema,
         )
-        self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
+        self.column_with_null_values = IndCqc.ascwds_pir_merged
         self.model_to_extrapolate_from = IndCqc.rolling_average_model
         self.window_spec_lagged = (
             Window.partitionBy(IndCqc.location_id)
@@ -217,7 +217,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
             Data.extrapolation_backwards_rows,
             Schemas.extrapolation_backwards_schema,
         )
-        self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
+        self.column_with_null_values = IndCqc.ascwds_pir_merged
         self.model_to_extrapolate_from = IndCqc.rolling_average_model
         self.window_spec_all_rows = (
             Window.partitionBy(IndCqc.location_id)

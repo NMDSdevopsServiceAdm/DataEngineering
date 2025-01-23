@@ -14,7 +14,7 @@ non_res_pir_columns = [
     IndCqc.location_id,
     IndCqc.cqc_location_import_date,
     IndCqc.care_home,
-    IndCqc.ascwds_filled_posts_dedup_clean,
+    IndCqc.ascwds_pir_merged,
     IndCqc.people_directly_employed_dedup,
     IndCqc.imputed_non_res_people_directly_employed,
     Keys.year,

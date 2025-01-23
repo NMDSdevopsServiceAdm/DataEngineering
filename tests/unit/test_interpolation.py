@@ -31,7 +31,7 @@ class MainTests(ModelInterpolationTests):
 
         self.returned_df = job.model_interpolation(
             self.interpolation_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.ascwds_pir_merged,
             method="trend",
         )
 
@@ -45,7 +45,7 @@ class MainTests(ModelInterpolationTests):
         try:
             job.model_interpolation(
                 self.interpolation_df,
-                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.ascwds_pir_merged,
                 method="straight",
             )
 
@@ -56,7 +56,7 @@ class MainTests(ModelInterpolationTests):
         with self.assertRaises(ValueError) as context:
             job.model_interpolation(
                 self.interpolation_df,
-                IndCqc.ascwds_filled_posts_dedup_clean,
+                IndCqc.ascwds_pir_merged,
                 "invalid",
             )
 
@@ -93,7 +93,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         )
         self.returned_df = job.calculate_residuals(
             self.test_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.ascwds_pir_merged,
             IndCqc.extrapolation_forwards,
             self.window_spec,
         )
@@ -128,7 +128,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         )
         returned_df = job.calculate_residuals(
             test_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.ascwds_pir_merged,
             IndCqc.extrapolation_forwards,
             self.window_spec,
         )
@@ -154,7 +154,7 @@ class CalculateResidualsTests(ModelInterpolationTests):
         )
         returned_df = job.calculate_residuals(
             test_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.ascwds_pir_merged,
             IndCqc.extrapolation_forwards,
             self.window_spec,
         )
@@ -176,7 +176,7 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.column_with_null_values = IndCqc.ascwds_filled_posts_dedup_clean
+        self.column_with_null_values = IndCqc.ascwds_pir_merged
         self.window_spec_backwards = (
             Window.partitionBy(IndCqc.location_id)
             .orderBy(IndCqc.unix_time)

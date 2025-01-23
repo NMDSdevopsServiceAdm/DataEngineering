@@ -34,7 +34,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.ascwds_filled_posts: 1.0,
-            IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
+            IndCqcColumns.ascwds_pir_merged: 1.0,
             # IndCqcColumns.imputed_posts_non_res_with_dormancy_model: 1.0, # temporarily removed until non res models are fixed
             IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.number_of_beds: 1,
@@ -44,7 +44,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_filled_posts: 3000.0,
-            IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
+            IndCqcColumns.ascwds_pir_merged: 3000.0,
             IndCqcColumns.imputed_posts_care_home_model: 3000.0,
             # IndCqcColumns.imputed_posts_non_res_with_dormancy_model: 3000.0, # temporarily removed until non res models are fixed
             IndCqcColumns.care_home_model: 3000.0,

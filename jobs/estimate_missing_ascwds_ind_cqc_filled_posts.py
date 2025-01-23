@@ -60,7 +60,7 @@ def main(
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
