@@ -7805,6 +7805,7 @@ class DiagnosticsOnKnownFilledPostsData:
             "loc 1",
             date(2024, 1, 1),
             10.0,
+            10.0,
             PrimaryServiceType.care_home_only,
             10.0,
             10.0,
