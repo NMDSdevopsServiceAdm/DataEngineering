@@ -5409,7 +5409,8 @@ class BlendAscwdsPirData:
             StructField(
                 IndCQC.people_directly_employed_filled_posts, FloatType(), True
             ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
         ]
     )
 
