@@ -2601,7 +2601,7 @@ class ModelExtrapolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), False),
         ]
     )
@@ -2610,7 +2610,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
         ]
     )
     expected_first_and_final_submission_dates_schema = StructType(
@@ -2625,7 +2625,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), False),
         ]
     )
@@ -2647,7 +2647,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), False),
@@ -2671,7 +2671,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
             StructField(IndCQC.extrapolation_forwards, FloatType(), True),
@@ -2693,7 +2693,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
     )
@@ -2703,7 +2703,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
     )
@@ -2719,7 +2719,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
         ]
     )
     expected_time_between_submissions_schema = StructType(
@@ -2742,7 +2742,7 @@ class ModelInterpolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.previous_non_null_value, DoubleType(), True),
             StructField(IndCQC.residual, DoubleType(), True),
             StructField(
