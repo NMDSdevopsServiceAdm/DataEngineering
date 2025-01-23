@@ -2928,7 +2928,7 @@ class MLModelMetrics:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -2940,7 +2940,7 @@ class MLModelMetrics:
     predictions_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
