@@ -49,6 +49,7 @@ estimate_missing_ascwds_columns = [
     IndCQC.ascwds_filled_posts,
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filled_posts_dedup,
+    IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.current_ons_import_date,
