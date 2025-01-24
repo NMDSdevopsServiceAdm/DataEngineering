@@ -2206,7 +2206,7 @@ class NonResAscwdsFeaturesSchema(object):
                 True,
             ),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
@@ -2228,7 +2228,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(IndCQC.people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
@@ -2250,7 +2250,7 @@ class NonResPirFeaturesSchema:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
             StructField(
                 IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
@@ -2601,7 +2601,7 @@ class ModelExtrapolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), False),
         ]
     )
@@ -2610,7 +2610,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
         ]
     )
     expected_first_and_final_submission_dates_schema = StructType(
@@ -2625,7 +2625,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), False),
         ]
     )
@@ -2647,7 +2647,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), False),
@@ -2671,7 +2671,7 @@ class ModelExtrapolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
             StructField(IndCQC.extrapolation_forwards, FloatType(), True),
@@ -2693,7 +2693,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
     )
@@ -2703,7 +2703,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.extrapolation_forwards, DoubleType(), True),
         ]
     )
@@ -2719,7 +2719,7 @@ class ModelInterpolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
         ]
     )
     expected_time_between_submissions_schema = StructType(
@@ -2742,7 +2742,7 @@ class ModelInterpolation:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.previous_non_null_value, DoubleType(), True),
             StructField(IndCQC.residual, DoubleType(), True),
             StructField(
@@ -2928,7 +2928,7 @@ class MLModelMetrics:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -2940,7 +2940,7 @@ class MLModelMetrics:
     predictions_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
@@ -4389,6 +4389,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
@@ -5393,7 +5394,7 @@ class BlendAscwdsPirData:
             StructField(
                 IndCQC.people_directly_employed_filled_posts, FloatType(), True
             ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
         ]
     )
     expected_blend_modelled_pir_ands_ascwds_schema = StructType(
@@ -5409,6 +5410,7 @@ class BlendAscwdsPirData:
                 IndCQC.people_directly_employed_filled_posts, FloatType(), True
             ),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
         ]
     )
 

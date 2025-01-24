@@ -28,12 +28,12 @@ class CareHomeIndCqcFeaturesValidationRules:
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.people_directly_employed: 0,
-            IndCqcColumns.ascwds_filled_posts_dedup_clean: 1.0,
+            IndCqcColumns.ascwds_pir_merged: 1.0,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
             IndCqcColumns.people_directly_employed: 10000,
-            IndCqcColumns.ascwds_filled_posts_dedup_clean: 3000.0,
+            IndCqcColumns.ascwds_pir_merged: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_care_home_values.categorical_values,

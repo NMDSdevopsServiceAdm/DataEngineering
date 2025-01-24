@@ -170,12 +170,12 @@ def merge_people_directly_employed_modelled_into_ascwds_clean_column(
         DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
     """
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
     )
 
     df = df.withColumn(
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         F.when(
             (
                 F.months_between(

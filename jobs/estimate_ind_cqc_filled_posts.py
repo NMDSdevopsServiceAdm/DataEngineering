@@ -50,6 +50,7 @@ estimate_missing_ascwds_columns = [
     IndCQC.ascwds_filled_posts_source,
     IndCQC.ascwds_filled_posts_dedup,
     IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.current_ons_import_date,
     IndCQC.current_cssr,
@@ -132,7 +133,7 @@ def main(
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         IndCQC.care_home_model,
         IndCQC.imputed_posts_care_home_model,
         care_home=True,
@@ -140,7 +141,7 @@ def main(
 
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         IndCQC.non_res_with_dormancy_model,
         IndCQC.imputed_posts_non_res_with_dormancy_model,
         care_home=False,
@@ -152,7 +153,7 @@ def main(
         populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             estimate_filled_posts_df,
             [
-                IndCQC.ascwds_filled_posts_dedup_clean,
+                IndCQC.ascwds_pir_merged,
                 IndCQC.imputed_posts_care_home_model,
                 IndCQC.care_home_model,
                 IndCQC.imputed_filled_post_model,

@@ -24,7 +24,7 @@ class MainTests(TestGenerateMLModelMetrics):
 
     MODEL_SOURCE = "some/model/version/"
     METRICS_DESTINATION = "some/destination"
-    DEPENDENT_COLUMN_NAME = IndCqc.ascwds_filled_posts_dedup_clean
+    DEPENDENT_COLUMN_NAME = IndCqc.ascwds_pir_merged
 
     partition_keys = [IndCqc.model_name, IndCqc.model_version]
 
@@ -58,9 +58,7 @@ class GenerateR2MetricTests(TestGenerateMLModelMetrics):
 
     def test_generates_expected_r2_metric(self):
         df = self.spark.createDataFrame(Data.r2_metric_rows, Schemas.r2_metric_schema)
-        r2 = job.generate_r2_metric(
-            df, IndCqc.prediction, IndCqc.ascwds_filled_posts_dedup_clean
-        )
+        r2 = job.generate_r2_metric(df, IndCqc.prediction, IndCqc.ascwds_pir_merged)
 
         self.assertAlmostEqual(r2, 0.93, places=2)
 
@@ -88,7 +86,7 @@ class GetPredictionsWithKnownDependentVariableTests(TestGenerateMLModelMetrics):
             Data.predictions_rows, Schemas.predictions_schema
         )
         returned_df = job.get_predictions_with_known_dependent_variable_df(
-            input_df, IndCqc.ascwds_filled_posts_dedup_clean
+            input_df, IndCqc.ascwds_pir_merged
         )
 
         expected_df = self.spark.createDataFrame(

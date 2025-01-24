@@ -92,7 +92,7 @@ def main(
         IndCQC.people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.ascwds_pir_merged,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_rate_of_change_model,
         Keys.year,

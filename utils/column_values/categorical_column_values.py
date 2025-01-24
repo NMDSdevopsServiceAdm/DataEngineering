@@ -445,7 +445,7 @@ class ASCWDSFilledPostsSource(ColumnValues):
 class EstimateFilledPostsSource(ColumnValues):
     """The possible values of the estimate filled posts source column in the independent CQC estimates pipeline"""
 
-    ascwds_filled_posts_dedup_clean: str = IndCQC.ascwds_filled_posts_dedup_clean
+    ascwds_pir_merged: str = IndCQC.ascwds_pir_merged
     care_home_model: str = IndCQC.care_home_model
     imputed_posts_care_home_model: str = IndCQC.imputed_posts_care_home_model
     imputed_posts_non_res_with_dormancy_model: str = (

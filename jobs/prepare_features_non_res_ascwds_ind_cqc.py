@@ -40,7 +40,7 @@ vectorised_features_column_list: List[str] = [
     IndCQC.service_count,
     IndCQC.activity_count,
     IndCQC.specialism_count,
-    IndCQC.ascwds_filled_posts_dedup_clean,
+    IndCQC.ascwds_pir_merged,
     IndCQC.rolling_rate_of_change_model,
     IndCQC.imputed_registration_date,
     IndCQC.time_registered,

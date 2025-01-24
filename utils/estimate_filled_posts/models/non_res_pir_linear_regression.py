@@ -37,7 +37,7 @@ def model_non_res_pir_linear_regression(
 
     save_model_metrics(
         non_res_predictions,
-        IndCqc.ascwds_filled_posts_dedup_clean,
+        IndCqc.ascwds_pir_merged,
         model_source,
         metrics_destination,
     )
