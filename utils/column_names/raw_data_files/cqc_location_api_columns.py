@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class NewCqcLocationApiColumns:
+    age_group: str = "ageGroup"
     also_known_as: str = "alsoKnownAs"
     brand_id: str = "brandId"
     brand_name: str = "brandName"
@@ -84,6 +85,12 @@ class NewCqcLocationApiColumns:
     report_uri: str = "reportUri"
     reports: str = "reports"
     service_ratings: str = "serviceRatings"
+    setting_services: str = "settingServices"
+    setting_type_code: str = "settingtypeCode"
+    setting_type_name: str = "settingtypeName"
+    service_type_code: str = "servicetypeCode"
+    service_type_name: str = "servicetypeName"
+    specialism: str = "specialism"
     specialisms: str = "specialisms"
     status: str = "status"
     summary: str = "summary"

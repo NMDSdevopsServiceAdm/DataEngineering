@@ -525,5 +525,46 @@ LOCATION_SCHEMA = StructType(
             ),
             True,
         ),
+        StructField(
+            NewColNames.specialism,
+            ArrayType(
+                StructType(
+                    [
+                        StructField(NewColNames.code, StringType(), True),
+                        StructField(NewColNames.name, StringType(), True),
+                    ]
+                ),
+                True,
+            ),
+            True,
+        ),
+        StructField(
+            NewColNames.age_group,
+            ArrayType(
+                StructType(
+                    [
+                        StructField(NewColNames.code, StringType(), True),
+                        StructField(NewColNames.name, StringType(), True),
+                    ]
+                ),
+                True,
+            ),
+            True,
+        ),
+        StructField(
+            NewColNames.setting_services,
+            ArrayType(
+                StructType(
+                    [
+                        StructField(NewColNames.setting_type_code, StringType(), True),
+                        StructField(NewColNames.setting_type_name, StringType(), True),
+                        StructField(NewColNames.service_type_code, StringType(), True),
+                        StructField(NewColNames.service_type_name, StringType(), True),
+                    ]
+                ),
+                True,
+            ),
+            True,
+        ),
     ]
 )
