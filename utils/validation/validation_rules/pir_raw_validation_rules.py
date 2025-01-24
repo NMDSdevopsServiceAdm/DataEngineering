@@ -17,9 +17,9 @@ class PIRRawValidationRules:
             CQCPIR.location_id,
         ],
         RuleName.max_values: {
-            CQCPIR.people_directly_employed: 10000,
+            CQCPIR.pir_people_directly_employed: 10000,
         },
         RuleName.min_values: {
-            CQCPIR.people_directly_employed: 0,
+            CQCPIR.pir_people_directly_employed: 0,
         },
     }
