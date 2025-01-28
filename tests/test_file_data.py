@@ -3274,6 +3274,138 @@ class CQCLocationsData:
         ),
     ]
 
+    extract_registered_manager_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Another Role"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        }
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager", "Another Role"],
+                            CQCL.person_title: "M",
+                        }
+                    ],
+                },
+            ],
+        ),
+        (
+            "1-003",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 3",
+                    CQCL.code: "A3",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_3",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Another Role"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 1, 1),
+            [
+                {CQCL.name: "Activity 4a", CQCL.code: "A4a", CQCL.contacts: []},
+                {CQCL.name: "Activity 4b", CQCL.code: "A4b", CQCL.contacts: []},
+            ],
+        ),
+        (
+            "1-004",
+            date(2024, 2, 1),
+            [
+                {CQCL.name: "Activity 4a", CQCL.code: "A4a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 4b",
+                    CQCL.code: "A4b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_4b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+        (
+            "1-005",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 5a",
+                    CQCL.code: "A5a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_5a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        }
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 5b",
+                    CQCL.code: "A5b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_5b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager", "Another Role"],
+                            CQCL.person_title: "M",
+                        }
+                    ],
+                },
+            ],
+        ),
+    ]
+
 
 @dataclass
 class UtilsData:

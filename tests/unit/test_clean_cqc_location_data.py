@@ -890,5 +890,17 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
         )
 
 
+class ExtractRegisteredManagerInformationTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_column_related_location_returns_correct_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.extract_registered_manager_rows,
+            Schemas.extract_registered_manager_schema,
+        )
+        returned_df = job.extract_registered_manager_information(test_df)
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
