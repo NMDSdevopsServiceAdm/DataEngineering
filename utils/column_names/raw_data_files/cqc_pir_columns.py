@@ -9,7 +9,7 @@ class CqcPirColumns:
     location_name: str = "Location_name"
     location_status: str = "Location_status"
     number_of_beds: str = "Location_beds"
-    people_directly_employed: str = "How_many_people_are_directly_employed_and_deliver_regulated_activities_at_your_service_as_part_of_their_daily_duties"
+    pir_people_directly_employed: str = "How_many_people_are_directly_employed_and_deliver_regulated_activities_at_your_service_as_part_of_their_daily_duties"
     pir_submission_date: str = "PIR_submission_date"
     pir_type: str = "PIR_type"
     primary_inspection_category: str = "Location_primary_inspection_category"

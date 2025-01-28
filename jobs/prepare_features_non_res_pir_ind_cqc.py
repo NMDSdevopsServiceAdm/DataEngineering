@@ -15,8 +15,8 @@ non_res_pir_columns = [
     IndCqc.cqc_location_import_date,
     IndCqc.care_home,
     IndCqc.ascwds_pir_merged,
-    IndCqc.people_directly_employed_dedup,
-    IndCqc.imputed_non_res_people_directly_employed,
+    IndCqc.pir_people_directly_employed_dedup,
+    IndCqc.imputed_non_res_pir_people_directly_employed,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -37,11 +37,11 @@ def main(
         locations_df, IndCqc.care_home, CareHome.not_care_home
     )
     features_df = utils.select_rows_with_non_null_value(
-        non_res_df, IndCqc.imputed_non_res_people_directly_employed
+        non_res_df, IndCqc.imputed_non_res_pir_people_directly_employed
     )
     vectorised_features_df = vectorise_dataframe(
         df=features_df,
-        list_for_vectorisation=[IndCqc.imputed_non_res_people_directly_employed],
+        list_for_vectorisation=[IndCqc.imputed_non_res_pir_people_directly_employed],
     )
 
     print(f"Exporting as parquet to {non_res_pir_ind_cqc_features_destination}")

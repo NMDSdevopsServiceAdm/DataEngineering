@@ -89,7 +89,7 @@ def main(
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
         IndCQC.number_of_beds,
-        IndCQC.people_directly_employed,
+        IndCQC.pir_people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
         IndCQC.ascwds_pir_merged,
