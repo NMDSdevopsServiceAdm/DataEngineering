@@ -134,6 +134,9 @@ def main(
     registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         registered_locations_df
     )
+    registered_locations_df = extract_registered_manager_information(
+        registered_locations_df
+    )
 
     utils.write_to_parquet(
         registered_locations_df,
@@ -702,6 +705,134 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             "All postcodes were found in the ONS postcode file, returning original dataframe"
         )
         return cleaned_locations_df
+
+
+def extract_registered_manager_information(df: DataFrame) -> DataFrame:
+    """
+    Extracts registered manager information from the DataFrame.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with registered manager names.
+    """
+    registered_manager_identifier = "Registered Manager"
+
+    contacts_df = explode_regulated_activities_to_get_contacts_information(df)
+    df_result = select_and_create_full_name(contacts_df)
+    df_filtered = filter_to_registered_managers(
+        df_result, registered_manager_identifier
+    )
+    df_final = group_and_collect(df_filtered)
+    df_with_reg_man_names = join_with_original(df, df_final)
+
+    df_with_reg_man_names.show(truncate=False)
+    return df_with_reg_man_names
+
+
+def explode_regulated_activities_to_get_contacts_information(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Explodes the regulated_activities array and then the contacts array in the DataFrame.
+
+    Args:
+        df (DataFrame): Input DataFrame with regulated_activities array.
+
+    Returns:
+        DataFrame: DataFrame with exploded regulated_activities and contacts.
+    """
+    df = df.select(
+        CQCL.location_id, CQCLClean.cqc_location_import_date, CQCL.regulated_activities
+    )
+    exploded_activities_df = df.withColumn(
+        CQCLClean.regulated_activities_exploded, F.explode(CQCL.regulated_activities)
+    )
+    exploded_contacts_df = exploded_activities_df.withColumn(
+        CQCLClean.contacts_exploded,
+        F.explode(
+            exploded_activities_df[CQCLClean.regulated_activities_exploded][
+                CQCL.contacts
+            ]
+        ),
+    )
+    exploded_contacts_df = exploded_contacts_df.drop(
+        CQCLClean.regulated_activities_exploded
+    )
+    return exploded_contacts_df
+
+
+def select_and_create_full_name(df: DataFrame) -> DataFrame:
+    """
+    Selects relevant columns and creates a full_name column by concatenating given and family names.
+
+    Args:
+        df (DataFrame): Input DataFrame with exploded contacts.
+
+    Returns:
+        DataFrame: DataFrame with selected columns and full_name column.
+    """
+    df = df.select(
+        df[CQCL.location_id],
+        df[CQCLClean.cqc_location_import_date],
+        df[CQCLClean.contacts_exploded][CQCL.person_roles].alias(
+            CQCLClean.contacts_roles
+        ),
+        F.concat_ws(
+            " ",
+            df[CQCLClean.contacts_exploded][CQCL.person_given_name],
+            df[CQCLClean.contacts_exploded][CQCL.person_family_name],
+        ).alias(CQCLClean.contacts_full_name),
+    )
+    return df
+
+
+def filter_to_registered_managers(df: DataFrame, identifier: str) -> DataFrame:
+    """
+    Filters the DataFrame to only include rows where person_roles contains the specified identifier.
+
+    Args:
+        df (DataFrame): Input DataFrame with selected columns.
+        identifier (str): The role identifier to filter by (e.g., "Registered Manager").
+
+    Returns:
+        DataFrame: Filtered DataFrame.
+    """
+    return df.where(F.array_contains(df[CQCLClean.contacts_roles], identifier))
+
+
+def group_and_collect(df: DataFrame) -> DataFrame:
+    """
+    Groups the DataFrame by location_id and cqc_location_import_date, and collects roles and names into arrays.
+
+    Args:
+        df (DataFrame): Filtered DataFrame.
+
+    Returns:
+        DataFrame: Grouped DataFrame with collected roles and names.
+    """
+    return df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
+        F.collect_set(CQCLClean.contacts_full_name).alias(
+            CQCLClean.registered_manager_names
+        )
+    )
+
+
+def join_with_original(df: DataFrame, df_final: DataFrame) -> DataFrame:
+    """
+    Joins the grouped DataFrame with the original DataFrame.
+
+    Args:
+        df (DataFrame): Original DataFrame.
+        df_final (DataFrame): Grouped DataFrame with collected roles and names.
+
+    Returns:
+        DataFrame: Joined DataFrame.
+    """
+    return df.join(
+        df_final, [CQCL.location_id, CQCLClean.cqc_location_import_date], "left"
+    )
 
 
 if __name__ == "__main__":
