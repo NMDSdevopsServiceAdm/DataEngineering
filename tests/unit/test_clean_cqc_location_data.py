@@ -33,6 +33,9 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         self.test_clean_cqc_location_df = self.spark.createDataFrame(
             Data.sample_rows, schema=Schemas.detailed_schema
         )
+        self.test_location_df = self.spark.createDataFrame(
+            Data.small_location_rows, Schemas.small_location_schema
+        )
         self.test_provider_df = self.spark.createDataFrame(
             Data.join_provider_rows, Schemas.join_provider_schema
         )

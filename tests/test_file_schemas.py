@@ -1150,6 +1150,14 @@ class CQCLocationsSchema:
         ]
     )
 
+    small_location_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
     join_provider_schema = StructType(
         [
             StructField(CQCPClean.provider_id, StringType(), True),
