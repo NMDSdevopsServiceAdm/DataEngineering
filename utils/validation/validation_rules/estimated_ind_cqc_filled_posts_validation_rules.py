@@ -38,7 +38,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             # IndCqcColumns.imputed_posts_non_res_with_dormancy_model: 1.0, # temporarily removed until non res models are fixed
             IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.number_of_beds: 1,
-            IndCqcColumns.people_directly_employed_dedup: 1,
+            IndCqcColumns.pir_people_directly_employed_dedup: 1,
             IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
@@ -52,7 +52,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
-            # IndCqcColumns.people_directly_employed_dedup: 3000, # temporarily removed until PIR data is cleaned
+            # IndCqcColumns.pir_people_directly_employed_dedup: 3000, # temporarily removed until PIR data is cleaned
             IndCqcColumns.non_res_pir_linear_regression_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
         },

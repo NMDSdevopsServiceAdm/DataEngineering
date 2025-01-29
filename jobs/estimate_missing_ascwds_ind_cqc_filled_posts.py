@@ -76,9 +76,9 @@ def main(
 
     estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_missing_ascwds_df,
-        IndCQC.people_directly_employed_dedup,
+        IndCQC.pir_people_directly_employed_dedup,
         IndCQC.rolling_rate_of_change_model,
-        IndCQC.imputed_non_res_people_directly_employed,
+        IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
     )
 

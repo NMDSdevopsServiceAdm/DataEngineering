@@ -15,7 +15,7 @@ class PIRCleanedValidationRules:
         RuleName.complete_columns: [
             CQCPIRClean.cqc_pir_import_date,
             CQCPIRClean.location_id,
-            CQCPIRClean.people_directly_employed,
+            CQCPIRClean.pir_people_directly_employed,
             CQCPIRClean.care_home,
         ],
         RuleName.index_columns: [
@@ -24,10 +24,10 @@ class PIRCleanedValidationRules:
             CQCPIRClean.cqc_pir_import_date,
         ],
         RuleName.max_values: {
-            CQCPIRClean.people_directly_employed: 10000,
+            CQCPIRClean.pir_people_directly_employed: 10000,
         },
         RuleName.min_values: {
-            CQCPIRClean.people_directly_employed: 1,
+            CQCPIRClean.pir_people_directly_employed: 1,
         },
         RuleName.categorical_values_in_columns: {
             CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,
