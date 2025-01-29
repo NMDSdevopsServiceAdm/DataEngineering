@@ -1382,6 +1382,177 @@ class CQCLocationsSchema:
         ]
     )
 
+    extract_contacts_information_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_extract_contacts_information_schema = StructType(
+        [
+            *extract_contacts_information_schema,
+            StructField(
+                CQCLClean.contacts_exploded,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.person_family_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_given_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_roles,
+                            ArrayType(StringType(), True),
+                            True,
+                        ),
+                        StructField(CQCL.person_title, StringType(), True),
+                    ]
+                ),
+            ),
+        ]
+    )
+
+    select_and_create_full_name_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(
+                CQCLClean.contacts_exploded,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.person_family_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_given_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_roles,
+                            ArrayType(StringType(), True),
+                            True,
+                        ),
+                        StructField(CQCL.person_title, StringType(), True),
+                    ]
+                ),
+            ),
+        ]
+    )
+    expected_select_and_create_full_name_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.contacts_roles, ArrayType(StringType(), True), True),
+            StructField(CQCLClean.contacts_full_name, StringType(), True),
+        ]
+    )
+
+    filter_to_registered_managers_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.contacts_roles, ArrayType(StringType(), True), True),
+            StructField(CQCLClean.contacts_full_name, StringType(), True),
+        ]
+    )
+
+    group_and_collect_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCLClean.contacts_full_name, StringType(), True),
+        ]
+    )
+    expected_group_and_collect_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+
+    original_test_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+        ]
+    )
+    registered_manager_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+    expected_join_with_original_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+
 
 @dataclass
 class UtilsSchema:
