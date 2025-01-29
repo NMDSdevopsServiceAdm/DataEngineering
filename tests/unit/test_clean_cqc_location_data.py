@@ -894,12 +894,31 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_column_related_location_returns_correct_values(self):
-        test_df = self.spark.createDataFrame(
+        self.extract_registered_manager_df = self.spark.createDataFrame(
             Data.extract_registered_manager_rows,
             Schemas.extract_registered_manager_schema,
         )
-        returned_df = job.extract_registered_manager_names(test_df)
+
+    @patch("jobs.clean_cqc_location_data.join_with_original")
+    @patch("jobs.clean_cqc_location_data.group_and_collect_names")
+    @patch("jobs.clean_cqc_location_data.filter_to_registered_managers")
+    @patch("jobs.clean_cqc_location_data.select_and_create_full_name")
+    @patch("jobs.clean_cqc_location_data.extract_contacts_information")
+    def test_extract_registered_manager_names_calls_all_functions(
+        self,
+        extract_contacts_information_mock: Mock,
+        select_and_create_full_name_mock: Mock,
+        filter_to_registered_managers_mock: Mock,
+        group_and_collect_names_mock: Mock,
+        join_with_original_mock: Mock,
+    ):
+        job.extract_registered_manager_names(self.extract_registered_manager_df)
+
+        extract_contacts_information_mock.assert_called_once()
+        select_and_create_full_name_mock.assert_called_once()
+        filter_to_registered_managers_mock.assert_called_once()
+        group_and_collect_names_mock.assert_called_once()
+        join_with_original_mock.assert_called_once()
 
 
 if __name__ == "__main__":
