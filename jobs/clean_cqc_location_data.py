@@ -114,6 +114,9 @@ def main(
     registered_locations_df = realign_carehome_column_with_primary_service(
         registered_locations_df
     )
+    registered_locations_df = extract_registered_manager_information(
+        registered_locations_df
+    )
 
     registered_locations_df = add_column_related_location(registered_locations_df)
 
@@ -132,9 +135,6 @@ def main(
         registered_locations_df, ons_postcode_directory_df
     )
     registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
-        registered_locations_df
-    )
-    registered_locations_df = extract_registered_manager_information(
         registered_locations_df
     )
 
@@ -727,7 +727,6 @@ def extract_registered_manager_information(df: DataFrame) -> DataFrame:
     df_final = group_and_collect(df_filtered)
     df_with_reg_man_names = join_with_original(df, df_final)
 
-    df_with_reg_man_names.show(truncate=False)
     return df_with_reg_man_names
 
 
