@@ -722,7 +722,7 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     registered_manager_identifier: str = "Registered Manager"
 
-    exploded_contacts_df = explode_regulated_activities_to_get_contacts_information(df)
+    exploded_contacts_df = extract_contacts_information(df)
     contact_names_df = select_and_create_full_name(exploded_contacts_df)
     registered_manager_names_df = filter_to_registered_managers(
         contact_names_df, registered_manager_identifier
@@ -735,7 +735,7 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     return df_with_reg_man_names
 
 
-def explode_regulated_activities_to_get_contacts_information(
+def extract_contacts_information(
     df: DataFrame,
 ) -> DataFrame:
     """
