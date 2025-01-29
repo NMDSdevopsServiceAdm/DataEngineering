@@ -890,7 +890,7 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
         )
 
 
-class ExtractRegisteredManagerInformationTests(CleanCQCLocationDatasetTests):
+class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -899,7 +899,7 @@ class ExtractRegisteredManagerInformationTests(CleanCQCLocationDatasetTests):
             Data.extract_registered_manager_rows,
             Schemas.extract_registered_manager_schema,
         )
-        returned_df = job.extract_registered_manager_information(test_df)
+        returned_df = job.extract_registered_manager_names(test_df)
 
 
 if __name__ == "__main__":

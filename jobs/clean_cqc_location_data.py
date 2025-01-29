@@ -114,9 +114,7 @@ def main(
     registered_locations_df = realign_carehome_column_with_primary_service(
         registered_locations_df
     )
-    registered_locations_df = extract_registered_manager_information(
-        registered_locations_df
-    )
+    registered_locations_df = extract_registered_manager_names(registered_locations_df)
 
     registered_locations_df = add_column_related_location(registered_locations_df)
 
@@ -707,25 +705,32 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         return cleaned_locations_df
 
 
-def extract_registered_manager_information(df: DataFrame) -> DataFrame:
+def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     """
-    Extracts registered manager information from the DataFrame.
+    Extracts registered manager names from the regulated activities column.
+
+    The CQC requires a registered manager for each regulated activity at a location.
+    The regulated activities column contains an array of contacts for each activity the location offers.
+    This function extracts the names for all contacts with the role 'Registered Manager' and adds them into an array column.
+    Registered manager names are deduplicated in the array so each name will only appears once in the array.
 
     Args:
-        df (DataFrame): Input DataFrame.
+        df (DataFrame): Input DataFrame with regulated_activities array.
 
     Returns:
-        DataFrame: DataFrame with registered manager names.
+        DataFrame: DataFrame with deduplicated registered manager names in a new column.
     """
     registered_manager_identifier: str = "Registered Manager"
 
-    contacts_df = explode_regulated_activities_to_get_contacts_information(df)
-    df_result = select_and_create_full_name(contacts_df)
-    df_filtered = filter_to_registered_managers(
-        df_result, registered_manager_identifier
+    exploded_contacts_df = explode_regulated_activities_to_get_contacts_information(df)
+    contact_names_df = select_and_create_full_name(exploded_contacts_df)
+    registered_manager_names_df = filter_to_registered_managers(
+        contact_names_df, registered_manager_identifier
     )
-    df_final = group_and_collect(df_filtered)
-    df_with_reg_man_names = join_with_original(df, df_final)
+    grouped_registered_manager_names_df = group_and_collect_names(
+        registered_manager_names_df
+    )
+    df_with_reg_man_names = join_with_original(df, grouped_registered_manager_names_df)
 
     return df_with_reg_man_names
 
@@ -740,7 +745,7 @@ def explode_regulated_activities_to_get_contacts_information(
         df (DataFrame): Input DataFrame with regulated_activities array.
 
     Returns:
-        DataFrame: DataFrame with exploded regulated_activities and contacts.
+        DataFrame: DataFrame with exploded contacts information.
     """
     df = df.select(
         CQCL.location_id, CQCLClean.cqc_location_import_date, CQCL.regulated_activities
@@ -767,7 +772,7 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
     Selects relevant columns and creates a full_name column by concatenating given and family names.
 
     Args:
-        df (DataFrame): Input DataFrame with exploded contacts.
+        df (DataFrame): Input DataFrame with exploded contacts information.
 
     Returns:
         DataFrame: DataFrame with selected columns and full_name column.
@@ -789,11 +794,11 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
 
 def filter_to_registered_managers(df: DataFrame, identifier: str) -> DataFrame:
     """
-    Filters the DataFrame to only include rows where person_roles contains the specified identifier.
+    Filters the DataFrame to only include rows where the role contains the specified registered manager identifier.
 
     Args:
         df (DataFrame): Input DataFrame with selected columns.
-        identifier (str): The role identifier to filter by (e.g., "Registered Manager").
+        identifier (str): The role identifier to filter by (e.g. "Registered Manager").
 
     Returns:
         DataFrame: Filtered DataFrame.
@@ -801,15 +806,15 @@ def filter_to_registered_managers(df: DataFrame, identifier: str) -> DataFrame:
     return df.where(F.array_contains(df[CQCLClean.contacts_roles], identifier))
 
 
-def group_and_collect(df: DataFrame) -> DataFrame:
+def group_and_collect_names(df: DataFrame) -> DataFrame:
     """
-    Groups the DataFrame by location_id and cqc_location_import_date, and collects roles and names into arrays.
+    Groups the DataFrame by location_id and cqc_location_import_date, and collects all the unique names into an array column.
 
     Args:
         df (DataFrame): Filtered DataFrame.
 
     Returns:
-        DataFrame: Grouped DataFrame with collected roles and names.
+        DataFrame: Grouped DataFrame with unique registered manager names at each location and time period.
     """
     return df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
         F.collect_set(CQCLClean.contacts_full_name).alias(
@@ -818,19 +823,23 @@ def group_and_collect(df: DataFrame) -> DataFrame:
     )
 
 
-def join_with_original(df: DataFrame, df_final: DataFrame) -> DataFrame:
+def join_with_original(
+    df: DataFrame, registered_manager_names_df: DataFrame
+) -> DataFrame:
     """
-    Joins the grouped DataFrame with the original DataFrame.
+    Joins the DataFrame with the registered manager names column into the original DataFrame.
 
     Args:
         df (DataFrame): Original DataFrame.
-        df_final (DataFrame): Grouped DataFrame with collected roles and names.
+        registered_manager_names_df (DataFrame): Grouped DataFrame with registered manager names column.
 
     Returns:
-        DataFrame: Joined DataFrame.
+        DataFrame: Original DataFrame with registered manager names column joined in.
     """
     return df.join(
-        df_final, [CQCL.location_id, CQCLClean.cqc_location_import_date], "left"
+        registered_manager_names_df,
+        [CQCL.location_id, CQCLClean.cqc_location_import_date],
+        "left",
     )
 
 
