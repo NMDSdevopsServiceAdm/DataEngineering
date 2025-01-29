@@ -2628,29 +2628,6 @@ class CQCLocationsData:
         ("6", CareHome.not_care_home, PrimaryServiceType.non_residential),
     ]
 
-    small_location_rows = [
-        (
-            "loc-1",
-            "prov-1",
-            "20200101",
-        ),
-        (
-            "loc-2",
-            "prov-1",
-            "20200101",
-        ),
-        (
-            "loc-3",
-            "prov-2",
-            "20200101",
-        ),
-        (
-            "loc-4",
-            "prov-2",
-            "20210101",
-        ),
-    ]
-
     join_provider_rows = [
         (
             "prov-1",
