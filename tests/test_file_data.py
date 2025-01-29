@@ -3207,7 +3207,7 @@ class CQCLocationsData:
     )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
 
-    add_column_related_location_rows = [
+    add_related_location_column_rows = [
         ("loc 1", None),
         ("loc 2", []),
         (
@@ -3239,7 +3239,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_add_column_related_location_rows = [
+    expected_add_related_location_column_rows = [
         ("loc 1", None, RelatedLocation.no_related_location),
         ("loc 2", [], RelatedLocation.no_related_location),
         (

@@ -115,7 +115,7 @@ def main(
         registered_locations_df
     )
 
-    registered_locations_df = add_column_related_location(registered_locations_df)
+    registered_locations_df = add_related_location_column(registered_locations_df)
 
     registered_locations_df = join_cqc_provider_data(
         registered_locations_df, cqc_provider_df
@@ -546,7 +546,7 @@ def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     return df
 
 
-def add_column_related_location(df: DataFrame) -> DataFrame:
+def add_related_location_column(df: DataFrame) -> DataFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not
 
