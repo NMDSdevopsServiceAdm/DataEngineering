@@ -899,7 +899,7 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
             Schemas.extract_registered_manager_schema,
         )
 
-    @patch("jobs.clean_cqc_location_data.join_with_original")
+    @patch("jobs.clean_cqc_location_data.join_names_column_into_original_df")
     @patch("jobs.clean_cqc_location_data.group_and_collect_names")
     @patch("jobs.clean_cqc_location_data.select_and_create_full_name")
     @patch("jobs.clean_cqc_location_data.extract_contacts_information")
@@ -908,14 +908,14 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
         extract_contacts_information_mock: Mock,
         select_and_create_full_name_mock: Mock,
         group_and_collect_names_mock: Mock,
-        join_with_original_mock: Mock,
+        join_names_column_into_original_df_mock: Mock,
     ):
         job.extract_registered_manager_names(self.extract_registered_manager_df)
 
         extract_contacts_information_mock.assert_called_once()
         select_and_create_full_name_mock.assert_called_once()
         group_and_collect_names_mock.assert_called_once()
-        join_with_original_mock.assert_called_once()
+        join_names_column_into_original_df_mock.assert_called_once()
 
     def test_extract_registered_manager_names_returns_the_same_number_of_rows(self):
         returned_df = job.extract_registered_manager_names(
