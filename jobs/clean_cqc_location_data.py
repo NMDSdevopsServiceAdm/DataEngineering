@@ -31,6 +31,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     current_geography_columns,
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
+from utils.cqc_location_utils.extract_registered_manager_names import (
+    extract_registered_manager_names_from_regulated_activities_column,
+)
 from utils.raw_data_adjustments import remove_records_from_locations_data
 
 
@@ -114,7 +117,11 @@ def main(
     registered_locations_df = realign_carehome_column_with_primary_service(
         registered_locations_df
     )
-    registered_locations_df = extract_registered_manager_names(registered_locations_df)
+    registered_locations_df = (
+        extract_registered_manager_names_from_regulated_activities_column(
+            registered_locations_df
+        )
+    )
 
     registered_locations_df = add_column_related_location(registered_locations_df)
 
@@ -703,124 +710,6 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             "All postcodes were found in the ONS postcode file, returning original dataframe"
         )
         return cleaned_locations_df
-
-
-def extract_registered_manager_names(df: DataFrame) -> DataFrame:
-    """
-    Extracts registered manager names from the regulated activities column.
-
-    The CQC requires a registered manager for each regulated activity at a location.
-    The regulated activities column contains an array of contacts for each activity the location offers.
-    This function extracts the names for all contacts (Registered Managers) and adds them into an array column.
-    Registered manager names are deduplicated in the array so each name will only appear once in the array.
-
-    Args:
-        df (DataFrame): Input DataFrame with regulated_activities column.
-
-    Returns:
-        DataFrame: DataFrame with deduplicated registered manager names in a new column.
-    """
-    exploded_contacts_df = extract_contacts_information(df)
-    contact_names_df = select_and_create_full_name(exploded_contacts_df)
-    grouped_registered_manager_names_df = group_and_collect_names(contact_names_df)
-    df_with_reg_man_names = join_names_column_into_original_df(
-        df, grouped_registered_manager_names_df
-    )
-
-    return df_with_reg_man_names
-
-
-def extract_contacts_information(
-    df: DataFrame,
-) -> DataFrame:
-    """
-    Explodes the regulated_activities array and then the contacts array in the DataFrame.
-
-    Args:
-        df (DataFrame): Input DataFrame with regulated_activities array.
-
-    Returns:
-        DataFrame: DataFrame with exploded contacts information.
-    """
-    df = df.select(
-        CQCL.location_id, CQCLClean.cqc_location_import_date, CQCL.regulated_activities
-    )
-    exploded_activities_df = df.withColumn(
-        CQCLClean.regulated_activities_exploded, F.explode(CQCL.regulated_activities)
-    )
-    exploded_contacts_df = exploded_activities_df.withColumn(
-        CQCLClean.contacts_exploded,
-        F.explode(
-            exploded_activities_df[CQCLClean.regulated_activities_exploded][
-                CQCL.contacts
-            ]
-        ),
-    )
-    exploded_contacts_df = exploded_contacts_df.drop(
-        CQCLClean.regulated_activities_exploded
-    )
-    return exploded_contacts_df
-
-
-def select_and_create_full_name(df: DataFrame) -> DataFrame:
-    """
-    Selects relevant columns and creates a full_name column by concatenating given and family names.
-
-    Args:
-        df (DataFrame): Input DataFrame with exploded contacts information.
-
-    Returns:
-        DataFrame: DataFrame with selected columns and full_name column.
-    """
-    df = df.select(
-        df[CQCL.location_id],
-        df[CQCLClean.cqc_location_import_date],
-        F.concat_ws(
-            " ",
-            df[CQCLClean.contacts_exploded][CQCL.person_given_name],
-            df[CQCLClean.contacts_exploded][CQCL.person_family_name],
-        ).alias(CQCLClean.contacts_full_name),
-    )
-    return df
-
-
-def group_and_collect_names(df: DataFrame) -> DataFrame:
-    """
-    Groups the DataFrame by location_id and cqc_location_import_date, and collects all the unique names into an array column.
-
-    Args:
-        df (DataFrame): Filtered DataFrame.
-
-    Returns:
-        DataFrame: Grouped DataFrame with unique registered manager names at each location and time period.
-    """
-    df = df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
-        F.collect_set(CQCLClean.contacts_full_name).alias(
-            CQCLClean.registered_manager_names
-        )
-    )
-    return df
-
-
-def join_names_column_into_original_df(
-    df: DataFrame, registered_manager_names_df: DataFrame
-) -> DataFrame:
-    """
-    Joins the DataFrame with the registered manager names column into the original DataFrame.
-
-    Args:
-        df (DataFrame): Original DataFrame.
-        registered_manager_names_df (DataFrame): Grouped DataFrame with registered manager names column.
-
-    Returns:
-        DataFrame: Original DataFrame with registered manager names column joined in.
-    """
-    df = df.join(
-        registered_manager_names_df,
-        [CQCL.location_id, CQCLClean.cqc_location_import_date],
-        "left",
-    )
-    return df
 
 
 if __name__ == "__main__":

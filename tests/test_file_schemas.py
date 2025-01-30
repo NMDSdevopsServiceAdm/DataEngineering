@@ -1333,6 +1333,9 @@ class CQCLocationsSchema:
         ]
     )
 
+
+@dataclass
+class ExtractRegisteredManagerNamesSchema:
     extract_registered_manager_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),

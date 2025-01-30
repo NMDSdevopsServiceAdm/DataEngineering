@@ -3274,6 +3274,9 @@ class CQCLocationsData:
         ),
     ]
 
+
+@dataclass
+class ExtractRegisteredManagerNamesData:
     extract_registered_manager_rows = [
         (
             "1-001",
