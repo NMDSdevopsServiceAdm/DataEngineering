@@ -71,6 +71,20 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
+    # TODO 1. Make a window over establishmentid, import date and job role.
+
+    # TODO 2. Use the window to add a column called "temp_job_role_count". 
+    #         The values are a count of rows in window.
+    #
+    # TODO 3. Make another window over locationid and import date.    #
+    #
+    # TODO 3. Use create_map function to create a new column of type dictionary. Apply that function over the new window.
+    #         create_map function arguments must be column or string.
+    #         For example: 
+    #         df = df.withColumn(
+    #           "map_column_name",
+    #           F.create_map(job role column, temp_job_role_count column).alias("ascwds_main_job_role_counts").over(window)
+
     utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
