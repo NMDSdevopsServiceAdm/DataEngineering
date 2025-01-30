@@ -1305,7 +1305,7 @@ class CQCLocationsSchema:
             ),
         ]
     )
-    add_column_related_location_schema = StructType(
+    add_related_location_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
@@ -1326,9 +1326,9 @@ class CQCLocationsSchema:
         ]
     )
 
-    expected_add_column_related_location_schema = StructType(
+    expected_add_related_location_column_schema = StructType(
         [
-            *add_column_related_location_schema,
+            *add_related_location_column_schema,
             StructField(CQCLClean.related_location, StringType(), True),
         ]
     )
