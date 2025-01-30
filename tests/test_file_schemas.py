@@ -1493,15 +1493,6 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.contacts_roles, ArrayType(StringType(), True), True),
-            StructField(CQCLClean.contacts_full_name, StringType(), True),
-        ]
-    )
-
-    filter_to_registered_managers_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCLClean.contacts_roles, ArrayType(StringType(), True), True),
             StructField(CQCLClean.contacts_full_name, StringType(), True),
         ]
     )

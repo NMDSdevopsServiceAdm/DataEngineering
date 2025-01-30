@@ -901,14 +901,12 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
 
     @patch("jobs.clean_cqc_location_data.join_with_original")
     @patch("jobs.clean_cqc_location_data.group_and_collect_names")
-    @patch("jobs.clean_cqc_location_data.filter_to_registered_managers")
     @patch("jobs.clean_cqc_location_data.select_and_create_full_name")
     @patch("jobs.clean_cqc_location_data.extract_contacts_information")
     def test_extract_registered_manager_names_calls_all_functions(
         self,
         extract_contacts_information_mock: Mock,
         select_and_create_full_name_mock: Mock,
-        filter_to_registered_managers_mock: Mock,
         group_and_collect_names_mock: Mock,
         join_with_original_mock: Mock,
     ):
@@ -916,7 +914,6 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
 
         extract_contacts_information_mock.assert_called_once()
         select_and_create_full_name_mock.assert_called_once()
-        filter_to_registered_managers_mock.assert_called_once()
         group_and_collect_names_mock.assert_called_once()
         join_with_original_mock.assert_called_once()
 
@@ -999,21 +996,6 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
             Schemas.expected_select_and_create_full_name_schema,
         )
         returned_df = job.select_and_create_full_name(test_df)
-        self.assertEqual(
-            expected_df.sort(CQCL.location_id).collect(),
-            returned_df.sort(CQCL.location_id).collect(),
-        )
-
-    def test_filter_to_registered_managers_returns_expected_df(self):
-        test_df = self.spark.createDataFrame(
-            Data.filter_to_registered_managers_rows,
-            Schemas.filter_to_registered_managers_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_filter_to_registered_managers_rows,
-            Schemas.filter_to_registered_managers_schema,
-        )
-        returned_df = job.filter_to_registered_managers(test_df, "Registered Manager")
         self.assertEqual(
             expected_df.sort(CQCL.location_id).collect(),
             returned_df.sort(CQCL.location_id).collect(),

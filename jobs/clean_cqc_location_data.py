@@ -711,7 +711,7 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
 
     The CQC requires a registered manager for each regulated activity at a location.
     The regulated activities column contains an array of contacts for each activity the location offers.
-    This function extracts the names for all contacts with the role 'Registered Manager' and adds them into an array column.
+    This function extracts the names for all contacts (Registered Managers) and adds them into an array column.
     Registered manager names are deduplicated in the array so each name will only appears once in the array.
 
     Args:
@@ -720,16 +720,9 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with deduplicated registered manager names in a new column.
     """
-    registered_manager_identifier: str = "Registered Manager"
-
     exploded_contacts_df = extract_contacts_information(df)
     contact_names_df = select_and_create_full_name(exploded_contacts_df)
-    registered_manager_names_df = filter_to_registered_managers(
-        contact_names_df, registered_manager_identifier
-    )
-    grouped_registered_manager_names_df = group_and_collect_names(
-        registered_manager_names_df
-    )
+    grouped_registered_manager_names_df = group_and_collect_names(contact_names_df)
     df_with_reg_man_names = join_with_original(df, grouped_registered_manager_names_df)
 
     return df_with_reg_man_names
@@ -780,9 +773,6 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
     df = df.select(
         df[CQCL.location_id],
         df[CQCLClean.cqc_location_import_date],
-        df[CQCLClean.contacts_exploded][CQCL.person_roles].alias(
-            CQCLClean.contacts_roles
-        ),
         F.concat_ws(
             " ",
             df[CQCLClean.contacts_exploded][CQCL.person_given_name],
@@ -790,20 +780,6 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
         ).alias(CQCLClean.contacts_full_name),
     )
     return df
-
-
-def filter_to_registered_managers(df: DataFrame, identifier: str) -> DataFrame:
-    """
-    Filters the DataFrame to only include rows where the role contains the specified registered manager identifier.
-
-    Args:
-        df (DataFrame): Input DataFrame with selected columns.
-        identifier (str): The role identifier to filter by (e.g. "Registered Manager").
-
-    Returns:
-        DataFrame: Filtered DataFrame.
-    """
-    return df.where(F.array_contains(df[CQCLClean.contacts_roles], identifier))
 
 
 def group_and_collect_names(df: DataFrame) -> DataFrame:
