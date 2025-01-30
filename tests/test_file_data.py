@@ -3286,13 +3286,13 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_1a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                         {
                             CQCL.person_family_name: "Surname_1b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3311,7 +3311,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3332,7 +3332,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3344,7 +3344,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3364,7 +3364,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3376,7 +3376,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3385,7 +3385,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_2a",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3400,7 +3400,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3412,7 +3412,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3421,7 +3421,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_2b",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3439,13 +3439,13 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_1a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                         {
                             CQCL.person_family_name: "Surname_1b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3465,13 +3465,13 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_1a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                         {
                             CQCL.person_family_name: "Surname_1b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3480,7 +3480,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_1a",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3495,13 +3495,13 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_1a",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                         {
                             CQCL.person_family_name: "Surname_1b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3510,7 +3510,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_1b",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3529,7 +3529,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3550,7 +3550,7 @@ class CQCLocationsData:
                         {
                             CQCL.person_family_name: "Surname_2b",
                             CQCL.person_given_name: "Name",
-                            CQCL.person_roles: [["Registered Manager"]],
+                            CQCL.person_roles: ["Registered Manager"],
                             CQCL.person_title: "M",
                         },
                     ],
@@ -3559,7 +3559,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_2b",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3573,7 +3573,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_1",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
@@ -3584,7 +3584,7 @@ class CQCLocationsData:
             {
                 CQCL.person_family_name: "Surname_2",
                 CQCL.person_given_name: "Name",
-                CQCL.person_roles: [["Registered Manager"]],
+                CQCL.person_roles: ["Registered Manager"],
                 CQCL.person_title: "M",
             },
         ),
