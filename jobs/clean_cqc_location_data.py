@@ -712,10 +712,10 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     The CQC requires a registered manager for each regulated activity at a location.
     The regulated activities column contains an array of contacts for each activity the location offers.
     This function extracts the names for all contacts (Registered Managers) and adds them into an array column.
-    Registered manager names are deduplicated in the array so each name will only appears once in the array.
+    Registered manager names are deduplicated in the array so each name will only appear once in the array.
 
     Args:
-        df (DataFrame): Input DataFrame with regulated_activities array.
+        df (DataFrame): Input DataFrame with regulated_activities column.
 
     Returns:
         DataFrame: DataFrame with deduplicated registered manager names in a new column.
@@ -794,11 +794,12 @@ def group_and_collect_names(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: Grouped DataFrame with unique registered manager names at each location and time period.
     """
-    return df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
+    df = df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
         F.collect_set(CQCLClean.contacts_full_name).alias(
             CQCLClean.registered_manager_names
         )
     )
+    return df
 
 
 def join_names_column_into_original_df(
@@ -814,11 +815,12 @@ def join_names_column_into_original_df(
     Returns:
         DataFrame: Original DataFrame with registered manager names column joined in.
     """
-    return df.join(
+    df = df.join(
         registered_manager_names_df,
         [CQCL.location_id, CQCLClean.cqc_location_import_date],
         "left",
     )
+    return df
 
 
 if __name__ == "__main__":
