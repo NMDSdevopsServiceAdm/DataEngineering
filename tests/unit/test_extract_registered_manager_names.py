@@ -25,11 +25,17 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
         )
 
     @patch(
-        "utils.cqc_location_utils.cqc_location_utils.join_names_column_into_original_df"
+        "utils.cqc_location_utils.extract_registered_manager_names.join_names_column_into_original_df"
     )
-    @patch("utils.cqc_location_utils.cqc_location_utils.group_and_collect_names")
-    @patch("utils.cqc_location_utils.cqc_location_utils.select_and_create_full_name")
-    @patch("utils.cqc_location_utils.cqc_location_utils.extract_contacts_information")
+    @patch(
+        "utils.cqc_location_utils.extract_registered_manager_names.group_and_collect_names"
+    )
+    @patch(
+        "utils.cqc_location_utils.extract_registered_manager_names.select_and_create_full_name"
+    )
+    @patch(
+        "utils.cqc_location_utils.extract_registered_manager_names.extract_contacts_information"
+    )
     def test_extract_registered_manager_names_calls_all_functions(
         self,
         extract_contacts_information_mock: Mock,
