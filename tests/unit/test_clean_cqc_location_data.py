@@ -1037,7 +1037,7 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
             ).collect(),
         )
 
-    def test_join_with_original_returns_expected_df(
+    def test_join_names_column_into_original_df_returns_expected_df(
         self,
     ):
         original_df = self.spark.createDataFrame(
@@ -1052,7 +1052,7 @@ class ExtractRegisteredManagerNamesTests(CleanCQCLocationDatasetTests):
             Data.expected_join_with_original_rows,
             Schemas.expected_join_with_original_schema,
         )
-        returned_joined_df = job.join_with_original(
+        returned_joined_df = job.join_names_column_into_original_df(
             original_df, registered_manager_names_df
         )
         self.assertEqual(

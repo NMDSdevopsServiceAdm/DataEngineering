@@ -723,7 +723,9 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     exploded_contacts_df = extract_contacts_information(df)
     contact_names_df = select_and_create_full_name(exploded_contacts_df)
     grouped_registered_manager_names_df = group_and_collect_names(contact_names_df)
-    df_with_reg_man_names = join_with_original(df, grouped_registered_manager_names_df)
+    df_with_reg_man_names = join_names_column_into_original_df(
+        df, grouped_registered_manager_names_df
+    )
 
     return df_with_reg_man_names
 
@@ -799,7 +801,7 @@ def group_and_collect_names(df: DataFrame) -> DataFrame:
     )
 
 
-def join_with_original(
+def join_names_column_into_original_df(
     df: DataFrame, registered_manager_names_df: DataFrame
 ) -> DataFrame:
     """
