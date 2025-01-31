@@ -10,6 +10,18 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as NewColNames,
 )
 
+"""
+This schema (and the data in s3) has been updated to match changes which were announced 
+to be taking place on 30/1/25. The three new columns added are highlighted below. This 
+update to the API has now been postponed and no new launch date has been communicated as
+yet. We are leaving these columns in the schema for now, as they do not affect the pipeline.
+If another API schema change happens before these columns are added, they may need removing.
+
+The changes were made in PR #680: Update location api schema. Note that reversing this PR will 
+also roll back the version number for the CQC locations data in s3. The data in s3 and the
+version number in s3 will need reverting separately.
+"""
+
 LOCATION_SCHEMA = StructType(
     [
         StructField(NewColNames.location_id, StringType(), True),
@@ -526,7 +538,7 @@ LOCATION_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.specialism,
+            NewColNames.specialism,  # new column
             ArrayType(
                 StructType(
                     [
@@ -539,7 +551,7 @@ LOCATION_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.age_group,
+            NewColNames.age_group,  # new column
             ArrayType(
                 StructType(
                     [
@@ -552,7 +564,7 @@ LOCATION_SCHEMA = StructType(
             True,
         ),
         StructField(
-            NewColNames.setting_services,
+            NewColNames.setting_services,  # new column
             ArrayType(
                 StructType(
                     [
