@@ -2329,6 +2329,21 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
         ]
     )
 
+    workplace_with_two_workers_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    expected_workplace_with_two_workers_schema = StructType(
+        [
+            *workplace_with_two_workers_schema,
+            StructField("ascwds_main_job_role_counts", IntegerType(), True)
+        ]
+    )
+
 
 @dataclass
 class EstimateMissingAscwdsFilledPostsSchemas:
@@ -5428,23 +5443,5 @@ class BlendAscwdsPirData:
             StructField(
                 IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
-        ]
-    )
-
-
-@dataclass
-class JobroleCountMapData:
-    workplace_with_two_workers_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    expected_workplace_with_two_workers_schema = StructType(
-        [
-            *workplace_with_two_workers_schema,
-            StructField("ascwds_main_job_role_counts", IntegerType(), True)
         ]
     )
