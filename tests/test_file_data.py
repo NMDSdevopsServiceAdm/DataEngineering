@@ -9080,4 +9080,16 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), {"Care worker": 1}),
         ("1", date(2025, 2, 1), {"Care worker": 1}),
     ]
+
+
+
+    workplaces_with_different_number_of_unique_jobroles_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("2", date(2025, 1, 1), "Senior care worker", 1),
+        ("2", date(2025, 1, 1), "Registered manager", 1),
+    ]
+    expected_workplaces_with_different_number_of_unique_jobroles_rows = [
+        ("1", date(2025, 1, 1), {"Care worker": 1}),
+        ("2", date(2025, 1, 1), {"Senior care worker": 1, "Registered manager": 1}),
+    ]
     # fmt: on

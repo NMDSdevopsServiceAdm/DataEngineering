@@ -236,3 +236,26 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             returned_df.sort(AWKClean.establishment_id).collect(),
             expected_workplace_across_different_importdates_same_jobrole_counted_df.collect(),
         )
+
+    def test_convert_jobrole_count_to_jobrole_map_converts_when_establishments_have_different_number_of_unique_jobroles(
+        self,
+    ):
+        test_df = (
+            self.spark.createDataFrame(
+                Data.workplaces_with_different_number_of_unique_jobroles_rows,
+                Schemas.worker_with_jobrole_count_schema,
+            )
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_workplaces_with_different_number_of_unique_jobroles_rows,
+            Schemas.worker_with_jobrole_map_schema,
+        )
+
+        returned_df = convert_jobrole_count_to_jobrole_map(
+            test_df
+        )
+
+        self.assertEqual(
+            returned_df.sort(AWKClean.establishment_id).collect(),
+            expected_df.collect(),
+        )

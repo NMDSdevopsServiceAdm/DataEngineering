@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 # Roy - Note - We have a dict in which the keys are job roles and values are counts per establishemnt.
