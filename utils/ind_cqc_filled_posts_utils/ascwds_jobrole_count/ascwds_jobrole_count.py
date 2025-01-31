@@ -9,7 +9,7 @@ def count_job_roles_per_establishment(df: DataFrame) -> DataFrame:
     """
     Counts the number of rows per establishmentid, importdate and main job role.
 
-    This function groups the ASC-WDS worker dataset by establishmentid, importdate and main job role 
+    This function groups the ASC-WDS worker dataset by establishmentid, importdate and main job role
     and adds a column with the count of rows per group.
     Duplicate rows by establishmentid, importdate and main job role are removed.
 
