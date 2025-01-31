@@ -69,22 +69,22 @@ def extract_contacts_information(
 
 def select_and_create_full_name(df: DataFrame) -> DataFrame:
     """
-    Selects relevant columns and creates a full_name column by concatenating given and family names.
+    Selects relevant columns and creates a full name column by concatenating given and family names.
 
     Args:
         df (DataFrame): Input DataFrame with exploded contacts information.
 
     Returns:
-        DataFrame: DataFrame with selected columns and full_name column.
+        DataFrame: DataFrame with selected columns and full name column.
     """
+    first_name: str = df[CQCLClean.contacts_exploded][CQCL.person_given_name]
+    surname: str = df[CQCLClean.contacts_exploded][CQCL.person_family_name]
+    full_name: str = CQCLClean.contacts_full_name
+
     df = df.select(
         df[CQCL.location_id],
         df[CQCLClean.cqc_location_import_date],
-        F.concat_ws(
-            " ",
-            df[CQCLClean.contacts_exploded][CQCL.person_given_name],
-            df[CQCLClean.contacts_exploded][CQCL.person_family_name],
-        ).alias(CQCLClean.contacts_full_name),
+        F.concat(first_name, F.lit(" "), surname).alias(full_name),
     )
     return df
 
