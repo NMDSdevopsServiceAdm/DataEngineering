@@ -149,12 +149,6 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             returned_df.columns, expected_workplace_with_two_workers_df.columns
         )
 
-
-
-
-
-
-
     def test_convert_jobrole_count_to_jobrole_map_converts_one_row_into_one_dict(self):
         test_workplace_with_two_workers_counted_df = self.spark.createDataFrame(
             Data.workplace_with_two_workers_counted_rows,
@@ -174,15 +168,18 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_two_workers_counted_df.collect(),
         )
 
-
     def test_convert_jobrole_count_to_jobrole_map_converts_two_rows_into_one_dict(self):
-        test_workplace_with_one_worker_in_two_roles_counted_df = self.spark.createDataFrame(
-            Data.workplace_with_one_worker_in_two_roles_counted_rows,
-            Schemas.worker_with_jobrole_count_schema,
+        test_workplace_with_one_worker_in_two_roles_counted_df = (
+            self.spark.createDataFrame(
+                Data.workplace_with_one_worker_in_two_roles_counted_rows,
+                Schemas.worker_with_jobrole_count_schema,
+            )
         )
-        expected_workplace_with_one_worker_in_two_roles_counted_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_one_worker_in_two_roles_counted_rows,
-            Schemas.worker_with_jobrole_map_schema,
+        expected_workplace_with_one_worker_in_two_roles_counted_df = (
+            self.spark.createDataFrame(
+                Data.expected_workplace_with_one_worker_in_two_roles_counted_rows,
+                Schemas.worker_with_jobrole_map_schema,
+            )
         )
 
         returned_df = convert_jobrole_count_to_jobrole_map(
@@ -194,15 +191,18 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_one_worker_in_two_roles_counted_df.collect(),
         )
 
-
-    def test_convert_jobrole_count_to_jobrole_map_converts_two_establishments_with_same_role_into_two_dicts(self):
+    def test_convert_jobrole_count_to_jobrole_map_converts_two_establishments_with_same_role_into_two_dicts(
+        self,
+    ):
         test_two_workplaces_with_same_jobrole_counted_rows = self.spark.createDataFrame(
             Data.two_workplaces_with_same_jobrole_counted_rows,
             Schemas.worker_with_jobrole_count_schema,
         )
-        expected_two_workplaces_with_same_jobrole_counted_rows = self.spark.createDataFrame(
-            Data.expected_two_workplaces_with_same_jobrole_counted_rows,
-            Schemas.worker_with_jobrole_map_schema,
+        expected_two_workplaces_with_same_jobrole_counted_rows = (
+            self.spark.createDataFrame(
+                Data.expected_two_workplaces_with_same_jobrole_counted_rows,
+                Schemas.worker_with_jobrole_map_schema,
+            )
         )
 
         returned_df = convert_jobrole_count_to_jobrole_map(
@@ -214,11 +214,14 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_two_workplaces_with_same_jobrole_counted_rows.collect(),
         )
 
-
-    def test_convert_jobrole_count_to_jobrole_map_converts_one_establishment_at_different_importdates_into_two_dicts(self):
-        test_workplace_across_different_importdates_same_jobrole_counted_df = self.spark.createDataFrame(
-            Data.workplace_across_different_importdates_same_jobrole_counted_rows,
-            Schemas.worker_with_jobrole_count_schema,
+    def test_convert_jobrole_count_to_jobrole_map_converts_one_establishment_at_different_importdates_into_two_dicts(
+        self,
+    ):
+        test_workplace_across_different_importdates_same_jobrole_counted_df = (
+            self.spark.createDataFrame(
+                Data.workplace_across_different_importdates_same_jobrole_counted_rows,
+                Schemas.worker_with_jobrole_count_schema,
+            )
         )
         expected_workplace_across_different_importdates_same_jobrole_counted_df = self.spark.createDataFrame(
             Data.expected_workplace_across_different_importdates_same_jobrole_counted_rows,

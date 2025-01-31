@@ -5453,6 +5453,10 @@ class AscwdsJobroleCountSchema:
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.ascwds_main_job_role_counts, MapType(StringType(), IntegerType()), True),
+            StructField(
+                AWKClean.ascwds_main_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
         ]
     )
