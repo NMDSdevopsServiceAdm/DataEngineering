@@ -78,7 +78,7 @@ def main(
     count_job_roles_per_establishment_df = count_job_roles_per_establishment(
         cleaned_ascwds_worker_df
     )
-    count_job_roles_per_establishment_df = mapped_column(
+    count_job_roles_per_establishment_df = convert_jobrole_count_to_jobrole_map(
         count_job_roles_per_establishment_df
     )
 
