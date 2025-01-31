@@ -8991,3 +8991,63 @@ class BlendAscwdsPirData:
         ("loc 1", date(2023, 1, 1), date(2020, 1, 1), 10, 20.0),
     ]
     expected_drop_temporary_columns = [IndCQC.location_id]
+
+
+@dataclass
+class JobroleCountMapData:
+
+    # fmt: off
+    workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), "Care worker"),
+    ]
+
+    expected_workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 2),
+    ]
+
+
+    template_jobrole_count_dict_rows = [
+        ({
+        "Activities worker or co-ordinator" : 0,
+        "Administrative or office staff not care-providing" : 0,
+        "Advice Guidance and Advocacy" : 0,
+        "Allied Health Professional" : 0,
+        "Ancillary staff not care-providing" : 0,
+        "Any Childrens/young peoples job role" : 0,
+        "Assessment officer" : 0,
+        "Care co-ordinator" : 0,
+        "Care Worker" : 0,
+        "Community Support and Outreach Work" : 0,
+        "Data Analyst" : 0,
+        "Data Governance Manager" : 0,
+        "Deputy manager" : 0,
+        "Employment Support" : 0,
+        "First Line Manager" : 0,
+        "IT and Digital Support" : 0,
+        "IT Manager" : 0,
+        "IT Service Desk Manager" : 0,
+        "Learning and development lead" : 0,
+        "Managers and staff in care-related but not care-providing roles" : 0,
+        "Middle Management" : 0,
+        "Not known" : 0,
+        "Nursing Assistant" : 0,
+        "Occupational Therapist" : 0,
+        "Occupational therapist assistant" : 0,
+        "Other care-providing job role" : 0,
+        "Other non-care-providing job roles" : 0,
+        "Registered Manager" : 0,
+        "Registered Nurse" : 0,
+        "Registered Nursing Associate" : 0,
+        "Safeguarding and reviewing officer" : 0,
+        "Senior Care Worker" : 0,
+        "Senior Management" : 0,
+        "Social Worker" : 0,
+        "Software Developer" : 0,
+        "Supervisor" : 0,
+        "Support Worker" : 0,
+        "Team leader" : 0,
+        "Technician" : 0,
+        })
+    ]
+    # fmt: on
