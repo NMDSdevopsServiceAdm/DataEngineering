@@ -5,6 +5,10 @@ from utils import utils
 from tests.test_file_data import AscwdsJobroleCountData as Data
 from tests.test_file_schemas import AscwdsJobroleCountSchema as Schemas
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
+
 from utils.ind_cqc_filled_posts_utils.ascwds_jobrole_count.ascwds_jobrole_count import count_job_roles_per_establishment, mapped_column
 
 class AscwdsJobroleCount(unittest.TestCase):
@@ -25,3 +29,5 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         )
 
         returned_df = count_job_roles_per_establishment(test_workplace_with_two_workers_df)
+
+        self.assertEqual(returned_df.sort(AWKClean.establishment_id).collect(), expected_workplace_with_two_workers_df.collect())
