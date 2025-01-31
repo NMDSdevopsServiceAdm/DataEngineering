@@ -9006,6 +9006,43 @@ class JobroleCountMapData:
         ("1", date(2025, 1, 1), "Care worker", 2),
     ]
 
+    workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), "Senior care worker"),
+    ]
+
+    expected_workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), "Senior care worker", 1),
+    ]
+
+    two_workplaces_with_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("2", date(2025, 1, 1), "Care worker"),
+    ]
+
+    expected_two_workplaces_with_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("2", date(2025, 1, 1), "Care worker", 1),
+    ]
+
+    workplace_across_different_importdates_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 2, 1), "Care worker"),
+    ]
+
+    expected_workplace_across_different_importdates_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 2, 1), "Care worker", 1),
+    ]
+
+    workplace_with_null_jobrole_rows = [
+        ("1", date(2025, 1, 1), None),
+    ]
+
+    expected_workplace_with_null_jobrole_rows = [
+        ("1", date(2025, 1, 1), None, 1),
+    ]
 
     template_jobrole_count_dict_rows = [
         ({
