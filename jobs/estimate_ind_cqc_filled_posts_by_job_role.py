@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_jobrole_count.ascwds_jobrole_count import (
     count_job_roles_per_establishment,
-    mapped_column,
+    convert_jobrole_count_to_jobrole_map,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]

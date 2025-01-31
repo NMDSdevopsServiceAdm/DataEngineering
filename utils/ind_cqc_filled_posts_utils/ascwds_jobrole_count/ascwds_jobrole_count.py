@@ -12,25 +12,25 @@ def count_job_roles_per_establishment(df: DataFrame) -> DataFrame:
         F.col(AWKClean.main_job_role_clean_labelled),
     ).agg(
         F.count(F.col(AWKClean.main_job_role_clean_labelled)).alias(
-            "ascwds_main_job_role_counts"
+            AWKClean.ascwds_main_job_role_counts
         )
     )
     return df
 
 
-def mapped_column(df_agg: DataFrame) -> DataFrame:
+def convert_jobrole_count_to_jobrole_map(df_agg: DataFrame) -> DataFrame:
     df_struct = df_agg.withColumn(
         "struct_column",
         F.struct(
             F.col(AWKClean.main_job_role_clean_labelled),
-            F.col("ascwds_main_job_role_counts"),
+            F.col(AWKClean.ascwds_main_job_role_counts),
         ),
     )
     df_mapped = df_struct.groupBy(
         F.col(AWKClean.establishment_id), F.col(AWKClean.ascwds_worker_import_date)
     ).agg(
         F.map_from_entries(F.collect_list("struct_column")).alias(
-            "ascwds_main_job_role_counts"
+            AWKClean.ascwds_main_job_role_counts
         )
     )
     return df_mapped
