@@ -21,11 +21,11 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def test_count_job_roles_per_establishment_counts_two_workers_that_are_the_same(self):
         test_workplace_with_two_workers_df = self.spark.createDataFrame(
             Data.workplace_with_two_workers_rows,
-            Schemas.workplace_with_two_workers_schema,
+            Schemas.worker_schema,
         )
         expected_workplace_with_two_workers_df = self.spark.createDataFrame(
             Data.expected_workplace_with_two_workers_rows,
-            Schemas.expected_workplace_with_two_workers_schema,
+            Schemas.worker_with_jobrole_count_schema,
         )
 
         returned_df = count_job_roles_per_establishment(test_workplace_with_two_workers_df)
