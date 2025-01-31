@@ -14,7 +14,7 @@ def count_job_roles_per_establishment(df: DataFrame) -> DataFrame:
     Duplicate rows by establishmentid, importdate and main job role are removed.
 
     Args:
-        cleaned_ascwds_worker_df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
+        df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid, importdate and main job role and row count.
@@ -38,7 +38,7 @@ def convert_jobrole_count_to_jobrole_map(df: DataFrame) -> DataFrame:
     removes main job role and main job role count columns.
 
     Args:
-        cleaned_ascwds_worker_df (DataFrame): A dataframe containing cleaned ASC-WDS worker data with a count per main job role.
+        df (DataFrame): A dataframe containing cleaned ASC-WDS worker data with a count per main job role.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid, importdate and dictionary where key = main job role value = main job role count.
