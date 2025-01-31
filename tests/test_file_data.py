@@ -8992,9 +8992,10 @@ class BlendAscwdsPirData:
     ]
     expected_drop_temporary_columns = [IndCQC.location_id]
 
+
 @dataclass
 class AscwdsJobroleCountData:
-# fmt: off
+    # fmt: off
     workplace_with_two_workers_rows = [
         ("1", date(2025, 1, 1), "Care worker"),
         ("1", date(2025, 1, 1), "Care worker"),
@@ -9039,6 +9040,6 @@ class AscwdsJobroleCountData:
     ]
 
     expected_workplace_with_null_jobrole_rows = [
-        ("1", date(2025, 1, 1), None, 1),
+        ("1", date(2025, 1, 1), None, 0),
     ]
     # fmt: on

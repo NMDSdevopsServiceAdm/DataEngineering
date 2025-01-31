@@ -5431,9 +5431,9 @@ class BlendAscwdsPirData:
         ]
     )
 
+
 @dataclass
 class AscwdsJobroleCountSchema:
-
     worker_schema = StructType(
         [
             StructField(AWKClean.establishment_id, StringType(), True),
@@ -5445,6 +5445,6 @@ class AscwdsJobroleCountSchema:
     worker_with_jobrole_count_schema = StructType(
         [
             *worker_schema,
-            StructField("ascwds_main_job_role_counts", IntegerType(), True)
+            StructField("ascwds_main_job_role_counts", IntegerType(), True),
         ]
     )
