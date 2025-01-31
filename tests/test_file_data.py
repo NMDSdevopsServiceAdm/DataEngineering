@@ -4938,55 +4938,6 @@ class EstimateIndCQCFilledPostsByJobRoleData:
         ("Service A", MainJobRoleLabels.senior_management , date(2025, 1, 1), "104", None, "1-004", date(2025, 1, 1), 3.0, 0, 0.0, 0.0, 0.0),
     ]
     # fmt: on
-    
-    # fmt: off
-    workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 1, 1), "Care worker"),
-    ]
-
-    expected_workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 2),
-    ]
-
-    workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 1, 1), "Senior care worker"),
-    ]
-
-    expected_workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 1, 1), "Senior care worker", 1),
-    ]
-
-    two_workplaces_with_same_jobrole_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("2", date(2025, 1, 1), "Care worker"),
-    ]
-
-    expected_two_workplaces_with_same_jobrole_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("2", date(2025, 1, 1), "Care worker", 1),
-    ]
-
-    workplace_across_different_importdates_same_jobrole_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 2, 1), "Care worker"),
-    ]
-
-    expected_workplace_across_different_importdates_same_jobrole_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 2, 1), "Care worker", 1),
-    ]
-
-    workplace_with_null_jobrole_rows = [
-        ("1", date(2025, 1, 1), None),
-    ]
-
-    expected_workplace_with_null_jobrole_rows = [
-        ("1", date(2025, 1, 1), None, 1),
-    ]
-    # fmt: on
 
 
 @dataclass
@@ -9040,3 +8991,54 @@ class BlendAscwdsPirData:
         ("loc 1", date(2023, 1, 1), date(2020, 1, 1), 10, 20.0),
     ]
     expected_drop_temporary_columns = [IndCQC.location_id]
+
+@dataclass
+class AscwdsJobroleCountData:
+# fmt: off
+    workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), "Care worker"),
+    ]
+
+    expected_workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 2),
+    ]
+
+    workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), "Senior care worker"),
+    ]
+
+    expected_workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), "Senior care worker", 1),
+    ]
+
+    two_workplaces_with_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("2", date(2025, 1, 1), "Care worker"),
+    ]
+
+    expected_two_workplaces_with_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("2", date(2025, 1, 1), "Care worker", 1),
+    ]
+
+    workplace_across_different_importdates_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 2, 1), "Care worker"),
+    ]
+
+    expected_workplace_across_different_importdates_same_jobrole_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 2, 1), "Care worker", 1),
+    ]
+
+    workplace_with_null_jobrole_rows = [
+        ("1", date(2025, 1, 1), None),
+    ]
+
+    expected_workplace_with_null_jobrole_rows = [
+        ("1", date(2025, 1, 1), None, 1),
+    ]
+    # fmt: on
