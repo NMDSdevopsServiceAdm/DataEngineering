@@ -135,6 +135,7 @@ class InvalidPostcodes:
         "WF12 2SE": "WF13 2SE",
         "WR13 3JS": "WF13 3JS",
         "YO11 3J": "YO11 3YJ",
+        "YO32 2HT": "YO1 6ET",
         "YO42 2NP": "YO42 2NH",
         "YO61 3FF": "YO61 3FN",
     }
