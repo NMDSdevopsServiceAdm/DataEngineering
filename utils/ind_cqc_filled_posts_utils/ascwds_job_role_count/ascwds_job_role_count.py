@@ -8,17 +8,17 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
     """
-    Counts the number of rows per establishmentid, importdate and main job role.
+    Counts the number of rows per establishmentid, import date and main job role.
 
-    This function groups the ASC-WDS worker dataset by establishmentid, importdate and main job role
+    This function groups the ASC-WDS worker dataset by establishmentid, import date and main job role
     and adds a column with the count of rows per group.
-    Duplicate rows by establishmentid, importdate and main job role are removed.
+    Duplicate rows by establishmentid, import date and main job role are removed.
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
 
     Returns:
-        DataFrame: A dataframe with unique establishmentid, importdate and main job role and row count.
+        DataFrame: A dataframe with unique establishmentid, import date and main job role and row count.
     """
 
     df = df.groupBy(
@@ -40,13 +40,13 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     Adds column which contains a dictionary. The keys are main job role and values are main job role count.
     Each dictionary is per establishmentid and import date.
     Main job role and main job role count columns are removed and duplicate rows by establishmentid and
-    importdate are removed.
+    import date are removed.
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data with a count per main job role.
 
     Returns:
-        DataFrame: A dataframe with unique establishmentid, importdate and dictionary where key = main job role value = main job role count.
+        DataFrame: A dataframe with unique establishmentid, import date and dictionary where key = main job role value = main job role count.
     """
     struct_column: str = "struct_column"
     df_struct = df.withColumn(
