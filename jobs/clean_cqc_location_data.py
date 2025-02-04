@@ -433,6 +433,7 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing 'location_id', 'cqc_location_import_date', and a struct column to impute.
+        column_name (str): Name of struct column to impute
 
     Returns:
         DataFrame: DataFrame with the struct column containing imputed values.
