@@ -42,6 +42,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -8997,52 +8998,52 @@ class BlendAscwdsPirData:
 class AscwdsJobroleCountData:
     # fmt: off
     workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
     ]
 
     expected_workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 2),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
     ]
 
     workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 1, 1), "Senior care worker"),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
     ]
 
     expected_workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 1, 1), "Senior care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
     ]
 
     two_workplaces_with_same_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("2", date(2025, 1, 1), "Care worker"),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker),
     ]
 
     expected_two_workplaces_with_same_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("2", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
     ]
 
     two_workplaces_with_different_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("2", date(2025, 1, 1), "Senior care worker"),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
     ]
 
     expected_two_workplaces_with_different_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("2", date(2025, 1, 1), "Senior care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
     ]
 
     workplace_across_different_importdates_same_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker"),
-        ("1", date(2025, 2, 1), "Care worker"),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker),
     ]
 
     expected_workplace_across_different_importdates_same_job_role_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 2, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
     ]
 
     workplace_with_null_job_role_rows = [
@@ -9058,48 +9059,48 @@ class AscwdsJobroleCountData:
 
 
     workplace_with_two_workers_counted_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 2),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
     ]
  
     expected_workplace_with_two_workers_counted_rows = [
-        ("1", date(2025, 1, 1), {"Care worker": 2}),
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 2}),
     ]
 
     workplace_with_one_worker_in_two_job_roles_counted_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 1, 1), "Senior care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
     ]
     expected_workplace_with_one_worker_in_two_job_roles_counted_rows = [
-        ("1", date(2025, 1, 1), {"Care worker": 1, "Senior care worker": 1}),
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.senior_care_worker: 1}),
     ]
  
     two_workplaces_with_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("2", date(2025, 1, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
     ]
     expected_two_workplaces_with_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), {"Care worker": 1}),
-        ("2", date(2025, 1, 1), {"Care worker": 1}),
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
     ]
  
     workplace_across_different_importdates_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("1", date(2025, 2, 1), "Care worker", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
     ]
     expected_workplace_across_different_importdates_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), {"Care worker": 1}),
-        ("1", date(2025, 2, 1), {"Care worker": 1}),
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
     ]
 
 
 
     workplaces_with_different_number_of_unique_job_roles_rows = [
-        ("1", date(2025, 1, 1), "Care worker", 1),
-        ("2", date(2025, 1, 1), "Senior care worker", 1),
-        ("2", date(2025, 1, 1), "Registered manager", 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.registered_manager, 1),
     ]
     expected_workplaces_with_different_number_of_unique_job_roles_rows = [
-        ("1", date(2025, 1, 1), {"Care worker": 1}),
-        ("2", date(2025, 1, 1), {"Senior care worker": 1, "Registered manager": 1}),
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
     ]
     # fmt: on

@@ -163,9 +163,6 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             test_workplace_with_two_workers_df
         )
 
-        expected_workplace_with_two_workers_df.show()
-        returned_df.show()
-
         self.assertEqual(
             returned_df.columns, expected_workplace_with_two_workers_df.columns
         )
