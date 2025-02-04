@@ -9054,10 +9054,6 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), None, 0),
     ]
 
-
-
-
-
     workplace_with_one_job_role_and_two_workers_counted_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
     ]
@@ -9091,8 +9087,6 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
         ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
     ]
-
-
 
     workplaces_with_different_number_of_unique_job_roles_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
