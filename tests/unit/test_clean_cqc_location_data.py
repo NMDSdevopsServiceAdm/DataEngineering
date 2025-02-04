@@ -443,9 +443,6 @@ class RemoveLocationsThatNeverHadRegulatedActivitesTests(CleanCQCLocationDataset
     def test_remove_locations_that_never_had_regulated_activities_returns_expected_data(
         self,
     ):
-        self.test_df.show()
-        self.returned_df.show()
-        self.expected_df.show()
         self.assertEqual(self.returned_data, self.expected_data)
 
 
