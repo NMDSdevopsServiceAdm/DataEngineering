@@ -17,7 +17,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             IndCqcColumns.location_id,
-            IndCqcColumns.ascwds_workplace_import_date,
+            # IndCqcColumns.ascwds_workplace_import_date, # missing old asc-wds data
             IndCqcColumns.cqc_location_import_date,
             IndCqcColumns.care_home,
             IndCqcColumns.primary_service_type,
@@ -25,8 +25,8 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.unix_time,
-            IndCqcColumns.estimate_filled_posts,
-            IndCqcColumns.estimate_filled_posts_source,
+            # IndCqcColumns.estimate_filled_posts, # missing old asc-wds data
+            # IndCqcColumns.estimate_filled_posts_source, # missing old asc-wds data
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,

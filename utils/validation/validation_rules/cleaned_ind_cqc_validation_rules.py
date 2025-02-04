@@ -16,7 +16,7 @@ class CleanedIndCqcValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             IndCqcColumns.location_id,
-            IndCqcColumns.ascwds_workplace_import_date,
+            # IndCqcColumns.ascwds_workplace_import_date, # missing old asc-wds data
             IndCqcColumns.cqc_location_import_date,
             IndCqcColumns.care_home,
             IndCqcColumns.provider_id,
