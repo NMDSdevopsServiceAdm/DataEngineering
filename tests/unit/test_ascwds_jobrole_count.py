@@ -199,13 +199,13 @@ class ConvertJobRoleCountToJobRoleMap(AscwdsJobroleCount):
     ):
         test_workplace_with_one_worker_in_two_roles_counted_df = (
             self.spark.createDataFrame(
-                Data.workplace_with_one_worker_in_two_job_roles_counted_rows,
+                Data.workplace_with_two_workers_in_different_job_roles_counted_rows,
                 Schemas.ascwds_worker_with_job_role_count_schema,
             )
         )
         expected_workplace_with_one_worker_in_two_roles_counted_df = (
             self.spark.createDataFrame(
-                Data.expected_workplace_with_one_worker_in_two_job_roles_counted_rows,
+                Data.expected_workplace_with_two_workers_in_different_job_roles_counted_rows,
                 Schemas.ascwds_worker_with_job_role_map_schema,
             )
         )
