@@ -1341,7 +1341,7 @@ class ExtractRegisteredManagerNamesSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
-                CQCL.imputed_regulated_activities,
+                CQCLClean.imputed_regulated_activities,
                 ArrayType(
                     StructType(
                         [
