@@ -83,7 +83,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             returned_df.sort(AWKClean.establishment_id).collect(),
             expected_two_workplaces_with_same_job_role_df.collect(),
         )
-    
+
     def test_count_job_role_per_establishment_counts_when_job_role_is_different_at_different_workplaces(
         self,
     ):
@@ -170,7 +170,9 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             returned_df.columns, expected_workplace_with_two_workers_df.columns
         )
 
-    def test_convert_job_role_count_to_job_role_map_converts_one_row_into_one_dict(self):
+    def test_convert_job_role_count_to_job_role_map_converts_one_row_into_one_dict(
+        self,
+    ):
         test_workplace_with_two_workers_counted_df = self.spark.createDataFrame(
             Data.workplace_with_two_workers_counted_rows,
             Schemas.ascwds_worker_with_job_role_count_schema,
@@ -189,7 +191,9 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_two_workers_counted_df.collect(),
         )
 
-    def test_convert_job_role_count_to_job_role_map_converts_two_rows_into_one_dict(self):
+    def test_convert_job_role_count_to_job_role_map_converts_two_rows_into_one_dict(
+        self,
+    ):
         test_workplace_with_one_worker_in_two_roles_counted_df = (
             self.spark.createDataFrame(
                 Data.workplace_with_one_worker_in_two_job_roles_counted_rows,
@@ -215,9 +219,11 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def test_convert_job_role_count_to_job_role_map_converts_two_establishments_with_same_role_into_two_dicts(
         self,
     ):
-        test_two_workplaces_with_same_job_role_counted_rows = self.spark.createDataFrame(
-            Data.two_workplaces_with_same_job_role_counted_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        test_two_workplaces_with_same_job_role_counted_rows = (
+            self.spark.createDataFrame(
+                Data.two_workplaces_with_same_job_role_counted_rows,
+                Schemas.ascwds_worker_with_job_role_count_schema,
+            )
         )
         expected_two_workplaces_with_same_job_role_counted_rows = (
             self.spark.createDataFrame(
