@@ -1110,7 +1110,7 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
-                CQCL.regulated_activities,
+                CQCLClean.imputed_regulated_activities,
                 ArrayType(
                     StructType(
                         [

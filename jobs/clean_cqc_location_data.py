@@ -490,6 +490,7 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     Returns:
         DataFrame: A dataframe where blank imputed rows are removed.
     """
+    df = df.where(df[CQCLClean.imputed_regulated_activities].isNotNull())
     return df
 
 
