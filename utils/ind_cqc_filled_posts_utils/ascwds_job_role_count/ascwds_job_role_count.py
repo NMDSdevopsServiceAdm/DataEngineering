@@ -3,6 +3,7 @@ from pyspark.sql import DataFrame, functions as F
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
@@ -26,7 +27,7 @@ def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
         F.col(AWKClean.main_job_role_clean_labelled),
     ).agg(
         F.count(F.col(AWKClean.main_job_role_clean_labelled)).alias(
-            AWKClean.ascwds_main_job_role_counts
+            IndCQC.ascwds_main_job_role_counts
         )
     )
     return df
