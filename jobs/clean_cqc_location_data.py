@@ -110,7 +110,12 @@ def main(
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    registered_locations_df = impute_missing_struct_column(registered_locations_df)
+    registered_locations_df = impute_missing_struct_column(
+        registered_locations_df, CQCL.gac_service_types
+    )
+    registered_locations_df = impute_missing_struct_column(
+        registered_locations_df, CQCL.regulated_activities
+    )
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
