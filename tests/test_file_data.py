@@ -9055,11 +9055,11 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 2}),
     ]
 
-    workplace_with_one_worker_in_two_job_roles_counted_rows = [
+    workplace_with_two_workers_in_different_job_roles_counted_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
         ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
     ]
-    expected_workplace_with_one_worker_in_two_job_roles_counted_rows = [
+    expected_workplace_with_two_workers_in_different_job_roles_counted_rows = [
         ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.senior_care_worker: 1}),
     ]
  
