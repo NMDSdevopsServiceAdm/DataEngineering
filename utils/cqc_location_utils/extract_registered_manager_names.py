@@ -50,11 +50,11 @@ def extract_contacts_information(
     df = df.select(
         CQCL.location_id,
         CQCLClean.cqc_location_import_date,
-        CQCLClean.imputed_imputed_regulated_activities,
+        CQCLClean.imputed_regulated_activities,
     )
     exploded_activities_df = df.withColumn(
         CQCLClean.imputed_regulated_activities_exploded,
-        F.explode(CQCLClean.imputed_imputed_regulated_activities),
+        F.explode(CQCLClean.imputed_regulated_activities),
     )
     exploded_contacts_df = exploded_activities_df.withColumn(
         CQCLClean.contacts_exploded,

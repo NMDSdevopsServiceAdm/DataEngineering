@@ -30,13 +30,13 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities: str = (
         "imputed_" + NewCqcLocationApiColumns.regulated_activities
     )
+    imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
-    regulated_activities_exploded: str = "regulated_activities_exploded"
     related_location: str = "related_location"
     relationships_exploded: str = NewCqcLocationApiColumns.relationships + "_exploded"
     relationships_predecessors_only: str = (
