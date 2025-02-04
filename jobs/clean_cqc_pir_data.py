@@ -25,7 +25,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
     cqc_pir_df = remove_duplicate_record_in_raw_pir_data(cqc_pir_df)
 
-    cqc_pir_df = remove_rows_without_people_directly_employed(cqc_pir_df)
+    cqc_pir_df = remove_rows_without_pir_people_directly_employed(cqc_pir_df)
 
     cqc_pir_df = cUtils.column_to_date(
         cqc_pir_df, Keys.import_date, PIRCleanCols.cqc_pir_import_date
@@ -44,7 +44,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
 
     cqc_pir_df = cqc_pir_df.withColumnRenamed(
-        PIRCols.people_directly_employed, PIRCleanCols.people_directly_employed
+        PIRCols.pir_people_directly_employed, PIRCleanCols.pir_people_directly_employed
     )
 
     utils.write_to_parquet(
@@ -55,8 +55,8 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
     )
 
 
-def remove_rows_without_people_directly_employed(df: DataFrame) -> DataFrame:
-    df = df.where((df[PIRCols.people_directly_employed] > 0))
+def remove_rows_without_pir_people_directly_employed(df: DataFrame) -> DataFrame:
+    df = df.where((df[PIRCols.pir_people_directly_employed] > 0))
     return df
 
 

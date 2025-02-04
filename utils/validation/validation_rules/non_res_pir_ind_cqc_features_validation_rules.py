@@ -22,12 +22,12 @@ class NonResPirIndCqcFeaturesValidationRules:
             IndCqc.cqc_location_import_date,
         ],
         RuleName.min_values: {
-            IndCqc.people_directly_employed_dedup: 1.0,
-            IndCqc.imputed_non_res_people_directly_employed: 0.01,
+            IndCqc.pir_people_directly_employed_dedup: 1.0,
+            IndCqc.imputed_non_res_pir_people_directly_employed: 0.01,
         },
         RuleName.max_values: {
-            IndCqc.people_directly_employed_dedup: 3000.0,
-            IndCqc.imputed_non_res_people_directly_employed: 3000.0,
+            IndCqc.pir_people_directly_employed_dedup: 3000.0,
+            IndCqc.imputed_non_res_pir_people_directly_employed: 3000.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqc.care_home: CatValues.care_home_column_non_care_home_values.categorical_values,

@@ -70,7 +70,7 @@ cleaned_cqc_pir_columns_to_import = [
     CQCPIRClean.care_home,
     CQCPIRClean.cqc_pir_import_date,
     CQCPIRClean.location_id,
-    CQCPIRClean.people_directly_employed,
+    CQCPIRClean.pir_people_directly_employed,
 ]
 
 

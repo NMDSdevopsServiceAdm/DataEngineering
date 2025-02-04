@@ -11,6 +11,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 class CqcPIRCleanedColumns(CqcPirColumns):
     cqc_pir_import_date: str = "cqc_pir_import_date"
     pir_submission_date_as_date: str = "cqc_pir_submission_date"
-    people_directly_employed: str = "people_directly_employed"
+    pir_people_directly_employed: str = "pir_people_directly_employed"
 
     care_home: str = NewCqcLocationApiColumns.care_home

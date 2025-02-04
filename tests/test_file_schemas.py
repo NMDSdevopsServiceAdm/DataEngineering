@@ -1305,7 +1305,7 @@ class CQCLocationsSchema:
             ),
         ]
     )
-    add_column_related_location_schema = StructType(
+    add_related_location_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
@@ -1326,10 +1326,224 @@ class CQCLocationsSchema:
         ]
     )
 
-    expected_add_column_related_location_schema = StructType(
+    expected_add_related_location_column_schema = StructType(
         [
-            *add_column_related_location_schema,
+            *add_related_location_column_schema,
             StructField(CQCLClean.related_location, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ExtractRegisteredManagerNamesSchema:
+    extract_registered_manager_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+
+    extract_contacts_information_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    ),
+                                    True,
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_extract_contacts_information_schema = StructType(
+        [
+            *extract_contacts_information_schema,
+            StructField(
+                CQCLClean.contacts_exploded,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.person_family_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_given_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_roles,
+                            ArrayType(StringType(), True),
+                            True,
+                        ),
+                        StructField(CQCL.person_title, StringType(), True),
+                    ]
+                ),
+            ),
+        ]
+    )
+
+    select_and_create_full_name_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(
+                CQCLClean.contacts_exploded,
+                StructType(
+                    [
+                        StructField(
+                            CQCL.person_family_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_given_name,
+                            StringType(),
+                            True,
+                        ),
+                        StructField(
+                            CQCL.person_roles,
+                            ArrayType(StringType(), True),
+                            True,
+                        ),
+                        StructField(CQCL.person_title, StringType(), True),
+                    ]
+                ),
+            ),
+        ]
+    )
+    expected_select_and_create_full_name_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.contacts_full_name, StringType(), True),
+        ]
+    )
+
+    group_and_collect_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCLClean.contacts_full_name, StringType(), True),
+        ]
+    )
+    expected_group_and_collect_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+
+    original_test_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+        ]
+    )
+    registered_manager_names_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+    expected_join_with_original_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(CQCL.number_of_beds, IntegerType(), True),
+            StructField(
+                CQCLClean.registered_manager_names, ArrayType(StringType(), True), True
+            ),
         ]
     )
 
@@ -1566,7 +1780,7 @@ class CQCPIRSchema:
             StructField(CQCPIR.pir_type, StringType(), False),
             StructField(CQCPIR.pir_submission_date, StringType(), False),
             StructField(
-                CQCPIR.people_directly_employed,
+                CQCPIR.pir_people_directly_employed,
                 IntegerType(),
                 True,
             ),
@@ -1606,10 +1820,10 @@ class CQCPIRSchema:
         ]
     )
 
-    remove_rows_missing_people_directly_employed_schema = StructType(
+    remove_rows_missing_pir_people_directly_employed_schema = StructType(
         [
             StructField(CQCPIR.location_id, StringType(), True),
-            StructField(CQCPIR.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -1647,7 +1861,7 @@ class MergeIndCQCData:
             StructField(CQCPIRClean.location_id, StringType(), False),
             StructField(CQCPIRClean.care_home, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -1673,7 +1887,7 @@ class MergeIndCQCData:
     expected_cqc_and_pir_merged_schema = StructType(
         [
             *clean_cqc_location_for_merge_schema,
-            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
@@ -1893,7 +2107,7 @@ class CleanIndCQCData:
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(CQCPIRClean.people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
@@ -2227,7 +2441,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
@@ -2251,9 +2465,9 @@ class NonResPirFeaturesSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
             StructField(
-                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
             ),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -2274,7 +2488,7 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.care_home, StringType(), True),
@@ -2342,7 +2556,7 @@ class EstimateMissingAscwdsFilledPostsSchemas:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, FloatType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, FloatType(), True),
         ]
     )
 
@@ -2813,7 +3027,7 @@ class ModelCareHomes:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -2840,7 +3054,7 @@ class ModelNonResWithDormancy:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -2867,7 +3081,7 @@ class ModelNonResWithoutDormancy:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -2880,7 +3094,7 @@ class ModelNonResPirLinearRegressionSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(
-                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
             ),
         ]
     )
@@ -2890,7 +3104,7 @@ class ModelNonResPirLinearRegressionSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(
-                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
             ),
             StructField(IndCQC.features, VectorUDT(), True),
         ]
@@ -2981,7 +3195,7 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
@@ -3828,7 +4042,7 @@ class ValidationUtils:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
         ]
     )
 
@@ -3976,7 +4190,7 @@ class ValidatePIRCleanedData:
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.people_directly_employed, StringType(), True),
+            StructField(CQCPIRClean.pir_people_directly_employed, StringType(), True),
             StructField(CQCPIRClean.care_home, StringType(), True),
         ]
     )
@@ -4077,7 +4291,7 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
@@ -4085,7 +4299,7 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -4132,7 +4346,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
@@ -4140,7 +4354,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsData:
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
@@ -4161,7 +4375,7 @@ class ValidateCareHomeIndCqcFeaturesData:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.features, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
@@ -4210,7 +4424,7 @@ class ValidateNonResPirIndCqcFeaturesSchema:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(
-                IndCQC.imputed_non_res_people_directly_employed, FloatType(), True
+                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
             ),
         ]
     )
@@ -4244,13 +4458,13 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.current_ons_import_date, DateType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.people_directly_employed, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
@@ -4334,7 +4548,7 @@ class ValidatePIRRawData:
         [
             StructField(CQCPIR.location_id, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-            StructField(CQCPIR.people_directly_employed, StringType(), True),
+            StructField(CQCPIR.pir_people_directly_employed, StringType(), True),
         ]
     )
 
@@ -5331,7 +5545,7 @@ class BlendAscwdsPirData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
         ]
     )
@@ -5351,28 +5565,30 @@ class BlendAscwdsPirData:
             ),
         ]
     )
-    create_people_directly_employed_dedup_modelled_column_schema = StructType(
+    create_pir_people_directly_employed_dedup_modelled_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
         ]
     )
-    expected_create_people_directly_employed_dedup_modelled_column_schema = StructType(
-        [
-            *create_people_directly_employed_dedup_modelled_column_schema,
-            StructField(
-                IndCQC.people_directly_employed_filled_posts, FloatType(), True
-            ),
-        ]
+    expected_create_pir_people_directly_employed_dedup_modelled_column_schema = (
+        StructType(
+            [
+                *create_pir_people_directly_employed_dedup_modelled_column_schema,
+                StructField(
+                    IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
+                ),
+            ]
+        )
     )
     create_last_submission_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
-            StructField(IndCQC.people_directly_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
         ]
     )
     expected_create_last_submission_columns_schema = StructType(
@@ -5392,7 +5608,7 @@ class BlendAscwdsPirData:
                 IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
             ),
             StructField(
-                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
         ]
@@ -5407,7 +5623,7 @@ class BlendAscwdsPirData:
                 IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
             ),
             StructField(
-                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
@@ -5423,7 +5639,7 @@ class BlendAscwdsPirData:
                 IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
             ),
             StructField(
-                IndCQC.people_directly_employed_filled_posts, FloatType(), True
+                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
         ]
     )

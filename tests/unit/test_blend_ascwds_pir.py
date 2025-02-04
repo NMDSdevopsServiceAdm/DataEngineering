@@ -34,13 +34,13 @@ class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
         "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.drop_temporary_columns"
     )
     @patch(
-        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.merge_people_directly_employed_modelled_into_ascwds_clean_column"
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column"
     )
     @patch(
         "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_last_submission_columns"
     )
     @patch(
-        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_people_directly_employed_dedup_modelled_column"
+        "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_pir_people_directly_employed_dedup_modelled_column"
     )
     @patch(
         "utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir.create_repeated_ascwds_clean_column"
@@ -48,9 +48,9 @@ class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
     def test_blend_pir_and_ascwds_when_ascwds_out_of_date_calls_correct_functions(
         self,
         create_repeated_ascwds_clean_column_mock: Mock,
-        create_people_directly_employed_dedup_modelled_column_mock: Mock,
+        create_pir_people_directly_employed_dedup_modelled_column_mock: Mock,
         create_last_submission_columns_mock: Mock,
-        merge_people_directly_employed_modelled_into_ascwds_clean_column_mock: Mock,
+        merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_mock: Mock,
         drop_temporary_columns_mock: Mock,
     ):
         job.blend_pir_and_ascwds_when_ascwds_out_of_date(
@@ -58,9 +58,9 @@ class BlendPirAndAscwdsWhenAscwdsOutOfDateTests(BlendAscwdsPirTests):
         )
 
         create_repeated_ascwds_clean_column_mock.assert_called_once()
-        create_people_directly_employed_dedup_modelled_column_mock.assert_called_once()
+        create_pir_people_directly_employed_dedup_modelled_column_mock.assert_called_once()
         create_last_submission_columns_mock.assert_called_once()
-        merge_people_directly_employed_modelled_into_ascwds_clean_column_mock.assert_called_once()
+        merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_mock.assert_called_once()
         drop_temporary_columns_mock.assert_called_once()
 
     def test_blend_pir_and_ascwds_when_ascwds_out_of_date_completes(
@@ -181,28 +181,28 @@ class CreatePeopleDirectlyEmployedDedupModelledColumnTests(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
         test_df = self.spark.createDataFrame(
-            Data.create_people_directly_employed_dedup_modelled_column_rows,
-            Schemas.create_people_directly_employed_dedup_modelled_column_schema,
+            Data.create_pir_people_directly_employed_dedup_modelled_column_rows,
+            Schemas.create_pir_people_directly_employed_dedup_modelled_column_schema,
         )
         self.expected_data = self.spark.createDataFrame(
-            Data.expected_create_people_directly_employed_dedup_modelled_column_rows,
-            Schemas.expected_create_people_directly_employed_dedup_modelled_column_schema,
+            Data.expected_create_pir_people_directly_employed_dedup_modelled_column_rows,
+            Schemas.expected_create_pir_people_directly_employed_dedup_modelled_column_schema,
         ).collect()
         self.returned_data = (
-            job.create_people_directly_employed_dedup_modelled_column(
+            job.create_pir_people_directly_employed_dedup_modelled_column(
                 test_df, self.NON_RES_PIR_MODEL
             )
             .sort(IndCQC.location_id)
             .collect()
         )
 
-    def test_create_people_directly_employed_dedup_modelled_column_returns_correct_values(
+    def test_create_pir_people_directly_employed_dedup_modelled_column_returns_correct_values(
         self,
     ):
         for i in range(len(self.expected_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCQC.people_directly_employed_filled_posts],
-                self.expected_data[i][IndCQC.people_directly_employed_filled_posts],
+                self.returned_data[i][IndCQC.pir_people_directly_employed_filled_posts],
+                self.expected_data[i][IndCQC.pir_people_directly_employed_filled_posts],
                 places=3,
             )
 
@@ -235,19 +235,19 @@ class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
     def setUp(self):
         super().setUp()
 
-    def test_merge_people_directly_employed_modelled_into_ascwds_clean_column_blends_data_when_pir_more_than_two_years_after_asc_and_difference_greater_than_absolute_and_percentage_thresholds(
+    def test_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_blends_data_when_pir_more_than_two_years_after_asc_and_difference_greater_than_absolute_and_percentage_thresholds(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
+            Data.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
             Schemas.blend_modelled_pir_ands_ascwds_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
+            Data.expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows,
             Schemas.expected_blend_modelled_pir_ands_ascwds_schema,
         )
         returned_df = (
-            job.merge_people_directly_employed_modelled_into_ascwds_clean_column(
+            job.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
                 test_df
             )
         )
@@ -256,19 +256,19 @@ class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
             expected_df.collect(),
         )
 
-    def test_merge_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_pir_less_than_two_years_after_asc(
+    def test_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_pir_less_than_two_years_after_asc(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows,
+            Data.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows,
             Schemas.blend_modelled_pir_ands_ascwds_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows,
+            Data.expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows,
             Schemas.expected_blend_modelled_pir_ands_ascwds_schema,
         )
         returned_df = (
-            job.merge_people_directly_employed_modelled_into_ascwds_clean_column(
+            job.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
                 test_df
             )
         )
@@ -277,19 +277,19 @@ class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
             expected_df.collect(),
         )
 
-    def test_merge_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_asc_after_pir(
+    def test_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_asc_after_pir(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows,
+            Data.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows,
             Schemas.blend_modelled_pir_ands_ascwds_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows,
+            Data.expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows,
             Schemas.expected_blend_modelled_pir_ands_ascwds_schema,
         )
         returned_df = (
-            job.merge_people_directly_employed_modelled_into_ascwds_clean_column(
+            job.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
                 test_df
             )
         )
@@ -298,19 +298,19 @@ class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
             expected_df.collect(),
         )
 
-    def test_merge_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_difference_less_than_absolute_threshold(
+    def test_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_difference_less_than_absolute_threshold(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows,
+            Data.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows,
             Schemas.blend_modelled_pir_ands_ascwds_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows,
+            Data.expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows,
             Schemas.expected_blend_modelled_pir_ands_ascwds_schema,
         )
         returned_df = (
-            job.merge_people_directly_employed_modelled_into_ascwds_clean_column(
+            job.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
                 test_df
             )
         )
@@ -321,19 +321,19 @@ class MergeModelledPirAndAscwds(BlendAscwdsPirTests):
             expected_df.collect(),
         )
 
-    def test_merge_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_difference_less_than_percentage_threshold(
+    def test_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_does_not_blend_data_when_difference_less_than_percentage_threshold(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows,
+            Data.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows,
             Schemas.blend_modelled_pir_ands_ascwds_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows,
+            Data.expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows,
             Schemas.expected_blend_modelled_pir_ands_ascwds_schema,
         )
         returned_df = (
-            job.merge_people_directly_employed_modelled_into_ascwds_clean_column(
+            job.merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
                 test_df
             )
         )

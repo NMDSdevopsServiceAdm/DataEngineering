@@ -13,6 +13,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 
 @dataclass
 class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
+    contacts_full_name: str = "contacts_full_name"
+    contacts_roles: str = "contacts_roles"
+    contacts_exploded: str = "contacts_exploded"
     cqc_location_import_date: str = "cqc_location_import_date"
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
     cqc_sector: str = CQCPClean.cqc_sector
@@ -29,6 +32,8 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     ons_current_import_date: str = ONSClean.current_ons_import_date
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
+    registered_manager_names: str = "registered_manager_names"
+    regulated_activities_exploded: str = "regulated_activities_exploded"
     related_location: str = "related_location"
     relationships_exploded: str = NewCqcLocationApiColumns.relationships + "_exploded"
     relationships_predecessors_only: str = (

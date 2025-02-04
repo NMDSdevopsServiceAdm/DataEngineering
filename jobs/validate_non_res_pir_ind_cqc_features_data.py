@@ -22,7 +22,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCqc.location_id,
     IndCqc.cqc_location_import_date,
     IndCqc.care_home,
-    IndCqc.imputed_non_res_people_directly_employed,
+    IndCqc.imputed_non_res_pir_people_directly_employed,
 ]
 
 
@@ -70,7 +70,7 @@ def calculate_expected_size_of_non_res_pir_ind_cqc_features_dataset(
     """
     expected_size = cleaned_ind_cqc_df.filter(
         (F.col(IndCqc.care_home) == CareHome.not_care_home)
-        & (F.col(IndCqc.imputed_non_res_people_directly_employed).isNotNull())
+        & (F.col(IndCqc.imputed_non_res_pir_people_directly_employed).isNotNull())
     ).count()
     return expected_size
 

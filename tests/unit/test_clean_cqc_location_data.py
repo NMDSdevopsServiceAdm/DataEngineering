@@ -875,16 +875,16 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_column_related_location_returns_correct_values(self):
+    def test_add_related_location_column_returns_correct_values(self):
         test_df = self.spark.createDataFrame(
-            Data.add_column_related_location_rows,
-            Schemas.add_column_related_location_schema,
+            Data.add_related_location_column_rows,
+            Schemas.add_related_location_column_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_add_column_related_location_rows,
-            Schemas.expected_add_column_related_location_schema,
+            Data.expected_add_related_location_column_rows,
+            Schemas.expected_add_related_location_column_schema,
         )
-        returned_df = job.add_column_related_location(test_df)
+        returned_df = job.add_related_location_column(test_df)
         self.assertEqual(
             expected_df.collect(), returned_df.sort(CQCL.location_id).collect()
         )

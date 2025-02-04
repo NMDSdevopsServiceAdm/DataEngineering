@@ -17,7 +17,7 @@ PIR_SCHEMA = StructType(
         StructField(ColNames.pir_type, StringType(), False),
         StructField(ColNames.pir_submission_date, StringType(), False),
         StructField(
-            ColNames.people_directly_employed,
+            ColNames.pir_people_directly_employed,
             IntegerType(),
             True,
         ),

@@ -1065,13 +1065,13 @@ class CQCpirData:
         ("loc 4", "Community"),
     ]
 
-    remove_rows_missing_people_directly_employed = [
+    remove_rows_missing_pir_people_directly_employed = [
         ("loc_1", 1),
         ("loc_1", 0),
         ("loc_1", None),
     ]
 
-    expected_remove_rows_missing_people_directly_employed = [
+    expected_remove_rows_missing_pir_people_directly_employed = [
         ("loc_1", 1),
     ]
 
@@ -3207,7 +3207,7 @@ class CQCLocationsData:
     )
     expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
 
-    add_column_related_location_rows = [
+    add_related_location_column_rows = [
         ("loc 1", None),
         ("loc 2", []),
         (
@@ -3239,7 +3239,7 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_add_column_related_location_rows = [
+    expected_add_related_location_column_rows = [
         ("loc 1", None, RelatedLocation.no_related_location),
         ("loc 2", [], RelatedLocation.no_related_location),
         (
@@ -3272,6 +3272,368 @@ class CQCLocationsData:
             ],
             RelatedLocation.has_related_location,
         ),
+    ]
+
+
+@dataclass
+class ExtractRegisteredManagerNamesData:
+    extract_registered_manager_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {CQCL.name: "Activity 2a", CQCL.code: "A2a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+
+    extract_contacts_information_two_activities_one_contact_each_rows = [
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_extract_contacts_information_two_activities_one_contact_each_rows = [
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            {
+                CQCL.person_family_name: "Surname_2a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            {
+                CQCL.person_family_name: "Surname_2b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+
+    extract_contacts_information_one_activity_two_contacts_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        )
+    ]
+    expected_extract_contacts_information_one_activity_two_contacts_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            {
+                CQCL.person_family_name: "Surname_1a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+        (
+            "1-001",
+            date(2024, 1, 1),
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            {
+                CQCL.person_family_name: "Surname_1b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+
+    extract_contacts_information_two_activities_but_only_one_with_contacts_rows = [
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {CQCL.name: "Activity 2a", CQCL.code: "A2a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_extract_contacts_information_two_activities_but_only_one_with_contacts_rows = [
+        (
+            "1-002",
+            date(2024, 1, 1),
+            [
+                {CQCL.name: "Activity 2a", CQCL.code: "A2a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            {
+                CQCL.person_family_name: "Surname_2b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+
+    select_and_create_full_name_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            "Y",
+            {
+                CQCL.person_family_name: "Surname_1",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+        (
+            "1-002",
+            date(2024, 1, 1),
+            "Y",
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+    expected_select_and_create_full_name_rows = [
+        ("1-001", date(2024, 1, 1), "Name Surname_1"),
+        ("1-002", date(2024, 1, 1), "Name Surname_2"),
+    ]
+
+    group_and_collect_names_with_duplicate_names_rows = [
+        ("1-001", date(2024, 1, 1), "Y", "Name Surname_1"),
+        ("1-001", date(2024, 1, 1), "Y", "Name Surname_1"),
+        ("1-001", date(2024, 1, 1), "Y", "Name Surname_2"),
+    ]
+    expected_group_and_collect_names_with_duplicate_names_rows = [
+        ("1-001", date(2024, 1, 1), ["Name Surname_2", "Name Surname_1"]),
+    ]
+
+    group_and_collect_names_with_different_ids_and_dates_rows = [
+        ("1-001", date(2024, 1, 1), "Y", "Name Surname_1"),
+        ("1-001", date(2024, 2, 1), "Y", "Name Surname_1"),
+        ("1-001", date(2024, 2, 1), "Y", "Name Surname_2"),
+        ("1-002", date(2024, 1, 1), "N", "Name Surname_3"),
+    ]
+    expected_group_and_collect_names_with_different_ids_and_dates_rows = [
+        ("1-001", date(2024, 1, 1), ["Name Surname_1"]),
+        ("1-001", date(2024, 2, 1), ["Name Surname_2", "Name Surname_1"]),
+        ("1-002", date(2024, 1, 1), ["Name Surname_3"]),
+    ]
+
+    original_test_rows = [
+        ("1-001", date(2024, 1, 1), "Y", 5),
+        ("1-001", date(2024, 2, 1), "Y", 5),
+        ("1-002", date(2024, 1, 1), "Y", 10),
+        ("1-002", date(2024, 2, 1), "Y", 10),
+    ]
+    registered_manager_names_rows = [
+        ("1-001", date(2024, 1, 1), ["Name Surname_1"]),
+        ("1-001", date(2024, 2, 1), ["Name Surname_1", "Name Surname_2"]),
+        ("1-002", date(2024, 2, 1), ["Name Surname_3"]),
+    ]
+    expected_join_with_original_rows = [
+        ("1-001", date(2024, 1, 1), "Y", 5, ["Name Surname_1"]),
+        ("1-001", date(2024, 2, 1), "Y", 5, ["Name Surname_1", "Name Surname_2"]),
+        ("1-002", date(2024, 1, 1), "Y", 10, None),
+        ("1-002", date(2024, 2, 1), "Y", 10, ["Name Surname_3"]),
     ]
 
 
@@ -7007,7 +7369,7 @@ class ValidationUtils:
     min_values_multiple_columns_rule = {
         RuleName.min_values: {
             IndCQC.number_of_beds: 1,
-            IndCQC.people_directly_employed: 0,
+            IndCQC.pir_people_directly_employed: 0,
         }
     }
     min_values_below_minimum_rows = [
@@ -7056,7 +7418,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(people_directly_employed,None,None))",
+            "MinimumConstraint(Minimum(pir_people_directly_employed,None,None))",
             "Success",
             "",
         ),
@@ -7070,7 +7432,7 @@ class ValidationUtils:
     max_values_multiple_columns_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
-            IndCQC.people_directly_employed: 20,
+            IndCQC.pir_people_directly_employed: 20,
         }
     }
     max_values_below_maximum_rows = [
@@ -7119,7 +7481,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(people_directly_employed,None,None))",
+            "MaximumConstraint(Maximum(pir_people_directly_employed,None,None))",
             "Success",
             "",
         ),
@@ -8875,13 +9237,13 @@ class BlendAscwdsPirData:
         ("loc 2", date(2024, 1, 1), 50, 50),
         ("loc 2", date(2024, 2, 1), None, 50),
     ]
-    create_people_directly_employed_dedup_modelled_column_rows = [
+    create_pir_people_directly_employed_dedup_modelled_column_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10),
         ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None),
         ("loc 3", date(2024, 1, 1), CareHome.care_home, 10),
         ("loc 4", date(2024, 1, 1), CareHome.care_home, None),
     ]
-    expected_create_people_directly_employed_dedup_modelled_column_rows = [
+    expected_create_pir_people_directly_employed_dedup_modelled_column_rows = [
         ("loc 1", date(2024, 1, 1), CareHome.not_care_home, 10, 10.64384),
         ("loc 2", date(2024, 1, 1), CareHome.not_care_home, None, None),
         ("loc 3", date(2024, 1, 1), CareHome.care_home, 10, None),
@@ -8912,41 +9274,41 @@ class BlendAscwdsPirData:
         ("loc 4", date(2024, 4, 1), None, 70, date(2024, 3, 1), date(2024, 4, 1)),
     ]
     # fmt: off
-    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
+    merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
         ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 200.0, None),
     ]
-    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
+    expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_more_than_two_years_after_asc_and_difference_greater_than_thresholds_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
         ("loc 1", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, 200.0, None, 200.0),
     ]
-    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
+    merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, 200.0, None),
     ]
-    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
+    expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_pir_less_than_two_years_after_asc_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, 10.0, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, None, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2022, 1, 1), 10, 200.0, None, None),
     ]
-    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
+    merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
         ("loc 1", date(2020, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, 200.0, None),
         ("loc 1", date(2021, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
         ("loc 1", date(2022, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None),
         ("loc 1", date(2023, 1, 1), date(2023, 1, 1), date(2020, 1, 1), 10, None, 10.0),
     ]
-    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
+    expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_asc_after_pir_rows = [
         ("loc 1", date(2020, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, 200.0, None, None),
         ("loc 1", date(2021, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None, None),
         ("loc 1", date(2022, 1, 1), date(2023, 1, 1), date(2020, 1, 1), None, None, None, None),
         ("loc 1", date(2023, 1, 1), date(2023, 1, 1), date(2020, 1, 1), 10, None, 10.0, 10.0),
     ]
-    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
+    merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
@@ -8956,7 +9318,7 @@ class BlendAscwdsPirData:
         ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None),
         ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, 10.0, None),
     ]
-    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
+    expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_absolute_threshold_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
@@ -8966,7 +9328,7 @@ class BlendAscwdsPirData:
         ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, None, None, None),
         ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 110, 10.0, None, None),
     ]
-    merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
+    merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None),
@@ -8976,7 +9338,7 @@ class BlendAscwdsPirData:
         ("loc 2", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, None, None),
         ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5, 10.0, None),
     ]
-    expected_merge_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
+    expected_merge_pir_people_directly_employed_modelled_into_ascwds_clean_column_when_difference_less_than_percentage_threshold_rows = [
         ("loc 1", date(2020, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, 10.0, 10.0),
         ("loc 1", date(2021, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
         ("loc 1", date(2022, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 10, None, None, None),
