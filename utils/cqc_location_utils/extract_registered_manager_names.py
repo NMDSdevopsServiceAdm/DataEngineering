@@ -8,7 +8,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
-def extract_registered_manager_names_from_regulated_activities_column(
+def extract_registered_manager_names_from_imputed_regulated_activities_column(
     df: DataFrame,
 ) -> DataFrame:
     """
@@ -20,7 +20,7 @@ def extract_registered_manager_names_from_regulated_activities_column(
     Registered manager names are deduplicated in the array so each name will only appear once in the array.
 
     Args:
-        df (DataFrame): Input DataFrame with regulated_activities column.
+        df (DataFrame): Input DataFrame with imputed_regulated_activities column.
 
     Returns:
         DataFrame: DataFrame with deduplicated registered manager names in a new column.
@@ -39,30 +39,33 @@ def extract_contacts_information(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Explodes the regulated_activities array and then the contacts array in the DataFrame.
+    Explodes the imputed_regulated_activities array and then the contacts array in the DataFrame.
 
     Args:
-        df (DataFrame): Input DataFrame with regulated_activities array.
+        df (DataFrame): Input DataFrame with imputed_regulated_activities array.
 
     Returns:
         DataFrame: DataFrame with exploded contacts information.
     """
     df = df.select(
-        CQCL.location_id, CQCLClean.cqc_location_import_date, CQCL.regulated_activities
+        CQCL.location_id,
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.imputed_imputed_regulated_activities,
     )
     exploded_activities_df = df.withColumn(
-        CQCLClean.regulated_activities_exploded, F.explode(CQCL.regulated_activities)
+        CQCLClean.imputed_regulated_activities_exploded,
+        F.explode(CQCLClean.imputed_imputed_regulated_activities),
     )
     exploded_contacts_df = exploded_activities_df.withColumn(
         CQCLClean.contacts_exploded,
         F.explode(
-            exploded_activities_df[CQCLClean.regulated_activities_exploded][
+            exploded_activities_df[CQCLClean.imputed_regulated_activities_exploded][
                 CQCL.contacts
             ]
         ),
     )
     exploded_contacts_df = exploded_contacts_df.drop(
-        CQCLClean.regulated_activities_exploded
+        CQCLClean.imputed_regulated_activities_exploded
     )
     return exploded_contacts_df
 

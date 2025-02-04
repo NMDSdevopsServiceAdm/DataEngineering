@@ -206,7 +206,7 @@ class IndCqcColumns:
     r2: str = "r2"
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
-    regulated_activities: str = CQCLClean.regulated_activities
+    imputed_regulated_activities: str = CQCLClean.imputed_regulated_activities
     related_location: str = CQCLClean.related_location
     residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
