@@ -170,17 +170,19 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def test_convert_job_role_count_to_job_role_map_converts_one_row_into_one_dict(
         self,
     ):
-        test_workplace_with_two_workers_counted_df = self.spark.createDataFrame(
-            Data.workplace_with_two_workers_counted_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        test_workplace_with_one_job_role_and_two_workers_counted_df = (
+            self.spark.createDataFrame(
+                Data.workplace_with_one_job_role_and_two_workers_counted_rows,
+                Schemas.ascwds_worker_with_job_role_count_schema,
+            )
         )
         expected_workplace_with_two_workers_counted_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_two_workers_counted_rows,
+            Data.expected_workplace_with_one_job_role_and_two_workers_counted_rows,
             Schemas.ascwds_worker_with_job_role_map_schema,
         )
 
         returned_df = convert_job_role_count_to_job_role_map(
-            test_workplace_with_two_workers_counted_df
+            test_workplace_with_one_job_role_and_two_workers_counted_df
         )
 
         self.assertEqual(

@@ -31,14 +31,18 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment")
-    @patch("jobs.estimate_ind_cqc_filled_posts_by_job_role.convert_job_role_count_to_job_role_map")
+    @patch(
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment"
+    )
+    @patch(
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.convert_job_role_count_to_job_role_map"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
-        self, 
-        read_from_parquet_mock: Mock, 
+        self,
+        read_from_parquet_mock: Mock,
         convert_job_role_count_to_job_role_map_mock: Mock,
-        count_job_role_per_establishment_mock: Mock, 
+        count_job_role_per_establishment_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
