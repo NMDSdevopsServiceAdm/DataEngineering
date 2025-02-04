@@ -57,6 +57,7 @@ def main(
     estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+    temp_worker_job_role_count_destination: str,
 ):
     """
     Creates estimates of filled posts split by main job role.
@@ -83,6 +84,13 @@ def main(
     )
 
     utils.write_to_parquet(
+        count_job_roles_per_establishment_df,
+        temp_worker_job_role_count_destination,
+        "overwrite",
+        PartitionKeys,
+    )
+
+    utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
@@ -98,6 +106,7 @@ if __name__ == "__main__":
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_worker_job_role_count_destination,
     ) = utils.collect_arguments(
         (
             "--estimated_ind_cqc_filled_posts_source",
@@ -111,10 +120,15 @@ if __name__ == "__main__":
             "--estimated_ind_cqc_filled_posts_by_job_role_destination",
             "Destination s3 directory",
         ),
+        (
+            "--temp_worker_job_role_count_destination",
+            "Destination s3 directory",
+        ),
     )
 
     main(
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_worker_job_role_count_destination,
     )
