@@ -36,10 +36,10 @@ def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
 def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     """
     Adds a column with a dictionary created from main job role and main job role count.
-     
+
     Adds column which contains a dictionary. The keys are main job role and values are main job role count.
     Each dictionary is per establishmentid and import date.
-    Main job role and main job role count columns are removed and duplicate rows by establishmentid and 
+    Main job role and main job role count columns are removed and duplicate rows by establishmentid and
     importdate are removed.
 
     Args:

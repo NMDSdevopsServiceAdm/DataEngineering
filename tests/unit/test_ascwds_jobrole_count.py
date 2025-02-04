@@ -1,14 +1,12 @@
 import unittest
 
-from utils import utils
-
 from tests.test_file_data import AscwdsJobroleCountData as Data
 from tests.test_file_schemas import AscwdsJobroleCountSchema as Schemas
 
+from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-
 from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
