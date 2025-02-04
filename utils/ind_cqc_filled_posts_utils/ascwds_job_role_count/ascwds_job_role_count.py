@@ -44,9 +44,9 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with unique establishmentid, importdate and dictionary where key = main job role value = main job role count.
     """
-
+    struct_column: str = "struct_column"
     df_struct = df.withColumn(
-        "struct_column",
+        struct_column,
         F.struct(
             F.col(AWKClean.main_job_role_clean_labelled),
             F.col(AWKClean.ascwds_main_job_role_counts),
@@ -55,7 +55,7 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     df_mapped = df_struct.groupBy(
         F.col(AWKClean.establishment_id), F.col(AWKClean.ascwds_worker_import_date)
     ).agg(
-        F.map_from_entries(F.collect_list("struct_column")).alias(
+        F.map_from_entries(F.collect_list(struct_column)).alias(
             AWKClean.ascwds_main_job_role_counts
         )
     )
