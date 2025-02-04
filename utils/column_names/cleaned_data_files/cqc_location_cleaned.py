@@ -27,6 +27,9 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
         "imputed_" + NewCqcLocationApiColumns.gac_service_types
     )
     imputed_registration_date: str = "imputed_registration_date"
+    imputed_regulated_activities: str = (
+        "imputed_" + NewCqcLocationApiColumns.regulated_activities
+    )
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date

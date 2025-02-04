@@ -1341,7 +1341,7 @@ class ExtractRegisteredManagerNamesSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
-                CQCL.regulated_activities,
+                CQCL.imputed_regulated_activities,
                 ArrayType(
                     StructType(
                         [
@@ -1390,7 +1390,7 @@ class ExtractRegisteredManagerNamesSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
-                CQCL.regulated_activities,
+                CQCL.imputed_regulated_activities,
                 ArrayType(
                     StructType(
                         [
@@ -2371,7 +2371,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(
-                IndCQC.regulated_activities,
+                IndCQC.imputed_regulated_activities,
                 ArrayType(
                     StructType(
                         [
