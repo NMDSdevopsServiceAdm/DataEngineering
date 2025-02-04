@@ -35,8 +35,12 @@ def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
 
 def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     """
-    Adds a column with a dictionary created from main job role and main job role count then
-    removes main job role and main job role count columns.
+    Adds a column with a dictionary created from main job role and main job role count.
+     
+    Adds column which contains a dictionary. The keys are main job role and values are main job role count.
+    Each dictionary is per establishmentid and import date.
+    Main job role and main job role count columns are removed and duplicate rows by establishmentid and 
+    importdate are removed.
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data with a count per main job role.
@@ -49,14 +53,14 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
         struct_column,
         F.struct(
             F.col(AWKClean.main_job_role_clean_labelled),
-            F.col(AWKClean.ascwds_main_job_role_counts),
+            F.col(IndCQC.ascwds_main_job_role_counts),
         ),
     )
     df_mapped = df_struct.groupBy(
         F.col(AWKClean.establishment_id), F.col(AWKClean.ascwds_worker_import_date)
     ).agg(
         F.map_from_entries(F.collect_list(struct_column)).alias(
-            AWKClean.ascwds_main_job_role_counts
+            IndCQC.ascwds_main_job_role_counts
         )
     )
     return df_mapped
