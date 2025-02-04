@@ -66,6 +66,7 @@ def main(
         estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
+        temp_worker_job_role_count_destination (str): path to where to save worker data temporarily
     """
     estimated_ind_cqc_filled_posts_df = utils.read_from_parquet(
         estimated_ind_cqc_filled_posts_source,
