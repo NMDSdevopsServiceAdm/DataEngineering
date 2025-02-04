@@ -19,6 +19,9 @@ class AscwdsJobroleCount(unittest.TestCase):
 
 
 class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_count_job_role_per_establishment_counts_two_workers_that_are_the_same(
         self,
     ):
@@ -162,6 +165,11 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         self.assertEqual(
             returned_df.columns, expected_workplace_with_two_workers_df.columns
         )
+
+
+class ConvertJobRoleCountToJobRoleMap(AscwdsJobroleCount):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_convert_job_role_count_to_job_role_map_converts_one_row_into_one_dict(
         self,
