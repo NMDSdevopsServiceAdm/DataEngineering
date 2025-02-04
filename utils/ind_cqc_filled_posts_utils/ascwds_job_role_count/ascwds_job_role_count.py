@@ -5,7 +5,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 
 
-def count_job_roles_per_establishment(df: DataFrame) -> DataFrame:
+def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
     """
     Counts the number of rows per establishmentid, importdate and main job role.
 
@@ -32,7 +32,7 @@ def count_job_roles_per_establishment(df: DataFrame) -> DataFrame:
     return df
 
 
-def convert_jobrole_count_to_jobrole_map(df: DataFrame) -> DataFrame:
+def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     """
     Adds a column with a dictionary created from main job role and main job role count then
     removes main job role and main job role count columns.

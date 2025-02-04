@@ -9015,31 +9015,41 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), "Senior care worker", 1),
     ]
 
-    two_workplaces_with_same_jobrole_rows = [
+    two_workplaces_with_same_job_role_rows = [
         ("1", date(2025, 1, 1), "Care worker"),
         ("2", date(2025, 1, 1), "Care worker"),
     ]
 
-    expected_two_workplaces_with_same_jobrole_rows = [
+    expected_two_workplaces_with_same_job_role_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("2", date(2025, 1, 1), "Care worker", 1),
     ]
 
-    workplace_across_different_importdates_same_jobrole_rows = [
+    two_workplaces_with_different_job_role_rows = [
+        ("1", date(2025, 1, 1), "Care worker"),
+        ("2", date(2025, 1, 1), "Senior care worker"),
+    ]
+
+    expected_two_workplaces_with_different_job_role_rows = [
+        ("1", date(2025, 1, 1), "Care worker", 1),
+        ("2", date(2025, 1, 1), "Senior care worker", 1),
+    ]
+
+    workplace_across_different_importdates_same_job_role_rows = [
         ("1", date(2025, 1, 1), "Care worker"),
         ("1", date(2025, 2, 1), "Care worker"),
     ]
 
-    expected_workplace_across_different_importdates_same_jobrole_rows = [
+    expected_workplace_across_different_importdates_same_job_role_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("1", date(2025, 2, 1), "Care worker", 1),
     ]
 
-    workplace_with_null_jobrole_rows = [
+    workplace_with_null_job_role_rows = [
         ("1", date(2025, 1, 1), None),
     ]
 
-    expected_workplace_with_null_jobrole_rows = [
+    expected_workplace_with_null_job_role_rows = [
         ("1", date(2025, 1, 1), None, 0),
     ]
 
@@ -9055,40 +9065,40 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), {"Care worker": 2}),
     ]
 
-    workplace_with_one_worker_in_two_roles_counted_rows = [
+    workplace_with_one_worker_in_two_job_roles_counted_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("1", date(2025, 1, 1), "Senior care worker", 1),
     ]
-    expected_workplace_with_one_worker_in_two_roles_counted_rows = [
+    expected_workplace_with_one_worker_in_two_job_roles_counted_rows = [
         ("1", date(2025, 1, 1), {"Care worker": 1, "Senior care worker": 1}),
     ]
  
-    two_workplaces_with_same_jobrole_counted_rows = [
+    two_workplaces_with_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("2", date(2025, 1, 1), "Care worker", 1),
     ]
-    expected_two_workplaces_with_same_jobrole_counted_rows = [
+    expected_two_workplaces_with_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), {"Care worker": 1}),
         ("2", date(2025, 1, 1), {"Care worker": 1}),
     ]
  
-    workplace_across_different_importdates_same_jobrole_counted_rows = [
+    workplace_across_different_importdates_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("1", date(2025, 2, 1), "Care worker", 1),
     ]
-    expected_workplace_across_different_importdates_same_jobrole_counted_rows = [
+    expected_workplace_across_different_importdates_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), {"Care worker": 1}),
         ("1", date(2025, 2, 1), {"Care worker": 1}),
     ]
 
 
 
-    workplaces_with_different_number_of_unique_jobroles_rows = [
+    workplaces_with_different_number_of_unique_job_roles_rows = [
         ("1", date(2025, 1, 1), "Care worker", 1),
         ("2", date(2025, 1, 1), "Senior care worker", 1),
         ("2", date(2025, 1, 1), "Registered manager", 1),
     ]
-    expected_workplaces_with_different_number_of_unique_jobroles_rows = [
+    expected_workplaces_with_different_number_of_unique_job_roles_rows = [
         ("1", date(2025, 1, 1), {"Care worker": 1}),
         ("2", date(2025, 1, 1), {"Senior care worker": 1, "Registered manager": 1}),
     ]

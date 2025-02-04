@@ -5434,7 +5434,7 @@ class BlendAscwdsPirData:
 
 @dataclass
 class AscwdsJobroleCountSchema:
-    worker_schema = StructType(
+    ascwds_worker_schema = StructType(
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
@@ -5442,14 +5442,14 @@ class AscwdsJobroleCountSchema:
         ]
     )
 
-    worker_with_jobrole_count_schema = StructType(
+    ascwds_worker_with_job_role_count_schema = StructType(
         [
-            *worker_schema,
+            *ascwds_worker_schema,
             StructField(AWKClean.ascwds_main_job_role_counts, IntegerType(), True),
         ]
     )
 
-    worker_with_jobrole_map_schema = StructType(
+    ascwds_worker_with_job_role_map_schema = StructType(
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
