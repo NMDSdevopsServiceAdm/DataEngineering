@@ -112,11 +112,9 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
                 Schemas.ascwds_worker_schema,
             )
         )
-        expected_workplace_across_different_import_dates_same_job_role_df = (
-            self.spark.createDataFrame(
-                Data.expected_workplace_across_different_import_dates_same_job_role_rows,
-                Schemas.ascwds_worker_with_job_role_count_schema,
-            )
+        expected_workplace_across_different_import_dates_same_job_role_df = self.spark.createDataFrame(
+            Data.expected_workplace_across_different_import_dates_same_job_role_rows,
+            Schemas.ascwds_worker_with_job_role_count_schema,
         )
 
         returned_df = count_job_role_per_establishment(
