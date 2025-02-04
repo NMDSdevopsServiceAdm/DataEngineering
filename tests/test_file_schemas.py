@@ -1072,7 +1072,7 @@ class CQCLocationsSchema:
         ]
     )
 
-    impute_missing_gac_service_types_schema = StructType(
+    impute_missing_struct_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
@@ -1089,9 +1089,9 @@ class CQCLocationsSchema:
             ),
         ]
     )
-    expected_impute_missing_gac_service_types_schema = StructType(
+    expected_impute_missing_struct_column_schema = StructType(
         [
-            *impute_missing_gac_service_types_schema,
+            *impute_missing_struct_column_schema,
             StructField(
                 CQCLClean.imputed_gac_service_types,
                 ArrayType(

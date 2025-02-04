@@ -2253,7 +2253,7 @@ class CQCLocationsData:
     ]
 
     # fmt: off
-    impute_missing_gac_service_types_rows = [
+    impute_missing_struct_column_rows = [
         ("1-001", date(2024, 1, 1), []),
         ("1-001", date(2024, 2, 1), None),
         ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}]),
@@ -2265,7 +2265,7 @@ class CQCLocationsData:
         ("1-002", date(2024, 1, 1), []),
         ("1-002", date(2024, 2, 1), None),
     ]
-    expected_impute_missing_gac_service_types_rows = [
+    expected_impute_missing_struct_column_rows = [
         ("1-001", date(2024, 1, 1), [], [{"name": "Name A", "description": "Desc A"}]),
         ("1-001", date(2024, 2, 1), None, [{"name": "Name A", "description": "Desc A"}]),
         ("1-001", date(2024, 3, 1), [{"name": "Name A", "description": "Desc A"}], [{"name": "Name A", "description": "Desc A"}]),

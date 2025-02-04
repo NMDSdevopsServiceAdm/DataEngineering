@@ -382,19 +382,19 @@ class GetRelationshipsWhereTypeIsPredecessorTests(CleanCQCLocationDatasetTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):
+class ImputeMissingStructColumnTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_impute_missing_gac_service_types_df = self.spark.createDataFrame(
-            Data.impute_missing_gac_service_types_rows,
-            Schemas.impute_missing_gac_service_types_schema,
+        self.test_impute_missing_struct_column_df = self.spark.createDataFrame(
+            Data.impute_missing_struct_column_rows,
+            Schemas.impute_missing_struct_column_schema,
         )
-        self.returned_df = job.impute_missing_gac_service_types(
-            self.test_impute_missing_gac_service_types_df
+        self.returned_df = job.impute_missing_struct_column(
+            self.test_impute_missing_struct_column_df, CQCLCleaned.gac_service_types
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_impute_missing_gac_service_types_rows,
-            Schemas.expected_impute_missing_gac_service_types_schema,
+            Data.expected_impute_missing_struct_column_rows,
+            Schemas.expected_impute_missing_struct_column_schema,
         )
 
         self.returned_data = self.returned_df.sort(
@@ -402,10 +402,10 @@ class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_impute_missing_gac_service_types_returns_expected_columns(self):
+    def test_impute_missing_struct_column_returns_expected_columns(self):
         self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
-    def test_original_gac_service_types_remains_unchanged(self):
+    def test_original_column_remains_unchanged(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
                 self.returned_data[i][CQCL.gac_service_types],
@@ -413,7 +413,7 @@ class ImputeMissingGacServiceTypesTests(CleanCQCLocationDatasetTests):
                 f"Returned value in row {i} does not match original",
             )
 
-    def test_impute_missing_gac_service_types_returns_expected_imputed_data(self):
+    def test_impute_missing_struct_column_returns_expected_imputed_data(self):
         for i in range(len(self.returned_data)):
             self.assertEqual(
                 self.returned_data[i][CQCLCleaned.imputed_gac_service_types],
