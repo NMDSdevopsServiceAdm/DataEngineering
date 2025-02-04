@@ -8,6 +8,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
+    count_job_role_per_establishment,
+    convert_job_role_count_to_job_role_map,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -69,6 +73,13 @@ def main(
     cleaned_ascwds_worker_df = utils.read_from_parquet(
         cleaned_ascwds_worker_source,
         selected_columns=cleaned_ascwds_worker_columns_to_import,
+    )
+
+    count_job_roles_per_establishment_df = count_job_role_per_establishment(
+        cleaned_ascwds_worker_df
+    )
+    count_job_roles_per_establishment_df = convert_job_role_count_to_job_role_map(
+        count_job_roles_per_establishment_df
     )
 
     utils.write_to_parquet(

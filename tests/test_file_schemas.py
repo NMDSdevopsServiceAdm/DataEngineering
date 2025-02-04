@@ -11,6 +11,7 @@ from pyspark.sql.types import (
     DateType,
     DoubleType,
     BooleanType,
+    MapType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -5640,6 +5641,36 @@ class BlendAscwdsPirData:
             ),
             StructField(
                 IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
+            ),
+        ]
+    )
+
+
+@dataclass
+class AscwdsJobroleCountSchema:
+    ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_count_schema = StructType(
+        [
+            *ascwds_worker_schema,
+            StructField(IndCQC.ascwds_main_job_role_counts, IntegerType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_map_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_main_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
             ),
         ]
     )
