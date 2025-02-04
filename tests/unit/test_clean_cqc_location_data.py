@@ -422,6 +422,33 @@ class ImputeMissingStructColumnTests(CleanCQCLocationDatasetTests):
             )
 
 
+class RemoveLocationsThatNeverHadRegulatedActivitesTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_df = self.spark.createDataFrame(
+            Data.remove_locations_that_never_had_regulated_activities_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        )
+        self.returned_df = job.remove_locations_that_never_had_regulated_activities(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_remove_locations_that_never_had_regulated_activities_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(CQCL.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_remove_locations_that_never_had_regulated_activities_returns_expected_data(
+        self,
+    ):
+        self.test_df.show()
+        self.returned_df.show()
+        self.expected_df.show()
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
 class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()

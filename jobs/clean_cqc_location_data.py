@@ -116,6 +116,9 @@ def main(
     registered_locations_df = impute_missing_struct_column(
         registered_locations_df, CQCL.regulated_activities
     )
+    registered_locations_df = remove_locations_that_never_had_regulated_activities(
+        registered_locations_df
+    )
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -470,6 +473,23 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
         ),
     )
 
+    return df
+
+
+def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataFrame:
+    """
+    Removes locations who have never submitted regulated activities data.
+
+    Removes locations who have never submitted regulated activities data as it is
+    the activities that are regulated and not the location. This function removes any blank rows
+    from the imputed_regulatedactivities column, which are locations that have no data at any time point.
+
+    Args:
+        df (DataFrame): A dataframe with imputed_regulatedactivities
+
+    Returns:
+        DataFrame: A dataframe where blank imputed rows are removed.
+    """
     return df
 
 
