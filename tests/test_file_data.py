@@ -9032,11 +9032,11 @@ class AscwdsJobroleCountData:
         ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
     ]
 
-    workplace_across_different_importdates_same_job_role_rows = [
+    workplace_across_different_import_dates_same_job_role_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
         ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker),
     ]
-    expected_workplace_across_different_importdates_same_job_role_rows = [
+    expected_workplace_across_different_import_dates_same_job_role_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
         ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
     ]
@@ -9072,11 +9072,11 @@ class AscwdsJobroleCountData:
         ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
     ]
  
-    workplace_across_different_importdates_same_job_role_counted_rows = [
+    workplace_across_different_import_dates_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
         ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
     ]
-    expected_workplace_across_different_importdates_same_job_role_counted_rows = [
+    expected_workplace_across_different_import_dates_same_job_role_counted_rows = [
         ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
         ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
     ]
