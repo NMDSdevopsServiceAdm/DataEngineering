@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 
 import jobs.ingest_ascwds_dataset as job
 from tests.test_file_data import IngestASCWDSData as Data
@@ -9,6 +10,31 @@ from utils import utils
 class IngestASCWDSDatasetTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
+
+class IngestSingleFileTest(IngestASCWDSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch("utils.utils.construct_destination_path")
+    @patch("jobs.ingest_ascwds_dataset.handle_job")
+    def test_ingest_single_file(
+        self, handle_job_mock: Mock, construct_destination_path_mock: Mock
+    ):
+        source = "s3://bucket/source.csv"
+        bucket = "bucket"
+        prefix = "source.csv"
+        destination = "s3://bucket/destination/"
+
+        expected_new_destination = "s3://bucket/destination/source.csv"
+        construct_destination_path_mock.return_value = expected_new_destination
+
+        job.ingest_single_file(source, bucket, prefix, destination)
+
+        construct_destination_path_mock.assert_called_once_with(destination, prefix)
+        handle_job_mock.assert_called_once_with(
+            source, bucket, prefix, expected_new_destination
+        )
 
 
 class RaiseErrorIfMainjridIncludesUnknownValuesTests(IngestASCWDSDatasetTests):
