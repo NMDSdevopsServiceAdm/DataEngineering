@@ -109,6 +109,18 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
     return df_mapped
 
 def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
+    """
+    Group the worker dataset by establishment id and import date.
+    Subsequently performs a pivot on the clean job role labels which will be the additional columns in the grouped data.
+    Any labels in the list of job roles not present in the establishment will have their counts aggregated to zero.
+
+    Args:
+        df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
+
     list_of_job_roles 
 
     df = (
