@@ -8,7 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.ascwds_job_role_count import ( 
+from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
 )
