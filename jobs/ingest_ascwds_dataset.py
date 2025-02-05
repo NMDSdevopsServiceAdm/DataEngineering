@@ -82,6 +82,9 @@ def handle_job(
         source_key (str): The S3 prefix (key) of the file.
         destination (str): The destination directory for outputting parquet files.
         dataset (str): The dataset type, either 'ascwds' or 'nmdssc'.
+
+    Raises:
+        ValueError: If chosen method does not match 'ascwds' or 'nmdssc'.
     """
     file_sample = utils.read_partial_csv_content(source_bucket, source_key)
     delimiter = utils.identify_csv_delimiter(file_sample)
