@@ -9403,7 +9403,7 @@ class AscwdsJobroleCountData:
     ]
 
     expected_workplace_with_one_of_every_possible_job_role = [
-        ("1", date(2025, 1, 1), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+        ("1", date(2025, 1, 1), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
     ]
 
     # workplace_with_two_different_roles_rows = [
