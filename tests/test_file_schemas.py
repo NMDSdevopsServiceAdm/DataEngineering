@@ -176,6 +176,26 @@ class ASCWDSWorkplaceSchemas:
         ]
     )
 
+    filter_test_account_when_orgid_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+        ]
+    )
+    filter_test_account_when_orgid_not_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+
+    remove_white_space_from_nmdsid_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
+        ]
+    )
+
     location_schema = StructType(
         [
             StructField(AWP.location_id, StringType(), True),

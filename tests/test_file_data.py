@@ -169,7 +169,7 @@ class ASCWDSWorkerData:
 
 @dataclass
 class ASCWDSWorkplaceData:
-    workplace_rows = rows = [
+    workplace_rows = [
         (
             "1-000000001",
             "101",
@@ -291,89 +291,62 @@ class ASCWDSWorkplaceData:
             "01/05/2021",
         ),
     ]
+    filter_test_account_when_orgid_present_rows = [
+        ("1-001", "310"),
+        ("1-002", "2452"),
+        ("1-003", "308"),
+        ("1-004", "1234"),
+        ("1-005", "31138"),
+    ]
+    expected_filter_test_account_when_orgid_present_rows = [
+        ("1-004", "1234"),
+    ]
+
+    filter_test_account_when_orgid_not_present_rows = [
+        ("1-001", "20250101"),
+        ("1-002", "20250101"),
+        ("1-003", "20250101"),
+        ("1-004", "20250101"),
+        ("1-005", "20250101"),
+    ]
+
+    remove_white_space_from_nmdsid_rows = [
+        ("1-001", "A123  "),
+        ("1-002", "A1234 "),
+        ("1-003", "A12345"),
+    ]
+    expected_remove_white_space_from_nmdsid_rows = [
+        ("1-001", "A123"),
+        ("1-002", "A1234"),
+        ("1-003", "A12345"),
+    ]
 
     small_location_rows = [
-        (
-            "loc-1",
-            "2020-01-01",
-            "1",
-        ),
-        (
-            "loc-2",
-            "2020-01-01",
-            "2",
-        ),
-        (
-            "loc-3",
-            "2020-01-01",
-            "3",
-        ),
-        (
-            "loc-4",
-            "2021-01-01",
-            "4",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "5",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "6",
-        ),
+        ("loc-1", "2020-01-01", "1"),
+        ("loc-2", "2020-01-01", "2"),
+        ("loc-3", "2020-01-01", "3"),
+        ("loc-4", "2021-01-01", "4"),
+        (None, "2021-01-01", "5"),
+        (None, "2021-01-01", "6"),
     ]
 
     location_rows_with_duplicates = [
         *small_location_rows,
-        (
-            "loc-3",
-            "2020-01-01",
-            "7",
-        ),
-        (
-            "loc-4",
-            "2021-01-01",
-            "8",
-        ),
+        ("loc-3", "2020-01-01", "7"),
+        ("loc-4", "2021-01-01", "8"),
     ]
 
     location_rows_with_different_import_dates = [
         *small_location_rows,
-        (
-            "loc-3",
-            "2021-01-01",
-            "3",
-        ),
-        (
-            "loc-4",
-            "2022-01-01",
-            "4",
-        ),
+        ("loc-3", "2021-01-01", "3"),
+        ("loc-4", "2022-01-01", "4"),
     ]
 
     expected_filtered_location_rows = [
-        (
-            "loc-1",
-            "2020-01-01",
-            "1",
-        ),
-        (
-            "loc-2",
-            "2020-01-01",
-            "2",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "5",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "6",
-        ),
+        ("loc-1", "2020-01-01", "1"),
+        ("loc-2", "2020-01-01", "2"),
+        (None, "2021-01-01", "5"),
+        (None, "2021-01-01", "6"),
     ]
 
     mupddate_for_org_rows = [
