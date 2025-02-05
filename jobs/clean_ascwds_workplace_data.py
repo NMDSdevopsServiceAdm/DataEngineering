@@ -1,7 +1,6 @@
 import sys
 
 from pyspark.sql import DataFrame, Window, functions as F
-from pyspark.sql.types import IntegerType
 from typing import Tuple
 
 from utils import utils
@@ -56,6 +55,9 @@ def main(
     workplace_for_reconciliation_destination: str,
 ):
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
+
+    ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
+    ascwds_workplace_df = remove_white_space_from_nmdsid(ascwds_workplace_df)
 
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
         AWPClean.last_logged_in, AWPClean.last_logged_in_date
@@ -126,6 +128,49 @@ def main(
         mode="overwrite",
         partitionKeys=partition_keys,
     )
+
+
+def filter_test_accounts(df: DataFrame) -> DataFrame:
+    """
+    Filters out test accounts (accounts used by internal Skills for Care staff) from the DataFrame.
+
+    Args:
+        df (DataFrame): The DataFrame to filter test accounts from.
+
+    Returns:
+        DataFrame: The DataFrame with test accounts removed.
+    """
+    test_accounts = [
+        "305",
+        "307",
+        "308",
+        "309",
+        "310",
+        "2452",
+        "28470",
+        "26792",
+        "31657",
+        "31138",
+    ]
+
+    if AWPClean.organisation_id in df.columns:
+        df = df.filter(~df[AWPClean.organisation_id].isin(test_accounts))
+
+    return df
+
+
+def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
+    """
+    Removes white space from the nmds_id column in the DataFrame.
+
+    Args:
+        df (DataFrame): The DataFrame to remove white space from the nmds_id column.
+
+    Returns:
+        DataFrame: The DataFrame with white space removed from the nmds_id column
+    """
+    df = df.withColumn(AWPClean.nmds_id, F.trim(F.col(AWPClean.nmds_id)))
+    return df
 
 
 def remove_workplaces_with_duplicate_location_ids(df: DataFrame) -> DataFrame:
