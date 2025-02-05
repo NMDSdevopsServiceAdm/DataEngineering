@@ -118,17 +118,22 @@ def collect_arguments():
         help="A destination directory for outputting parquet files",
         required=True,
     )
+    parser.add_argument(
+        "--dataset",
+        help="The dataset to be ingested (ascwds or nmdssc)",
+        default="ascwds",
+    )
 
     args, _ = parser.parse_known_args()
 
-    return args.source, args.destination
+    return args.source, args.destination, args.dataset
 
 
 if __name__ == "__main__":
     print("Spark job 'ingest_ascwds_dataset' starting...")
     print(f"Job parameters: {sys.argv}")
 
-    source, destination = collect_arguments()
-    main(source, destination)
+    source, destination, dataset = collect_arguments()
+    main(source, destination, dataset)
 
     print("Spark job 'ingest_ascwds_dataset' complete")
