@@ -59,7 +59,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         )
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_one_job_role_df
+            expected_workplace_with_one_job_role_df.collect()
         )
 
 
