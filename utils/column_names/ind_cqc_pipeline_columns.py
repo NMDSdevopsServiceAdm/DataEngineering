@@ -210,6 +210,7 @@ class IndCqcColumns:
     regulated_activities: str = CQCLClean.regulated_activities
     related_location: str = CQCLClean.related_location
     registered_manager_names: str = CQCLClean.registered_manager_names
+    registered_manager_count: str = "registered_manager_count"
     residual: str = "residual"
     residuals_ascwds_filled_posts_clean_dedup_non_res_pir: str = (
         "residuals_ascwds_filled_posts_clean_dedup_non_res_pir"

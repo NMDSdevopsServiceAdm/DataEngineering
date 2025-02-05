@@ -9453,3 +9453,42 @@ class AscwdsJobroleCountData:
         ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
     ]
     # fmt: on
+
+
+class RegisteredManagerNamesCountData:
+    location_with_one_registered_manager = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"])
+    ]
+    expected_location_with_one_registered_manager = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1)
+    ]
+
+    location_with_two_registered_managers = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
+    ]
+    expected_location_with_two_registered_managers = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+    ]
+
+    location_with_no_registered_manager = [("1-0000000001", date(2025, 1, 1), None)]
+    expected_location_with_no_registered_manager = [
+        ("1-0000000001", date(2025, 1, 1), None, 0)
+    ]
+
+    two_locations_with_different_number_of_registered_managers = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_two_locations_with_different_number_of_registered_managers = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+    ]
+
+    location_with_different_number_of_registered_managers_at_different_import_dates = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_location_with_different_number_of_registered_managers_at_different_import_dates = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+    ]
