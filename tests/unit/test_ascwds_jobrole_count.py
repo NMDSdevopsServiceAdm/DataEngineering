@@ -7,7 +7,7 @@ from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
+from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
     count_job_role_per_establishment_as_columns,
