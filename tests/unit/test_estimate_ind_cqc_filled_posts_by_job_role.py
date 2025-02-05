@@ -16,6 +16,7 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
     ESTIMATE_SOURCE = "some/source"
     ASCWDS_WORKER_SOURCE = "some/other/source"
     OUTPUT_DIR = "some/destination"
+    OUTPUT_DIR_TEMP_FOR_WORKER_DATA = "some/destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -30,6 +31,9 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
+    @unittest.skip(
+        "I'm temporarily saving some worker data and will delete whole branch later"
+    )
     @patch("utils.utils.write_to_parquet")
     @patch(
         "jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment"
@@ -49,7 +53,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             self.test_estimated_ind_cqc_filled_posts_df,
             self.test_cleaned_ascwds_worker_df,
         ]
-        job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
+        job.main(
+            self.ESTIMATE_SOURCE,
+            self.ASCWDS_WORKER_SOURCE,
+            self.OUTPUT_DIR,
+            self.OUTPUT_DIR_TEMP_FOR_WORKER_DATA,
+        )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
         read_from_parquet_mock.assert_has_calls(

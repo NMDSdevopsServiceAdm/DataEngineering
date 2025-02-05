@@ -8,7 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
+from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
 )
@@ -57,6 +57,7 @@ def main(
     estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+    temp_worker_job_role_count_destination: str,
 ):
     """
     Creates estimates of filled posts split by main job role.
@@ -65,6 +66,7 @@ def main(
         estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
+        temp_worker_job_role_count_destination (str): path to where to save worker data temporarily
     """
     estimated_ind_cqc_filled_posts_df = utils.read_from_parquet(
         estimated_ind_cqc_filled_posts_source,
@@ -83,6 +85,13 @@ def main(
     )
 
     utils.write_to_parquet(
+        count_job_roles_per_establishment_df,
+        temp_worker_job_role_count_destination,
+        "overwrite",
+        PartitionKeys,
+    )
+
+    utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
@@ -98,6 +107,7 @@ if __name__ == "__main__":
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_worker_job_role_count_destination,
     ) = utils.collect_arguments(
         (
             "--estimated_ind_cqc_filled_posts_source",
@@ -111,10 +121,15 @@ if __name__ == "__main__":
             "--estimated_ind_cqc_filled_posts_by_job_role_destination",
             "Destination s3 directory",
         ),
+        (
+            "--temp_worker_job_role_count_destination",
+            "Destination s3 directory",
+        ),
     )
 
     main(
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_worker_job_role_count_destination,
     )
