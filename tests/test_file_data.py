@@ -9406,6 +9406,16 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)
     ]
 
+    workplace_with_one_job_role = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+    ]
+
+    expected_workplace_with_one_job_role = [
+        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    ]
+
+    
+
     # workplace_with_two_different_roles_rows = [
     #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
     #     ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),

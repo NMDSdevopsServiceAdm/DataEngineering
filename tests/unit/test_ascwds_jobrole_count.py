@@ -43,6 +43,24 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_one_of_every_possible_job_role_df.collect(),
         )
 
+    def test_workplace_with_one_job_role(
+            self,
+    ):
+        test_workplace_with_one_job_role_df = self.spark.createDataFrame(
+            Data.workplace_with_one_job_role,
+            Schemas.ascwds_worker_schema,
+        )
+        expected_workplace_with_one_job_role_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_one_job_role,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment
+        )
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_one_job_role_df
+        )
+        self.assertEqual(
+            returned_df.sort(AWKClean.establishment_id).collect(),
+            expected_workplace_with_one_job_role_df
+        )
 
 
 
