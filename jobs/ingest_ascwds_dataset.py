@@ -1,7 +1,7 @@
-import sys
 import argparse
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
+import sys
+
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
@@ -41,36 +41,10 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
         f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
     )
     df = utils.read_csv(source, delimiter)
-    df = filter_test_accounts(df)
-    df = remove_white_space_from_nmdsid(df)
     df = raise_error_if_mainjrid_includes_unknown_values(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
-
-
-def filter_test_accounts(df: DataFrame) -> DataFrame:
-    test_accounts = [
-        "305",
-        "307",
-        "308",
-        "309",
-        "310",
-        "2452",
-        "28470",
-        "26792",
-        "31657",
-        "31138",
-    ]
-
-    if "orgid" in df.columns:
-        df = df.filter(~df.orgid.isin(test_accounts))
-
-    return df
-
-
-def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
-    return df.withColumn("nmdsid", F.trim(F.col("nmdsid")))
 
 
 def raise_error_if_mainjrid_includes_unknown_values(df: DataFrame) -> DataFrame:
