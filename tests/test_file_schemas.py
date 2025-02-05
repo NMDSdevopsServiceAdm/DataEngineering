@@ -173,6 +173,7 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
         ]
     )
 
