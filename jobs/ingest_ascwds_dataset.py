@@ -9,22 +9,24 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 )
 
 
-def main(source: str, destination: str):
+def main(source: str, destination: str, dataset: str = "ascwds"):
     bucket, prefix = utils.split_s3_uri(source)
 
     if utils.is_csv(source):
-        ingest_single_file(source, bucket, prefix, destination)
+        ingest_single_file(source, bucket, prefix, destination, dataset)
     else:
-        ingest_multiple_files(bucket, prefix, destination)
+        ingest_multiple_files(bucket, prefix, destination, dataset)
 
 
-def ingest_single_file(source: str, bucket: str, prefix: str, destination: str):
+def ingest_single_file(
+    source: str, bucket: str, prefix: str, destination: str, dataset: str
+):
     print("Single file provided to job. Handling single file.")
     new_destination = utils.construct_destination_path(destination, prefix)
-    handle_job(source, bucket, prefix, new_destination)
+    handle_job(source, bucket, prefix, new_destination, dataset)
 
 
-def ingest_multiple_files(bucket: str, prefix: str, destination: str):
+def ingest_multiple_files(bucket: str, prefix: str, destination: str, dataset: str):
     print("Multiple files provided to job. Handling each file...")
     objects_list = utils.get_s3_objects_list(bucket, prefix)
 
@@ -34,15 +36,22 @@ def ingest_multiple_files(bucket: str, prefix: str, destination: str):
     for key in objects_list:
         new_source = utils.construct_s3_uri(bucket, key)
         new_destination = utils.construct_destination_path(destination, key)
-        handle_job(new_source, bucket, key, new_destination)
+        handle_job(new_source, bucket, key, new_destination, dataset)
 
 
-def handle_job(source: str, source_bucket: str, source_key: str, destination: str):
+def handle_job(
+    source: str, source_bucket: str, source_key: str, destination: str, dataset: str
+):
     file_sample = utils.read_partial_csv_content(source_bucket, source_key)
     delimiter = utils.identify_csv_delimiter(file_sample)
 
     df = utils.read_csv(source, delimiter)
-    df = raise_error_if_mainjrid_includes_unknown_values(df)
+    if dataset == "ascwds":
+        df = raise_error_if_mainjrid_includes_unknown_values(df)
+    elif dataset == "nmdssc":
+        df = df  # TODO Add date adjustment function here
+    else:
+        raise ValueError("Error: dataset must be either 'ascwds' or 'nmdssc'")
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)

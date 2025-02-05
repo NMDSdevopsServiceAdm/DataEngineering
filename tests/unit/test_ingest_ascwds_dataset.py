@@ -15,6 +15,7 @@ class IngestASCWDSDatasetTests(unittest.TestCase):
         self.bucket = "bucket"
         self.csv_file_name = "source.csv"
         self.destination_path = "s3://bucket/destination/"
+        self.dataset = "ascwds"
 
 
 class IngestSingleFileTest(IngestASCWDSDatasetTests):
@@ -34,6 +35,7 @@ class IngestSingleFileTest(IngestASCWDSDatasetTests):
             self.bucket,
             self.csv_file_name,
             self.destination_path,
+            self.dataset,
         )
 
         construct_destination_path_mock.assert_called_once_with(
@@ -44,6 +46,7 @@ class IngestSingleFileTest(IngestASCWDSDatasetTests):
             self.bucket,
             self.csv_file_name,
             expected_new_destination,
+            self.dataset,
         )
 
 
@@ -72,7 +75,9 @@ class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
             lambda destination, key: f"{destination}{key}"
         )
 
-        job.ingest_multiple_files(self.bucket, prefix, self.destination_path)
+        job.ingest_multiple_files(
+            self.bucket, prefix, self.destination_path, self.dataset
+        )
 
         get_s3_objects_list_mock.assert_called_once_with(self.bucket, prefix)
         expected_calls_s3_uri = [
@@ -93,12 +98,14 @@ class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
                 self.bucket,
                 file1,
                 "s3://bucket/destination/file1.csv",
+                self.dataset,
             ),
             call(
                 "s3://bucket/file2.csv",
                 self.bucket,
                 file2,
                 "s3://bucket/destination/file2.csv",
+                self.dataset,
             ),
         ]
         handle_job_mock.assert_has_calls(expected_calls_handle_job)
@@ -110,7 +117,7 @@ class TestHandleJob(IngestASCWDSDatasetTests):
     @patch("utils.utils.read_csv")
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
-    def test_handle_job(
+    def test_handle_job_calls_correct_functions_when_dataset_is_ascwds(
         self,
         raise_error_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -132,6 +139,45 @@ class TestHandleJob(IngestASCWDSDatasetTests):
             self.bucket,
             self.csv_file_name,
             self.destination_path,
+            self.dataset,
+        )
+
+        read_partial_csv_content_mock.assert_called_once_with(
+            self.bucket, self.csv_file_name
+        )
+        identify_csv_delimiter_mock.assert_called_once_with(file_sample)
+        read_csv_mock.assert_called_once_with(self.single_csv_file_source, delimiter)
+        raise_error_mock.assert_called_once_with(df)
+        write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
+
+    @patch("utils.utils.read_partial_csv_content")
+    @patch("utils.utils.identify_csv_delimiter")
+    @patch("utils.utils.read_csv")
+    @patch("utils.utils.write_to_parquet")
+    @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
+    def test_handle_job_calls_correct_functions_when_dataset_is_nmdssc(
+        self,
+        raise_error_mock: Mock,
+        write_to_parquet_mock: Mock,
+        read_csv_mock: Mock,
+        identify_csv_delimiter_mock: Mock,
+        read_partial_csv_content_mock: Mock,
+    ):
+        file_sample = "sample_data"
+        delimiter = ","
+        df = "dataframe"
+
+        read_partial_csv_content_mock.return_value = file_sample
+        identify_csv_delimiter_mock.return_value = delimiter
+        read_csv_mock.return_value = df
+        raise_error_mock.return_value = df
+
+        job.handle_job(
+            self.single_csv_file_source,
+            self.bucket,
+            self.csv_file_name,
+            self.destination_path,
+            self.dataset,
         )
 
         read_partial_csv_content_mock.assert_called_once_with(
