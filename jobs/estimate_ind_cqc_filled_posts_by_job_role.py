@@ -9,8 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts_by_job_role_utils.ascwds_job_role_count.ascwds_job_role_count import (
-    count_job_role_per_establishment,
-    convert_job_role_count_to_job_role_map,
+    count_job_role_per_establishment_as_columns,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -75,11 +74,8 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
-    count_job_roles_per_establishment_df = count_job_role_per_establishment(
+    count_job_role_per_establishment_df = count_job_role_per_establishment_as_columns(
         cleaned_ascwds_worker_df
-    )
-    count_job_roles_per_establishment_df = convert_job_role_count_to_job_role_map(
-        count_job_roles_per_establishment_df
     )
 
     utils.write_to_parquet(
