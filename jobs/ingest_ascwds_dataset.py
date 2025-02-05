@@ -49,7 +49,7 @@ def handle_job(
     if dataset == "ascwds":
         df = raise_error_if_mainjrid_includes_unknown_values(df)
     elif dataset == "nmdssc":
-        df = df  # TODO Add date adjustment function here
+        df = fix_nmdssc_dates(df)
     else:
         raise ValueError("Error: dataset must be either 'ascwds' or 'nmdssc'")
 
@@ -82,6 +82,27 @@ def raise_error_if_mainjrid_includes_unknown_values(df: DataFrame) -> DataFrame:
                 f"Error: this file contains {count_unknown} unknown mainjrid record(s)"
             )
 
+    return df
+
+
+def fix_nmdssc_dates(df: DataFrame) -> DataFrame:
+    """
+    Convert NMDS-SC date string format from MM/dd/yyyy to match the ASC-WDS string format of dd/MM/yyyy.
+
+    Args:
+        df (DataFrame): The DataFrame to adjust the date columns for.
+
+    Returns:
+        DataFrame: The DataFrame with the date columns adjusted.
+    """
+    DATE_COLUMN_SUFFIX = "date"
+    date_columns = [column for column in df.columns if DATE_COLUMN_SUFFIX in column]
+
+    for date_column in date_columns:
+        df = df.withColumn(
+            date_column,
+            F.date_format(F.to_date(df[date_column], "MM/dd/yyyy"), "dd/MM/yyyy"),
+        )
     return df
 
 

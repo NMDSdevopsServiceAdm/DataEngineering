@@ -154,10 +154,10 @@ class TestHandleJob(IngestASCWDSDatasetTests):
     @patch("utils.utils.identify_csv_delimiter")
     @patch("utils.utils.read_csv")
     @patch("utils.utils.write_to_parquet")
-    @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
+    @patch("jobs.ingest_ascwds_dataset.fix_nmdssc_dates")
     def test_handle_job_calls_correct_functions_when_dataset_is_nmdssc(
         self,
-        raise_error_mock: Mock,
+        fix_nmdssc_dates_mock: Mock,
         write_to_parquet_mock: Mock,
         read_csv_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -166,18 +166,19 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         file_sample = "sample_data"
         delimiter = ","
         df = "dataframe"
+        dataset = "nmdssc"
 
         read_partial_csv_content_mock.return_value = file_sample
         identify_csv_delimiter_mock.return_value = delimiter
         read_csv_mock.return_value = df
-        raise_error_mock.return_value = df
+        fix_nmdssc_dates_mock.return_value = df
 
         job.handle_job(
             self.single_csv_file_source,
             self.bucket,
             self.csv_file_name,
             self.destination_path,
-            self.dataset,
+            dataset,
         )
 
         read_partial_csv_content_mock.assert_called_once_with(
@@ -185,8 +186,34 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         )
         identify_csv_delimiter_mock.assert_called_once_with(file_sample)
         read_csv_mock.assert_called_once_with(self.single_csv_file_source, delimiter)
-        raise_error_mock.assert_called_once_with(df)
+        fix_nmdssc_dates_mock.assert_called_once_with(df)
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
+
+    @patch("utils.utils.read_partial_csv_content")
+    @patch("utils.utils.identify_csv_delimiter")
+    @patch("utils.utils.read_csv")
+    @patch("utils.utils.write_to_parquet")
+    def test_handle_job_raises_error_if_dataset_is_not_a_valid_option(
+        self,
+        write_to_parquet_mock: Mock,
+        read_csv_mock: Mock,
+        identify_csv_delimiter_mock: Mock,
+        read_partial_csv_content_mock: Mock,
+    ):
+        dataset = "invalid_option"
+
+        with self.assertRaises(ValueError) as context:
+            job.handle_job(
+                self.single_csv_file_source,
+                self.bucket,
+                self.csv_file_name,
+                self.destination_path,
+                dataset,
+            )
+
+        self.assertIn(
+            "Error: dataset must be either 'ascwds' or 'nmdssc'", str(context.exception)
+        )
 
 
 class RaiseErrorIfMainjridIncludesUnknownValuesTests(IngestASCWDSDatasetTests):
