@@ -173,6 +173,27 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
+        ]
+    )
+
+    filter_test_account_when_orgid_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+        ]
+    )
+    filter_test_account_when_orgid_not_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+
+    remove_white_space_from_nmdsid_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
         ]
     )
 
