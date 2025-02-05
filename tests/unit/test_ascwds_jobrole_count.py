@@ -10,6 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
+    count_job_role_per_establishment_as_columns,
 )
 
 
@@ -282,4 +283,31 @@ class ConvertJobRoleCountToJobRoleMap(AscwdsJobroleCount):
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
             expected_df.collect(),
+        )
+
+
+class PivotJobRoleCountIntoColumns(AscwdsJobroleCount):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_pivot_job_role_count(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.workplaces_with_different_number_of_unique_job_roles_rows,
+            Schemas.ascwds_worker_with_job_role_count_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_workplaces_with_different_number_of_unique_job_roles_when_pivoted_rows,
+            Schemas.ascwds_worker_with_job_role_count_pivoted_schema,
+        )
+
+        returned_df = count_job_role_per_establishment_as_columns(test_df)
+
+        returned_df.sort(AWKClean.establishment_id).show()
+        expected_df.sort(AWKClean.establishment_id).show()
+
+        self.assertEqual(
+            returned_df.sort(AWKClean.establishment_id).collect(),
+            expected_df.sort(AWKClean.establishment_id).collect(),
         )

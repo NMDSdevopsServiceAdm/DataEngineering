@@ -9090,4 +9090,9 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
         ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
     ]
+
+    expected_workplaces_with_different_number_of_unique_job_roles_when_pivoted_rows = [
+        ("1", date(2025, 1, 1), 0, 0, 1, 0),
+        ("2", date(2025, 1, 1), 1, 1, 0, 0),
+    ]
     # fmt: on

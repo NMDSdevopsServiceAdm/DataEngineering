@@ -73,6 +73,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -5458,5 +5459,16 @@ class AscwdsJobroleCountSchema:
                 MapType(StringType(), IntegerType()),
                 True,
             ),
+        ]
+    )
+
+    ascwds_worker_with_job_role_count_pivoted_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(MainJobRoleLabels.registered_manager, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.not_known, IntegerType(), True),
         ]
     )
