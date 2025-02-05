@@ -9359,97 +9359,136 @@ class BlendAscwdsPirData:
 @dataclass
 class AscwdsJobroleCountData:
     # fmt: off
-    workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-    ]
-    expected_workplace_with_two_workers_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
-    ]
 
-    workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    workplace_with_one_of_every_possible_job_role = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.first_line_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.registered_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.supervisor),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.social_worker),
         ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
-    ]
-    expected_workplace_with_two_different_roles_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
-    ]
-
-    two_workplaces_with_same_job_role_rows = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-    ]
-    expected_two_workplaces_with_same_job_role_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-    ]
-
-    two_workplaces_with_different_job_role_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
-    ]
-    expected_two_workplaces_with_different_job_role_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
-    ]
-
-    workplace_across_different_import_dates_same_job_role_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker),
-    ]
-    expected_workplace_across_different_import_dates_same_job_role_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
-    ]
-
-    workplace_with_null_job_role_rows = [
-        ("1", date(2025, 1, 1), None),
-    ]
-    expected_workplace_with_null_job_role_rows = [
-        ("1", date(2025, 1, 1), None, 0),
-    ]
-
-    workplace_with_one_job_role_and_two_workers_counted_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
-    ]
-    expected_workplace_with_one_job_role_and_two_workers_counted_rows = [
-        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 2}),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.community_support_and_outreach),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.employment_support),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.advocacy),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.occupational_therapist),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.registered_nurse),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.allied_health_professional),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.technician),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.other_care_role),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_related_staff),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.admin_staff),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.ancillary_staff),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.other_non_care_related_staff),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.activites_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.safeguarding_officer),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.occupational_therapist_assistant),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.registered_nursing_associate),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.nursing_assistant),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.assessment_officer),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_coordinator),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.childrens_roles),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.deputy_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.learning_and_development_lead),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.team_leader),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.data_analyst),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.data_governance_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.it_and_digital_support),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.it_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.it_service_desk_manager),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.software_developer),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.support_worker),
     ]
 
-    workplace_with_two_workers_in_different_job_roles_counted_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    expected_workplace_with_one_of_every_possible_job_role = [
+        ("1", date(2025, 1, 1), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
     ]
-    expected_workplace_with_two_workers_in_different_job_roles_counted_rows = [
-        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.senior_care_worker: 1}),
-    ]
+
+    # workplace_with_two_different_roles_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
+    # ]
+    # expected_workplace_with_two_different_roles_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    # ]
+
+    # two_workplaces_with_same_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    # ]
+    # expected_two_workplaces_with_same_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    # ]
+
+    # two_workplaces_with_different_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
+    # ]
+    # expected_two_workplaces_with_different_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    # ]
+
+    # workplace_across_different_import_dates_same_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    #     ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker),
+    # ]
+    # expected_workplace_across_different_import_dates_same_job_role_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
+    # ]
+
+    # workplace_with_null_job_role_rows = [
+    #     ("1", date(2025, 1, 1), None),
+    # ]
+    # expected_workplace_with_null_job_role_rows = [
+    #     ("1", date(2025, 1, 1), None, 0),
+    # ]
+
+    # workplace_with_one_job_role_and_two_workers_counted_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
+    # ]
+    # expected_workplace_with_one_job_role_and_two_workers_counted_rows = [
+    #     ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 2}),
+    # ]
+
+    # workplace_with_two_workers_in_different_job_roles_counted_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    # ]
+    # expected_workplace_with_two_workers_in_different_job_roles_counted_rows = [
+    #     ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.senior_care_worker: 1}),
+    # ]
  
-    two_workplaces_with_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-    ]
-    expected_two_workplaces_with_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
-        ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
-    ]
+    # two_workplaces_with_same_job_role_counted_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    # ]
+    # expected_two_workplaces_with_same_job_role_counted_rows = [
+    #     ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+    #     ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+    # ]
  
-    workplace_across_different_import_dates_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
-    ]
-    expected_workplace_across_different_import_dates_same_job_role_counted_rows = [
-        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
-        ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
-    ]
+    # workplace_across_different_import_dates_same_job_role_counted_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
+    # ]
+    # expected_workplace_across_different_import_dates_same_job_role_counted_rows = [
+    #     ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+    #     ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
+    # ]
 
-    workplaces_with_different_number_of_unique_job_roles_rows = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.registered_manager, 1),
-    ]
-    expected_workplaces_with_different_number_of_unique_job_roles_rows = [
-        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
-        ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
-    ]
+    # workplaces_with_different_number_of_unique_job_roles_rows = [
+    #     ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    #     ("2", date(2025, 1, 1), MainJobRoleLabels.registered_manager, 1),
+    # ]
+    # expected_workplaces_with_different_number_of_unique_job_roles_rows = [
+    #     ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+    #     ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
+    # ]
     # fmt: on

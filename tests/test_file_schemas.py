@@ -74,6 +74,8 @@ from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
+from utils.column_values.categorical_column_values import MainJobRoleLabels
+
 
 @dataclass
 class CalculatePaRatioSchemas:
@@ -5656,21 +5658,49 @@ class AscwdsJobroleCountSchema:
         ]
     )
 
-    ascwds_worker_with_job_role_count_schema = StructType(
-        [
-            *ascwds_worker_schema,
-            StructField(IndCQC.ascwds_main_job_role_counts, IntegerType(), True),
-        ]
-    )
-
-    ascwds_worker_with_job_role_map_schema = StructType(
+    ascwds_worker_with_columns_per_count_of_job_role_per_establishment = StructType(
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(
-                IndCQC.ascwds_main_job_role_counts,
-                MapType(StringType(), IntegerType()),
-                True,
-            ),
-        ]
+            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), False),
+            StructField(MainJobRoleLabels.middle_management, IntegerType(), False),
+            StructField(MainJobRoleLabels.first_line_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.registered_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.supervisor, IntegerType(), False),
+            StructField(MainJobRoleLabels.social_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.community_support_and_outreach, IntegerType(), False),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+            StructField(MainJobRoleLabels.advocacy, IntegerType(), False),
+            StructField(MainJobRoleLabels.occupational_therapist, IntegerType(), False),
+            StructField(MainJobRoleLabels.registered_nurse, IntegerType(), False),
+            StructField(MainJobRoleLabels.allied_health_professional, IntegerType(), False),
+            StructField(MainJobRoleLabels.technician, IntegerType(), False),
+            StructField(MainJobRoleLabels.other_care_role, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_related_staff, IntegerType(), False),
+            StructField(MainJobRoleLabels.admin_staff, IntegerType(), False),
+            StructField(MainJobRoleLabels.ancillary_staff, IntegerType(), False),
+            StructField(MainJobRoleLabels.other_non_care_related_staff, IntegerType(), False),
+            StructField(MainJobRoleLabels.activites_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.safeguarding_officer, IntegerType(), False),
+            StructField(MainJobRoleLabels.occupational_therapist_assistant, IntegerType(), False),
+            StructField(MainJobRoleLabels.registered_nursing_associate, IntegerType(), False),
+            StructField(MainJobRoleLabels.nursing_assistant, IntegerType(), False),
+            StructField(MainJobRoleLabels.assessment_officer, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_coordinator, IntegerType(), False),
+            StructField(MainJobRoleLabels.childrens_roles, IntegerType(), False),
+            StructField(MainJobRoleLabels.deputy_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.learning_and_development_lead, IntegerType(), False),
+            StructField(MainJobRoleLabels.team_leader, IntegerType(), False),
+            StructField(MainJobRoleLabels.data_analyst, IntegerType(), False),
+            StructField(MainJobRoleLabels.data_governance_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.it_and_digital_support, IntegerType(), False),
+            StructField(MainJobRoleLabels.it_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.it_service_desk_manager, IntegerType(), False),
+            StructField(MainJobRoleLabels.software_developer, IntegerType(), False),
+            StructField(MainJobRoleLabels.support_worker, IntegerType(), False),
+    ]
+        
     )
