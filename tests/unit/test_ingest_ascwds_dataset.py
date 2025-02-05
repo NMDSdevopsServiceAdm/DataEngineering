@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import call, patch, Mock
 
 import jobs.ingest_ascwds_dataset as job
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 from tests.test_file_data import IngestASCWDSData as Data
 from tests.test_file_schemas import IngestASCWDSData as Schemas
 from utils import utils
@@ -285,6 +288,43 @@ class RaiseErrorIfMainjridIncludesUnknownValuesTests(IngestASCWDSDatasetTests):
         self.assertIn(
             "Error: this file contains 1 unknown mainjrid record(s)",
             str(context.exception),
+        )
+
+
+class FixNmdsscDatesTests(IngestASCWDSDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.fix_nmdssc_dates_rows, Schemas.fix_nmdssc_dates_schema
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_fix_nmdssc_dates_rows, Schemas.fix_nmdssc_dates_schema
+        )
+        returned_df = job.fix_nmdssc_dates(test_df)
+
+        self.returned_data = returned_df.collect()
+        self.expected_data = expected_df.collect()
+
+    def test_fix_nmdssc_dates_amends_date_columns(self):
+        self.assertEqual(
+            self.returned_data[0][AWK.created_date],
+            self.expected_data[0][AWK.created_date],
+        )
+        self.assertEqual(
+            self.returned_data[0][AWK.updated_date],
+            self.expected_data[0][AWK.updated_date],
+        )
+
+    def test_fix_nmdssc_dates_does_not_change_non_date_columns(self):
+        self.assertEqual(
+            self.returned_data[0][AWK.establishment_id],
+            self.expected_data[0][AWK.establishment_id],
+        )
+        self.assertEqual(
+            self.returned_data[0][AWK.main_job_role_id],
+            self.expected_data[0][AWK.main_job_role_id],
         )
 
 
