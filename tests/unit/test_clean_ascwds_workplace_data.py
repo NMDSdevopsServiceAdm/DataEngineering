@@ -75,6 +75,62 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
+class FilterTestAccountsTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self):
+        super().setUp()
+
+    def test_filter_test_accounts(self):
+        test_df = self.spark.createDataFrame(
+            Data.filter_test_account_when_orgid_present_rows,
+            Schemas.filter_test_account_when_orgid_present_schema,
+        )
+
+        returned_df = job.filter_test_accounts(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_filter_test_account_when_orgid_present_rows,
+            Schemas.filter_test_account_when_orgid_present_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_filter_test_accounts_without_orgid_doesnt_filter_rows(self):
+        test_df = self.spark.createDataFrame(
+            Data.filter_test_account_when_orgid_not_present_rows,
+            Schemas.filter_test_account_when_orgid_not_present_schema,
+        )
+
+        returned_df = job.filter_test_accounts(test_df)
+
+        self.assertEqual(
+            returned_df.sort(AWP.location_id).collect(),
+            test_df.sort(AWP.location_id).collect(),
+        )
+
+
+class RemoveWhiteSpaceFromNmdsidTests(CleanASCWDSWorkplaceDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_white_space_from_nmdsid(self):
+        test_df = self.spark.createDataFrame(
+            Data.remove_white_space_from_nmdsid_rows,
+            Schemas.remove_white_space_from_nmdsid_schema,
+        )
+
+        returned_df = job.remove_white_space_from_nmdsid(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_white_space_from_nmdsid_rows,
+            Schemas.remove_white_space_from_nmdsid_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort(AWP.location_id).collect(),
+            expected_df.sort(AWP.location_id).collect(),
+        )
+
+
 class CreatePurgedDfsForReconciliationAndDataTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self):
         super().setUp()
