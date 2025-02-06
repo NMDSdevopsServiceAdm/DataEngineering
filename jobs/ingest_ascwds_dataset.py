@@ -41,36 +41,10 @@ def ingest_dataset(source: str, destination: str, delimiter: str):
         f"Reading CSV from {source} and writing to {destination} with delimiter: {delimiter}"
     )
     df = utils.read_csv(source, delimiter)
-    df = filter_test_accounts(df)
-    df = remove_white_space_from_nmdsid(df)
     df = raise_error_if_mainjrid_includes_unknown_values(df)
 
     print(f"Exporting as parquet to {destination}")
     utils.write_to_parquet(df, destination)
-
-
-def filter_test_accounts(df: DataFrame) -> DataFrame:
-    test_accounts = [
-        "305",
-        "307",
-        "308",
-        "309",
-        "310",
-        "2452",
-        "28470",
-        "26792",
-        "31657",
-        "31138",
-    ]
-
-    if "orgid" in df.columns:
-        df = df.filter(~df.orgid.isin(test_accounts))
-
-    return df
-
-
-def remove_white_space_from_nmdsid(df: DataFrame) -> DataFrame:
-    return df.withColumn("nmdsid", F.trim(F.col("nmdsid")))
 
 
 def raise_error_if_mainjrid_includes_unknown_values(df: DataFrame) -> DataFrame:
@@ -79,7 +53,6 @@ def raise_error_if_mainjrid_includes_unknown_values(df: DataFrame) -> DataFrame:
 
     This function runs for both workplace and worker files so the function first checks that the file contains the main job role column.
     If it does (worker file), it checks for unknown main job role IDs in the DataFrame and raises an error if any are found.
-
 
     Args:
         df (DataFrame): The DataFrame to check for unknown main job role IDs.
