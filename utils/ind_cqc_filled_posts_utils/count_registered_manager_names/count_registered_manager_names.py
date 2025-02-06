@@ -9,7 +9,7 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
 
     This function uses the size method to count elements in list of strings. This method
     returns the count, including null elements within a list, when list partially populated.
-    It returns 0 when list is empty. It returns -1 when column is null.
+    It returns 0 when list is empty. It returns -1 when row is null.
     Therefore, after the counting, this function recodes values of -1 to 0.
 
     Args:
