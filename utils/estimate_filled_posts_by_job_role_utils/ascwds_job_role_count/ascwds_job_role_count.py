@@ -45,8 +45,9 @@ list_of_job_roles = [
     MainJobRoleLabels.it_manager,
     MainJobRoleLabels.it_service_desk_manager,
     MainJobRoleLabels.software_developer,
-    MainJobRoleLabels.support_worker
-    ]
+    MainJobRoleLabels.support_worker,
+]
+
 
 def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
     """
@@ -61,7 +62,7 @@ def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with unique establishmentid and import date.
     """
 
-    list_of_job_roles 
+    list_of_job_roles
 
     df = (
         df.groupBy(
