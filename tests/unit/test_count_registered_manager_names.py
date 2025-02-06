@@ -29,9 +29,7 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_count_registered_manager_names_when_location_has_two_registered_managers(
         self,
@@ -48,11 +46,9 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_count_registered_manager_names_when_location_has_null_registered_manager(
+    def test_count_registered_manager_names_returns_zero_when_location_has_null_registered_manager(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -67,11 +63,9 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_count_registered_manager_names_when_location_has_only_nulls_element_in_list(
+    def test_count_registered_manager_names_returns_zero_when_location_has_only_nulls_element_in_list(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -86,9 +80,7 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_count_registered_manager_names_when_location_has_null_and_named_registered_manager(
         self,
@@ -105,9 +97,7 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
-        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers(
         self,
@@ -144,5 +134,6 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
         returned_df = count_registered_manager_names(test_df)
 
         self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+            returned_df.sort(IndCQC.cqc_location_import_date).collect(),
+            expected_df.collect(),
         )
