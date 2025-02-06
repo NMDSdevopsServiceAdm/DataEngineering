@@ -5265,10 +5265,42 @@ class EstimateIndCQCFilledPostsData:
 @dataclass
 class EstimateIndCQCFilledPostsByJobRoleData:
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-001", date(2024, 1, 1), "Service A", "101", date(2024, 1, 1), 3.0),
-        ("1-002", date(2025, 1, 1), "Service A", "101", date(2025, 1, 1), 3.0),
-        ("1-003", date(2025, 1, 1), "Service B", "103", date(2025, 1, 1), 3.0),
-        ("1-004", date(2025, 1, 1), "Service A", "104", date(2025, 1, 1), 3.0),
+        (
+            "1-001",
+            date(2024, 1, 1),
+            "Service A",
+            "101",
+            date(2024, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Service A",
+            "101",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "Service B",
+            "103",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "Service A",
+            "104",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
     ]
     cleaned_ascwds_worker_rows = [
         ("101", date(2024, 1, 1), "1", MainJobRoleLabels.senior_management),
