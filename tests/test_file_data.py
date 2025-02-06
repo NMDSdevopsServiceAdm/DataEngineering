@@ -9414,4 +9414,14 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     ]
 
+    workplace_workplace_three_jobs_roles_with_two_being_distinct = [
+    ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+    ]
+
+    exptected_workplace_three_job_roles_with_two_being_distinct = [
+        ("1", date(2025, 1, 1), 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    ]
+
     # fmt: on
