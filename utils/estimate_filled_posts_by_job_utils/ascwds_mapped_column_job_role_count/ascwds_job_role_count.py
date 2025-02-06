@@ -4,6 +4,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 def count_job_role_per_establishment(df: DataFrame) -> DataFrame:
@@ -64,3 +65,24 @@ def convert_job_role_count_to_job_role_map(df: DataFrame) -> DataFrame:
         )
     )
     return df_mapped
+
+
+def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
+    list_of_job_roles = [
+        MainJobRoleLabels.registered_manager,
+        MainJobRoleLabels.senior_care_worker,
+        MainJobRoleLabels.care_worker,
+        MainJobRoleLabels.not_known,
+    ]
+
+    df = (
+        df.groupBy(
+            F.col(AWKClean.establishment_id),
+            F.col(AWKClean.ascwds_worker_import_date),
+        )
+        .pivot(AWKClean.main_job_role_clean_labelled, list_of_job_roles)
+        .count()
+    )
+
+    df = df.na.fill(0)
+    return df

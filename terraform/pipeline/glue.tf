@@ -844,6 +844,7 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
     "--estimated_ind_cqc_filled_posts_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
     "--cleaned_ascwds_worker_source"                           = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
     "--estimated_ind_cqc_filled_posts_by_job_role_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/"
+    "--temp_worker_job_role_count_destination"                 = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=temp_worker_job_role_count_destination/"
   }
 }
 
