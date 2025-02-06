@@ -12,7 +12,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_coun
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
 )
-from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.count_registered_manager_names import (
+from utils.ind_cqc_filled_posts_utils.count_registered_manager_names.count_registered_manager_names import (
     count_registered_manager_names,
 )
 

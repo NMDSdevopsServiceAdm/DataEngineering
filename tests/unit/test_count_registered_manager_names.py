@@ -5,7 +5,7 @@ from tests.test_file_schemas import RegisteredManagerNamesCountSchema as Schemas
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.count_registered_manager_names import (
+from utils.ind_cqc_filled_posts_utils.count_registered_manager_names.count_registered_manager_names import (
     count_registered_manager_names,
 )
 
