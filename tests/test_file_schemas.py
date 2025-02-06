@@ -2514,7 +2514,9 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.registered_manager_names, DoubleType(), True),
+            StructField(
+                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
+            ),
         ]
     )
     cleaned_ascwds_worker_schema = StructType(
