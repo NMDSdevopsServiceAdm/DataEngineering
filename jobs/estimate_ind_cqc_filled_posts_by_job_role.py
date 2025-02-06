@@ -12,6 +12,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_coun
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
 )
+from utils.estimate_filled_posts_by_job_utils.ascwds_mapped_column_job_role_count.count_registered_manager_names import (
+    count_registered_manager_names,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -74,6 +77,10 @@ def main(
     cleaned_ascwds_worker_df = utils.read_from_parquet(
         cleaned_ascwds_worker_source,
         selected_columns=cleaned_ascwds_worker_columns_to_import,
+    )
+
+    estimated_ind_cqc_filled_posts_df = count_registered_manager_names(
+        estimated_ind_cqc_filled_posts_df
     )
 
     count_job_roles_per_establishment_df = count_job_role_per_establishment(

@@ -9456,6 +9456,7 @@ class AscwdsJobroleCountData:
 
 
 class RegisteredManagerNamesCountData:
+    # fmt: off
     location_with_one_registered_manager = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
@@ -9470,9 +9471,24 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
     ]
 
-    location_with_no_registered_manager = [("1-0000000001", date(2025, 1, 1), None)]
-    expected_location_with_no_registered_manager = [
+    location_with_null_registered_manager = [("1-0000000001", date(2025, 1, 1), None)]
+    expected_location_with_null_registered_manager = [
         ("1-0000000001", date(2025, 1, 1), None, 0)
+    ]
+
+    location_with_only_null_element_in_registered_manager_names_list = [
+        ("1-0000000001", date(2025, 1, 1), [])
+    ]
+    expected_location_with_only_null_element_in_registered_manager_names_list = [
+        ("1-0000000001", date(2025, 1, 1), [], 0)
+    ]
+
+    location_with_null_elements_in_list_as_well_as_registered_manager_names = [
+        ("1-0000000001", date(2025, 1, 1),["John Doe", None , "Jane Doe"],
+        )
+    ]
+    expected_location_with_null_elements_in_list_as_well_as_registered_manager_names = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", None, "Jane Doe"], 3,)
     ]
 
     two_locations_with_different_number_of_registered_managers = [
@@ -9492,3 +9508,4 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
+    # fmt: on

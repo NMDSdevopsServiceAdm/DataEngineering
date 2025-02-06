@@ -5689,11 +5689,7 @@ class RegisteredManagerNamesCountSchema:
 
     location_with_list_of_names_and_count_of_names = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(
-                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
-            ),
+            *location_with_list_of_names,
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
