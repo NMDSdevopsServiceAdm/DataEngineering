@@ -9515,14 +9515,6 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), [], 0)
     ]
 
-    location_with_null_elements_in_list_as_well_as_registered_manager_names = [
-        ("1-0000000001", date(2025, 1, 1),["John Doe", None , "Jane Doe"],
-        )
-    ]
-    expected_location_with_null_elements_in_list_as_well_as_registered_manager_names = [
-        ("1-0000000001", date(2025, 1, 1), ["John Doe", None, "Jane Doe"], 3,)
-    ]
-
     two_locations_with_different_number_of_registered_managers = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
         ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
