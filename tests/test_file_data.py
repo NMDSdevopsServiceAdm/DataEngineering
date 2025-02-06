@@ -5248,10 +5248,42 @@ class EstimateIndCQCFilledPostsData:
 @dataclass
 class EstimateIndCQCFilledPostsByJobRoleData:
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-001", date(2024, 1, 1), "Service A", "101", date(2024, 1, 1), 3.0),
-        ("1-002", date(2025, 1, 1), "Service A", "101", date(2025, 1, 1), 3.0),
-        ("1-003", date(2025, 1, 1), "Service B", "103", date(2025, 1, 1), 3.0),
-        ("1-004", date(2025, 1, 1), "Service A", "104", date(2025, 1, 1), 3.0),
+        (
+            "1-001",
+            date(2024, 1, 1),
+            "Service A",
+            "101",
+            date(2024, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Service A",
+            "101",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "Service B",
+            "103",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "Service A",
+            "104",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
     ]
     cleaned_ascwds_worker_rows = [
         ("101", date(2024, 1, 1), "1", MainJobRoleLabels.senior_management),
@@ -9436,3 +9468,51 @@ class AscwdsJobroleCountData:
         ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
     ]
     # fmt: on
+
+
+class RegisteredManagerNamesCountData:
+    count_registered_manager_names_when_location_has_one_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"])
+    ]
+    expected_count_registered_manager_names_when_location_has_one_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1)
+    ]
+
+    count_registered_manager_names_when_location_has_two_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
+    ]
+    expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+    ]
+
+    count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), None)
+    ]
+    expected_count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), None, 0)
+    ]
+
+    count_registered_manager_names_when_location_has_empty_list_rows = [
+        ("1-0000000001", date(2025, 1, 1), [])
+    ]
+    expected_count_registered_manager_names_when_location_has_empty_list_rows = [
+        ("1-0000000001", date(2025, 1, 1), [], 0)
+    ]
+
+    count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+    ]
+
+    count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+    ]
