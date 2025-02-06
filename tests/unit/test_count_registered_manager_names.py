@@ -67,9 +67,6 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
 
         returned_df = count_registered_manager_names(test_df)
 
-        expected_df.show()
-        returned_df.show()
-
         self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
