@@ -9488,46 +9488,48 @@ class AscwdsJobroleCountData:
 
 
 class RegisteredManagerNamesCountData:
-    location_with_one_registered_manager = [
+    count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
-    expected_location_with_one_registered_manager = [
+    expected_count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1)
     ]
 
-    location_with_two_registered_managers = [
+    count_registered_manager_names_when_location_has_two_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
     ]
-    expected_location_with_two_registered_managers = [
+    expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
     ]
 
-    location_with_null_registered_manager = [("1-0000000001", date(2025, 1, 1), None)]
-    expected_location_with_null_registered_manager = [
+    count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), None)
+    ]
+    expected_count_registered_manager_names_when_location_has_null_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), None, 0)
     ]
 
-    location_with_only_null_element_in_registered_manager_names_list = [
+    count_registered_manager_names_when_location_has_empty_list_rows = [
         ("1-0000000001", date(2025, 1, 1), [])
     ]
-    expected_location_with_only_null_element_in_registered_manager_names_list = [
+    expected_count_registered_manager_names_when_location_has_empty_list_rows = [
         ("1-0000000001", date(2025, 1, 1), [], 0)
     ]
 
-    two_locations_with_different_number_of_registered_managers = [
+    count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
         ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
     ]
-    expected_two_locations_with_different_number_of_registered_managers = [
+    expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
     ]
 
-    location_with_different_number_of_registered_managers_at_different_import_dates = [
+    count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"]),
     ]
-    expected_location_with_different_number_of_registered_managers_at_different_import_dates = [
+    expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
