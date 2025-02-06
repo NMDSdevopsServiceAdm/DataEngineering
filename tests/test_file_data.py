@@ -9488,7 +9488,6 @@ class AscwdsJobroleCountData:
 
 
 class RegisteredManagerNamesCountData:
-    # fmt: off
     location_with_one_registered_manager = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
@@ -9532,4 +9531,3 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
-    # fmt: on
