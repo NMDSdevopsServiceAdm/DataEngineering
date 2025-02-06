@@ -9414,7 +9414,7 @@ class AscwdsJobroleCountData:
         ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     ]
 
-    workplace_workplace_three_jobs_roles_with_two_being_distinct = [
+    workplace_three_jobs_roles_with_two_being_distinct = [
     ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
     ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
     ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
