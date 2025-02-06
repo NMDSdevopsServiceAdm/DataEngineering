@@ -19,12 +19,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.location_with_one_registered_manager,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_location_with_one_registered_manager,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)
@@ -36,12 +36,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.location_with_two_registered_managers,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_location_with_two_registered_managers,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)
@@ -53,12 +53,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.location_with_null_registered_manager,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_location_with_null_registered_manager,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)
@@ -70,12 +70,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.location_with_only_null_element_in_registered_manager_names_list,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_location_with_only_null_element_in_registered_manager_names_list,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)
@@ -87,12 +87,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.two_locations_with_different_number_of_registered_managers,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_two_locations_with_different_number_of_registered_managers,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)
@@ -106,12 +106,12 @@ class CountRegisteredManagerNamesTests(unittest.TestCase):
     ):
         test_df = self.spark.createDataFrame(
             Data.location_with_different_number_of_registered_managers_at_different_import_dates,
-            Schemas.location_with_list_of_names,
+            Schemas.count_registered_manager_names_schema,
         )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_location_with_different_number_of_registered_managers_at_different_import_dates,
-            Schemas.location_with_list_of_names_and_count_of_names,
+            Schemas.expected_count_registered_manager_names_schema,
         )
 
         returned_df = count_registered_manager_names(test_df)

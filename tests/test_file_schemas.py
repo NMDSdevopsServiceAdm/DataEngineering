@@ -5680,7 +5680,7 @@ class AscwdsJobroleCountSchema:
 
 
 class RegisteredManagerNamesCountSchema:
-    location_with_list_of_names = StructType(
+    count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -5690,9 +5690,9 @@ class RegisteredManagerNamesCountSchema:
         ]
     )
 
-    location_with_list_of_names_and_count_of_names = StructType(
+    expected_count_registered_manager_names_schema = StructType(
         [
-            *location_with_list_of_names,
+            *count_registered_manager_names_schema,
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
