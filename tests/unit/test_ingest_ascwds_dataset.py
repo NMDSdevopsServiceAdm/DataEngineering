@@ -66,10 +66,10 @@ class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
 
         get_s3_objects_list_mock.return_value = objects_list
         construct_s3_uri_mock.side_effect = (
-            lambda bucket, prefix: f"s3://{self.bucket}/{prefix}"
+            lambda bucket, prefix: f"s3://{bucket}/{prefix}"
         )
         construct_destination_path_mock.side_effect = (
-            lambda destination, prefix: f"{self.destination_path}{prefix}"
+            lambda destination, prefix: f"{destination}{prefix}"
         )
 
         job.ingest_multiple_files(self.bucket, prefix, self.destination_path)
