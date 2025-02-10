@@ -124,7 +124,7 @@ def main(
 
     registered_locations_df = registered_locations_df.withColumn(
         first_non_null_regulated_activity,
-        F.first(F.col(CQCL.regulated_activities)).over(window_spec),
+        F.size(F.first(F.col(CQCL.regulated_activities)).over(window_spec)),
     )
     #### TEMP CODE ####
 
