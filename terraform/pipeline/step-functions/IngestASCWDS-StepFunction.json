@@ -8,8 +8,9 @@
             "Parameters": {
                 "JobName": "${ingest_ascwds_job_name}",
                 "Arguments": {
+                    "--source.$": "$.jobs.ingest_ascwds_dataset.source",
                     "--destination": "s3://${dataset_bucket_name}/domain=ASCWDS/",
-                    "--source.$": "$.jobs.ingest_ascwds_dataset.source"
+                    "--dataset": "ascwds"
                 }
             },
             "Catch": [

@@ -86,6 +86,7 @@ module "ingest_ascwds_dataset_job" {
   job_parameters = {
     "--source"      = ""
     "--destination" = ""
+    "--dataset"     = "ascwds"
   }
 }
 
