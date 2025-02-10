@@ -35,7 +35,6 @@ from utils.cqc_location_utils.extract_registered_manager_names import (
     extract_registered_manager_names_from_imputed_regulated_activities_column,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -123,13 +122,9 @@ def main(
         CQCL.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
-    registered_locations_df = get_selected_value(
-        registered_locations_df,
-        window_spec,
-        CQCL.regulated_activities,
-        CQCL.regulated_activities,
+    registered_locations_df = registered_locations_df.withColumn(
         first_non_null_regulated_activity,
-        "first",
+        F.first(F.col(CQCL.regulated_activities)).over(window_spec),
     )
     #### TEMP CODE ####
 
