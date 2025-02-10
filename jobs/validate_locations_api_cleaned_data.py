@@ -55,9 +55,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -75,10 +75,13 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
     first_non_null_regulated_activity: str = "first_non_null_regulated_activity"
+    window_spec = Window.partitionBy(
+        CQCL.location_id,
+    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
     raw_location_df = get_selected_value(
         raw_location_df,
-        Window.partitionBy(CQCL.location_id),
+        window_spec,
         CQCL.regulated_activities,
         CQCL.regulated_activities,
         first_non_null_regulated_activity,
