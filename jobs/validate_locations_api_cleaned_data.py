@@ -17,7 +17,6 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     Services,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
     LocationsAPICleanedValidationRules as Rules,
@@ -55,9 +54,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
