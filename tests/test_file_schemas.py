@@ -73,6 +73,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
