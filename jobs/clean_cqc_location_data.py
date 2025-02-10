@@ -123,8 +123,8 @@ def main(
         CQCL.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
-    raw_location_df = get_selected_value(
-        raw_location_df,
+    registered_locations_df = get_selected_value(
+        registered_locations_df,
         window_spec,
         CQCL.regulated_activities,
         CQCL.regulated_activities,
