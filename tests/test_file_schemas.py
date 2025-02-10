@@ -120,6 +120,15 @@ class IngestASCWDSData:
         ]
     )
 
+    fix_nmdssc_dates_schema = StructType(
+        [
+            StructField(AWK.establishment_id, StringType(), True),
+            StructField(AWK.created_date, StringType(), True),
+            StructField(AWK.main_job_role_id, StringType(), True),
+            StructField(AWK.updated_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkerSchemas:
