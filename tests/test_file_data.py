@@ -42,6 +42,7 @@ from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_a
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -112,6 +113,9 @@ class IngestASCWDSData:
     raise_mainjrid_error_with_known_value_rows = [("123", "1-001", "1")]
     raise_mainjrid_error_with_unknown_value_rows = [("123", "1-001", "-1")]
 
+    fix_nmdssc_dates_rows = [("100", "07/31/2021", "8", "10/01/2024")]
+    expected_fix_nmdssc_dates_rows = [("100", "31/07/2021", "8", "01/10/2024")]
+
 
 @dataclass
 class ASCWDSWorkerData:
@@ -168,7 +172,7 @@ class ASCWDSWorkerData:
 
 @dataclass
 class ASCWDSWorkplaceData:
-    workplace_rows = rows = [
+    workplace_rows = [
         (
             "1-000000001",
             "101",
@@ -180,6 +184,7 @@ class ASCWDSWorkplaceData:
             0,
             "201",
             "01/02/2021",
+            "A101",
         ),
         (
             "1-000000002",
@@ -192,6 +197,7 @@ class ASCWDSWorkplaceData:
             1,
             None,
             "01/02/2021",
+            "A102",
         ),
         (
             "1-000000003",
@@ -204,6 +210,7 @@ class ASCWDSWorkplaceData:
             0,
             "203",
             "01/02/2021",
+            "A103",
         ),
         (
             "1-000000004",
@@ -216,6 +223,7 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/02/2021",
+            "A104",
         ),
         (
             "1-000000005",
@@ -228,6 +236,7 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/02/2021",
+            "A105",
         ),
         (
             "1-000000006",
@@ -240,6 +249,7 @@ class ASCWDSWorkplaceData:
             1,
             None,
             "01/02/2021",
+            "A106",
         ),
         (
             "1-000000007",
@@ -252,6 +262,7 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/05/2021",
+            "A107",
         ),
         (
             "1-000000008",
@@ -264,6 +275,7 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/05/2021",
+            "A108",
         ),
         (
             "1-000000009",
@@ -276,6 +288,7 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/05/2021",
+            "A109",
         ),
         (
             "1-0000000010",
@@ -288,91 +301,66 @@ class ASCWDSWorkplaceData:
             0,
             None,
             "01/05/2021",
+            "A1010",
         ),
     ]
 
+    filter_test_account_when_orgid_present_rows = [
+        ("1-001", "310"),
+        ("1-002", "2452"),
+        ("1-003", "308"),
+        ("1-004", "1234"),
+        ("1-005", "31138"),
+    ]
+    expected_filter_test_account_when_orgid_present_rows = [
+        ("1-004", "1234"),
+    ]
+
+    filter_test_account_when_orgid_not_present_rows = [
+        ("1-001", "20250101"),
+        ("1-002", "20250101"),
+        ("1-003", "20250101"),
+        ("1-004", "20250101"),
+        ("1-005", "20250101"),
+    ]
+
+    remove_white_space_from_nmdsid_rows = [
+        ("1-001", "A123  "),
+        ("1-002", "A1234 "),
+        ("1-003", "A12345"),
+    ]
+    expected_remove_white_space_from_nmdsid_rows = [
+        ("1-001", "A123"),
+        ("1-002", "A1234"),
+        ("1-003", "A12345"),
+    ]
+
     small_location_rows = [
-        (
-            "loc-1",
-            "2020-01-01",
-            "1",
-        ),
-        (
-            "loc-2",
-            "2020-01-01",
-            "2",
-        ),
-        (
-            "loc-3",
-            "2020-01-01",
-            "3",
-        ),
-        (
-            "loc-4",
-            "2021-01-01",
-            "4",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "5",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "6",
-        ),
+        ("loc-1", "2020-01-01", "1"),
+        ("loc-2", "2020-01-01", "2"),
+        ("loc-3", "2020-01-01", "3"),
+        ("loc-4", "2021-01-01", "4"),
+        (None, "2021-01-01", "5"),
+        (None, "2021-01-01", "6"),
     ]
 
     location_rows_with_duplicates = [
         *small_location_rows,
-        (
-            "loc-3",
-            "2020-01-01",
-            "7",
-        ),
-        (
-            "loc-4",
-            "2021-01-01",
-            "8",
-        ),
+        ("loc-3", "2020-01-01", "7"),
+        ("loc-4", "2021-01-01", "8"),
     ]
 
     location_rows_with_different_import_dates = [
         *small_location_rows,
-        (
-            "loc-3",
-            "2021-01-01",
-            "3",
-        ),
-        (
-            "loc-4",
-            "2022-01-01",
-            "4",
-        ),
+        ("loc-3", "2021-01-01", "3"),
+        ("loc-4", "2022-01-01", "4"),
     ]
 
     expected_filtered_location_rows = [
-        (
-            "loc-1",
-            "2020-01-01",
-            "1",
-        ),
-        (
-            "loc-2",
-            "2020-01-01",
-            "2",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "5",
-        ),
-        (
-            None,
-            "2021-01-01",
-            "6",
-        ),
+        ("loc-1", "2020-01-01", "1"),
+        ("loc-2", "2020-01-01", "2"),
+        (None, "2021-01-01", "5"),
+        (None, "2021-01-01", "6"),
     ]
 
     mupddate_for_org_rows = [
@@ -5304,10 +5292,42 @@ class EstimateIndCQCFilledPostsData:
 @dataclass
 class EstimateIndCQCFilledPostsByJobRoleData:
     estimated_ind_cqc_filled_posts_rows = [
-        ("1-001", date(2024, 1, 1), "Service A", "101", date(2024, 1, 1), 3.0),
-        ("1-002", date(2025, 1, 1), "Service A", "101", date(2025, 1, 1), 3.0),
-        ("1-003", date(2025, 1, 1), "Service B", "103", date(2025, 1, 1), 3.0),
-        ("1-004", date(2025, 1, 1), "Service A", "104", date(2025, 1, 1), 3.0),
+        (
+            "1-001",
+            date(2024, 1, 1),
+            "Service A",
+            "101",
+            date(2024, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Service A",
+            "101",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "Service B",
+            "103",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "Service A",
+            "104",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
     ]
     cleaned_ascwds_worker_rows = [
         ("101", date(2024, 1, 1), "1", MainJobRoleLabels.senior_management),
@@ -7698,37 +7718,57 @@ class ValidationUtils:
 class ValidateLocationsAPICleanedData:
     # fmt: off
     raw_cqc_locations_rows = [
-        ("1-000000001", "20240101", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("1-000000002", "20240101", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("1-000000001", "20240201", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("1-000000002", "20240201", "not social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-    ]
-
-    cleaned_cqc_locations_rows = [
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None),
-    ]
-    
-
-    calculate_expected_size_rows = [
-        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_2", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_3", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_5", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_6", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}]),
-        ("loc_7", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        ("loc_8", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        ("loc_9", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        ("loc_10", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        ("loc_11", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        ("loc_12", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}]),
-        (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered, None),
-        (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered, None),
+        ("1-000000001", "20240101", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", "20240101", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", "20240201", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", "20240201", "not social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
     ]
     # fmt: on
+
+    # fmt: off
+    cleaned_cqc_locations_rows = [
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+    ]
+    # fmt: on
+    
+
+    # fmt: off
+    calculate_expected_size_rows = [
+        ("loc_1", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_2", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_3", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_4", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_5", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_6", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_7", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_8", "non social care org", RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_9", None, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_10", LocationType.social_care_identifier, RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_11", "non social care org", RegistrationStatus.deregistered, [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_12", None, RegistrationStatus.deregistered,  [{CQCL.name: "name", CQCL.description: Services.specialist_college_service}], [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_13", LocationType.social_care_identifier, RegistrationStatus.registered, [{CQCL.name: "name", CQCL.description: Services.care_home_service_with_nursing}], None),
+        (RecordsToRemoveInLocationsData.dental_practice, LocationType.social_care_identifier, RegistrationStatus.registered, None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        (RecordsToRemoveInLocationsData.temp_registration, LocationType.social_care_identifier, RegistrationStatus.registered, None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+    ]
+    # fmt: on
+
+    identify_if_location_has_a_known_regulated_activity_rows = [
+        ("loc_1", []),
+        ("loc_1", [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_1", None),
+        ("loc_2", []),
+        ("loc_3", None),
+    ]
+    expected_identify_if_location_has_a_known_regulated_activity_rows = [
+        ("loc_1", [], True),
+        ("loc_1", [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}], True),
+        ("loc_1", None, True),
+        ("loc_2", [], False),
+        ("loc_3", None, False),
+    ]
 
 
 @dataclass
@@ -9393,3 +9433,150 @@ class BlendAscwdsPirData:
         ("loc 1", date(2023, 1, 1), date(2020, 1, 1), 10, 20.0),
     ]
     expected_drop_temporary_columns = [IndCQC.location_id]
+
+
+@dataclass
+class AscwdsJobroleCountData:
+    # fmt: off
+    workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    ]
+    expected_workplace_with_two_workers_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
+    ]
+
+    workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
+    ]
+    expected_workplace_with_two_different_roles_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    ]
+
+    two_workplaces_with_same_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    ]
+    expected_two_workplaces_with_same_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    ]
+
+    two_workplaces_with_different_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
+    ]
+    expected_two_workplaces_with_different_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    ]
+
+    workplace_across_different_import_dates_same_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker),
+    ]
+    expected_workplace_across_different_import_dates_same_job_role_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
+    ]
+
+    workplace_with_null_job_role_rows = [
+        ("1", date(2025, 1, 1), None),
+    ]
+    expected_workplace_with_null_job_role_rows = [
+        ("1", date(2025, 1, 1), None, 0),
+    ]
+
+    workplace_with_one_job_role_and_two_workers_counted_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 2),
+    ]
+    expected_workplace_with_one_job_role_and_two_workers_counted_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 2}),
+    ]
+
+    workplace_with_two_workers_in_different_job_roles_counted_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+    ]
+    expected_workplace_with_two_workers_in_different_job_roles_counted_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.senior_care_worker: 1}),
+    ]
+ 
+    two_workplaces_with_same_job_role_counted_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+    ]
+    expected_two_workplaces_with_same_job_role_counted_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+    ]
+ 
+    workplace_across_different_import_dates_same_job_role_counted_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("1", date(2025, 2, 1), MainJobRoleLabels.care_worker, 1),
+    ]
+    expected_workplace_across_different_import_dates_same_job_role_counted_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("1", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1}),
+    ]
+
+    workplaces_with_different_number_of_unique_job_roles_rows = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker, 1),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.registered_manager, 1),
+    ]
+    expected_workplaces_with_different_number_of_unique_job_roles_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1}),
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.senior_care_worker: 1, MainJobRoleLabels.registered_manager: 1}),
+    ]
+    # fmt: on
+
+
+class RegisteredManagerNamesCountData:
+    count_registered_manager_names_when_location_has_one_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"])
+    ]
+    expected_count_registered_manager_names_when_location_has_one_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1)
+    ]
+
+    count_registered_manager_names_when_location_has_two_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
+    ]
+    expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+    ]
+
+    count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), None)
+    ]
+    expected_count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        ("1-0000000001", date(2025, 1, 1), None, 0)
+    ]
+
+    count_registered_manager_names_when_location_has_empty_list_rows = [
+        ("1-0000000001", date(2025, 1, 1), [])
+    ]
+    expected_count_registered_manager_names_when_location_has_empty_list_rows = [
+        ("1-0000000001", date(2025, 1, 1), [], 0)
+    ]
+
+    count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+    ]
+
+    count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"]),
+    ]
+    expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
+        ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+    ]

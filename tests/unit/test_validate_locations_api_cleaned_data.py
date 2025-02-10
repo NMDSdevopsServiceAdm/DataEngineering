@@ -3,11 +3,12 @@ import unittest
 from unittest.mock import Mock, patch
 
 import jobs.validate_locations_api_cleaned_data as job
-
 from tests.test_file_data import ValidateLocationsAPICleanedData as Data
 from tests.test_file_schemas import ValidateLocationsAPICleanedData as Schemas
-
 from utils import utils
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 
 class ValidateLocationsAPICleanedDatasetTests(unittest.TestCase):
@@ -59,7 +60,7 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
 
 class CalculateExpectedSizeofDataset(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
-        return super().setUp()
+        super().setUp()
 
     def test_calculate_expected_size_of_cleaned_cqc_locations_dataset_returns_correct_row_count(
         self,
@@ -67,11 +68,48 @@ class CalculateExpectedSizeofDataset(ValidateLocationsAPICleanedDatasetTests):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
+
         expected_row_count = 1
         returned_row_count = (
             job.calculate_expected_size_of_cleaned_cqc_locations_dataset(test_df)
         )
+
         self.assertEqual(returned_row_count, expected_row_count)
+
+
+class IdentifyIfLocationHasAKnownRegulatedActivity(
+    ValidateLocationsAPICleanedDatasetTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_identify_if_location_has_a_known_regulated_activity_returns_correct_df(
+        self,
+    ):
+        has_known_regulated_activity: str = "has_known_regulated_activity"
+
+        test_df = self.spark.createDataFrame(
+            Data.identify_if_location_has_a_known_regulated_activity_rows,
+            Schemas.identify_if_location_has_a_known_regulated_activity_schema,
+        )
+
+        returned_df = job.identify_if_location_has_a_known_regulated_activity(
+            test_df, has_known_regulated_activity
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_identify_if_location_has_a_known_regulated_activity_rows,
+            Schemas.expected_identify_if_location_has_a_known_regulated_activity_schema,
+        )
+
+        returned_data = returned_df.sort(CQCL.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][has_known_regulated_activity],
+                expected_data[i][has_known_regulated_activity],
+                f"Row {i} has a known regulated activity column which doesn't match expected",
+            )
 
 
 if __name__ == "__main__":

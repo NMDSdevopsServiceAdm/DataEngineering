@@ -42,6 +42,7 @@ class IndCqcColumns:
     )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
+    ascwds_main_job_role_counts: str = "ascwds_main_job_role_counts"
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
@@ -204,6 +205,8 @@ class IndCqcColumns:
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
+    registered_manager_count: str = "registered_manager_count"
+    registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
     registration_status: str = CQCLClean.registration_status
     imputed_regulated_activities: str = CQCLClean.imputed_regulated_activities

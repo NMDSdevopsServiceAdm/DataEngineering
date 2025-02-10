@@ -11,6 +11,7 @@ from pyspark.sql.types import (
     DateType,
     DoubleType,
     BooleanType,
+    MapType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -119,6 +120,15 @@ class IngestASCWDSData:
         ]
     )
 
+    fix_nmdssc_dates_schema = StructType(
+        [
+            StructField(AWK.establishment_id, StringType(), True),
+            StructField(AWK.created_date, StringType(), True),
+            StructField(AWK.main_job_role_id, StringType(), True),
+            StructField(AWK.updated_date, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkerSchemas:
@@ -172,6 +182,27 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
+        ]
+    )
+
+    filter_test_account_when_orgid_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+        ]
+    )
+    filter_test_account_when_orgid_not_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+
+    remove_white_space_from_nmdsid_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
         ]
     )
 
@@ -2558,6 +2589,9 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+            StructField(
+                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
+            ),
         ]
     )
     cleaned_ascwds_worker_schema = StructType(
@@ -4158,6 +4192,45 @@ class ValidateLocationsAPICleanedData:
                     )
                 ),
             ),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
         ]
     )
     cleaned_cqc_locations_schema = StructType(
@@ -4182,10 +4255,44 @@ class ValidateLocationsAPICleanedData:
             StructField(CQCLClean.current_cssr, StringType(), True),
             StructField(CQCLClean.current_region, StringType(), True),
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
+            StructField(CQCLClean.services_offered, ArrayType(StringType())),
             StructField(
-                CQCLClean.services_offered,
+                CQCLClean.imputed_regulated_activities,
                 ArrayType(
-                    StringType(),
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
                 ),
             ),
         ]
@@ -4206,6 +4313,96 @@ class ValidateLocationsAPICleanedData:
                     )
                 ),
             ),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+
+    identify_if_location_has_a_known_regulated_activity_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCL.regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_identify_if_location_has_a_known_regulated_activity_schema = StructType(
+        [
+            *identify_if_location_has_a_known_regulated_activity_schema,
+            StructField("has_known_regulated_activity", BooleanType(), True),
         ]
     )
 
@@ -5686,5 +5883,54 @@ class BlendAscwdsPirData:
             StructField(
                 IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
+        ]
+    )
+
+
+@dataclass
+class AscwdsJobroleCountSchema:
+    ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_count_schema = StructType(
+        [
+            *ascwds_worker_schema,
+            StructField(IndCQC.ascwds_main_job_role_counts, IntegerType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_map_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_main_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+
+
+class RegisteredManagerNamesCountSchema:
+    count_registered_manager_names_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+
+    expected_count_registered_manager_names_schema = StructType(
+        [
+            *count_registered_manager_names_schema,
+            StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
