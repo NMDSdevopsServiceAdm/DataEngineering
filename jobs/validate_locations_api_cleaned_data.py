@@ -79,13 +79,9 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
         CQCL.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
-    raw_location_df = get_selected_value(
-        raw_location_df,
-        window_spec,
-        CQCL.regulated_activities,
-        CQCL.regulated_activities,
+    raw_location_df = raw_location_df.withColumn(
         first_non_null_regulated_activity,
-        "first",
+        F.first(F.col(CQCL.regulated_activities)).over(window_spec),
     )
 
     expected_size = raw_location_df.where(
