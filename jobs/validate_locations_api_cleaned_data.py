@@ -3,7 +3,7 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -17,6 +17,7 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     Services,
 )
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rules.locations_api_cleaned_validation_rules import (
     LocationsAPICleanedValidationRules as Rules,
@@ -36,6 +37,7 @@ raw_cqc_locations_columns_to_import = [
     CQCL.type,
     CQCL.registration_status,
     CQCL.gac_service_types,
+    CQCL.regulated_activities,
 ]
 
 
@@ -53,9 +55,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -72,6 +74,17 @@ def main(
 def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
+    first_non_null_regulated_activity: str = "first_non_null_regulated_activity"
+
+    raw_location_df = get_selected_value(
+        raw_location_df,
+        Window.partitionBy(CQCL.location_id),
+        CQCL.regulated_activities,
+        CQCL.regulated_activities,
+        first_non_null_regulated_activity,
+        "first",
+    )
+
     expected_size = raw_location_df.where(
         (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
         & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
@@ -91,6 +104,7 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
             | (F.size(raw_location_df[CQCL.gac_service_types]) != 1)
             | (raw_location_df[CQCL.gac_service_types].isNull())
         )
+        & (raw_location_df[first_non_null_regulated_activity].isNotNull())
     ).count()
     return expected_size
 
