@@ -5727,6 +5727,7 @@ class RegisteredManagerNamesCountSchema:
         ]
     )
 
+
 @dataclass
 class AscwdsJobroleCountSchema:
     ascwds_worker_schema = StructType(

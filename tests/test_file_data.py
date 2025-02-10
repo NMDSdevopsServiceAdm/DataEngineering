@@ -9521,6 +9521,7 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
 
+
 @dataclass
 class AscwdsJobroleCountData:
     # fmt: off

@@ -12,6 +12,7 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 
 list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
 
+
 def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
     """
     Group the worker dataset by establishment id and import date.
