@@ -120,8 +120,10 @@ class TestHandleJob(IngestASCWDSDatasetTests):
     @patch("utils.utils.read_csv")
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
+    @patch("jobs.ingest_ascwds_dataset.fix_nmdssc_dates")
     def test_handle_job_calls_correct_functions_when_dataset_is_ascwds(
         self,
+        fix_nmdssc_dates_mock: Mock,
         raise_error_mock: Mock,
         write_to_parquet_mock: Mock,
         read_csv_mock: Mock,
@@ -151,16 +153,19 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         identify_csv_delimiter_mock.assert_called_once_with(file_sample)
         read_csv_mock.assert_called_once_with(self.single_csv_file_source, delimiter)
         raise_error_mock.assert_called_once_with(df)
+        fix_nmdssc_dates_mock.assert_not_called()
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
 
     @patch("utils.utils.read_partial_csv_content")
     @patch("utils.utils.identify_csv_delimiter")
     @patch("utils.utils.read_csv")
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
     @patch("jobs.ingest_ascwds_dataset.fix_nmdssc_dates")
     def test_handle_job_calls_correct_functions_when_dataset_is_nmdssc(
         self,
         fix_nmdssc_dates_mock: Mock,
+        raise_error_mock: Mock,
         write_to_parquet_mock: Mock,
         read_csv_mock: Mock,
         identify_csv_delimiter_mock: Mock,
@@ -190,6 +195,7 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         identify_csv_delimiter_mock.assert_called_once_with(file_sample)
         read_csv_mock.assert_called_once_with(self.single_csv_file_source, delimiter)
         fix_nmdssc_dates_mock.assert_called_once_with(df)
+        raise_error_mock.assert_not_called()
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
 
     @patch("utils.utils.read_partial_csv_content")
