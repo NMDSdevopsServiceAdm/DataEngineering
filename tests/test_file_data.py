@@ -9520,3 +9520,57 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
+
+@dataclass
+class AscwdsJobroleCountData:
+    # fmt: off
+
+    workplace_with_three_distinct_job_role = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.employment_support),
+    ]
+
+    expected_workplace_with_three_distinct_job_role = [
+        ("1", date(2025, 1, 1), 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    workplace_with_different_import_date = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 2), MainJobRoleLabels.senior_care_worker),
+    ]
+
+    expected_workplace_with_different_import_date = [
+        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("1", date(2025, 1, 2), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    workplace_with_different_establishmentid = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("2", date(2025, 1, 1), MainJobRoleLabels.employment_support),
+    ]
+
+    expected_workplace_with_different_establishmentid = [
+        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("2", date(2025, 1, 1), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
+    workplace_with_none_job_role = [
+        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 1), None),
+    ]
+
+    expected_workplace_with_none_job_role = [
+        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    workplace_three_jobs_roles_with_two_being_distinct = [
+    ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+    ]
+
+    exptected_workplace_three_job_roles_with_two_being_distinct = [
+        ("1", date(2025, 1, 1), 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+    ]
+
+    # fmt: on

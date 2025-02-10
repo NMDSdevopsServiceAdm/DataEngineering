@@ -7,9 +7,9 @@ from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
+
 from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
-    count_job_role_per_establishment,
-    convert_job_role_count_to_job_role_map,
+    count_job_role_per_establishment_as_columns,
 )
 
 
@@ -22,264 +22,101 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_count_job_role_per_establishment_counts_two_workers_that_are_the_same(
+    def test_workplace_with_three_distinct_job_role(
         self,
     ):
-        test_workplace_with_two_workers_df = self.spark.createDataFrame(
-            Data.workplace_with_two_workers_rows,
+        test_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
+            Data.workplace_with_three_distinct_job_role,
             Schemas.ascwds_worker_schema,
         )
-        expected_workplace_with_two_workers_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_two_workers_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        expected_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_three_distinct_job_role,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
 
-        returned_df = count_job_role_per_establishment(
-            test_workplace_with_two_workers_df
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_three_distinct_job_role_df
         )
 
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_two_workers_df.collect(),
+            expected_workplace_with_three_distinct_job_role_df.collect(),
         )
 
-    def test_count_job_role_per_establishment_counts_when_job_roles_are_different(
+    def test_workplace_with_none_job_role(
         self,
     ):
-        test_workplace_with_different_job_roles_df = self.spark.createDataFrame(
-            Data.workplace_with_two_different_roles_rows,
+        test_workplace_with_none_job_role_df = self.spark.createDataFrame(
+            Data.workplace_with_none_job_role,
             Schemas.ascwds_worker_schema,
         )
-        expected_workplace_with_different_job_roles_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_two_different_roles_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        expected_workplace_with_none_job_role_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_none_job_role,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
-
-        returned_df = count_job_role_per_establishment(
-            test_workplace_with_different_job_roles_df
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_none_job_role_df
         )
-
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_different_job_roles_df.collect(),
+            expected_workplace_with_none_job_role_df.collect(),
         )
 
-    def test_count_job_role_per_establishment_counts_when_job_role_is_same_at_different_workplaces(
+    # def test_workplace_with_different_import_date(
+    #     self,
+    # ):
+    #     test_workplace_with_different_import_date_df = self.spark.createDataFrame(
+    #         Data.workplace_with_different_import_date,
+    #         Schemas.ascwds_worker_schema,
+    #     )
+    #     expected_workplace_with_different_import_date_df = self.spark.createDataFrame(
+    #         Data.expected_workplace_with_different_import_date,
+    #         Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
+    #     )
+    #     returned_df = count_job_role_per_establishment_as_columns(
+    #         test_workplace_with_different_import_date_df
+    #     )
+    #     self.assertEqual(
+    #         returned_df.sort(AWKClean.establishment_id).collect(),
+    #         expected_workplace_with_different_import_date_df.collect(),
+    #     )
+
+    def test_workplace_with_different_establishmentid(
         self,
     ):
-        test_two_workplaces_with_same_job_role_df = self.spark.createDataFrame(
-            Data.two_workplaces_with_same_job_role_rows,
+        test_workplace_with_different_establishmentid_df = self.spark.createDataFrame(
+            Data.workplace_with_different_establishmentid,
             Schemas.ascwds_worker_schema,
         )
-        expected_two_workplaces_with_same_job_role_df = self.spark.createDataFrame(
-            Data.expected_two_workplaces_with_same_job_role_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        expected_workplace_with_different_establishmentid_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_different_establishmentid,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
-
-        returned_df = count_job_role_per_establishment(
-            test_two_workplaces_with_same_job_role_df
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_different_establishmentid_df
         )
-
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_two_workplaces_with_same_job_role_df.collect(),
+            expected_workplace_with_different_establishmentid_df.collect(),
         )
 
-    def test_count_job_role_per_establishment_counts_when_job_role_is_different_at_different_workplaces(
+    def test_workplace_three_jobs_roles_with_two_being_distinct(
         self,
     ):
-        test_two_workplaces_with_different_job_role_df = self.spark.createDataFrame(
-            Data.two_workplaces_with_different_job_role_rows,
-            Schemas.ascwds_worker_schema,
-        )
-        expected_two_workplaces_with_different_job_role_df = self.spark.createDataFrame(
-            Data.expected_two_workplaces_with_different_job_role_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
-        )
-
-        returned_df = count_job_role_per_establishment(
-            test_two_workplaces_with_different_job_role_df
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_two_workplaces_with_different_job_role_df.collect(),
-        )
-
-    def test_count_job_role_per_establishment_counts_when_import_date_is_different(
-        self,
-    ):
-        test_workplace_across_different_import_dates_same_job_role_df = (
+        test_workplace_three_jobs_roles_with_two_being_distinct_df = (
             self.spark.createDataFrame(
-                Data.workplace_across_different_import_dates_same_job_role_rows,
+                Data.workplace_three_jobs_roles_with_two_being_distinct,
                 Schemas.ascwds_worker_schema,
             )
         )
-        expected_workplace_across_different_import_dates_same_job_role_df = self.spark.createDataFrame(
-            Data.expected_workplace_across_different_import_dates_same_job_role_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
+        expected_workplace_three_jobs_roles_with_two_being_distinct_df = self.spark.createDataFrame(
+            Data.exptected_workplace_three_job_roles_with_two_being_distinct,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
-
-        returned_df = count_job_role_per_establishment(
-            test_workplace_across_different_import_dates_same_job_role_df
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_three_jobs_roles_with_two_being_distinct_df
         )
-
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_across_different_import_dates_same_job_role_df.collect(),
-        )
-
-    def test_count_job_role_per_establishment_counts_when_job_role_is_null(self):
-        test_workplace_with_null_job_role_df = self.spark.createDataFrame(
-            Data.workplace_with_null_job_role_rows,
-            Schemas.ascwds_worker_schema,
-        )
-        expected_workplace_with_null_job_role_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_null_job_role_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
-        )
-
-        returned_df = count_job_role_per_establishment(
-            test_workplace_with_null_job_role_df
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_null_job_role_df.collect(),
-        )
-
-    def test_count_job_role_per_establishment_adds_one_column(self):
-        test_workplace_with_two_workers_df = self.spark.createDataFrame(
-            Data.workplace_with_two_workers_rows,
-            Schemas.ascwds_worker_schema,
-        )
-        expected_workplace_with_two_workers_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_two_workers_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
-        )
-
-        returned_df = count_job_role_per_establishment(
-            test_workplace_with_two_workers_df
-        )
-
-        self.assertEqual(
-            returned_df.columns, expected_workplace_with_two_workers_df.columns
-        )
-
-
-class ConvertJobRoleCountToJobRoleMap(AscwdsJobroleCount):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_convert_job_role_count_to_job_role_map_converts_one_row_into_one_dict(
-        self,
-    ):
-        test_workplace_with_one_job_role_and_two_workers_counted_df = (
-            self.spark.createDataFrame(
-                Data.workplace_with_one_job_role_and_two_workers_counted_rows,
-                Schemas.ascwds_worker_with_job_role_count_schema,
-            )
-        )
-        expected_workplace_with_two_workers_counted_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_one_job_role_and_two_workers_counted_rows,
-            Schemas.ascwds_worker_with_job_role_map_schema,
-        )
-
-        returned_df = convert_job_role_count_to_job_role_map(
-            test_workplace_with_one_job_role_and_two_workers_counted_df
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_two_workers_counted_df.collect(),
-        )
-
-    def test_convert_job_role_count_to_job_role_map_converts_two_rows_into_one_dict(
-        self,
-    ):
-        test_workplace_with_one_worker_in_two_roles_counted_df = (
-            self.spark.createDataFrame(
-                Data.workplace_with_two_workers_in_different_job_roles_counted_rows,
-                Schemas.ascwds_worker_with_job_role_count_schema,
-            )
-        )
-        expected_workplace_with_one_worker_in_two_roles_counted_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_two_workers_in_different_job_roles_counted_rows,
-            Schemas.ascwds_worker_with_job_role_map_schema,
-        )
-
-        returned_df = convert_job_role_count_to_job_role_map(
-            test_workplace_with_one_worker_in_two_roles_counted_df
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_one_worker_in_two_roles_counted_df.collect(),
-        )
-
-    def test_convert_job_role_count_to_job_role_map_converts_two_establishments_with_same_role_into_two_dicts(
-        self,
-    ):
-        test_two_workplaces_with_same_job_role_counted_rows = (
-            self.spark.createDataFrame(
-                Data.two_workplaces_with_same_job_role_counted_rows,
-                Schemas.ascwds_worker_with_job_role_count_schema,
-            )
-        )
-        expected_two_workplaces_with_same_job_role_counted_rows = (
-            self.spark.createDataFrame(
-                Data.expected_two_workplaces_with_same_job_role_counted_rows,
-                Schemas.ascwds_worker_with_job_role_map_schema,
-            )
-        )
-
-        returned_df = convert_job_role_count_to_job_role_map(
-            test_two_workplaces_with_same_job_role_counted_rows
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_two_workplaces_with_same_job_role_counted_rows.collect(),
-        )
-
-    def test_convert_job_role_count_to_job_role_map_converts_one_establishment_at_different_import_dates_into_two_dicts(
-        self,
-    ):
-        test_workplace_across_different_import_dates_same_job_role_counted_df = (
-            self.spark.createDataFrame(
-                Data.workplace_across_different_import_dates_same_job_role_counted_rows,
-                Schemas.ascwds_worker_with_job_role_count_schema,
-            )
-        )
-        expected_workplace_across_different_import_dates_same_job_role_counted_df = self.spark.createDataFrame(
-            Data.expected_workplace_across_different_import_dates_same_job_role_counted_rows,
-            Schemas.ascwds_worker_with_job_role_map_schema,
-        )
-
-        returned_df = convert_job_role_count_to_job_role_map(
-            test_workplace_across_different_import_dates_same_job_role_counted_df
-        )
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_across_different_import_dates_same_job_role_counted_df.collect(),
-        )
-
-    def test_convert_job_role_count_to_job_role_map_converts_when_establishments_have_different_number_of_unique_job_roles(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.workplaces_with_different_number_of_unique_job_roles_rows,
-            Schemas.ascwds_worker_with_job_role_count_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_workplaces_with_different_number_of_unique_job_roles_rows,
-            Schemas.ascwds_worker_with_job_role_map_schema,
-        )
-
-        returned_df = convert_job_role_count_to_job_role_map(test_df)
-
-        self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_df.collect(),
+            expected_workplace_three_jobs_roles_with_two_being_distinct_df.collect(),
         )
