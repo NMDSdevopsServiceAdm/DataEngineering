@@ -116,21 +116,9 @@ def main(
     registered_locations_df = impute_missing_struct_column(
         registered_locations_df, CQCL.regulated_activities
     )
-    #### TEMP CODE ####
-    first_non_null_regulated_activity: str = "first_non_null_regulated_activity"
-    window_spec = Window.partitionBy(
-        CQCL.location_id,
-    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-
-    registered_locations_df = registered_locations_df.withColumn(
-        first_non_null_regulated_activity,
-        F.size(F.first(F.col(CQCL.regulated_activities)).over(window_spec)),
+    registered_locations_df = remove_locations_that_never_had_regulated_activities(
+        registered_locations_df
     )
-    #### TEMP CODE ####
-
-    # registered_locations_df = remove_locations_that_never_had_regulated_activities(
-    #     registered_locations_df
-    # )
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
