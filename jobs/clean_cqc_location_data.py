@@ -35,6 +35,7 @@ from utils.cqc_location_utils.extract_registered_manager_names import (
     extract_registered_manager_names_from_imputed_regulated_activities_column,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -116,9 +117,25 @@ def main(
     registered_locations_df = impute_missing_struct_column(
         registered_locations_df, CQCL.regulated_activities
     )
-    registered_locations_df = remove_locations_that_never_had_regulated_activities(
-        registered_locations_df
+    #### TEMP CODE ####
+    first_non_null_regulated_activity: str = "first_non_null_regulated_activity"
+    window_spec = Window.partitionBy(
+        CQCL.location_id,
+    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+
+    raw_location_df = get_selected_value(
+        raw_location_df,
+        window_spec,
+        CQCL.regulated_activities,
+        CQCL.regulated_activities,
+        first_non_null_regulated_activity,
+        "first",
     )
+    #### TEMP CODE ####
+
+    # registered_locations_df = remove_locations_that_never_had_regulated_activities(
+    #     registered_locations_df
+    # )
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
