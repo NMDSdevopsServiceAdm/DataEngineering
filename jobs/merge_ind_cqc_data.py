@@ -43,6 +43,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.specialisms,
     CQCLClean.related_location,
     CQCLClean.primary_service_type,
+    CQCLClean.registered_manager_names,
     ONSClean.contemporary_ons_import_date,
     ONSClean.contemporary_cssr,
     ONSClean.contemporary_icb,

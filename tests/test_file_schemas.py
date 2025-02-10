@@ -11,6 +11,7 @@ from pyspark.sql.types import (
     DateType,
     DoubleType,
     BooleanType,
+    MapType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -172,6 +173,27 @@ class ASCWDSWorkplaceSchemas:
             StructField(AWP.is_parent, StringType(), True),
             StructField(AWP.parent_id, StringType(), True),
             StructField(AWP.last_logged_in, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
+        ]
+    )
+
+    filter_test_account_when_orgid_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+        ]
+    )
+    filter_test_account_when_orgid_not_present_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.import_date, StringType(), True),
+        ]
+    )
+
+    remove_white_space_from_nmdsid_schema = StructType(
+        [
+            StructField(AWP.location_id, StringType(), True),
+            StructField(AWP.nmds_id, StringType(), True),
         ]
     )
 
@@ -2558,6 +2580,9 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+            StructField(
+                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
+            ),
         ]
     )
     cleaned_ascwds_worker_schema = StructType(
@@ -5686,5 +5711,54 @@ class BlendAscwdsPirData:
             StructField(
                 IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
             ),
+        ]
+    )
+
+
+@dataclass
+class AscwdsJobroleCountSchema:
+    ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_count_schema = StructType(
+        [
+            *ascwds_worker_schema,
+            StructField(IndCQC.ascwds_main_job_role_counts, IntegerType(), True),
+        ]
+    )
+
+    ascwds_worker_with_job_role_map_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_main_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+
+
+class RegisteredManagerNamesCountSchema:
+    count_registered_manager_names_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.registered_manager_names, ArrayType(StringType(), True), True
+            ),
+        ]
+    )
+
+    expected_count_registered_manager_names_schema = StructType(
+        [
+            *count_registered_manager_names_schema,
+            StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
