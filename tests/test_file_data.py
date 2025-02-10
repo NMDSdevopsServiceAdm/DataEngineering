@@ -7752,6 +7752,21 @@ class ValidateLocationsAPICleanedData:
     ]
     # fmt: on
 
+    identify_if_location_has_a_known_regulated_activity_rows = [
+        ("loc_1", []),
+        ("loc_1", [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("loc_1", None),
+        ("loc_2", []),
+        ("loc_3", None),
+    ]
+    expected_identify_if_location_has_a_known_regulated_activity_rows = [
+        ("loc_1", [], True),
+        ("loc_1", [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}], True),
+        ("loc_1", None, True),
+        ("loc_2", [], False),
+        ("loc_3", None, False),
+    ]
+
 
 @dataclass
 class ValidateProvidersAPICleanedData:
