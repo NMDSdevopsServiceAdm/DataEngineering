@@ -26,8 +26,6 @@ def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with unique establishmentid and import date.
     """
 
-    list_of_job_roles
-
     df = (
         df.groupBy(
             F.col(AWKClean.establishment_id),
