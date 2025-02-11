@@ -3,7 +3,7 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.3"
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -36,6 +36,7 @@ raw_cqc_locations_columns_to_import = [
     CQCL.type,
     CQCL.registration_status,
     CQCL.gac_service_types,
+    CQCL.regulated_activities,
 ]
 
 
@@ -72,6 +73,12 @@ def main(
 def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
+    has_a_known_regulated_activity: str = "has_a_known_regulated_activity"
+
+    raw_location_df = identify_if_location_has_a_known_regulated_activity(
+        raw_location_df, has_a_known_regulated_activity
+    )
+
     expected_size = raw_location_df.where(
         (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
         & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
@@ -91,8 +98,40 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
             | (F.size(raw_location_df[CQCL.gac_service_types]) != 1)
             | (raw_location_df[CQCL.gac_service_types].isNull())
         )
+        & (raw_location_df[has_a_known_regulated_activity] == True)
     ).count()
     return expected_size
+
+
+def identify_if_location_has_a_known_regulated_activity(
+    df: DataFrame, new_col_name: str
+) -> DataFrame:
+    """
+    Identifies if a location has any known regulated activities and adds a new column to the DataFrame.
+
+    This function partitions the DataFrame by location ID and checks if there are any regulated activities
+    associated with each location. If any regulated activities are found, it sets the value of the new column
+    to True; otherwise, it sets it to False.
+
+    Args:
+        df (DataFrame): The input DataFrame containing location data.
+        new_col_name (str): The name of the new column to be added to the DataFrame.
+
+    Returns:
+        DataFrame: The DataFrame with the new column indicating the presence of regulated activities.
+    """
+    window_spec = Window.partitionBy(
+        CQCL.location_id,
+    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+
+    df = df.withColumn(
+        new_col_name,
+        F.when(
+            F.max(F.size(CQCL.regulated_activities)).over(window_spec) > 0,
+            True,
+        ).otherwise(False),
+    )
+    return df
 
 
 if __name__ == "__main__":

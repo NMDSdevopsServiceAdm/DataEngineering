@@ -73,7 +73,7 @@ def main(
     features_df = add_array_column_count_to_data(
         df=features_df,
         new_col_name=IndCQC.activity_count,
-        col_to_check=IndCQC.regulated_activities,
+        col_to_check=IndCQC.imputed_regulated_activities,
     )
     features_df = add_array_column_count_to_data(
         df=features_df,

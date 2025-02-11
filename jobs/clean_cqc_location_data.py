@@ -32,7 +32,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.cqc_location_dictionaries import InvalidPostcodes
 from utils.cqc_location_utils.extract_registered_manager_names import (
-    extract_registered_manager_names_from_regulated_activities_column,
+    extract_registered_manager_names_from_imputed_regulated_activities_column,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
 
@@ -110,7 +110,15 @@ def main(
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    registered_locations_df = impute_missing_gac_service_types(registered_locations_df)
+    registered_locations_df = impute_missing_struct_column(
+        registered_locations_df, CQCL.gac_service_types
+    )
+    registered_locations_df = impute_missing_struct_column(
+        registered_locations_df, CQCL.regulated_activities
+    )
+    registered_locations_df = remove_locations_that_never_had_regulated_activities(
+        registered_locations_df
+    )
     registered_locations_df = add_list_of_services_offered(registered_locations_df)
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
@@ -118,7 +126,7 @@ def main(
         registered_locations_df
     )
     registered_locations_df = (
-        extract_registered_manager_names_from_regulated_activities_column(
+        extract_registered_manager_names_from_imputed_regulated_activities_column(
             registered_locations_df
         )
     )
@@ -416,22 +424,24 @@ def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     return df
 
 
-def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
+def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     """
-    Imputes missing gacservicetypes in the DataFrame by filling with known values from other imports.
+    Imputes missing rows in a struct col in the DataFrame by filling with known values from other import_dates.
 
     The function performs the following steps:
-    1. Creates a new column 'imputed_gac_service_types' which copies gac_service_types if it contains data,
+    1. Creates a new column with the prefix 'imputed_' which copies the column if it contains data,
        and sets it to None if the array is empty.
-    2. Fills the missing values in 'imputed_gac_service_types' with the previous known value within the partition.
-    3. Fills any remaining missing values in 'imputed_gac_service_types' with the future known value within the partition.
+    2. Fills the missing values in 'imputed_' with the previous known value within the partition.
+    3. Fills any remaining missing values in 'imputed_' with the future known value within the partition.
 
     Args:
-        df (DataFrame): Input DataFrame containing 'location_id', 'cqc_location_import_date', and 'gac_service_types'.
+        df (DataFrame): Input DataFrame containing 'location_id', 'cqc_location_import_date', and a struct column to impute.
+        column_name (str): Name of struct column to impute
 
     Returns:
-        DataFrame: DataFrame with the 'imputed_gac_service_types' column containing imputed values.
+        DataFrame: DataFrame with the struct column containing imputed values.
     """
+    new_column_name = "imputed_" + column_name
     w_future = Window.partitionBy(CQCL.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
@@ -440,33 +450,47 @@ def impute_missing_gac_service_types(df: DataFrame) -> DataFrame:
     )
 
     df = df.withColumn(
-        CQCLClean.imputed_gac_service_types,
+        new_column_name,
         F.when(
-            F.size(F.col(CQCL.gac_service_types)) > 0,
-            F.col(CQCL.gac_service_types),
+            F.size(F.col(column_name)) > 0,
+            F.col(column_name),
         ).otherwise(F.lit(None)),
     )
 
     df = df.withColumn(
-        CQCLClean.imputed_gac_service_types,
+        new_column_name,
         F.coalesce(
-            F.col(CQCLClean.imputed_gac_service_types),
-            F.last(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
-                w_future
-            ),
+            F.col(new_column_name),
+            F.last(new_column_name, ignorenulls=True).over(w_future),
         ),
     )
 
     df = df.withColumn(
-        CQCLClean.imputed_gac_service_types,
+        new_column_name,
         F.coalesce(
-            F.col(CQCLClean.imputed_gac_service_types),
-            F.first(CQCLClean.imputed_gac_service_types, ignorenulls=True).over(
-                w_historic
-            ),
+            F.col(new_column_name),
+            F.first(new_column_name, ignorenulls=True).over(w_historic),
         ),
     )
 
+    return df
+
+
+def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataFrame:
+    """
+    Removes locations who have never submitted regulated activities data.
+
+    Removes locations who have never submitted regulated activities data as it is
+    the activities that are regulated and not the location. This function removes any blank rows
+    from the imputed_regulatedactivities column, which are locations that have no data at any time point.
+
+    Args:
+        df (DataFrame): A dataframe with imputed_regulatedactivities
+
+    Returns:
+        DataFrame: A dataframe where blank imputed rows are removed.
+    """
+    df = df.where(df[CQCLClean.imputed_regulated_activities].isNotNull())
     return df
 
 
