@@ -77,8 +77,8 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             test_workplace_with_different_import_date_df
         )
         self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id).collect(),
-            expected_workplace_with_different_import_date_df.collect(),
+            returned_df.sort(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date).collect(),
+            expected_workplace_with_different_import_date_df.sort(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date).collect(),
         )
 
     def test_workplace_with_different_establishmentid(
