@@ -32,7 +32,7 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count.count_job_role_per_establishment_as_columns"
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment_as_columns"
     )
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
