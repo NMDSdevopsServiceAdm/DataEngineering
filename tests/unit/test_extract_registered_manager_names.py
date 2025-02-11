@@ -43,7 +43,7 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
         group_and_collect_names_mock: Mock,
         join_names_column_into_original_df_mock: Mock,
     ):
-        job.extract_registered_manager_names_from_regulated_activities_column(
+        job.extract_registered_manager_names_from_imputed_regulated_activities_column(
             self.extract_registered_manager_df
         )
 
@@ -53,10 +53,8 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
         join_names_column_into_original_df_mock.assert_called_once()
 
     def test_extract_registered_manager_names_returns_the_same_number_of_rows(self):
-        returned_df = (
-            job.extract_registered_manager_names_from_regulated_activities_column(
-                self.extract_registered_manager_df
-            )
+        returned_df = job.extract_registered_manager_names_from_imputed_regulated_activities_column(
+            self.extract_registered_manager_df
         )
         self.assertEqual(
             self.extract_registered_manager_df.count(), returned_df.count()
