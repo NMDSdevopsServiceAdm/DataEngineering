@@ -7,6 +7,9 @@ from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
 
 
 def main(source: str, destination: str, dataset: str = "ascwds"):
@@ -146,6 +149,15 @@ def fix_nmdssc_dates(df: DataFrame) -> DataFrame:
         df = df.withColumn(
             date_column,
             F.date_format(F.to_date(df[date_column], "MM/dd/yyyy"), "dd/MM/yyyy"),
+        )
+
+    # last_logged_in is the only date column which doen't contain the word date so we need to handle it separately
+    if AWP.last_logged_in in df.columns:
+        df = df.withColumn(
+            AWP.last_logged_in,
+            F.date_format(
+                F.to_date(df[AWP.last_logged_in], "MM/dd/yyyy"), "dd/MM/yyyy"
+            ),
         )
     return df
 

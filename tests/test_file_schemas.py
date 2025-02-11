@@ -129,6 +129,15 @@ class IngestASCWDSData:
         ]
     )
 
+    fix_nmdssc_dates_with_last_logged_in_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(AWP.master_update_date, StringType(), True),
+            StructField(AWP.organisation_id, StringType(), True),
+            StructField(AWP.last_logged_in, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkerSchemas:
