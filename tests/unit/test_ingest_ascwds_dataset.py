@@ -333,6 +333,20 @@ class FixNmdsscDatesTests(IngestASCWDSDatasetTests):
             self.expected_data[0][AWK.main_job_role_id],
         )
 
+    def test_fix_nmdssc_dates_amends_last_logged_in_column(self):
+        last_logged_in_df = self.spark.createDataFrame(
+            Data.fix_nmdssc_dates_with_last_logged_in_rows,
+            Schemas.fix_nmdssc_dates_with_last_logged_in_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_fix_nmdssc_dates_with_last_logged_in_rows,
+            Schemas.fix_nmdssc_dates_with_last_logged_in_schema,
+        )
+        returned_df = job.fix_nmdssc_dates(last_logged_in_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
