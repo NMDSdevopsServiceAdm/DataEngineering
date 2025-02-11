@@ -116,6 +116,13 @@ class IngestASCWDSData:
     fix_nmdssc_dates_rows = [("100", "07/31/2021", "8", "10/01/2024")]
     expected_fix_nmdssc_dates_rows = [("100", "31/07/2021", "8", "01/10/2024")]
 
+    fix_nmdssc_dates_with_last_logged_in_rows = [
+        ("100", "07/31/2021", "8", "10/01/2024")
+    ]
+    expected_fix_nmdssc_dates_with_last_logged_in_rows = [
+        ("100", "31/07/2021", "8", "01/10/2024")
+    ]
+
 
 @dataclass
 class ASCWDSWorkerData:
