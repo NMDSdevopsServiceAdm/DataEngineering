@@ -9441,6 +9441,7 @@ class BlendAscwdsPirData:
     ]
     expected_drop_temporary_columns = [IndCQC.location_id]
 
+
 class RegisteredManagerNamesCountData:
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])

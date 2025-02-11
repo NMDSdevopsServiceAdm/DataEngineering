@@ -5896,6 +5896,7 @@ class BlendAscwdsPirData:
         ]
     )
 
+
 class RegisteredManagerNamesCountSchema:
     count_registered_manager_names_schema = StructType(
         [
