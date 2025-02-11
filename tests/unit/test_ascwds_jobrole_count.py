@@ -10,6 +10,7 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 
 from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment_as_columns,
+    list_of_job_roles,
 )
 
 
@@ -21,6 +22,9 @@ class AscwdsJobroleCount(unittest.TestCase):
 class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def setUp(self) -> None:
         super().setUp()
+
+    def test_workplace_job_role_count(self):
+        self.assertEqual(len(list_of_job_roles), 39)
 
     def test_workplace_with_three_distinct_job_role(
         self,
@@ -77,8 +81,12 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             test_workplace_with_different_import_date_df
         )
         self.assertEqual(
-            returned_df.sort(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date).collect(),
-            expected_workplace_with_different_import_date_df.sort(AWKClean.establishment_id, AWKClean.ascwds_worker_import_date).collect(),
+            returned_df.sort(
+                AWKClean.establishment_id, AWKClean.ascwds_worker_import_date
+            ).collect(),
+            expected_workplace_with_different_import_date_df.sort(
+                AWKClean.establishment_id, AWKClean.ascwds_worker_import_date
+            ).collect(),
         )
 
     def test_workplace_with_different_establishmentid(
