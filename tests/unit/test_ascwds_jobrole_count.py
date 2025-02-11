@@ -62,24 +62,24 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_none_job_role_df.collect(),
         )
 
-    # def test_workplace_with_different_import_date(
-    #     self,
-    # ):
-    #     test_workplace_with_different_import_date_df = self.spark.createDataFrame(
-    #         Data.workplace_with_different_import_date,
-    #         Schemas.ascwds_worker_schema,
-    #     )
-    #     expected_workplace_with_different_import_date_df = self.spark.createDataFrame(
-    #         Data.expected_workplace_with_different_import_date,
-    #         Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
-    #     )
-    #     returned_df = count_job_role_per_establishment_as_columns(
-    #         test_workplace_with_different_import_date_df
-    #     )
-    #     self.assertEqual(
-    #         returned_df.sort(AWKClean.establishment_id).collect(),
-    #         expected_workplace_with_different_import_date_df.collect(),
-    #     )
+    def test_workplace_with_different_import_date(
+        self,
+    ):
+        test_workplace_with_different_import_date_df = self.spark.createDataFrame(
+            Data.workplace_with_different_import_date,
+            Schemas.ascwds_worker_schema,
+        )
+        expected_workplace_with_different_import_date_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_different_import_date,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
+        )
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_different_import_date_df
+        )
+        self.assertEqual(
+            returned_df.sort(AWKClean.establishment_id).collect(),
+            expected_workplace_with_different_import_date_df.collect(),
+        )
 
     def test_workplace_with_different_establishmentid(
         self,
