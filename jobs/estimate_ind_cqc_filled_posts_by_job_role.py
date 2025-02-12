@@ -61,7 +61,7 @@ def main(
     estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
-    temp_destinaion: str,
+    temp_destination: str,
 ):
     """
     Creates estimates of filled posts split by main job role.
@@ -98,7 +98,7 @@ def main(
 
     utils.write_to_parquet(
         count_job_roles_per_establishment_df,
-        temp_destinaion,
+        temp_destination,
         "overwrite",
     )
 
