@@ -35,8 +35,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         )
         self.assertEqual(
             len(returned_df.columns),
-            len(test_workplace_with_three_distinct_job_role_df.columns)
-            + 3,
+            len(test_workplace_with_three_distinct_job_role_df.columns) + 3,
         )
 
     def test_workplace_with_three_distinct_job_role(
