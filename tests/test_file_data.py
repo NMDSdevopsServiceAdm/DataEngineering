@@ -9494,6 +9494,8 @@ class RegisteredManagerNamesCountData:
 class AscwdsJobroleCountData:
     # fmt: off
 
+    list_of_job_roles = [MainJobRoleLabels.not_known,MainJobRoleLabels.senior_care_worker,MainJobRoleLabels.care_worker,MainJobRoleLabels.employment_support]
+
     workplace_with_three_distinct_job_role = [
         ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
@@ -9501,7 +9503,7 @@ class AscwdsJobroleCountData:
     ]
 
     expected_workplace_with_three_distinct_job_role = [
-        ("1", date(2025, 1, 1), 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("1", date(2025, 1, 1), 0, 1, 1, 1),
     ]
 
     workplace_with_different_import_date = [
@@ -9510,8 +9512,8 @@ class AscwdsJobroleCountData:
     ]
 
     expected_workplace_with_different_import_date = [
-        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-        ("1", date(2025, 1, 2), 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("1", date(2025, 1, 1), 1, 0, 0, 0),
+        ("1", date(2025, 1, 2), 0, 1, 0, 0),
     ]
 
     workplace_with_different_establishmentid = [
@@ -9520,26 +9522,25 @@ class AscwdsJobroleCountData:
     ]
 
     expected_workplace_with_different_establishmentid = [
-        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-        ("2", date(2025, 1, 1), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("1", date(2025, 1, 1), 1, 0, 0, 0),
+        ("2", date(2025, 1, 1), 0, 0, 0, 1),
     ]
     workplace_with_none_job_role = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
         ("1", date(2025, 1, 1), None),
     ]
 
     expected_workplace_with_none_job_role = [
-        ("1", date(2025, 1, 1), 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+        ("1", date(2025, 1, 1), 0, 0, 0, 0),
     ]
 
     workplace_three_jobs_roles_with_two_being_distinct = [
     ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
-    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
-    ("1", date(2025, 1, 1), MainJobRoleLabels.middle_management),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
     ]
 
     exptected_workplace_three_job_roles_with_two_being_distinct = [
-        ("1", date(2025, 1, 1), 1, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        ("1", date(2025, 1, 1), 1, 0, 2, 0)
     ]
 
     # fmt: on

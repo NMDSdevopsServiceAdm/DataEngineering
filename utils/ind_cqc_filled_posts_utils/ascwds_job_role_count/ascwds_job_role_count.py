@@ -12,7 +12,9 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
 
 
-def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
+def count_job_role_per_establishment_as_columns(
+    df: DataFrame, list_of_columns_for_job_role: list
+) -> DataFrame:
     """
     Group the worker dataset by establishment id and import date.
     Subsequently performs a pivot on the clean job role labels which will be the additional columns in the grouped data.
@@ -30,13 +32,13 @@ def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
             F.col(AWKClean.establishment_id),
             F.col(AWKClean.ascwds_worker_import_date),
         )
-        .pivot(AWKClean.main_job_role_clean_labelled, list_of_job_roles)
+        .pivot(AWKClean.main_job_role_clean_labelled, list_of_columns_for_job_role)
         .count()
     )
 
-    df = df.na.fill(0, subset=list_of_job_roles)
+    df = df.na.fill(0, subset=list_of_columns_for_job_role)
 
-    for column in list_of_job_roles:
-        df = df.withColumnRenamed(column,f"job_role_count_{column}")
+    for column in list_of_columns_for_job_role:
+        df = df.withColumnRenamed(column, f"job_role_count_{column}")
 
     return df

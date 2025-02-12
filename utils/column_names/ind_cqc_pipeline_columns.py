@@ -13,6 +13,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 
+
 @dataclass
 class PartitionKeys:
     day: str = "day"

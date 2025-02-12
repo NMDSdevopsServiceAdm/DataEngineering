@@ -23,8 +23,21 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_workplace_job_role_count(self):
-        self.assertEqual(len(list_of_job_roles), 39)
+    def checking_total_number_of_added_columns(
+        self,
+    ):
+        test_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
+            Data.workplace_with_three_distinct_job_role,
+            Schemas.ascwds_worker_schema,
+        )
+        returned_df = count_job_role_per_establishment_as_columns(
+            test_workplace_with_three_distinct_job_role_df, Data.list_of_job_roles
+        )
+        self.assertEqual(
+            len(returned_df.columns),
+            len(test_workplace_with_three_distinct_job_role_df.columns)
+            + len(Data.list_of_job_roles),
+        )
 
     def test_workplace_with_three_distinct_job_role(
         self,
@@ -39,7 +52,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         )
 
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_with_three_distinct_job_role_df
+            test_workplace_with_three_distinct_job_role_df, Data.list_of_job_roles
         )
 
         self.assertEqual(
@@ -59,7 +72,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_with_none_job_role_df
+            test_workplace_with_none_job_role_df, Data.list_of_job_roles
         )
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
@@ -78,7 +91,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_with_different_import_date_df
+            test_workplace_with_different_import_date_df, Data.list_of_job_roles
         )
         self.assertEqual(
             returned_df.sort(
@@ -101,7 +114,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_with_different_establishmentid_df
+            test_workplace_with_different_establishmentid_df, Data.list_of_roles
         )
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
@@ -122,7 +135,8 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_three_jobs_roles_with_two_being_distinct_df
+            test_workplace_three_jobs_roles_with_two_being_distinct_df,
+            Data.list_of_job_roles,
         )
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),

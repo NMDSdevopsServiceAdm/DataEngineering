@@ -13,6 +13,7 @@ from utils.ind_cqc_filled_posts_utils.count_registered_manager_names.count_regis
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
     count_job_role_per_establishment_as_columns,
+    list_of_job_roles,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -83,7 +84,7 @@ def main(
     )
 
     count_job_roles_per_establishment_df = count_job_role_per_establishment_as_columns(
-        cleaned_ascwds_worker_df
+        cleaned_ascwds_worker_df, list_of_job_roles
     )
 
     utils.write_to_parquet(
