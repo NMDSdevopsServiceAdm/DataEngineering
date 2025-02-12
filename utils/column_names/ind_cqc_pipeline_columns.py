@@ -13,6 +13,8 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 
+from utils.column_values.categorical_column_values import ColumnValues, MainJobRoleLabels (
+)
 
 @dataclass
 class PartitionKeys:
@@ -247,3 +249,90 @@ class PrimaryServiceRollingAverageColumns:
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
+
+@dataclass
+class MainJobRoleColumns(ColumnValues):
+    """The possible values of the main job role column in ASCWDS data"""
+
+    not_known: str = MainJobRoleLabels.not_known.lower().replace(' ','_')
+    senior_management: str = MainJobRoleLabels.senior_management.lower().replace(' ','_')
+    middle_management: str = MainJobRoleLabels.middle_management.lower().replace(' ','_')
+    first_line_manager: str = MainJobRoleLabels.first_line_manager.lower().replace(' ','_')
+    registered_manager: str = MainJobRoleLabels.registered_manager.lower().replace(' ','_')
+    supervisor: str = MainJobRoleLabels.supervisor.lower().replace(' ','_')
+    social_worker: str = MainJobRoleLabels.social_worker.lower().replace(' ','_')
+    senior_care_worker: str = MainJobRoleLabels.senior_care_worker.lower().replace(' ','_')
+    care_worker: str = MainJobRoleLabels.care_worker.lower().replace(' ','_')
+    community_support_and_outreach: str = MainJobRoleLabels.community_support_and_outreach.lower().replace(' ','_')
+    employment_support: str = MainJobRoleLabels.employment_support.lower().replace(' ','_')
+    advocacy: str = MainJobRoleLabels.advocacy.lower().replace(' ','_')
+    occupational_therapist: str = MainJobRoleLabels.occupational_therapist.lower().replace(' ','_')
+    registered_nurse: str = MainJobRoleLabels.registered_nurse.lower().replace(' ','_')
+    allied_health_professional: str = MainJobRoleLabels.allied_health_professional.lower().replace(' ','_')
+    technician: str = MainJobRoleLabels.technician.lower().replace(' ','_')
+    other_care_role: str = MainJobRoleLabels.other_care_role.lower().replace(' ','_')
+    care_related_staff: str = MainJobRoleLabels.care_related_staff.lower().replace(' ','_')
+    admin_staff: str = MainJobRoleLabels.admin_staff.lower().replace(' ','_')
+    ancillary_staff: str = MainJobRoleLabels.ancillary_staff.lower().replace(' ','_')
+    other_non_care_related_staff: str = MainJobRoleLabels.other_non_care_related_staff.lower().replace(' ','_')
+    activites_worker: str = MainJobRoleLabels.activites_worker.lower().replace(' ','_')
+    safeguarding_officer: str = MainJobRoleLabels.safeguarding_officer.lower().replace(' ','_')
+    occupational_therapist_assistant: str = MainJobRoleLabels.occupational_therapist_assistant.lower().replace(' ','_')
+    registered_nursing_associate: str = MainJobRoleLabels.registered_nursing_associate.lower().replace(' ','_')
+    nursing_assistant: str = MainJobRoleLabels.nursing_assistant.lower().replace(' ','_')
+    assessment_officer: str = MainJobRoleLabels.assessment_officer.lower().replace(' ','_')
+    care_coordinator: str = MainJobRoleLabels.care_coordinator.lower().replace(' ','_')
+    childrens_roles: str = MainJobRoleLabels.childrens_roles.lower().replace(' ','_')
+    deputy_manager: str = MainJobRoleLabels.deputy_manager.lower().replace(' ','_')
+    learning_and_development_lead: str = MainJobRoleLabels.learning_and_development_lead.lower().replace(' ','_')
+    team_leader: str = MainJobRoleLabels.team_leader.lower().replace(' ','_')
+    data_analyst: str = MainJobRoleLabels.data_analyst.lower().replace(' ','_')
+    data_governance_manager: str = MainJobRoleLabels.data_governance_manager.lower().replace(' ','_')
+    it_and_digital_support: str = MainJobRoleLabels.it_and_digital_support.lower().replace(' ','_')
+    it_manager: str = MainJobRoleLabels.it_manager.lower().replace(' ','_')
+    it_service_desk_manager: str = MainJobRoleLabels.it_service_desk_manager.lower().replace(' ','_')
+    software_developer: str = MainJobRoleLabels.software_developer.lower().replace(' ','_')
+    support_worker: str = MainJobRoleLabels.support_worker.lower().replace(' ','_')
+
+    main_job_role_columns_dict = {
+
+    "not_known": MainJobRoleLabels.not_known.lower().replace(' ','_'),
+    "senior_management": MainJobRoleLabels.senior_management.lower().replace(' ','_'),
+    "middle_management": MainJobRoleLabels.middle_management.lower().replace(' ','_'),
+    "first_line_manager": MainJobRoleLabels.first_line_manager.lower().replace(' ','_'),
+    "registered_manager": MainJobRoleLabels.registered_manager.lower().replace(' ','_'),
+    "supervisor": MainJobRoleLabels.supervisor.lower().replace(' ','_'),
+    "social_worker": MainJobRoleLabels.social_worker.lower().replace(' ','_'),
+    "senior_care_worker": MainJobRoleLabels.senior_care_worker.lower().replace(' ','_'),
+    "care_worker": MainJobRoleLabels.care_worker.lower().replace(' ','_'),
+    "community_support_and_outreach": MainJobRoleLabels.community_support_and_outreach.lower().replace(' ','_'),
+    "employment_support": MainJobRoleLabels.employment_support.lower().replace(' ','_'),
+    "advocacy: str": MainJobRoleLabels.advocacy.lower().replace(' ','_'),
+    "occupational_therapist": MainJobRoleLabels.occupational_therapist.lower().replace(' ','_'),
+    "registered_nurse": MainJobRoleLabels.registered_nurse.lower().replace(' ','_'),
+    "allied_health_professional": MainJobRoleLabels.allied_health_professional.lower().replace(' ','_'),
+    "technician": MainJobRoleLabels.technician.lower().replace(' ','_'),
+    "other_care_role": MainJobRoleLabels.other_care_role.lower().replace(' ','_'),
+    "care_related_staff": MainJobRoleLabels.care_related_staff.lower().replace(' ','_'),
+    "admin_staff": MainJobRoleLabels.admin_staff.lower().replace(' ','_'),
+    "ancillary_staff": MainJobRoleLabels.ancillary_staff.lower().replace(' ','_'),
+    "other_non_care_related_staff": MainJobRoleLabels.other_non_care_related_staff.lower().replace(' ','_'),
+    "activites_worker": MainJobRoleLabels.activites_worker.lower().replace(' ','_'),
+    "safeguarding_officer": MainJobRoleLabels.safeguarding_officer.lower().replace(' ','_'),
+    "occupational_therapist_assistant": MainJobRoleLabels.occupational_therapist_assistant.lower().replace(' ','_'),
+    "registered_nursing_associate": MainJobRoleLabels.registered_nursing_associate.lower().replace(' ','_'),
+    "nursing_assistant": MainJobRoleLabels.nursing_assistant.lower().replace(' ','_'),
+    "assessment_officer": MainJobRoleLabels.assessment_officer.lower().replace(' ','_'),
+    "care_coordinator": MainJobRoleLabels.care_coordinator.lower().replace(' ','_'),
+    "childrens_roles": MainJobRoleLabels.childrens_roles.lower().replace(' ','_'),
+    "deputy_manager": MainJobRoleLabels.deputy_manager.lower().replace(' ','_'),
+    "learning_and_development_lead": MainJobRoleLabels.learning_and_development_lead.lower().replace(' ','_'),
+    "team_leader": MainJobRoleLabels.team_leader.lower().replace(' ','_'),
+    "data_analyst": MainJobRoleLabels.data_analyst.lower().replace(' ','_'),
+    "data_governance_manager": MainJobRoleLabels.data_governance_manager.lower().replace(' ','_'),
+    "it_and_digital_support": MainJobRoleLabels.it_and_digital_support.lower().replace(' ','_'),
+    "it_manager": MainJobRoleLabels.it_manager.lower().replace(' ','_'),
+    "it_service_desk_manager": MainJobRoleLabels.it_service_desk_manager.lower().replace(' ','_'),
+    "software_developer": MainJobRoleLabels.software_developer.lower().replace(' ','_'),
+    "support_worker": MainJobRoleLabels.support_worker.lower().replace(' ','_'),
+    }

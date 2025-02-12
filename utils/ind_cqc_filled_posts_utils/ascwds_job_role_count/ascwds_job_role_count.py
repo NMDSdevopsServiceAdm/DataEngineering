@@ -9,8 +9,10 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
 )
 
+from utils.column_names.ind_cqc_pipeline_columns import ( MainJobRoleColumns
+)
 
-list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
+list_of_job_roles = list(MainJobRoleColumns.main_job_role_columns_dict.values())
 
 
 def count_job_role_per_establishment_as_columns(df: DataFrame) -> DataFrame:
