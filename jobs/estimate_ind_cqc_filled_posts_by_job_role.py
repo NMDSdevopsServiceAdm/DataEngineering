@@ -61,6 +61,7 @@ def main(
     estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
     estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+    temp_destinaion: str,
 ):
     """
     Creates estimates of filled posts split by main job role.
@@ -69,6 +70,7 @@ def main(
         estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
+        temp_destination (str): path of the temporary destination of job role counts
     """
     estimated_ind_cqc_filled_posts_df = utils.read_from_parquet(
         estimated_ind_cqc_filled_posts_source,
@@ -94,6 +96,11 @@ def main(
         PartitionKeys,
     )
 
+    utils.write_to_parquet(
+        count_job_roles_per_establishment_df,
+        temp_destinaion,
+        "overwrite",
+    )
 
 if __name__ == "__main__":
     print("spark job: estimate_ind_cqc_filled_posts_by_job_role starting")
@@ -103,6 +110,7 @@ if __name__ == "__main__":
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_destination,
     ) = utils.collect_arguments(
         (
             "--estimated_ind_cqc_filled_posts_source",
@@ -116,10 +124,15 @@ if __name__ == "__main__":
             "--estimated_ind_cqc_filled_posts_by_job_role_destination",
             "Destination s3 directory",
         ),
+        (
+            "--temp_destinaion",
+            "Destination s3 directory",
+        ),
     )
 
     main(
         estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
+        temp_destination,
     )
