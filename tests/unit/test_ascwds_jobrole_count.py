@@ -113,7 +113,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
         returned_df = count_job_role_per_establishment_as_columns(
-            test_workplace_with_different_establishmentid_df, Data.list_of_roles
+            test_workplace_with_different_establishmentid_df, Data.list_of_job_roles
         )
         self.assertEqual(
             returned_df.sort(AWKClean.establishment_id).collect(),
