@@ -23,7 +23,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def setUp(self) -> None:
         super().setUp()
 
-    def checking_total_number_of_added_columns(
+    def test_checking_total_number_of_added_columns(
         self,
     ):
         test_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
@@ -36,7 +36,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
         self.assertEqual(
             len(returned_df.columns),
             len(test_workplace_with_three_distinct_job_role_df.columns)
-            + len(Data.list_of_job_roles),
+            + 3,
         )
 
     def test_workplace_with_three_distinct_job_role(

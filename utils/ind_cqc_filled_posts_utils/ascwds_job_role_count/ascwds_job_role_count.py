@@ -22,11 +22,11 @@ def count_job_role_per_establishment_as_columns(
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
+        list_of_columns_for_job_role (list): A list containing the ASC-WDS job role. 
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
     """
-
     df = (
         df.groupBy(
             F.col(AWKClean.establishment_id),
