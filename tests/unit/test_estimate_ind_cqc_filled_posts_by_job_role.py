@@ -45,12 +45,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             self.test_estimated_ind_cqc_filled_posts_df,
             self.test_cleaned_ascwds_worker_df,
         ]
-        job.main(
-            self.ESTIMATE_SOURCE,
-            self.ASCWDS_WORKER_SOURCE,
-            self.OUTPUT_DIR,
-            self.OUTPUT_DIR,
-        )
+        job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
         read_from_parquet_mock.assert_has_calls(
