@@ -23,7 +23,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_checking_total_number_of_added_columns(
+    def test_count_job_role_per_establishment_as_columns_returns_expected_number_of_columns_when_called(
         self,
     ):
         test_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
@@ -38,7 +38,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             len(test_workplace_with_three_distinct_job_role_df.columns) + 3,
         )
 
-    def test_workplace_with_three_distinct_job_role(
+    def test_count_job_role_per_establishment_as_columns_returns_correct_counts_when_workplace_has_three_distinct_job_roles(
         self,
     ):
         test_workplace_with_three_distinct_job_role_df = self.spark.createDataFrame(
@@ -59,7 +59,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_three_distinct_job_role_df.collect(),
         )
 
-    def test_workplace_with_none_job_role(
+    def test_count_job_role_per_establishment_as_columns_returns_correct_counts_when_has_none_job_role(
         self,
     ):
         test_workplace_with_none_job_role_df = self.spark.createDataFrame(
@@ -78,7 +78,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_none_job_role_df.collect(),
         )
 
-    def test_workplace_with_different_import_date(
+    def test_count_job_role_per_establishment_as_columns_returns_correct_counts_when_workplace_has_different_import_date(
         self,
     ):
         test_workplace_with_different_import_date_df = self.spark.createDataFrame(
@@ -101,7 +101,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             ).collect(),
         )
 
-    def test_workplace_with_different_establishmentid(
+    def test_count_job_role_per_establishment_as_columns_returns_correct_counts_when_workplace_has_different_establishmentid(
         self,
     ):
         test_workplace_with_different_establishmentid_df = self.spark.createDataFrame(
@@ -120,7 +120,7 @@ class CountJobRolesPerEstablishmentTests(AscwdsJobroleCount):
             expected_workplace_with_different_establishmentid_df.collect(),
         )
 
-    def test_workplace_three_jobs_roles_with_two_being_distinct(
+    def test_count_job_role_per_establishment_as_columns_returns_correct_counts_when_workplace_has_three_job_roles_with_two_being_distinct(
         self,
     ):
         test_workplace_three_jobs_roles_with_two_being_distinct_df = (
