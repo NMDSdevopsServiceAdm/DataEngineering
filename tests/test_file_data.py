@@ -9587,3 +9587,56 @@ class RegisteredManagerNamesCountData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
+
+
+class AscwdsJobRoleCountsToRatiosData:
+    list_of_job_role_columns = [
+        "job_role_count_name_1",
+        "job_role_count_name_2",
+        "job_role_count_name_3",
+        "job_role_count_name_4",
+    ]
+
+    ascwds_job_role_counts_to_ratios_when_only_one_above_zero = [
+        ("1", 1, 0, 0, 0),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_when_only_one_above_zero = [
+        ("1", 1, 0, 0, 0, 1.0, 0.0, 0.0, 0.0),
+    ]
+
+    ascwds_job_role_counts_to_ratios_when_all_above_zero_rows = [
+        ("1", 1, 2, 3, 4),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_when_all_above_zero_rows = [
+        ("1", 1, 2, 3, 4, 0.1, 0.2, 0.3, 0.4),
+    ]
+
+    ascwds_job_role_counts_to_ratios_when_all_equal_zero = [
+        ("1", 0, 0, 0, 0),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_when_all_equal_zero = [
+        ("1", 0, 0, 0, 0, 0.0, 0.0, 0.0, 0.0),
+    ]
+
+    ascwds_job_role_counts_to_ratios_when_a_count_is_null = [
+        ("1", None, 1, 0, 0),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_when_a_count_is_null = [
+        ("1", None, 1, 0, 0, 0.0, 1.0, 0.0, 0.0),
+    ]
+
+    ascwds_job_role_counts_to_ratios_when_all_are_null = [
+        ("1", None, None, None, None),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_when_all_are_null = [
+        ("1", None, None, None, None, None, None, None, None),
+    ]
+
+    ascwds_job_role_counts_to_ratios_at_different_establishments = [
+        ("1", 1, 1, 0, 0),
+        ("2", 0, 0, 1, 1),
+    ]
+    expected_ascwds_job_role_counts_to_ratios_at_different_establishments = [
+        ("1", 1, 1, 0, 0, 0.5, 0.5, 0.0, 0.0),
+        ("2", 0, 0, 1, 1, 0.0, 0.0, 0.5, 0.5),
+    ]

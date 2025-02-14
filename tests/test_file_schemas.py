@@ -5943,3 +5943,25 @@ class RegisteredManagerNamesCountSchema:
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
+
+
+class AscwdsJobRoleCountsToRatiosSchema:
+    ascwds_job_role_counts_to_ratios_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField("job_role_count_name_1", IntegerType(), True),
+            StructField("job_role_count_name_2", IntegerType(), True),
+            StructField("job_role_count_name_3", IntegerType(), True),
+            StructField("job_role_count_name_4", IntegerType(), True),
+        ]
+    )
+
+    expected_ascwds_job_role_counts_to_ratios_schema = StructType(
+        [
+            *ascwds_job_role_counts_to_ratios_schema,
+            StructField("job_role_ratio_name_1", FloatType(), True),
+            StructField("job_role_ratio_name_2", FloatType(), True),
+            StructField("job_role_ratio_name_3", FloatType(), True),
+            StructField("job_role_ratio_name_4", FloatType(), True),
+        ]
+    )
