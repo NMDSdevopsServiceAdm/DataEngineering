@@ -10,7 +10,7 @@ def transform_job_role_counts_to_ratios(
 
     Args:
         df (DataFrame): A dataframe containing job role count columns.
-        list_of_job_role_columns (list): List of job role count columns.
+        list_of_job_role_columns (List[str]): List of job role count columns.
 
     Returns:
         DataFrame: A dataframe with additional job role ratio columns.
