@@ -412,3 +412,26 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
             len(returned_df.columns),
             len(test_df.columns) + len(Data.list_of_job_role_columns),
         )
+
+    def test_transform_job_role_counts_to_ratios_only_adds_columns_from_given_list_and_replaces_word_count_with_ratio(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.ascwds_job_role_counts_to_ratios_at_different_establishments,
+            Schemas.ascwds_job_role_counts_to_ratios_schema,
+        )
+
+        test_columns = test_df.columns
+
+        expected_columns_added = [
+            i.replace("count", "ratio") for i in Data.list_of_job_role_columns
+        ]
+
+        returned_columns = job.transform_job_role_counts_to_ratios(
+            test_df, Data.list_of_job_role_columns
+        ).columns
+
+        new_columns_returned = [k for k in returned_columns if k not in test_columns]
+
+        for l in range(len(expected_columns_added)):
+            self.assertEqual(expected_columns_added[l], new_columns_returned[l])
