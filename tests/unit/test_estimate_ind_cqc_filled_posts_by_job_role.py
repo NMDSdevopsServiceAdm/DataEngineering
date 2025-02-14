@@ -32,20 +32,20 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.transform_job_role_counts_to_ratios"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_counts_to_ratios"
     )
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.count_job_role_per_establishment_as_columns"
     )
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.convert_job_role_count_to_job_role_map"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
         self,
         read_from_parquet_mock: Mock,
-        convert_job_role_count_to_job_role_map_mock: Mock,
-        count_job_role_per_establishment_mock: Mock,
+        count_registered_manager_names_mock: Mock,
+        count_job_role_per_establishment_as_columns_mock: Mock,
         transform_job_role_counts_to_ratios_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -69,8 +69,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             ]
         )
 
-        self.assertEqual(count_job_role_per_establishment_mock.call_count, 1)
-        self.assertEqual(convert_job_role_count_to_job_role_map_mock.call_count, 1)
+        count_registered_manager_names_mock.assert_called_once()
+
+        count_job_role_per_establishment_as_columns_mock.assert_called_once()
 
         transform_job_role_counts_to_ratios_mock.assert_called_once()
 
