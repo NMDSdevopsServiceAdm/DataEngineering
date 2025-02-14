@@ -73,6 +73,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.direct_payments_utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -5896,36 +5897,6 @@ class BlendAscwdsPirData:
     )
 
 
-@dataclass
-class AscwdsJobroleCountSchema:
-    ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    ascwds_worker_with_job_role_count_schema = StructType(
-        [
-            *ascwds_worker_schema,
-            StructField(IndCQC.ascwds_main_job_role_counts, IntegerType(), True),
-        ]
-    )
-
-    ascwds_worker_with_job_role_map_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(
-                IndCQC.ascwds_main_job_role_counts,
-                MapType(StringType(), IntegerType()),
-                True,
-            ),
-        ]
-    )
-
-
 class RegisteredManagerNamesCountSchema:
     count_registered_manager_names_schema = StructType(
         [
@@ -5941,5 +5912,27 @@ class RegisteredManagerNamesCountSchema:
         [
             *count_registered_manager_names_schema,
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class AscwdsJobroleCountSchema:
+    ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    ascwds_worker_with_columns_per_count_of_job_role_per_establishment = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
