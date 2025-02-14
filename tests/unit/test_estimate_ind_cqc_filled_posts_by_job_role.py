@@ -32,6 +32,9 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.transform_job_role_counts_to_ratios"
+    )
+    @patch(
         "jobs.estimate_ind_cqc_filled_posts_by_job_role.count_job_role_per_establishment"
     )
     @patch(
@@ -43,6 +46,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         read_from_parquet_mock: Mock,
         convert_job_role_count_to_job_role_map_mock: Mock,
         count_job_role_per_establishment_mock: Mock,
+        transform_job_role_counts_to_ratios_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -67,6 +71,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
 
         self.assertEqual(count_job_role_per_establishment_mock.call_count, 1)
         self.assertEqual(convert_job_role_count_to_job_role_map_mock.call_count, 1)
+
+        transform_job_role_counts_to_ratios_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
