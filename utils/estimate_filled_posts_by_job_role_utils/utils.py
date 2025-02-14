@@ -88,9 +88,9 @@ def transform_job_role_counts_to_ratios(
         DataFrame: A dataframe with additional job role ratio columns.
     """
 
-    temp_total_column = "temp_total_column"
+    temp_job_role_count_total_column = "temp_job_role_count_total_column"
     df = df.withColumn(
-        temp_total_column,
+        temp_job_role_count_total_column,
         F.when(
             F.greatest(
                 *[F.col(column) for column in list_of_job_role_columns]
@@ -105,9 +105,26 @@ def transform_job_role_counts_to_ratios(
     for column in list_of_job_role_columns:
         df = df.withColumn(
             column.replace("count", "ratio"),
-            F.when(F.col(column) > 0, F.col(column) / F.col(temp_total_column))
-            .when(F.col(temp_total_column).isNull(), None)
+            F.when(
+                F.col(column) > 0,
+                F.col(column) / F.col(temp_job_role_count_total_column),
+            )
+            .when(F.col(temp_job_role_count_total_column).isNull(), None)
             .otherwise(F.lit(0.0)),
         )
 
-    return df.drop(temp_total_column)
+    temp_job_role_ratio_total_column = "temp_job_role_count_total_column"
+    list_of_ratio_columns = [
+        column for column in df.columns if "job_role_ratio_" in column
+    ]
+    df = df.withColumn(
+        temp_job_role_ratio_total_column,
+        F.when(
+            F.col(temp_job_role_count_total_column).isNotNull(),
+            sum(F.col(column) for column in list_of_ratio_columns),
+        ),
+    )
+    if df.filter(F.col(temp_job_role_ratio_total_column) > 1):
+        raise ValueError(f"The sum of job role ratios per row cannot be greater than 1")
+
+    return df.drop(temp_job_role_count_total_column, temp_job_role_ratio_total_column)
