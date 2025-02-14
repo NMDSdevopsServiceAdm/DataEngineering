@@ -16,6 +16,10 @@ from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_coun
     list_of_job_roles,
 )
 
+from utils.ind_cqc_filled_posts_utils.merge_ascwds_job_role_count_and_ind_cqc_estimates.merge_ascwds_job_role_count_and_ind_cqc_estimates import (
+    merge_dataframes,
+)
+
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     AWKClean.ascwds_worker_import_date,
@@ -85,6 +89,10 @@ def main(
 
     count_job_roles_per_establishment_df = count_job_role_per_establishment_as_columns(
         cleaned_ascwds_worker_df, list_of_job_roles
+    )
+
+    master_df = merge_dataframes(
+        estimated_ind_cqc_filled_posts_df, count_job_roles_per_establishment_df
     )
 
     utils.write_to_parquet(
