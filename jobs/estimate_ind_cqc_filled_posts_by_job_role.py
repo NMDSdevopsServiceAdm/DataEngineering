@@ -8,7 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.ind_cqc_filled_posts_by_job_role_utils import utils as JRutils
+from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
