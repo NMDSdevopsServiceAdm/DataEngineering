@@ -12,6 +12,9 @@ from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_coun
     count_job_role_per_establishment,
     convert_job_role_count_to_job_role_map,
 )
+from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_counts_to_ratios import (
+    transform_job_role_counts_to_ratios,
+)
 from utils.ind_cqc_filled_posts_utils.count_registered_manager_names.count_registered_manager_names import (
     count_registered_manager_names,
 )
@@ -88,6 +91,15 @@ def main(
     )
     count_job_roles_per_establishment_df = convert_job_role_count_to_job_role_map(
         count_job_roles_per_establishment_df
+    )
+
+    list_of_job_role_columns = [
+        column
+        for column in estimated_ind_cqc_filled_posts_df.columns
+        if "job_role_count_" in column
+    ]
+    estimated_ind_cqc_filled_posts_df = transform_job_role_counts_to_ratios(
+        estimated_ind_cqc_filled_posts_df, list_of_job_role_columns
     )
 
     utils.write_to_parquet(
