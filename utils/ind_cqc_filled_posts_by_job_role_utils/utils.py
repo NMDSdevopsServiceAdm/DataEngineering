@@ -1,14 +1,9 @@
 from pyspark.sql import DataFrame, functions as F
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
-from pyspark.sql import DataFrame, functions as F
-
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
 )
