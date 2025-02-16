@@ -5932,13 +5932,10 @@ class EstimateFilledPostsByJobRoleSchema:
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
-    
+
     IndCQCEstimateFilledPostsByJobRoleSchema = StructType(
         [
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(
                 IndCQC.imputed_gac_service_types,
                 ArrayType(
@@ -5950,8 +5947,9 @@ class EstimateFilledPostsByJobRoleSchema:
                     )
                 ),
             ),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
