@@ -5897,7 +5897,7 @@ class BlendAscwdsPirData:
     )
 
 
-class RegisteredManagerNamesCountSchema:
+class EstimateFilledPostsByJobRoleSchema:
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -5907,7 +5907,6 @@ class RegisteredManagerNamesCountSchema:
             ),
         ]
     )
-
     expected_count_registered_manager_names_schema = StructType(
         [
             *count_registered_manager_names_schema,
@@ -5915,9 +5914,6 @@ class RegisteredManagerNamesCountSchema:
         ]
     )
 
-
-@dataclass
-class AscwdsJobroleCountSchema:
     ascwds_worker_schema = StructType(
         [
             StructField(AWKClean.establishment_id, StringType(), True),

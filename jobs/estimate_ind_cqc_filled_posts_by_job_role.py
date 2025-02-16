@@ -8,13 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.ind_cqc_filled_posts_utils.count_registered_manager_names.count_registered_manager_names import (
-    count_registered_manager_names,
-)
-from utils.ind_cqc_filled_posts_utils.ascwds_job_role_count.ascwds_job_role_count import (
-    count_job_role_per_establishment_as_columns,
-    list_of_job_roles,
-)
+from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
 
 from utils.ind_cqc_filled_posts_utils.merge_ascwds_job_role_count_and_ind_cqc_estimates.merge_ascwds_job_role_count_and_ind_cqc_estimates import (
     merge_dataframes,
@@ -83,12 +77,14 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
-    estimated_ind_cqc_filled_posts_df = count_registered_manager_names(
+    estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
         estimated_ind_cqc_filled_posts_df
     )
 
-    count_job_roles_per_establishment_df = count_job_role_per_establishment_as_columns(
-        cleaned_ascwds_worker_df, list_of_job_roles
+    count_job_roles_per_establishment_df = (
+        JRutils.count_job_role_per_establishment_as_columns(
+            cleaned_ascwds_worker_df, JRutils.list_of_job_roles
+        )
     )
 
     master_df = merge_dataframes(
