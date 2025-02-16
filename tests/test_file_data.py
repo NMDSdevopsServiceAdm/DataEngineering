@@ -9578,7 +9578,8 @@ class EstimateFilledPostsByJobRoleData:
             1,
             1,
             1,
-        )(
+        ),
+        (
             "1-100000002",
             ["Homecare agencies", "Domiciliary care service"],
             date(2025, 1, 2),
@@ -9588,7 +9589,8 @@ class EstimateFilledPostsByJobRoleData:
             0,
             0,
             0,
-        )(
+        ),
+        (
             "1-100000003",
             ["Supported living", "Supported living service"],
             date(2025, 1, 1),
@@ -9598,5 +9600,5 @@ class EstimateFilledPostsByJobRoleData:
             0,
             0,
             0,
-        )
+        ),
     ]
