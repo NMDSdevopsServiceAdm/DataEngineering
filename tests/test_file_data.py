@@ -9562,7 +9562,6 @@ class EstimateFilledPostsByJobRoleData:
         ),
     ]
 
-    # ascwds_worker_data has been grouped by establishmed_id and ascwds_worker_import_date prior
     workplace_with_one_record_matching = [
         ("1", date(2025, 1, 1), 1, 1, 1, 1),
         ("4", date(2025, 1, 1), 1, 1, 1, 1),
