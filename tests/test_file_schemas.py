@@ -5932,9 +5932,7 @@ class EstimateFilledPostsByJobRoleSchema:
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
-
-@dataclass
-class EstimatedIndCQCFilledPostsWithJobRoleCountSchema:
+    
     IndCQCEstimateFilledPostsByJobRoleSchema = StructType(
         [
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -5955,16 +5953,5 @@ class EstimatedIndCQCFilledPostsWithJobRoleCountSchema:
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
-        ]
-    )
-
-    ascwds_worker_with_columns_per_count_of_job_role_per_establishment = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
-            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
-            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
-            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
