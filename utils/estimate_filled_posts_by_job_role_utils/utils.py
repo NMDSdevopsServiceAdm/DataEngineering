@@ -95,7 +95,7 @@ def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
         "left",
     )
 
-    result_df = joined_df.select(posts_df, workers_df[list_of_job_roles])
+    result_df = joined_df.select(posts_df, list_of_job_roles)
 
     result_df.fillna(0,subset=list_of_job_roles)
 
