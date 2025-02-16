@@ -5936,3 +5936,62 @@ class AscwdsJobroleCountSchema:
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
+
+@dataclass
+class EstimatedIndCQCFilledPostsWithJobRoleCountSchema:
+    IndCQCEstimateFilledPostsByJobRoleSchema = StructType(
+        [
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(IndCQC.provider_id, StringType(), True),
+            StructField(IndCQC.provider_name, StringType(), True),
+            StructField(IndCQC.services_offered, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(IndCQC.imputed_registration_date, DateType()),
+            StructField(IndCQC.registered_manager_names, ArrayType(StringType(), True)),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.organisation_id, StringType(), True),
+            StructField(IndCQC.worker_records_bounded, StringType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+            StructField(IndCQC.current_ons_import_date, DateType(), True),
+            StructField(IndCQC.current_cssr, StringType(), True),
+            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.current_icb, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+            StructField(IndCQC.registered_manager_count, IntegerType(), True),
+            StructField(Keys.year, IntegerType(), True),
+            StructField(Keys.month, IntegerType(), True),
+            StructField(Keys.day, IntegerType(), True),
+            StructField(Keys.import_date, IntegerType(), True),
+        ]
+    )
+
+    ascwds_worker_with_columns_per_count_of_job_role_per_establishment = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+        ]
+    )
