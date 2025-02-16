@@ -87,7 +87,7 @@ def main(
         )
     )
 
-    master_df = merge_dataframes(
+    master_df = JRutils.merge_dataframes(
         estimated_ind_cqc_filled_posts_df, count_job_roles_per_establishment_df
     )
 
