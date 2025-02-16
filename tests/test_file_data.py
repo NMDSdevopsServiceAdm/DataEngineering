@@ -9537,3 +9537,24 @@ class EstimateFilledPostsByJobRoleData:
     exptected_workplace_three_job_roles_with_two_being_distinct = [
         ("1", date(2025, 1, 1), 1, 0, 2, 0)
     ]
+
+    ind_cqc_estimated_filled_posts_by_job_role = [
+        ("1-100000001",["Homecare agencies","Domiciliary care service"],date(2025, 1, 1), "1", "ascwds_pir_merged"),
+        ("1-100000002",["Homecare agencies","Domiciliary care service"],date(2025, 1, 2), "2", "imputed_filled_post_model"),
+        ("1-100000003",["Supported living","Supported living service"],date(2025, 1, 1), "3", "ascwds_pir_merged"),
+    ]
+
+    # ascwds_worker_data has been grouped by establishmed_id and ascwds_worker_import_date prior
+    workplace_with_one_record_matching = [
+        ("1", date(2025, 1, 1), 1, 1, 1, 1),
+        ("4", date(2025, 1, 1), 1, 1, 1, 1),
+    ]
+
+    expected_workplace_with_one_record_matching = [
+        ("1-100000001",["Homecare agencies","Domiciliary care service"],date(2025, 1, 1), "1", "ascwds_pir_merged",1,1,1,1,)
+        ("1-100000002",["Homecare agencies","Domiciliary care service"],date(2025, 1, 2), "2", "imputed_filled_post_model",0,0,0,0)
+        ("1-100000003",["Supported living","Supported living service"],date(2025, 1, 1), "3", "ascwds_pir_merged",0,0,0,0)
+    ]
+
+
+    
