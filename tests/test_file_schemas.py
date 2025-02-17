@@ -5949,7 +5949,6 @@ class EstimateFilledPostsByJobRoleSchema:
             ),
             StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
             StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
