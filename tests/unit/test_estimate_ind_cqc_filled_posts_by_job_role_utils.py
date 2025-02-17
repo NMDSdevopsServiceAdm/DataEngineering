@@ -250,31 +250,31 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
             expected_workplace_three_jobs_roles_with_two_being_distinct_df.collect(),
         )
 
-    # def test_change_name(
-    #     self,
-    # ):
-    #     test_left_table_df = self.spark.createDataFrame(
-    #         Data.ind_cqc_estimated_filled_posts_by_job_role,
-    #         Schemas.IndCQCEstimateFilledPostsByJobRoleSchema,
-    #     )
+    def test_change_name(
+        self,
+    ):
+        test_left_table_df = self.spark.createDataFrame(
+            Data.ind_cqc_estimated_filled_posts_by_job_role,
+            Schemas.IndCQCEstimateFilledPostsByJobRoleSchema,
+        )
 
-    #     test_workplace_with_one_record_matching_df = self.spark.createDataFrame(
-    #         Data.workplace_with_one_record_matching,
-    #         Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
-    #     )
+        test_workplace_with_one_record_matching_df = self.spark.createDataFrame(
+            Data.workplace_with_one_record_matching,
+            Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
+        )
 
-    #     expected_workplace_with_one_record_matching_df = self.spark.createDataFrame(
-    #         Data.expected_workplace_with_one_record_matching,
-    #         Schemas.merged_job_role_estimate_schema,
-    #     )
+        expected_workplace_with_one_record_matching_df = self.spark.createDataFrame(
+            Data.expected_workplace_with_one_record_matching,
+            Schemas.merged_job_role_estimate_schema,
+        )
 
-    #     returned_df = job.merge_dataframes(
-    #         test_left_table_df, test_workplace_with_one_record_matching_df
-    #     )
+        returned_df = job.merge_dataframes(
+            test_left_table_df, test_workplace_with_one_record_matching_df
+        )
 
-    #     self.assertEqual(
-    #         returned_df.sort(AWKClean.establishment_id).collect(),
-    #         expected_workplace_with_one_record_matching_df.sort(
-    #             AWKClean.establishment_id
-    #         ).collect(),
-    #     )
+        self.assertEqual(
+            returned_df.sort(AWKClean.establishment_id).collect(),
+            expected_workplace_with_one_record_matching_df.sort(
+                AWKClean.establishment_id
+            ).collect(),
+        )
