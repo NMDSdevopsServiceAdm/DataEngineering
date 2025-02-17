@@ -45,6 +45,10 @@ def main(
         WORKPLACE_COLUMNS,
     )
 
+    ascwds_worker_df = cUtils.column_to_date(
+        ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
+    )
+
     ascwds_worker_df = remove_duplicate_worker_in_raw_worker_data(ascwds_worker_df)
 
     ascwds_worker_df = remove_workers_without_workplaces(
@@ -52,10 +56,6 @@ def main(
     )
 
     ascwds_worker_df = create_clean_main_job_role_column(ascwds_worker_df)
-
-    ascwds_worker_df = cUtils.column_to_date(
-        ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
-    )
 
     print(f"Exporting as parquet to {cleaned_worker_destination}")
     utils.write_to_parquet(
