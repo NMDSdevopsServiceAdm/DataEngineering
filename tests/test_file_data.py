@@ -9541,27 +9541,31 @@ class EstimateFilledPostsByJobRoleData:
     ind_cqc_estimated_filled_posts_by_job_role = [
         (
             "1-100000001",
-            {
-                "name": "Homecare agencies",
-                "description": "Domiciliary care service",
-            },
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
             date(2025, 1, 1),
             "1",
             "ascwds_pir_merged",
         ),
         (
             "1-100000002",
-            {
-                "name": "Homecare agencies",
-                "description": "Domiciliary care service",
-            },
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
             date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
         ),
         (
             "1-100000003",
-            {"name":"Supported living", "description":"Supported living service"},
+            [{"name": "Supported living", "description": "Supported living service"}],
             date(2025, 1, 1),
             "3",
             "ascwds_pir_merged",
@@ -9576,10 +9580,12 @@ class EstimateFilledPostsByJobRoleData:
     expected_workplace_with_one_record_matching = [
         (
             "1-100000001",
-            {
-                "name": "Homecare agencies",
-                "description": "Domiciliary care service",
-            },
+            [
+                {
+                    "name": "Homecare agencies",
+                    "description": "Domiciliary care service",
+                }
+            ],
             date(2025, 1, 1),
             "1",
             "ascwds_pir_merged",
@@ -9590,8 +9596,7 @@ class EstimateFilledPostsByJobRoleData:
         ),
         (
             "1-100000002",
-            {"name":"Homecare agencies", 
-             "description":"Domiciliary care service"},
+            [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
             date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
@@ -9602,7 +9607,7 @@ class EstimateFilledPostsByJobRoleData:
         ),
         (
             "1-100000003",
-            {"name":"Supported living","description":"Supported living service"},
+            [{"name": "Supported living", "description": "Supported living service"}],
             date(2025, 1, 1),
             "3",
             "ascwds_pir_merged",
