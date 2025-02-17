@@ -259,7 +259,7 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
         )
 
         test_workplace_with_one_record_matching_df = self.spark.createDataFrame(
-            Data.expected_workplace_with_one_record_matching,
+            Data.workplace_with_one_record_matching,
             Schemas.ascwds_worker_with_columns_per_count_of_job_role_per_establishment,
         )
 
