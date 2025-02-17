@@ -101,7 +101,7 @@ def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
     )
 
     new_job_role_count_columns = [
-        column for column in workers_df.columns if column not in posts_df.columns
+        column for column in joined_df.columns if column not in posts_df.columns
     ]
 
     result_df = joined_df.fillna(0, subset=new_job_role_count_columns)
