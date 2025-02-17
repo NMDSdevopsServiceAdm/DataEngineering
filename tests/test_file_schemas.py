@@ -177,6 +177,14 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
+    impute_not_known_job_roles_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkplaceSchemas:

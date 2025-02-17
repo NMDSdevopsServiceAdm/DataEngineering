@@ -176,6 +176,52 @@ class ASCWDSWorkerData:
         ("40", "40"),
     ]
 
+    impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 1, 1), "-1"),
+        ("1002", date(2024, 6, 1), "7"),
+    ]
+    expected_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows = [
+        ("1001", date(2024, 1, 1), "8"),
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 1, 1), "7"),
+        ("1002", date(2024, 6, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "-1"),
+        ("1002", date(2024, 3, 1), "7"),
+        ("1002", date(2024, 8, 1), "-1"),
+    ]
+    expected_impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "8"),
+        ("1002", date(2024, 3, 1), "7"),
+        ("1002", date(2024, 8, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "-1"),
+        ("1001", date(2024, 5, 1), "-1"),
+        ("1001", date(2024, 6, 1), "7"),
+    ]
+    expected_impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "8"),
+        ("1001", date(2024, 5, 1), "8"),
+        ("1001", date(2024, 6, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+    ]
+    expected_impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+    ]
+
 
 @dataclass
 class ASCWDSWorkplaceData:
