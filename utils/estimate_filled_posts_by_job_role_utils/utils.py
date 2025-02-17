@@ -94,10 +94,8 @@ def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
             == workers_df[AWKClean.ascwds_worker_import_date]
         ),
         "left",
-    )
+    ).drop(workers_df["establishmed_id"])
 
-    result_df = joined_df.select(posts_df, list_of_job_roles)
-
-    result_df.fillna(0, subset=list_of_job_roles)
+    result_df = joined_df.fillna(0, subset=list_of_job_roles)
 
     return result_df
