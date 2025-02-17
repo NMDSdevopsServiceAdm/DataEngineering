@@ -17,7 +17,23 @@ Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngi
 
 ## Mission Statement
 
-*"INSERT MISSION STATEMENT*
+
+### About Us
+
+We are Skills for Care’s Workforce Intelligence Team, the experts in adult social care workforce insight.
+
+Skills for Care, as the leading source of adult social care workforce intelligence, helps to create a better-led, skilled and valued adult social care workforce. We provide practical tools and support to help adult social care organisations in England recruit, retain, develop and lead their workforce. We work with employers and related services to ensure dignity and respect are at the heart of service delivery.
+
+We’re commissioned by the Department of Health and Social Care to collect data on adult social care providers and their workforce via the Adult Social Care Workforce Data Set (previously named National Minimum Data Set for Social Care). For over 15 years we’ve turned this data into intelligence and insight that's relied upon by the Government and across our sector.
+
+### About the Data Engineering Project
+
+Our data engineering project aims to convert our data modeling processes into reproducible analytical pipelines in AWS. These pipelines will be more accurate and efficient, allowing us to: 
+ - model our estimates using all the data available to us
+ - provide more frequent updates to our estimates
+ - use more complex modelling techniques, such as machine learning or AI modules
+ - make our detailed methods available to anyone who wants to explore them
+
 
 ## Building the project
 
