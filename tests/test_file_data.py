@@ -153,7 +153,7 @@ class ASCWDSWorkerData:
         ("141", date(2025, 1, 1), "41"),
     ]
     expected_create_clean_main_job_role_column_rows = [
-        ("101", date(2024, 1, 1), "-1", "-1", MainJobRoleLabels.not_known),
+        ("101", date(2024, 1, 1), "-1", "1", MainJobRoleLabels.senior_management),
         ("101", date(2025, 1, 1), "1", "1", MainJobRoleLabels.senior_management),
         ("102", date(2025, 1, 1), "-1", "-1", MainJobRoleLabels.not_known),
         ("103", date(2024, 1, 1), "3", "3", MainJobRoleLabels.first_line_manager),

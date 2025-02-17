@@ -142,6 +142,7 @@ def impute_not_known_job_roles(df: DataFrame) -> DataFrame:
     1. Replaces 'not known' (labelled as '-1') job roles with None.
     2. Fills the None values in with the previous known value within the partition.
     3. Fills any remaining None values with the future known value within the partition.
+    4. Replaces missing job role rows with the original 'not known' ('-1') value.
 
     Args:
         df (DataFrame): Input DataFrame containing 'worker_id', 'ascwds_worker_import_date' and 'main_job_role_clean'.
@@ -172,6 +173,7 @@ def impute_not_known_job_roles(df: DataFrame) -> DataFrame:
             F.first(AWKClean.main_job_role_clean, ignorenulls=True).over(w_historic),
         ),
     )
+    df = df.na.fill(not_known_identifier, subset=AWKClean.main_job_role_clean)
     return df
 
 
