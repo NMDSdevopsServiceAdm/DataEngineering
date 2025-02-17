@@ -96,6 +96,7 @@ def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
         "left",
     ).drop(workers_df[AWKClean.establishment_id])
 
-    result_df = joined_df.fillna(0, subset=list_of_job_roles)
+    # Not currently using a subset, might need to look into using it
+    result_df = joined_df.fillna(0)
 
     return result_df
