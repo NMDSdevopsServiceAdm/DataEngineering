@@ -86,7 +86,6 @@ def main(
     master_df = JRutils.merge_dataframes(
         estimated_ind_cqc_filled_posts_df,
         count_job_roles_per_establishment_df,
-        JRutils.list_of_job_roles,
     )
 
     utils.write_to_parquet(

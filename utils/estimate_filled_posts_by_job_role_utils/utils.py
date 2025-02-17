@@ -73,9 +73,7 @@ def count_job_role_per_establishment_as_columns(
     return df
 
 
-def merge_dataframes(
-    posts_df: DataFrame, workers_df: DataFrame, list_of_columns_for_job_role: list
-) -> DataFrame:
+def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
     """
     Joining the IndCQC Estimates dataframe (Left Table) and the ASCWDS Worker DataFrame (Right Table) together.
     All the columns from IndCQC and the Job Count columns from ASCWDS.
@@ -83,7 +81,6 @@ def merge_dataframes(
     Args:
         posts_df (DataFrame): A dataframe containing cleaned IndCQC workplace Data.
         workers_df (DataFrame): ASC-WDS worker dataframe grouped to include columns with job role counts per job role.
-        list_of_columns_for_job_role (list): A list containing the ASC-WDS job role.
 
     Returns:
         DataFrame: The IndCQC DataFrame merged to include job role count columns.
@@ -103,7 +100,10 @@ def merge_dataframes(
         .drop(workers_df[AWKClean.ascwds_worker_import_date])
     )
 
-    # Not currently using a subset, might need to look into using it
-    result_df = joined_df.fillna(0, subset=list_of_columns_for_job_role)
+    new_job_role_count_columns = [
+        column for column in workers_df.columns if column not in posts_df.columns
+    ]
+
+    result_df = joined_df.fillna(0, subset=new_job_role_count_columns)
 
     return result_df

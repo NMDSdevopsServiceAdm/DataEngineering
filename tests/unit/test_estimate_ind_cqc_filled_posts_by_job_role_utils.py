@@ -271,7 +271,6 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
         returned_df = job.merge_dataframes(
             test_left_table_df,
             test_workplace_with_one_record_matching_df,
-            Data.list_of_job_roles,
         )
 
         self.assertEqual(
@@ -302,7 +301,6 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
         returned_df = job.merge_dataframes(
             test_left_table_df,
             test_workplace_with_no_records_matching_df,
-            Data.list_of_job_roles,
         )
 
         self.assertEqual(
@@ -333,7 +331,6 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
         returned_df = job.merge_dataframes(
             test_left_table_df,
             test_workplace_with_no_records_matching_df,
-            Data.list_of_job_roles,
         )
 
         self.assertEqual(
