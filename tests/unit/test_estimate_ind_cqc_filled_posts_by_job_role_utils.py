@@ -250,7 +250,7 @@ class CountJobRolesPerEstablishmentTests(EstimateFilledPostsByJobRoleTests):
             expected_workplace_three_jobs_roles_with_two_being_distinct_df.collect(),
         )
 
-    def test_change_name(
+    def test_merge_dataframes_returns_ind_cqc_estimate_filled_posts_with_job_role_counts_when_workplace_matches(
         self,
     ):
         test_left_table_df = self.spark.createDataFrame(
