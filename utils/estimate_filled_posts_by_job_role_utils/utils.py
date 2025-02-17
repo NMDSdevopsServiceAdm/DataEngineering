@@ -86,15 +86,19 @@ def merge_dataframes(posts_df: DataFrame, workers_df: DataFrame) -> DataFrame:
         DataFrame: The IndCQC DataFrame merged to include job role count columns.
     """
 
-    joined_df = posts_df.join(
-        workers_df,
-        (posts_df[IndCQC.establishment_id] == workers_df[AWKClean.establishment_id])
-        & (
-            posts_df[IndCQC.ascwds_workplace_import_date]
-            == workers_df[AWKClean.ascwds_worker_import_date]
-        ),
-        "left",
-    ).drop(workers_df[AWKClean.establishment_id])
+    joined_df = (
+        posts_df.join(
+            workers_df,
+            (posts_df[IndCQC.establishment_id] == workers_df[AWKClean.establishment_id])
+            & (
+                posts_df[IndCQC.ascwds_workplace_import_date]
+                == workers_df[AWKClean.ascwds_worker_import_date]
+            ),
+            "left",
+        )
+        .drop(workers_df[AWKClean.establishment_id])
+        .drop(workers_df[AWKClean.ascwds_worker_import_date])
+    )
 
     # Not currently using a subset, might need to look into using it
     result_df = joined_df.fillna(0)
