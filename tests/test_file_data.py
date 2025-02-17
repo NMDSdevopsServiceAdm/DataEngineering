@@ -9670,7 +9670,6 @@ class EstimateFilledPostsByJobRoleData:
         ("5", date(2025, 1, 1), 1, 1, 1, 1),
         ("6", date(2025, 1, 1), 1, 1, 1, 1),
     ]
-    
 
     expected_workplace_with_no_records_matching = [
         (
