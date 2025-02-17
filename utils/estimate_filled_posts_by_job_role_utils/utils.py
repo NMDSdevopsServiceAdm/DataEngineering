@@ -82,7 +82,8 @@ def merge_dataframes(
 
     Args:
         posts_df (DataFrame): A dataframe containing cleaned IndCQC workplace Data.
-        workers_df (DataFrame): ASC-WDS worker dataframe grouped to include columns with job role counts per job role. .
+        workers_df (DataFrame): ASC-WDS worker dataframe grouped to include columns with job role counts per job role.
+        list_of_columns_for_job_role (list): A list containing the ASC-WDS job role.
 
     Returns:
         DataFrame: The IndCQC DataFrame merged to include job role count columns.
