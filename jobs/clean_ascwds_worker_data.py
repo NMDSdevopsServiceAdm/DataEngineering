@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -45,6 +45,10 @@ def main(
         WORKPLACE_COLUMNS,
     )
 
+    ascwds_worker_df = cUtils.column_to_date(
+        ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
+    )
+
     ascwds_worker_df = remove_duplicate_worker_in_raw_worker_data(ascwds_worker_df)
 
     ascwds_worker_df = remove_workers_without_workplaces(
@@ -52,10 +56,6 @@ def main(
     )
 
     ascwds_worker_df = create_clean_main_job_role_column(ascwds_worker_df)
-
-    ascwds_worker_df = cUtils.column_to_date(
-        ascwds_worker_df, PartitionKeys.import_date, AWKClean.ascwds_worker_import_date
-    )
 
     print(f"Exporting as parquet to {cleaned_worker_destination}")
     utils.write_to_parquet(
@@ -108,6 +108,7 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     df = df.withColumn(AWKClean.main_job_role_clean, F.col(AWKClean.main_job_role_id))
 
     df = replace_care_navigator_with_care_coordinator(df)
+    df = impute_not_known_job_roles(df)
     df = cUtils.apply_categorical_labels(
         df,
         ascwds_worker_labels_dict,
@@ -131,6 +132,49 @@ def replace_care_navigator_with_care_coordinator(df: DataFrame) -> DataFrame:
         DataFrame: The DataFrame with the replaced value.
     """
     return df.replace("41", "40", AWKClean.main_job_role_clean)
+
+
+def impute_not_known_job_roles(df: DataFrame) -> DataFrame:
+    """
+    Imputes not known job roles in the DataFrame by filling with known values from other import_dates.
+
+    The function performs the following steps:
+    1. Replaces 'not known' (labelled as '-1') job roles with None.
+    2. Fills the None values in with the previous known value within the partition.
+    3. Fills any remaining None values with the future known value within the partition.
+    4. Replaces missing job role rows with the original 'not known' ('-1') value.
+
+    Args:
+        df (DataFrame): Input DataFrame containing 'worker_id', 'ascwds_worker_import_date' and 'main_job_role_clean'.
+
+    Returns:
+        DataFrame: DataFrame with the 'main_job_role_clean' column with imputed values.
+    """
+    w_future = Window.partitionBy(AWKClean.worker_id).orderBy(
+        AWKClean.ascwds_worker_import_date
+    )
+    w_historic = w_future.rowsBetween(
+        Window.unboundedPreceding, Window.unboundedFollowing
+    )
+    not_known_identifier: str = "-1"
+
+    df = df.replace(not_known_identifier, None, AWKClean.main_job_role_clean)
+    df = df.withColumn(
+        AWKClean.main_job_role_clean,
+        F.coalesce(
+            F.col(AWKClean.main_job_role_clean),
+            F.last(AWKClean.main_job_role_clean, ignorenulls=True).over(w_future),
+        ),
+    )
+    df = df.withColumn(
+        AWKClean.main_job_role_clean,
+        F.coalesce(
+            F.col(AWKClean.main_job_role_clean),
+            F.first(AWKClean.main_job_role_clean, ignorenulls=True).over(w_historic),
+        ),
+    )
+    df = df.na.fill(not_known_identifier, subset=AWKClean.main_job_role_clean)
+    return df
 
 
 if __name__ == "__main__":
