@@ -37,12 +37,17 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframe"
+
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
         self,
         read_from_parquet_mock: Mock,
         count_registered_manager_names_mock: Mock,
         count_job_role_per_establishment_as_columns_mock: Mock,
+        merge_dataframes_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -66,6 +71,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         )
         count_registered_manager_names_mock.assert_called_once()
         count_job_role_per_establishment_as_columns_mock.assert_called_once()
+        merge_dataframes_mock.assert_called_once()
+
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
