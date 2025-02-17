@@ -5954,9 +5954,11 @@ class EstimateFilledPostsByJobRoleSchema:
     )
 
     merged_job_role_estimate_schema = StructType(
-        *IndCQCEstimateFilledPostsByJobRoleSchema,
-        StructField(MainJobRoleLabels.not_known, IntegerType(), False),
-        StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
-        StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
-        StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+        [
+            *IndCQCEstimateFilledPostsByJobRoleSchema,
+            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+        ]
     )
