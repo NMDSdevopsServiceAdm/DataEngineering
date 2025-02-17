@@ -70,36 +70,3 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
-
-    # TODO remove (and delete test data and schemas) or edit this test once function working
-    # @patch("utils.utils.write_to_parquet")
-    # @patch("utils.utils.read_from_parquet")
-    # def test_expected_outputs(
-    #     self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
-    # ):
-    #     read_from_parquet_mock.side_effect = [
-    #         self.test_estimated_ind_cqc_filled_posts_df,
-    #         self.test_cleaned_ascwds_worker_df,
-    #     ]
-    #     returned_df = job.main(
-    #         self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR
-    #     )
-
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_estimated_ind_cqc_filled_posts_by_job_role_rows,
-    #         Schemas.expected_estimated_ind_cqc_filled_posts_by_job_role_schema,
-    #     )
-
-    #     returned_data = returned_df.sort(
-    #         "establishmentid", "cqc_location_import_date", "mainjrid_clean_labels"
-    #     ).collect()
-    #     expected_data = expected_df.sort(
-    #         "establishmentid", "cqc_location_import_date", "mainjrid_clean_labels"
-    #     ).collect()
-
-    #     for i in range(len(returned_data)):
-    #         self.assertEqual(
-    #             returned_data[i]["estimate_job_role_count"],
-    #             expected_data[i]["estimate_job_role_count"],
-    #             f"Returned value in row {i} does not match expected",
-    #         )
