@@ -5922,3 +5922,33 @@ class EstimateFilledPostsByJobRoleSchema:
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
         ]
     )
+
+    ind_cqc_estimate_filled_posts_by_job_role_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+    merged_job_role_estimate_schema = StructType(
+        [
+            *ind_cqc_estimate_filled_posts_by_job_role_schema,
+            StructField(MainJobRoleLabels.not_known, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), True),
+        ]
+    )
