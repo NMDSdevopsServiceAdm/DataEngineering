@@ -271,13 +271,13 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
             test_df, Data.list_of_job_role_columns
         ).collect()
 
-        for i in range(len(returned_rows)):
-            for j in range(len(Data.list_of_job_role_columns)):
-                self.assertAlmostEqual(
-                    returned_rows[i][Data.list_of_job_role_columns[j]],
-                    expected_rows[i][Data.list_of_job_role_columns[j]],
-                    places=3,
-                )
+        for i in range(len(Data.list_of_job_role_columns)):
+            self.assertAlmostEqual(
+                returned_rows[0][Data.list_of_job_role_columns[i]],
+                expected_rows[0][Data.list_of_job_role_columns[i]],
+                places=3,
+                msg=f"Returned value in column {i} does not match expected",
+            )
 
     def test_transform_job_role_counts_to_ratios_returns_expected_ratios_when_given_counts_are_all_above_zero(
         self,
@@ -295,13 +295,13 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
             test_df, Data.list_of_job_role_columns
         ).collect()
 
-        for i in range(len(returned_rows)):
-            for j in range(len(Data.list_of_job_role_columns)):
-                self.assertAlmostEqual(
-                    returned_rows[i][Data.list_of_job_role_columns[j]],
-                    expected_rows[i][Data.list_of_job_role_columns[j]],
-                    places=3,
-                )
+        for i in range(len(Data.list_of_job_role_columns)):
+            self.assertAlmostEqual(
+                returned_rows[0][Data.list_of_job_role_columns[i]],
+                expected_rows[0][Data.list_of_job_role_columns[i]],
+                places=3,
+                msg=f"Returned value in column {i} does not match expected",
+            )
 
     def test_transform_job_role_counts_to_ratios_returns_expected_ratios_when_given_counts_all_equal_zero(
         self,
@@ -319,13 +319,13 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
             test_df, Data.list_of_job_role_columns
         ).collect()
 
-        for i in range(len(returned_rows)):
-            for j in range(len(Data.list_of_job_role_columns)):
-                self.assertAlmostEqual(
-                    returned_rows[i][Data.list_of_job_role_columns[j]],
-                    expected_rows[i][Data.list_of_job_role_columns[j]],
-                    places=3,
-                )
+        for i in range(len(Data.list_of_job_role_columns)):
+            self.assertAlmostEqual(
+                returned_rows[0][Data.list_of_job_role_columns[i]],
+                expected_rows[0][Data.list_of_job_role_columns[i]],
+                places=3,
+                msg=f"Returned value in column {i} does not match expected",
+            )
 
     def test_transform_job_role_counts_to_ratios_returns_ratio_of_zero_for_null_count_when_given_counts_contain_a_null_value(
         self,
@@ -343,13 +343,13 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
             test_df, Data.list_of_job_role_columns
         ).collect()
 
-        for i in range(len(returned_rows)):
-            for j in range(len(Data.list_of_job_role_columns)):
-                self.assertAlmostEqual(
-                    returned_rows[i][Data.list_of_job_role_columns[j]],
-                    expected_rows[i][Data.list_of_job_role_columns[j]],
-                    places=3,
-                )
+        for i in range(len(Data.list_of_job_role_columns)):
+            self.assertAlmostEqual(
+                returned_rows[0][Data.list_of_job_role_columns[i]],
+                expected_rows[0][Data.list_of_job_role_columns[i]],
+                places=3,
+                msg=f"Returned value in column {i} does not match expected",
+            )
 
     def test_transform_job_role_counts_to_ratios_returns_all_null_ratio_values_when_all_counts_are_null(
         self,
@@ -394,6 +394,7 @@ class AscwdsJobRoleCountsToRatios(EstimateFilledPostsByJobRoleTests):
                     returned_rows[i][Data.list_of_job_role_columns[j]],
                     expected_rows[i][Data.list_of_job_role_columns[j]],
                     places=3,
+                    msg=f"Returned value in row {i} at column {j} does not match expected",
                 )
 
     def test_transform_job_role_counts_to_ratios_adds_ratio_column_for_all_given_count_columns(
