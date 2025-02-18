@@ -1,4 +1,4 @@
-# Main README
+# README
 
 ```{include} ../../README.md
 :relative-images:

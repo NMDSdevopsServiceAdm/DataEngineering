@@ -15,11 +15,27 @@ For further info on the steps I took to get this far, check out the [Walkthrough
 Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx#Setting-up) section to get started, and from there explore the specific sections of relevance
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 3
+:caption: 'Starting points:'
+:maxdepth: 1
    
 currentReadme
 ind_cqc_pipelines
 ```
 
+```{toctree}
+:caption: 'Pipelines:'
+:maxdepth: 1
+:glob:
+
+data_ingestion_pipelines/*
+ind_cqc_pipelines/*
+```
+
+```{toctree}
+:caption: 'Jobs:'
+:maxdepth: 1
+:glob:
+   
+ind_cqc_jobs/*
+```
 
