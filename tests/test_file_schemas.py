@@ -185,6 +185,14 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
+    remove_workers_with_not_known_job_role_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkplaceSchemas:
@@ -5916,7 +5924,7 @@ class EstimateFilledPostsByJobRoleSchema:
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), False),
             StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
             StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
@@ -5946,7 +5954,7 @@ class EstimateFilledPostsByJobRoleSchema:
     merged_job_role_estimate_schema = StructType(
         [
             *ind_cqc_estimate_filled_posts_by_job_role_schema,
-            StructField(MainJobRoleLabels.not_known, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), True),
             StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
             StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
             StructField(MainJobRoleLabels.employment_support, IntegerType(), True),

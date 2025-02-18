@@ -15,7 +15,6 @@ class AscwdsWorkerValueLabelsMainjrid:
     column_name: str = AWKClean.main_job_role_clean
 
     labels_dict = {
-        "-1": MainJobRoleLabels.not_known,
         "1": MainJobRoleLabels.senior_management,
         "2": MainJobRoleLabels.middle_management,
         "3": MainJobRoleLabels.first_line_manager,

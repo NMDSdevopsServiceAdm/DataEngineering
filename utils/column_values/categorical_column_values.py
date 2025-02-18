@@ -140,7 +140,6 @@ class Sector(ColumnValues):
 class MainJobRoleLabels(ColumnValues):
     """The possible values of the main job role column in ASCWDS data"""
 
-    not_known: str = "not_known"
     senior_management: str = "senior_management"
     middle_management: str = "middle_management"
     first_line_manager: str = "first_line_manager"
@@ -187,7 +186,6 @@ class MainJobRoleLabels(ColumnValues):
 class MainJobRoleID(ColumnValues):
     """The possible values of the main job role column in ASCWDS data"""
 
-    not_known: str = "-1"
     senior_management: str = "1"
     middle_management: str = "2"
     first_line_manager: str = "3"
