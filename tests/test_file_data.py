@@ -7689,7 +7689,7 @@ class ValidationUtils:
             "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
-            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be equal to or less than 2.",
         ),
     ]
     distinct_values_result_multiple_columns_rows = [
@@ -7699,7 +7699,7 @@ class ValidationUtils:
             "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
-            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be equal to or less than 2.",
         ),
         (
             "Column contains correct number of distinct values",
