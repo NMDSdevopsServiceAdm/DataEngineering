@@ -7666,10 +7666,10 @@ class ValidationUtils:
         (
             "Column contains correct number of distinct values",
             "Warning",
-            "Success",
+            "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
-            "Success",
-            "",
+            "Failure",
+            "Value: 1 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
         ),
     ]
     fewer_distinct_values_result_rows = [
@@ -7689,7 +7689,7 @@ class ValidationUtils:
             "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
-            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be equal to or less than 2.",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
         ),
     ]
     distinct_values_result_multiple_columns_rows = [
@@ -7699,7 +7699,7 @@ class ValidationUtils:
             "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
             "Failure",
-            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be equal to or less than 2.",
+            "Value: 3 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
         ),
         (
             "Column contains correct number of distinct values",
@@ -7718,7 +7718,7 @@ class ValidationUtils:
         ("loc_1", 5),
     ]
 
-    check_rows = more_distinct_values_result_rows
+    check_rows = fewer_distinct_values_result_rows
 
     custom_type_rule = {
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type
@@ -7824,9 +7824,9 @@ class ValidateProvidersAPICleanedData:
     ]
     cleaned_cqc_providers_rows = [
         ("1-000000001", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 1), "name", Sector.local_authority),
+        ("1-000000002", date(2024, 1, 1), "name", Sector.independent),
         ("1-000000001", date(2024, 1, 9), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 9), "name", "other sector"),
+        ("1-000000002", date(2024, 1, 9), "name", Sector.independent),
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows
@@ -8131,14 +8131,12 @@ class ValidateASCWDSWorkplaceRawData:
 
 @dataclass
 class ValidateASCWDSWorkerRawData:
-    # fmt: off
     raw_ascwds_worker_rows = [
         ("estab_1", "20240101", "worker_1", "8"),
         ("estab_2", "20240101", "worker_2", "8"),
         ("estab_1", "20240109", "worker_3", "8"),
         ("estab_2", "20240109", "worker_4", "8"),
     ]
-    # fmt: on
 
 
 @dataclass
@@ -8147,8 +8145,8 @@ class ValidateLocationsAPIRawData:
     raw_cqc_locations_rows = [
         ("1-000000001", "20240101", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
         ("1-000000002", "20240101", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "Y"),
-        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "G"),
+        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
     ]
     # fmt: on
 

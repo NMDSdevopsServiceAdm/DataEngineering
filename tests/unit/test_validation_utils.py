@@ -370,7 +370,7 @@ class CheckOfNumberOfDistinctValuesInColumns(ValidateUtilsTests):
         returned_df = job.validate_dataset(test_df, self.distinct_values_rule)
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_create_check_of_number_of_distinct_values_returns_success_when_column_has_fewer_distinct_values_than_expected(
+    def test_create_check_of_number_of_distinct_values_returns_failure_when_column_has_fewer_distinct_values_than_expected(
         self,
     ):
         test_df = self.spark.createDataFrame(
