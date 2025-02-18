@@ -19,6 +19,7 @@ Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/w
 usage
 currentReadme
 sample_docpage
+ind_cqc_pipelines
 ```
 
 
