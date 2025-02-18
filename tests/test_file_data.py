@@ -9601,12 +9601,6 @@ class EstimateFilledPostsByJobRoleData:
         ),
     ]
 
-    #     workplace_with_all_records_matching = [
-    #     ("1", date(2025, 1, 1), 3, 9, 1, 1),
-    #     ("2", date(2025, 1, 2), 1, 1, 1, 1),
-    #     ("3", date(2025, 1, 1), 1, 1, 2, 4),
-    # ]
-
     workplace_with_one_record_matching = [
         ("1", date(2025, 1, 1), 1, 1, 1, 1),
         ("4", date(2025, 1, 2), 1, 1, 1, 1),

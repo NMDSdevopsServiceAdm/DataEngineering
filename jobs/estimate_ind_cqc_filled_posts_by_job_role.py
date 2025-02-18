@@ -83,13 +83,13 @@ def main(
         )
     )
 
-    master_df = JRutils.merge_dataframes(
+    count_job_roles_per_establishment_by_job_role_df = JRutils.merge_dataframes(
         estimated_ind_cqc_filled_posts_df,
         count_job_roles_per_establishment_df,
     )
 
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        count_job_roles_per_establishment_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
         PartitionKeys,
