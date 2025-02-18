@@ -237,13 +237,13 @@ def create_check_of_number_of_distinct_values(
     column_name: str, distinct_values: int
 ) -> Check:
     """
-    Creates a check of the number of distinct values in a column to add to a verification run.
+    Creates a check of the maximum number of distinct values in a column to add to a verification run.
 
-    This function creates a check of the number of distinct values in the given column to add to a verification run.
+    This function creates a check of the maximum number of distinct values in the given column to add to a verification run.
 
     Args:
         column_name(str): A categorical column in the dataset.
-        distinct_values(int): The number of distinct values that should be present in the given column.
+        distinct_values(int): The maximum number of distinct values that should be present in the given column.
 
     Returns:
         Check: A check of the categorical values in columns to add to a verification run.
@@ -254,10 +254,10 @@ def create_check_of_number_of_distinct_values(
     )
     check = check.hasNumberOfDistinctValues(
         column=column_name,
-        assertion=lambda x: x == distinct_values,
+        assertion=lambda x: x <= distinct_values,
         binningUdf=None,
         maxBins=distinct_values,
-        hint=f"The number of distinct values in {column_name} should be {distinct_values}.",
+        hint=f"The number of distinct values in {column_name} should be equal to or less than {distinct_values}.",
     )
     return check
 

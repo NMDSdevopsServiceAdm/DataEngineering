@@ -7669,10 +7669,10 @@ class ValidationUtils:
         (
             "Column contains correct number of distinct values",
             "Warning",
-            "Warning",
+            "Success",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
-            "Failure",
-            "Value: 1 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+            "Success",
+            "",
         ),
     ]
     more_distinct_values_result_rows = [
@@ -7809,21 +7809,18 @@ class ValidateLocationsAPICleanedData:
 
 @dataclass
 class ValidateProvidersAPICleanedData:
-    # fmt: off
     raw_cqc_providers_rows = [
         ("1-000000001", "20240101"),
         ("1-000000002", "20240101"),
         ("1-000000001", "20240201"),
         ("1-000000002", "20240201"),
     ]
-
     cleaned_cqc_providers_rows = [
         ("1-000000001", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 1), "name", Sector.independent),
+        ("1-000000002", date(2024, 1, 1), "name", Sector.local_authority),
         ("1-000000001", date(2024, 1, 9), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 9), "name", Sector.independent),
+        ("1-000000002", date(2024, 1, 9), "name", "other sector"),
     ]
-    # fmt: on
 
     calculate_expected_size_rows = raw_cqc_providers_rows
 
@@ -8143,15 +8140,14 @@ class ValidateLocationsAPIRawData:
     raw_cqc_locations_rows = [
         ("1-000000001", "20240101", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
         ("1-000000002", "20240101", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "Y"),
+        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "G"),
     ]
     # fmt: on
 
 
 @dataclass
 class ValidateProvidersAPIRawData:
-    # fmt: off
     raw_cqc_providers_rows = [
         ("1-000000001", "20240101", "name"),
         ("1-000000002", "20240101", "name"),
@@ -8162,19 +8158,16 @@ class ValidateProvidersAPIRawData:
 
 @dataclass
 class ValidatePIRRawData:
-    # fmt: off
     raw_cqc_pir_rows = [
         ("1-000000001", "20240101", 10),
         ("1-000000002", "20240101", 10),
         ("1-000000001", "20240109", 10),
         ("1-000000002", "20240109", 10),
     ]
-    # fmt: on
 
 
 @dataclass
 class ValidatePostcodeDirectoryRawData:
-    # fmt: off
     raw_postcode_directory_rows = [
         ("AB1 2CD", "20240101", "cssr", "region", "rui"),
         ("AB2 2CD", "20240101", "cssr", "region", "rui"),
