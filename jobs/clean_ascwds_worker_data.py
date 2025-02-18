@@ -182,6 +182,10 @@ def remove_workers_with_not_known_job_role(df: DataFrame) -> DataFrame:
     """
     Removes worker records with a main job role of 'not known' ('-1').
 
+    There are some instances of workers in historical data with a main job role of 'not known' ('-1') who have never had a known job role in other import_dates.
+    These workers are removed from the dataset as their main job role is required for analysis.
+    There are validations in place to stop not known job roles from reoccuring in the future.
+
     Args:
         df (DataFrame): The DataFrame containing the worker records.
 
