@@ -7711,7 +7711,7 @@ class ValidationUtils:
         ("loc_1", 5),
     ]
 
-    check_rows = fewer_distinct_values_result_rows
+    check_rows = more_distinct_values_result_rows
 
     custom_type_rule = {
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type
