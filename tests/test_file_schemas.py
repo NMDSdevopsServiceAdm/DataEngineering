@@ -5923,7 +5923,7 @@ class EstimateFilledPostsByJobRoleSchema:
         ]
     )
 
-    IndCQCEstimateFilledPostsByJobRoleSchema = StructType(
+    ind_cqc_estimate_filled_posts_by_job_role_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -5945,10 +5945,10 @@ class EstimateFilledPostsByJobRoleSchema:
 
     merged_job_role_estimate_schema = StructType(
         [
-            *IndCQCEstimateFilledPostsByJobRoleSchema,
-            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
-            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
-            StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
-            StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+            *ind_cqc_estimate_filled_posts_by_job_role_schema,
+            StructField(MainJobRoleLabels.not_known, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), True),
         ]
     )

@@ -31,13 +31,13 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_job_role_per_establishment_as_columns"
     )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
-    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
         self,

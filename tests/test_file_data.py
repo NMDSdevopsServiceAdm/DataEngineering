@@ -9588,7 +9588,7 @@ class EstimateFilledPostsByJobRoleData:
                     "description": "Domiciliary care service",
                 }
             ],
-            date(2025, 1, 1),
+            date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
         ),
@@ -9600,6 +9600,12 @@ class EstimateFilledPostsByJobRoleData:
             "ascwds_pir_merged",
         ),
     ]
+
+    #     workplace_with_all_records_matching = [
+    #     ("1", date(2025, 1, 1), 3, 9, 1, 1),
+    #     ("2", date(2025, 1, 2), 1, 1, 1, 1),
+    #     ("3", date(2025, 1, 1), 1, 1, 2, 4),
+    # ]
 
     workplace_with_one_record_matching = [
         ("1", date(2025, 1, 1), 1, 1, 1, 1),
@@ -9626,13 +9632,13 @@ class EstimateFilledPostsByJobRoleData:
         (
             "1-100000002",
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 1),
+            date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
-            0,
-            0,
-            0,
-            0,
+            None,
+            None,
+            None,
+            None,
         ),
         (
             "1-100000003",
@@ -9640,17 +9646,17 @@ class EstimateFilledPostsByJobRoleData:
             date(2025, 1, 1),
             "3",
             "ascwds_pir_merged",
-            0,
-            0,
-            0,
-            0,
+            None,
+            None,
+            None,
+            None,
         ),
     ]
 
     workplace_with_all_records_matching = [
-        ("1", date(2025, 1, 1), 1, 1, 1, 1),
-        ("2", date(2025, 1, 1), 1, 1, 1, 1),
-        ("3", date(2025, 1, 1), 1, 1, 1, 1),
+        ("1", date(2025, 1, 1), 3, 9, 1, 1),
+        ("2", date(2025, 1, 2), 1, 1, 1, 1),
+        ("3", date(2025, 1, 1), 1, 1, 2, 4),
     ]
 
     expected_workplace_with_all_records_matching = [
@@ -9665,15 +9671,15 @@ class EstimateFilledPostsByJobRoleData:
             date(2025, 1, 1),
             "1",
             "ascwds_pir_merged",
-            1,
-            1,
+            3,
+            9,
             1,
             1,
         ),
         (
             "1-100000002",
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 1),
+            date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
             1,
@@ -9689,8 +9695,8 @@ class EstimateFilledPostsByJobRoleData:
             "ascwds_pir_merged",
             1,
             1,
-            1,
-            1,
+            2,
+            4,
         ),
     ]
 
@@ -9712,21 +9718,21 @@ class EstimateFilledPostsByJobRoleData:
             date(2025, 1, 1),
             "1",
             "ascwds_pir_merged",
-            0,
-            0,
-            0,
-            0,
+            None,
+            None,
+            None,
+            None,
         ),
         (
             "1-100000002",
             [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 1),
+            date(2025, 1, 2),
             "2",
             "imputed_filled_post_model",
-            0,
-            0,
-            0,
-            0,
+            None,
+            None,
+            None,
+            None,
         ),
         (
             "1-100000003",
@@ -9734,9 +9740,9 @@ class EstimateFilledPostsByJobRoleData:
             date(2025, 1, 1),
             "3",
             "ascwds_pir_merged",
-            0,
-            0,
-            0,
-            0,
+            None,
+            None,
+            None,
+            None,
         ),
     ]
