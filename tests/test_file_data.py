@@ -7666,20 +7666,20 @@ class ValidationUtils:
         (
             "Column contains correct number of distinct values",
             "Warning",
-            "Warning",
+            "Success",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
-            "Failure",
-            "Value: 1 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
+            "Success",
+            "",
         ),
     ]
     fewer_distinct_values_result_rows = [
         (
             "Column contains correct number of distinct values",
             "Warning",
-            "Success",
+            "Warning",
             "HistogramBinConstraint(Histogram(cqc_sector,null,2,None,false,Count))",
-            "Success",
-            "",
+            "Failure",
+            "Value: 1 does not meet the constraint requirement! The number of distinct values in cqc_sector should be 2.",
         ),
     ]
     more_distinct_values_result_rows = [
