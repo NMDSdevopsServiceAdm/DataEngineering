@@ -269,5 +269,24 @@ class ImputeNotKnownJobRolesTests(IngestASCWDSWorkerDatasetTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class RemoveWorkersWithNotKnownJobRoleTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_workers_with_not_known_job_role_returns_expected_dataframe(self):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.remove_workers_with_not_known_job_role_rows,
+            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
+        )
+        returned_df = job.remove_workers_with_not_known_job_role(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_remove_workers_with_not_known_job_role_rows,
+            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

@@ -109,6 +109,7 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
 
     df = replace_care_navigator_with_care_coordinator(df)
     df = impute_not_known_job_roles(df)
+    df = remove_workers_with_not_known_job_role(df)
     df = cUtils.apply_categorical_labels(
         df,
         ascwds_worker_labels_dict,
@@ -175,6 +176,19 @@ def impute_not_known_job_roles(df: DataFrame) -> DataFrame:
     )
     df = df.na.fill(not_known_identifier, subset=AWKClean.main_job_role_clean)
     return df
+
+
+def remove_workers_with_not_known_job_role(df: DataFrame) -> DataFrame:
+    """
+    Removes worker records with a main job role of 'not known' ('-1').
+
+    Args:
+        df (DataFrame): The DataFrame containing the worker records.
+
+    Returns:
+        DataFrame: The DataFrame with the worker records that have a main job role other than 'not known' ('-1').
+    """
+    return df.filter(F.col(AWKClean.main_job_role_clean) != "-1")
 
 
 if __name__ == "__main__":

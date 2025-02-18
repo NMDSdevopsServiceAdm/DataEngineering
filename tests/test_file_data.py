@@ -143,7 +143,6 @@ class ASCWDSWorkerData:
         ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
     ]
 
-    # TODO: Simplify test data once the function is fully operational
     create_clean_main_job_role_column_rows = [
         ("101", date(2024, 1, 1), "-1"),
         ("101", date(2025, 1, 1), "1"),
@@ -155,7 +154,6 @@ class ASCWDSWorkerData:
     expected_create_clean_main_job_role_column_rows = [
         ("101", date(2024, 1, 1), "-1", "1", MainJobRoleLabels.senior_management),
         ("101", date(2025, 1, 1), "1", "1", MainJobRoleLabels.senior_management),
-        ("102", date(2025, 1, 1), "-1", "-1", MainJobRoleLabels.not_known),
         ("103", date(2024, 1, 1), "3", "3", MainJobRoleLabels.first_line_manager),
         ("103", date(2025, 1, 1), "4", "4", MainJobRoleLabels.registered_manager),
         ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
@@ -220,6 +218,15 @@ class ASCWDSWorkerData:
     ]
     expected_impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows = [
         ("1001", date(2024, 1, 1), "-1"),
+    ]
+
+    remove_workers_with_not_known_job_role_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 3, 1), "-1"),
+        ("1002", date(2024, 4, 1), "-1"),
+    ]
+    expected_remove_workers_with_not_known_job_role_rows = [
+        ("1001", date(2024, 3, 1), "8"),
     ]
 
 
@@ -9519,7 +9526,7 @@ class EstimateFilledPostsByJobRoleData:
     ]
 
     list_of_job_roles = [
-        MainJobRoleLabels.not_known,
+        MainJobRoleLabels.senior_management,
         MainJobRoleLabels.senior_care_worker,
         MainJobRoleLabels.care_worker,
         MainJobRoleLabels.employment_support,
@@ -9535,7 +9542,7 @@ class EstimateFilledPostsByJobRoleData:
     ]
 
     workplace_with_different_import_date = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
         ("1", date(2025, 1, 2), MainJobRoleLabels.senior_care_worker),
     ]
     expected_workplace_with_different_import_date = [
@@ -9544,7 +9551,7 @@ class EstimateFilledPostsByJobRoleData:
     ]
 
     workplace_with_different_establishmentid = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
         ("2", date(2025, 1, 1), MainJobRoleLabels.employment_support),
     ]
     expected_workplace_with_different_establishmentid = [
@@ -9559,7 +9566,7 @@ class EstimateFilledPostsByJobRoleData:
     ]
 
     workplace_three_jobs_roles_with_two_being_distinct = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.not_known),
+        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
         ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
     ]
