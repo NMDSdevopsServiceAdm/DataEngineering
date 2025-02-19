@@ -83,17 +83,24 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.merge_dataframes(
+        estimated_ind_cqc_filled_posts_df,
+        count_job_roles_per_establishment_df,
+    )
+
     list_of_job_role_columns = [
         column
         for column in estimated_ind_cqc_filled_posts_df.columns
         if "job_role_count_" in column
     ]
-    estimated_ind_cqc_filled_posts_df = JRutils.transform_job_role_counts_to_ratios(
-        estimated_ind_cqc_filled_posts_df, list_of_job_role_columns
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.transform_job_role_counts_to_ratios(
+            estimated_ind_cqc_filled_posts_by_job_role_df, list_of_job_role_columns
+        )
     )
 
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        estimated_ind_cqc_filled_posts_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
         PartitionKeys,

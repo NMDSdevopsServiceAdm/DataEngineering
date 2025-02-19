@@ -34,6 +34,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_counts_to_ratios"
     )
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_job_role_per_establishment_as_columns"
     )
@@ -46,6 +47,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         read_from_parquet_mock: Mock,
         count_registered_manager_names_mock: Mock,
         count_job_role_per_establishment_as_columns_mock: Mock,
+        merge_dataframes_mock: Mock,
         transform_job_role_counts_to_ratios_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -72,42 +74,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         count_registered_manager_names_mock.assert_called_once()
 
         count_job_role_per_establishment_as_columns_mock.assert_called_once()
+        merge_dataframes_mock.assert_called_once()
 
         transform_job_role_counts_to_ratios_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
-
-    # TODO remove (and delete test data and schemas) or edit this test once function working
-    # @patch("utils.utils.write_to_parquet")
-    # @patch("utils.utils.read_from_parquet")
-    # def test_expected_outputs(
-    #     self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
-    # ):
-    #     read_from_parquet_mock.side_effect = [
-    #         self.test_estimated_ind_cqc_filled_posts_df,
-    #         self.test_cleaned_ascwds_worker_df,
-    #     ]
-    #     returned_df = job.main(
-    #         self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR
-    #     )
-
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_estimated_ind_cqc_filled_posts_by_job_role_rows,
-    #         Schemas.expected_estimated_ind_cqc_filled_posts_by_job_role_schema,
-    #     )
-
-    #     returned_data = returned_df.sort(
-    #         "establishmentid", "cqc_location_import_date", "mainjrid_clean_labels"
-    #     ).collect()
-    #     expected_data = expected_df.sort(
-    #         "establishmentid", "cqc_location_import_date", "mainjrid_clean_labels"
-    #     ).collect()
-
-    #     for i in range(len(returned_data)):
-    #         self.assertEqual(
-    #             returned_data[i]["estimate_job_role_count"],
-    #             expected_data[i]["estimate_job_role_count"],
-    #             f"Returned value in row {i} does not match expected",
-    #         )

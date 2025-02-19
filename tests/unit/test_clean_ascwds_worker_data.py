@@ -189,5 +189,104 @@ class ReplaceCareNavigatorWithCareCoordinatorTests(IngestASCWDSWorkerDatasetTest
         self.assertEqual(returned_data, expected_data)
 
 
+class ImputeNotKnownJobRolesTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+        returned_df = job.impute_not_known_job_roles(test_df)
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+
+        returned_data = returned_df.sort(
+            AWKClean.worker_id, AWKClean.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_impute_not_known_job_roles_returns_previously_known_value_when_after_known_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+        returned_df = job.impute_not_known_job_roles(test_df)
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+
+        returned_data = returned_df.sort(
+            AWKClean.worker_id, AWKClean.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+        returned_df = job.impute_not_known_job_roles(test_df)
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+
+        returned_data = returned_df.sort(
+            AWKClean.worker_id, AWKClean.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_impute_not_known_job_roles_returns_not_known_when_job_role_never_known(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+        returned_df = job.impute_not_known_job_roles(test_df)
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows,
+            ASCWDSWorkerSchemas.impute_not_known_job_roles_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class RemoveWorkersWithNotKnownJobRoleTests(IngestASCWDSWorkerDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_remove_workers_with_not_known_job_role_returns_expected_dataframe(self):
+        test_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.remove_workers_with_not_known_job_role_rows,
+            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
+        )
+        returned_df = job.remove_workers_with_not_known_job_role(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            ASCWDSWorkerData.expected_remove_workers_with_not_known_job_role_rows,
+            ASCWDSWorkerSchemas.remove_workers_with_not_known_job_role_schema,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

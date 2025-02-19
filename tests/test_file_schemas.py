@@ -177,6 +177,22 @@ class ASCWDSWorkerSchemas:
         ]
     )
 
+    impute_not_known_job_roles_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+        ]
+    )
+
+    remove_workers_with_not_known_job_role_schema = StructType(
+        [
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ASCWDSWorkplaceSchemas:
@@ -2610,24 +2626,6 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    # TODO: Temp test data to check outputs, consider removing or tidying at the end
-    expected_estimated_ind_cqc_filled_posts_by_job_role_schema = StructType(
-        [
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField("ascwds_num_of_jobs", IntegerType(), True),
-            StructField("estimated_num_of_jobs", DoubleType(), True),
-            StructField("ascwds_num_of_jobs_rebased", DoubleType(), True),
-            StructField("estimate_filled_posts_by_job_role", DoubleType(), True),
         ]
     )
 
@@ -5926,10 +5924,40 @@ class EstimateFilledPostsByJobRoleSchema:
         [
             StructField(AWKClean.establishment_id, StringType(), True),
             StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(MainJobRoleLabels.not_known, IntegerType(), False),
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), False),
             StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), False),
             StructField(MainJobRoleLabels.care_worker, IntegerType(), False),
             StructField(MainJobRoleLabels.employment_support, IntegerType(), False),
+        ]
+    )
+
+    ind_cqc_estimate_filled_posts_by_job_role_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+
+    merged_job_role_estimate_schema = StructType(
+        [
+            *ind_cqc_estimate_filled_posts_by_job_role_schema,
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.employment_support, IntegerType(), True),
         ]
     )
 
