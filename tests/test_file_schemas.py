@@ -5887,14 +5887,35 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
     )
     cleaned_ascwds_worker_schema = StructType(
         [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(IndCQC.main_job_role_clean_labelled, StringType(), True),
         ]
     )
 
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
+    test_map_column: str = "test_map_column"
+    create_map_column_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(MainJobRoleLabels.care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
+            StructField(MainJobRoleLabels.senior_management, IntegerType(), True),
+        ]
+    )
+    expected_create_map_column_schema = StructType(
+        [
+            *create_map_column_schema,
+            StructField(
+                test_map_column,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
