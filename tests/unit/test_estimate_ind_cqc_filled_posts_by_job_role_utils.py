@@ -84,7 +84,7 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
             expected_data[0][IndCQC.ascwds_job_role_counts],
         )
 
-    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_some_job_roles_never_present(
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_null_values_replaced_with_zeroes(
         self,
     ):
         test_df = self.spark.createDataFrame(
