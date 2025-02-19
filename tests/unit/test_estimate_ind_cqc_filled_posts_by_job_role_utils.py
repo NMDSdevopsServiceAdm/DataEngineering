@@ -31,7 +31,6 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.expected_create_map_column_when_all_columns_populated_rows,
             Schemas.expected_create_map_column_schema,
         )
-        returned_df.show(truncate=False)
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
 
@@ -53,7 +52,6 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.expected_create_map_column_when_some_columns_populated_rows,
             Schemas.expected_create_map_column_schema,
         )
-        returned_df.show(truncate=False)
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
 
@@ -75,7 +73,6 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.expected_create_map_column_when_no_columns_populated_rows,
             Schemas.expected_create_map_column_schema,
         )
-        returned_df.show(truncate=False)
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
 
