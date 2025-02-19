@@ -15,6 +15,7 @@ cleaned_ascwds_worker_columns_to_import = [
 ]
 estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.cqc_location_import_date,
+    IndCQC.unix_time,
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
