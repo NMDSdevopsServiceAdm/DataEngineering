@@ -25,7 +25,7 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
     ):
         test_df = self.spark.createDataFrame(
             Data.aggregate_ascwds_worker_job_roles_per_establishment_rows,
-            Schemas.aggregate_ascwds_worker_schema,
+            Schemas.aggregate_ascwds_worker_with_additional_column_schema,
         )
         returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
             test_df, Data.list_of_job_roles_for_tests
