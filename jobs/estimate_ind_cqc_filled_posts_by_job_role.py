@@ -69,6 +69,12 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
+    aggregated_job_roles_per_establishment_df = (
+        JRutils.aggregate_ascwds_worker_job_roles_per_establishment(
+            cleaned_ascwds_worker_df, JRutils.list_of_job_roles
+        )
+    )
+
     estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
         estimated_ind_cqc_filled_posts_df
     )

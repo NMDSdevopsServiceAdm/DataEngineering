@@ -34,10 +34,14 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.aggregate_ascwds_worker_job_roles_per_establishment"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main_function(
         self,
         read_from_parquet_mock: Mock,
+        aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
         count_registered_manager_names_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -60,6 +64,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
                 ),
             ]
         )
+        aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(

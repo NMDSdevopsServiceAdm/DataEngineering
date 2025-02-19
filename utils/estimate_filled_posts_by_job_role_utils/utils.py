@@ -9,6 +9,41 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
 
 
+def aggregate_ascwds_worker_job_roles_per_establishment(
+    df: DataFrame, list_of_job_roles: list
+) -> DataFrame:
+    """
+    Aggregates the worker dataset by establishment_id and import date and transforms them into a mapped structure.
+
+    This function aggregates the worker dataset by establishment_id and import date and creates a pivot table that has one column per job role counts.
+    Null values are populated with zero before creating a map column that contains job role names and counts.
+    The individual job role count columns are then dropped.
+
+    Args:
+        df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
+        list_of_columns_for_job_role (list): A list containing the ASC-WDS job role.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
+    df = (
+        df.groupBy(
+            F.col(IndCQC.establishment_id), F.col(IndCQC.ascwds_worker_import_date)
+        )
+        .pivot(IndCQC.main_job_role_clean_labelled, list_of_job_roles)
+        .count()
+    )
+    df = df.na.fill(0, subset=list_of_job_roles)
+
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts, create_map_column(list_of_job_roles)
+    )
+
+    df = df.drop(*list_of_job_roles)
+
+    return df
+
+
 def create_map_column(columns: List[str]) -> F.Column:
     """
     Creates a Spark map column from a list of columns where keys are column names and values are the respective column values.
