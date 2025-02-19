@@ -9681,6 +9681,53 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         )
     ]
 
+    # fmt: off
+    estimated_filled_posts_when_single_establishment_has_multiple_dates_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1"),
+        ("1-1001", CareHome.care_home, 5, date(2025, 2, 1), "1"),
+        ("1-1001", CareHome.care_home, 7, date(2025, 3, 1), "1"),
+    ]
+    aggregated_job_role_breakdown_when_single_establishment_has_multiple_dates_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
+        ("1", date(2025, 3, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1", date(2025, 5, 1), {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3}),
+    ]
+    expected_merge_dataframse_when_single_establishment_has_multiple_dates_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
+        ("1-1001", CareHome.care_home, 5, date(2025, 2, 1), "1", None),
+        ("1-1001", CareHome.care_home, 7, date(2025, 3, 1), "1", {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    # fmt: on
+
+    # fmt: off
+    estimated_filled_posts_when_multiple_establishments_on_the_same_date_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1"),
+        ("1-1002", CareHome.care_home, 5, date(2025, 1, 1), "2"),
+        ("1-1003", CareHome.care_home, 7, date(2025, 1, 1), "3"),
+    ]
+    aggregated_job_role_breakdown_when_multiple_establishments_on_the_same_date_rows = [
+        ("1", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    expected_merge_dataframse_when_multiple_establishments_on_the_same_date_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
+        ("1-1002", CareHome.care_home, 5, date(2025, 1, 1), "2", {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-1003", CareHome.care_home, 7, date(2025, 1, 1), "3", None),
+    ]
+    # fmt: on
+
+    # fmt: off
+    estimated_filled_posts_when_establishments_do_not_match_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1"),
+    ]
+    aggregated_job_role_breakdown_when_establishments_do_not_match_rows = [
+        ("2", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    expected_merge_dataframse_when_establishments_do_not_match_rows = [
+        ("1-1001", CareHome.care_home, 3, date(2025, 1, 1), "1", None),
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]

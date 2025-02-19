@@ -84,7 +84,7 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
             expected_data[0][IndCQC.ascwds_job_role_counts],
         )
 
-    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_some_job_roles_never_present(
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_null_values_replaced_with_zeroes(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -225,6 +225,104 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             returned_data[0][Schemas.test_map_column],
             expected_data[0][Schemas.test_map_column],
         )
+
+
+class MergeDataframesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.estimated_filled_posts_df = self.spark.createDataFrame(
+            Data.estimated_filled_posts_when_single_establishment_has_multiple_dates_rows,
+            Schemas.estimated_filled_posts_schema,
+        )
+        aggregated_job_role_breakdown_df = self.spark.createDataFrame(
+            Data.aggregated_job_role_breakdown_when_single_establishment_has_multiple_dates_rows,
+            Schemas.aggregated_job_role_breakdown_df,
+        )
+        self.returned_df = job.merge_dataframes(
+            self.estimated_filled_posts_df, aggregated_job_role_breakdown_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merge_dataframse_when_single_establishment_has_multiple_dates_rows,
+            Schemas.merged_job_role_estimate_schema,
+        )
+
+    def test_merge_dataframes_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_merge_dataframes_returns_same_row_count_as_original_estimated_filled_posts_df(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_df.count(), self.estimated_filled_posts_df.count()
+        )
+
+    def test_merge_dataframes_when_single_establishment_has_multiple_dates(
+        self,
+    ):
+        returned_data = self.returned_df.sort(
+            IndCQC.establishment_id, IndCQC.ascwds_workplace_import_date
+        ).collect()
+        expected_data = self.expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i],
+                expected_data[i],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_merge_dataframes_when_multiple_establishments_on_the_same_date(
+        self,
+    ):
+        estimated_filled_posts_df = self.spark.createDataFrame(
+            Data.estimated_filled_posts_when_multiple_establishments_on_the_same_date_rows,
+            Schemas.estimated_filled_posts_schema,
+        )
+        aggregated_job_role_breakdown_df = self.spark.createDataFrame(
+            Data.aggregated_job_role_breakdown_when_multiple_establishments_on_the_same_date_rows,
+            Schemas.aggregated_job_role_breakdown_df,
+        )
+        returned_df = job.merge_dataframes(
+            estimated_filled_posts_df, aggregated_job_role_breakdown_df
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_dataframse_when_multiple_establishments_on_the_same_date_rows,
+            Schemas.merged_job_role_estimate_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCQC.establishment_id, IndCQC.ascwds_workplace_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i],
+                expected_data[i],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_merge_dataframes_when_multiple_establishments_do_not_match(
+        self,
+    ):
+        estimated_filled_posts_df = self.spark.createDataFrame(
+            Data.estimated_filled_posts_when_establishments_do_not_match_rows,
+            Schemas.estimated_filled_posts_schema,
+        )
+        aggregated_job_role_breakdown_df = self.spark.createDataFrame(
+            Data.aggregated_job_role_breakdown_when_establishments_do_not_match_rows,
+            Schemas.aggregated_job_role_breakdown_df,
+        )
+        returned_df = job.merge_dataframes(
+            estimated_filled_posts_df, aggregated_job_role_breakdown_df
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_dataframse_when_establishments_do_not_match_rows,
+            Schemas.merged_job_role_estimate_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
