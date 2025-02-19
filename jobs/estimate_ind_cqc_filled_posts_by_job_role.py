@@ -84,7 +84,6 @@ def main(
         aggregated_job_roles_per_establishment_df,  # TEMP for testing outputs
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
-        PartitionKeys,
     )
 
 
