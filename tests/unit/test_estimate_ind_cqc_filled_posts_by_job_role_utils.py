@@ -14,6 +14,77 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
 
+class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_create_map_column_when_all_columns_populated(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_map_column_when_all_columns_populated_rows,
+            Schemas.create_map_column_schema,
+        )
+        returned_df = test_df.withColumn(
+            Schemas.test_map_column,
+            job.create_map_column(Data.list_of_job_roles_for_tests),
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_map_column_when_all_columns_populated_rows,
+            Schemas.expected_create_map_column_schema,
+        )
+        returned_df.show(truncate=False)
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][Schemas.test_map_column],
+            expected_data[0][Schemas.test_map_column],
+        )
+
+    def test_create_map_column_when_some_columns_populated(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_map_column_when_some_columns_populated_rows,
+            Schemas.create_map_column_schema,
+        )
+        returned_df = test_df.withColumn(
+            Schemas.test_map_column,
+            job.create_map_column(Data.list_of_job_roles_for_tests),
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_map_column_when_some_columns_populated_rows,
+            Schemas.expected_create_map_column_schema,
+        )
+        returned_df.show(truncate=False)
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][Schemas.test_map_column],
+            expected_data[0][Schemas.test_map_column],
+        )
+
+    def test_create_map_column_when_no_columns_populated(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_map_column_when_no_columns_populated_rows,
+            Schemas.create_map_column_schema,
+        )
+        returned_df = test_df.withColumn(
+            Schemas.test_map_column,
+            job.create_map_column(Data.list_of_job_roles_for_tests),
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_map_column_when_no_columns_populated_rows,
+            Schemas.expected_create_map_column_schema,
+        )
+        returned_df.show(truncate=False)
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][Schemas.test_map_column],
+            expected_data[0][Schemas.test_map_column],
+        )
+
+
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()

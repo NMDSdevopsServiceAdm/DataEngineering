@@ -9474,6 +9474,62 @@ class EstimateIndCQCFilledPostsByJobRoleData:
 
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsData:
+    list_of_job_roles_for_tests = [
+        MainJobRoleLabels.care_worker,
+        MainJobRoleLabels.registered_nurse,
+        MainJobRoleLabels.senior_care_worker,
+        MainJobRoleLabels.senior_management,
+    ]
+
+    create_map_column_when_all_columns_populated_rows = [("123", 0, 10, 20, 30)]
+    expected_create_map_column_when_all_columns_populated_rows = [
+        (
+            "123",
+            0,
+            10,
+            20,
+            30,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 10,
+                MainJobRoleLabels.senior_care_worker: 20,
+                MainJobRoleLabels.senior_management: 30,
+            },
+        )
+    ]
+    create_map_column_when_some_columns_populated_rows = [("123", 0, None, 20, None)]
+    expected_create_map_column_when_some_columns_populated_rows = [
+        (
+            "123",
+            0,
+            None,
+            20,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: 20,
+                MainJobRoleLabels.senior_management: None,
+            },
+        )
+    ]
+    create_map_column_when_no_columns_populated_rows = [("123", None, None, None, None)]
+    expected_create_map_column_when_no_columns_populated_rows = [
+        (
+            "123",
+            None,
+            None,
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        )
+    ]
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
