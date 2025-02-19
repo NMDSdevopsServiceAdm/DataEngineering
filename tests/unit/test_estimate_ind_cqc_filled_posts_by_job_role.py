@@ -67,4 +67,6 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
 
-        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, "overwrite")
+        write_to_parquet_mock.assert_called_once_with(
+            ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
+        )
