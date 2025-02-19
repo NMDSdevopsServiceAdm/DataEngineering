@@ -90,7 +90,7 @@ def main(
 
     list_of_job_role_columns = [
         column
-        for column in estimated_ind_cqc_filled_posts_df.columns
+        for column in estimated_ind_cqc_filled_posts_by_job_role_df.columns
         if "job_role_count_" in column
     ]
     estimated_ind_cqc_filled_posts_by_job_role_df = (
