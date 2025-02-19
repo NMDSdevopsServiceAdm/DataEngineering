@@ -5350,62 +5350,6 @@ class EstimateIndCQCFilledPostsData:
 
 
 @dataclass
-class EstimateIndCQCFilledPostsByJobRoleData:
-    estimated_ind_cqc_filled_posts_rows = [
-        (
-            "1-001",
-            date(2024, 1, 1),
-            "Service A",
-            "101",
-            date(2024, 1, 1),
-            3.0,
-            ["John Doe"],
-        ),
-        (
-            "1-002",
-            date(2025, 1, 1),
-            "Service A",
-            "101",
-            date(2025, 1, 1),
-            3.0,
-            ["John Doe"],
-        ),
-        (
-            "1-003",
-            date(2025, 1, 1),
-            "Service B",
-            "103",
-            date(2025, 1, 1),
-            3.0,
-            ["John Doe"],
-        ),
-        (
-            "1-004",
-            date(2025, 1, 1),
-            "Service A",
-            "104",
-            date(2025, 1, 1),
-            3.0,
-            ["John Doe"],
-        ),
-    ]
-    cleaned_ascwds_worker_rows = [
-        ("101", date(2024, 1, 1), "1", MainJobRoleLabels.senior_management),
-        ("101", date(2024, 1, 1), "2", MainJobRoleLabels.care_worker),
-        ("101", date(2024, 1, 1), "3", MainJobRoleLabels.care_worker),
-        ("101", date(2025, 1, 1), "2", MainJobRoleLabels.care_worker),
-        ("101", date(2025, 1, 1), "3", MainJobRoleLabels.care_worker),
-        ("103", date(2025, 1, 1), "4", MainJobRoleLabels.senior_management),
-        ("103", date(2025, 1, 1), "5", MainJobRoleLabels.registered_nurse),
-        ("103", date(2025, 1, 1), "6", MainJobRoleLabels.care_worker),
-        ("103", date(2025, 1, 1), "7", MainJobRoleLabels.care_worker),
-        ("103", date(2025, 1, 1), "8", MainJobRoleLabels.care_worker),
-        ("103", date(2025, 1, 1), "9", MainJobRoleLabels.care_worker),
-        ("111", date(2025, 1, 1), "10", MainJobRoleLabels.care_worker),
-    ]
-
-
-@dataclass
 class EstimateMissingAscwdsFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [
@@ -9473,7 +9417,63 @@ class BlendAscwdsPirData:
     expected_drop_temporary_columns = [IndCQC.location_id]
 
 
-class EstimateFilledPostsByJobRoleData:
+@dataclass
+class EstimateIndCQCFilledPostsByJobRoleData:
+    estimated_ind_cqc_filled_posts_rows = [
+        (
+            "1-001",
+            date(2024, 1, 1),
+            "Service A",
+            "101",
+            date(2024, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            "Service A",
+            "101",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "Service B",
+            "103",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+        (
+            "1-004",
+            date(2025, 1, 1),
+            "Service A",
+            "104",
+            date(2025, 1, 1),
+            3.0,
+            ["John Doe"],
+        ),
+    ]
+    cleaned_ascwds_worker_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_management),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.care_worker),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.care_worker),
+        ("101", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("101", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.senior_management),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.registered_nurse),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("103", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+        ("111", date(2025, 1, 1), MainJobRoleLabels.care_worker),
+    ]
+
+
+class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
@@ -9518,227 +9518,4 @@ class EstimateFilledPostsByJobRoleData:
     expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
-    ]
-
-    list_of_job_roles = [
-        MainJobRoleLabels.senior_management,
-        MainJobRoleLabels.senior_care_worker,
-        MainJobRoleLabels.care_worker,
-        MainJobRoleLabels.employment_support,
-    ]
-
-    workplace_with_three_distinct_job_role = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_care_worker),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.employment_support),
-    ]
-    expected_workplace_with_three_distinct_job_role = [
-        ("1", date(2025, 1, 1), 0, 1, 1, 1),
-    ]
-
-    workplace_with_different_import_date = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
-        ("1", date(2025, 1, 2), MainJobRoleLabels.senior_care_worker),
-    ]
-    expected_workplace_with_different_import_date = [
-        ("1", date(2025, 1, 1), 1, 0, 0, 0),
-        ("1", date(2025, 1, 2), 0, 1, 0, 0),
-    ]
-
-    workplace_with_different_establishmentid = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
-        ("2", date(2025, 1, 1), MainJobRoleLabels.employment_support),
-    ]
-    expected_workplace_with_different_establishmentid = [
-        ("1", date(2025, 1, 1), 1, 0, 0, 0),
-        ("2", date(2025, 1, 1), 0, 0, 0, 1),
-    ]
-    workplace_with_none_job_role = [
-        ("1", date(2025, 1, 1), None),
-    ]
-    expected_workplace_with_none_job_role = [
-        ("1", date(2025, 1, 1), 0, 0, 0, 0),
-    ]
-
-    workplace_three_jobs_roles_with_two_being_distinct = [
-        ("1", date(2025, 1, 1), MainJobRoleLabels.senior_management),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-        ("1", date(2025, 1, 1), MainJobRoleLabels.care_worker),
-    ]
-    exptected_workplace_three_job_roles_with_two_being_distinct = [
-        ("1", date(2025, 1, 1), 1, 0, 2, 0)
-    ]
-
-    ind_cqc_estimated_filled_posts_by_job_role = [
-        (
-            "1-100000001",
-            [
-                {
-                    "name": "Homecare agencies",
-                    "description": "Domiciliary care service",
-                }
-            ],
-            date(2025, 1, 1),
-            "1",
-            "ascwds_pir_merged",
-        ),
-        (
-            "1-100000002",
-            [
-                {
-                    "name": "Homecare agencies",
-                    "description": "Domiciliary care service",
-                }
-            ],
-            date(2025, 1, 2),
-            "2",
-            "imputed_filled_post_model",
-        ),
-        (
-            "1-100000003",
-            [{"name": "Supported living", "description": "Supported living service"}],
-            date(2025, 1, 1),
-            "3",
-            "ascwds_pir_merged",
-        ),
-    ]
-
-    workplace_with_one_record_matching = [
-        ("1", date(2025, 1, 1), 1, 1, 1, 1),
-        ("4", date(2025, 1, 2), 1, 1, 1, 1),
-    ]
-
-    expected_workplace_with_one_record_matching = [
-        (
-            "1-100000001",
-            [
-                {
-                    "name": "Homecare agencies",
-                    "description": "Domiciliary care service",
-                }
-            ],
-            date(2025, 1, 1),
-            "1",
-            "ascwds_pir_merged",
-            1,
-            1,
-            1,
-            1,
-        ),
-        (
-            "1-100000002",
-            [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 2),
-            "2",
-            "imputed_filled_post_model",
-            None,
-            None,
-            None,
-            None,
-        ),
-        (
-            "1-100000003",
-            [{"name": "Supported living", "description": "Supported living service"}],
-            date(2025, 1, 1),
-            "3",
-            "ascwds_pir_merged",
-            None,
-            None,
-            None,
-            None,
-        ),
-    ]
-
-    workplace_with_all_records_matching = [
-        ("1", date(2025, 1, 1), 3, 9, 1, 1),
-        ("2", date(2025, 1, 2), 1, 1, 1, 1),
-        ("3", date(2025, 1, 1), 1, 1, 2, 4),
-    ]
-
-    expected_workplace_with_all_records_matching = [
-        (
-            "1-100000001",
-            [
-                {
-                    "name": "Homecare agencies",
-                    "description": "Domiciliary care service",
-                }
-            ],
-            date(2025, 1, 1),
-            "1",
-            "ascwds_pir_merged",
-            3,
-            9,
-            1,
-            1,
-        ),
-        (
-            "1-100000002",
-            [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 2),
-            "2",
-            "imputed_filled_post_model",
-            1,
-            1,
-            1,
-            1,
-        ),
-        (
-            "1-100000003",
-            [{"name": "Supported living", "description": "Supported living service"}],
-            date(2025, 1, 1),
-            "3",
-            "ascwds_pir_merged",
-            1,
-            1,
-            2,
-            4,
-        ),
-    ]
-
-    workplace_with_no_records_matching = [
-        ("4", date(2025, 1, 1), 1, 1, 1, 1),
-        ("5", date(2025, 1, 1), 1, 1, 1, 1),
-        ("6", date(2025, 1, 1), 1, 1, 1, 1),
-    ]
-
-    expected_workplace_with_no_records_matching = [
-        (
-            "1-100000001",
-            [
-                {
-                    "name": "Homecare agencies",
-                    "description": "Domiciliary care service",
-                }
-            ],
-            date(2025, 1, 1),
-            "1",
-            "ascwds_pir_merged",
-            None,
-            None,
-            None,
-            None,
-        ),
-        (
-            "1-100000002",
-            [{"name": "Homecare agencies", "description": "Domiciliary care service"}],
-            date(2025, 1, 2),
-            "2",
-            "imputed_filled_post_model",
-            None,
-            None,
-            None,
-            None,
-        ),
-        (
-            "1-100000003",
-            [{"name": "Supported living", "description": "Supported living service"}],
-            date(2025, 1, 1),
-            "3",
-            "ascwds_pir_merged",
-            None,
-            None,
-            None,
-            None,
-        ),
     ]

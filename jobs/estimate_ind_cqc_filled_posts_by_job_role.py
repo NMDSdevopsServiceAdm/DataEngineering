@@ -1,9 +1,6 @@
 import sys
 
 from utils import utils
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
@@ -12,10 +9,9 @@ from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
-    AWKClean.ascwds_worker_import_date,
-    AWKClean.establishment_id,
-    AWKClean.worker_id,
-    AWKClean.main_job_role_clean_labelled,
+    IndCQC.ascwds_worker_import_date,
+    IndCQC.establishment_id,
+    IndCQC.main_job_role_clean_labelled,
 ]
 estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.cqc_location_import_date,
@@ -77,19 +73,8 @@ def main(
         estimated_ind_cqc_filled_posts_df
     )
 
-    count_job_roles_per_establishment_df = (
-        JRutils.count_job_role_per_establishment_as_columns(
-            cleaned_ascwds_worker_df, JRutils.list_of_job_roles
-        )
-    )
-
-    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.merge_dataframes(
-        estimated_ind_cqc_filled_posts_df,
-        count_job_roles_per_establishment_df,
-    )
-
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_by_job_role_df,
+        estimated_ind_cqc_filled_posts_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
         PartitionKeys,

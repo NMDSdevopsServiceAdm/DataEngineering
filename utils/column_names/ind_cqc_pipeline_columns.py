@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -42,7 +45,8 @@ class IndCqcColumns:
     )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
-    ascwds_main_job_role_counts: str = "ascwds_main_job_role_counts"
+    ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
     average_percentage_residual: str = "average_percentage_residual"
@@ -148,6 +152,7 @@ class IndCqcColumns:
         "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
+    main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
     max_residual: str = "max_residual"
