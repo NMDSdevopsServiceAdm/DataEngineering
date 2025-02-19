@@ -14,6 +14,151 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
 
+class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_columns(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            [],
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        self.assertEqual(returned_df.columns, expected_df.columns)
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_all_job_roles_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_when_all_job_roles_present_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_when_all_job_roles_present_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCQC.establishment_id, IndCQC.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_job_role_counts],
+                expected_data[i][IndCQC.ascwds_job_role_counts],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_some_job_roles_never_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_when_some_job_roles_never_present_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_when_some_job_roles_never_present_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][IndCQC.ascwds_job_role_counts],
+            expected_data[0][IndCQC.ascwds_job_role_counts],
+        )
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_some_job_roles_never_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_missing_roles_replaced_with_zero_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_missing_roles_replaced_with_zero_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][IndCQC.ascwds_job_role_counts],
+            expected_data[0][IndCQC.ascwds_job_role_counts],
+        )
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_single_establishment_has_multiple_dates(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_when_single_establishment_has_multiple_dates_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_when_single_establishment_has_multiple_dates_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCQC.establishment_id, IndCQC.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_job_role_counts],
+                expected_data[i][IndCQC.ascwds_job_role_counts],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_multiple_establishments_on_the_same_date(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_when_multiple_establishments_on_the_same_date_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_when_multiple_establishments_on_the_same_date_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.sort(
+            IndCQC.establishment_id, IndCQC.ascwds_worker_import_date
+        ).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.ascwds_job_role_counts],
+                expected_data[i][IndCQC.ascwds_job_role_counts],
+                f"Returned row {i} does not match expected",
+            )
+
+
 class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()

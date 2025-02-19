@@ -5916,6 +5916,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    aggregate_ascwds_worker_with_additional_column_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
     aggregate_ascwds_worker_schema = StructType(
         [
             StructField(IndCQC.establishment_id, StringType(), True),

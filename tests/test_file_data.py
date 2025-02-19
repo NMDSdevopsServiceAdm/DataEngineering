@@ -9481,6 +9481,157 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         MainJobRoleLabels.senior_management,
     ]
 
+    aggregate_ascwds_worker_job_roles_per_establishment_rows = [
+        ("101", date(2024, 1, 1), "1-001", MainJobRoleLabels.care_worker),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_when_all_job_roles_present_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.care_worker),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.care_worker),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.registered_nurse),
+        ("102", date(2024, 1, 1), MainJobRoleLabels.senior_care_worker),
+        ("102", date(2024, 1, 1), MainJobRoleLabels.senior_management),
+        ("102", date(2024, 1, 2), MainJobRoleLabels.care_worker),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_when_all_job_roles_present_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 2,
+                MainJobRoleLabels.registered_nurse: 1,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+        (
+            "102",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+        (
+            "102",
+            date(2024, 1, 2),
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_when_some_job_roles_never_present_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_management),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.registered_nurse),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_when_some_job_roles_never_present_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 1,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_missing_roles_replaced_with_zero_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.registered_nurse),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_missing_roles_replaced_with_zero_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 1,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_when_single_establishment_has_multiple_dates_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_care_worker),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_management),
+        ("101", date(2024, 1, 2), MainJobRoleLabels.care_worker),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_when_single_establishment_has_multiple_dates_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+        (
+            "101",
+            date(2024, 1, 2),
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_when_multiple_establishments_on_the_same_date_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_care_worker),
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_management),
+        ("102", date(2024, 1, 1), MainJobRoleLabels.care_worker),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_when_multiple_establishments_on_the_same_date_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+        (
+            "101",
+            date(2024, 1, 2),
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
+    aggregate_ascwds_worker_job_roles_per_establishment_when_unrecognised_role_present_rows = [
+        ("101", date(2024, 1, 1), MainJobRoleLabels.senior_care_worker),
+        ("101", date(2024, 1, 1), "unrecognised_role"),
+    ]
+    expected_aggregate_ascwds_worker_job_roles_per_establishment_when_unrecognised_role_present_rows = [
+        (
+            "101",
+            date(2024, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 0,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
     create_map_column_when_all_columns_populated_rows = [("123", 0, 10, 20, 30)]
     expected_create_map_column_when_all_columns_populated_rows = [
         (
