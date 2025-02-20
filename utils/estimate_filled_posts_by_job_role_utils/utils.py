@@ -1,4 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import LongType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -119,7 +120,7 @@ def transform_job_role_count_map_to_ratios_map(
             temp_ascwds_total_worker_records,
             F.aggregate(
                 F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-                F.lit(0),
+                F.lit(0).cast(LongType()),
                 lambda a, b: a + b,
             ),
         )
