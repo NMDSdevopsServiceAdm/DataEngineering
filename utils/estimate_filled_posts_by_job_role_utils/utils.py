@@ -57,6 +57,45 @@ def create_map_column(columns: List[str]) -> F.Column:
     return F.create_map(*[x for col in columns for x in (F.lit(col), F.col(col))])
 
 
+def merge_dataframes(
+    estimated_filled_posts_df: DataFrame,
+    aggregated_job_roles_per_establishment_df: DataFrame,
+) -> DataFrame:
+    """
+    Join the ASC-WDS job role count column from the aggregated worker file into the estimated filled post DataFrame, matched on establishment_id and import_date.
+
+    Args:
+        estimated_filled_posts_df (DataFrame): A dataframe containing estimated filled posts at workplace level.
+        aggregated_job_roles_per_establishment_df (DataFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
+
+    Returns:
+        DataFrame: The estimated filled post DataFrame with the job role count map column joined in.
+    """
+
+    merged_df = (
+        estimated_filled_posts_df.join(
+            aggregated_job_roles_per_establishment_df,
+            (
+                estimated_filled_posts_df[IndCQC.establishment_id]
+                == aggregated_job_roles_per_establishment_df[IndCQC.establishment_id]
+            )
+            & (
+                estimated_filled_posts_df[IndCQC.ascwds_workplace_import_date]
+                == aggregated_job_roles_per_establishment_df[
+                    IndCQC.ascwds_worker_import_date
+                ]
+            ),
+            "left",
+        )
+        .drop(aggregated_job_roles_per_establishment_df[IndCQC.establishment_id])
+        .drop(
+            aggregated_job_roles_per_establishment_df[IndCQC.ascwds_worker_import_date]
+        )
+    )
+
+    return merged_df
+
+
 def count_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     Adds a column with a count of elements within list of registered manager names.
