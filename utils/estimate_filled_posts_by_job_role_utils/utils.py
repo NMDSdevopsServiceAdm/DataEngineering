@@ -113,9 +113,10 @@ def transform_job_role_count_map_to_ratios_map(
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
     """
 
+    temp_ascwds_total_worker_records = "temp_ascwds_total_worker_records"
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
-            "ascwds_total_worker_records",
+            temp_ascwds_total_worker_records,
             F.aggregate(
                 F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
                 F.lit(0),
@@ -138,7 +139,7 @@ def transform_job_role_count_map_to_ratios_map(
     )
 
     return estimated_ind_cqc_filled_posts_by_job_role_df.drop(
-        "ascwds_total_worker_records"
+        temp_ascwds_total_worker_records
     )
 
 
