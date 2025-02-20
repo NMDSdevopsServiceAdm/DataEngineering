@@ -96,7 +96,9 @@ def merge_dataframes(
     return merged_df
 
 
-def transform_job_role_count_map_to_ratios_map(df: DataFrame) -> DataFrame:
+def transform_job_role_count_map_to_ratios_map(
+    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
+) -> DataFrame:
     """
     Transform a job role count map column into a job role ratio map column.
 

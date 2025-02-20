@@ -9781,8 +9781,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     # fmt: off
     transform_counts_map_to_ratios_map_at_multiple_establishments_rows = [
-        ("1-001", {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
-        ("1-002", {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 1}),
+        ("1-001", {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 0}),
+        ("1-002", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
     ]
     expected_transform_counts_map_to_ratios_map_at_multiple_establishments_rows = [
         ("1-001", 
