@@ -12,6 +12,7 @@ from pyspark.sql.types import (
     DoubleType,
     BooleanType,
     MapType,
+    LongType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -5980,7 +5981,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
                 IndCQC.ascwds_job_role_counts,
-                MapType(StringType(), IntegerType()),
+                MapType(StringType(), LongType()),
                 True,
             ),
         ]
