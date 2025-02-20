@@ -353,21 +353,37 @@ class TransformJobRoleCountsMapToRatiosMap(
     def setUp(self) -> None:
         super().setUp()
 
-    def test_transform_job_role_count_map_to_ratios_map_when_only_one_count_value_above_zero(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        returned_df = job.transform_job_role_count_map_to_ratios_map(test_df)
-        expected_df = self.spark.createDataFrame(
+        self.returned_df = job.transform_job_role_count_map_to_ratios_map(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
         )
 
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_transform_job_role_count_map_to_ratios_map_only_adds_one_columns(self):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+
+    def test_transform_job_role_count_map_to_ratios_map_adds_correctly_named_column(
+        self,
+    ):
+        self.assertEqual(
+            self.columns_added_by_function[0], IndCQC.ascwds_job_role_ratios
+        )
+
+    def test_transform_job_role_count_map_to_ratios_map_when_only_one_count_value_above_zero(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
 
         self.assertEqual(
             returned_data[0][IndCQC.ascwds_job_role_ratios],

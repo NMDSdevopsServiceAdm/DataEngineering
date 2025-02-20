@@ -113,27 +113,33 @@ def transform_job_role_count_map_to_ratios_map(
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
     """
 
-    df = df.withColumn(
-        "ascwds_total_worker_records",
-        F.aggregate(
-            F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-            F.lit(0),
-            lambda a, b: a + b,
-        ),
-    )
-
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_ratios,
-        F.map_from_arrays(
-            F.map_keys(F.col(IndCQC.ascwds_job_role_counts)),
-            F.transform(
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
+            "ascwds_total_worker_records",
+            F.aggregate(
                 F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-                lambda v: v / F.col("ascwds_total_worker_records"),
+                F.lit(0),
+                lambda a, b: a + b,
             ),
-        ),
+        )
     )
 
-    return df.drop("ascwds_total_worker_records")
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
+            IndCQC.ascwds_job_role_ratios,
+            F.map_from_arrays(
+                F.map_keys(F.col(IndCQC.ascwds_job_role_counts)),
+                F.transform(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
+                    lambda v: v / F.col("ascwds_total_worker_records"),
+                ),
+            ),
+        )
+    )
+
+    return estimated_ind_cqc_filled_posts_by_job_role_df.drop(
+        "ascwds_total_worker_records"
+    )
 
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:
