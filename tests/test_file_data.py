@@ -9473,6 +9473,7 @@ class EstimateIndCQCFilledPostsByJobRoleData:
     ]
 
 
+@dataclass
 class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     list_of_job_roles_for_tests = [
         MainJobRoleLabels.care_worker,

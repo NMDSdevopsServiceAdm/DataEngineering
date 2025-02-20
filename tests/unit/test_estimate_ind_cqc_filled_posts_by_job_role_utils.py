@@ -158,6 +158,28 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(
                 f"Returned row {i} does not match expected",
             )
 
+    def test_aggregate_ascwds_worker_job_roles_per_establishment_returns_expected_data_when_unrecognised_role_present(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.aggregate_ascwds_worker_job_roles_per_establishment_when_unrecognised_role_present_rows,
+            Schemas.aggregate_ascwds_worker_schema,
+        )
+        returned_df = job.aggregate_ascwds_worker_job_roles_per_establishment(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_aggregate_ascwds_worker_job_roles_per_establishment_when_unrecognised_role_present_rows,
+            Schemas.expected_aggregate_ascwds_worker_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][IndCQC.ascwds_job_role_counts],
+            expected_data[0][IndCQC.ascwds_job_role_counts],
+        )
+
 
 class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
