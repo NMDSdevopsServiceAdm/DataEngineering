@@ -58,34 +58,39 @@ def create_map_column(columns: List[str]) -> F.Column:
 
 
 def merge_dataframes(
-    estimated_filled_posts_df: DataFrame, job_role_breakdown_df: DataFrame
+    estimated_filled_posts_df: DataFrame,
+    aggregated_job_roles_per_establishment_df: DataFrame,
 ) -> DataFrame:
     """
     Join the ASC-WDS job role count column from the aggregated worker file into the estimated filled post DataFrame, matched on establishment_id and import_date.
 
     Args:
         estimated_filled_posts_df (DataFrame): A dataframe containing estimated filled posts at workplace level.
-        job_role_breakdown_df (DataFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
+        aggregated_job_roles_per_establishment_df (DataFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
 
     Returns:
-        DataFrame: The IndCQC DataFrame merged to include job role count columns.
+        DataFrame: The estimated filled post DataFrame with the job role count map column joined in.
     """
 
     merged_df = (
         estimated_filled_posts_df.join(
-            job_role_breakdown_df,
+            aggregated_job_roles_per_establishment_df,
             (
                 estimated_filled_posts_df[IndCQC.establishment_id]
-                == job_role_breakdown_df[IndCQC.establishment_id]
+                == aggregated_job_roles_per_establishment_df[IndCQC.establishment_id]
             )
             & (
                 estimated_filled_posts_df[IndCQC.ascwds_workplace_import_date]
-                == job_role_breakdown_df[IndCQC.ascwds_worker_import_date]
+                == aggregated_job_roles_per_establishment_df[
+                    IndCQC.ascwds_worker_import_date
+                ]
             ),
             "left",
         )
-        .drop(job_role_breakdown_df[IndCQC.establishment_id])
-        .drop(job_role_breakdown_df[IndCQC.ascwds_worker_import_date])
+        .drop(aggregated_job_roles_per_establishment_df[IndCQC.establishment_id])
+        .drop(
+            aggregated_job_roles_per_establishment_df[IndCQC.ascwds_worker_import_date]
+        )
     )
 
     return merged_df
