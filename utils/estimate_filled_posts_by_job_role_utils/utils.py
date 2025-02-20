@@ -132,7 +132,7 @@ def transform_job_role_count_map_to_ratios_map(
                 F.map_keys(F.col(IndCQC.ascwds_job_role_counts)),
                 F.transform(
                     F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-                    lambda v: v / F.col("ascwds_total_worker_records"),
+                    lambda v: v / F.col(temp_ascwds_total_worker_records),
                 ),
             ),
         )
