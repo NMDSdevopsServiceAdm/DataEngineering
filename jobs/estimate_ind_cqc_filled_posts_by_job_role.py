@@ -15,6 +15,7 @@ cleaned_ascwds_worker_columns_to_import = [
 ]
 estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.cqc_location_import_date,
+    IndCQC.unix_time,
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
@@ -67,6 +68,12 @@ def main(
     cleaned_ascwds_worker_df = utils.read_from_parquet(
         cleaned_ascwds_worker_source,
         selected_columns=cleaned_ascwds_worker_columns_to_import,
+    )
+
+    aggregated_job_roles_per_establishment_df = (
+        JRutils.aggregate_ascwds_worker_job_roles_per_establishment(
+            cleaned_ascwds_worker_df, JRutils.list_of_job_roles
+        )
     )
 
     estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
