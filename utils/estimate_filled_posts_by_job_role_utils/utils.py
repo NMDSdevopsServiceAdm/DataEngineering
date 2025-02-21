@@ -177,6 +177,18 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
 def sum_job_role_count_split_by_service(
     df: DataFrame, list_of_job_roles: list
 ) -> DataFrame:
+    """
+    Takes the mapped column of job counts from the dataframes and does a sum for each
+    job role for each partition of service type. This is done through a combination of
+    explode, group by and left join
+
+    Args:
+        df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
+        list_of_job_roles (list): A list containing the ASC-WDS job role.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
     df_explode = df.select(
         IndCQC.primary_service_type, F.explode(IndCQC.ascwds_job_role_counts)
     )
