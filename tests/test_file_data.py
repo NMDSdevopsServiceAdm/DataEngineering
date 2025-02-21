@@ -9729,10 +9729,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
-    test_count_map_column = IndCQC.ascwds_job_role_counts
-    test_count_map_values_total_column_name = IndCQC.ascwds_job_role_counts_total
-    test_ratio_map_column_name = IndCQC.ascwds_job_role_ratios
-
     # fmt: off
     create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
         ("1-001", 

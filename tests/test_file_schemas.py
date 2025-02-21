@@ -5976,7 +5976,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    create_total_from_values_in_map_column_shcema = StructType(
+    create_total_from_values_in_map_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -5987,7 +5987,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    expected_create_total_from_values_in_map_column_shcema = StructType(
+    expected_create_total_from_values_in_map_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -6000,7 +6000,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     )
 
     ascwds_job_role_count_map_to_ratios_map_schema = StructType(
-        [*expected_create_total_from_values_in_map_column_shcema]
+        [*expected_create_total_from_values_in_map_column_schema]
     )
 
     expected_ascwds_job_role_count_map_to_ratios_map_schema = StructType(
