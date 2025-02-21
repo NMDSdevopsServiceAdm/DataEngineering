@@ -97,7 +97,7 @@ def merge_dataframes(
     return merged_df
 
 
-def transform_count_map_to_ratios_map(
+def transform_job_role_count_map_to_ratios_map(
     estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
     count_map_column: str,
     count_map_values_total_column_name: str,
