@@ -9729,6 +9729,73 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # fmt: off
+    transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 0}),
+    ]
+    expected_transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 0},
+         {MainJobRoleLabels.care_worker: 1.0, MainJobRoleLabels.registered_nurse: 0.0}),
+    ]
+    # fmt: on
+
+    # fmt: off
+    transform_counts_map_to_ratios_map_when_all_count_values_above_zero_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    expected_transform_counts_map_to_ratios_map_when_all_count_values_above_zero_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+         {MainJobRoleLabels.care_worker: 0.333, MainJobRoleLabels.registered_nurse: 0.667}),
+    ]
+    # fmt: on
+
+    # fmt: off
+    transform_counts_map_to_ratios_map_when_all_count_values_are_null_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
+        ),
+    ]
+    expected_transform_counts_map_to_ratios_map_when_all_count_values_are_null_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
+         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
+        ),
+    ]
+    # fmt: on
+
+    # fmt: off
+    transform_counts_map_to_ratios_map_when_count_map_column_is_null_rows = [
+        ("1-001", 
+         None),
+    ]
+    expected_transform_counts_map_to_ratios_map_when_count_map_column_is_null_rows = [
+        ("1-001", 
+         None, 
+         None),
+    ]
+    # fmt: on
+
+    # fmt: off
+    transform_counts_map_to_ratios_map_at_multiple_establishments_rows = [
+        ("1-001", {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 0}),
+        ("1-002", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
+    ]
+    expected_transform_counts_map_to_ratios_map_at_multiple_establishments_rows = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 0},
+         {MainJobRoleLabels.care_worker: 1.0, MainJobRoleLabels.registered_nurse: 0.0}
+        ),
+        ("1-002", 
+         {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1},
+         {MainJobRoleLabels.care_worker: 0.0, MainJobRoleLabels.registered_nurse: 1.0}
+        ),
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
