@@ -9753,6 +9753,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    test_count_map_column = IndCQC.ascwds_job_role_counts
+    test_ratio_map_column_name = IndCQC.ascwds_job_role_ratios
+
     # fmt: off
     transform_counts_map_to_ratios_map_when_all_count_values_are_null_rows = [
         ("1-001", 

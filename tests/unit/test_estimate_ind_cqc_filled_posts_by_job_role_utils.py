@@ -357,7 +357,9 @@ class TransformJobRoleCountsMapToRatiosMap(
             Data.transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        self.returned_df = job.transform_job_role_count_map_to_ratios_map(self.test_df)
+        self.returned_df = job.transform_count_map_to_ratios_map(
+            self.test_df, Data.test_count_map_column, Data.test_ratio_map_column_name
+        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_when_only_one_count_value_above_zero_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
@@ -397,7 +399,9 @@ class TransformJobRoleCountsMapToRatiosMap(
             Data.transform_counts_map_to_ratios_map_when_all_count_values_above_zero_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        returned_df = job.transform_job_role_count_map_to_ratios_map(test_df)
+        returned_df = job.transform_count_map_to_ratios_map(
+            test_df, Data.test_count_map_column, Data.test_ratio_map_column_name
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_when_all_count_values_above_zero_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
@@ -424,7 +428,9 @@ class TransformJobRoleCountsMapToRatiosMap(
             Data.transform_counts_map_to_ratios_map_when_all_count_values_are_null_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        returned_df = job.transform_job_role_count_map_to_ratios_map(test_df)
+        returned_df = job.transform_count_map_to_ratios_map(
+            test_df, Data.test_count_map_column, Data.test_ratio_map_column_name
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_when_all_count_values_are_null_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
@@ -445,7 +451,9 @@ class TransformJobRoleCountsMapToRatiosMap(
             Data.transform_counts_map_to_ratios_map_when_count_map_column_is_null_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        returned_df = job.transform_job_role_count_map_to_ratios_map(test_df)
+        returned_df = job.transform_count_map_to_ratios_map(
+            test_df, Data.test_count_map_column, Data.test_ratio_map_column_name
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_when_count_map_column_is_null_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
@@ -466,7 +474,9 @@ class TransformJobRoleCountsMapToRatiosMap(
             Data.transform_counts_map_to_ratios_map_at_multiple_establishments_rows,
             Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
         )
-        returned_df = job.transform_job_role_count_map_to_ratios_map(test_df)
+        returned_df = job.transform_count_map_to_ratios_map(
+            test_df, Data.test_count_map_column, Data.test_ratio_map_column_name
+        )
         expected_df = self.spark.createDataFrame(
             Data.expected_transform_counts_map_to_ratios_map_at_multiple_establishments_rows,
             Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
