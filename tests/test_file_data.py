@@ -9776,19 +9776,85 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
 
     count_job_role_split_by_service_data = [
-        ("1-0000000001", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A'),
-        ("1-0000000001", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A'),
-        ("1-0000000002", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A'),
-        ("1-0000000002", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'B'),
-        ("1-0000000003", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'B'),
-        ("1-0000000003", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'C'),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+        ),
+        (
+            "1-0000000001",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+        ),
+        (
+            "1-0000000002",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+        ),
+        (
+            "1-0000000002",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "B",
+        ),
+        (
+            "1-0000000003",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "B",
+        ),
+        (
+            "1-0000000003",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "C",
+        ),
     ]
 
     expected_count_job_role_split_by_service_data = [
-        ("1-0000000001", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A', {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6}),
-        ("1-0000000001", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A', {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6}),
-        ("1-0000000002", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'A', {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6}),
-        ("1-0000000002", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'B', {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4}),
-        ("1-0000000003", date(2025, 1, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'B', {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4}),
-        ("1-0000000003", date(2025, 2, 1), {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}, 'C', {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+        ),
+        (
+            "1-0000000001",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+        ),
+        (
+            "1-0000000002",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "A",
+            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+        ),
+        (
+            "1-0000000002",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "B",
+            {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4},
+        ),
+        (
+            "1-0000000003",
+            date(2025, 1, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "B",
+            {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4},
+        ),
+        (
+            "1-0000000003",
+            date(2025, 2, 1),
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            "C",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+        ),
     ]

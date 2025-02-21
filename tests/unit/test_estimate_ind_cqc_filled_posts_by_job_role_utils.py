@@ -458,10 +458,11 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             expected_df.collect(),
         )
 
+
 class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-
-    def sample_test(self,):
-
+    def sample_test(
+        self,
+    ):
         input_df = self.spark.createDataFrame(
             Data.count_job_role_split_by_service_data,
             Schemas.count_job_role_split_by_service_schema,
@@ -472,9 +473,11 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
             Schemas.expected_count_role_split_by_service_schema,
         )
 
-        output_df = job.sum_job_role_count_split_by_service(input_df,Data.list_of_job_roles_for_tests)
+        output_df = job.sum_job_role_count_split_by_service(
+            input_df, Data.list_of_job_roles_for_tests
+        )
 
         self.assertEqual(
             output_df.sort(IndCQC.establishment_id).collect(),
-            expected_output_df.sort(IndCQC.establishment_id).collect()
+            expected_output_df.sort(IndCQC.establishment_id).collect(),
         )
