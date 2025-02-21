@@ -113,7 +113,8 @@ def transform_job_role_count_map_to_ratios_map(
     Args:
         estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a job role count map at workplace level.
         count_map_column (str): A map column of type any:long.
-        ratio_map_column_name (str): The name to give to the new ratio map column.
+        count_map_values_total_column_name (str): The name to give to the total values from count map column.
+        ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
