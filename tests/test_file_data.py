@@ -9859,7 +9859,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
         ),
         (
             "1-0000000001",
@@ -9870,7 +9870,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
         ),
         (
             "1-0000000002",
@@ -9881,7 +9881,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
         ),
         (
             "1-0000000002",
@@ -9892,7 +9892,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
         ),
         (
             "1-0000000003",
@@ -9903,7 +9903,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
         ),
         (
             "1-0000000003",
@@ -9914,7 +9914,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "C",
+            "Care home with nursing",
         ),
     ]
 
@@ -9928,7 +9928,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
             {
                 MainJobRoleLabels.care_worker: 3,
                 MainJobRoleLabels.registered_nurse: 6,
@@ -9945,7 +9945,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
             {
                 MainJobRoleLabels.care_worker: 3,
                 MainJobRoleLabels.registered_nurse: 6,
@@ -9962,7 +9962,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
             {
                 MainJobRoleLabels.care_worker: 3,
                 MainJobRoleLabels.registered_nurse: 6,
@@ -9979,7 +9979,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
             {
                 MainJobRoleLabels.care_worker: 2,
                 MainJobRoleLabels.registered_nurse: 4,
@@ -9996,7 +9996,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
             {
                 MainJobRoleLabels.care_worker: 2,
                 MainJobRoleLabels.registered_nurse: 4,
@@ -10013,7 +10013,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "C",
+            "Care home with nursing",
             {
                 MainJobRoleLabels.care_worker: 1,
                 MainJobRoleLabels.registered_nurse: 2,
@@ -10033,7 +10033,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
         ),
         (
             "1-0000000001",
@@ -10044,7 +10044,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 4,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
         ),
         (
             "1-0000000001",
@@ -10055,7 +10055,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 1,
                 MainJobRoleLabels.senior_management: 1,
             },
-            "C",
+            "Care home with nursing",
         ),
     ]
 
@@ -10069,7 +10069,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 0,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "A",
+            "non-residential",
             {
                 MainJobRoleLabels.care_worker: 1,
                 MainJobRoleLabels.registered_nurse: 2,
@@ -10086,7 +10086,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 4,
                 MainJobRoleLabels.senior_management: 0,
             },
-            "B",
+            "Care home without nursing",
             {
                 MainJobRoleLabels.care_worker: 0,
                 MainJobRoleLabels.registered_nurse: 2,
@@ -10103,7 +10103,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 1,
                 MainJobRoleLabels.senior_management: 1,
             },
-            "C",
+            "Care home with nursing",
             {
                 MainJobRoleLabels.care_worker: 3,
                 MainJobRoleLabels.registered_nurse: 6,
