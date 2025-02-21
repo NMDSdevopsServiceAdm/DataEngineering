@@ -1,4 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import LongType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -94,6 +95,53 @@ def merge_dataframes(
     )
 
     return merged_df
+
+
+def transform_job_role_count_map_to_ratios_map(
+    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
+) -> DataFrame:
+    """
+    Transform a job role count map column into a job role ratio map column.
+
+    Take a map column which has keys for each job role and values are the count of each job role
+    at an establishment. Make another map column with keys per job role and values as the
+    percentage of each count from the total of all values in the count map.
+
+    Args:
+        estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a job role count map at workplace level.
+
+    Returns:
+        DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
+    """
+
+    temp_ascwds_total_worker_records = "temp_ascwds_total_worker_records"
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
+            temp_ascwds_total_worker_records,
+            F.aggregate(
+                F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
+                F.lit(0).cast(LongType()),
+                lambda a, b: a + b,
+            ),
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
+            IndCQC.ascwds_job_role_ratios,
+            F.map_from_arrays(
+                F.map_keys(F.col(IndCQC.ascwds_job_role_counts)),
+                F.transform(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
+                    lambda v: v / F.col(temp_ascwds_total_worker_records),
+                ),
+            ),
+        )
+    )
+
+    return estimated_ind_cqc_filled_posts_by_job_role_df.drop(
+        temp_ascwds_total_worker_records
+    )
 
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:

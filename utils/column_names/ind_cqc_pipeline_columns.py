@@ -46,6 +46,7 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_counts_by_primary_service: str = (
         "ascwds_job_role_counts_by_primary_service"
     )
