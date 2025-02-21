@@ -616,7 +616,7 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
 
         self.assertEqual(
             output_df.sort(IndCQC.establishment_id).collect(),
-            expected_output_df.collect(),
+            expected_output_df.sort(IndCQC.establishment_id).collect(),
         )
 
     def test_sum_job_role_count_split_by_service_when_one_entry_in_partition_column(
@@ -638,5 +638,5 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
 
         self.assertEqual(
             output_df.sort(IndCQC.establishment_id).collect(),
-            expected_output_df.collect(),
+            expected_output_df.sort(IndCQC.establishment_id).collect(),
         )
