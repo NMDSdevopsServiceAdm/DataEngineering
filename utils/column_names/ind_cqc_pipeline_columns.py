@@ -46,6 +46,7 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_total: str = "ascwds_job_role_counts_total"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
