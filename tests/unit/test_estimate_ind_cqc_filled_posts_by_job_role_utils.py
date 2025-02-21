@@ -460,9 +460,14 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
 
 
 class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+
+    def setUp(self) -> None:
+        super().setUp()
+
     def sample_test(
         self,
     ):
+        
         input_df = self.spark.createDataFrame(
             Data.count_job_role_split_by_service_data,
             Schemas.count_job_role_split_by_service_schema,
