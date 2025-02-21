@@ -457,3 +457,24 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
             expected_df.collect(),
         )
+
+class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+
+    def sample_test(self,):
+
+        input_df = self.spark.createDataFrame(
+            Data.count_job_role_split_by_service_data,
+            Schemas.count_job_role_split_by_service_schema,
+        )
+
+        expected_output_df = self.spark.createDataFrame(
+            Data.expected_count_job_role_split_by_service_data,
+            Schemas.expected_count_role_split_by_service_schema,
+        )
+
+        output_df = job.sum_job_role_count_split_by_service(input_df,Data.list_of_job_roles_for_tests)
+
+        self.assertEqual(
+            output_df.sort(IndCQC.establishment_id).collect(),
+            expected_output_df.sort(IndCQC.establishment_id).collect()
+        )

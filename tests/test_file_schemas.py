@@ -5990,3 +5990,21 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
+
+    count_job_role_split_by_service_schema = StructType(
+        [
+            *aggregated_job_role_breakdown_df,
+            StructField(IndCQC.primary_service_type, StringType(), True),
+        ]
+    )
+
+    expected_count_role_split_by_service_schema = StructType(
+        [
+            *count_job_role_split_by_service_schema,
+            StructField(
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )

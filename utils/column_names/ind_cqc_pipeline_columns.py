@@ -46,6 +46,9 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_by_primary_service: str = (
+        "ascwds_job_role_counts_by_primary_service"
+    )
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"

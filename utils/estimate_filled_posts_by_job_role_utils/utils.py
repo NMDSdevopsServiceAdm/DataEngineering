@@ -124,3 +124,36 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
     )
 
     return df
+
+
+def sum_job_role_count_split_by_service(
+    df: DataFrame, list_of_job_roles: list
+) -> DataFrame:
+    df_exploded = df.select(
+        IndCQC.primary_service_type,
+        F.explode("cleaned_ascwds_worker_df").alias("job_roles", "job_roles_values"),
+    )
+
+    df_pivot = (
+        df_exploded.groupBy(IndCQC.primary_service_type)
+        .pivot("job_roles", list_of_job_roles)
+        .sum("job_roles_values")
+    )
+
+    df_mapped = df_pivot.withColumn(
+        IndCQC.ascwds_job_role_counts_by_primary_service,
+        create_map_column(list_of_job_roles),
+    )
+
+    df_mapped = df_mapped.drop(*list_of_job_roles)
+    df_mapped.drop("job_roles")
+    df_mapped.drop("job_roles_values")
+
+    df_result = df.join(
+        df_mapped,
+        df[IndCQC.primary_service_type] == df_mapped[IndCQC.primary_service_type],
+        "left",
+    )
+    df_result.drop(df_mapped[IndCQC.primary_service_type])
+
+    return df_result
