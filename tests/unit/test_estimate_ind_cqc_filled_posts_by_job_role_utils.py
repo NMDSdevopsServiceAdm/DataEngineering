@@ -460,21 +460,19 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
 
 
 class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-
     def setUp(self) -> None:
         super().setUp()
 
-    def sample_test(
+    def test_sum_job_role_count_split_by_service_when_duplicate_entries_in_partition_column(
         self,
     ):
-        
         input_df = self.spark.createDataFrame(
-            Data.count_job_role_split_by_service_data,
+            Data.count_job_role_split_by_service_with_duplicate_service_types_data,
             Schemas.count_job_role_split_by_service_schema,
         )
 
         expected_output_df = self.spark.createDataFrame(
-            Data.expected_count_job_role_split_by_service_data,
+            Data.expected_count_job_role_split_by_service_with_duplicate_service_types_data,
             Schemas.expected_count_role_split_by_service_schema,
         )
 
@@ -484,5 +482,27 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
 
         self.assertEqual(
             output_df.sort(IndCQC.establishment_id).collect(),
-            expected_output_df.sort(IndCQC.establishment_id).collect(),
+            expected_output_df.collect(),
+        )
+
+    def test_sum_job_role_count_split_by_service_when_one_entry_in_partition_column(
+        self,
+    ):
+        input_df = self.spark.createDataFrame(
+            Data.count_job_role_split_by_service_with_one_service_types_data,
+            Schemas.count_job_role_split_by_service_schema,
+        )
+
+        expected_output_df = self.spark.createDataFrame(
+            Data.expected_count_job_role_split_by_service_with_one_service_types_data,
+            Schemas.expected_count_role_split_by_service_schema,
+        )
+
+        output_df = job.sum_job_role_count_split_by_service(
+            input_df, Data.list_of_job_roles_for_tests
+        )
+
+        self.assertEqual(
+            output_df.sort(IndCQC.establishment_id).collect(),
+            expected_output_df.collect(),
         )

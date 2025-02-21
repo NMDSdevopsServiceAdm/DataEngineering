@@ -9775,86 +9775,273 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
 
-    count_job_role_split_by_service_data = [
+    list_of_job_roles_for_tests = [
+        MainJobRoleLabels.care_worker,
+        MainJobRoleLabels.registered_nurse,
+        MainJobRoleLabels.senior_care_worker,
+        MainJobRoleLabels.senior_management,
+    ]
+
+    count_job_role_split_by_service_with_duplicate_service_types_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
         ),
         (
             "1-0000000001",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
         ),
         (
             "1-0000000002",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
         ),
         (
             "1-0000000002",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "B",
         ),
         (
             "1-0000000003",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "B",
         ),
         (
             "1-0000000003",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "C",
         ),
     ]
 
-    expected_count_job_role_split_by_service_data = [
+    expected_count_job_role_split_by_service_with_duplicate_service_types_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
-            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
         ),
         (
             "1-0000000001",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
-            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
         ),
         (
             "1-0000000002",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "A",
-            {MainJobRoleLabels.care_worker: 3, MainJobRoleLabels.registered_nurse: 6},
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
         ),
         (
             "1-0000000002",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "B",
-            {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4},
+            {
+                MainJobRoleLabels.care_worker: 2,
+                MainJobRoleLabels.registered_nurse: 4,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
         ),
         (
             "1-0000000003",
             date(2025, 1, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "B",
-            {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 4},
+            {
+                MainJobRoleLabels.care_worker: 2,
+                MainJobRoleLabels.registered_nurse: 4,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
         ),
         (
             "1-0000000003",
             date(2025, 2, 1),
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
             "C",
-            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+    ]
+
+    count_job_role_split_by_service_with_one_service_types_data = [
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+            "A",
+        ),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 4,
+                MainJobRoleLabels.senior_management: 0,
+            },
+            "B",
+        ),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
+            "C",
+        ),
+    ]
+
+    expected_count_job_role_split_by_service_with_one_service_types_data = [
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+            "A",
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 4,
+                MainJobRoleLabels.senior_management: 0,
+            },
+            "B",
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 2,
+                MainJobRoleLabels.senior_care_worker: 4,
+                MainJobRoleLabels.senior_management: 0,
+            },
+        ),
+        (
+            "1-0000000001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
+            "C",
+            {
+                MainJobRoleLabels.care_worker: 3,
+                MainJobRoleLabels.registered_nurse: 6,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 1,
+            },
         ),
     ]

@@ -131,7 +131,7 @@ def sum_job_role_count_split_by_service(
 ) -> DataFrame:
     df_exploded = df.select(
         IndCQC.primary_service_type,
-        F.explode("cleaned_ascwds_worker_df").alias("job_roles", "job_roles_values"),
+        F.explode(IndCQC.ascwds_job_role_counts).alias("job_roles", "job_roles_values"),
     )
 
     df_pivot = (
@@ -154,6 +154,7 @@ def sum_job_role_count_split_by_service(
         df[IndCQC.primary_service_type] == df_mapped[IndCQC.primary_service_type],
         "left",
     )
-    df_result.drop(df_mapped[IndCQC.primary_service_type])
+
+    df_result = df_result.drop(df_mapped[IndCQC.primary_service_type])
 
     return df_result
