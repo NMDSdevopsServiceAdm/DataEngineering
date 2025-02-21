@@ -31,7 +31,9 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
-    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service")
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service"
+    )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
