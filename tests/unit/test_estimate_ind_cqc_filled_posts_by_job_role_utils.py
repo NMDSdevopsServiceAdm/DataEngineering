@@ -613,7 +613,7 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         output_df = job.sum_job_role_count_split_by_service(
             input_df, Data.list_of_job_roles_for_tests
         )
-        self.maxDiff = None
+
         self.assertEqual(
             expected_output_df.sort(IndCQC.primary_service_type).collect(),
             output_df.sort(IndCQC.primary_service_type).collect(),
@@ -635,7 +635,7 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         output_df = job.sum_job_role_count_split_by_service(
             input_df, Data.list_of_job_roles_for_tests
         )
-        self.maxDiff = None
+
         self.assertEqual(
             expected_output_df.sort(IndCQC.primary_service_type).collect(),
             output_df.sort(IndCQC.primary_service_type).collect(),
