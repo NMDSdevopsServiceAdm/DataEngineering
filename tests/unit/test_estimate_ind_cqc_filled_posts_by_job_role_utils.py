@@ -615,8 +615,8 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         )
         self.maxDiff = None
         self.assertEqual(
-            expected_output_df.sort(IndCQC.establishment_id).collect(),
-            output_df.sort(IndCQC.establishment_id).collect(),
+            expected_output_df.sort(IndCQC.primary_service_type).collect(),
+            output_df.sort(IndCQC.primary_service_type).collect(),
         )
 
     def test_sum_job_role_count_split_by_service_when_one_entry_in_partition_column(
@@ -637,6 +637,6 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         )
         self.maxDiff = None
         self.assertEqual(
-            expected_output_df.sort(IndCQC.establishment_id).collect(),
-            output_df.sort(IndCQC.establishment_id).collect(),
+            expected_output_df.sort(IndCQC.primary_service_type).collect(),
+            output_df.sort(IndCQC.primary_service_type).collect(),
         )
