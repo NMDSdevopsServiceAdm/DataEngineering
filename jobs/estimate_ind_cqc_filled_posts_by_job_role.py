@@ -93,7 +93,7 @@ def main(
 
     estimated_ind_cqc_filled_posts_with_job_role_split_df = (
         JRutils.sum_job_role_count_split_by_service(
-            estimated_ind_cqc_filled_posts_df, JRutils.list_of_job_roles
+            aggregated_job_roles_per_establishment_df, JRutils.list_of_job_roles
         )
     )
 
