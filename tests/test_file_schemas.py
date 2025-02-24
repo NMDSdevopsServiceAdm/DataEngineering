@@ -6014,7 +6014,13 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     count_job_role_split_by_service_schema = StructType(
         [
-            *aggregated_job_role_breakdown_df,
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
             StructField(IndCQC.primary_service_type, StringType(), True),
         ]
     )

@@ -206,9 +206,8 @@ def sum_job_role_count_split_by_service(
 
     df_result = df.join(
         df_explode_grouped_with_map_column,
-        df[IndCQC.primary_service_type]
-        == df_explode_grouped_with_map_column[IndCQC.primary_service_type],
+        IndCQC.primary_service_type,
         "left",
-    ).drop(df_explode_grouped_with_map_column[IndCQC.primary_service_type])
+    )
 
     return df_result

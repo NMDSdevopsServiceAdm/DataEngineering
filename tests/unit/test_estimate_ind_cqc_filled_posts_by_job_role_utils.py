@@ -597,16 +597,16 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
     def setUp(self) -> None:
         super().setUp()
 
-    def test_sum_job_role_count_split_by_service_when_duplicate_entries_in_partition_column(
+    def test_sum_job_role_count_split_by_service_when_multiple_entries_in_partition_column(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.count_job_role_split_by_service_with_duplicate_service_types_data,
+            Data.count_job_role_split_by_service_with_multiple_service_types_data,
             Schemas.count_job_role_split_by_service_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_count_job_role_split_by_service_with_duplicate_service_types_data,
+            Data.expected_count_job_role_split_by_service_with_multiple_service_types_data,
             Schemas.expected_count_role_split_by_service_schema,
         )
 
@@ -616,10 +616,18 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
 
         self.assertEqual(
             expected_df.sort(IndCQC.primary_service_type).collect(),
-            return_df.sort(IndCQC.primary_service_type).collect(),
+            return_df.select(
+                IndCQC.establishment_id,
+                IndCQC.ascwds_worker_import_date,
+                IndCQC.ascwds_job_role_counts,
+                IndCQC.primary_service_type,
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+            )
+            .sort(IndCQC.primary_service_type)
+            .collect(),
         )
 
-    def test_sum_job_role_count_split_by_service_when_one_entry_in_partition_column(
+    def test_sum_job_role_count_split_by_service_when_one_entry_in_each_partition(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -638,5 +646,13 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
 
         self.assertEqual(
             expected_df.sort(IndCQC.primary_service_type).collect(),
-            return_df.sort(IndCQC.primary_service_type).collect(),
+            return_df.select(
+                IndCQC.establishment_id,
+                IndCQC.ascwds_worker_import_date,
+                IndCQC.ascwds_job_role_counts,
+                IndCQC.primary_service_type,
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+            )
+            .sort(IndCQC.primary_service_type)
+            .collect(),
         )
