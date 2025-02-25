@@ -9825,6 +9825,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    list_of_job_role_ratios_to_be_merged = [
+        IndCQC.ascwds_job_role_ratios_by_primary_service,
+        IndCQC.ascwds_job_role_ratios,
+    ]
+
     # fmt: off
     merge_known_ascwds_and_primary_service_job_role_ratios_when_only_ascwds_known = [
         ("1-001", 

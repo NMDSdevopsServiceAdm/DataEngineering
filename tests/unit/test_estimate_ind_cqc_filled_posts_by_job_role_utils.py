@@ -600,6 +600,32 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         )
 
 
+class MergeKnownAscwdsAndPrimaryServiceJobRoleRatios(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_merge_known_ascwds_and_primary_service_job_role_ratios_returns_ascwds_when_only_ascwds_known(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_known_ascwds_and_primary_service_job_role_ratios_when_only_ascwds_known,
+            Schemas.merge_known_ascwds_and_primary_service_job_role_ratios,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_known_ascwds_and_primary_service_job_role_ratios_when_only_ascwds_known,
+            Schemas.expected_merge_known_ascwds_and_primary_service_job_role_ratios,
+        )
+        returned_df = job.merge_job_role_ratios(
+            test_df,
+            Data.list_of_job_role_ratios_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()

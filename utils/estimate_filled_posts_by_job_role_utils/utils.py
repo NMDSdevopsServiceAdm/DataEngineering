@@ -268,3 +268,16 @@ def sum_job_role_count_split_by_service(
     )
 
     return df_result
+
+
+def merge_job_role_ratios(
+    df: DataFrame,
+    list_of_job_role_ratios_to_be_merged: List,
+    merged_job_role_ratios: str,
+) -> DataFrame:
+    """
+    If you put the list of columns of job role ratios in reverse order,
+    then you can copy of the values into the new column in that order,
+    then the worst estimate is replaced by a better one until you reach the best estimate
+    """
+    return df
