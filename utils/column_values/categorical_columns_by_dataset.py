@@ -207,7 +207,8 @@ class EstimatedMissingAscwdsCategoricalValues:
 @dataclass
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
-    services_column_values = Services(IndCQC.gac_service_types)
+    services_column_values = Services(IndCQC.imputed_gac_service_types)
+    specialisms_column_values = Services(IndCQC.specialisms)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
     care_home_column_care_home_values = CareHome(

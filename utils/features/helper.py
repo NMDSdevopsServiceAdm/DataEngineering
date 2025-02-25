@@ -62,7 +62,8 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
     Adds a new column called time_registered.
 
     This function adds a new integer column to the given data frame which represents the length of time between the imputed
-    registration date and the cqc location import date, split into 6 month time bands (rounded down).
+    registration date and the cqc location import date, split into 12 month time bands (rounded down).
+    This is capped to group together 3 years and above.
 
     Args:
         df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
@@ -70,15 +71,18 @@ def add_time_registered_into_df(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with the new column of integers added.
     """
-    six_months = 6
+    twelve_months = 12
     loc_df = df.withColumn(
         IndCQC.time_registered,
-        F.floor(
-            F.months_between(
-                F.col(IndCQC.cqc_location_import_date),
-                F.col(IndCQC.imputed_registration_date),
-            )
-            / six_months
+        F.least(
+            F.floor(
+                F.months_between(
+                    F.col(IndCQC.cqc_location_import_date),
+                    F.col(IndCQC.imputed_registration_date),
+                )
+                / twelve_months
+            ),
+            F.lit(3),
         ),
     )
     return loc_df

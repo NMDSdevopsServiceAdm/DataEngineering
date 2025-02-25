@@ -227,8 +227,8 @@ class IndCqcColumns:
     rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
+    specialisms_offered: str = "specialisms_offered"
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded

@@ -20,5 +20,5 @@ class FeatureEngineeringValueLabelsRegion:
         "region_south_east": CatValues.current_region_column_values.south_east,
         "region_south_west": CatValues.current_region_column_values.south_west,
         "region_west_midlands": CatValues.current_region_column_values.west_midlands,
-        "region_yorkshire_and_the_humber": CatValues.current_region_column_values.yorkshire_and_the_humber,
+        # "region_yorkshire_and_the_humber": CatValues.current_region_column_values.yorkshire_and_the_humber,
     }

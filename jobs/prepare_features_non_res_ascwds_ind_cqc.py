@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -20,6 +20,9 @@ from utils.feature_engineering_resources.feature_engineering_rural_urban import 
 )
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
+)
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
     vectorise_dataframe,
@@ -75,17 +78,23 @@ def main(
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,
     )
-    features_df = add_array_column_count_to_data(
-        df=features_df,
-        new_col_name=IndCQC.specialism_count,
-        col_to_check=IndCQC.specialisms,
-    )
 
     service_keys = list(ServicesFeatures.labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.services_offered,
         lookup_dict=ServicesFeatures.labels_dict,
+    )
+
+    features_df = features_df.withColumn(
+        IndCQC.specialisms_offered, features_df["specialisms"]["name"]
+    )
+
+    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
+    features_df = column_expansion_with_dict(
+        df=features_df,
+        col_name=IndCQC.services_offered,
+        lookup_dict=SpecialismsFeatures.labels_dict,
     )
 
     rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
@@ -119,6 +128,14 @@ def main(
         df=features_df,
     )
 
+    # There are a limited number of locations in some categories with very few, or no, ASCWDS data so the counts are capped.
+    features_df = features_df.withColumn(
+        IndCQC.service_count, F.least(F.col(IndCQC.service_count), F.lit(4))
+    )
+    features_df = features_df.withColumn(
+        IndCQC.activity_count, F.least(F.col(IndCQC.activity_count), F.lit(3))
+    )
+
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
@@ -127,11 +144,10 @@ def main(
         [
             IndCQC.service_count,
             IndCQC.activity_count,
-            IndCQC.specialism_count,
             IndCQC.time_registered,
-            IndCQC.rolling_rate_of_change_model,
         ]
         + service_keys
+        + specialisms_keys
         + regions
         + rui_indicators
     )
