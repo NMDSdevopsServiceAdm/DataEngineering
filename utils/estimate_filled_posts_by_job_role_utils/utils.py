@@ -98,50 +98,107 @@ def merge_dataframes(
 
 
 def transform_job_role_count_map_to_ratios_map(
-    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
+    df: DataFrame,
+    count_map_column_name: str,
+    ratio_map_column_name: str,
 ) -> DataFrame:
     """
-    Transform a job role count map column into a job role ratio map column.
+    Transform a count map column into a ratio map column.
 
-    Take a map column which has keys for each job role and values are the count of each job role
-    at an establishment. Make another map column with keys per job role and values as the
-    percentage of each count from the total of all values in the count map.
+    Adds a column to hold the total of values from the given count map.
+    Adds a column with the ratio map.
+    Drops the column with the total of values from given count map.
 
     Args:
-        estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a job role count map at workplace level.
+        df (DataFrame): A dataframe containing a job role count map at workplace level.
+        count_map_column_name (str): A map column of type any:long.
+        ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
     """
 
-    temp_ascwds_total_worker_records = "temp_ascwds_total_worker_records"
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
-            temp_ascwds_total_worker_records,
-            F.aggregate(
-                F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-                F.lit(0).cast(LongType()),
-                lambda a, b: a + b,
-            ),
-        )
+    temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
+    df = calculate_total_sum_of_values_in_a_map_column(
+        df,
+        count_map_column_name,
+        temp_total_count_of_worker_records,
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
-            IndCQC.ascwds_job_role_ratios,
-            F.map_from_arrays(
-                F.map_keys(F.col(IndCQC.ascwds_job_role_counts)),
-                F.transform(
-                    F.map_values(F.col(IndCQC.ascwds_job_role_counts)),
-                    lambda v: v / F.col(temp_ascwds_total_worker_records),
-                ),
-            ),
-        )
+    df = create_ratios_map_from_count_map_and_total(
+        df,
+        count_map_column_name,
+        temp_total_count_of_worker_records,
+        ratio_map_column_name,
     )
 
-    return estimated_ind_cqc_filled_posts_by_job_role_df.drop(
-        temp_ascwds_total_worker_records
+    return df.drop(temp_total_count_of_worker_records)
+
+
+def calculate_total_sum_of_values_in_a_map_column(
+    df: DataFrame,
+    map_column_name: str,
+    total_sum_column_name: str,
+) -> DataFrame:
+    """
+    Adds a column which contains the total of values from a given map column of type any:long.
+
+    Args:
+        df (DataFrame): A dataframe containing a count map.
+        map_column_name (str): A map column of type any:long.
+        total_sum_column_name (str): The name to give to the total column being added.
+
+    Returns:
+        DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
+    """
+
+    df = df.withColumn(
+        total_sum_column_name,
+        F.aggregate(
+            F.map_values(F.col(map_column_name)),
+            F.lit(0).cast(LongType()),
+            lambda a, b: a + b,
+        ),
     )
+
+    return df
+
+
+def create_ratios_map_from_count_map_and_total(
+    df: DataFrame,
+    count_map_column_name: str,
+    total_sum_column_name: str,
+    ratio_map_column_name: str,
+) -> DataFrame:
+    """
+    Adds a column which contains a ratio map.
+
+    Takes a map column and a column with the total of values from that map column.
+    Makes another map with the same keys as the given map but values as each value in the given map
+    as a percentage of total column.
+
+    Args:
+        df (DataFrame): A dataframe containing a job role count map at workplace level.
+        count_map_column_name (str): A map column.
+        total_sum_column_name (str): A column with the total of values from the count_map_column.
+        ratio_map_column_name (str): The name to give to the new ratio map column.
+
+    Returns:
+        DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
+    """
+
+    df = df.withColumn(
+        ratio_map_column_name,
+        F.map_from_arrays(
+            F.map_keys(F.col(count_map_column_name)),
+            F.transform(
+                F.map_values(F.col(count_map_column_name)),
+                lambda v: v / F.col(total_sum_column_name),
+            ),
+        ),
+    )
+
+    return df
 
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:

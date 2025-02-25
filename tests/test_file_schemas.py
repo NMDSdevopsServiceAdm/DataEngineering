@@ -5976,7 +5976,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    ascwds_job_role_count_map_to_ratios_map_schema = StructType(
+    create_total_from_values_in_map_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -5985,6 +5985,22 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 True,
             ),
         ]
+    )
+
+    expected_create_total_from_values_in_map_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), LongType()),
+                True,
+            ),
+            StructField("temp_total_count_of_worker_records", LongType(), True),
+        ]
+    )
+
+    ascwds_job_role_count_map_to_ratios_map_schema = StructType(
+        [*expected_create_total_from_values_in_map_column_schema]
     )
 
     expected_ascwds_job_role_count_map_to_ratios_map_schema = StructType(
