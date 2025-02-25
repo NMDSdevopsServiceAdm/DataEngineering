@@ -361,7 +361,6 @@ class TransformJobRoleCountsMapToRatiosMap(
         self.returned_df = job.transform_job_role_count_map_to_ratios_map(
             self.test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
             IndCQC.ascwds_job_role_ratios,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -379,20 +378,19 @@ class TransformJobRoleCountsMapToRatiosMap(
         "utils.estimate_filled_posts_by_job_role_utils.utils.create_ratios_map_from_count_map_and_total"
     )
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.create_total_from_values_in_map_column"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_total_sum_of_values_in_a_map_column"
     )
     def test_transform_job_role_count_map_to_ratios_map_function(
         self,
-        create_total_from_values_in_map_column_mock: Mock,
+        calculate_total_sum_of_values_in_a_map_column: Mock,
         create_ratios_map_from_count_map_and_total_mock: Mock,
     ):
         job.transform_job_role_count_map_to_ratios_map(
             self.test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
             IndCQC.ascwds_job_role_ratios,
         )
-        create_total_from_values_in_map_column_mock.assert_called_once()
+        calculate_total_sum_of_values_in_a_map_column.assert_called_once()
         create_ratios_map_from_count_map_and_total_mock.assert_called_once()
 
     def test_transform_job_role_count_map_to_ratios_map_only_adds_one_column(self):
@@ -414,10 +412,10 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             Data.create_total_from_values_in_map_column_when_all_count_values_above_zero_rows,
             Schemas.create_total_from_values_in_map_column_schema,
         )
-        self.returned_df = job.create_total_from_values_in_map_column(
+        self.returned_df = job.calculate_total_sum_of_values_in_a_map_column(
             self.test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows,
@@ -440,7 +438,7 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
     ):
         self.assertEqual(
             self.added_columns[0],
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
         )
 
     def test_create_total_from_values_in_map_returns_expected_value_when_all_count_values_above_zero(
@@ -455,10 +453,10 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             Data.create_total_from_values_in_map_column_when_all_count_values_are_null_rows,
             Schemas.create_total_from_values_in_map_column_schema,
         )
-        returned_df = job.create_total_from_values_in_map_column(
+        returned_df = job.calculate_total_sum_of_values_in_a_map_column(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows,
@@ -474,10 +472,10 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             Data.create_total_from_values_in_map_column_when_count_column_is_null_rows,
             Schemas.create_total_from_values_in_map_column_schema,
         )
-        returned_df = job.create_total_from_values_in_map_column(
+        returned_df = job.calculate_total_sum_of_values_in_a_map_column(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_total_from_values_in_map_column_when_count_column_is_null_rows,
@@ -501,7 +499,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         returned_df = job.create_ratios_map_from_count_map_and_total(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
             IndCQC.ascwds_job_role_ratios,
         )
         expected_df = self.spark.createDataFrame(
@@ -533,7 +531,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         returned_df = job.create_ratios_map_from_count_map_and_total(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
             IndCQC.ascwds_job_role_ratios,
         )
         expected_df = self.spark.createDataFrame(
@@ -559,7 +557,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         returned_df = job.create_ratios_map_from_count_map_and_total(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
             IndCQC.ascwds_job_role_ratios,
         )
         expected_df = self.spark.createDataFrame(
@@ -585,7 +583,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         returned_df = job.create_ratios_map_from_count_map_and_total(
             test_df,
             IndCQC.ascwds_job_role_counts,
-            IndCQC.ascwds_job_role_counts_total,
+            Data.temp_total_count_of_worker_records,
             IndCQC.ascwds_job_role_ratios,
         )
         expected_df = self.spark.createDataFrame(

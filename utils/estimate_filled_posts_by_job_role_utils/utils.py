@@ -98,9 +98,8 @@ def merge_dataframes(
 
 
 def transform_job_role_count_map_to_ratios_map(
-    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
-    count_map_column: str,
-    count_map_values_total_column_name: str,
+    df: DataFrame,
+    count_map_column_name: str,
     ratio_map_column_name: str,
 ) -> DataFrame:
     """
@@ -120,32 +119,27 @@ def transform_job_role_count_map_to_ratios_map(
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
     """
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        create_total_from_values_in_map_column(
-            estimated_ind_cqc_filled_posts_by_job_role_df,
-            count_map_column,
-            count_map_values_total_column_name,
-        )
+    temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
+    df = calculate_total_sum_of_values_in_a_map_column(
+        df,
+        count_map_column_name,
+        temp_total_count_of_worker_records,
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        create_ratios_map_from_count_map_and_total(
-            estimated_ind_cqc_filled_posts_by_job_role_df,
-            count_map_column,
-            count_map_values_total_column_name,
-            ratio_map_column_name,
-        )
+    df = create_ratios_map_from_count_map_and_total(
+        df,
+        count_map_column_name,
+        temp_total_count_of_worker_records,
+        ratio_map_column_name,
     )
 
-    return estimated_ind_cqc_filled_posts_by_job_role_df.drop(
-        IndCQC.ascwds_job_role_counts_total
-    )
+    return df.drop(temp_total_count_of_worker_records)
 
 
-def create_total_from_values_in_map_column(
-    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
-    count_map_column: str,
-    count_map_values_total_column_name: str,
+def calculate_total_sum_of_values_in_a_map_column(
+    df: DataFrame,
+    map_column_name: str,
+    total_sum_column_name: str,
 ) -> DataFrame:
     """
     Adds a column which contains the total of values from a given map column of type any:long.
@@ -159,24 +153,22 @@ def create_total_from_values_in_map_column(
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
-            count_map_values_total_column_name,
-            F.aggregate(
-                F.map_values(F.col(count_map_column)),
-                F.lit(0).cast(LongType()),
-                lambda a, b: a + b,
-            ),
-        )
+    df = df.withColumn(
+        total_sum_column_name,
+        F.aggregate(
+            F.map_values(F.col(map_column_name)),
+            F.lit(0).cast(LongType()),
+            lambda a, b: a + b,
+        ),
     )
 
-    return estimated_ind_cqc_filled_posts_by_job_role_df
+    return df
 
 
 def create_ratios_map_from_count_map_and_total(
-    estimated_ind_cqc_filled_posts_by_job_role_df: DataFrame,
-    count_map_column: str,
-    count_map_values_total_column: str,
+    df: DataFrame,
+    count_map_column_name: str,
+    total_sum_column_name: str,
     ratio_map_column_name: str,
 ) -> DataFrame:
     """
@@ -196,20 +188,18 @@ def create_ratios_map_from_count_map_and_total(
         DataFrame: The estimated filled post by job role DataFrame with the job role ratio map column joined in.
     """
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
-        estimated_ind_cqc_filled_posts_by_job_role_df.withColumn(
-            ratio_map_column_name,
-            F.map_from_arrays(
-                F.map_keys(F.col(count_map_column)),
-                F.transform(
-                    F.map_values(F.col(count_map_column)),
-                    lambda v: v / F.col(count_map_values_total_column),
-                ),
+    df = df.withColumn(
+        ratio_map_column_name,
+        F.map_from_arrays(
+            F.map_keys(F.col(count_map_column_name)),
+            F.transform(
+                F.map_values(F.col(count_map_column_name)),
+                lambda v: v / F.col(total_sum_column_name),
             ),
-        )
+        ),
     )
 
-    return estimated_ind_cqc_filled_posts_by_job_role_df
+    return df
 
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:

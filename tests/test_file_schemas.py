@@ -5995,7 +5995,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 MapType(StringType(), LongType()),
                 True,
             ),
-            StructField(IndCQC.ascwds_job_role_counts_total, LongType(), True),
+            StructField("temp_total_count_of_worker_records", LongType(), True),
         ]
     )
 

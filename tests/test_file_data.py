@@ -9729,6 +9729,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
+
     # fmt: off
     create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
         ("1-001", 
