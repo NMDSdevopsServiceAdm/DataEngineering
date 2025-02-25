@@ -6012,6 +6012,31 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    merge_known_ascwds_and_primary_service_job_role_ratios = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_by_primary_service,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_merge_known_ascwds_and_primary_service_job_role_ratios = StructType(
+        [
+            *merge_known_ascwds_and_primary_service_job_role_ratios,
+            StructField(
+                IndCQC.ascwds_job_role_ratios_merged,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

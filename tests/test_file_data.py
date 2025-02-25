@@ -9825,6 +9825,74 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # fmt: off
+    merge_known_ascwds_and_primary_service_job_role_ratios_when_only_ascwds_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None)
+    ]
+    #fmt: on
+
+     # fmt: off
+    expected_merge_known_ascwds_and_primary_service_job_role_ratios_when_only_ascwds_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None,
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5})
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_known_ascwds_and_primary_service_job_role_ratios_when_only_primary_service_known = [
+        ("1-001", 
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_known_ascwds_and_primary_service_job_role_ratios_when_only_primary_service_known = [
+        ("1-001", 
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_known_ascwds_and_primary_service_job_role_ratios_when_both_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_known_ascwds_and_primary_service_job_role_ratios_when_both_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5})
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_known_ascwds_and_primary_service_job_role_ratios_when_both_not_known = [
+        ("1-001", 
+         None,
+         None)
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_known_ascwds_and_primary_service_job_role_ratios_when_both_not_known = [
+        ("1-001", 
+         None,
+         None,
+         None)
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
