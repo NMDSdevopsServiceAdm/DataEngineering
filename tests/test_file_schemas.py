@@ -6012,7 +6012,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    count_job_role_split_by_service_schema = StructType(
+    sum_job_role_split_by_service_schema = StructType(
         [
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
@@ -6025,9 +6025,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    expected_count_role_split_by_service_schema = StructType(
+    expected_sum_job_role_split_by_service_schema = StructType(
         [
-            *count_job_role_split_by_service_schema,
+            *sum_job_role_split_by_service_schema,
             StructField(
                 IndCQC.ascwds_job_role_counts_by_primary_service,
                 MapType(StringType(), IntegerType()),

@@ -9842,7 +9842,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
     ]
 
-    count_job_role_split_by_service_with_multiple_service_types_data = [
+    sum_job_role_count_split_by_service_with_multiple_service_types_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),
@@ -9911,7 +9911,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_count_job_role_split_by_service_with_multiple_service_types_data = [
+    expected_sum_job_role_split_by_service_with_multiple_service_types_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),
@@ -10016,7 +10016,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    count_job_role_split_by_service_with_one_service_types_data = [
+    sum_job_role_count_split_by_service_with_one_service_type_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),
@@ -10052,7 +10052,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_count_job_role_split_by_service_with_one_service_types_data = [
+    expected_sum_job_role_count_split_by_service_with_one_service_type_data = [
         (
             "1-0000000001",
             date(2025, 1, 1),

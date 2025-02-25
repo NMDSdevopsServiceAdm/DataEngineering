@@ -593,7 +593,7 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         )
 
 
-class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -601,13 +601,13 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.count_job_role_split_by_service_with_multiple_service_types_data,
-            Schemas.count_job_role_split_by_service_schema,
+            Data.sum_job_role_count_split_by_service_with_multiple_service_types_data,
+            Schemas.sum_job_role_split_by_service_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_count_job_role_split_by_service_with_multiple_service_types_data,
-            Schemas.expected_count_role_split_by_service_schema,
+            Data.expected_sum_job_role_split_by_service_with_multiple_service_types_data,
+            Schemas.expected_sum_job_role_split_by_service_schema,
         )
 
         return_df = job.sum_job_role_count_split_by_service(
@@ -631,13 +631,13 @@ class CountJobRoleSplitByServiceTypeTests(EstimateIndCQCFilledPostsByJobRoleUtil
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.count_job_role_split_by_service_with_one_service_types_data,
-            Schemas.count_job_role_split_by_service_schema,
+            Data.sum_job_role_count_split_by_service_with_one_service_type_data,
+            Schemas.sum_job_role_split_by_service_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_count_job_role_split_by_service_with_one_service_types_data,
-            Schemas.expected_count_role_split_by_service_schema,
+            Data.expected_sum_job_role_count_split_by_service_with_one_service_type_data,
+            Schemas.expected_sum_job_role_split_by_service_schema,
         )
 
         return_df = job.sum_job_role_count_split_by_service(
