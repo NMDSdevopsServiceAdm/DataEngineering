@@ -110,9 +110,8 @@ def transform_job_role_count_map_to_ratios_map(
     Drops the column with the total of values from given count map.
 
     Args:
-        estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a job role count map at workplace level.
-        count_map_column (str): A map column of type any:long.
-        count_map_values_total_column_name (str): The name to give to the total values from count map column.
+        df (DataFrame): A dataframe containing a job role count map at workplace level.
+        count_map_column_name (str): A map column of type any:long.
         ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
@@ -145,9 +144,9 @@ def calculate_total_sum_of_values_in_a_map_column(
     Adds a column which contains the total of values from a given map column of type any:long.
 
     Args:
-        estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a count map.
-        count_map_column (str): A map column of type any:long.
-        count_map_values_total_column_name (str): The name to give to the total column being added.
+        df (DataFrame): A dataframe containing a count map.
+        map_column_name (str): A map column of type any:long.
+        total_sum_column_name (str): The name to give to the total column being added.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
@@ -179,9 +178,9 @@ def create_ratios_map_from_count_map_and_total(
     as a percentage of total column.
 
     Args:
-        estimated_ind_cqc_filled_posts_by_job_role_df (DataFrame): A dataframe containing a job role count map at workplace level.
-        count_map_column (str): A map column.
-        count_map_values_total_column (str): A column with the total of values from the count_map_column.
+        df (DataFrame): A dataframe containing a job role count map at workplace level.
+        count_map_column_name (str): A map column.
+        total_sum_column_name (str): A column with the total of values from the count_map_column.
         ratio_map_column_name (str): The name to give to the new ratio map column.
 
     Returns:
