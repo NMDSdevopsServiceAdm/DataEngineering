@@ -6011,3 +6011,27 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
         ]
     )
+
+    sum_job_role_split_by_service_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+        ]
+    )
+
+    expected_sum_job_role_split_by_service_schema = StructType(
+        [
+            *sum_job_role_split_by_service_schema,
+            StructField(
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )

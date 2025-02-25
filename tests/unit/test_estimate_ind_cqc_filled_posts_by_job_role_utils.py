@@ -591,3 +591,68 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             returned_df.sort(IndCQC.cqc_location_import_date).collect(),
             expected_df.collect(),
         )
+
+
+class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_sum_job_role_count_split_by_service_when_multiple_entries_in_partition_column(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.sum_job_role_count_split_by_service_with_multiple_service_types_data,
+            Schemas.sum_job_role_split_by_service_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_sum_job_role_split_by_service_with_multiple_service_types_data,
+            Schemas.expected_sum_job_role_split_by_service_schema,
+        )
+
+        return_df = job.sum_job_role_count_split_by_service(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+
+        self.assertEqual(
+            expected_df.sort(IndCQC.primary_service_type).collect(),
+            return_df.select(
+                IndCQC.establishment_id,
+                IndCQC.ascwds_worker_import_date,
+                IndCQC.ascwds_job_role_counts,
+                IndCQC.primary_service_type,
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+            )
+            .sort(IndCQC.primary_service_type)
+            .collect(),
+        )
+
+    def test_sum_job_role_count_split_by_service_when_one_entry_in_each_partition(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.sum_job_role_count_split_by_service_with_one_service_type_data,
+            Schemas.sum_job_role_split_by_service_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_sum_job_role_count_split_by_service_with_one_service_type_data,
+            Schemas.expected_sum_job_role_split_by_service_schema,
+        )
+
+        return_df = job.sum_job_role_count_split_by_service(
+            test_df, Data.list_of_job_roles_for_tests
+        )
+
+        self.assertEqual(
+            expected_df.sort(IndCQC.primary_service_type).collect(),
+            return_df.select(
+                IndCQC.establishment_id,
+                IndCQC.ascwds_worker_import_date,
+                IndCQC.ascwds_job_role_counts,
+                IndCQC.primary_service_type,
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+            )
+            .sort(IndCQC.primary_service_type)
+            .collect(),
+        )
