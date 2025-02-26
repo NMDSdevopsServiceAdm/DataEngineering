@@ -286,8 +286,9 @@ def merge_job_role_ratio_columns(
 
     Args:
         df (DataFrame): A dataframe containing multiple columns of job role ratios.
-        list_of_job_role_ratio_columns_to_be_merged (list): A list of job role ratio column names in priority order highest to lowest.
-        merged_job_role_ratios (str): The name to give the merged job role ratios column.
+        list_of_job_role_ratio_columns_to_be_merged (List): A list of job role ratio column names in priority order highest to lowest.
+        merged_job_role_ratios_column_name (str): The name to give the merged job role ratios column.
+        merged_job_role_ratios_source_column_name (str): The name to give the merged job role ratios source column.
 
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
