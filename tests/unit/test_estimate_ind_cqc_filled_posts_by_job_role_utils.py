@@ -617,8 +617,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         self.returned_df = job.merge_job_role_ratio_columns(
             self.test_df,
             Data.list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.new_columns_added = [
@@ -631,20 +629,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         self,
     ):
         self.assertEqual(len(self.new_columns_added), 2)
-
-    def test_merge_job_role_ratio_columns_adds_a_column_called_ascwds_job_role_ratios_merged(
-        self,
-    ):
-        self.assertEqual(
-            self.new_columns_added[0], IndCQC.ascwds_job_role_ratios_merged
-        )
-
-    def test_merge_job_role_ratio_columns_adds_a_column_called_ascwds_job_role_ratios_merged_source(
-        self,
-    ):
-        self.assertEqual(
-            self.new_columns_added[1], IndCQC.ascwds_job_role_ratios_merged_source
-        )
 
     def test_merge_job_role_ratio_columns_returns_ascwds_ratios_when_only_ascwds_known(
         self,
@@ -665,8 +649,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         returned_df = job.merge_job_role_ratio_columns(
             test_df,
             Data.list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -685,8 +667,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         returned_df = job.merge_job_role_ratio_columns(
             test_df,
             Data.list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -705,8 +685,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         returned_df = job.merge_job_role_ratio_columns(
             test_df,
             Data.list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -725,8 +703,6 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         returned_df = job.merge_job_role_ratio_columns(
             test_df,
             Data.list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())

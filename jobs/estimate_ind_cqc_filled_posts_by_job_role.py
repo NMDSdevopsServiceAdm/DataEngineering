@@ -111,8 +111,6 @@ def main(
         JRutils.merge_job_role_ratio_columns(
             estimated_ind_cqc_filled_posts_by_job_role_df,
             list_of_job_role_ratio_columns_to_be_merged,
-            IndCQC.ascwds_job_role_ratios_merged,
-            IndCQC.ascwds_job_role_ratios_merged_source,
         )
     )
 

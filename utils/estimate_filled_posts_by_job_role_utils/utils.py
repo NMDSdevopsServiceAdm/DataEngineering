@@ -273,28 +273,25 @@ def sum_job_role_count_split_by_service(
 def merge_job_role_ratio_columns(
     df: DataFrame,
     list_of_job_role_ratio_columns_to_be_merged: List,
-    merged_job_role_ratios_column_name: str,
-    merged_job_role_ratios_source_column_name: str,
 ) -> DataFrame:
     """
-    Merges job role ratio columns into one column.
+    Merges two job role ratio columns into a new column and adds another column for the source.
 
-    We have various columns showing job role ratios per location made by different methods.
-    This function merges these columns into one final column using the order the columns are given
-    in a list as the highest to lowest priority.
-    Another column is added to show the source for the merged job role ratio column.
+    We have two columns showing job role ratios per location made by different methods,
+    these are ascwds_job_role_ratios and ascwds_job_role_ratios_by_primary_service.
+    This function merges these two columns into final column called ascwds_job_role_ratios_merged,
+    using the order the columns are given in a list as the highest to lowest priority.
+    Another column, ascwds_job_role_ratios_merged_source, is added to show the source for the merged job role ratio column.
 
     Args:
         df (DataFrame): A dataframe containing multiple columns of job role ratios.
         list_of_job_role_ratio_columns_to_be_merged (List): A list of job role ratio column names in priority order highest to lowest.
-        merged_job_role_ratios_column_name (str): The name to give the merged job role ratios column.
-        merged_job_role_ratios_source_column_name (str): The name to give the merged job role ratios source column.
 
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
     """
     df = df.withColumn(
-        merged_job_role_ratios_column_name,
+        IndCQC.ascwds_job_role_ratios_merged,
         F.coalesce(
             *[F.col(column) for column in list_of_job_role_ratio_columns_to_be_merged]
         ),
@@ -307,6 +304,6 @@ def merge_job_role_ratio_columns(
     for column_name in list_of_job_role_ratio_columns_to_be_merged[1:]:
         source_column = source_column.when(F.col(column_name).isNotNull(), column_name)
 
-    df = df.withColumn(merged_job_role_ratios_source_column_name, source_column)
+    df = df.withColumn(IndCQC.ascwds_job_role_ratios_merged_source, source_column)
 
     return df
