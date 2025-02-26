@@ -270,14 +270,42 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
-def merge_job_role_ratios(
+def merge_job_role_ratio_columns(
     df: DataFrame,
-    list_of_job_role_ratios_to_be_merged: List,
-    merged_job_role_ratios: str,
+    list_of_job_role_ratio_columns_to_be_merged: List,
+    merged_job_role_ratios_column_name: str,
+    merged_job_role_ratios_source_column_name: str,
 ) -> DataFrame:
     """
-    If you put the list of columns of job role ratios in reverse order,
-    then you can copy of the values into the new column in that order,
-    then the worst estimate is replaced by a better one until you reach the best estimate
+    Merges job role ratio columns into one column.
+
+    We have various columns showing job role ratios per location made by different methods.
+    This function merges these columns into one final column using the order the columns are given
+    in a list as the highest to lowest priority.
+    Another column is added to show the source for the merged job role ratio column.
+
+    Args:
+        df (DataFrame): A dataframe containing multiple columns of job role ratios.
+        list_of_job_role_ratio_columns_to_be_merged (list): A list of job role ratio column names in priority order highest to lowest.
+        merged_job_role_ratios (str): The name to give the merged job role ratios column.
+
+    Returns:
+        DataFrame: A dataframe with a column for the merged job role ratios.
     """
+    df = df.withColumn(
+        merged_job_role_ratios_column_name,
+        F.coalesce(
+            *[F.col(column) for column in list_of_job_role_ratio_columns_to_be_merged]
+        ),
+    )
+
+    source_column = F.when(
+        F.col(list_of_job_role_ratio_columns_to_be_merged[0]).isNotNull(),
+        list_of_job_role_ratio_columns_to_be_merged[0],
+    )
+    for column_name in list_of_job_role_ratio_columns_to_be_merged[1:]:
+        source_column = source_column.when(F.col(column_name).isNotNull(), column_name)
+
+    df = df.withColumn(merged_job_role_ratios_source_column_name, source_column)
+
     return df
