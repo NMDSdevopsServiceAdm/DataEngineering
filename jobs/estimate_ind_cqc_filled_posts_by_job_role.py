@@ -82,6 +82,12 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.sum_job_role_count_split_by_service(
+            estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_job_role_count_map_to_ratios_map(
             estimated_ind_cqc_filled_posts_by_job_role_df,
             IndCQC.ascwds_job_role_counts,
@@ -89,14 +95,29 @@ def main(
         )
     )
 
-    estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
-        estimated_ind_cqc_filled_posts_df
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.transform_job_role_count_map_to_ratios_map(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_counts_by_primary_service,
+            IndCQC.ascwds_job_role_ratios_by_primary_service,
+        )
     )
 
+    list_of_job_role_ratio_columns_to_be_merged = [
+        IndCQC.ascwds_job_role_ratios,
+        IndCQC.ascwds_job_role_ratios_by_primary_service,
+    ]
     estimated_ind_cqc_filled_posts_by_job_role_df = (
-        JRutils.sum_job_role_count_split_by_service(
-            estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        JRutils.merge_job_role_ratio_columns(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            list_of_job_role_ratio_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
         )
+    )
+
+    estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
+        estimated_ind_cqc_filled_posts_df
     )
 
     utils.write_to_parquet(
