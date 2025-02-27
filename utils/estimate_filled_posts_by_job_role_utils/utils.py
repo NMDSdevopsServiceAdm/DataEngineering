@@ -313,7 +313,17 @@ def estimate_filled_posts_by_job_role(
     df: DataFrame,
 ) -> DataFrame:
     """
-    doc string goes here
+    Creates a map column of estimated filled posts by job role.
+
+    Takes the ascwds_job_role_ratios_merged column and multiplies each ratio by estimate_filled_posts.
+    The results are mapped to a dictionary with the same keys as ascwds_job_role_ratios_merged.
+
+    Args:
+        df (DataFrame): A dataframe which contains a job role ratio map column and an estimated filled post column.
+
+    Returns:
+        DataFrame: A dataframe with an additional map column of estimated filled posts by job role.
+
     """
     df = df.withColumn(
         IndCQC.estimate_filled_posts_by_job_role,
