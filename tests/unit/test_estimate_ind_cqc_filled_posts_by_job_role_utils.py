@@ -708,6 +708,26 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class EstimateFilledPostsByJobRole(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_estimate_filled_posts_by_job_role_returns_expected_estimates_when_all_job_role_ratios_populated(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
+            Schemas.estimate_filled_posts_by_job_role_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
+            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+        )
+        returned_df = """"""
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()

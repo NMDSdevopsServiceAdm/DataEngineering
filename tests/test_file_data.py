@@ -9928,6 +9928,48 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # fmt: off
+    estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows = [
+        ("1-001",
+         100.0,
+        {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5})
+    ]
+
+    expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows = [
+        ("1-001",
+         100.0,
+        {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+        {MainJobRoleLabels.care_worker: 50.0, MainJobRoleLabels.registered_nurse: 50.0})
+    ]
+    # fmt: on
+
+    estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows = [
+        ("1-001", 100.0, None)
+    ]
+
+    expected_estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows = [
+        ("1-001", 100.0, None, None)
+    ]
+
+    # fmt: off
+    estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows = [
+        (
+            "1-001",
+            None,
+            {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+        )
+    ]
+
+    expected_estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows = [
+        (
+            "1-001",
+            None,
+            {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+            None,
+        )
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]

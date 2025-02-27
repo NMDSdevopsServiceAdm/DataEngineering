@@ -6040,6 +6040,25 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    estimate_filled_posts_by_job_role_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_merged,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_estimate_filled_posts_by_job_role_schema = StructType(
+        [
+            *estimate_filled_posts_by_job_role_schema,
+            StructField(IndCQC.estimate_filled_posts_by_job_role, DoubleType(), True),
+        ]
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
