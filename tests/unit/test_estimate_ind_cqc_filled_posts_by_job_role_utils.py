@@ -723,7 +723,7 @@ class EstimateFilledPostsByJobRole(EstimateIndCQCFilledPostsByJobRoleUtilsTests)
             Data.expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
             Schemas.expected_estimate_filled_posts_by_job_role_schema,
         )
-        returned_df = """"""
+        returned_df = job.estimate_filled_posts_by_job_role(test_df)
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

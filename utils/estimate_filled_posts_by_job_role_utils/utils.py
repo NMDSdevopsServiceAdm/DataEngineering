@@ -307,3 +307,23 @@ def merge_job_role_ratio_columns(
     df = df.withColumn(IndCQC.ascwds_job_role_ratios_merged_source, source_column)
 
     return df
+
+
+def estimate_filled_posts_by_job_role(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    doc string goes here
+    """
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts_by_job_role,
+        F.map_from_arrays(
+            F.map_keys(F.col(IndCQC.ascwds_job_role_ratios_merged)),
+            F.transform(
+                F.map_values(F.col(IndCQC.ascwds_job_role_ratios_merged)),
+                lambda v: v * F.col(IndCQC.estimate_filled_posts),
+            ),
+        ),
+    )
+
+    return df

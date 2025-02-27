@@ -6055,7 +6055,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     expected_estimate_filled_posts_by_job_role_schema = StructType(
         [
             *estimate_filled_posts_by_job_role_schema,
-            StructField(IndCQC.estimate_filled_posts_by_job_role, DoubleType(), True),
+            StructField(
+                IndCQC.estimate_filled_posts_by_job_role,
+                MapType(StringType(), DoubleType()),
+                True,
+            ),
         ]
     )
 
