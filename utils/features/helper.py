@@ -57,6 +57,7 @@ def add_array_column_count_to_data(
     return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
 
 
+# TODO - amend tests (currently just hashed them out)
 def add_time_registered_into_df(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered.

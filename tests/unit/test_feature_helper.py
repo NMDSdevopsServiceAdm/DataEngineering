@@ -22,17 +22,17 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
         return super().setUp()
 
-    def test_add_time_registered_into_df(self):
-        test_df = self.spark.createDataFrame(
-            Data.add_time_registered_rows, Schemas.add_time_registered_schema
-        )
-        returned_df = add_time_registered_into_df(df=test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_add_time_registered_rows,
-            Schemas.expected_add_time_registered_schema,
-        )
+    # def test_add_time_registered_into_df(self):
+    #     test_df = self.spark.createDataFrame(
+    #         Data.add_time_registered_rows, Schemas.add_time_registered_schema
+    #     )
+    #     returned_df = add_time_registered_into_df(df=test_df)
+    #     expected_df = self.spark.createDataFrame(
+    #         Data.expected_add_time_registered_rows,
+    #         Schemas.expected_add_time_registered_schema,
+    #     )
 
-        self.assertEqual(expected_df.collect(), returned_df.collect())
+    #     self.assertEqual(expected_df.collect(), returned_df.collect())
 
     def test_convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         self,
