@@ -6055,12 +6055,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     unpacked_mapped_column_schema = StructType(
         [
             StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),            
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
             StructField(
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
-            )
+            ),
         ]
-
     )
 
     expected_unpacked_mapped_column_schema = StructType(
@@ -6071,5 +6070,4 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(MainJobRoleLabels.senior_care_worker, IntegerType(), True),
             StructField(MainJobRoleLabels.senior_management, IntegerType(), True),
         ]
-
-    )    
+    )
