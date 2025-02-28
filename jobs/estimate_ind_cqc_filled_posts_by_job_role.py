@@ -76,12 +76,31 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.merge_dataframes(
+        estimated_ind_cqc_filled_posts_df,
+        aggregated_job_roles_per_establishment_df,
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.transform_job_role_count_map_to_ratios_map(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_counts,
+            IndCQC.ascwds_job_role_ratios,
+        )
+    )
+
     estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
         estimated_ind_cqc_filled_posts_df
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.sum_job_role_count_split_by_service(
+            estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        )
+    )
+
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        estimated_ind_cqc_filled_posts_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         "overwrite",
         PartitionKeys,

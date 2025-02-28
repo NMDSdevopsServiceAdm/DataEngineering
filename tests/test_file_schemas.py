@@ -12,6 +12,7 @@ from pyspark.sql.types import (
     DoubleType,
     BooleanType,
     MapType,
+    LongType,
 )
 
 from utils.column_names.capacity_tracker_columns import (
@@ -5944,6 +5945,73 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    estimated_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.establishment_id, StringType(), True),
+        ]
+    )
+    aggregated_job_role_breakdown_df = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+    merged_job_role_estimate_schema = StructType(
+        [
+            *estimated_filled_posts_schema,
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+
+    create_total_from_values_in_map_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), LongType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_create_total_from_values_in_map_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), LongType()),
+                True,
+            ),
+            StructField("temp_total_count_of_worker_records", LongType(), True),
+        ]
+    )
+
+    ascwds_job_role_count_map_to_ratios_map_schema = StructType(
+        [*expected_create_total_from_values_in_map_column_schema]
+    )
+
+    expected_ascwds_job_role_count_map_to_ratios_map_schema = StructType(
+        [
+            *ascwds_job_role_count_map_to_ratios_map_schema,
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+        ]
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -5957,5 +6025,29 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *count_registered_manager_names_schema,
             StructField(IndCQC.registered_manager_count, IntegerType(), True),
+        ]
+    )
+
+    sum_job_role_split_by_service_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+            StructField(IndCQC.primary_service_type, StringType(), True),
+        ]
+    )
+
+    expected_sum_job_role_split_by_service_schema = StructType(
+        [
+            *sum_job_role_split_by_service_schema,
+            StructField(
+                IndCQC.ascwds_job_role_counts_by_primary_service,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
         ]
     )
