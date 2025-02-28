@@ -12,6 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 import utils.ind_cqc_filled_posts_utils.utils as job
+from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
 
 class TestIndCqcFilledPostUtils(unittest.TestCase):
@@ -29,19 +30,19 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
             Schemas.input_schema_for_adding_estimate_filled_posts_and_source,
         )
 
-        self.returned_df = job.populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+        self.returned_df = merge_columns_in_order(
             self.input_df,
             ["model_name_1", "model_name_2", "model_name_3"],
             IndCQC.estimate_filled_posts,
             IndCQC.estimate_filled_posts_source,
         )
 
-    def test_populate_estimate_filled_posts_and_source_adds_new_columns(self):
+    def test_merge_columns_in_order_adds_new_columns(self):
         assert IndCQC.estimate_filled_posts in self.returned_df.columns
         assert IndCQC.estimate_filled_posts_source in self.returned_df.columns
         self.assertEqual(len(self.returned_df.columns), len(self.input_df.columns) + 2)
 
-    def test_populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+    def test_merge_columns_in_order_returns_expected_values(
         self,
     ):
         expected_df = self.spark.createDataFrame(
