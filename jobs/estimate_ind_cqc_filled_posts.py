@@ -20,10 +20,7 @@ from utils.estimate_filled_posts.models.non_res_without_dormancy import (
 from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
     model_non_res_pir_linear_regression,
 )
-
-from utils.ind_cqc_filled_posts_utils.utils import (
-    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
-)
+from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
 estimate_missing_ascwds_columns = [
     IndCQC.cqc_location_import_date,
@@ -150,23 +147,21 @@ def main(
 
     # TODO: add imputation for other non res models
 
-    estimate_filled_posts_df = (
-        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-            estimate_filled_posts_df,
-            [
-                IndCQC.ascwds_pir_merged,
-                IndCQC.imputed_posts_care_home_model,
-                IndCQC.care_home_model,
-                IndCQC.imputed_filled_post_model,
-                IndCQC.imputed_posts_non_res_with_dormancy_model,
-                IndCQC.non_res_pir_linear_regression_model,
-                IndCQC.non_res_with_dormancy_model,
-                IndCQC.non_res_without_dormancy_model,
-                IndCQC.rolling_average_model,
-            ],
-            IndCQC.estimate_filled_posts,
-            IndCQC.estimate_filled_posts_source,
-        )
+    estimate_filled_posts_df = merge_columns_in_order(
+        estimate_filled_posts_df,
+        [
+            IndCQC.ascwds_pir_merged,
+            IndCQC.imputed_posts_care_home_model,
+            IndCQC.care_home_model,
+            IndCQC.imputed_filled_post_model,
+            IndCQC.imputed_posts_non_res_with_dormancy_model,
+            IndCQC.non_res_pir_linear_regression_model,
+            IndCQC.non_res_with_dormancy_model,
+            IndCQC.non_res_without_dormancy_model,
+            IndCQC.rolling_average_model,
+        ],
+        IndCQC.estimate_filled_posts,
+        IndCQC.estimate_filled_posts_source,
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
