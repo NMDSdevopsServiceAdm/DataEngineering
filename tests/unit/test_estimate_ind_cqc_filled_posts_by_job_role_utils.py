@@ -814,3 +814,20 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         return_df = job.unpack_mapped_column(test_df, IndCQC.ascwds_job_role_ratios)
 
         self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_unpack_mapped_column_when_two_import_dates_in_data_return_dataframe_with_two_import_dates_and_unpacked_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_two_import_dates_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_two_import_dates_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        return_df = job.unpack_mapped_column(test_df, IndCQC.ascwds_job_role_ratios)
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
