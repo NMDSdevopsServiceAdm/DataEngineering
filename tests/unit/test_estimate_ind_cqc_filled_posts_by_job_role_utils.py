@@ -776,12 +776,14 @@ class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtils
             .collect(),
         )
 
+
 class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_sample(self,):
-
+    def test_sample(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.unpacked_mapped_column_with_one_establishment_record_data,
             Schemas.unpacked_mapped_column_schema,
@@ -789,14 +791,9 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         expected_df = self.spark.createDataFrame(
             Data.expected_unpacked_mapped_column_with_one_establishment_record_data,
-            Schemas.expected_unpacked_mapped_column_schema
+            Schemas.expected_unpacked_mapped_column_schema,
         )
 
-        return_df = job.unpack_mapped_column(
-            test_df
-        )
+        return_df = job.unpack_mapped_column(test_df, IndCQC.ascwds_job_role_ratios)
 
-        self.assertEqual(
-            expected_df.collect(),
-            return_df.collect()
-        )
+        self.assertEqual(expected_df.collect(), return_df.collect())

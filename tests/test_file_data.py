@@ -10140,10 +10140,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             "10545",
             date(2025, 1, 1),
             {
-                MainJobRoleLabels.care_worker: 1,
-                MainJobRoleLabels.registered_nurse: 1,
-                MainJobRoleLabels.senior_care_worker: 1,
-                MainJobRoleLabels.senior_management: 1,
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
             },
         )
     ]
@@ -10152,9 +10152,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (
             "10545",
             date(2025, 1, 1),
-            1,
-            1,
-            1,
-            1,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
         )
     ]
