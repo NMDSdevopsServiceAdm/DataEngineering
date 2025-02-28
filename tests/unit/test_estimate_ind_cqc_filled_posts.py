@@ -48,6 +48,10 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.estimate_ind_cqc_filled_posts.merge_columns_in_order")
+    @patch(
+        "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
+    )
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_pir_linear_regression")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
@@ -60,6 +64,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_non_res_with_dormancy_patch: Mock,
         model_non_res_without_dormancy_patch: Mock,
         model_non_res_pir_linear_regression_patch: Mock,
+        model_imputation_with_extrapolation_and_interpolation: Mock,
+        merge_columns_in_order_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -89,6 +95,10 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
         self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
         self.assertEqual(model_non_res_pir_linear_regression_patch.call_count, 1)
+        self.assertEqual(
+            model_imputation_with_extrapolation_and_interpolation.call_count, 2
+        )
+        self.assertEqual(merge_columns_in_order_mock.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
