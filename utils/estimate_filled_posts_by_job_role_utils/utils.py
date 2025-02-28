@@ -268,3 +268,17 @@ def sum_job_role_count_split_by_service(
     )
 
     return df_result
+
+
+def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
+    df_keys = df.select(F.explode(F.map_keys(df[column_name])))
+
+    list_keys = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+
+    column_of_keys = list(
+        map(lambda x: F.col(column_name).getItem(x).alias(str(x)), list_keys)
+    )
+
+    result_df = df.select(df["*"], *column_of_keys)
+
+    return result_df
