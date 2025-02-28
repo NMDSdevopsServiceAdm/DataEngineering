@@ -1,4 +1,4 @@
-from pyspark.ml.regression import GBTRegressionModel
+from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from utils.estimate_filled_posts.insert_predictions_into_locations import (
@@ -32,9 +32,9 @@ def model_non_res_with_dormancy(
     Returns:
         DataFrame: A dataframe with non residential with dormancy model estimates added.
     """
-    gbt_trained_model = GBTRegressionModel.load(model_source)
+    lasso_trained_model = LinearRegressionModel.load(model_source)
 
-    non_res_with_dormancy_predictions = gbt_trained_model.transform(features_df)
+    non_res_with_dormancy_predictions = lasso_trained_model.transform(features_df)
 
     save_model_metrics(
         non_res_with_dormancy_predictions,
