@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import LongType
+from pyspark.sql.types import LongType, MapType, FloatType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -268,42 +268,3 @@ def sum_job_role_count_split_by_service(
     )
 
     return df_result
-
-
-def merge_job_role_ratio_columns(
-    df: DataFrame,
-    list_of_job_role_ratio_columns_to_be_merged: List,
-) -> DataFrame:
-    """
-    Merges two job role ratio columns into a new column and adds another column for the source.
-
-    We have two columns showing job role ratios per location made by different methods,
-    these are ascwds_job_role_ratios and ascwds_job_role_ratios_by_primary_service.
-    This function merges these two columns into final column called ascwds_job_role_ratios_merged,
-    using the order the columns are given in a list as the highest to lowest priority.
-    Another column, ascwds_job_role_ratios_merged_source, is added to show the source for the merged job role ratio column.
-
-    Args:
-        df (DataFrame): A dataframe containing multiple columns of job role ratios.
-        list_of_job_role_ratio_columns_to_be_merged (List): A list of job role ratio column names in priority order highest to lowest.
-
-    Returns:
-        DataFrame: A dataframe with a column for the merged job role ratios.
-    """
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_ratios_merged,
-        F.coalesce(
-            *[F.col(column) for column in list_of_job_role_ratio_columns_to_be_merged]
-        ),
-    )
-
-    source_column = F.when(
-        F.col(list_of_job_role_ratio_columns_to_be_merged[0]).isNotNull(),
-        list_of_job_role_ratio_columns_to_be_merged[0],
-    )
-    for column_name in list_of_job_role_ratio_columns_to_be_merged[1:]:
-        source_column = source_column.when(F.col(column_name).isNotNull(), column_name)
-
-    df = df.withColumn(IndCQC.ascwds_job_role_ratios_merged_source, source_column)
-
-    return df
