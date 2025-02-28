@@ -796,4 +796,7 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         return_df = job.unpack_mapped_column(test_df, IndCQC.ascwds_job_role_ratios)
 
+        expected_df.show(truncate=False)
+        return_df.show(truncate=False)
+
         self.assertEqual(expected_df.collect(), return_df.collect())
