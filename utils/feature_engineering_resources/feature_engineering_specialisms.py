@@ -11,7 +11,7 @@ class FeatureEngineeringValueLabelsSpecialisms:
 
     column_name: str = CatValues.specialisms_column_values.column_name
 
-    labels_dict = {
+    non_res_model_labels_dict = {
         "specialism_adults_over_65": "Caring for adults over 65 yrs",
         "specialism_adults_under_65": "Caring for adults under 65 yrs",
         "specialism_children": "Caring for children",

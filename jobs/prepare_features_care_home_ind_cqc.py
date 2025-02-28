@@ -45,28 +45,28 @@ def main(
         col_to_check=IndCQC.services_offered,
     )
 
-    service_keys = list(ServicesFeatures.labels_dict.keys())
+    service_keys = list(ServicesFeatures.care_home_labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.labels_dict,
+        lookup_dict=ServicesFeatures.care_home_labels_dict,
     )
 
-    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.care_home_labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.labels_dict,
+            lookup_dict=RuralUrbanFeatures.care_home_labels_dict,
         )
     )
 
-    regions = list(RegionFeatures.labels_dict.keys())
+    regions = list(RegionFeatures.care_home_labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.labels_dict,
+            lookup_dict=RegionFeatures.care_home_labels_dict,
         )
     )
 
