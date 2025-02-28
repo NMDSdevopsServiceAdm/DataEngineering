@@ -9965,7 +9965,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             "1-001",
             None,
             {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
-            None,
+            {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
         )
     ]
     # fmt: on

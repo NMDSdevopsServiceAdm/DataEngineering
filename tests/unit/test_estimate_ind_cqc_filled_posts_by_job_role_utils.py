@@ -712,15 +712,56 @@ class EstimateFilledPostsByJobRole(EstimateIndCQCFilledPostsByJobRoleUtilsTests)
     def setUp(self) -> None:
         super().setUp()
 
-    def test_estimate_filled_posts_by_job_role_returns_expected_estimates_when_all_job_role_ratios_populated(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
             Schemas.estimate_filled_posts_by_job_role_schema,
         )
-        expected_df = self.spark.createDataFrame(
+        self.expected_df = self.spark.createDataFrame(
             Data.expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
+            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+        )
+        self.returned_df = job.estimate_filled_posts_by_job_role(self.test_df)
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_estimate_filled_posts_by_job_role_adds_one_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+
+    def test_estimate_filled_posts_by_job_role_returns_expected_estimates_when_all_job_role_ratios_populated(
+        self,
+    ):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+    def test_estimate_filled_posts_by_job_role_returns_null_when_job_role_ratio_column_is_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows,
+            Schemas.estimate_filled_posts_by_job_role_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows,
+            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+        )
+        returned_df = job.estimate_filled_posts_by_job_role(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_estimate_filled_posts_by_job_role_returns_null_when_estimate_filled_posts_is_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows,
+            Schemas.estimate_filled_posts_by_job_role_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows,
             Schemas.expected_estimate_filled_posts_by_job_role_schema,
         )
         returned_df = job.estimate_filled_posts_by_job_role(test_df)
