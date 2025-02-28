@@ -96,6 +96,8 @@ def merge_columns_in_order(
         merged_column_source_name (str):
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
+    Raises:
+        ValueError: if the given list of columns have different datatypes.
     """
     column_types = list(
         set(
