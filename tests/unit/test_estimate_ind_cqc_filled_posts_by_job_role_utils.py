@@ -633,6 +633,16 @@ class MergeAscwdsAndPrimaryServiceJobRoleRatioColumns(
     ):
         self.assertEqual(len(self.new_columns_added), 2)
 
+    def test_merge_job_role_ratio_columns_adds_expected_column_names(
+        self,
+    ):
+        self.assertEqual(
+            self.new_columns_added[0], IndCQC.ascwds_job_role_ratios_merged
+        )
+        self.assertEqual(
+            self.new_columns_added[1], IndCQC.ascwds_job_role_ratios_merged_source
+        )
+
     def test_merge_job_role_ratio_columns_returns_ascwds_ratios_when_only_ascwds_known(
         self,
     ):
