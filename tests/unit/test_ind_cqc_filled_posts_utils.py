@@ -12,7 +12,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 import utils.ind_cqc_filled_posts_utils.utils as job
-from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
 
 class TestIndCqcFilledPostUtils(unittest.TestCase):
@@ -30,7 +29,7 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
             Schemas.input_schema_for_adding_estimate_filled_posts_and_source,
         )
 
-        self.returned_df = merge_columns_in_order(
+        self.returned_df = job.merge_columns_in_order(
             self.input_df,
             ["model_name_1", "model_name_2", "model_name_3"],
             IndCQC.estimate_filled_posts,
