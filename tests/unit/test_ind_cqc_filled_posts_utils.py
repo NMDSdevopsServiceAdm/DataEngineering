@@ -55,6 +55,40 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
         self.assertEqual(self.returned_df.count(), expected_df.count())
         self.assertEqual(expected_data, returned_data)
 
+    def test_merge_columns_in_order_raises_error_when_given_list_of_columns_with_multiple_datatypes(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_columns_in_order_when_df_has_columns_of_multiple_datatypes,
+            Schemas.merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema,
+        )
+
+        list_of_columns_of_multiple_datatypes = [
+            IndCQC.care_home_model,
+            IndCQC.ascwds_job_role_ratios,
+        ]
+        column_types = list(
+            set(
+                [
+                    test_df.schema[column].dataType
+                    for column in list_of_columns_of_multiple_datatypes
+                ]
+            )
+        )
+        with self.assertRaises(ValueError) as context:
+            job.merge_columns_in_order(
+                test_df,
+                list_of_columns_of_multiple_datatypes,
+                "merged_column_name",
+                "merged_column_source_name",
+            )
+
+        self.assertTrue(
+            f"The columns to merge must all have the same datatype. Found {column_types}"
+            in str(context.exception),
+            "Exception does not contain the correct error message",
+        )
+
 
 class TestSourceDescriptionAdded(TestIndCqcFilledPostUtils):
     def setUp(self) -> None:

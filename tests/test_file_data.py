@@ -4357,6 +4357,17 @@ class IndCQCDataUtils:
         ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
     ]
 
+    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
+        (
+            "1-000001",
+            10.0,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        )
+    ]
+
     source_missing_rows = [
         ("1-000001", 8.0, None),
         ("1-000002", None, None),

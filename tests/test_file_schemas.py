@@ -2174,6 +2174,18 @@ class IndCQCDataUtils:
         ]
     )
 
+    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema = (
+        StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.care_home_model, FloatType(), True),
+                StructField(
+                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType())
+                ),
+            ]
+        )
+    )
+
     estimated_source_description_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
