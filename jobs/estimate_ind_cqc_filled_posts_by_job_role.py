@@ -6,7 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
-from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
+from utils.ind_cqc_filled_posts_utils import utils as FPutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -108,7 +108,7 @@ def main(
         IndCQC.ascwds_job_role_ratios,
         IndCQC.ascwds_job_role_ratios_by_primary_service,
     ]
-    estimated_ind_cqc_filled_posts_by_job_role_df = merge_columns_in_order(
+    estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         list_of_job_role_ratio_columns_to_be_merged,
         IndCQC.ascwds_job_role_ratios_merged,
