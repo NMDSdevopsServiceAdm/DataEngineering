@@ -1,4 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import Window
 from pyspark.sql.types import LongType
 from typing import List
 
@@ -282,3 +283,45 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     result_df = df.select(df["*"], *column_of_keys)
 
     return result_df
+
+
+def interpolate_job_role_count(df: DataFrame, column_name: str) -> DataFrame:
+    df = unpack_mapped_column(df, column_name).drop(column_name)
+
+    df_keys = df.select(F.explode(F.map_keys(df[column_name])))
+    columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+
+    window_prev = (
+        Window.partitionBy(IndCQC.establishment_id)
+        .orderBy(IndCQC.unix_time)
+        .rowsBetween(Window.unboundedPreceding, -1)
+    )
+    window_next = (
+        Window.partitionBy(IndCQC.establishment_id)
+        .orderBy(IndCQC.unix_time)
+        .rowsBetween(1, Window.unboundedFollowing)
+    )
+
+    for col_name in columns_to_interpolate:
+        df = df.withColumn(
+            f"prev_{col_name}", F.last(col_name, ignorenulls=True).over(window_prev)
+        )
+        df = df.withColumn(
+            f"next_{col_name}", F.first(col_name, ignorenulls=True).over(window_next)
+        )
+
+        df = df.withColumn(
+            col_name,
+            F.when(
+                F.col(col_name).isNull(),
+                F.when(
+                    F.col(f"prev_{col_name}").isNotNull()
+                    & F.col(f"next_{col_name}").isNotNull(),
+                    (F.col(f"prev_{col_name}") + F.col(f"next_{col_name}")) / 2,
+                )
+                .when(F.col(f"prev_{col_name}").isNotNull(), F.col(f"prev_{col_name}"))
+                .when(F.col(f"next_{col_name}").isNotNull(), F.col(f"next_{col_name}")),
+            ).otherwise(F.col(col_name)),
+        ).drop(f"prev_{col_name}", f"next_{col_name}")
+
+    df = df.withColumn(column_name, create_map_column(columns_to_interpolate))
