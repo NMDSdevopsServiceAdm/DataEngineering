@@ -327,3 +327,7 @@ def interpolate_job_role_count(df: DataFrame, column_name: str) -> DataFrame:
         ).drop(f"prev_{col_name}", f"next_{col_name}")
 
     df = df.withColumn(column_name, create_map_column(columns_to_interpolate))
+
+    df_result = df.drop(*columns_to_interpolate)
+
+    return df_result
