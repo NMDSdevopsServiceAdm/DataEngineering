@@ -837,7 +837,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_unpack_mapped_column_when_two_import_dates_in_data_return_dataframe_with_two_import_dates_and_unpacked_job_role_counts(
+    def test_sample(
         self,
     ):
         test_df = self.spark.createDataFrame(
