@@ -10273,6 +10273,34 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    unpacked_mapped_column_with_null_values_data = [
+        (
+            "10545",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            }
+        )]
+    
+    expected_unpacked_mapped_column_with_null_values_data = [
+        (
+            "10545",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+            None,
+            None,
+            None,
+            None,
+        )]
+
     interpolate_job_role_count_data = [
         (
             "1000",

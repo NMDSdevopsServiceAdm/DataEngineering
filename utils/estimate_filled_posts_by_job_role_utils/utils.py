@@ -286,10 +286,12 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
 
 
 def interpolate_job_role_count(df: DataFrame, column_name: str) -> DataFrame:
-    df = unpack_mapped_column(df, column_name).drop(column_name)
+    df = unpack_mapped_column(df, column_name)
 
     df_keys = df.select(F.explode(F.map_keys(df[column_name])))
     columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+
+    df = df.drop(column_name)
 
     window_prev = (
         Window.partitionBy(IndCQC.establishment_id)
