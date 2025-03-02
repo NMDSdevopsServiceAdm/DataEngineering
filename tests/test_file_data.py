@@ -10273,7 +10273,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_schema = [
+    interpolate_job_role_count_data = [
         (
             "1000",
             1000,
@@ -10306,7 +10306,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_schema = [
+    expected_interpolate_job_role_count_data = [
         (
             "1000",
             1000,
