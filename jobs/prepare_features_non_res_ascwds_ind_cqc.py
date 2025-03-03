@@ -1,7 +1,7 @@
 import sys
 from typing import List
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -20,9 +20,6 @@ from utils.feature_engineering_resources.feature_engineering_rural_urban import 
 )
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
-)
-from utils.feature_engineering_resources.feature_engineering_specialisms import (
-    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
     vectorise_dataframe,
@@ -77,41 +74,34 @@ def main(
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,
     )
+    features_df = add_array_column_count_to_data(
+        df=features_df,
+        new_col_name=IndCQC.specialism_count,
+        col_to_check=IndCQC.specialisms,
+    )
 
-    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
+    service_keys = list(ServicesFeatures.labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.non_res_model_labels_dict,
+        lookup_dict=ServicesFeatures.labels_dict,
     )
 
-    # make function if required
-    features_df = features_df.withColumn(
-        IndCQC.specialisms_offered, features_df["specialisms"]["name"]
-    )
-
-    specialisms_keys = list(SpecialismsFeatures.non_res_model_labels_dict.keys())
-    features_df = column_expansion_with_dict(
-        df=features_df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=SpecialismsFeatures.non_res_model_labels_dict,
-    )
-
-    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.non_res_model_labels_dict,
+            lookup_dict=RuralUrbanFeatures.labels_dict,
         )
     )
 
-    regions = list(RegionFeatures.non_res_model_labels_dict.keys())
+    regions = list(RegionFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.non_res_model_labels_dict,
+            lookup_dict=RegionFeatures.labels_dict,
         )
     )
 
@@ -128,14 +118,6 @@ def main(
         df=features_df,
     )
 
-    # There are a limited number of locations in some categories with very few, or no, ASCWDS data so the counts are capped.
-    features_df = features_df.withColumn(
-        IndCQC.service_count, F.least(F.col(IndCQC.service_count), F.lit(4))
-    )
-    features_df = features_df.withColumn(
-        IndCQC.activity_count, F.least(F.col(IndCQC.activity_count), F.lit(3))
-    )
-
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
@@ -147,7 +129,6 @@ def main(
             IndCQC.time_registered,
         ]
         + service_keys
-        + specialisms_keys
         + regions
         + rui_indicators
     )

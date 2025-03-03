@@ -32,9 +32,9 @@ def model_non_res_with_dormancy(
     Returns:
         DataFrame: A dataframe with non residential with dormancy model estimates added.
     """
-    lasso_trained_model = LinearRegressionModel.load(model_source)
+    gbt_trained_model = LinearRegressionModel.load(model_source)
 
-    non_res_with_dormancy_predictions = lasso_trained_model.transform(features_df)
+    non_res_with_dormancy_predictions = gbt_trained_model.transform(features_df)
 
     save_model_metrics(
         non_res_with_dormancy_predictions,
