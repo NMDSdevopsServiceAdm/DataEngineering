@@ -850,11 +850,12 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
+
 class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_sample(
+    def test_model_interpolation_when_one_record_of_null_values_in_between_populated_job_role_counts_return_dataframe_with_interpolated_job_role_counts(
         self,
     ):
         test_df = self.spark.createDataFrame(
@@ -867,7 +868,97 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_count_schema,
         )
 
-        return_df = interp.model_interpolation(test_df, IndCQC.ascwds_job_role_ratios, "straight")
+        return_df = interp.model_interpolation(
+            test_df, IndCQC.ascwds_job_role_ratios, "straight"
+        )
+
+        expected_df.show(truncate=False)
+        return_df.show(truncate=False)
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_model_interpolation_when_two_records_of_null_values_in_between_populated_job_role_counts_return_dataframe_with_interpolated_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.interpolate_job_role_count_with_2_records_with_nulls_data,
+            Schemas.interpolate_job_role_count_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_job_role_count_with_2_records_with_nulls_data,
+            Schemas.expected_interpolate_job_role_count_schema,
+        )
+
+        return_df = interp.model_interpolation(
+            test_df, IndCQC.ascwds_job_role_ratios, "straight"
+        )
+
+        expected_df.show(truncate=False)
+        return_df.show(truncate=False)
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_model_interpolation_when_two_paritions_in_dataframe_return_dataframe_with_interpolated_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.interpolate_job_role_count_with_2_partitions_data,
+            Schemas.interpolate_job_role_count_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_job_role_count_with_2_partitions_data,
+            Schemas.expected_interpolate_job_role_count_schema,
+        )
+
+        return_df = interp.model_interpolation(
+            test_df, IndCQC.ascwds_job_role_ratios, "straight"
+        )
+
+        expected_df.show(truncate=False)
+        return_df.show(truncate=False)
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_model_interpolation_when_three_records_of_null_values_in_between_populated_job_role_counts_return_dataframe_with_interpolated_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.interpolate_job_role_count_with_2_records_with_nulls_data,
+            Schemas.interpolate_job_role_count_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_job_role_count_with_2_records_with_nulls_data,
+            Schemas.expected_interpolate_job_role_count_schema,
+        )
+
+        return_df = interp.model_interpolation(
+            test_df, IndCQC.ascwds_job_role_ratios, "straight"
+        )
+
+        expected_df.show(truncate=False)
+        return_df.show(truncate=False)
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_model_interpolation_when_three_paritions_in_dataframe_return_dataframe_with_interpolated_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.interpolate_job_role_count_with_three_records_with_nulls_data,
+            Schemas.interpolate_job_role_count_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_job_role_count_with_three_records_with_nulls_data,
+            Schemas.expected_interpolate_job_role_count_schema,
+        )
+
+        return_df = interp.model_interpolation(
+            test_df, IndCQC.ascwds_job_role_ratios, "straight"
+        )
 
         expected_df.show(truncate=False)
         return_df.show(truncate=False)

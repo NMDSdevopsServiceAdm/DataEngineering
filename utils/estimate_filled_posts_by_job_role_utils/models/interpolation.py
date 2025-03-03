@@ -4,8 +4,12 @@ from typing import Optional, Tuple
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-from utils.estimate_filled_posts_by_job_role_utils.utils import unpack_mapped_column, create_map_column
+from utils.estimate_filled_posts_by_job_role_utils.utils import (
+    unpack_mapped_column,
+    create_map_column,
+)
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+
 
 def model_interpolation(
     df: DataFrame,
@@ -44,8 +48,7 @@ def model_interpolation(
     ) = define_window_specs()
 
     for column in columns_to_interpolate:
-
-    # for column in ["registered_nurse"]:
+        # for column in ["registered_nurse"]:
 
         df = calculate_proportion_of_time_between_submissions(
             df, column, window_spec_backwards, window_spec_forwards
@@ -60,7 +63,8 @@ def model_interpolation(
                 window_spec_forwards,
             )
             df = calculate_interpolated_values(
-                df, IndCqc.extrapolation_forwards,
+                df,
+                IndCqc.extrapolation_forwards,
             )
 
         elif method == "straight":
@@ -80,9 +84,7 @@ def model_interpolation(
                 window_spec_forwards,
             )
             df.show()
-            df = calculate_interpolated_values(
-                df, column
-            )
+            df = calculate_interpolated_values(df, column)
             df.show()
             df = df.drop(IndCqc.previous_non_null_value)
             df.show()
@@ -92,7 +94,9 @@ def model_interpolation(
 
         df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
 
-    df = df.withColumn(column_with_null_values, create_map_column(columns_to_interpolate))
+    df = df.withColumn(
+        column_with_null_values, create_map_column(columns_to_interpolate)
+    )
 
     df_result = df.drop(*columns_to_interpolate)
 
@@ -232,9 +236,11 @@ def calculate_interpolated_values(
     """
     df = df.withColumn(
         column_to_interpolate_from,
-                F.when(
+        F.when(
             F.col(column_to_interpolate_from).isNull(),
-            F.col(IndCqc.previous_non_null_value) + F.col(IndCqc.residual) * F.col(IndCqc.proportion_of_time_between_submissions),
+            F.col(IndCqc.previous_non_null_value)
+            + F.col(IndCqc.residual)
+            * F.col(IndCqc.proportion_of_time_between_submissions),
         ).otherwise(F.col(column_to_interpolate_from)),
     )
     return df
