@@ -10369,7 +10369,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_2_records_with_nulls_data = [
+    interpolate_job_role_count_with_two_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10412,7 +10412,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_2_records_with_nulls_data = [
+    expected_interpolate_job_role_count_with_two_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10455,7 +10455,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_2_partitions_data = [
+    interpolate_job_role_count_with_two_partitions_data = [
         (
             "1000",
             1000,
@@ -10528,7 +10528,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_2_partitions_data = [
+    expected_interpolate_job_role_count_with_two_partitions_data = [
         (
             "1000",
             1000,

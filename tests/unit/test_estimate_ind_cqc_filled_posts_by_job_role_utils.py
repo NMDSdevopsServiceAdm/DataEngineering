@@ -881,12 +881,12 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_count_with_2_records_with_nulls_data,
+            Data.interpolate_job_role_count_with_two_records_with_nulls_data,
             Schemas.interpolate_job_role_count_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_count_with_2_records_with_nulls_data,
+            Data.expected_interpolate_job_role_count_with_two_records_with_nulls_data,
             Schemas.expected_interpolate_job_role_count_schema,
         )
 
@@ -903,12 +903,12 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_count_with_2_partitions_data,
+            Data.interpolate_job_role_count_with_two_partitions_data,
             Schemas.interpolate_job_role_count_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_count_with_2_partitions_data,
+            Data.expected_interpolate_job_role_count_with_two_partitions_data,
             Schemas.expected_interpolate_job_role_count_schema,
         )
 
@@ -925,12 +925,12 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_count_with_2_records_with_nulls_data,
+            Data.interpolate_job_role_count_with_three_records_with_nulls_data,
             Schemas.interpolate_job_role_count_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_count_with_2_records_with_nulls_data,
+            Data.expected_interpolate_job_role_count_with_three_records_with_nulls_data,
             Schemas.expected_interpolate_job_role_count_schema,
         )
 
