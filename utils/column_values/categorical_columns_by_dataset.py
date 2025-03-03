@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-    NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRClean,
@@ -41,13 +40,6 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     InAscwds,
 )
-
-
-@dataclass
-class LocationApiRawCategoricalValues:
-    dormancy_column_values = Dormancy(CQCL.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(CQCL.registration_status)
-    care_home_column_values = CareHome(CQCL.care_home)
 
 
 @dataclass

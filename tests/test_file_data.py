@@ -17,21 +17,21 @@ from utils.column_values.categorical_columns_by_dataset import (
     DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
-    PrimaryServiceType,
-    CareHome,
-    Sector,
-    MainJobRoleLabels,
-    LocationType,
-    CQCRatingsValues,
-    CQCCurrentOrHistoricValues,
-    ParentsOrSinglesAndSubs,
-    IsParent,
-    SingleSubDescription,
-    Services,
-    EstimateFilledPostsSource,
     AscwdsFilteringRule,
+    CareHome,
+    CQCCurrentOrHistoricValues,
+    CQCRatingsValues,
+    EstimateFilledPostsSource,
+    IsParent,
+    LocationType,
+    MainJobRoleLabels,
+    ParentsOrSinglesAndSubs,
+    PrimaryServiceType,
+    RegistrationStatus,
     RelatedLocation,
+    Sector,
+    Services,
+    SingleSubDescription,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
@@ -8085,14 +8085,13 @@ class ValidateASCWDSWorkerRawData:
 
 @dataclass
 class ValidateLocationsAPIRawData:
-    # fmt: off
     raw_cqc_locations_rows = [
-        ("1-000000001", "20240101", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000002", "20240101", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000001", "20240201", "Y", "prov_1", RegistrationStatus.registered, "2020-01-01", "location name", 5, "N"),
-        ("1-000000002", "20240201", "Y", "prov_1", RegistrationStatus.deregistered, "2020-01-01", "location name", 5, "N"),
+        ("1-00001", "20240101", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240101", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00001", "20240201", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
     ]
-    # fmt: on
 
 
 @dataclass
