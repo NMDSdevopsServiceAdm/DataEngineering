@@ -10706,3 +10706,149 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         ),
     ]
+
+    interpolate_job_role_count_with_null_records_which_cannot_be_interpolated_data = [
+        (
+            "1000",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 4.0,
+                MainJobRoleLabels.senior_care_worker: 6.0,
+                MainJobRoleLabels.senior_management: 8.0,
+            },
+        ),
+        (
+            "1000",
+            1002,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            1003,
+            {
+                MainJobRoleLabels.care_worker: 0.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 4.0,
+                MainJobRoleLabels.senior_management: 5.0,
+            },
+        ),
+        (
+            "1001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 5.0,
+                MainJobRoleLabels.registered_nurse: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1001",
+            1002,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+    ]
+
+    expected_interpolate_job_role_count_with_null_records_which_cannot_be_interpolated_data = [
+        (
+            "1000",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 4.0,
+                MainJobRoleLabels.senior_care_worker: 6.0,
+                MainJobRoleLabels.senior_management: 8.0,
+            },
+        ),
+        (
+            "1000",
+            1002,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+                MainJobRoleLabels.senior_care_worker: 5.0,
+                MainJobRoleLabels.senior_management: 6.5,
+            },
+        ),
+        (
+            "1000",
+            1003,
+            {
+                MainJobRoleLabels.care_worker: 0.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 4.0,
+                MainJobRoleLabels.senior_management: 5.0,
+            },
+        ),
+        (
+            "1001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 5.0,
+                MainJobRoleLabels.registered_nurse: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1001",
+            1002,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+    ]
