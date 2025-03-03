@@ -44,13 +44,6 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
-class LocationApiRawCategoricalValues:
-    dormancy_column_values = Dormancy(CQCL.dormancy, contains_null_values=True)
-    registration_status_column_values = RegistrationStatus(CQCL.registration_status)
-    care_home_column_values = CareHome(CQCL.care_home)
-
-
-@dataclass
 class ASCWDSWorkerCleanedCategoricalValues:
     main_job_role_labels_column_values = MainJobRoleLabels(
         AWKClean.main_job_role_clean_labelled
