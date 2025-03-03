@@ -4,6 +4,7 @@ from unittest.mock import ANY, call, patch, Mock
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils import utils as job
+from utils.estimate_filled_posts_by_job_role_utils.models import interpolation as interp
 from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
 from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
@@ -866,7 +867,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_count_schema,
         )
 
-        return_df = job.interpolate_job_role_count(test_df, IndCQC.ascwds_job_role_ratios)
+        return_df = interp.model_interpolation(test_df, IndCQC.ascwds_job_role_ratios, "straight")
 
         expected_df.show(truncate=False)
         return_df.show(truncate=False)
