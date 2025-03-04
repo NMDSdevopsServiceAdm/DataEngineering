@@ -282,7 +282,7 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
 
     Args:
         df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
+        column_name (str): Mapped column which needs unpacking.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
