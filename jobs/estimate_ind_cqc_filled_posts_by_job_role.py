@@ -104,13 +104,12 @@ def main(
         )
     )
 
-    list_of_job_role_ratio_columns_to_be_merged = [
-        IndCQC.ascwds_job_role_ratios,
-        IndCQC.ascwds_job_role_ratios_by_primary_service,
-    ]
     estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
         estimated_ind_cqc_filled_posts_by_job_role_df,
-        list_of_job_role_ratio_columns_to_be_merged,
+        [
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.ascwds_job_role_ratios_by_primary_service,
+        ],
         IndCQC.ascwds_job_role_ratios_merged,
         IndCQC.ascwds_job_role_ratios_merged_source,
     )
