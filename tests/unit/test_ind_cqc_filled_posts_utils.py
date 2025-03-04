@@ -84,7 +84,7 @@ class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
             )
 
         self.assertTrue(
-            f"Error: The columns to merge must all have the same datatype. Found {column_types}."
+            f"The columns to merge must all have the same datatype. Found {column_types}."
             in str(context.exception),
             "Exception does not contain the correct error message",
         )
@@ -118,7 +118,7 @@ class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
             )
 
         self.assertTrue(
-            f"Error: columns to merge must be either 'float' of 'map' type. Found {column_types}."
+            f"Columns to merge must be either 'float' or 'map' type. Found {column_types}."
             in str(context.exception),
             "Exception does not contain the correct error message",
         )

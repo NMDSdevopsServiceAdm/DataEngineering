@@ -151,7 +151,7 @@ def merge_columns_in_order(
 
     else:
         raise ValueError(
-            f"Columns to merge must be either 'float' of 'map' type. Found {column_types}."
+            f"Columns to merge must be either 'float' or 'map' type. Found {column_types}."
         )
 
     df = df.withColumn(merged_column_source_name, source_column)
