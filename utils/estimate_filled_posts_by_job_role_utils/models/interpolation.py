@@ -48,12 +48,11 @@ def model_interpolation(
     ) = define_window_specs()
 
     for column in columns_to_interpolate:
-        # for column in ["registered_nurse"]:
 
         df = calculate_proportion_of_time_between_submissions(
             df, column, window_spec_backwards, window_spec_forwards
         )
-        df.show()
+
 
         if method == "trend":
             df = calculate_residuals(
@@ -76,18 +75,14 @@ def model_interpolation(
                 IndCqc.previous_non_null_value,
                 "last",
             )
-            df.show()
             df = calculate_residuals(
                 df,
                 column,
                 IndCqc.previous_non_null_value,
                 window_spec_forwards,
             )
-            df.show()
             df = calculate_interpolated_values(df, column)
-            df.show()
             df = df.drop(IndCqc.previous_non_null_value)
-            df.show()
 
         else:
             raise ValueError("Error: method must be either 'straight' or 'trend'")
