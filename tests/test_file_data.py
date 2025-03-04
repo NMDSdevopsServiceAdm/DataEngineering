@@ -4368,6 +4368,10 @@ class IndCQCDataUtils:
         )
     ]
 
+    merge_columns_in_order_when_columns_are_datatype_string = [
+        ("1-000001", "string", "string")
+    ]
+
     source_missing_rows = [
         ("1-000001", 8.0, None),
         ("1-000002", None, None),

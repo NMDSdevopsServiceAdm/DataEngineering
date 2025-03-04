@@ -84,7 +84,41 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
             )
 
         self.assertTrue(
-            f"The columns to merge must all have the same datatype. Found {column_types}"
+            f"Error: The columns to merge must all have the same datatype. Found {column_types}."
+            in str(context.exception),
+            "Exception does not contain the correct error message",
+        )
+
+    def test_merge_columns_in_order_raises_error_when_given_columns_with_datatype_string(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_columns_in_order_when_columns_are_datatype_string,
+            Schemas.merge_columns_in_order_when_columns_are_datatype_string_schema,
+        )
+
+        list_of_columns_of_datatype_string = [
+            IndCQC.ascwds_filled_posts_source,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        ]
+        column_types = list(
+            set(
+                [
+                    test_df.schema[column].dataType
+                    for column in list_of_columns_of_datatype_string
+                ]
+            )
+        )
+        with self.assertRaises(ValueError) as context:
+            job.merge_columns_in_order(
+                test_df,
+                list_of_columns_of_datatype_string,
+                "merged_column_name",
+                "merged_column_source_name",
+            )
+
+        self.assertTrue(
+            f"Error: columns to merge must be either 'float' of 'map' type. Found {column_types}."
             in str(context.exception),
             "Exception does not contain the correct error message",
         )

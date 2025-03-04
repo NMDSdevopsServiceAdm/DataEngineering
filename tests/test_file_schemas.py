@@ -2186,6 +2186,16 @@ class IndCQCDataUtils:
         )
     )
 
+    merge_columns_in_order_when_columns_are_datatype_string_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
+            ),
+        ]
+    )
+
     estimated_source_description_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

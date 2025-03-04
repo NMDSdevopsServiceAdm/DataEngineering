@@ -100,6 +100,7 @@ def merge_columns_in_order(
 
     Raises:
         ValueError: if the given list of columns have different datatypes.
+        ValueError: if the given columns to merge are not 'float' or 'map type.
     """
     column_types = list(
         set(
@@ -111,7 +112,7 @@ def merge_columns_in_order(
     )
     if len(column_types) > 1:
         raise ValueError(
-            f"The columns to merge must all have the same datatype. Found {column_types}"
+            f"Error: The columns to merge must all have the same datatype. Found {column_types}."
         )
 
     if isinstance(column_types[0], FloatType):
@@ -132,7 +133,7 @@ def merge_columns_in_order(
         for column_name in ordered_list_of_columns_to_be_merged[1:]:
             source_column = source_column.when(F.col(column_name) >= 1.0, column_name)
 
-    if isinstance(column_types[0], MapType):
+    elif isinstance(column_types[0], MapType):
         df = df.withColumn(
             merged_column_name,
             F.coalesce(
@@ -148,6 +149,11 @@ def merge_columns_in_order(
             source_column = source_column.when(
                 F.col(column_name).isNotNull(), column_name
             )
+
+    else:
+        raise ValueError(
+            f"Error: columns to merge must be either 'float' of 'map' type. Found {column_types}."
+        )
 
     df = df.withColumn(merged_column_source_name, source_column)
 
