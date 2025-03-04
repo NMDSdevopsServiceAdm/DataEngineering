@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import IntegerType, StringType, MapType, FloatType
+from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
@@ -99,7 +99,7 @@ def merge_columns_in_order(
         DataFrame: A dataframe with a column for the merged job role ratios.
 
     Raises:
-        ValueError: If the given list of columns are not all 'float' or all 'map' datatypes.
+        ValueError: If the given list of columns are not all 'double' or all 'map' datatypes.
     """
     column_types = list(
         set(
@@ -114,7 +114,7 @@ def merge_columns_in_order(
             f"The columns to merge must all have the same datatype. Found {column_types}."
         )
 
-    if isinstance(column_types[0], FloatType):
+    if isinstance(column_types[0], DoubleType):
         df = df.withColumn(
             merged_column_name,
             F.coalesce(
@@ -151,7 +151,7 @@ def merge_columns_in_order(
 
     else:
         raise ValueError(
-            f"Columns to merge must be either 'float' or 'map' type. Found {column_types}."
+            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
         )
 
     df = df.withColumn(merged_column_source_name, source_column)

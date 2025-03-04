@@ -118,7 +118,7 @@ class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
             )
 
         self.assertTrue(
-            f"Columns to merge must be either 'float' or 'map' type. Found {column_types}."
+            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
             in str(context.exception),
             "Exception does not contain the correct error message",
         )

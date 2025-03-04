@@ -2160,16 +2160,16 @@ class IndCQCDataUtils:
     input_schema_for_adding_estimate_filled_posts_and_source = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField("model_name_1", FloatType(), True),
-            StructField("model_name_2", FloatType(), True),
-            StructField("model_name_3", FloatType(), True),
+            StructField("model_name_1", DoubleType(), True),
+            StructField("model_name_2", DoubleType(), True),
+            StructField("model_name_3", DoubleType(), True),
         ]
     )
 
     expected_schema_with_estimate_filled_posts_and_source = StructType(
         [
             *input_schema_for_adding_estimate_filled_posts_and_source,
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
@@ -2178,9 +2178,9 @@ class IndCQCDataUtils:
         StructType(
             [
                 StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home_model, FloatType(), True),
+                StructField(IndCQC.care_home_model, DoubleType(), True),
                 StructField(
-                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType())
+                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType())
                 ),
             ]
         )
@@ -2200,11 +2200,11 @@ class IndCQCDataUtils:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
             ),
             StructField(
                 IndCQC.ascwds_job_role_ratios_by_primary_service,
-                MapType(StringType(), FloatType()),
+                MapType(StringType(), DoubleType()),
                 True,
             ),
         ]
@@ -2215,7 +2215,7 @@ class IndCQCDataUtils:
             *merge_columns_in_order_using_map_columns_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios_merged,
-                MapType(StringType(), FloatType()),
+                MapType(StringType(), DoubleType()),
                 True,
             ),
             StructField(
