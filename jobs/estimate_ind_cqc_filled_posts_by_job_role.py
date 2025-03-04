@@ -6,6 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
+from utils.estimate_filled_posts_by_job_role_utils.models import interpolation
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -96,6 +97,12 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.sum_job_role_count_split_by_service(
             estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        interpolation.model_mapped_column_interpolation(
+            estimated_ind_cqc_filled_posts_by_job_role_df, IndCQC.ascwds_job_role_ratios
         )
     )
 
