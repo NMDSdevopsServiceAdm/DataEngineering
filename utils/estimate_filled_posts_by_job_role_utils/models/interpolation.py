@@ -27,7 +27,6 @@ def model_interpolation(
         df (DataFrame): The input DataFrame containing the data.
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
-        new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.

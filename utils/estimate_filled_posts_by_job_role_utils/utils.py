@@ -272,6 +272,21 @@ def sum_job_role_count_split_by_service(
 
 
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
+    """
+    Takes in two argument which is a DataFrame and also a Column Name which is a string. The column
+    that the column name is referencing must be a mapped column. The function has three main lines of code.
+    The first line of code explodes the mapped column of the dataframe by the keys of each record. So the DF
+    will be extended to include a record for each key available in each map. The second line of code converts that
+    column into a list of unique keys. The third line of code creates a list of PySpark Column objects, where each column represents a key 
+    from the map column.
+
+    Args:
+        df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
+        list_of_job_roles (list): A list containing the ASC-WDS job role.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
     df_keys = df.select(F.explode(F.map_keys(df[column_name])))
 
     list_keys = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
@@ -283,51 +298,3 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     result_df = df.select(df["*"], *column_of_keys)
 
     return result_df
-
-
-# def interpolate_job_role_count(df: DataFrame, column_name: str) -> DataFrame:
-#     df = unpack_mapped_column(df, column_name)
-
-#     df_keys = df.select(F.explode(F.map_keys(df[column_name])))
-#     columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
-
-#     df = df.drop(column_name)
-
-#     window_prev = (
-#         Window.partitionBy(IndCQC.establishment_id)
-#         .orderBy(IndCQC.unix_time)
-#         .rowsBetween(Window.unboundedPreceding, -1)
-#     )
-#     window_next = (
-#         Window.partitionBy(IndCQC.establishment_id)
-#         .orderBy(IndCQC.unix_time)
-#         .rowsBetween(1, Window.unboundedFollowing)
-#     )
-
-#     for col_name in columns_to_interpolate:
-#         df = df.withColumn(
-#             f"prev_{col_name}", F.last(col_name, ignorenulls=True).over(window_prev)
-#         )
-#         df = df.withColumn(
-#             f"next_{col_name}", F.first(col_name, ignorenulls=True).over(window_next)
-#         )
-
-#         df = df.withColumn(
-#             col_name,
-#             F.when(
-#                 F.col(col_name).isNull(),
-#                 F.when(
-#                     F.col(f"prev_{col_name}").isNotNull()
-#                     & F.col(f"next_{col_name}").isNotNull(),
-#                     (F.col(f"prev_{col_name}") + F.col(f"next_{col_name}")) / 2,
-#                 )
-#                 .when(F.col(f"prev_{col_name}").isNotNull(), F.col(f"prev_{col_name}"))
-#                 .when(F.col(f"next_{col_name}").isNotNull(), F.col(f"next_{col_name}")),
-#             ).otherwise(F.col(col_name)),
-#         ).drop(f"prev_{col_name}", f"next_{col_name}")
-
-#     df = df.withColumn(column_name, create_map_column(columns_to_interpolate))
-
-#     df_result = df.drop(*columns_to_interpolate)
-
-#     return df_result
