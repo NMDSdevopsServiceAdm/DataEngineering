@@ -99,8 +99,7 @@ def merge_columns_in_order(
         DataFrame: A dataframe with a column for the merged job role ratios.
 
     Raises:
-        ValueError: if the given list of columns have different datatypes.
-        ValueError: if the given columns to merge are not 'float' or 'map type.
+        ValueError: If the given list of columns are not all 'float' or all 'map' datatypes.
     """
     column_types = list(
         set(
@@ -112,7 +111,7 @@ def merge_columns_in_order(
     )
     if len(column_types) > 1:
         raise ValueError(
-            f"Error: The columns to merge must all have the same datatype. Found {column_types}."
+            f"The columns to merge must all have the same datatype. Found {column_types}."
         )
 
     if isinstance(column_types[0], FloatType):
@@ -152,7 +151,7 @@ def merge_columns_in_order(
 
     else:
         raise ValueError(
-            f"Error: columns to merge must be either 'float' of 'map' type. Found {column_types}."
+            f"Columns to merge must be either 'float' of 'map' type. Found {column_types}."
         )
 
     df = df.withColumn(merged_column_source_name, source_column)
