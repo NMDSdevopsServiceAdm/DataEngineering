@@ -32,7 +32,7 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.model.model_mapped_column_interpolation"
+        "utils.estimate_filled_posts_by_job_role_utils.models.interpolation.model_mapped_column_interpolation"
     )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service"
