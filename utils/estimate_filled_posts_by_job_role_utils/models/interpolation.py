@@ -48,11 +48,9 @@ def model_interpolation(
     ) = define_window_specs()
 
     for column in columns_to_interpolate:
-
         df = calculate_proportion_of_time_between_submissions(
             df, column, window_spec_backwards, window_spec_forwards
         )
-
 
         if method == "trend":
             df = calculate_residuals(
