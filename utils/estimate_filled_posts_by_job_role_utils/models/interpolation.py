@@ -11,7 +11,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import (
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
-def model_interpolation(
+def model_mapped_column_interpolation(
     df: DataFrame,
     column_with_null_values: str,
     method: str,
@@ -36,8 +36,10 @@ def model_interpolation(
     """
 
     df = unpack_mapped_column(df, column_with_null_values)
+
     df_keys = df.select(F.explode(F.map_keys(df[column_with_null_values])))
     columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+
     df = df.drop(column_with_null_values)
 
     (
