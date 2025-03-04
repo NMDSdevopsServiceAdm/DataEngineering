@@ -277,7 +277,7 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     that the column name is referencing must be a mapped column. The function has three main lines of code.
     The first line of code explodes the mapped column of the dataframe by the keys of each record. So the DF
     will be extended to include a record for each key available in each map. The second line of code converts that
-    column into a list of unique keys. The third line of code creates a list of PySpark Column objects, where each column represents a key 
+    column into a list of unique keys. The third line of code creates a list of PySpark Column objects, where each column represents a key
     from the map column.
 
     Args:
