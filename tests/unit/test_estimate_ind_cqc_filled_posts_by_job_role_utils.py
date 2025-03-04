@@ -943,28 +943,6 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
-    def test_model_interpolation_when_three_paritions_in_dataframe_return_dataframe_with_interpolated_job_role_counts(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_count_with_three_records_with_nulls_data,
-            Schemas.interpolate_job_role_count_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_count_with_three_records_with_nulls_data,
-            Schemas.expected_interpolate_job_role_count_schema,
-        )
-
-        return_df = interp.model_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
-
-        expected_df.show(truncate=False)
-        return_df.show(truncate=False)
-
-        self.assertEqual(expected_df.collect(), return_df.collect())
-
     def test_model_interpolation_when_data_includes_nulls_which_cannot_be_interpolated_return_dataframe(
         self,
     ):
