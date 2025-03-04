@@ -92,10 +92,12 @@ def merge_columns_in_order(
     Args:
         df (DataFrame): A dataframe containing multiple columns of job role ratios.
         ordered_list_of_columns_to_be_merged (List): A list of column names in priority order highest to lowest.
-        merged_column_name (str):
-        merged_column_source_name (str):
+        merged_column_name (str): The name to give the new merged column.
+        merged_column_source_name (str): The name to give the new merged source column.
+
     Returns:
         DataFrame: A dataframe with a column for the merged job role ratios.
+
     Raises:
         ValueError: if the given list of columns have different datatypes.
     """
