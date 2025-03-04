@@ -132,8 +132,6 @@ def merge_columns_in_order(
         for column_name in ordered_list_of_columns_to_be_merged[1:]:
             source_column = source_column.when(F.col(column_name) >= 1.0, column_name)
 
-        df = df.withColumn(merged_column_source_name, source_column)
-
     if isinstance(column_types[0], MapType):
         df = df.withColumn(
             merged_column_name,
@@ -151,7 +149,7 @@ def merge_columns_in_order(
                 F.col(column_name).isNotNull(), column_name
             )
 
-        df = df.withColumn(merged_column_source_name, source_column)
+    df = df.withColumn(merged_column_source_name, source_column)
 
     return df
 
