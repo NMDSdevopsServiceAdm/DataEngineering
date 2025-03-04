@@ -21,7 +21,7 @@ class TestIndCqcFilledPostUtils(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
+class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
     def setUp(self) -> None:
         super().setUp()
         self.input_df = self.spark.createDataFrame(
@@ -123,100 +123,100 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
             "Exception does not contain the correct error message",
         )
 
-    def test_merge_columns_in_order_returns_ascwds_ratios_when_only_ascwds_known(
+    def test_merge_columns_in_order_returns_ascwds_map_when_only_ascwds_map_populated(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_job_role_ratio_columns_when_only_ascwds_known,
-            Schemas.merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.merge_map_columns_in_order_when_only_ascwds_known,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_ratio_columns_when_only_ascwds_known,
-            Schemas.expected_merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.expected_merge_map_columns_in_order_when_only_ascwds_known,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
         )
         returned_df = job.merge_columns_in_order(
             test_df,
-            Data.list_of_job_role_ratio_columns_to_be_merged,
+            Data.list_of_map_columns_to_be_merged,
             IndCQC.ascwds_job_role_ratios_merged,
             IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_merge_columns_in_order_returns_primary_service_ratios_when_only_ratios_by_primary_service_populated(
+    def test_merge_columns_in_order_returns_primary_service_map_when_only_primary_service_map_populated(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_job_role_ratio_columns_when_only_primary_service_known,
-            Schemas.merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.merge_map_columns_in_order_when_only_primary_service_known,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_ratio_columns_when_only_primary_service_known,
-            Schemas.expected_merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.expected_merge_map_columns_in_order_when_only_primary_service_known,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
         )
         returned_df = job.merge_columns_in_order(
             test_df,
-            Data.list_of_job_role_ratio_columns_to_be_merged,
+            Data.list_of_map_columns_to_be_merged,
             IndCQC.ascwds_job_role_ratios_merged,
             IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_merge_columns_in_order_returns_ascwds_ratios_when_both_ratios_populated(
+    def test_merge_columns_in_order_returns_ascwds_map_when_both_map_columns_populated(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_job_role_ratio_columns_when_both_ratio_columns_populated,
-            Schemas.merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.merge_map_columns_in_order_when_both_map_columns_populated,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_ratio_columns_when_both_ratio_columns_populated,
-            Schemas.expected_merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.expected_merge_map_columns_in_order_when_both_map_columns_populated,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
         )
         returned_df = job.merge_columns_in_order(
             test_df,
-            Data.list_of_job_role_ratio_columns_to_be_merged,
+            Data.list_of_map_columns_to_be_merged,
             IndCQC.ascwds_job_role_ratios_merged,
             IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_merge_columns_in_order_returns_null_when_both_ratio_columns_are_null(
+    def test_merge_columns_in_order_returns_null_when_both_map_columns_are_null(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_job_role_ratio_columns_when_both_null,
-            Schemas.merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.merge_map_columns_in_order_when_both_null,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_ratio_columns_when_both_null,
-            Schemas.expected_merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.expected_merge_map_columns_in_order_when_both_null,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
         )
         returned_df = job.merge_columns_in_order(
             test_df,
-            Data.list_of_job_role_ratio_columns_to_be_merged,
+            Data.list_of_map_columns_to_be_merged,
             IndCQC.ascwds_job_role_ratios_merged,
             IndCQC.ascwds_job_role_ratios_merged_source,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_merge_columns_in_order_returns_ascwds_at_both_locations_when_both_ratios_populated_at_both_locations(
+    def test_merge_columns_in_order_returns_ascwds_map_at_both_locations_when_both_map_columns_populated_at_both_locations(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.merge_job_role_ratio_columns_at_multiple_locations_when_both_ratio_columns_populated_at_both_locations,
-            Schemas.merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_merge_job_role_ratio_columns_at_multiple_locations_when_both_ratio_columns_populated_at_both_locations,
-            Schemas.expected_merge_ascwds_and_primary_service_job_role_ratio_columns,
+            Data.expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
         )
         returned_df = job.merge_columns_in_order(
             test_df,
-            Data.list_of_job_role_ratio_columns_to_be_merged,
+            Data.list_of_map_columns_to_be_merged,
             IndCQC.ascwds_job_role_ratios_merged,
             IndCQC.ascwds_job_role_ratios_merged_source,
         )

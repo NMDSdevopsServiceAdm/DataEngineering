@@ -2196,6 +2196,34 @@ class IndCQCDataUtils:
         ]
     )
 
+    merge_columns_in_order_using_map_columns_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_by_primary_service,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_merge_columns_in_order_using_map_columns_schema = StructType(
+        [
+            *merge_columns_in_order_using_map_columns_schema,
+            StructField(
+                IndCQC.ascwds_job_role_ratios_merged,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
+            ),
+        ]
+    )
+
     estimated_source_description_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -6030,34 +6058,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             *ascwds_job_role_count_map_to_ratios_map_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
-            ),
-        ]
-    )
-
-    merge_ascwds_and_primary_service_job_role_ratio_columns = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
-            ),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_by_primary_service,
-                MapType(StringType(), FloatType()),
-                True,
-            ),
-        ]
-    )
-
-    expected_merge_ascwds_and_primary_service_job_role_ratio_columns = StructType(
-        [
-            *merge_ascwds_and_primary_service_job_role_ratio_columns,
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged,
-                MapType(StringType(), FloatType()),
-                True,
-            ),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
             ),
         ]
     )
