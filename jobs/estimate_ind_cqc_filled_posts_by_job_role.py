@@ -122,7 +122,7 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
-        interpolation.model_mapped_column_interpolation(
+        interpolation.model_job_role_ratio_interpolation(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
     )

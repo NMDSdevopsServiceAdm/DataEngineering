@@ -11,7 +11,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import (
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
-def model_mapped_column_interpolation(
+def model_job_role_ratio_interpolation(
     df: DataFrame,
     method: str,
 ) -> DataFrame:
@@ -36,7 +36,9 @@ def model_mapped_column_interpolation(
 
     df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
 
-    df_keys = df.select(F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))).distinct()
+    df_keys = df.select(
+        F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))
+    ).distinct()
     columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
     (

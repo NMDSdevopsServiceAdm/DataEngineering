@@ -851,7 +851,7 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self.assertEqual(expected_df.collect(), return_df.collect())
 
 
-class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -868,7 +868,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -885,7 +885,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -902,7 +902,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -919,7 +919,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -936,7 +936,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -953,7 +953,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -970,7 +970,7 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -987,6 +987,6 @@ class InterpolateJobRoleCount(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_mapped_column_interpolation(test_df, "straight")
+        return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
         self.assertEqual(expected_df.collect(), return_df.collect())

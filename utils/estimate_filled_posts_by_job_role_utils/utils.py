@@ -292,7 +292,9 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
 
     list_keys = [row[0] for row in df_keys.collect()]
 
-    column_of_keys = [F.col(column_name).getItem(key).alias(str(key)) for key in list_keys]
+    column_of_keys = [
+        F.col(column_name).getItem(key).alias(str(key)) for key in list_keys
+    ]
 
     result_df = df.select("*", *column_of_keys)
 
