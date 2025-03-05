@@ -24,7 +24,6 @@ def model_job_role_ratio_interpolation(
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
-        column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
 
     Returns:
