@@ -9974,7 +9974,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         )
     ]
 
-    expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows = [
+    expected_create_estimate_filled_posts_by_job_role_map_column_when_estimate_filled_posts_is_null_rows = [
         (
             "1-001",
             None,

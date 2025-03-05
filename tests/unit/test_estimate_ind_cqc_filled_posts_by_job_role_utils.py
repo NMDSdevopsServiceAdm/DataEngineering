@@ -657,7 +657,7 @@ class CreateEstimateFilledPostsByJobRoleMapColumn(
             Schemas.create_estimate_filled_posts_by_job_role_map_column_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows,
+            Data.expected_create_estimate_filled_posts_by_job_role_map_column_when_estimate_filled_posts_is_null_rows,
             Schemas.expected_create_estimate_filled_posts_by_job_role_map_column_schema,
         )
         returned_df = job.create_estimate_filled_posts_by_job_role_map_column(test_df)
