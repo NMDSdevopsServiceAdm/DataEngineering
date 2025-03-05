@@ -6047,3 +6047,43 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+
+    unpacked_mapped_column_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+        ]
+    )
+
+    expected_unpacked_mapped_column_schema = StructType(
+        [
+            *unpacked_mapped_column_schema,
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+        ]
+    )
+
+    interpolate_job_role_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+        ]
+    )
+
+    expected_interpolate_job_role_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+            ),
+        ]
+    )

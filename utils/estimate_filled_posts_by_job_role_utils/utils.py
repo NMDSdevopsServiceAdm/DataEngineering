@@ -1,4 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import Window
 from pyspark.sql.types import LongType
 from typing import List
 
@@ -268,3 +269,32 @@ def sum_job_role_count_split_by_service(
     )
 
     return df_result
+
+
+def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
+    """
+    Takes in two argument which is a DataFrame and also a Column Name which is a string. The column
+    that the column name is referencing must be a mapped column. The function has three main lines of code.
+    The first line of code explodes the mapped column of the dataframe by the keys of each record. So the DF
+    will be extended to include a record for each key available in each map. The second line of code converts that
+    column into a list of unique keys. The third line of code creates a list of PySpark Column objects, where each column represents a key
+    from the map column.
+
+    Args:
+        df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
+        column_name (str): Mapped column which needs unpacking.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
+    df_keys = df.select(F.explode(F.map_keys(df[column_name])))
+
+    list_keys = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+
+    column_of_keys = list(
+        map(lambda x: F.col(column_name).getItem(x).alias(str(x)), list_keys)
+    )
+
+    result_df = df.select(df["*"], *column_of_keys)
+
+    return result_df
