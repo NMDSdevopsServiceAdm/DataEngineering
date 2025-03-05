@@ -50,6 +50,11 @@ class IndCqcColumns:
     ascwds_job_role_counts_by_primary_service: str = (
         "ascwds_job_role_counts_by_primary_service"
     )
+    ascwds_job_role_ratios_by_primary_service: str = (
+        "ascwds_job_role_ratios_by_primary_service"
+    )
+    ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
+    ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -110,6 +115,7 @@ class IndCqcColumns:
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
+    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"

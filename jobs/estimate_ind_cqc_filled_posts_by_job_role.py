@@ -6,6 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
+from utils.ind_cqc_filled_posts_utils import utils as FPutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -82,6 +83,12 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.sum_job_role_count_split_by_service(
+            estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_job_role_count_map_to_ratios_map(
             estimated_ind_cqc_filled_posts_by_job_role_df,
             IndCQC.ascwds_job_role_counts,
@@ -89,13 +96,33 @@ def main(
         )
     )
 
-    estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
-        estimated_ind_cqc_filled_posts_df
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.transform_job_role_count_map_to_ratios_map(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_counts_by_primary_service,
+            IndCQC.ascwds_job_role_ratios_by_primary_service,
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
+        estimated_ind_cqc_filled_posts_by_job_role_df,
+        [
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.ascwds_job_role_ratios_by_primary_service,
+        ],
+        IndCQC.ascwds_job_role_ratios_merged,
+        IndCQC.ascwds_job_role_ratios_merged_source,
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
-        JRutils.sum_job_role_count_split_by_service(
-            estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles
+        JRutils.create_estimate_filled_posts_by_job_role_map_column(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.count_registered_manager_names(
+            estimated_ind_cqc_filled_posts_by_job_role_df
         )
     )
 
