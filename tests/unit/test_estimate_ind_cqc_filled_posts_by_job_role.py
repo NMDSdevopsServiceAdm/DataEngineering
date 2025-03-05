@@ -40,8 +40,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
+    @patch("utils.ind_cqc_filled_posts_utils.utils.merge_columns_in_order")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_count_map_to_ratios_map"
+    )
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service"
     )
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
     @patch(
@@ -53,10 +57,11 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         read_from_parquet_mock: Mock,
         aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
         merge_dataframes_mock: Mock,
-        transform_job_role_count_map_to_ratios_map_mock: Mock,
-        count_registered_manager_names_mock: Mock,
         sum_job_role_count_split_by_service_mock: Mock,
         model_mapped_column_interpolation_mock: Mock,
+        transform_job_role_count_map_to_ratios_map_mock: Mock,
+        merge_columns_in_order_mock: Mock,
+        count_registered_manager_names_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -80,10 +85,14 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         )
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         merge_dataframes_mock.assert_called_once()
-        transform_job_role_count_map_to_ratios_map_mock.assert_called_once()
-        count_registered_manager_names_mock.assert_called_once()
         sum_job_role_count_split_by_service_mock.assert_called_once()
+<<<<<<< HEAD
         model_mapped_column_interpolation_mock.assert_called_once()
+=======
+        self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
+        merge_columns_in_order_mock.assert_called_once()
+        count_registered_manager_names_mock.assert_called_once()
+>>>>>>> 3dc35d1f3c6985c7310cb37f3102bfc1b7bd3419
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys

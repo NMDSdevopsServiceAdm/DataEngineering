@@ -21,7 +21,7 @@ class TestIndCqcFilledPostUtils(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
+class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
     def setUp(self) -> None:
         super().setUp()
         self.input_df = self.spark.createDataFrame(
@@ -29,19 +29,19 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
             Schemas.input_schema_for_adding_estimate_filled_posts_and_source,
         )
 
-        self.returned_df = job.populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+        self.returned_df = job.merge_columns_in_order(
             self.input_df,
             ["model_name_1", "model_name_2", "model_name_3"],
             IndCQC.estimate_filled_posts,
             IndCQC.estimate_filled_posts_source,
         )
 
-    def test_populate_estimate_filled_posts_and_source_adds_new_columns(self):
+    def test_merge_columns_in_order_adds_new_columns(self):
         assert IndCQC.estimate_filled_posts in self.returned_df.columns
         assert IndCQC.estimate_filled_posts_source in self.returned_df.columns
         self.assertEqual(len(self.returned_df.columns), len(self.input_df.columns) + 2)
 
-    def test_populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
+    def test_merge_columns_in_order_returns_expected_values(
         self,
     ):
         expected_df = self.spark.createDataFrame(
@@ -54,6 +54,174 @@ class TestFilledPostsAndSourceAdded(TestIndCqcFilledPostUtils):
 
         self.assertEqual(self.returned_df.count(), expected_df.count())
         self.assertEqual(expected_data, returned_data)
+
+    def test_merge_columns_in_order_raises_error_when_given_list_of_columns_with_multiple_datatypes(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_columns_in_order_when_df_has_columns_of_multiple_datatypes,
+            Schemas.merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema,
+        )
+
+        list_of_columns_of_multiple_datatypes = [
+            IndCQC.care_home_model,
+            IndCQC.ascwds_job_role_ratios,
+        ]
+        column_types = list(
+            set(
+                [
+                    test_df.schema[column].dataType
+                    for column in list_of_columns_of_multiple_datatypes
+                ]
+            )
+        )
+        with self.assertRaises(ValueError) as context:
+            job.merge_columns_in_order(
+                test_df,
+                list_of_columns_of_multiple_datatypes,
+                "merged_column_name",
+                "merged_column_source_name",
+            )
+
+        self.assertTrue(
+            f"The columns to merge must all have the same datatype. Found {column_types}."
+            in str(context.exception),
+            "Exception does not contain the correct error message",
+        )
+
+    def test_merge_columns_in_order_raises_error_when_given_columns_with_datatype_string(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_columns_in_order_when_columns_are_datatype_string,
+            Schemas.merge_columns_in_order_when_columns_are_datatype_string_schema,
+        )
+
+        list_of_columns_of_datatype_string = [
+            IndCQC.ascwds_filled_posts_source,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        ]
+        column_types = list(
+            set(
+                [
+                    test_df.schema[column].dataType
+                    for column in list_of_columns_of_datatype_string
+                ]
+            )
+        )
+        with self.assertRaises(ValueError) as context:
+            job.merge_columns_in_order(
+                test_df,
+                list_of_columns_of_datatype_string,
+                "merged_column_name",
+                "merged_column_source_name",
+            )
+
+        self.assertTrue(
+            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
+            in str(context.exception),
+            "Exception does not contain the correct error message",
+        )
+
+    def test_merge_columns_in_order_returns_ascwds_map_when_only_ascwds_map_populated(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_map_columns_in_order_when_only_ascwds_known,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_map_columns_in_order_when_only_ascwds_known,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
+        )
+        returned_df = job.merge_columns_in_order(
+            test_df,
+            Data.list_of_map_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_merge_columns_in_order_returns_primary_service_map_when_only_primary_service_map_populated(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_map_columns_in_order_when_only_primary_service_known,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_map_columns_in_order_when_only_primary_service_known,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
+        )
+        returned_df = job.merge_columns_in_order(
+            test_df,
+            Data.list_of_map_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_merge_columns_in_order_returns_ascwds_map_when_both_map_columns_populated(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_map_columns_in_order_when_both_map_columns_populated,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_map_columns_in_order_when_both_map_columns_populated,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
+        )
+        returned_df = job.merge_columns_in_order(
+            test_df,
+            Data.list_of_map_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_merge_columns_in_order_returns_null_when_both_map_columns_are_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_map_columns_in_order_when_both_null,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_map_columns_in_order_when_both_null,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
+        )
+        returned_df = job.merge_columns_in_order(
+            test_df,
+            Data.list_of_map_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_merge_columns_in_order_returns_ascwds_map_at_both_locations_when_both_map_columns_populated_at_both_locations(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations,
+            Schemas.merge_columns_in_order_using_map_columns_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations,
+            Schemas.expected_merge_columns_in_order_using_map_columns_schema,
+        )
+        returned_df = job.merge_columns_in_order(
+            test_df,
+            Data.list_of_map_columns_to_be_merged,
+            IndCQC.ascwds_job_role_ratios_merged,
+            IndCQC.ascwds_job_role_ratios_merged_source,
+        )
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class TestSourceDescriptionAdded(TestIndCqcFilledPostUtils):
