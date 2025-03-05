@@ -115,19 +115,15 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
-        JRutils.count_registered_manager_names(
-            estimated_ind_cqc_filled_posts_by_job_role_df
-        )
-    )
-
-    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.estimate_filled_posts_by_job_role(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
     )
 
-    estimated_ind_cqc_filled_posts_df = JRutils.count_registered_manager_names(
-        estimated_ind_cqc_filled_posts_df
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.count_registered_manager_names(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
     )
 
     utils.write_to_parquet(
