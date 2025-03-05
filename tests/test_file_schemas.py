@@ -6126,15 +6126,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
             ),
         ]
-
     )
 
     expected_interpolate_job_role_ratios_schema = StructType(
         [
             *interpolate_job_role_ratios_schema,
             StructField(
-                IndCQC.ascwds_job_role_ratios_interpolated, MapType(StringType(), FloatType()), True
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+                True,
             ),
-
         ]
     )

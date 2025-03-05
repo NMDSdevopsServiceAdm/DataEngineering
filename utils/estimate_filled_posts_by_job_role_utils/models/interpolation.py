@@ -36,8 +36,8 @@ def model_mapped_column_interpolation(
 
     df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
 
-    df_keys = df.select(F.explode(F.map_keys(df[IndCqc.ascwds_job_role_ratios])))
-    columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+    df_keys = df.select(F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))).distinct()
+    columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
     (
         window_spec_backwards,
@@ -86,7 +86,8 @@ def model_mapped_column_interpolation(
         df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
 
     df = df.withColumn(
-        IndCqc.ascwds_job_role_ratios_interpolated, create_map_column(columns_to_interpolate)
+        IndCqc.ascwds_job_role_ratios_interpolated,
+        create_map_column(columns_to_interpolate),
     )
 
     df_result = df.drop(*columns_to_interpolate)

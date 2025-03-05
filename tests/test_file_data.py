@@ -11248,8 +11248,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-
-    expected_interpolate_job_role_count_with_an_sequential_none_records_data= [
+    expected_interpolate_job_role_count_with_an_sequential_none_records_data = [
         (
             "1000",
             1000,

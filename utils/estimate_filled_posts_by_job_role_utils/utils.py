@@ -287,14 +287,13 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
     """
-    df_keys = df.select(F.explode(F.map_keys(df[column_name])))
 
-    list_keys = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
+    df_keys = df.select(F.explode(F.map_keys(F.col(column_name)))).distinct()
 
-    column_of_keys = list(
-        map(lambda x: F.col(column_name).getItem(x).alias(str(x)), list_keys)
-    )
+    list_keys = [row[0] for row in df_keys.collect()]
 
-    result_df = df.select(df["*"], *column_of_keys)
+    column_of_keys = [F.col(column_name).getItem(key).alias(str(key)) for key in list_keys]
+
+    result_df = df.select("*", *column_of_keys)
 
     return result_df
