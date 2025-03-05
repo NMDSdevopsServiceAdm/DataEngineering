@@ -15,6 +15,9 @@ from utils.feature_engineering_resources.feature_engineering_dormancy import (
 from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as RegionFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_related_location import (
+    FeatureEngineeringValueLabelsRelatedLocation as RelatedLocationFeatures,
+)
 from utils.feature_engineering_resources.feature_engineering_rural_urban import (
     FeatureEngineeringValueLabelsRuralUrban as RuralUrbanFeatures,
 )
@@ -124,9 +127,16 @@ def main(
         )
     )
 
-    features_df = add_time_registered_into_df(
-        df=features_df,
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.related_location,
+            lookup_dict=RelatedLocationFeatures.labels_dict,
+        )
     )
+
+    features_df = add_time_registered_into_df(df=features_df)
 
     # There are a limited number of locations in some categories with very few, or no, ASCWDS data so the counts are capped.
     features_df = features_df.withColumn(
@@ -142,14 +152,15 @@ def main(
 
     list_for_vectorisation_without_dormancy: List[str] = sorted(
         [
-            IndCQC.service_count,
             IndCQC.activity_count,
+            IndCQC.service_count,
             IndCQC.time_registered,
         ]
-        + service_keys
-        + specialisms_keys
+        + related_location
         + regions
         + rui_indicators
+        + service_keys
+        + specialisms_keys
     )
     list_for_vectorisation_with_dormancy: List[str] = sorted(
         list_for_vectorisation_without_dormancy + dormancy

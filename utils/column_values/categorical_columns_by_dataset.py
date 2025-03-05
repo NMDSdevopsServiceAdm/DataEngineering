@@ -203,14 +203,12 @@ class FeatureEngineeringCategoricalValues:
     specialisms_column_values = Services(IndCQC.specialisms)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
+    related_location_column_values = RelatedLocation(IndCQC.related_location)
     care_home_column_care_home_values = CareHome(
         IndCQC.care_home, value_to_remove=CareHome.not_care_home
     )
     care_home_column_non_care_home_values = CareHome(
         IndCQC.care_home, value_to_remove=CareHome.care_home
-    )
-    dormancy_column_without_dormancy_values = Dormancy(
-        IndCQC.dormancy, contains_null_values=True
     )
 
 
