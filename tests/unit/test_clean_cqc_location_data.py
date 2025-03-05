@@ -446,36 +446,29 @@ class RemoveLocationsThatNeverHadRegulatedActivitesTests(CleanCQCLocationDataset
         self.assertEqual(self.returned_data, self.expected_data)
 
 
-class ListServicesOfferedTests(CleanCQCLocationDatasetTests):
+class ExtractFromStructTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_services_offered_df = self.spark.createDataFrame(
-            Data.list_of_services_rows,
-            schema=Schemas.primary_service_type_schema,
+        test_df = self.spark.createDataFrame(
+            Data.extract_from_struct_rows,
+            schema=Schemas.extract_from_struct_schema,
         )
-        self.returned_df = job.add_list_of_services_offered(
-            self.test_services_offered_df
+        self.returned_df = job.extract_from_struct(
+            test_df,
+            test_df[CQCL.gac_service_types][CQCL.description],
+            CQCLCleaned.services_offered,
         )
 
-    def test_add_list_of_services_offered_adds_column(self):
+    def test_extract_from_struct_adds_column(self):
         self.assertTrue(CQCLCleaned.services_offered in self.returned_df.columns)
 
-    def test_add_list_of_services_offered_returns_correct_data(self):
+    def test_extract_from_struct_returns_correct_data(self):
         expected_df = self.spark.createDataFrame(
-            Data.expected_services_offered_rows,
-            Schemas.expected_services_offered_schema,
+            Data.expected_extract_from_struct_rows,
+            Schemas.expected_extract_from_struct_schema,
         )
-
-        returned_data = (
-            self.returned_df.select(sorted(self.returned_df.columns))
-            .sort(CQCLCleaned.location_id)
-            .collect()
-        )
-        expected_data = (
-            expected_df.select(sorted(expected_df.columns))
-            .sort(CQCLCleaned.location_id)
-            .collect()
-        )
+        returned_data = self.returned_df.sort(CQCLCleaned.location_id).collect()
+        expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
 
