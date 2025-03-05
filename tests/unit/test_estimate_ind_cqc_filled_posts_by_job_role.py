@@ -86,13 +86,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         merge_dataframes_mock.assert_called_once()
         sum_job_role_count_split_by_service_mock.assert_called_once()
-<<<<<<< HEAD
         model_mapped_column_interpolation_mock.assert_called_once()
-=======
         self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
         merge_columns_in_order_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
->>>>>>> 3dc35d1f3c6985c7310cb37f3102bfc1b7bd3419
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
