@@ -13,7 +13,6 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 def model_mapped_column_interpolation(
     df: DataFrame,
-    column_with_null_values: str,
     method: str,
 ) -> DataFrame:
     """
@@ -35,12 +34,10 @@ def model_mapped_column_interpolation(
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
 
-    df = unpack_mapped_column(df, column_with_null_values)
+    df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
 
-    df_keys = df.select(F.explode(F.map_keys(df[column_with_null_values])))
+    df_keys = df.select(F.explode(F.map_keys(df[IndCqc.ascwds_job_role_ratios])))
     columns_to_interpolate = df_keys.rdd.map(lambda x: x[0]).distinct().collect()
-
-    df = df.drop(column_with_null_values)
 
     (
         window_spec_backwards,
@@ -89,7 +86,7 @@ def model_mapped_column_interpolation(
         df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
 
     df = df.withColumn(
-        column_with_null_values, create_map_column(columns_to_interpolate)
+        IndCqc.ascwds_job_role_ratios_interpolated, create_map_column(columns_to_interpolate)
     )
 
     df_result = df.drop(*columns_to_interpolate)

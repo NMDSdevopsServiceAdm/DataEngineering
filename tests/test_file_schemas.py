@@ -6118,7 +6118,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    interpolate_job_role_count_schema = StructType(
+    interpolate_job_role_ratios_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
@@ -6126,14 +6126,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
             ),
         ]
+
     )
 
-    expected_interpolate_job_role_count_schema = StructType(
+    expected_interpolate_job_role_ratios_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
+            *interpolate_job_role_ratios_schema,
             StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+                IndCQC.ascwds_job_role_ratios_interpolated, MapType(StringType(), FloatType()), True
             ),
+
         ]
     )
