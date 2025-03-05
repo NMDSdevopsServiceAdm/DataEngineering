@@ -270,7 +270,7 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
-def estimate_filled_posts_by_job_role(
+def create_estimate_filled_posts_by_job_role_map_column(
     df: DataFrame,
 ) -> DataFrame:
     """

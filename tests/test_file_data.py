@@ -9943,13 +9943,13 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     # fmt: on
 
     # fmt: off
-    estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows = [
+    create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows = [
         ("1-001",
          100.0,
         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5})
     ]
 
-    expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows = [
+    expected_create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows = [
         ("1-001",
          100.0,
         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
@@ -9957,16 +9957,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
-    estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows = [
+    create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows = [
         ("1-001", 100.0, None)
     ]
 
-    expected_estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows = [
+    expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows = [
         ("1-001", 100.0, None, None)
     ]
 
     # fmt: off
-    estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows = [
+    create_estimate_filled_posts_by_job_role_map_column_when_estimate_filled_posts_is_null_rows = [
         (
             "1-001",
             None,
@@ -9974,7 +9974,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         )
     ]
 
-    expected_estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows = [
+    expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows = [
         (
             "1-001",
             None,

@@ -600,19 +600,23 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         )
 
 
-class EstimateFilledPostsByJobRole(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class CreateEstimateFilledPostsByJobRoleMapColumn(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
     def setUp(self) -> None:
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
-            Schemas.estimate_filled_posts_by_job_role_schema,
+            Data.create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows,
+            Schemas.create_estimate_filled_posts_by_job_role_map_column_schema,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_estimate_filled_posts_by_job_role_when_all_job_role_ratios_populated_rows,
-            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+            Data.expected_create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows,
+            Schemas.expected_create_estimate_filled_posts_by_job_role_map_column_schema,
         )
-        self.returned_df = job.estimate_filled_posts_by_job_role(self.test_df)
+        self.returned_df = job.create_estimate_filled_posts_by_job_role_map_column(
+            self.test_df
+        )
 
         self.new_columns_added = [
             column
@@ -620,43 +624,43 @@ class EstimateFilledPostsByJobRole(EstimateIndCQCFilledPostsByJobRoleUtilsTests)
             if column not in self.test_df.columns
         ]
 
-    def test_estimate_filled_posts_by_job_role_adds_one_column(
+    def test_create_estimate_filled_posts_by_job_role_map_column_adds_one_column(
         self,
     ):
         self.assertEqual(len(self.new_columns_added), 1)
 
-    def test_estimate_filled_posts_by_job_role_returns_expected_estimates_when_all_job_role_ratios_populated(
+    def test_create_estimate_filled_posts_by_job_role_map_column_returns_expected_estimates_when_all_job_role_ratios_populated(
         self,
     ):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
-    def test_estimate_filled_posts_by_job_role_returns_null_when_job_role_ratio_column_is_null(
+    def test_create_estimate_filled_posts_by_job_role_map_column_returns_null_when_job_role_ratio_column_is_null(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows,
-            Schemas.estimate_filled_posts_by_job_role_schema,
+            Data.create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows,
+            Schemas.create_estimate_filled_posts_by_job_role_map_column_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_estimate_filled_posts_by_job_role_when_job_role_ratio_column_is_null_rows,
-            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+            Data.expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows,
+            Schemas.expected_create_estimate_filled_posts_by_job_role_map_column_schema,
         )
-        returned_df = job.estimate_filled_posts_by_job_role(test_df)
+        returned_df = job.create_estimate_filled_posts_by_job_role_map_column(test_df)
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_estimate_filled_posts_by_job_role_returns_null_when_estimate_filled_posts_is_null(
+    def test_create_estimate_filled_posts_by_job_role_map_column_returns_null_when_estimate_filled_posts_is_null(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows,
-            Schemas.estimate_filled_posts_by_job_role_schema,
+            Data.create_estimate_filled_posts_by_job_role_map_column_when_estimate_filled_posts_is_null_rows,
+            Schemas.create_estimate_filled_posts_by_job_role_map_column_schema,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_estimate_filled_posts_by_job_role_when_estimate_filled_posts_is_null_rows,
-            Schemas.expected_estimate_filled_posts_by_job_role_schema,
+            Data.expected_create_estimate_filled_posts_by_job_role_map_column_when_job_role_ratio_column_is_null_rows,
+            Schemas.expected_create_estimate_filled_posts_by_job_role_map_column_schema,
         )
-        returned_df = job.estimate_filled_posts_by_job_role(test_df)
+        returned_df = job.create_estimate_filled_posts_by_job_role_map_column(test_df)
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 

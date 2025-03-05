@@ -6058,7 +6058,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    estimate_filled_posts_by_job_role_schema = StructType(
+    create_estimate_filled_posts_by_job_role_map_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
@@ -6070,9 +6070,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    expected_estimate_filled_posts_by_job_role_schema = StructType(
+    expected_create_estimate_filled_posts_by_job_role_map_column_schema = StructType(
         [
-            *estimate_filled_posts_by_job_role_schema,
+            *create_estimate_filled_posts_by_job_role_map_column_schema,
             StructField(
                 IndCQC.estimate_filled_posts_by_job_role,
                 MapType(StringType(), DoubleType()),
