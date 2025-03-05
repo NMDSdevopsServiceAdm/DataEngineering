@@ -1,8 +1,6 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-)
+from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
+from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
@@ -24,6 +22,7 @@ def add_source_description_to_source_column(
     )
 
 
+# TODO Remove this function if it has been replaced and is no longer used.
 def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
     df: DataFrame,
     order_of_models_to_populate_estimate_filled_posts_with: list,
@@ -70,6 +69,92 @@ def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
             estimates_source_column_to_populate,
             model_name,
         )
+
+    return df
+
+
+def merge_columns_in_order(
+    df: DataFrame,
+    ordered_list_of_columns_to_be_merged: List,
+    merged_column_name: str,
+    merged_column_source_name: str,
+) -> DataFrame:
+    """
+    Merges a given list of columns into a new column and adds another column for the source.
+
+    This function creates a new column using the values from other columns given in a list.
+    Values are taken from the given list of columns in the order of the list.
+    The given list of columns must all be of the same datatype which can be float or map.
+    Float values will only be taken if they are greater than or equal to 1.0.
+    Map elements will only be taken if they are not null.
+    This function also adds a new column for the source, which is the column name that values were taken from.
+
+    Args:
+        df (DataFrame): A dataframe containing multiple columns of job role ratios.
+        ordered_list_of_columns_to_be_merged (List): A list of column names in priority order highest to lowest.
+        merged_column_name (str): The name to give the new merged column.
+        merged_column_source_name (str): The name to give the new merged source column.
+
+    Returns:
+        DataFrame: A dataframe with a column for the merged job role ratios.
+
+    Raises:
+        ValueError: If the given list of columns are not all 'double' or all 'map' datatypes.
+    """
+    column_types = list(
+        set(
+            [
+                df.schema[column].dataType
+                for column in ordered_list_of_columns_to_be_merged
+            ]
+        )
+    )
+    if len(column_types) > 1:
+        raise ValueError(
+            f"The columns to merge must all have the same datatype. Found {column_types}."
+        )
+
+    if isinstance(column_types[0], DoubleType):
+        df = df.withColumn(
+            merged_column_name,
+            F.coalesce(
+                *[
+                    F.when((F.col(column) >= 1.0), F.col(column))
+                    for column in ordered_list_of_columns_to_be_merged
+                ]
+            ),
+        )
+
+        source_column = F.when(
+            F.col(ordered_list_of_columns_to_be_merged[0]) >= 1.0,
+            ordered_list_of_columns_to_be_merged[0],
+        )
+        for column_name in ordered_list_of_columns_to_be_merged[1:]:
+            source_column = source_column.when(F.col(column_name) >= 1.0, column_name)
+
+    elif isinstance(column_types[0], MapType):
+        df = df.withColumn(
+            merged_column_name,
+            F.coalesce(
+                *[F.col(column) for column in ordered_list_of_columns_to_be_merged]
+            ),
+        )
+
+        source_column = F.when(
+            F.col(ordered_list_of_columns_to_be_merged[0]).isNotNull(),
+            ordered_list_of_columns_to_be_merged[0],
+        )
+        for column_name in ordered_list_of_columns_to_be_merged[1:]:
+            source_column = source_column.when(
+                F.col(column_name).isNotNull(), column_name
+            )
+
+    else:
+        raise ValueError(
+            f"Columns to merge must be either 'double' or 'map' type. Found {column_types}."
+        )
+
+    df = df.withColumn(merged_column_source_name, source_column)
 
     return df
 

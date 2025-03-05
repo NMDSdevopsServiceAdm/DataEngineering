@@ -4357,6 +4357,124 @@ class IndCQCDataUtils:
         ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
     ]
 
+    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
+        (
+            "1-000001",
+            10.0,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        )
+    ]
+
+    merge_columns_in_order_when_columns_are_datatype_string = [
+        ("1-000001", "string", "string")
+    ]
+
+    list_of_map_columns_to_be_merged = [
+        IndCQC.ascwds_job_role_ratios,
+        IndCQC.ascwds_job_role_ratios_by_primary_service,
+    ]
+
+    # fmt: off
+    merge_map_columns_in_order_when_only_ascwds_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None)
+    ]
+    #fmt: on
+
+     # fmt: off
+    expected_merge_map_columns_in_order_when_only_ascwds_known = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None,
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_only_primary_service_known = [
+        ("1-001", 
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_only_primary_service_known = [
+        ("1-001", 
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         IndCQC.ascwds_job_role_ratios_by_primary_service)
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_both_map_columns_populated = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_both_map_columns_populated = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    #fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_both_null = [
+        ("1-001", 
+         None,
+         None)
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_both_null = [
+        ("1-001", 
+         None,
+         None,
+         None,
+         None)
+    ]
+    # fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4}),
+        ("1-002", 
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2})
+    ]
+    #fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+        ("1-001", 
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios),
+        ("1-002", 
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    # fmt: on
+
     source_missing_rows = [
         ("1-000001", 8.0, None),
         ("1-000002", None, None),
