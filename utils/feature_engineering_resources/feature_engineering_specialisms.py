@@ -7,7 +7,7 @@ from utils.column_values.categorical_columns_by_dataset import (
 
 @dataclass
 class FeatureEngineeringValueLabelsSpecialisms:
-    """The possible values of the services feature in the independent CQC estimates pipeline"""
+    """The possible values of the specialism feature in the independent CQC estimates pipeline"""
 
     column_name: str = CatValues.specialisms_column_values.column_name
 
