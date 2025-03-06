@@ -237,7 +237,6 @@ def calculate_interpolated_values(
     #     ).otherwise(F.col(column_to_interpolate_from)),
     # )
 
-
     df = df.withColumn(
         column_to_interpolate_from,
         F.coalesce(
