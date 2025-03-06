@@ -3116,8 +3116,8 @@ class ModelFeatures:
     calculate_time_registered_for_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
         ]
     )
     expected_calculate_time_registered_for_schema = StructType(

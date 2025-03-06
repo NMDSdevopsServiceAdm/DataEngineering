@@ -34,7 +34,7 @@ class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
             Data.expected_calculate_time_registered_same_day_rows,
             Schemas.expected_calculate_time_registered_for_schema,
         )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        returned_data = returned_df.collect()
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)

@@ -5991,32 +5991,32 @@ class ModelFeatures:
     ]
 
     calculate_time_registered_exact_years_apart_rows = [
-        ("1-0001", date(2024, 1, 1), date(2025, 1, 1)),
-        ("1-0002", date(2019, 1, 1), date(2025, 1, 1)),
-        ("1-0003", date(2014, 1, 1), date(2025, 1, 1)),
+        ("1-0001", date(2025, 1, 1), date(2024, 1, 1)),
+        ("1-0002", date(2025, 1, 1), date(2019, 1, 1)),
+        ("1-0003", date(2025, 1, 1), date(2014, 1, 1)),
     ]
     expected_calculate_time_registered_exact_years_apart_rows = [
-        ("1-0001", date(2024, 1, 1), date(2025, 1, 1), 1),
-        ("1-0002", date(2019, 1, 1), date(2025, 1, 1), 6),
-        ("1-0003", date(2014, 1, 1), date(2025, 1, 1), 11),
+        ("1-0001", date(2025, 1, 1), date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 1, 1), date(2019, 1, 1), 6),
+        ("1-0003", date(2025, 1, 1), date(2014, 1, 1), 11),
     ]
 
     calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
-        ("1-0001", date(2024, 1, 2), date(2025, 1, 1)),
-        ("1-0002", date(2019, 6, 9), date(2025, 6, 8)),
+        ("1-0001", date(2025, 1, 1), date(2024, 1, 2)),
+        ("1-0002", date(2025, 6, 8), date(2019, 6, 9)),
     ]
     expected_calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
-        ("1-0001", date(2024, 1, 2), date(2025, 1, 1), 1),
-        ("1-0002", date(2019, 6, 9), date(2025, 6, 8), 6),
+        ("1-0001", date(2025, 1, 1), date(2024, 1, 2), 0),
+        ("1-0002", date(2025, 6, 8), date(2019, 6, 9), 5),
     ]
 
     calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
-        ("1-0001", date(2024, 1, 1), date(2025, 1, 2)),
-        ("1-0002", date(2019, 5, 31), date(2025, 6, 1)),
+        ("1-0001", date(2025, 1, 2), date(2024, 1, 1)),
+        ("1-0002", date(2025, 6, 1), date(2019, 5, 31)),
     ]
     expected_calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
-        ("1-0001", date(2024, 1, 1), date(2025, 1, 2), 0),
-        ("1-0002", date(2019, 5, 31), date(2025, 6, 1), 5),
+        ("1-0001", date(2025, 1, 2), date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 6, 1), date(2019, 5, 31), 6),
     ]
 
 
