@@ -227,13 +227,24 @@ def calculate_interpolated_values(
     Returns:
         DataFrame: The DataFrame with the specified column updated.
     """
+    # df = df.withColumn(
+    #     column_to_interpolate_from,
+    #     F.when(
+    #         F.col(column_to_interpolate_from).isNull(),
+    #         F.col(IndCqc.previous_non_null_value)
+    #         + F.col(IndCqc.residual)
+    #         * F.col(IndCqc.proportion_of_time_between_submissions),
+    #     ).otherwise(F.col(column_to_interpolate_from)),
+    # )
+
+
     df = df.withColumn(
         column_to_interpolate_from,
-        F.when(
-            F.col(column_to_interpolate_from).isNull(),
+        F.coalesce(
+            F.col(column_to_interpolate_from),
             F.col(IndCqc.previous_non_null_value)
             + F.col(IndCqc.residual)
             * F.col(IndCqc.proportion_of_time_between_submissions),
-        ).otherwise(F.col(column_to_interpolate_from)),
+        ),
     )
     return df
