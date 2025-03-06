@@ -119,7 +119,16 @@ def main(
     registered_locations_df = remove_locations_that_never_had_regulated_activities(
         registered_locations_df
     )
-    registered_locations_df = add_list_of_services_offered(registered_locations_df)
+    registered_locations_df = extract_from_struct(
+        registered_locations_df,
+        registered_locations_df[CQCLClean.imputed_gac_service_types][CQCL.description],
+        CQCLClean.services_offered,
+    )
+    registered_locations_df = extract_from_struct(
+        registered_locations_df,
+        registered_locations_df[CQCLClean.specialisms][CQCL.name],
+        CQCLClean.specialisms_offered,
+    )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
     registered_locations_df = realign_carehome_column_with_primary_service(
@@ -494,21 +503,22 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     return df
 
 
-def add_list_of_services_offered(cqc_loc_df: DataFrame) -> DataFrame:
+def extract_from_struct(
+    df: DataFrame, source_struct_column_name: str, new_column_name: str
+) -> DataFrame:
     """
-    Adds a new column called 'services_offered' which contains an array of descriptions from the 'imputed_gac_service_types' field.
+    Extracts data from a specified struct column and stores it in a new column as an array.
 
     Args:
-        cqc_loc_df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+        df (DataFrame): The input DataFrame.
+        source_struct_column_name (str): The name of the column to extract data from.
+        new_column_name (str): The name of the new column where extracted data will be stored.
 
     Returns:
-        DataFrame: The DataFrame with the new 'services_offered' column added.
+        DataFrame: A new DataFrame with the extracted data stored in the specified column.
     """
-    cqc_loc_df = cqc_loc_df.withColumn(
-        CQCLClean.services_offered,
-        cqc_loc_df[CQCLClean.imputed_gac_service_types][CQCL.description],
-    )
-    return cqc_loc_df
+    df = df.withColumn(new_column_name, source_struct_column_name)
+    return df
 
 
 def allocate_primary_service_type(df: DataFrame) -> DataFrame:

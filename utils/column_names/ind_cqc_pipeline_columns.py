@@ -115,6 +115,7 @@ class IndCqcColumns:
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
+    estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
     estimate_value: str = "estimate_value"
     expected_filled_posts: str = "expected_filled_posts"
@@ -238,6 +239,7 @@ class IndCqcColumns:
     services_offered: str = CQCLClean.services_offered
     specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms
+    specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded

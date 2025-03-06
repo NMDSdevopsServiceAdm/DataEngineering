@@ -120,6 +120,12 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.create_estimate_filled_posts_by_job_role_map_column(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.count_registered_manager_names(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
