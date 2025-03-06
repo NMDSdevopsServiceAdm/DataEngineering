@@ -1209,6 +1209,34 @@ class CQCLocationsSchema:
         ]
     )
 
+    extract_from_struct_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCLClean.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_extract_from_struct_schema = StructType(
+        [
+            *extract_from_struct_schema,
+            StructField(
+                CQCLClean.services_offered,
+                ArrayType(
+                    StringType(),
+                ),
+            ),
+        ]
+    )
+
     primary_service_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1343,18 +1371,6 @@ class CQCLocationsSchema:
     expected_split_registered_schema = StructType(
         [
             *expected_ons_join_schema,
-        ]
-    )
-
-    expected_services_offered_schema = StructType(
-        [
-            *primary_service_type_schema,
-            StructField(
-                CQCLClean.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-            ),
         ]
     )
 
