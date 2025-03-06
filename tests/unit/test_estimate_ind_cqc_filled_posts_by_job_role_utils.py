@@ -600,6 +600,33 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
         )
 
 
+class RemoveAscwdsJobRoleCountWhenFilledPostsSourceNotAscwds(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows,
+            Schemas.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema,
+        )
+        self.returned_df = job.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
+            self.test_df
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+    def test_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_returns_null_as_expected(
+        self,
+    ):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows,
+            Schemas.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema,
+        )
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(self.returned_data, expected_data)
+
+
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
