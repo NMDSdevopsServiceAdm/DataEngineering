@@ -113,6 +113,26 @@ class Services(ColumnValues):
 
 
 @dataclass
+class Specialisms(ColumnValues):
+    """The possible values of the specialisms column in CQC locations data"""
+
+    adults_over_65: str = "Caring for adults over 65 yrs"
+    adults_under_65: str = "Caring for adults under 65 yrs"
+    children: str = "Caring for children"
+    dementia: str = "Dementia"
+    detained_under_mental_health_act: str = (
+        "Caring for people whose rights are restricted under the Mental Health Act"
+    )
+    eating_disorders: str = "Eating disorders"
+    learning_disabilities: str = "Learning disabilities"
+    mental_health: str = "Mental health conditions"
+    physical_disabilities: str = "Physical disabilities"
+    sensory_impairment: str = "Sensory impairment"
+    substance_misuse: str = "Substance misuse problems"
+    whole_population: str = "Services for everyone"
+
+
+@dataclass
 class PIRType(ColumnValues):
     """The possible values of the PIR type column in CQC PIR data"""
 

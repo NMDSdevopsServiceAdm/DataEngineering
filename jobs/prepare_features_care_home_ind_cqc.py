@@ -13,11 +13,17 @@ from utils.column_values.categorical_column_values import CareHome
 from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as RegionFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_related_location import (
+    FeatureEngineeringValueLabelsRelatedLocation as RelatedLocationFeatures,
+)
 from utils.feature_engineering_resources.feature_engineering_rural_urban import (
     FeatureEngineeringValueLabelsRuralUrban as RuralUrbanFeatures,
 )
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
+)
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
     vectorise_dataframe,
@@ -52,6 +58,13 @@ def main(
         lookup_dict=ServicesFeatures.labels_dict,
     )
 
+    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
+    features_df = column_expansion_with_dict(
+        df=features_df,
+        col_name=IndCQC.services_offered,
+        lookup_dict=SpecialismsFeatures.labels_dict,
+    )
+
     rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
@@ -67,6 +80,15 @@ def main(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
             lookup_dict=RegionFeatures.labels_dict,
+        )
+    )
+
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.related_location,
+            lookup_dict=RelatedLocationFeatures.labels_dict,
         )
     )
 
