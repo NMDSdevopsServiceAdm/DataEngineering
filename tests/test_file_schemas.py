@@ -3113,15 +3113,16 @@ class ModelFeatures:
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
-    add_time_registered_schema = StructType(
+    calculate_time_registered_for_schema = StructType(
         [
+            StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
-    expected_add_time_registered_schema = StructType(
+    expected_calculate_time_registered_for_schema = StructType(
         [
-            *add_time_registered_schema,
+            *calculate_time_registered_for_schema,
             StructField(IndCQC.time_registered, IntegerType(), True),
         ]
     )

@@ -5982,11 +5982,41 @@ class ModelFeatures:
         ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
-    add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10)),
+
+    calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
     ]
-    expected_add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10), 20),
+    expected_calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 0),
+    ]
+
+    calculate_time_registered_exact_years_apart_rows = [
+        ("1-0001", date(2024, 1, 1), date(2025, 1, 1)),
+        ("1-0002", date(2019, 1, 1), date(2025, 1, 1)),
+        ("1-0003", date(2014, 1, 1), date(2025, 1, 1)),
+    ]
+    expected_calculate_time_registered_exact_years_apart_rows = [
+        ("1-0001", date(2024, 1, 1), date(2025, 1, 1), 1),
+        ("1-0002", date(2019, 1, 1), date(2025, 1, 1), 6),
+        ("1-0003", date(2014, 1, 1), date(2025, 1, 1), 11),
+    ]
+
+    calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
+        ("1-0001", date(2024, 1, 1), date(2025, 1, 2)),
+        ("1-0002", date(2019, 6, 1), date(2025, 5, 31)),
+    ]
+    expected_calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
+        ("1-0001", date(2024, 1, 1), date(2025, 1, 2), 0),
+        ("1-0002", date(2019, 6, 1), date(2025, 5, 31), 5),
+    ]
+
+    calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
+        ("1-0001", date(2024, 1, 2), date(2025, 1, 2)),
+        ("1-0002", date(2019, 6, 9), date(2025, 5, 31)),
+    ]
+    expected_calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
+        ("1-0001", date(2024, 1, 2), date(2025, 1, 1), 1),
+        ("1-0002", date(2019, 6, 9), date(2025, 6, 8), 6),
     ]
 
 

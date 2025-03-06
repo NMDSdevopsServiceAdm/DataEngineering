@@ -2,12 +2,7 @@ import unittest
 import warnings
 
 from utils.utils import get_spark
-from utils.features.helper import (
-    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_array_column_count_to_data,
-    vectorise_dataframe,
-    add_time_registered_into_df,
-)
+from utils.features import helper as job
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -20,19 +15,36 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         self.spark = get_spark()
 
         warnings.simplefilter("ignore", ResourceWarning)
-        return super().setUp()
 
-    # def test_add_time_registered_into_df(self):
-    #     test_df = self.spark.createDataFrame(
-    #         Data.add_time_registered_rows, Schemas.add_time_registered_schema
-    #     )
-    #     returned_df = add_time_registered_into_df(df=test_df)
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_add_time_registered_rows,
-    #         Schemas.expected_add_time_registered_schema,
-    #     )
 
-    #     self.assertEqual(expected_df.collect(), returned_df.collect())
+class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_time_registered_returns_zero_when_dates_are_on_the_same_day(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_same_day_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_same_day_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
+class ConvertCategoricalVariableToBinaryVariablesBasedOnADictionaryTests(
+    LocationsFeatureEngineeringTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
     def test_convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         self,
@@ -45,7 +57,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             )
         ]
         df = self.spark.createDataFrame(rows, cols)
-        result = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+        result = job.convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=df,
             categorical_col_name="rui_2011",
             lookup_dict={
@@ -55,13 +67,18 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         result_rows = result.collect()
         self.assertEqual(result_rows[0].indicator_1, 1)
 
+
+class AddArrayColumnCountToDataTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_add_array_column_count_to_data(self):
         cols = ["location", "services"]
         new_col_name = "service_count"
         rows = [("1", ["service_1", "service_2", "service_3"]), ("2", ["service_1"])]
         df = self.spark.createDataFrame(rows, cols)
 
-        result = add_array_column_count_to_data(
+        result = job.add_array_column_count_to_data(
             df=df, new_col_name=new_col_name, col_to_check="services"
         )
         rows = result.collect()
@@ -79,6 +96,11 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             == {"location": "2", "services": ["service_1"], "service_count": 1}
         )
 
+
+class VectoriseDataframeTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
     def test_vectorise_dataframe(self):
         list_for_vectorisation = ["col_1", "col_2", "col_3"]
 
@@ -86,7 +108,7 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
             Data.vectorise_input_rows, Schemas.vectorise_schema
         )
 
-        output_df = vectorise_dataframe(
+        output_df = job.vectorise_dataframe(
             df=df, list_for_vectorisation=list_for_vectorisation
         )
         output_data = (

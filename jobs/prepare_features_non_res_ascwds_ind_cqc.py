@@ -28,11 +28,12 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
     FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
-    vectorise_dataframe,
-    column_expansion_with_dict,
     add_array_column_count_to_data,
+    calculate_time_registered_for,
+    cap_integer_at_max_value,
+    column_expansion_with_dict,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_time_registered_into_df,
+    vectorise_dataframe,
 )
 
 
@@ -131,25 +132,35 @@ def main(
         )
     )
 
-    features_df = add_time_registered_into_df(df=features_df)
+    features_df = calculate_time_registered_for(df=features_df)
 
-    # There are a limited number of locations in some categories with very few, or no, ASCWDS data so the counts are capped.
-    features_df = features_df.withColumn(
-        IndCQC.service_count, F.least(F.col(IndCQC.service_count), F.lit(4))
+    features_df = cap_integer_at_max_value(
+        features_df,
+        IndCQC.time_registered,
+        3,
+        IndCQC.time_registered_capped_at_three_years,
     )
-    features_df = features_df.withColumn(
-        IndCQC.activity_count, F.least(F.col(IndCQC.activity_count), F.lit(3))
+    features_df = cap_integer_at_max_value(
+        features_df,
+        IndCQC.time_registered,
+        10,
+        IndCQC.time_registered_capped_at_ten_years,
+    )
+    features_df = cap_integer_at_max_value(
+        features_df, IndCQC.service_count, 4, IndCQC.service_count_capped
+    )
+    features_df = cap_integer_at_max_value(
+        features_df, IndCQC.activity_count, 3, IndCQC.activity_count_capped
     )
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
 
-    list_for_vectorisation_without_dormancy: List[str] = sorted(
+    list_for_vectorisation: List[str] = sorted(
         [
-            IndCQC.activity_count,
-            IndCQC.service_count,
-            IndCQC.time_registered,
+            IndCQC.activity_count_capped,
+            IndCQC.service_count_capped,
         ]
         + related_location
         + regions
@@ -157,8 +168,12 @@ def main(
         + service_keys
         + specialisms_keys
     )
+    list_for_vectorisation_without_dormancy: List[str] = sorted(
+        list_for_vectorisation + [IndCQC.time_registered_capped_at_three_years]
+    )
+
     list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation_without_dormancy + dormancy
+        list_for_vectorisation + [IndCQC.time_registered_capped_at_ten_years] + dormancy
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
