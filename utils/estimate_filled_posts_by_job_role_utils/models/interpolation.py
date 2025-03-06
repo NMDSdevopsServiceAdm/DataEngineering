@@ -33,6 +33,8 @@ def model_job_role_ratio_interpolation(
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
 
+    print(df.count())
+
     df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
 
     df_keys = df.select(
@@ -112,6 +114,7 @@ def model_job_role_ratio_interpolation(
     )
 
     df_result = df_result.drop(*columns_to_interpolate)
+    print(df_result)
 
     return df_result
 
