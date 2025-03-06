@@ -12,5 +12,5 @@ class FeatureEngineeringValueLabelsRelatedLocation:
     column_name: str = CatValues.related_location_column_values.column_name
 
     labels_dict = {
-        "no_predessor_account": CatValues.related_location_column_values.no_related_location,
+        "no_related_location": CatValues.related_location_column_values.no_related_location,
     }
