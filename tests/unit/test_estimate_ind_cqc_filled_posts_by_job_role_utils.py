@@ -935,6 +935,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
+        self.maxDiff = None
+
         self.assertEqual(expected_df.collect(), return_df.collect())
 
     def test_model_interpolation_when_two_records_of_null_values_in_between_populated_records_return_dataframe_with_interpolated_values(
@@ -951,6 +953,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
+
+        self.maxDiff = None
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -969,6 +973,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
+        self.maxDiff = None
+
         self.assertEqual(expected_df.collect(), return_df.collect())
 
     def test_model_interpolation_when_three_record_of_null_values_in_between_populated_records_return_dataframe_with_interpolated_values(
@@ -985,6 +991,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
+
+        self.maxDiff = None
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -1003,6 +1011,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
 
+        self.maxDiff = None
+
         self.assertEqual(expected_df.collect(), return_df.collect())
 
     def test_model_interpolation_when_data_includes_empty_record_which_cannot_be_interpolated_return_dataframe_with_no_incorrect_population_of_values(
@@ -1019,6 +1029,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
+
+        self.maxDiff = None
 
         self.assertEqual(expected_df.collect(), return_df.collect())
 
@@ -1053,5 +1065,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
         return_df = interp.model_job_role_ratio_interpolation(test_df, "straight")
+
+        self.maxDiff = None
 
         self.assertEqual(expected_df.collect(), return_df.collect())
