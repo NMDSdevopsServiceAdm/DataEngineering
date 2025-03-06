@@ -43,3 +43,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
         NewCqcLocationApiColumns.relationships + "_predecessors_only"
     )
     services_offered: str = "services_offered"
+    specialisms_offered: str = "specialisms_offered"
