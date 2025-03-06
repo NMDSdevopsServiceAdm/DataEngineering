@@ -124,6 +124,11 @@ def main(
         registered_locations_df[CQCLClean.imputed_gac_service_types][CQCL.description],
         CQCLClean.services_offered,
     )
+    registered_locations_df = extract_from_struct(
+        registered_locations_df,
+        registered_locations_df[CQCLClean.specialisms][CQCL.name],
+        CQCLClean.specialisms_offered,
+    )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)
     registered_locations_df = realign_carehome_column_with_primary_service(
