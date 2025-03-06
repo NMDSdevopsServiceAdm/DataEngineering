@@ -97,7 +97,7 @@ def main(
     specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
-        col_name=IndCQC.services_offered,
+        col_name=IndCQC.specialisms_offered,
         lookup_dict=SpecialismsFeatures.labels_dict,
     )
 
