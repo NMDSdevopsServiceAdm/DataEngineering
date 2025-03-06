@@ -63,7 +63,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(column_expansion_with_dict_mock.call_count, 2)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
-            4,
+            5,
         )
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)

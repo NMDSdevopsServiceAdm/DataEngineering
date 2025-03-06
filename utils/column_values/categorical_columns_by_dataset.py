@@ -22,23 +22,24 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 from utils.column_values.categorical_column_values import (
-    Dormancy,
-    RegistrationStatus,
-    PrimaryServiceType,
-    Services,
-    CareHome,
-    Sector,
-    MainJobRoleLabels,
-    MainJobRoleID,
-    Region,
-    RUI,
-    CurrentCSSR,
-    ContemporaryCSSR,
     ASCWDSFilledPostsSource,
-    EstimateFilledPostsSource,
     AscwdsFilteringRule,
-    RelatedLocation,
+    CareHome,
+    ContemporaryCSSR,
+    CurrentCSSR,
+    Dormancy,
+    EstimateFilledPostsSource,
     InAscwds,
+    MainJobRoleID,
+    MainJobRoleLabels,
+    PrimaryServiceType,
+    Region,
+    RegistrationStatus,
+    RelatedLocation,
+    RUI,
+    Sector,
+    Services,
+    Specialisms,
 )
 
 
@@ -200,7 +201,7 @@ class EstimatedMissingAscwdsCategoricalValues:
 class FeatureEngineeringCategoricalValues:
     current_region_column_values = Region(IndCQC.current_region)
     services_column_values = Services(IndCQC.imputed_gac_service_types)
-    specialisms_column_values = Services(IndCQC.specialisms)
+    specialisms_column_values = Specialisms(IndCQC.specialisms)
     current_rui_column_values = RUI(IndCQC.current_rural_urban_indicator_2011)
     dormancy_column_values = Dormancy(IndCQC.dormancy)
     related_location_column_values = RelatedLocation(IndCQC.related_location)

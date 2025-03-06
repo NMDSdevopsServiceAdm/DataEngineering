@@ -127,6 +127,15 @@ def main(
         )
     )
 
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.related_location,
+            lookup_dict=RelatedLocationFeatures.labels_dict,
+        )
+    )
+
     dormancy = list(DormancyFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
