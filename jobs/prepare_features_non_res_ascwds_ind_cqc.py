@@ -88,15 +88,10 @@ def main(
         lookup_dict=ServicesFeatures.non_res_model_labels_dict,
     )
 
-    # make function if required
-    features_df = features_df.withColumn(
-        IndCQC.specialisms_offered, features_df["specialisms"]["name"]
-    )
-
     specialisms_keys = list(SpecialismsFeatures.non_res_model_labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
-        col_name=IndCQC.services_offered,
+        col_name=IndCQC.specialisms_offered,
         lookup_dict=SpecialismsFeatures.non_res_model_labels_dict,
     )
 
