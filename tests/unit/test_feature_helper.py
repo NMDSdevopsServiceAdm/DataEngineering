@@ -39,6 +39,60 @@ class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
 
         self.assertEqual(returned_data, expected_data)
 
+    def test_calculate_time_registered_returns_zero_when_dates_are_exact_years_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_exact_years_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_exact_years_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_zero_when_dates_are_one_day_less_than_a_full_year_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_less_than_a_full_year_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_less_than_a_full_year_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_zero_when_dates_are_one_day_more_than_a_full_year_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_more_than_a_full_year_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_more_than_a_full_year_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
 
 class ConvertCategoricalVariableToBinaryVariablesBasedOnADictionaryTests(
     LocationsFeatureEngineeringTests
