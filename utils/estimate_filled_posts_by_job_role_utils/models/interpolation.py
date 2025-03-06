@@ -8,7 +8,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import (
     unpack_mapped_column,
     create_map_column,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from utils.estimate_filled_posts_by_job_role_utils.utils import get_selected_value
 
 
 def model_job_role_ratio_interpolation(
@@ -40,58 +40,78 @@ def model_job_role_ratio_interpolation(
     ).distinct()
     columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
+    # Identify columns not needed for interpolation
+    columns_to_keep = [
+        IndCqc.location_id,
+        IndCqc.unix_time,
+        IndCqc.ascwds_job_role_ratios,
+    ] + columns_to_interpolate  # Add any other essential columns
+    columns_to_drop = [col for col in df.columns if col not in columns_to_keep]
+
+    # Filter out unnecessary columns
+    df_to_interpolate = df.drop(*columns_to_drop)
+
     (
         window_spec_backwards,
         window_spec_forwards,
         window_spec_lagged,
     ) = define_window_specs()
 
+    # Add back the dropped columns
+
     for column in columns_to_interpolate:
-        df = calculate_proportion_of_time_between_submissions(
-            df, column, window_spec_backwards, window_spec_forwards
+        df_to_interpolate = calculate_proportion_of_time_between_submissions(
+            df_to_interpolate, column, window_spec_backwards, window_spec_forwards
         )
 
         if method == "trend":
-            df = calculate_residuals(
-                df,
+            df_to_interpolate = calculate_residuals(
+                df_to_interpolate,
                 column,
                 IndCqc.extrapolation_forwards,
                 window_spec_forwards,
             )
-            df = calculate_interpolated_values(
-                df,
+            df_to_interpolate = calculate_interpolated_values(
+                df_to_interpolate,
                 IndCqc.extrapolation_forwards,
             )
 
         elif method == "straight":
-            df = get_selected_value(
-                df,
+            df_to_interpolate = get_selected_value(
+                df_to_interpolate,
                 window_spec_lagged,
                 column,
                 column,
                 IndCqc.previous_non_null_value,
                 "last",
             )
-            df = calculate_residuals(
-                df,
+            df_to_interpolate = calculate_residuals(
+                df_to_interpolate,
                 column,
                 IndCqc.previous_non_null_value,
                 window_spec_forwards,
             )
-            df = calculate_interpolated_values(df, column)
-            df = df.drop(IndCqc.previous_non_null_value)
+            df_to_interpolate = calculate_interpolated_values(df_to_interpolate, column)
+            df_to_interpolate = df_to_interpolate.drop(IndCqc.previous_non_null_value)
 
         else:
             raise ValueError("Error: method must be either 'straight' or 'trend'")
 
-        df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
+        df_to_interpolate = df_to_interpolate.drop(
+            IndCqc.proportion_of_time_between_submissions, IndCqc.residual
+        )
 
-    df = df.withColumn(
+    df_result = df_to_interpolate.withColumn(
         IndCqc.ascwds_job_role_ratios_interpolated,
         create_map_column(columns_to_interpolate),
     )
 
-    df_result = df.drop(*columns_to_interpolate)
+    df_result = df_result.join(
+        df.select(*columns_to_drop, IndCqc.location_id, IndCqc.unix_time),
+        on=[IndCqc.location_id, IndCqc.unix_time],
+    )
+
+    df_result = df_result.drop(*columns_to_interpolate)
 
     return df_result
 
