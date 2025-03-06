@@ -178,3 +178,31 @@ class VectoriseDataframeTests(LocationsFeatureEngineeringTests):
         )
 
         self.assertEqual(output_data, expected_data)
+
+
+class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.cap_integer_at_max_value_rows, Schemas.cap_integer_at_max_value_schema
+        )
+
+        self.returned_df = job.cap_integer_at_max_value(
+            df=test_df,
+            col_name=IndCQC.service_count,
+            max_value=2,
+            new_col_name=IndCQC.service_count_capped,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_cap_integer_at_max_value_rows,
+            Schemas.expected_cap_integer_at_max_value_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_cap_integer_at_max_value_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_cap_integer_at_max_value_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)

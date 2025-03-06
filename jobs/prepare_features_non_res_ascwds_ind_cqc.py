@@ -76,10 +76,23 @@ def main(
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
+    features_df = cap_integer_at_max_value(
+        df=features_df,
+        col_name=IndCQC.service_count,
+        max_value=4,
+        new_col_name=IndCQC.service_count_capped,
+    )
+
     features_df = add_array_column_count_to_data(
         df=features_df,
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,
+    )
+    features_df = cap_integer_at_max_value(
+        df=features_df,
+        col_name=IndCQC.activity_count,
+        max_value=3,
+        new_col_name=IndCQC.activity_count_capped,
     )
 
     service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
@@ -135,22 +148,16 @@ def main(
     features_df = calculate_time_registered_for(df=features_df)
 
     features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.time_registered,
-        3,
-        IndCQC.time_registered_capped_at_three_years,
+        df=features_df,
+        col_name=IndCQC.time_registered,
+        max_value=3,
+        new_col_name=IndCQC.time_registered_capped_at_three_years,
     )
     features_df = cap_integer_at_max_value(
-        features_df,
-        IndCQC.time_registered,
-        10,
-        IndCQC.time_registered_capped_at_ten_years,
-    )
-    features_df = cap_integer_at_max_value(
-        features_df, IndCQC.service_count, 4, IndCQC.service_count_capped
-    )
-    features_df = cap_integer_at_max_value(
-        features_df, IndCQC.activity_count, 3, IndCQC.activity_count_capped
+        df=features_df,
+        col_name=IndCQC.time_registered,
+        max_value=10,
+        new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(

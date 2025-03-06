@@ -88,5 +88,23 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
 def cap_integer_at_max_value(
     df: DataFrame, col_name: str, max_value: int, new_col_name: str
 ) -> DataFrame:
-    df = df.withColumn(new_col_name, F.least(F.col(col_name), F.lit(max_value)))
+    """
+    Caps the values in a specified column at a given maximum value and stores the result in a new column.
+    Null values remain as null.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        col_name (str): The name of the column to be capped.
+        max_value (int): The maximum value allowed for the column.
+        new_col_name (str): The name of the new column to store the capped values.
+
+    Returns:
+        DataFrame: A new DataFrame with the capped values stored in the new column, preserving null values.
+    """
+    df = df.withColumn(
+        new_col_name,
+        F.when(
+            F.col(col_name).isNotNull(), F.least(F.col(col_name), F.lit(max_value))
+        ).otherwise(None),
+    )
     return df
