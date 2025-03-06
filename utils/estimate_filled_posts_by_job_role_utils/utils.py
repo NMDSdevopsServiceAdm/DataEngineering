@@ -299,6 +299,8 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     result_df = df.select("*", *column_of_keys)
 
     return result_df
+
+
 def create_estimate_filled_posts_by_job_role_map_column(
     df: DataFrame,
 ) -> DataFrame:
