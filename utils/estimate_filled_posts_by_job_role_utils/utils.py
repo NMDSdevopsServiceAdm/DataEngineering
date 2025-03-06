@@ -271,7 +271,6 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
-<<<<<<< HEAD
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Takes in two argument which is a DataFrame and also a Column Name which is a string. The column
@@ -300,7 +299,6 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     result_df = df.select("*", *column_of_keys)
 
     return result_df
-=======
 def create_estimate_filled_posts_by_job_role_map_column(
     df: DataFrame,
 ) -> DataFrame:
@@ -329,4 +327,3 @@ def create_estimate_filled_posts_by_job_role_map_column(
     )
 
     return df
->>>>>>> 21d85141181740d46a4a6d4bfdedf0d5f02d239f
