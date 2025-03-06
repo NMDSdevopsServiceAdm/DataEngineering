@@ -271,6 +271,7 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
+<<<<<<< HEAD
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Takes in two argument which is a DataFrame and also a Column Name which is a string. The column
@@ -299,3 +300,33 @@ def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     result_df = df.select("*", *column_of_keys)
 
     return result_df
+=======
+def create_estimate_filled_posts_by_job_role_map_column(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Creates a map column of estimated filled posts by job role.
+
+    Takes the ascwds_job_role_ratios_merged column and multiplies each ratio by estimate_filled_posts.
+    The results are mapped to a dictionary with the same keys as ascwds_job_role_ratios_merged.
+
+    Args:
+        df (DataFrame): A dataframe which contains a job role ratio map column and an estimated filled post column.
+
+    Returns:
+        DataFrame: A dataframe with an additional map column of estimated filled posts by job role.
+
+    """
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts_by_job_role,
+        F.map_from_arrays(
+            F.map_keys(F.col(IndCQC.ascwds_job_role_ratios_merged)),
+            F.transform(
+                F.map_values(F.col(IndCQC.ascwds_job_role_ratios_merged)),
+                lambda v: v * F.col(IndCQC.estimate_filled_posts),
+            ),
+        ),
+    )
+
+    return df
+>>>>>>> 21d85141181740d46a4a6d4bfdedf0d5f02d239f
