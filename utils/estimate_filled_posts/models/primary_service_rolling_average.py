@@ -56,7 +56,7 @@ def model_primary_service_rolling_average_and_rate_of_change(
     )
 
     columns_to_drop = [field.name for field in fields(TempCol())]
-    df = df.drop(*columns_to_drop)
+    # df = df.drop(*columns_to_drop)
 
     return df
 
