@@ -108,8 +108,8 @@ def remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
 
     When estimate filled posts source is not 'ascwds_pir_merged' and
     estimate filled posts is not equal to ascwds filled posts dedup clean.
-    This is to ensure that we're only using ascwds job role data when it has been used for estimated filled posts and
-    to remove duplicated ascwds job role data, by using a pre-deduplicated column as a reference.
+    This is to ensure that we're only using ascwds job role data when ascwds data has
+    been used for estimated filled posts.
 
     Args:
         df (DataFrame): The estimated filled post by job role DataFrame.
