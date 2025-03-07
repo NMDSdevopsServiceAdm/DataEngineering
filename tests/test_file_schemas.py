@@ -2581,13 +2581,6 @@ class NonResAscwdsFeaturesSchema(object):
                 ),
                 True,
             ),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
