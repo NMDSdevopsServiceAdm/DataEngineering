@@ -159,7 +159,7 @@ def main(
     features_df = cap_integer_at_max_value(
         df=features_df,
         col_name=IndCQC.time_registered,
-        max_value=3,
+        max_value=5,
         new_col_name=IndCQC.time_registered_capped_at_three_years,
     )
     features_df = cap_integer_at_max_value(
@@ -208,6 +208,7 @@ def main(
         vectorised_features_column_list
     )
 
+    # TODO - check what these are actually doing! is it the count of features or the count of columns we happen to select?
     print(
         f"number of features without dormancy: {len(list_for_vectorisation_without_dormancy)}"
     )
