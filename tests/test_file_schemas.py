@@ -6099,6 +6099,22 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema = (
+        StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+                StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+                StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+                StructField(
+                    IndCQC.ascwds_job_role_counts,
+                    MapType(StringType(), IntegerType()),
+                    True,
+                ),
+            ]
+        )
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

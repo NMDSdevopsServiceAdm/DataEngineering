@@ -9925,6 +9925,46 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # fmt: off
+    remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows = [
+        ("1-001", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-002", 
+         None, 
+         20.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-003", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.care_home_model,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows = [
+        ("1-001", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-002", 
+         None, 
+         20.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         None),
+        ("1-003", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.care_home_model,
+         None),
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
