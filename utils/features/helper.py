@@ -82,6 +82,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
             / twelve_months
         ),
     )
+
     return df
 
 

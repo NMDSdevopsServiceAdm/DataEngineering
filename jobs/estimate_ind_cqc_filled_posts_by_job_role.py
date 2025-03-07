@@ -33,6 +33,7 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.establishment_id,
     IndCQC.organisation_id,
     IndCQC.worker_records_bounded,
+    IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.ascwds_pir_merged,
     IndCQC.ascwds_filtering_rule,
     IndCQC.current_ons_import_date,
@@ -80,6 +81,10 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.merge_dataframes(
         estimated_ind_cqc_filled_posts_df,
         aggregated_job_roles_per_establishment_df,
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
+        estimated_ind_cqc_filled_posts_by_job_role_df
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
