@@ -151,6 +151,7 @@ class IndCqcColumns:
     )
     imputed_registration_date: str = CQCLClean.imputed_registration_date
     imputed_regulated_activities: str = CQCLClean.imputed_regulated_activities
+    imputed_specialisms: str = CQCLClean.imputed_specialisms
     interpolation_model: str = "interpolation_model"
     last_ascwds_submission: str = "last_ascwds_submission"
     last_filled_posts: str = "last_filled_posts"
@@ -239,7 +240,6 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialisms: str = CQCLClean.specialisms
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
