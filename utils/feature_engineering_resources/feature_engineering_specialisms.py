@@ -12,16 +12,16 @@ class FeatureEngineeringValueLabelsSpecialisms:
     column_name: str = CatValues.specialisms_column_values.column_name
 
     non_res_model_labels_dict = {
-        "specialism_adults_over_65": "Caring for adults over 65 yrs",
-        "specialism_adults_under_65": "Caring for adults under 65 yrs",
-        "specialism_children": "Caring for children",
-        "specialism_dementia": "Dementia",
-        # "specialism_detained_under_mental_health_act": "Caring for people whose rights are restricted under the Mental Health Act",
-        # "specialism_eating_disorders": "Eating disorders",
-        "specialism_learning_disabilities": "Learning disabilities",
-        "specialism_mental_health": "Mental health conditions",
-        "specialism_physical_disabilities": "Physical disabilities",
-        # "specialism_sensory_impairment": "Sensory impairment",
-        # "specialism_substance_misuse": "Substance misuse problems",
-        "specialism_whole_population": "Services for everyone",
+        "specialism_adults_over_65": CatValues.specialisms_column_values.adults_over_65,
+        "specialism_adults_under_65": CatValues.specialisms_column_values.adults_under_65,
+        "specialism_children": CatValues.specialisms_column_values.children,
+        "specialism_dementia": CatValues.specialisms_column_values.dementia,
+        # "specialism_detained_under_mental_health_act": CatValues.specialisms_column_values.detained_under_mental_health_act,
+        # "specialism_eating_disorders": CatValues.specialisms_column_values.eating_disorders,
+        "specialism_learning_disabilities": CatValues.specialisms_column_values.learning_disabilities,
+        "specialism_mental_health": CatValues.specialisms_column_values.mental_health,
+        "specialism_physical_disabilities": CatValues.specialisms_column_values.physical_disabilities,
+        # "specialism_sensory_impairment": CatValues.specialisms_column_values.sensory_impairment,
+        # "specialism_substance_misuse": CatValues.specialisms_column_values.substance_misuse,
+        "specialism_whole_population": CatValues.specialisms_column_values.whole_population,
     }
