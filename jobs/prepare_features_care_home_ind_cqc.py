@@ -20,10 +20,10 @@ from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
 from utils.features.helper import (
-    vectorise_dataframe,
-    column_expansion_with_dict,
     add_array_column_count_to_data,
+    column_expansion_with_dict,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    vectorise_dataframe,
 )
 
 
