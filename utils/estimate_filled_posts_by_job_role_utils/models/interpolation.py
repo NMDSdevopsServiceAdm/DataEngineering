@@ -93,7 +93,9 @@ def model_job_role_ratio_interpolation(
                 IndCqc.previous_non_null_value,
                 window_spec_forwards,
             )
+            df_to_interpolate.cache().count()
             df_to_interpolate = calculate_interpolated_values(df_to_interpolate, column)
+            df_to_interpolate.cache().count()
             df_to_interpolate = df_to_interpolate.drop(IndCqc.previous_non_null_value)
 
         else:
