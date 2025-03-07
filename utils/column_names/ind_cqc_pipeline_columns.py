@@ -236,6 +236,7 @@ class IndCqcColumns:
     rolling_average_model: str = "rolling_average_model"
     rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
+    service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
     specialism_count: str = "specialism_count"
     specialisms: str = CQCLClean.specialisms

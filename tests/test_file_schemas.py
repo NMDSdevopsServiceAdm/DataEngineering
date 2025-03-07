@@ -3133,6 +3133,19 @@ class ModelFeatures:
         ]
     )
 
+    cap_integer_at_max_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+    expected_cap_integer_at_max_value_schema = StructType(
+        [
+            *cap_integer_at_max_value_schema,
+            StructField(IndCQC.service_count_capped, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
