@@ -116,6 +116,9 @@ def main(
     registered_locations_df = impute_missing_struct_column(
         registered_locations_df, CQCL.regulated_activities
     )
+    registered_locations_df = impute_missing_struct_column(
+        registered_locations_df, CQCL.specialisms
+    )
     registered_locations_df = remove_locations_that_never_had_regulated_activities(
         registered_locations_df
     )
@@ -126,7 +129,7 @@ def main(
     )
     registered_locations_df = extract_from_struct(
         registered_locations_df,
-        registered_locations_df[CQCLClean.specialisms][CQCL.name],
+        registered_locations_df[CQCLClean.imputed_specialisms][CQCL.name],
         CQCLClean.specialisms_offered,
     )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)

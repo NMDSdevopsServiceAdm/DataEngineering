@@ -2582,7 +2582,7 @@ class NonResAscwdsFeaturesSchema(object):
                 True,
             ),
             StructField(
-                IndCQC.specialisms,
+                IndCQC.imputed_specialisms,
                 ArrayType(
                     StructType([StructField(IndCQC.name, StringType(), True)]), True
                 ),
