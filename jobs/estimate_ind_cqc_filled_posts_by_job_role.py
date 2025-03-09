@@ -127,7 +127,7 @@ def main(
         )
     )
 
-    estimated_ind_cqc_interpolated_filled_posts_by_job_role_df = (
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         interpolation.model_job_role_ratio_interpolation(
             estimated_ind_cqc_filled_posts_by_job_role_df, "straight"
         )
