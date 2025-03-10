@@ -46,6 +46,9 @@ def add_array_column_count_to_data(
     """
     Add a new column with the count of items in an array column.
 
+    This function adds a new column to the given data frame which contains the count of items in the specified array column.
+    If the array column is empty, the count will return 0 (by default, size returns -1 if the array is null).
+
     Args:
         df(DataFrame): A dataframe with an array column.
         new_col_name(str): A name for the new column with the count of items.
@@ -54,7 +57,7 @@ def add_array_column_count_to_data(
     Returns:
         DataFrame: A dataframe with an extra column with the count of items in hte specified array.
     """
-    return df.withColumn(new_col_name, F.size(F.col(col_to_check)))
+    return df.withColumn(new_col_name, F.least(F.size(F.col(col_to_check)), F.lit(0)))
 
 
 def add_time_registered_into_df(df: DataFrame) -> DataFrame:
