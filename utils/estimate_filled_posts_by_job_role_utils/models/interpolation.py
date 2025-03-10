@@ -108,6 +108,8 @@ def model_job_role_ratio_interpolation(
             IndCqc.proportion_of_time_between_submissions, IndCqc.residual
         )
 
+    df_to_interpolate = df_to_interpolate.cache()
+
     df_result = df_to_interpolate.withColumn(
         IndCqc.ascwds_job_role_ratios_interpolated,
         create_map_column(columns_to_interpolate),
@@ -120,6 +122,9 @@ def model_job_role_ratio_interpolation(
 
     df_result = df_result.drop(*columns_to_interpolate)
     print(df_result)
+
+    df_to_interpolate.unpersist()
+    df_result.unpersist()
 
     return df_result
 
