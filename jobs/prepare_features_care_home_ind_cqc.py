@@ -22,7 +22,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
-    add_array_column_count_to_data,
+    add_array_column_count,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
 )
 
@@ -39,7 +39,7 @@ def main(
         locations_df, IndCQC.care_home, CareHome.care_home
     )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=filtered_loc_data,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,

@@ -40,7 +40,7 @@ def convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
     return df
 
 
-def add_array_column_count_to_data(
+def add_array_column_count(
     df: DataFrame, new_col_name: str, col_to_check: str
 ) -> DataFrame:
     """
