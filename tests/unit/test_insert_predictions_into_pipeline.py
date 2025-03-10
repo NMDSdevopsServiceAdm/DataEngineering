@@ -5,8 +5,8 @@ from datetime import date
 from utils.estimate_filled_posts.insert_predictions_into_pipeline import (
     insert_predictions_into_pipeline,
 )
-from tests.test_file_data import InsertPredictionsIntoLocations as Data
-from tests.test_file_schemas import InsertPredictionsIntoLocations as Schemas
+from tests.test_file_data import InsertPredictionsIntoPipeline as Data
+from tests.test_file_schemas import InsertPredictionsIntoPipeline as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
