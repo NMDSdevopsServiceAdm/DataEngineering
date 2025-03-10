@@ -10,6 +10,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import (
 )
 from utils.estimate_filled_posts_by_job_role_utils.utils import get_selected_value
 
+# df.withColumn("job_role", F.explode(F.map_keys("propertiesMap"))).withColumn("percentage",F.explode(F.map_values("propertiesMap"))).show(truncate=False)
 
 def model_job_role_ratio_interpolation(
     df: DataFrame,
@@ -37,10 +38,16 @@ def model_job_role_ratio_interpolation(
 
     df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
 
-    df_keys = df.select(
-        F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))
-    ).distinct()
-    columns_to_interpolate = [row[0] for row in df_keys.collect()]
+    # df_keys = df.select(
+    #     F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))
+    # ).distinct()
+    # columns_to_interpolate = [row[0] for row in df_keys.collect()]
+
+    # test with list being one element long
+    columns_to_interpolate = ["care_worker"]
+
+    # check the values in the list
+
 
     # Identify columns not needed for interpolation
     columns_to_keep = [
@@ -52,6 +59,8 @@ def model_job_role_ratio_interpolation(
 
     # Filter out unnecessary columns
     df_to_interpolate = df.drop(*columns_to_drop)
+
+    # Check that it is actually dropping unncessary columns 
 
     # Repartition by location_id right after dropping unnecessary columns
     df_to_interpolate = df_to_interpolate.repartition(IndCqc.location_id)

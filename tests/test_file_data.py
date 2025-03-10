@@ -11154,7 +11154,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             "1000",
             1001,
             None,
-            None,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
         ),
         (
             "1000",
