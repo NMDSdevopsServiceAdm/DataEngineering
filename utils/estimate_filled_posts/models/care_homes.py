@@ -18,7 +18,6 @@ def model_care_homes(
     metrics_destination: str,
 ) -> DataFrame:
     gbt_trained_model = GBTRegressionModel.load(model_source)
-    features_df = features_df.where(features_df[IndCqc.number_of_beds].isNotNull())
 
     care_home_predictions = gbt_trained_model.transform(features_df)
 
