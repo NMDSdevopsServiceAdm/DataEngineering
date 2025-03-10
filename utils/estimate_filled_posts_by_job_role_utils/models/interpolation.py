@@ -45,7 +45,47 @@ def model_job_role_ratio_interpolation(
     # columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
     # test with list being one element long
-    columns_to_interpolate = ["care_worker","senior_care_worker","registered_nurse"]
+    # now
+    columns_to_interpolate = [
+        "senior_management",
+        "middle_management",
+        "first_line_manager",
+        "registered_manager",
+        "supervisor",
+        "social_worker",
+        "senior_care_worker",
+        "care_worker",
+        "community_support_and_outreach",
+        "employment_support",
+        "advice_guidance_and_advocacy",
+        "occupational_therapist",
+        "registered_nurse",
+        "allied_health_professional",
+        "technician",
+        "other_care_role",
+        "managers_and_staff_in_care_related_but_not_care_providing_roles",
+        "administrative_or_office_staff_not_care_providing",
+        "ancillary_staff_not_care_providing",
+        "other_non_care_related_staff",
+        "activities_worker_or_coordinator",
+        "safeguarding_and_reviewing_officer",
+        "occupational_therapist_assistant",
+        "registered_nursing_associate",
+        "nursing_assistant",
+        "assessment_officer",
+        "care_coordinator",
+        "childrens_roles",
+        "deputy_manager",
+        "learning_and_development_lead",
+        "team_leader",
+        "data_analyst",
+        "data_governance_manager",
+        "it_and_digital_support",
+        "it_manager",
+        "it_service_desk_manager",
+        "software_developer",
+        "support_worker",
+    ]
 
     # check the values in the list
 
