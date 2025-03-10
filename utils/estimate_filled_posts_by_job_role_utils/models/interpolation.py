@@ -45,8 +45,6 @@ def model_job_role_ratio_interpolation(
     # ).distinct()
     # columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
-    # test with list being one element long
-    # now
     columns_to_interpolate = [
         "senior_management",
         "middle_management",
@@ -71,21 +69,6 @@ def model_job_role_ratio_interpolation(
         "activities_worker_or_coordinator",
         "safeguarding_and_reviewing_officer",
         "occupational_therapist_assistant",
-        "registered_nursing_associate",
-        "nursing_assistant",
-        "assessment_officer",
-        "care_coordinator",
-        "childrens_roles",
-        "deputy_manager",
-        "learning_and_development_lead",
-        "team_leader",
-        "data_analyst",
-        "data_governance_manager",
-        "it_and_digital_support",
-        "it_manager",
-        "it_service_desk_manager",
-        "software_developer",
-        "support_worker",
     ]
 
     rows_with_null = df.filter(
