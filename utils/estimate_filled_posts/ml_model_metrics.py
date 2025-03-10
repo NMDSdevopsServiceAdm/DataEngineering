@@ -1,6 +1,5 @@
 from pyspark.ml.evaluation import RegressionEvaluator
-import pyspark.sql.functions as F
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import (
     StructField,
     StructType,
@@ -9,9 +8,7 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
 def save_model_metrics(
