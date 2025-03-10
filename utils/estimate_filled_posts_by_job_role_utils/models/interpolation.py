@@ -1,5 +1,6 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from typing import Optional, Tuple
+from functools import reduce
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
@@ -57,7 +58,16 @@ def model_job_role_ratio_interpolation(
         "care_worker",
         "community_support_and_outreach",
         "employment_support",
-    ]
+        "advice_guidance_and_advocacy",
+        "occupational_therapist",
+        "registered_nurse",
+        "allied_health_professional",
+        "technician",
+        "other_care_role",
+        "managers_and_staff_in_care_related_but_not_care_providing_roles",
+        "administrative_or_office_staff_not_care_providing",
+        "ancillary_staff_not_care_providing",
+        "other_non_care_related_staff"]
 
     # check the values in the list
 
