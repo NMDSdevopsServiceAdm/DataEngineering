@@ -12,6 +12,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import get_selected_val
 
 # df.withColumn("job_role", F.explode(F.map_keys("propertiesMap"))).withColumn("percentage",F.explode(F.map_values("propertiesMap"))).show(truncate=False)
 
+
 def model_job_role_ratio_interpolation(
     df: DataFrame,
     method: str,
@@ -48,7 +49,6 @@ def model_job_role_ratio_interpolation(
 
     # check the values in the list
 
-
     # Identify columns not needed for interpolation
     columns_to_keep = [
         IndCqc.location_id,
@@ -60,7 +60,7 @@ def model_job_role_ratio_interpolation(
     # Filter out unnecessary columns
     df_to_interpolate = df.drop(*columns_to_drop)
 
-    # Check that it is actually dropping unncessary columns 
+    # Check that it is actually dropping unncessary columns
 
     # Repartition by location_id right after dropping unnecessary columns
     df_to_interpolate = df_to_interpolate.repartition(IndCqc.location_id)
