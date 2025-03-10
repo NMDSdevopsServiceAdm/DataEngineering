@@ -6319,7 +6319,7 @@ class ModelNonResPirLinearRegressionRows:
 
 
 @dataclass
-class InsertPredictionsIntoPipeline:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
 
     predictions_rows = [
