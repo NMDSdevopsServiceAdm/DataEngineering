@@ -47,7 +47,7 @@ def model_job_role_ratio_interpolation(
 
     # test with list being one element long
     # now
-    columns_to_interpolate =  [
+    columns_to_interpolate = [
         "senior_management",
         "middle_management",
         "first_line_manager",
@@ -88,7 +88,9 @@ def model_job_role_ratio_interpolation(
         "support_worker",
     ]
 
-    rows_with_null = df.filter(reduce( lambda x, y: x | y, [F.col(c).isNull() for c in columns_to_interpolate]))
+    rows_with_null = df.filter(
+        reduce(lambda x, y: x | y, [F.col(c).isNull() for c in columns_to_interpolate])
+    )
     unique_ids_df = rows_with_null.select(IndCqc.location_id).distinct()
     unique_ids = [row[IndCqc.location_id] for row in unique_ids_df.collect()]
     df = df.filter(F.col(IndCqc.location_id).isin(unique_ids))
