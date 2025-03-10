@@ -3146,6 +3146,29 @@ class ModelFeatures:
         ]
     )
 
+    add_array_column_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_add_array_column_count_schema = StructType(
+        [
+            *add_array_column_count_schema,
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
