@@ -32,16 +32,14 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     )
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.column_expansion_with_dict")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.cap_integer_at_max_value")
-    @patch(
-        "jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count_to_data"
-    )
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
-        add_array_column_count_to_data_mock: Mock,
+        add_array_column_count_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
@@ -58,7 +56,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
-        self.assertEqual(add_array_column_count_to_data_mock.call_count, 2)
+        self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 2)
         self.assertEqual(

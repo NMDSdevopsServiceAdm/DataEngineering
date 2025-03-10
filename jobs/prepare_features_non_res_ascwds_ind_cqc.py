@@ -28,7 +28,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
     FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
-    add_array_column_count_to_data,
+    add_array_column_count,
     calculate_time_registered_for,
     cap_integer_at_max_value,
     column_expansion_with_dict,
@@ -71,7 +71,7 @@ def main(
         locations_df, IndCQC.care_home, CareHome.not_care_home
     )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=non_res_locations_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
@@ -83,7 +83,7 @@ def main(
         new_col_name=IndCQC.service_count_capped,
     )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=features_df,
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,

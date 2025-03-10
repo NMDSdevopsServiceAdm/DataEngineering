@@ -6032,6 +6032,49 @@ class ModelFeatures:
         ("1-0004", None, None),
     ]
 
+    add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}]),
+    ]
+    expected_add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}], 1),
+    ]
+
+    add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+        ),
+    ]
+    expected_add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+            3,
+        ),
+    ]
+
+    add_array_column_count_with_empty_array_rows = [
+        ("1-001", []),
+    ]
+    expected_add_array_column_count_with_empty_array_rows = [
+        ("1-001", [], 0),
+    ]
+
+    add_array_column_count_with_null_value_rows = [
+        ("1-001", None),
+    ]
+    expected_add_array_column_count_with_null_value_rows = [
+        ("1-001", None, 0),
+    ]
+
 
 @dataclass
 class ModelCareHomes:

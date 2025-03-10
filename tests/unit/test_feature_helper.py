@@ -122,33 +122,81 @@ class ConvertCategoricalVariableToBinaryVariablesBasedOnADictionaryTests(
         self.assertEqual(result_rows[0].indicator_1, 1)
 
 
-class AddArrayColumnCountToDataTests(LocationsFeatureEngineeringTests):
+class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_array_column_count_to_data(self):
-        cols = ["location", "services"]
-        new_col_name = "service_count"
-        rows = [("1", ["service_1", "service_2", "service_3"]), ("2", ["service_1"])]
-        df = self.spark.createDataFrame(rows, cols)
+        test_df = self.spark.createDataFrame(
+            Data.add_array_column_count_with_one_element_rows,
+            Schemas.add_array_column_count_schema,
+        )
+        self.returned_df = job.add_array_column_count(
+            df=test_df,
+            new_col_name=IndCQC.service_count,
+            col_to_check=IndCQC.gac_service_types,
+        )
 
-        result = job.add_array_column_count_to_data(
-            df=df, new_col_name=new_col_name, col_to_check="services"
-        )
-        rows = result.collect()
+    def test_add_array_column_count_adds_new_column(self):
+        self.assertTrue(IndCQC.service_count in self.returned_df.columns)
 
-        self.assertTrue(
-            rows[0].asDict()
-            == {
-                "location": "1",
-                "services": ["service_1", "service_2", "service_3"],
-                "service_count": 3,
-            }
+    def test_add_array_column_count_returns_expected_data_when_one_element_in_array(
+        self,
+    ):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_array_column_count_with_one_element_rows,
+            Schemas.expected_add_array_column_count_schema,
         )
-        self.assertTrue(
-            rows[1].asDict()
-            == {"location": "2", "services": ["service_1"], "service_count": 1}
+        self.assertEqual(self.returned_df.collect(), expected_df.collect())
+
+    def test_add_array_column_count_returns_expected_data_when_multiple_elements_in_array(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.add_array_column_count_with_multiple_elements_rows,
+            Schemas.add_array_column_count_schema,
         )
+        returned_df = job.add_array_column_count(
+            df=test_df,
+            new_col_name=IndCQC.service_count,
+            col_to_check=IndCQC.gac_service_types,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_array_column_count_with_multiple_elements_rows,
+            Schemas.expected_add_array_column_count_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_add_array_column_count_returns_zero_when_array_is_empty(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_array_column_count_with_empty_array_rows,
+            Schemas.add_array_column_count_schema,
+        )
+        returned_df = job.add_array_column_count(
+            df=test_df,
+            new_col_name=IndCQC.service_count,
+            col_to_check=IndCQC.gac_service_types,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_array_column_count_with_empty_array_rows,
+            Schemas.expected_add_array_column_count_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_add_array_column_count_returns_zero_when_array_is_null(self):
+        test_df = self.spark.createDataFrame(
+            Data.add_array_column_count_with_null_value_rows,
+            Schemas.add_array_column_count_schema,
+        )
+        returned_df = job.add_array_column_count(
+            df=test_df,
+            new_col_name=IndCQC.service_count,
+            col_to_check=IndCQC.gac_service_types,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_add_array_column_count_with_null_value_rows,
+            Schemas.expected_add_array_column_count_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class VectoriseDataframeTests(LocationsFeatureEngineeringTests):
