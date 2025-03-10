@@ -1,11 +1,9 @@
 from pyspark.sql import DataFrame
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
-def insert_predictions_into_locations(
+def insert_predictions_into_pipeline(
     locations_df: DataFrame,
     predictions_df: DataFrame,
     model_column_name: str,
