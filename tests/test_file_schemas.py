@@ -3262,7 +3262,7 @@ class ModelNonResPirLinearRegressionSchemas:
 
 
 @dataclass
-class InsertPredictionsIntoPipeline:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
 
     predictions_schema = StructType(

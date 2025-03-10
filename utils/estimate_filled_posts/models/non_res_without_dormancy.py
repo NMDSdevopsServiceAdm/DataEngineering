@@ -1,13 +1,9 @@
 from pyspark.ml.regression import GBTRegressionModel
 from pyspark.sql import DataFrame
 
-from utils.estimate_filled_posts.insert_predictions_into_pipeline import (
-    insert_predictions_into_pipeline,
-)
+from utils.estimate_filled_posts.models.utils import insert_predictions_into_pipeline
 from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
 def model_non_res_without_dormancy(
