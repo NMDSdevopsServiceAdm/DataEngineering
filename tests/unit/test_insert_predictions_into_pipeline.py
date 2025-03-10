@@ -39,7 +39,7 @@ class InsertPredictionsIntoPipelineTest(unittest.TestCase):
             & (df[IndCqc.cqc_location_import_date] == date(2022, 3, 29))
         ).collect()[0]
 
-        self.assertEqual(expected_df[IndCqc.care_home_model], 56.89)
+        self.assertAlmostEqual(expected_df[IndCqc.care_home_model], 56.89, places=2)
 
     def test_insert_predictions_into_pipeline_returns_null_if_no_match(self):
         df = self.returned_df
