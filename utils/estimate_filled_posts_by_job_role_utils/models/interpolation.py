@@ -45,7 +45,7 @@ def model_job_role_ratio_interpolation(
     # columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
     # test with list being one element long
-    columns_to_interpolate = ["care_worker"]
+    columns_to_interpolate = ["care_worker","senior_care_worker","registered_nurse"]
 
     # check the values in the list
 
