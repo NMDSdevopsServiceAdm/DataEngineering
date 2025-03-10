@@ -24,12 +24,12 @@ def model_care_homes(
         metrics_destination,
     )
 
-    locations_df = insert_predictions_into_pipeline(
-        locations_df, care_home_predictions, IndCqc.care_home_model
+    locations_df = calculate_filled_posts_from_beds_and_ratio(
+        locations_df, IndCqc.prediction, IndCqc.prediction
     )
 
-    locations_df = calculate_filled_posts_from_beds_and_ratio(
-        locations_df, IndCqc.care_home_model, IndCqc.care_home_model
+    locations_df = insert_predictions_into_pipeline(
+        locations_df, care_home_predictions, IndCqc.care_home_model
     )
 
     return locations_df
