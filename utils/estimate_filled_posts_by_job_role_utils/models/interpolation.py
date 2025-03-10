@@ -67,7 +67,8 @@ def model_job_role_ratio_interpolation(
         "managers_and_staff_in_care_related_but_not_care_providing_roles",
         "administrative_or_office_staff_not_care_providing",
         "ancillary_staff_not_care_providing",
-        "other_non_care_related_staff"]
+        "other_non_care_related_staff",
+    ]
 
     # check the values in the list
 
