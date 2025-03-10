@@ -38,6 +38,9 @@ def main(
     filtered_loc_data = utils.select_rows_with_value(
         locations_df, IndCQC.care_home, CareHome.care_home
     )
+    filtered_loc_data = utils.select_rows_with_non_null_value(
+        filtered_loc_data, IndCQC.number_of_beds
+    )
 
     features_df = add_array_column_count(
         df=filtered_loc_data,
