@@ -6039,10 +6039,10 @@ class ModelFeatures:
     ]
 
     add_array_column_count_with_null_value_rows = [
-        ("1-001", []),
+        ("1-001", None),
     ]
     expected_add_array_column_count_with_null_value_rows = [
-        ("1-001", [], 0),
+        ("1-001", None, 0),
     ]
 
 
