@@ -57,7 +57,9 @@ def add_array_column_count(
     Returns:
         DataFrame: A dataframe with an extra column with the count of items in hte specified array.
     """
-    return df.withColumn(new_col_name, F.least(F.size(F.col(col_to_check)), F.lit(0)))
+    return df.withColumn(
+        new_col_name, F.greatest(F.size(F.col(col_to_check)), F.lit(0))
+    )
 
 
 def add_time_registered_into_df(df: DataFrame) -> DataFrame:
