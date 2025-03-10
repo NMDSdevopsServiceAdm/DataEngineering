@@ -31,7 +31,7 @@ class TestModelNonResPirLinearRegression(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     @patch(
-        "utils.estimate_filled_posts.models.non_res_pir_linear_regression.insert_predictions_into_locations"
+        "utils.estimate_filled_posts.models.non_res_pir_linear_regression.insert_predictions_into_pipeline"
     )
     @patch(
         "utils.estimate_filled_posts.models.non_res_pir_linear_regression.save_model_metrics"
@@ -39,7 +39,7 @@ class TestModelNonResPirLinearRegression(unittest.TestCase):
     def test_model_non_res_pir_linear_regression_runs(
         self,
         save_model_metrics_mock: Mock,
-        insert_predictions_into_locations_mock: Mock,
+        insert_predictions_into_pipeline_mock: Mock,
     ):
         job.model_non_res_pir_linear_regression(
             self.ind_cqc_df,
@@ -49,7 +49,7 @@ class TestModelNonResPirLinearRegression(unittest.TestCase):
         )
 
         self.assertEqual(save_model_metrics_mock.call_count, 1)
-        self.assertEqual(insert_predictions_into_locations_mock.call_count, 1)
+        self.assertEqual(insert_predictions_into_pipeline_mock.call_count, 1)
 
     @patch(
         "utils.estimate_filled_posts.models.non_res_pir_linear_regression.save_model_metrics"
