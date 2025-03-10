@@ -6262,6 +6262,21 @@ class EstimateFilledPostsModelsUtils:
         ),
     ]
 
+    set_min_prediction_value_when_below_minimum_rows = [
+        ("1-001", 0.5, -7.6),
+    ]
+    expected_set_min_prediction_value_when_below_minimum_rows = [
+        ("1-001", 0.5, 1.0),
+    ]
+
+    set_min_prediction_value_when_above_minimum_rows = [
+        ("1-001", 1.5, 1.5),
+    ]
+
+    set_min_prediction_value_when_null_rows = [
+        ("1-001", None, None),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
