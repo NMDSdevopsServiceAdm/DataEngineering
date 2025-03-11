@@ -44,7 +44,7 @@ def model_job_role_ratio_interpolation(
     #     F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))
     # ).distinct()
     # columns_to_interpolate = [row[0] for row in df_keys.collect()]
-    # 
+    #
 
     columns_to_interpolate = [
         "senior_management",
