@@ -69,8 +69,17 @@ def model_job_role_ratio_interpolation(
         "activities_worker_or_coordinator",
         "safeguarding_and_reviewing_officer",
         "occupational_therapist_assistant",
+        "registered_nursing_associate",
+        "nursing_assistant",
+        "assessment_officer",
+        "care_coordinator",
+        "childrens_roles",
+        "deputy_manager",
+        "learning_and_development_lead",
     ]
 
+    # Filtering out records
+    original_df = df
     rows_with_null = df.filter(
         reduce(lambda x, y: x | y, [F.col(c).isNull() for c in columns_to_interpolate])
     )
@@ -159,6 +168,12 @@ def model_job_role_ratio_interpolation(
         df.select(*columns_to_drop, IndCqc.location_id, IndCqc.unix_time),
         on=[IndCqc.location_id, IndCqc.unix_time],
     )
+
+    # Find the rows that were filtered out
+    removed_rows = original_df.subtract(df_result)
+
+    # Union the filtered DataFrame with the removed rows
+    df_result = df_result.union(removed_rows)
 
     df_result = df_result.drop(*columns_to_interpolate)
     print(df_result)
