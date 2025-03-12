@@ -16,6 +16,7 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import get_selected_val
 
 def model_job_role_ratio_interpolation(
     df: DataFrame,
+    mapped_column_to_interpolate: str,
     method: str,
 ) -> DataFrame:
     """
@@ -36,62 +37,25 @@ def model_job_role_ratio_interpolation(
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
 
-    print(df.count())
+    df_to_interpolate = unpack_mapped_column(df, mapped_column_to_interpolate)
 
-    df = unpack_mapped_column(df, IndCqc.ascwds_job_role_ratios)
+    df_keys = df_to_interpolate.select(
+        F.explode(F.map_keys(F.col(mapped_column_to_interpolate)))
+    ).distinct()
+    columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
-    # df_keys = df.select(
-    #     F.explode(F.map_keys(F.col(IndCqc.ascwds_job_role_ratios)))
-    # ).distinct()
-    # columns_to_interpolate = [row[0] for row in df_keys.collect()]
-    #
-
-    columns_to_interpolate = [
-        "senior_management",
-        "middle_management",
-        "first_line_manager",
-        "registered_manager",
-        "supervisor",
-        "social_worker",
-        "senior_care_worker",
-        "care_worker",
-        "community_support_and_outreach",
-        "employment_support",
-        "advice_guidance_and_advocacy",
-        "occupational_therapist",
-        "registered_nurse",
-        "allied_health_professional",
-        "technician",
-        "other_care_role",
-        "managers_and_staff_in_care_related_but_not_care_providing_roles",
-    ]
-
-    # Filtering out records
-    original_df = df
-    rows_with_null = df.filter(
-        reduce(lambda x, y: x | y, [F.col(c).isNull() for c in columns_to_interpolate])
+    df_to_interpolate = df_to_interpolate.withColumn(
+        IndCqc.ascwds_job_role_ratios_temporary,
+        create_map_column(columns_to_interpolate),
     )
-    unique_ids_df = rows_with_null.select(IndCqc.location_id).distinct()
-    unique_ids = [row[IndCqc.location_id] for row in unique_ids_df.collect()]
-    df = df.filter(F.col(IndCqc.location_id).isin(unique_ids))
 
-    # check the values in the list
+    df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
 
-    # Identify columns not needed for interpolation
-    columns_to_keep = [
+    df_to_interpolate = df_to_interpolate.select(
         IndCqc.location_id,
         IndCqc.unix_time,
-        IndCqc.ascwds_job_role_ratios,
-    ] + columns_to_interpolate  # Add any other essential columns
-    columns_to_drop = [col for col in df.columns if col not in columns_to_keep]
-
-    # Filter out unnecessary columns
-    df_to_interpolate = df.drop(*columns_to_drop)
-
-    # Check that it is actually dropping unncessary columns
-
-    # Repartition by location_id right after dropping unnecessary columns
-    df_to_interpolate = df_to_interpolate.repartition(IndCqc.location_id)
+        F.explode(IndCqc.ascwds_job_role_ratios_temporary).alias("key", "ratios"),
+    )
 
     (
         window_spec_backwards,
@@ -99,69 +63,63 @@ def model_job_role_ratio_interpolation(
         window_spec_lagged,
     ) = define_window_specs()
 
-    # Add back the dropped columns
+    df_to_interpolate = calculate_proportion_of_time_between_submissions(
+        df_to_interpolate, "ratios", window_spec_backwards, window_spec_forwards
+    )
 
-    for column in columns_to_interpolate:
-        df_to_interpolate = calculate_proportion_of_time_between_submissions(
-            df_to_interpolate, column, window_spec_backwards, window_spec_forwards
+    # where im at now
+    if method == "trend":
+        df_to_interpolate = calculate_residuals(
+            df_to_interpolate,
+            "ratios",
+            IndCqc.extrapolation_forwards,
+            window_spec_forwards,
+        )
+        df_to_interpolate = calculate_interpolated_values(
+            df_to_interpolate,
+            IndCqc.extrapolation_forwards,
         )
 
-        if method == "trend":
-            df_to_interpolate = calculate_residuals(
-                df_to_interpolate,
-                column,
-                IndCqc.extrapolation_forwards,
-                window_spec_forwards,
-            )
-            df_to_interpolate = calculate_interpolated_values(
-                df_to_interpolate,
-                IndCqc.extrapolation_forwards,
-            )
-
-        elif method == "straight":
-            df_to_interpolate = get_selected_value(
-                df_to_interpolate,
-                window_spec_lagged,
-                column,
-                column,
-                IndCqc.previous_non_null_value,
-                "last",
-            )
-            df_to_interpolate = calculate_residuals(
-                df_to_interpolate,
-                column,
-                IndCqc.previous_non_null_value,
-                window_spec_forwards,
-            )
-
-            df_to_interpolate = calculate_interpolated_values(df_to_interpolate, column)
-
-            df_to_interpolate = df_to_interpolate.drop(IndCqc.previous_non_null_value)
-
-        else:
-            raise ValueError("Error: method must be either 'straight' or 'trend'")
-
-        df_to_interpolate = df_to_interpolate.drop(
-            IndCqc.proportion_of_time_between_submissions, IndCqc.residual
+    elif method == "straight":
+        df_to_interpolate = get_selected_value(
+            df_to_interpolate,
+            window_spec_lagged,
+            "ratios",
+            "ratios",
+            IndCqc.previous_non_null_value,
+            "last",
         )
 
-    df_to_interpolate = df_to_interpolate.cache()
+        df_to_interpolate = calculate_residuals(
+            df_to_interpolate,
+            "ratios",
+            IndCqc.previous_non_null_value,
+            window_spec_forwards,
+        )
 
-    df_result = df_to_interpolate.withColumn(
+        df_to_interpolate = calculate_interpolated_values(df_to_interpolate, "ratios")
+
+        df_to_interpolate = df_to_interpolate.drop(IndCqc.previous_non_null_value)
+
+    else:
+        raise ValueError("Error: method must be either 'straight' or 'trend'")
+
+    df_to_interpolate = (
+        df_to_interpolate.groupBy(IndCqc.location_id, IndCqc.unix_time)
+        .pivot("key")
+        .agg(F.first("ratios"))
+    )
+
+    df_to_interpolate = df_to_interpolate.withColumn(
         IndCqc.ascwds_job_role_ratios_interpolated,
         create_map_column(columns_to_interpolate),
     )
 
-    df_result = df_result.join(
-        df.select(*columns_to_drop, IndCqc.location_id, IndCqc.unix_time),
-        on=[IndCqc.location_id, IndCqc.unix_time],
+    df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
+
+    df_result = df_to_interpolate.join(
+        df, on=[IndCqc.location_id, IndCqc.unix_time], how="inner"
     )
-
-    df_result = df_result.drop(*columns_to_interpolate)
-    print(df_result)
-
-    df_to_interpolate.unpersist()
-    df_result.unpersist()
 
     return df_result
 
@@ -177,7 +135,9 @@ def define_window_specs() -> Tuple[Window, Window, Window]:
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
     """
-    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+    window_spec = Window.partitionBy(IndCqc.location_id, "key").orderBy(
+        IndCqc.unix_time
+    )
 
     window_spec_backwards = window_spec.rowsBetween(
         Window.unboundedPreceding, Window.currentRow
@@ -297,16 +257,6 @@ def calculate_interpolated_values(
     Returns:
         DataFrame: The DataFrame with the specified column updated.
     """
-    # df = df.withColumn(
-    #     column_to_interpolate_from,
-    #     F.when(
-    #         F.col(column_to_interpolate_from).isNull(),
-    #         F.col(IndCqc.previous_non_null_value)
-    #         + F.col(IndCqc.residual)
-    #         * F.col(IndCqc.proportion_of_time_between_submissions),
-    #     ).otherwise(F.col(column_to_interpolate_from)),
-    # )
-
     df = df.withColumn(
         column_to_interpolate_from,
         F.coalesce(
