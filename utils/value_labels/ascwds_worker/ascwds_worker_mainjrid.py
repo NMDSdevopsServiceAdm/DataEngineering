@@ -31,7 +31,7 @@ class AscwdsWorkerValueLabelsMainjrid:
         "17": MainJobRoleLabels.allied_health_professional,
         "22": MainJobRoleLabels.technician,
         "23": MainJobRoleLabels.other_care_role,
-        "24": MainJobRoleLabels.care_related_staff,
+        "24": MainJobRoleLabels.other_managerial_staff,
         "25": MainJobRoleLabels.admin_staff,
         "26": MainJobRoleLabels.ancillary_staff,
         "27": MainJobRoleLabels.other_non_care_related_staff,
