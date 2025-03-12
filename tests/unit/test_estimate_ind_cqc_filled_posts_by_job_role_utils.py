@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, call, patch, Mock
+from unittest.mock import patch, Mock
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -867,3 +867,84 @@ class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtils
             .sort(IndCQC.primary_service_type)
             .collect(),
         )
+
+
+class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_unpack_mapped_column_when_one_record_in_mapped_column_return_dataframe_with_one_record_and_unpacked_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_one_record_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_one_record_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        return_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_unpack_mapped_column_when_two_establishments_in_data_return_dataframe_with_two_establishments_and_unpacked_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_two_establishments_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_two_establishments_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        return_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_unpack_mapped_column_when_two_import_dates_in_data_return_dataframe_with_two_import_dates_and_unpacked_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_two_import_dates_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_two_import_dates_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        return_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
+
+    def test_unpack_mapped_column_when_null_values_in_data_return_dataframe_with_unpacked_job_role_counts(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_null_values_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_null_values_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        return_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        self.assertEqual(expected_df.collect(), return_df.collect())
