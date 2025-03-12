@@ -892,22 +892,14 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
     def test_unpack_mapped_column_returns_expected_values_in_each_column(self):
-        """
-        'estimate_filled_posts_by_job_role' is dropped as the items in the mapped column are re-sorting
-        which is causing the test to fail, but that behaviour is ok and out of scope of this test.
-        """
         self.assertEqual(
-            self.returned_df.drop(IndCQC.estimate_filled_posts_by_job_role).collect(),
-            self.expected_df.drop(IndCQC.estimate_filled_posts_by_job_role).collect(),
+            self.returned_df.collect(),
+            self.expected_df.collect(),
         )
 
     def test_unpack_mapped_column_when_rows_have_map_items_in_differing_orders_returns_expected_values(
         self,
     ):
-        """
-        'estimate_filled_posts_by_job_role' is dropped as the items in the mapped column are re-sorting
-        which is causing the test to fail, but that behaviour is ok and out of scope of this test.
-        """
         test_df = self.spark.createDataFrame(
             Data.unpacked_mapped_column_with_map_items_in_different_orders_data,
             Schemas.unpacked_mapped_column_schema,
@@ -921,24 +913,14 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_unpacked_mapped_column_schema,
         )
 
-        returned_data = (
-            returned_df.sort(IndCQC.location_id)
-            .drop(IndCQC.estimate_filled_posts_by_job_role)
-            .collect()
-        )
-        expected_data = expected_df.drop(
-            IndCQC.estimate_filled_posts_by_job_role
-        ).collect()
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
 
     def test_unpack_mapped_column_with_null_values_returns_expected_values(
         self,
     ):
-        """
-        'estimate_filled_posts_by_job_role' is dropped as the items in the mapped column are re-sorting
-        which is causing the test to fail, but that behaviour is ok and out of scope of this test.
-        """
         test_df = self.spark.createDataFrame(
             Data.unpacked_mapped_column_with_null_values_data,
             Schemas.unpacked_mapped_column_schema,
@@ -952,13 +934,7 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_unpacked_mapped_column_schema,
         )
 
-        returned_data = (
-            returned_df.sort(IndCQC.location_id)
-            .drop(IndCQC.estimate_filled_posts_by_job_role)
-            .collect()
-        )
-        expected_data = expected_df.drop(
-            IndCQC.estimate_filled_posts_by_job_role
-        ).collect()
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
