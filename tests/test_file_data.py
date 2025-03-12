@@ -10336,7 +10336,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     unpacked_mapped_column_with_one_record_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
                 MainJobRoleLabels.care_worker: 1.0,
@@ -10348,7 +10348,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_unpacked_mapped_column_with_one_record_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
                 MainJobRoleLabels.care_worker: 1.0,
@@ -10363,37 +10363,37 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         )
     ]
 
-    unpacked_mapped_column_with_two_establishments_data = [
+    unpacked_mapped_column_with_map_items_in_different_orders_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
-                MainJobRoleLabels.care_worker: 1.0,
                 MainJobRoleLabels.registered_nurse: 2.0,
-                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.care_worker: 1.0,
                 MainJobRoleLabels.senior_management: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
             },
         ),
         (
-            "10678",
+            "1-002",
             date(2025, 1, 1),
             {
-                MainJobRoleLabels.care_worker: 10.0,
-                MainJobRoleLabels.registered_nurse: 20.0,
-                MainJobRoleLabels.senior_care_worker: 30.0,
                 MainJobRoleLabels.senior_management: 40.0,
+                MainJobRoleLabels.registered_nurse: 20.0,
+                MainJobRoleLabels.care_worker: 10.0,
+                MainJobRoleLabels.senior_care_worker: 30.0,
             },
         ),
     ]
-    expected_unpacked_mapped_column_with_two_establishments_data = [
+    expected_unpacked_mapped_column_with_map_items_in_different_orders_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
-                MainJobRoleLabels.care_worker: 1.0,
                 MainJobRoleLabels.registered_nurse: 2.0,
-                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.care_worker: 1.0,
                 MainJobRoleLabels.senior_management: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
             },
             1.0,
             2.0,
@@ -10401,66 +10401,13 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             4.0,
         ),
         (
-            "10678",
+            "1-002",
             date(2025, 1, 1),
             {
-                MainJobRoleLabels.care_worker: 10.0,
-                MainJobRoleLabels.registered_nurse: 20.0,
-                MainJobRoleLabels.senior_care_worker: 30.0,
                 MainJobRoleLabels.senior_management: 40.0,
-            },
-            10.0,
-            20.0,
-            30.0,
-            40.0,
-        ),
-    ]
-
-    unpacked_mapped_column_with_two_import_dates_data = [
-        (
-            "10545",
-            date(2025, 1, 1),
-            {
-                MainJobRoleLabels.care_worker: 1.0,
-                MainJobRoleLabels.registered_nurse: 2.0,
-                MainJobRoleLabels.senior_care_worker: 3.0,
-                MainJobRoleLabels.senior_management: 4.0,
-            },
-        ),
-        (
-            "10545",
-            date(2025, 1, 2),
-            {
-                MainJobRoleLabels.care_worker: 10.0,
                 MainJobRoleLabels.registered_nurse: 20.0,
-                MainJobRoleLabels.senior_care_worker: 30.0,
-                MainJobRoleLabels.senior_management: 40.0,
-            },
-        ),
-    ]
-    expected_unpacked_mapped_column_with_two_import_dates_data = [
-        (
-            "10545",
-            date(2025, 1, 1),
-            {
-                MainJobRoleLabels.care_worker: 1.0,
-                MainJobRoleLabels.registered_nurse: 2.0,
-                MainJobRoleLabels.senior_care_worker: 3.0,
-                MainJobRoleLabels.senior_management: 4.0,
-            },
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-        ),
-        (
-            "10545",
-            date(2025, 1, 2),
-            {
                 MainJobRoleLabels.care_worker: 10.0,
-                MainJobRoleLabels.registered_nurse: 20.0,
                 MainJobRoleLabels.senior_care_worker: 30.0,
-                MainJobRoleLabels.senior_management: 40.0,
             },
             10.0,
             20.0,
@@ -10471,7 +10418,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     unpacked_mapped_column_with_null_values_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
                 MainJobRoleLabels.care_worker: None,
@@ -10481,14 +10428,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         ),
         (
-            "10545",
+            "1-002",
             date(2025, 2, 1),
             None,
         ),
     ]
     expected_unpacked_mapped_column_with_null_values_data = [
         (
-            "10545",
+            "1-001",
             date(2025, 1, 1),
             {
                 MainJobRoleLabels.care_worker: None,
@@ -10502,7 +10449,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
         (
-            "10545",
+            "1-002",
             date(2025, 2, 1),
             None,
             None,

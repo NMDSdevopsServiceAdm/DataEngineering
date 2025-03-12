@@ -6200,8 +6200,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     unpacked_mapped_column_schema = StructType(
         [
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(
                 IndCQC.estimate_filled_posts_by_job_role,
                 MapType(StringType(), FloatType()),
