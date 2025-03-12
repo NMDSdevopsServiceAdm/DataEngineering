@@ -3,7 +3,6 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
