@@ -2885,6 +2885,23 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
+class ModelPredictionRollingAverageSchemas:
+    rolling_average_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+    expected_rolling_average_schema = StructType(
+        [
+            *rolling_average_schema,
+            StructField(IndCQC.prediction_rolling_average, FloatType(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelImputationWithExtrapolationAndInterpolationSchemas:
     column_with_null_values: str = "null_values"
 

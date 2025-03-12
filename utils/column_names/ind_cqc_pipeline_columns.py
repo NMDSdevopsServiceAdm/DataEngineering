@@ -210,6 +210,7 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_rolling_average: str = "prediction_rolling_average"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
