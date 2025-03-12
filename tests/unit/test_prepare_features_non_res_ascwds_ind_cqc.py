@@ -8,9 +8,7 @@ import jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from tests.test_file_data import NonResAscwdsFeaturesData as Data
 from tests.test_file_schemas import NonResAscwdsFeaturesSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
