@@ -3285,9 +3285,8 @@ class ModelNonResPirLinearRegressionSchemas:
 
 
 @dataclass
-class InsertPredictionsIntoLocations:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
-    care_home_features_schema = ModelCareHomes.care_homes_features_schema
 
     predictions_schema = StructType(
         [

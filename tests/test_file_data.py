@@ -6289,10 +6289,8 @@ class ModelNonResPirLinearRegressionRows:
 
 
 @dataclass
-class InsertPredictionsIntoLocations:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
-
-    care_home_features_rows = ModelCareHomes.care_homes_features_rows
 
     predictions_rows = [
         (
@@ -6304,16 +6302,6 @@ class InsertPredictionsIntoLocations:
             67,
             date(2022, 3, 29),
             56.89,
-        ),
-        (
-            "1-000000004",
-            "non-residential",
-            10.0,
-            "N",
-            None,
-            0,
-            date(2022, 3, 29),
-            12.34,
         ),
     ]
 
