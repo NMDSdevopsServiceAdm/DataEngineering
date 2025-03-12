@@ -19,7 +19,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
 from utils.features.helper import (
-    add_array_column_count_to_data,
+    add_array_column_count,
     column_expansion_with_dict,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     vectorise_dataframe,
@@ -41,7 +41,7 @@ def main(
         filtered_loc_data, IndCQC.number_of_beds
     )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=filtered_loc_data,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,

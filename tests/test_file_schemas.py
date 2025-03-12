@@ -2582,7 +2582,7 @@ class NonResAscwdsFeaturesSchema(object):
                 True,
             ),
             StructField(
-                IndCQC.specialisms,
+                IndCQC.imputed_specialisms,
                 ArrayType(
                     StructType([StructField(IndCQC.name, StringType(), True)]), True
                 ),
@@ -3143,6 +3143,29 @@ class ModelFeatures:
         [
             *cap_integer_at_max_value_schema,
             StructField(IndCQC.service_count_capped, IntegerType(), True),
+        ]
+    )
+
+    add_array_column_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_add_array_column_count_schema = StructType(
+        [
+            *add_array_column_count_schema,
+            StructField(IndCQC.service_count, IntegerType(), True),
         ]
     )
 
