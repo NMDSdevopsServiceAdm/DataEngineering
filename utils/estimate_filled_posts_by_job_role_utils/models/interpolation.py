@@ -28,6 +28,7 @@ def model_job_role_ratio_interpolation(
 
     Args:
         df (DataFrame): The input DataFrame containing the data.
+        mapped_column_to_interpolate (str): the mapped column we want to apply interpolation on
         method (str): The choice of method. Must be either 'straight' or 'trend'
 
     Returns:
