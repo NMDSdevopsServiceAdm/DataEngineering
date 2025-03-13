@@ -34,6 +34,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
     )
@@ -62,6 +63,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         transform_job_role_count_map_to_ratios_map_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
+        unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -91,6 +93,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
         merge_columns_in_order_mock.assert_called_once()
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
+        unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(

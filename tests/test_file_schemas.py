@@ -6191,3 +6191,24 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+
+    unpacked_mapped_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.estimate_filled_posts_by_job_role,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_unpacked_mapped_column_schema = StructType(
+        [
+            *unpacked_mapped_column_schema,
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+        ]
+    )
