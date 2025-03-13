@@ -22,7 +22,7 @@ from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
 )
 from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
-estimate_missing_ascwds_columns = [
+ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
     IndCQC.name,
@@ -70,7 +70,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
-    estimate_missing_ascwds_filled_posts_data_source: str,
+    imputed_ind_cqc_data_source: str,
     care_home_features_source: str,
     care_home_model_source: str,
     non_res_with_dormancy_features_source: str,
@@ -87,9 +87,9 @@ def main(
     spark = utils.get_spark()
     spark.sql("set spark.sql.broadcastTimeout = 2000")
 
-    estimate_missing_ascwds_df = utils.read_from_parquet(
-        estimate_missing_ascwds_filled_posts_data_source,
-        estimate_missing_ascwds_columns,
+    estimate_filled_posts_df = utils.read_from_parquet(
+        imputed_ind_cqc_data_source,
+        ind_cqc_columns,
     )
     care_home_features_df = utils.read_from_parquet(care_home_features_source)
     non_res_with_dormancy_features_df = utils.read_from_parquet(
@@ -103,7 +103,7 @@ def main(
     )
 
     estimate_filled_posts_df = model_care_homes(
-        estimate_missing_ascwds_df,
+        estimate_filled_posts_df,
         care_home_features_df,
         care_home_model_source,
         ml_model_metrics_destination,
@@ -181,7 +181,7 @@ if __name__ == "__main__":
     print(f"Job parameters: {sys.argv}")
 
     (
-        estimate_missing_ascwds_filled_posts_data_source,
+        imputed_ind_cqc_data_source,
         care_home_features_source,
         care_home_model_source,
         non_res_with_dormancy_features_source,
@@ -194,8 +194,8 @@ if __name__ == "__main__":
         ml_model_metrics_destination,
     ) = utils.collect_arguments(
         (
-            "--estimate_missing_ascwds_filled_posts_data_source",
-            "Source s3 directory for estimate_missing_ascwds_filled_posts",
+            "--imputed_ind_cqc_data_source",
+            "Source s3 directory for imputed ASCWDS and PIR dataset",
         ),
         (
             "--care_home_features_source",
@@ -240,7 +240,7 @@ if __name__ == "__main__":
     )
 
     main(
-        estimate_missing_ascwds_filled_posts_data_source,
+        imputed_ind_cqc_data_source,
         care_home_features_source,
         care_home_model_source,
         non_res_with_dormancy_features_source,

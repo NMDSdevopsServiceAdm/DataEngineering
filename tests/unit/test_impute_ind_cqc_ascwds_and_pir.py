@@ -35,7 +35,7 @@ class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
 class MainTests(EstimateMissingAscwdsFilledPostsTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "jobs.estimate_missing_ascwds_ind_cqc_filled_posts.blend_pir_and_ascwds_when_ascwds_out_of_date"
+        "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(

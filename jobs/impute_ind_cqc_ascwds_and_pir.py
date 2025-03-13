@@ -29,7 +29,7 @@ class NumericalValues:
 
 def main(
     cleaned_ind_cqc_source: str,
-    estimated_missing_ascwds_ind_cqc_destination: str,
+    imputed_ind_cqc_ascwds_and_pir_destination: str,
     linear_regression_model_source: str,
 ) -> DataFrame:
     print("Estimating missing ASCWDS independent CQC filled posts...")
@@ -82,25 +82,25 @@ def main(
         care_home=False,
     )
 
-    print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
+    print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 
     utils.write_to_parquet(
         estimate_missing_ascwds_df,
-        estimated_missing_ascwds_ind_cqc_destination,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
 
-    print("Completed estimate missing ASCWDS independent CQC filled posts")
+    print("Completed imputing independent CQC ASCWDS and PIR")
 
 
 if __name__ == "__main__":
-    print("Spark job 'estimate_missing_ascwds_ind_cqc_filled_posts' starting...")
+    print("Spark job 'impute_ind_cqc_ascwds_and_pir' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_ind_cqc_source,
-        estimated_missing_ascwds_ind_cqc_destination,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         linear_regression_model_source,
     ) = utils.collect_arguments(
         (
@@ -108,8 +108,8 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned_ind_cqc_filled_posts",
         ),
         (
-            "--estimated_missing_ascwds_ind_cqc_destination",
-            "Destination s3 directory for outputting estimate missing ASCWDS filled posts",
+            "--imputed_ind_cqc_ascwds_and_pir_destination",
+            "Destination s3 directory for outputting imputed ind cqc ascwds and pir data",
         ),
         (
             "--linear_regression_model_source",
@@ -119,6 +119,6 @@ if __name__ == "__main__":
 
     main(
         cleaned_ind_cqc_source,
-        estimated_missing_ascwds_ind_cqc_destination,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         linear_regression_model_source,
     )
