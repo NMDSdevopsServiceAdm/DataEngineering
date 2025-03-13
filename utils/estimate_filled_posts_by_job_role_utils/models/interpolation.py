@@ -42,6 +42,7 @@ def model_job_role_ratio_interpolation(
 
     df_to_interpolate = unpack_mapped_column(df, mapped_column_to_interpolate)
 
+    df_to_interpolate.select(mapped_column_to_interpolate).show(truncate=False)
     print("df_to_interpolate_unpacked_map_count_of_rows:", df_to_interpolate.count())
 
     df_keys = df_to_interpolate.select(
@@ -49,6 +50,7 @@ def model_job_role_ratio_interpolation(
     ).distinct()
     columns_to_interpolate = [row[0] for row in df_keys.collect()]
 
+    df_to_interpolate.printSchema()
     df_to_interpolate = df_to_interpolate.withColumn(
         IndCqc.ascwds_job_role_ratios_temporary,
         create_map_column(columns_to_interpolate),
