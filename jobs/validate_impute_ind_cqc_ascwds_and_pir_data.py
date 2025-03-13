@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.validation.validation_rules.imputed_ind_cqc_ascwds_and_pir_validation_rules import (
-    EstimatedIndCqcFilledPostsValidationRules as Rules,
+    ImputedIndCqcAscwdsAndPirValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
     validate_dataset,
