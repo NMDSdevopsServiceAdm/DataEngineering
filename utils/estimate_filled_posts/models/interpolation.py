@@ -10,7 +10,7 @@ def model_interpolation(
     column_with_null_values: str,
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
-    partition_columns: Optional[list[str]] = None,
+    partition_columns: Optional[list[str]] = IndCqc.location_id,
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
@@ -24,6 +24,7 @@ def model_interpolation(
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
         new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
+        partition_column: A list of partition column. With the default being 'location_id'
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
@@ -31,8 +32,6 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-    if partition_columns is None:
-        partition_columns = [IndCqc.location_id]
 
     (
         window_spec_backwards,
