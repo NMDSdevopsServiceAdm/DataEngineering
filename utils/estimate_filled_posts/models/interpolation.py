@@ -10,6 +10,7 @@ def model_interpolation(
     column_with_null_values: str,
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
+    partition_columns: Optional[list[str]] = None,
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
@@ -30,11 +31,14 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
+    if partition_columns is None:
+        partition_columns = [IndCqc.location_id]
+
     (
         window_spec_backwards,
         window_spec_forwards,
         window_spec_lagged,
-    ) = define_window_specs()
+    ) = define_window_specs(partition_columns)
 
     df = calculate_proportion_of_time_between_submissions(
         df, column_with_null_values, window_spec_backwards, window_spec_forwards
@@ -60,15 +64,21 @@ def model_interpolation(
             IndCqc.previous_non_null_value,
             "last",
         )
+        df.show()
+        print("WATCH OUT FOR THIS!")
         df = calculate_residuals(
             df,
             column_with_null_values,
             IndCqc.previous_non_null_value,
             window_spec_forwards,
         )
+        df.show()
+        print("WATCH OUT FOR THIS!")
         df = calculate_interpolated_values(
             df, IndCqc.previous_non_null_value, new_column_name
         )
+        df.show()
+        print("WATCH OUT FOR THIS!")
         df = df.drop(IndCqc.previous_non_null_value)
 
     else:
@@ -79,7 +89,7 @@ def model_interpolation(
     return df
 
 
-def define_window_specs() -> Tuple[Window, Window, Window]:
+def define_window_specs(partition_columns: list[str]) -> Tuple[Window, Window, Window]:
     """
     Defines three window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
 
@@ -90,7 +100,7 @@ def define_window_specs() -> Tuple[Window, Window, Window]:
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
     """
-    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(IndCqc.unix_time)
+    window_spec = Window.partitionBy(*partition_columns).orderBy(IndCqc.unix_time)
 
     window_spec_backwards = window_spec.rowsBetween(
         Window.unboundedPreceding, Window.currentRow

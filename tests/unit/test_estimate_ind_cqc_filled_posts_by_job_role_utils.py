@@ -887,14 +887,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
-
-        self.maxDiff = None
-
-        expected_df.show(truncate=False)
-        return_df.show(truncate=False)
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -928,9 +921,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -964,9 +955,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -1000,9 +989,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -1036,9 +1023,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -1072,9 +1057,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
@@ -1108,9 +1091,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(
-            test_df, IndCQC.ascwds_job_role_ratios, "straight"
-        )
+        return_df = interp.model_job_role_ratio_interpolation(test_df)
 
         self.assertEqual(
             expected_df.select(
