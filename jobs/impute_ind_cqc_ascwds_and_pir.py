@@ -32,7 +32,7 @@ def main(
     imputed_ind_cqc_ascwds_and_pir_destination: str,
     linear_regression_model_source: str,
 ) -> DataFrame:
-    print("Estimating missing ASCWDS independent CQC filled posts...")
+    print("Imputing independent CQC ASCWDS and PIR values...")
 
     df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
