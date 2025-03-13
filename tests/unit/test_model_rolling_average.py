@@ -18,6 +18,8 @@ class MainTests(ModelRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
+        column_to_average: str = IndCqc.prediction
+        self.rolling_avg_col: str = IndCqc.prediction_rolling_average
         number_of_days: int = 3
 
         test_df = self.spark.createDataFrame(
@@ -26,10 +28,10 @@ class MainTests(ModelRollingAverageTests):
         )
         self.returned_df = job.calculate_rolling_average(
             df=test_df,
-            column_to_average=IndCqc.prediction,
+            column_to_average=column_to_average,
             number_of_days=number_of_days,
             column_to_partition_by=IndCqc.location_id,
-            new_column_name=IndCqc.prediction_rolling_average,
+            new_column_name=self.rolling_avg_col,
         )
 
         self.expected_df = self.spark.createDataFrame(
@@ -47,13 +49,13 @@ class MainTests(ModelRollingAverageTests):
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_prediction_rolling_average_values_match_expected(
+    def test_returned_rolling_average_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.prediction_rolling_average],
-                self.expected_data[i][IndCqc.prediction_rolling_average],
+                self.returned_data[i][self.rolling_avg_col],
+                self.expected_data[i][self.rolling_avg_col],
                 2,
                 f"Returned row {i} does not match expected",
             )
