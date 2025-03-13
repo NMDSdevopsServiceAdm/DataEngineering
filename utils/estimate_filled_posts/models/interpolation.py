@@ -24,7 +24,7 @@ def model_interpolation(
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
         new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
-        partition_column: A list of partition column. With the default being 'location_id'
+        partition_column (Optional[list[str]]): A list of partition column. With the default being 'location_id'
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
@@ -99,7 +99,7 @@ def define_window_specs(
     The third window specification ('window_spec_lagged') includes all rows from the start of the partition up to the current row, excluding the current row.
 
     Args:
-        partition_columns: Argument for define_window_specs, default being location id
+        partition_column (Optional[list[str]]): A list of partition column. With the default being 'location_id'
 
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
