@@ -12,15 +12,14 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
-def model_primary_service_cumulative_rate_of_change(
+def model_primary_service_rate_of_change(
     df: DataFrame,
-    ratio_column_to_average: str,
-    posts_column_to_average: str,
+    column_with_values: str,
     number_of_days: int,
     new_column_name: str,
 ) -> DataFrame:
     """
-    Computes the cumulative rate of change for specified columns over a rolling window, grouped by primary service type.
+    Computes the single period and cumulative rate of change for specified columns over a rolling window, grouped by primary service type.
 
     The cumulative rate of change is calculated by multiplying sequential rates of change over time.
     Given a rate of change sequence:
@@ -54,9 +53,9 @@ def model_primary_service_cumulative_rate_of_change(
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = create_single_column_to_average(
-        df, ratio_column_to_average, posts_column_to_average
-    )
+    # df = create_single_column_to_average(
+    #     df, ratio_column_to_average, posts_column_to_average
+    # )
     df = clean_column_to_average(df)
     df = interpolate_column_to_average(df)
 
@@ -217,15 +216,6 @@ def calculate_rolling_rate_of_change(
         TempCol.rolling_previous_period_sum,
     )
     df = calculate_single_period_rate_of_change(df)
-    deduped_df = deduplicate_dataframe(df)
-    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
-        deduped_df, rate_of_change_model_column_name
-    )
-    df = df.join(
-        cumulative_rate_of_change_df,
-        [IndCqc.primary_service_type, IndCqc.unix_time],
-        "left",
-    )
 
     return df
 
@@ -318,24 +308,6 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
     return df
 
 
-def deduplicate_dataframe(df: DataFrame) -> DataFrame:
-    """
-    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The deduplicated DataFrame.
-    """
-    df = df.select(
-        IndCqc.primary_service_type,
-        IndCqc.unix_time,
-        TempCol.single_period_rate_of_change,
-    ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
-    return df
-
-
 def calculate_cumulative_rate_of_change(
     df: DataFrame, rate_of_change_model_column_name: str
 ) -> DataFrame:
@@ -356,11 +328,38 @@ def calculate_cumulative_rate_of_change(
     """
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
+    deduped_df = deduplicate_dataframe(df)
+
     cumulative_rate_of_change = F.exp(
         F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
     )
 
-    df = df.withColumn(
+    cumulative_rate_of_change_df = deduped_df.withColumn(
         rate_of_change_model_column_name, cumulative_rate_of_change
     ).drop(TempCol.single_period_rate_of_change)
+
+    df = df.join(
+        cumulative_rate_of_change_df,
+        [IndCqc.primary_service_type, IndCqc.unix_time],
+        "left",
+    )
+
+    return df
+
+
+def deduplicate_dataframe(df: DataFrame) -> DataFrame:
+    """
+    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The deduplicated DataFrame.
+    """
+    df = df.select(
+        IndCqc.primary_service_type,
+        IndCqc.unix_time,
+        TempCol.single_period_rate_of_change,
+    ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
     return df

@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_cumulative_rate_of_change import (
-    model_primary_service_cumulative_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
+    model_primary_service_rate_of_change,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -43,7 +43,7 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    df = model_primary_service_cumulative_rate_of_change(
+    df = model_primary_service_rate_of_change(
         df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,

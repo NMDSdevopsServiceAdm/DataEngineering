@@ -7,7 +7,7 @@ from pyspark.sql import functions as F
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-import utils.estimate_filled_posts.models.primary_service_cumulative_rate_of_change as job
+import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceCumulativeRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceCumulativeRateOfChange as Schemas
 
@@ -29,7 +29,7 @@ class MainTests(ModelPrimaryServiceCumulativeRateOfChangeTests):
             Data.primary_service_cumulative_rate_of_change_rows,
             Schemas.primary_service_cumulative_rate_of_change_schema,
         )
-        self.returned_df = job.model_primary_service_cumulative_rate_of_change(
+        self.returned_df = job.model_primary_service_rate_of_change(
             self.test_df,
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
@@ -48,7 +48,7 @@ class MainTests(ModelPrimaryServiceCumulativeRateOfChangeTests):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.test_df.count(), self.returned_df.count())
 
-    def test_model_primary_service_cumulative_rate_of_change_returns_expected_columns(
+    def test_model_primary_service_rate_of_change_returns_expected_columns(
         self,
     ):
         self.assertEqual(
