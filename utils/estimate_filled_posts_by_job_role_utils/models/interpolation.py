@@ -38,7 +38,11 @@ def model_job_role_ratio_interpolation(
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
 
+    print("df_start_count_of_rows:", df.count())
+
     df_to_interpolate = unpack_mapped_column(df, mapped_column_to_interpolate)
+
+    print("df_to_interpolate_unpacked_map_count_of_rows:", df_to_interpolate.count())
 
     df_keys = df_to_interpolate.select(
         F.explode(F.map_keys(F.col(mapped_column_to_interpolate)))
@@ -50,12 +54,19 @@ def model_job_role_ratio_interpolation(
         create_map_column(columns_to_interpolate),
     )
 
+    print("df_to_interpolate_packed_map_count_of_rows:", df_to_interpolate.count())
+
     df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
 
     df_to_interpolate = df_to_interpolate.select(
         IndCqc.location_id,
         IndCqc.unix_time,
         F.explode(IndCqc.ascwds_job_role_ratios_temporary).alias("key", "ratios"),
+    )
+
+    print(
+        "df_to_interpolate_exploded_map_count_of_rows_divided_by_39:",
+        df_to_interpolate.count() / 39,
     )
 
     (
@@ -100,6 +111,11 @@ def model_job_role_ratio_interpolation(
 
         df_to_interpolate = calculate_interpolated_values(df_to_interpolate, "ratios")
 
+        print(
+            "df_to_interpolate_interpolated_exploded_map_count_of_rows_divided_by_39:",
+            df_to_interpolate.count() / 39,
+        )
+
         df_to_interpolate = df_to_interpolate.drop(IndCqc.previous_non_null_value)
 
     else:
@@ -109,6 +125,11 @@ def model_job_role_ratio_interpolation(
         df_to_interpolate.groupBy(IndCqc.location_id, IndCqc.unix_time)
         .pivot("key")
         .agg(F.first("ratios"))
+    )
+
+    print(
+        "df_to_interpolate_pivoted_count_of_rows_divided_by_39:",
+        df_to_interpolate.count(),
     )
 
     df_to_interpolate = df_to_interpolate.withColumn(
@@ -121,6 +142,8 @@ def model_job_role_ratio_interpolation(
     df_result = df_to_interpolate.join(
         df, on=[IndCqc.location_id, IndCqc.unix_time], how="inner"
     )
+
+    print("df_to_interpolate_join_count_of_rows_divided_by_39:", df_result.count())
 
     return df_result
 

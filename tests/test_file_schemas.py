@@ -2582,17 +2582,19 @@ class NonResAscwdsFeaturesSchema(object):
                 True,
             ),
             StructField(
-                IndCQC.specialisms,
+                IndCQC.imputed_specialisms,
                 ArrayType(
                     StructType([StructField(IndCQC.name, StringType(), True)]), True
                 ),
                 True,
             ),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.related_location, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -3131,6 +3133,42 @@ class ModelFeatures:
         ]
     )
 
+    cap_integer_at_max_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+    expected_cap_integer_at_max_value_schema = StructType(
+        [
+            *cap_integer_at_max_value_schema,
+            StructField(IndCQC.service_count_capped, IntegerType(), True),
+        ]
+    )
+
+    add_array_column_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                IndCQC.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_add_array_column_count_schema = StructType(
+        [
+            *add_array_column_count_schema,
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
@@ -3247,9 +3285,8 @@ class ModelNonResPirLinearRegressionSchemas:
 
 
 @dataclass
-class InsertPredictionsIntoLocations:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_schema = ModelCareHomes.care_homes_cleaned_ind_cqc_schema
-    care_home_features_schema = ModelCareHomes.care_homes_features_schema
 
     predictions_schema = StructType(
         [
@@ -3260,6 +3297,14 @@ class InsertPredictionsIntoLocations:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+
+    set_min_prediction_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
@@ -6097,6 +6142,22 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema = (
+        StructType(
+            [
+                StructField(IndCQC.location_id, StringType(), True),
+                StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+                StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+                StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+                StructField(
+                    IndCQC.ascwds_job_role_counts,
+                    MapType(StringType(), IntegerType()),
+                    True,
+                ),
+            ]
+        )
+    )
+
     count_registered_manager_names_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -6137,8 +6198,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-
-
     interpolate_job_role_ratios_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -6157,5 +6216,26 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 MapType(StringType(), FloatType()),
                 True,
             ),
+        ]
+    )
+
+    unpacked_mapped_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.estimate_filled_posts_by_job_role,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_unpacked_mapped_column_schema = StructType(
+        [
+            *unpacked_mapped_column_schema,
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
         ]
     )

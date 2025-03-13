@@ -113,6 +113,26 @@ class Services(ColumnValues):
 
 
 @dataclass
+class Specialisms(ColumnValues):
+    """The possible values of the specialisms column in CQC locations data"""
+
+    adults_over_65: str = "Caring for adults over 65 yrs"
+    adults_under_65: str = "Caring for adults under 65 yrs"
+    children: str = "Caring for children"
+    dementia: str = "Dementia"
+    detained_under_mental_health_act: str = (
+        "Caring for people whose rights are restricted under the Mental Health Act"
+    )
+    eating_disorders: str = "Eating disorders"
+    learning_disabilities: str = "Learning disabilities"
+    mental_health: str = "Mental health conditions"
+    physical_disabilities: str = "Physical disabilities"
+    sensory_impairment: str = "Sensory impairment"
+    substance_misuse: str = "Substance misuse problems"
+    whole_population: str = "Services for everyone"
+
+
+@dataclass
 class PIRType(ColumnValues):
     """The possible values of the PIR type column in CQC PIR data"""
 
@@ -156,7 +176,7 @@ class MainJobRoleLabels(ColumnValues):
     allied_health_professional: str = "allied_health_professional"
     technician: str = "technician"
     other_care_role: str = "other_care_role"
-    care_related_staff: str = (
+    other_managerial_staff: str = (
         "managers_and_staff_in_care_related_but_not_care_providing_roles"
     )
     admin_staff: str = "administrative_or_office_staff_not_care_providing"
@@ -202,7 +222,7 @@ class MainJobRoleID(ColumnValues):
     allied_health_professional: str = "17"
     technician: str = "22"
     other_care_role: str = "23"
-    care_related_staff: str = "24"
+    other_managerial_staff: str = "24"
     admin_staff: str = "25"
     ancillary_staff: str = "26"
     other_non_care_related_staff: str = "27"

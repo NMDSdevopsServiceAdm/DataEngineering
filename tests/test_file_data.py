@@ -21,17 +21,21 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     CQCCurrentOrHistoricValues,
     CQCRatingsValues,
+    Dormancy,
     EstimateFilledPostsSource,
     IsParent,
     LocationType,
     MainJobRoleLabels,
     ParentsOrSinglesAndSubs,
     PrimaryServiceType,
+    Region,
     RegistrationStatus,
     RelatedLocation,
+    RUI,
     Sector,
     Services,
     SingleSubDescription,
+    Specialisms,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
@@ -5193,16 +5197,16 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), "South East", "Y", ["Domiciliary care service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), "South East", "N", ["Domiciliary care service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", 67.0, 20.0, "N", "Rural hamlet and isolated dwellings in a sparse setting", '2022', '01', '01', '20220101'),
-        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), "South West", "Y", ["Urgent care services", "Supported living service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220112'),
-        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), "North East", "Y", ["Hospice services at home"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural hamlet and isolated dwellings", '2022', '01', '12', '20220212'),
-        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), "North East", "N", ["Specialist college service", "Community based services for people who misuse substances", "Urgent care services'"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Urban city and town", '2022', '03', '01', '20220301'),
-        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), "South West", None, ["Specialist college service"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Rural town and fringe in a sparse setting", '2022', '03', '08', '20220308'),
-        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), "North East", "Y", ["Care home service with nursing"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "Care home with nursing", None, 20.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
-        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), "North East", "Y", ["Care home service with nursing"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "Care home with nursing", 25.0, 20.0, "Y", "Urban city and town", '2022', '03', '08', '20220308'),
-        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), "North West", None, ["Care home service without nursing"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "Care home without nursing", None, 20.0, "Y", "Urban city and town", '2022', '03', '15', '20220315'),
-        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), "North West", "Y", ["Supported living service", "Acute services with overnight beds"], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], "non-residential", None, 20.0, "N", "Urban city and town", '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.hospice_services], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), Region.south_west, None, [Services.specialist_college_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_town, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, 25.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), Region.north_west, None, [Services.care_home_service_without_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_only, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
@@ -5985,6 +5989,62 @@ class ModelFeatures:
         (date(2013, 1, 10), date(2023, 1, 10), 20),
     ]
 
+    cap_integer_at_max_value_rows = [
+        ("1-0001", 1),
+        ("1-0002", 2),
+        ("1-0003", 3),
+        ("1-0004", None),
+    ]
+    expected_cap_integer_at_max_value_rows = [
+        ("1-0001", 1, 1),
+        ("1-0002", 2, 2),
+        ("1-0003", 3, 2),
+        ("1-0004", None, None),
+    ]
+
+    add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}]),
+    ]
+    expected_add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}], 1),
+    ]
+
+    add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+        ),
+    ]
+    expected_add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+            3,
+        ),
+    ]
+
+    add_array_column_count_with_empty_array_rows = [
+        ("1-001", []),
+    ]
+    expected_add_array_column_count_with_empty_array_rows = [
+        ("1-001", [], 0),
+    ]
+
+    add_array_column_count_with_null_value_rows = [
+        ("1-001", None),
+    ]
+    expected_add_array_column_count_with_null_value_rows = [
+        ("1-001", None, 0),
+    ]
+
 
 @dataclass
 class ModelCareHomes:
@@ -6229,10 +6289,8 @@ class ModelNonResPirLinearRegressionRows:
 
 
 @dataclass
-class InsertPredictionsIntoLocations:
+class EstimateFilledPostsModelsUtils:
     cleaned_cqc_rows = ModelCareHomes.care_homes_cleaned_ind_cqc_rows
-
-    care_home_features_rows = ModelCareHomes.care_homes_features_rows
 
     predictions_rows = [
         (
@@ -6245,16 +6303,21 @@ class InsertPredictionsIntoLocations:
             date(2022, 3, 29),
             56.89,
         ),
-        (
-            "1-000000004",
-            "non-residential",
-            10.0,
-            "N",
-            None,
-            0,
-            date(2022, 3, 29),
-            12.34,
-        ),
+    ]
+
+    set_min_prediction_value_when_below_minimum_rows = [
+        ("1-001", 0.5, -7.6),
+    ]
+    expected_set_min_prediction_value_when_below_minimum_rows = [
+        ("1-001", 0.5, 1.0),
+    ]
+
+    set_min_prediction_value_when_above_minimum_rows = [
+        ("1-001", 1.5, 1.5),
+    ]
+
+    set_min_prediction_value_when_null_rows = [
+        ("1-001", None, None),
     ]
 
 
@@ -9921,6 +9984,46 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # fmt: off
+    remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows = [
+        ("1-001", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-002", 
+         None, 
+         20.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-003", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.care_home_model,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows = [
+        ("1-001", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}),
+        ("1-002", 
+         None, 
+         20.0,
+         EstimateFilledPostsSource.ascwds_pir_merged,
+         None),
+        ("1-003", 
+         10.0, 
+         10.0,
+         EstimateFilledPostsSource.care_home_model,
+         None),
+    ]
+    # fmt: on
+
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
@@ -10231,7 +10334,130 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    unpacked_mapped_column_with_one_record_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
+        )
+    ]
+    expected_unpacked_mapped_column_with_one_record_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+        )
+    ]
 
+    unpacked_mapped_column_with_map_items_in_different_orders_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+            },
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.senior_management: 40.0,
+                MainJobRoleLabels.registered_nurse: 20.0,
+                MainJobRoleLabels.care_worker: 10.0,
+                MainJobRoleLabels.senior_care_worker: 30.0,
+            },
+        ),
+    ]
+    expected_unpacked_mapped_column_with_map_items_in_different_orders_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 4.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+            },
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+        ),
+        (
+            "1-002",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.senior_management: 40.0,
+                MainJobRoleLabels.registered_nurse: 20.0,
+                MainJobRoleLabels.care_worker: 10.0,
+                MainJobRoleLabels.senior_care_worker: 30.0,
+            },
+            10.0,
+            20.0,
+            30.0,
+            40.0,
+        ),
+    ]
+
+    unpacked_mapped_column_with_null_values_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1-002",
+            date(2025, 2, 1),
+            None,
+        ),
+    ]
+    expected_unpacked_mapped_column_with_null_values_data = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            date(2025, 2, 1),
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
 
     interpolate_job_role_count_data = [
         (

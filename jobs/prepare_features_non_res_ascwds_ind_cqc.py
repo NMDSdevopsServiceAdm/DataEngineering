@@ -15,16 +15,22 @@ from utils.feature_engineering_resources.feature_engineering_dormancy import (
 from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as RegionFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_related_location import (
+    FeatureEngineeringValueLabelsRelatedLocation as RelatedLocationFeatures,
+)
 from utils.feature_engineering_resources.feature_engineering_rural_urban import (
     FeatureEngineeringValueLabelsRuralUrban as RuralUrbanFeatures,
 )
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
+)
 from utils.features.helper import (
     vectorise_dataframe,
     column_expansion_with_dict,
-    add_array_column_count_to_data,
+    add_array_column_count,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
     add_time_registered_into_df,
 )
@@ -65,20 +71,20 @@ def main(
         locations_df, IndCQC.care_home, CareHome.not_care_home
     )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=non_res_locations_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=features_df,
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,
     )
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=features_df,
         new_col_name=IndCQC.specialism_count,
-        col_to_check=IndCQC.specialisms,
+        col_to_check=IndCQC.imputed_specialisms,
     )
 
     service_keys = list(ServicesFeatures.labels_dict.keys())
@@ -86,6 +92,13 @@ def main(
         df=features_df,
         col_name=IndCQC.services_offered,
         lookup_dict=ServicesFeatures.labels_dict,
+    )
+
+    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
+    features_df = column_expansion_with_dict(
+        df=features_df,
+        col_name=IndCQC.specialisms_offered,
+        lookup_dict=SpecialismsFeatures.labels_dict,
     )
 
     rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
@@ -103,6 +116,15 @@ def main(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
             lookup_dict=RegionFeatures.labels_dict,
+        )
+    )
+
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.related_location,
+            lookup_dict=RelatedLocationFeatures.labels_dict,
         )
     )
 

@@ -6,17 +6,11 @@ from pyspark.sql.types import FloatType
 
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
-from utils.estimate_filled_posts.insert_predictions_into_locations import (
-    insert_predictions_into_locations,
-)
+from utils.estimate_filled_posts.models.utils import insert_predictions_into_pipeline
 from utils.features.helper import vectorise_dataframe
-from utils.ind_cqc_filled_posts_utils.utils import (
-    get_selected_value,
-)
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 @dataclass
@@ -105,7 +99,7 @@ def create_pir_people_directly_employed_dedup_modelled_column(
     lr_trained_model = LinearRegressionModel.load(linear_regression_model_source)
 
     predictions = lr_trained_model.transform(vectorised_features_df)
-    df = insert_predictions_into_locations(
+    df = insert_predictions_into_pipeline(
         df,
         predictions,
         IndCQC.pir_people_directly_employed_filled_posts,

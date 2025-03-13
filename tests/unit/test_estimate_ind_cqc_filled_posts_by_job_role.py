@@ -37,6 +37,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
     )
@@ -46,6 +47,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service"
+    )
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds"
     )
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
     @patch(
@@ -57,10 +61,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         read_from_parquet_mock: Mock,
         aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
         merge_dataframes_mock: Mock,
+        remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock: Mock,
         sum_job_role_count_split_by_service_mock: Mock,
         transform_job_role_count_map_to_ratios_map_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
+        unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
         model_job_role_ratio_interpolation_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -86,10 +92,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         )
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         merge_dataframes_mock.assert_called_once()
+        remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock.assert_called_once()
         sum_job_role_count_split_by_service_mock.assert_called_once()
         self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
         merge_columns_in_order_mock.assert_called_once()
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
+        unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
         model_job_role_ratio_interpolation_mock.assert_called_once()
 

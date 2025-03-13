@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, call, patch, Mock
+from unittest.mock import patch, Mock
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -666,6 +666,33 @@ class CreateEstimateFilledPostsByJobRoleMapColumn(
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
+class RemoveAscwdsJobRoleCountWhenFilledPostsSourceNotAscwds(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows,
+            Schemas.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema,
+        )
+        self.returned_df = job.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
+            self.test_df
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+    def test_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_returns_null_as_expected(
+        self,
+    ):
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_rows,
+            Schemas.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_schema,
+        )
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(self.returned_data, expected_data)
+
+
 class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -841,9 +868,6 @@ class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtils
             .sort(IndCQC.primary_service_type)
             .collect(),
         )
-
-
-
 
 
 class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
@@ -1106,3 +1130,74 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             .sort(IndCQC.location_id, IndCQC.unix_time)
             .collect(),
         )
+
+
+class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_one_record_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+        self.returned_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_one_record_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+    def test_unpack_mapped_column_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_unpack_mapped_column_returns_expected_values_in_each_column(self):
+        self.assertEqual(
+            self.returned_df.collect(),
+            self.expected_df.collect(),
+        )
+
+    def test_unpack_mapped_column_when_rows_have_map_items_in_differing_orders_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_map_items_in_different_orders_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+        returned_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_map_items_in_different_orders_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_unpack_mapped_column_with_null_values_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.unpacked_mapped_column_with_null_values_data,
+            Schemas.unpacked_mapped_column_schema,
+        )
+        returned_df = job.unpack_mapped_column(
+            test_df, IndCQC.estimate_filled_posts_by_job_role
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_unpacked_mapped_column_with_null_values_data,
+            Schemas.expected_unpacked_mapped_column_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)

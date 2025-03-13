@@ -3,7 +3,6 @@ from typing import List
 
 from pyspark.sql import DataFrame
 
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -20,10 +19,10 @@ from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
 from utils.features.helper import (
-    vectorise_dataframe,
+    add_array_column_count,
     column_expansion_with_dict,
-    add_array_column_count_to_data,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    vectorise_dataframe,
 )
 
 
@@ -38,8 +37,11 @@ def main(
     filtered_loc_data = utils.select_rows_with_value(
         locations_df, IndCQC.care_home, CareHome.care_home
     )
+    filtered_loc_data = utils.select_rows_with_non_null_value(
+        filtered_loc_data, IndCQC.number_of_beds
+    )
 
-    features_df = add_array_column_count_to_data(
+    features_df = add_array_column_count(
         df=filtered_loc_data,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,

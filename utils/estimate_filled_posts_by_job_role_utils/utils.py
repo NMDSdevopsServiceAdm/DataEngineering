@@ -4,6 +4,9 @@ from pyspark.sql.types import LongType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    EstimateFilledPostsSource,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
 )
@@ -96,6 +99,40 @@ def merge_dataframes(
     )
 
     return merged_df
+
+
+def remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Changes ascwds job role counts column to null in the following cases.
+
+    When estimate filled posts source is not 'ascwds_pir_merged' and
+    estimate filled posts is not equal to ascwds filled posts dedup clean.
+    This is to ensure that we're only using ascwds job role data when ascwds data has
+    been used for estimated filled posts.
+
+    Args:
+        df (DataFrame): The estimated filled post by job role DataFrame.
+
+    Returns:
+        DataFrame: The estimated filled post by job role DataFrame with the ascwds job role count map column filtered.
+    """
+
+    return df.withColumn(
+        IndCQC.ascwds_job_role_counts,
+        F.when(
+            (
+                F.col(IndCQC.estimate_filled_posts_source)
+                == F.lit(EstimateFilledPostsSource.ascwds_pir_merged)
+            )
+            & (
+                F.col(IndCQC.estimate_filled_posts)
+                == F.col(IndCQC.ascwds_filled_posts_dedup_clean)
+            ),
+            F.col(IndCQC.ascwds_job_role_counts),
+        ).otherwise(F.lit(None)),
+    )
 
 
 def transform_job_role_count_map_to_ratios_map(
@@ -271,7 +308,29 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
+def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
+    """
+    Unpacks a MapType column in a DataFrame into separate columns (sorted alphabetically), with keys as column names and values as row values.
 
+    Args:
+        df (DataFrame): A PySpark DataFrame containing a MapType column.
+        column_name (str): The name of the MapType column to unpack.
+
+    Returns:
+        DataFrame: A DataFrame with the map column expanded into multiple columns, sorted alphabetically by key.
+    """
+
+    df_keys = df.select(F.explode(F.map_keys(F.col(column_name)))).distinct()
+
+    list_keys = sorted([row[0] for row in df_keys.collect()])
+
+    column_of_keys = [
+        F.col(column_name).getItem(key).alias(str(key)) for key in list_keys
+    ]
+
+    result_df = df.select("*", *column_of_keys)
+
+    return result_df
 
 
 def create_estimate_filled_posts_by_job_role_map_column(
