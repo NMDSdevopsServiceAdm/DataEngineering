@@ -1,7 +1,5 @@
 import unittest
 
-from pyspark.sql import functions as F
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 import utils.estimate_filled_posts.models.rolling_average as job
