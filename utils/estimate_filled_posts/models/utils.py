@@ -39,9 +39,11 @@ def set_min_prediction_value(
 ) -> DataFrame:
     """
     Sets the minimum value of the 'prediction' column to a specified value (default is 1.0).
+
     Args:
         df (DataFrame): A dataframe containing the 'prediction' column.
         min_prediction_value (float): The minimum value allowed in the 'prediction' column.
+
     Returns:
         DataFrame: A dataframe with the 'prediction' column set to the minimum value.
     """

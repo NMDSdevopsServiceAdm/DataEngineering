@@ -8,9 +8,7 @@ import jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from tests.test_file_data import NonResAscwdsFeaturesData as Data
 from tests.test_file_schemas import NonResAscwdsFeaturesSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
@@ -31,6 +29,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         "jobs.prepare_features_non_res_ascwds_ind_cqc.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
     )
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.column_expansion_with_dict")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.cap_integer_at_max_value")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
@@ -39,6 +38,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
         add_array_column_count_mock: Mock,
+        cap_integer_at_max_value_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
@@ -54,11 +54,12 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
-        self.assertEqual(add_array_column_count_mock.call_count, 3)
+        self.assertEqual(add_array_column_count_mock.call_count, 2)
+        self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
         self.assertEqual(column_expansion_with_dict_mock.call_count, 2)
         self.assertEqual(
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
-            4,
+            5,
         )
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)

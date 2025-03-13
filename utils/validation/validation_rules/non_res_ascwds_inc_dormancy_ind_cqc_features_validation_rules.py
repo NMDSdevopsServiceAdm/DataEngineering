@@ -24,7 +24,6 @@ class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.time_registered,
             IndCqcColumns.service_count,
             IndCqcColumns.activity_count,
-            IndCqcColumns.specialism_count,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -33,9 +32,8 @@ class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
         RuleName.min_values: {
             IndCqcColumns.ascwds_pir_merged: 1.0,
             IndCqcColumns.time_registered: 0.0,
-            # IndCqcColumns.service_count: 1, # Temporarily removed whilst we fix DQ
+            IndCqcColumns.service_count: 1,
             IndCqcColumns.activity_count: 0,
-            IndCqcColumns.specialism_count: 0,
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_pir_merged: 3000.0,

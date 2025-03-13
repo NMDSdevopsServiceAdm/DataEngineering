@@ -28,11 +28,12 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
     FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
-    vectorise_dataframe,
-    column_expansion_with_dict,
     add_array_column_count,
+    calculate_time_registered_for,
+    cap_integer_at_max_value,
+    column_expansion_with_dict,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_time_registered_into_df,
+    vectorise_dataframe,
 )
 
 
@@ -45,7 +46,6 @@ vectorised_features_column_list: List[str] = [
     IndCQC.care_home,
     IndCQC.service_count,
     IndCQC.activity_count,
-    IndCQC.specialism_count,
     IndCQC.ascwds_pir_merged,
     IndCQC.rolling_rate_of_change_model,
     IndCQC.imputed_registration_date,
@@ -76,46 +76,54 @@ def main(
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
+    features_df = cap_integer_at_max_value(
+        df=features_df,
+        col_name=IndCQC.service_count,
+        max_value=4,
+        new_col_name=IndCQC.service_count_capped,
+    )
+
     features_df = add_array_column_count(
         df=features_df,
         new_col_name=IndCQC.activity_count,
         col_to_check=IndCQC.imputed_regulated_activities,
     )
-    features_df = add_array_column_count(
+    features_df = cap_integer_at_max_value(
         df=features_df,
-        new_col_name=IndCQC.specialism_count,
-        col_to_check=IndCQC.imputed_specialisms,
+        col_name=IndCQC.activity_count,
+        max_value=3,
+        new_col_name=IndCQC.activity_count_capped,
     )
 
-    service_keys = list(ServicesFeatures.labels_dict.keys())
+    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.labels_dict,
+        lookup_dict=ServicesFeatures.non_res_model_labels_dict,
     )
 
-    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
+    specialisms_keys = list(SpecialismsFeatures.non_res_model_labels_dict.keys())
     features_df = column_expansion_with_dict(
         df=features_df,
         col_name=IndCQC.specialisms_offered,
-        lookup_dict=SpecialismsFeatures.labels_dict,
+        lookup_dict=SpecialismsFeatures.non_res_model_labels_dict,
     )
 
-    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.labels_dict,
+            lookup_dict=RuralUrbanFeatures.non_res_model_labels_dict,
         )
     )
 
-    regions = list(RegionFeatures.labels_dict.keys())
+    regions = list(RegionFeatures.non_res_model_labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.labels_dict,
+            lookup_dict=RegionFeatures.non_res_model_labels_dict,
         )
     )
 
@@ -137,28 +145,51 @@ def main(
         )
     )
 
-    features_df = add_time_registered_into_df(
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    features_df = (
+        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+            df=features_df,
+            categorical_col_name=IndCQC.related_location,
+            lookup_dict=RelatedLocationFeatures.labels_dict,
+        )
+    )
+
+    features_df = calculate_time_registered_for(df=features_df)
+
+    features_df = cap_integer_at_max_value(
         df=features_df,
+        col_name=IndCQC.time_registered,
+        max_value=5,
+        new_col_name=IndCQC.time_registered_capped_at_three_years,
+    )
+    features_df = cap_integer_at_max_value(
+        df=features_df,
+        col_name=IndCQC.time_registered,
+        max_value=10,
+        new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
 
-    list_for_vectorisation_without_dormancy: List[str] = sorted(
+    list_for_vectorisation: List[str] = sorted(
         [
-            IndCQC.service_count,
-            IndCQC.activity_count,
-            IndCQC.specialism_count,
-            IndCQC.time_registered,
-            IndCQC.rolling_rate_of_change_model,
+            IndCQC.activity_count_capped,
+            IndCQC.service_count_capped,
         ]
-        + service_keys
+        + related_location
         + regions
         + rui_indicators
+        + service_keys
+        + specialisms_keys
     )
+    list_for_vectorisation_without_dormancy: List[str] = sorted(
+        list_for_vectorisation + [IndCQC.time_registered_capped_at_three_years]
+    )
+
     list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation_without_dormancy + dormancy
+        list_for_vectorisation + [IndCQC.time_registered_capped_at_ten_years] + dormancy
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
@@ -177,6 +208,7 @@ def main(
         vectorised_features_column_list
     )
 
+    # TODO - check what these are actually doing! is it the count of features or the count of columns we happen to select?
     print(
         f"number of features without dormancy: {len(list_for_vectorisation_without_dormancy)}"
     )

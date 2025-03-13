@@ -2581,13 +2581,6 @@ class NonResAscwdsFeaturesSchema(object):
                 ),
                 True,
             ),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
@@ -3120,15 +3113,16 @@ class ModelFeatures:
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
-    add_time_registered_schema = StructType(
+    calculate_time_registered_for_schema = StructType(
         [
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.imputed_registration_date, DateType(), True),
         ]
     )
-    expected_add_time_registered_schema = StructType(
+    expected_calculate_time_registered_for_schema = StructType(
         [
-            *add_time_registered_schema,
+            *calculate_time_registered_for_schema,
             StructField(IndCQC.time_registered, IntegerType(), True),
         ]
     )

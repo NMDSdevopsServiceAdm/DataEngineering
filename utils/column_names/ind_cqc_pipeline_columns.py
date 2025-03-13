@@ -36,6 +36,7 @@ class ArchivePartitionKeys:
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
+    activity_count_capped: str = "activity_count_capped"
     ascwds_pir_merged: str = "ascwds_pir_merged"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
@@ -239,9 +240,11 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    time_registered: str = "time_registered"
+    time_registered_capped_at_three_years: str = "time_registered_capped_at_three_years"
+    time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
