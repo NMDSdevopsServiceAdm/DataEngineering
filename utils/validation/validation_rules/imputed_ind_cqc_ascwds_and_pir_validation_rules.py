@@ -5,7 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    EstimatedMissingAscwdsCategoricalValues as CatValues,
+    ImputedIndCqcAscwdsAndPirCategoricalValues as CatValues,
 )
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName

@@ -7984,7 +7984,7 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ValidateEstimatedMissingAscwdsFilledPostsData:
+class ValidateImputedIndCqcAscwdsAndPir:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-000000001", date(2024, 1, 1),),
@@ -7993,7 +7993,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsData:
         ("1-000000002", date(2024, 2, 1),),
     ]
 
-    estimated_missing_ascwds_filled_posts_rows = [
+    imputed_ind_cqc_ascwds_and_pir_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
         ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
