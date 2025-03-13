@@ -170,29 +170,6 @@ def interpolate_column_with_values(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_single_period_rate_of_change(
-    df: DataFrame, number_of_days: int, single_period_rate_of_change_column_name: str
-) -> DataFrame:
-    """
-    Calculates the rolling rate of change of a specified column over a given window of days partitioned by primary service type.
-
-    This function sequentially calls other functions to:
-    1. Add a column with the previous value for that location_id.
-    2. When both current and previous values exist, adds the rolling sum of both columns over a specified number of days into separate columns.
-    3. Calculate the rate of change for a single period.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the data.
-        number_of_days (int): The number of days to include in the rolling time period.
-        single_period_rate_of_change_column_name (str): Name of the column to store the rate of change values.
-
-    Returns:
-        DataFrame: The DataFrame with the calculated rolling rate of change.
-    """
-
-    return df
-
-
 def add_previous_value_column(df: DataFrame) -> DataFrame:
     """
     Adds the previous interpolated value for that location into a new column.
