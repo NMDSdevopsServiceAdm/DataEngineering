@@ -1,5 +1,6 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from typing import Optional, Tuple
+import typing
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
@@ -10,7 +11,7 @@ def model_interpolation(
     column_with_null_values: str,
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
-    partition_columns: Optional[list[str]] = IndCqc.location_id,
+    partition_columns: typing.Optional[typing.List[str]] = IndCqc.location_id,
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
@@ -89,7 +90,7 @@ def model_interpolation(
 
 
 def define_window_specs(
-    partition_columns: Optional[list[str]] = IndCqc.location_id,
+    partition_columns: typing.Optional[typing.List[str]] = IndCqc.location_id,
 ) -> Tuple[Window, Window, Window]:
     """
     Defines three window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
