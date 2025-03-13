@@ -5409,7 +5409,7 @@ class EstimateIndCQCFilledPostsData:
 
 
 @dataclass
-class EstimateMissingAscwdsFilledPostsData:
+class ImputeIndCqcAscwdsAndPirData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-1783948", date(2022, 2, 1), 0, PrimaryServiceType.non_residential, None, None, "N", "rule_1", None, None),

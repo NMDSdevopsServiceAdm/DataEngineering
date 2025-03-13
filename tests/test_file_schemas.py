@@ -2675,7 +2675,7 @@ class EstimateIndCQCFilledPostsSchemas:
 
 
 @dataclass
-class EstimateMissingAscwdsFilledPostsSchemas:
+class ImputeIndCqcAscwdsAndPirSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
