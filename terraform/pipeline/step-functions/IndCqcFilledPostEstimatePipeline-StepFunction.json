@@ -207,9 +207,9 @@
                   "--cleaned_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
                 }
               },
-              "Next": "Run estimate missing ascwds ind cqc filled posts job"
+              "Next": "Run impute ind cqc ascwds and pir job"
             },
-            "Run estimate missing ascwds ind cqc filled posts job": {
+            "Run impute ind cqc ascwds and pir job": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
