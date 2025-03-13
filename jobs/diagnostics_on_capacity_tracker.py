@@ -17,7 +17,7 @@ from utils.diagnostics_utils import diagnostics_utils as dUtils
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+from utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change import (
     model_primary_service_rolling_average_and_rate_of_change,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (

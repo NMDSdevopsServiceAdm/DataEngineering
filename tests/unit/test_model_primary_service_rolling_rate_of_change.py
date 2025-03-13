@@ -9,7 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
 from utils.column_values.categorical_column_values import CareHome
-import utils.estimate_filled_posts.models.primary_service_rolling_average as job
+import utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRollingAverage as Data
 from tests.test_file_schemas import ModelPrimaryServiceRollingAverage as Schemas
 
@@ -393,19 +393,19 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         )
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_previous_value_column"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_previous_value_column"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.add_rolling_sum"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_rolling_sum"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_single_period_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_single_period_rate_of_change"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.deduplicate_dataframe"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.deduplicate_dataframe"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.calculate_cumulative_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_cumulative_rate_of_change"
     )
     def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
@@ -457,7 +457,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
         self.expected_data = self.expected_df.collect()
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_average.get_selected_value"
+        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.get_selected_value"
     )
     def test_functions_called_in_add_previous_value_column_function(
         self,
