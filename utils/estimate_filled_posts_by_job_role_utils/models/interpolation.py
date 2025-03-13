@@ -40,6 +40,7 @@ def model_job_role_ratio_interpolation(
 
     print("df_start_count_of_rows:", df.count())
 
+    # mapped column + individual columns
     df_to_interpolate = unpack_mapped_column(df, mapped_column_to_interpolate)
 
     df_to_interpolate.select(mapped_column_to_interpolate).show(truncate=False)
@@ -51,6 +52,8 @@ def model_job_role_ratio_interpolation(
     columns_to_interpolate = sorted([row[0] for row in df_keys.collect()])
 
     df_to_interpolate.printSchema()
+
+    # create mapped column from individual column
     df_to_interpolate = df_to_interpolate.withColumn(
         IndCqc.ascwds_job_role_ratios_temporary,
         create_map_column(columns_to_interpolate),
@@ -126,7 +129,7 @@ def model_job_role_ratio_interpolation(
     df_to_interpolate = (
         df_to_interpolate.groupBy(IndCqc.location_id, IndCqc.unix_time)
         .pivot("key")
-        .agg(F.first("ratios"))
+        .agg(F.first("ratios", ignorenulls=False))
     )
 
     print(
