@@ -5692,7 +5692,7 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
-class ModelPredictionRollingAverageData:
+class ModelRollingAverageData:
     rolling_average_rows = [
         ("1-001", 1672531200, 1.1),
         ("1-001", 1672617600, 1.2),

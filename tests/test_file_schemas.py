@@ -2885,7 +2885,7 @@ class ModelPrimaryServiceRollingAverage:
 
 
 @dataclass
-class ModelPredictionRollingAverageSchemas:
+class ModelRollingAverageSchemas:
     rolling_average_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

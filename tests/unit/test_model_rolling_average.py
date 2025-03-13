@@ -4,17 +4,17 @@ from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.models.prediction_rolling_average as job
-from tests.test_file_data import ModelPredictionRollingAverageData as Data
-from tests.test_file_schemas import ModelPredictionRollingAverageSchemas as Schemas
+import utils.estimate_filled_posts.models.rolling_average as job
+from tests.test_file_data import ModelRollingAverageData as Data
+from tests.test_file_schemas import ModelRollingAverageSchemas as Schemas
 
 
-class ModelPredictionRollingAverageTests(unittest.TestCase):
+class ModelRollingAverageTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
 
-class MainTests(ModelPredictionRollingAverageTests):
+class MainTests(ModelRollingAverageTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -24,9 +24,14 @@ class MainTests(ModelPredictionRollingAverageTests):
             Data.rolling_average_rows,
             Schemas.rolling_average_schema,
         )
-        self.returned_df = job.calculate_prediction_rolling_average(
-            test_df, number_of_days
+        self.returned_df = job.calculate_rolling_average(
+            df=test_df,
+            column_to_average=IndCqc.prediction,
+            number_of_days=number_of_days,
+            column_to_partition_by=IndCqc.location_id,
+            new_column_name=IndCqc.prediction_rolling_average,
         )
+
         self.expected_df = self.spark.createDataFrame(
             Data.expected_rolling_average_rows,
             Schemas.expected_rolling_average_schema,
@@ -36,7 +41,7 @@ class MainTests(ModelPredictionRollingAverageTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_calculate_prediction_rolling_average_returns_expected_columns(self):
+    def test_calculate_rolling_average_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
