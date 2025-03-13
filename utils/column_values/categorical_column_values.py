@@ -176,7 +176,7 @@ class MainJobRoleLabels(ColumnValues):
     allied_health_professional: str = "allied_health_professional"
     technician: str = "technician"
     other_care_role: str = "other_care_role"
-    care_related_staff: str = (
+    other_managerial_staff: str = (
         "managers_and_staff_in_care_related_but_not_care_providing_roles"
     )
     admin_staff: str = "administrative_or_office_staff_not_care_providing"
@@ -222,7 +222,7 @@ class MainJobRoleID(ColumnValues):
     allied_health_professional: str = "17"
     technician: str = "22"
     other_care_role: str = "23"
-    care_related_staff: str = "24"
+    other_managerial_staff: str = "24"
     admin_staff: str = "25"
     ancillary_staff: str = "26"
     other_non_care_related_staff: str = "27"
