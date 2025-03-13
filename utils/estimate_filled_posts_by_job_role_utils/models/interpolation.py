@@ -48,7 +48,7 @@ def model_job_role_ratio_interpolation(
     df_keys = df_to_interpolate.select(
         F.explode(F.map_keys(F.col(mapped_column_to_interpolate)))
     ).distinct()
-    columns_to_interpolate = [row[0] for row in df_keys.collect()]
+    columns_to_interpolate = sorted([row[0] for row in df_keys.collect()])
 
     df_to_interpolate.printSchema()
     df_to_interpolate = df_to_interpolate.withColumn(
