@@ -588,18 +588,18 @@ module "validate_cleaned_ind_cqc_data_job" {
   }
 }
 
-module "validate_estimated_missing_ascwds_filled_posts_data_job" {
+module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "validate_estimated_missing_ascwds_filled_posts_data.py"
+  script_name     = "validate_imputed_ind_cqc_ascwds_and_pir_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
   glue_version    = "4.0"
 
   job_parameters = {
-    "--cleaned_ind_cqc_source"                       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
-    "--estimated_missing_ascwds_filled_posts_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
-    "--report_destination"                           = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_imputed_ascwds_and_pir/"
+    "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
+    "--imputed_ind_cqc_ascwds_and_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
+    "--report_destination"                    = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_imputed_ascwds_and_pir/"
   }
 }
 

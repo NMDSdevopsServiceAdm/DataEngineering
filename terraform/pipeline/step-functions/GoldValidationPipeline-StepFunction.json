@@ -43,16 +43,16 @@
             }
           },
           {
-            "StartAt": "Run validate estimated missing ascwds filled posts data job",
+            "StartAt": "Run validate imputed ind cqc ascwds and pir data job",
             "States": {
-              "Run validate estimated missing ascwds filled posts data job": {
+              "Run validate imputed ind cqc ascwds and pir data job": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_estimated_missing_ascwds_filled_posts_data_job_name}",
+                  "JobName": "${validate_imputed_ind_cqc_ascwds_and_pir_data_job_name}",
                   "Arguments": {
                     "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
-                    "--estimated_missing_ascwds_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/",
+                    "--imputed_ind_cqc_ascwds_and_pir_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/",
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_imputed_ascwds_and_pir/"
                   }
                 },
