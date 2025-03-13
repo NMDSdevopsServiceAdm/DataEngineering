@@ -1,6 +1,5 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from typing import Optional, Tuple
-from functools import reduce
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,

@@ -104,7 +104,7 @@ def define_window_specs(
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
     """
-    window_spec = Window.partitionBy(*partition_columns).orderBy(IndCqc.unix_time)
+    window_spec = Window.partitionBy(partition_columns).orderBy(IndCqc.unix_time)
 
     window_spec_backwards = window_spec.rowsBetween(
         Window.unboundedPreceding, Window.currentRow
