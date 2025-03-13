@@ -34,48 +34,46 @@ def main(
 ) -> DataFrame:
     print("Estimating missing ASCWDS independent CQC filled posts...")
 
-    cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
+    df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
-    estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
-        cleaned_ind_cqc_df,
+    df = utils.create_unix_timestamp_variable_from_date_column(
+        df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
     )
 
-    estimate_missing_ascwds_df = (
-        model_primary_service_rolling_average_and_rate_of_change(
-            estimate_missing_ascwds_df,
-            IndCQC.filled_posts_per_bed_ratio,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-            IndCQC.rolling_average_model,
-            IndCQC.rolling_rate_of_change_model,
-        )
+    df = model_primary_service_rolling_average_and_rate_of_change(
+        df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        IndCQC.rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
     )
 
-    estimate_missing_ascwds_df = blend_pir_and_ascwds_when_ascwds_out_of_date(
-        estimate_missing_ascwds_df, linear_regression_model_source
+    df = blend_pir_and_ascwds_when_ascwds_out_of_date(
+        df, linear_regression_model_source
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.ascwds_pir_merged,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.pir_people_directly_employed_dedup,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_non_res_pir_people_directly_employed,
@@ -85,7 +83,7 @@ def main(
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 
     utils.write_to_parquet(
-        estimate_missing_ascwds_df,
+        df,
         imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
