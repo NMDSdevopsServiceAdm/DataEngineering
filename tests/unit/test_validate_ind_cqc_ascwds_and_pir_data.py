@@ -2,19 +2,19 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_estimated_missing_ascwds_filled_posts_data as job
+import jobs.validate_imputed_ind_cqc_ascwds_and_pir_data as job
 
-from tests.test_file_data import ValidateEstimatedMissingAscwdsFilledPostsData as Data
+from tests.test_file_data import ValidateImputedIndCqcAscwdsAndPir as Data
 from tests.test_file_schemas import (
-    ValidateEstimatedMissingAscwdsFilledPostsData as Schemas,
+    ValidateImputedIndCqcAscwdsAndPir as Schemas,
 )
 
 from utils import utils
 
 
-class ValidateEstimatedMissingAscwdsFilledPostsDatasetTests(unittest.TestCase):
+class ValidateImputedIndCqcAscwdsAndPirsetTests(unittest.TestCase):
     TEST_CLEANED_SOURCE = "some/directory"
-    TEST_ESTIMATED_MISSING_ASCWDS_FILLED_POSTS_SOURCE = "some/other/directory"
+    TEST_IMPUTED_IND_CQC_ASCWDS_AND_PIR_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -24,8 +24,8 @@ class ValidateEstimatedMissingAscwdsFilledPostsDatasetTests(unittest.TestCase):
             Schemas.cleaned_ind_cqc_schema,
         )
         self.test_estimated_ind_cqc_filled_posts_df = self.spark.createDataFrame(
-            Data.estimated_missing_ascwds_filled_posts_rows,
-            Schemas.estimated_missing_ascwds_filled_posts_schema,
+            Data.imputed_ind_cqc_ascwds_and_pir_rows,
+            Schemas.imputed_ind_cqc_ascwds_and_pir_schema,
         )
 
     def tearDown(self) -> None:
@@ -33,7 +33,7 @@ class ValidateEstimatedMissingAscwdsFilledPostsDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateEstimatedMissingAscwdsFilledPostsDatasetTests):
+class MainTests(ValidateImputedIndCqcAscwdsAndPirsetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -52,7 +52,7 @@ class MainTests(ValidateEstimatedMissingAscwdsFilledPostsDatasetTests):
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CLEANED_SOURCE,
-                self.TEST_ESTIMATED_MISSING_ASCWDS_FILLED_POSTS_SOURCE,
+                self.TEST_IMPUTED_IND_CQC_ASCWDS_AND_PIR_SOURCE,
                 self.TEST_DESTINATION,
             )
 
@@ -60,9 +60,7 @@ class MainTests(ValidateEstimatedMissingAscwdsFilledPostsDatasetTests):
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class CalculateExpectedSizeofDataset(
-    ValidateEstimatedMissingAscwdsFilledPostsDatasetTests
-):
+class CalculateExpectedSizeofDataset(ValidateImputedIndCqcAscwdsAndPirsetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -73,8 +71,10 @@ class CalculateExpectedSizeofDataset(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = job.calculate_expected_size_of_estimated_missing_ascwds_filled_posts_dataset(
-            test_df
+        returned_row_count = (
+            job.calculate_expected_size_of_imputed_ind_cqc_ascwds_and_pir_dataset(
+                test_df
+            )
         )
         self.assertEqual(returned_row_count, expected_row_count)
 
