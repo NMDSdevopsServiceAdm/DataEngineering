@@ -34,10 +34,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = (
-        calculate_expected_size_of_imputed_ind_cqc_ascwds_and_pir_dataset(
-            cleaned_ind_cqc_df
-        )
+    rules[
+        RuleName.size_of_dataset
+    ] = calculate_expected_size_of_imputed_ind_cqc_ascwds_and_pir_dataset(
+        cleaned_ind_cqc_df
     )
 
     check_result_df = validate_dataset(imputed_df, rules)
