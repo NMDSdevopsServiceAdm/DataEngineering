@@ -23,7 +23,7 @@ def calculate_rolling_average(
         df (DataFrame): The input DataFrame.
         column_to_average (str): The name of the column with the values to average.
         number_of_days (int): The number of days for the rolling window.
-        partition_by (str): The name of the column to partition the window by.
+        column_to_partition_by (str): The name of the column to partition the window by.
         new_column_name (str): The name of the new column to store the rolling average values.
 
     Returns:
