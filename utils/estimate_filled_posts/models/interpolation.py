@@ -88,13 +88,18 @@ def model_interpolation(
     return df
 
 
-def define_window_specs(partition_columns: list[str]) -> Tuple[Window, Window, Window]:
+def define_window_specs(
+    partition_columns: Optional[list[str]] = IndCqc.location_id,
+) -> Tuple[Window, Window, Window]:
     """
     Defines three window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
 
     The first window specification ('window_spec_backwards') includes all rows up to the current row.
     The second window specification ('window_spec_forward') includes all rows from the current row onwards.
     The third window specification ('window_spec_lagged') includes all rows from the start of the partition up to the current row, excluding the current row.
+
+    Args:
+        partition_columns: Argument for define_window_specs, default being location id
 
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
