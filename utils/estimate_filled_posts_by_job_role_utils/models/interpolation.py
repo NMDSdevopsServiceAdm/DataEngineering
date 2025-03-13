@@ -40,10 +40,11 @@ def model_job_role_ratio_interpolation(
 
     print("df_start_count_of_rows:", df.count())
 
+    print("print_columns_before_unpacking:", df_to_interpolate.columns)
     # mapped column + individual columns
     df_to_interpolate = unpack_mapped_column(df, mapped_column_to_interpolate)
 
-    df_to_interpolate.select(mapped_column_to_interpolate).show(truncate=False)
+    print("print_columns_after_unpacking:", df_to_interpolate.columns)
     print("df_to_interpolate_unpacked_map_count_of_rows:", df_to_interpolate.count())
 
     df_keys = df_to_interpolate.select(
