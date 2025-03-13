@@ -12,32 +12,45 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
-def model_primary_service_rolling_average_and_rate_of_change(
+def model_primary_service_cumulative_rate_of_change(
     df: DataFrame,
     ratio_column_to_average: str,
     posts_column_to_average: str,
     number_of_days: int,
-    rolling_average_model_column_name: str,
-    rolling_rate_of_change_model_column_name: str,
+    new_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average and rate of change split by primary service type of specified columns over a given window of days.
+    Computes the cumulative rate of change for specified columns over a rolling window, grouped by primary service type.
 
-    Calculates the rolling average and rate of change of specified columns over a given window of days partitioned by primary service type.
-    Only data from locations who have at least 2 submissions and a consistent care_home status throughout time are included in the calculations.
-    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
-    For example, for a 3 day rolling average we want the current day plus the two days prior.
+    The cumulative rate of change is calculated by multiplying sequential rates of change over time.
+    Given a rate of change sequence:
+        - Period 1 to 2: 'a'
+        - Period 2 to 3: 'b'
+        - Period 3 to 4: 'c'
+      The cumulative rate of change is:
+        - Period 1: 1.0 (no change)
+        - Period 2: 'a'
+        - Period 3: 'a * b'
+        - Period 4: 'a * b * c', etc.
+
+    Only data from locations with at least two submissions and a consistent care home status over time are considered.
+
+    A rolling window is applied to smooth fluctuations in the data by combining values over a specified number of days.
+    This helps produce more stable and reliable trends by reducing the impact of short-term variations
+
+    Since the PySpark `rangeBetween` function is inclusive on both ends, one day is subtracted from the provided
+    `window_days` value to ensure the window includes only the current day and the specified number of prior days.
+    For example, a 3-day rolling average includes the current day plus the two preceding days.
 
     Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_to_average (str): The name of the filled posts column to average.
-        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
-        rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
-        rolling_rate_of_change_model_column_name (str): The name of the new column to store the rolling rate of change model values.
+        df (DataFrame): Input DataFrame.
+        ratio_column_to_average (str): Column name for the filled posts-per-bed ratio (for care homes only).
+        posts_column_to_average (str): Column name for the filled posts count.
+        number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
+        new_column_name (str): Name of the column to store the computed rolling rate of change.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing the rolling average and rolling rate of change modelled outputs.
+        DataFrame: The input DataFrame with an additional column containing the rolling rate of change values.
     """
     number_of_days_for_window: int = number_of_days - 1
 
@@ -47,12 +60,8 @@ def model_primary_service_rolling_average_and_rate_of_change(
     df = clean_column_to_average(df)
     df = interpolate_column_to_average(df)
 
-    df = calculate_rolling_average(
-        df, number_of_days_for_window, rolling_average_model_column_name
-    )
-
     df = calculate_rolling_rate_of_change(
-        df, number_of_days_for_window, rolling_rate_of_change_model_column_name
+        df, number_of_days_for_window, new_column_name
     )
 
     columns_to_drop = [field.name for field in fields(TempCol())]
@@ -169,41 +178,6 @@ def interpolate_column_to_average(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempCol.column_to_average_interpolated,
         F.coalesce(TempCol.column_to_average, TempCol.column_to_average_interpolated),
-    )
-    return df
-
-
-def calculate_rolling_average(
-    df: DataFrame, number_of_days: int, rolling_average_model_column_name: str
-) -> DataFrame:
-    """
-    Calculates the filled post rolling average of a specified column over a given window of days partitioned by primary service type.
-
-    Calculates the filled post rolling average of a specified column over a given window of days partitioned by primary service type.
-    Non-care homes figures are already represented as filled posts, whereas for care homes the column contains a ratio which needs to be multiplied by the number of beds to get the equivalent filled posts.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
-        rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing the calculated rolling average.
-    """
-    window = (
-        Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
-    )
-
-    rolling_average = F.avg(TempCol.column_to_average_interpolated).over(window)
-
-    df = df.withColumn(
-        rolling_average_model_column_name,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            rolling_average * F.col(IndCqc.number_of_beds),
-        ).otherwise(rolling_average),
     )
     return df
 

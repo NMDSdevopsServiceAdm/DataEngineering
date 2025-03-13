@@ -91,6 +91,7 @@ class IndCqcColumns:
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    cumulative_rate_of_change_model: str = "cumulative_rate_of_change_model"
     current_ccg: str = ONSClean.current_ccg
     current_constituancy: str = ONSClean.current_constituancy
     current_cssr: str = ONSClean.current_cssr
@@ -236,7 +237,6 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rolling_average_model: str = "rolling_average_model"
-    rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered

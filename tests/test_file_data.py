@@ -5431,9 +5431,9 @@ class ImputeIndCqcAscwdsAndPirData:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
+class ModelPrimaryServiceCumulativeRateOfChange:
     # fmt: off
-    primary_service_rolling_average_rows = [
+    primary_service_cumulative_rate_of_change_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8),
         ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4),
@@ -5448,20 +5448,20 @@ class ModelPrimaryServiceRollingAverage:
         ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 40.0, 4.0),
         ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None),
     ]
-    expected_primary_service_rolling_average_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0, 25.0, 1.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8, 25.5, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4, 27.3333, 1.16235),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 32.0, 3.2, 29.6666, 1.26158),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 20.0, 2.0, 25.0, 1.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, None, None, 25.5, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, None, 27.3333, 1.16235),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 32.0, 3.2, 29.6666, 1.26158),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 40.0, None, 40.0, 1.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None, 45.0, 1.25),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 60.0, None, 45.0, 1.25),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 40.0, 4.0, 25.0, 1.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None, 45.0, 1.25),
+    expected_primary_service_cumulative_rate_of_change_rows = [
+        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0, 1.0),
+        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8, 1.03999),
+        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4, 1.16235),
+        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 32.0, 3.2, 1.26158),
+        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 20.0, 2.0, 1.0),
+        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, None, None, 1.03999),
+        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, None, 1.16235),
+        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 32.0, 3.2, 1.26158),
+        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 40.0, None, 1.0),
+        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None, 1.25),
+        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 60.0, None, 1.25),
+        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 40.0, 4.0, 1.0),
+        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None, 1.25),
     ]
     # fmt: on
 
@@ -5572,31 +5572,29 @@ class ModelPrimaryServiceRollingAverage:
     ]
 
     # fmt: off
-    calculate_rolling_average_rows = [
-        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1),
-        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2),
-        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3),
-        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4),
-        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4),
-        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3),
-        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0),
-        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0),
-        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0),
+    calculate_rolling_rate_of_change_rows = [
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 1.1),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 1.2),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 1.3),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 1.4),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.4),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.3),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, 10.0),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, 20.0),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, 30.0),
     ]
-    expected_calculate_rolling_average_rows = [
-        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1, 11.0),
-        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2, 11.5),
-        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3, 12.0),
-        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4, 13.0),
-        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4, 13.5),
-        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3, 13.5),
-        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0, 10.0),
-        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0, 15.0),
-        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0, 25.0),
+    expected_calculate_rolling_rate_of_change_rows = [
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 1.1, 1.0),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.0909),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.1858),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 1.4, 1.2846),
+        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.4, 1.3505),
+        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.3, 1.3505),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, 10.0, 1.0),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, 20.0, 2.0),
+        ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, 30.0, 3.333),
     ]
     # fmt: on
-
-    calculate_rolling_rate_of_change_rows = calculate_rolling_average_rows
 
     add_previous_value_column_rows = [
         ("1-001", 1672531200, 1.1),

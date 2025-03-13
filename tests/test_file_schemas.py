@@ -2591,7 +2591,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(IndCQC.cumulative_rate_of_change_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
@@ -2618,7 +2618,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(IndCQC.cumulative_rate_of_change_model, DoubleType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -2693,8 +2693,8 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
-    primary_service_rolling_average_schema = StructType(
+class ModelPrimaryServiceCumulativeRateOfChange:
+    primary_service_cumulative_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
@@ -2705,11 +2705,10 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
-    expected_primary_service_rolling_average_schema = StructType(
+    expected_primary_service_cumulative_rate_of_change_schema = StructType(
         [
-            *primary_service_rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            *primary_service_cumulative_rate_of_change_schema,
+            StructField(IndCQC.cumulative_rate_of_change_model, DoubleType(), True),
         ]
     )
 
@@ -2785,24 +2784,21 @@ class ModelPrimaryServiceRollingAverage:
         ]
     )
 
-    calculate_rolling_average_schema = StructType(
+    calculate_rolling_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
         ]
     )
-    expected_calculate_rolling_average_schema = StructType(
+    expected_calculate_rolling_rate_of_change_schema = StructType(
         [
-            *calculate_rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            *calculate_rolling_rate_of_change_schema,
+            StructField(IndCQC.cumulative_rate_of_change_model, DoubleType(), True),
         ]
     )
-
-    calculate_rolling_rate_of_change_schema = calculate_rolling_average_schema
 
     add_previous_value_column_schema = StructType(
         [
@@ -2879,7 +2875,7 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(IndCQC.cumulative_rate_of_change_model, DoubleType(), True),
         ]
     )
 

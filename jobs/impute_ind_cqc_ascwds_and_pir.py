@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change import (
-    model_primary_service_rolling_average_and_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_cumulative_rate_of_change import (
+    model_primary_service_cumulative_rate_of_change,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -24,7 +24,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 @dataclass
 class NumericalValues:
-    NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 185  # Note: using 185 as a proxy for 6 months
+    NUMBER_OF_DAYS_IN_WINDOW = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -43,13 +43,12 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    df = model_primary_service_rolling_average_and_rate_of_change(
+    df = model_primary_service_cumulative_rate_of_change(
         df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
-        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        IndCQC.rolling_average_model,
-        IndCQC.rolling_rate_of_change_model,
+        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        IndCQC.cumulative_rate_of_change_model,
     )
 
     df = blend_pir_and_ascwds_when_ascwds_out_of_date(
@@ -59,7 +58,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ascwds_pir_merged,
-        IndCQC.rolling_rate_of_change_model,
+        IndCQC.cumulative_rate_of_change_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
     )
@@ -67,7 +66,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_rate_of_change_model,
+        IndCQC.cumulative_rate_of_change_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
     )
@@ -75,7 +74,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.pir_people_directly_employed_dedup,
-        IndCQC.rolling_rate_of_change_model,
+        IndCQC.cumulative_rate_of_change_model,
         IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
     )

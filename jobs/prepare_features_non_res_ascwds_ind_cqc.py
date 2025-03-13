@@ -47,7 +47,7 @@ vectorised_features_column_list: List[str] = [
     IndCQC.activity_count,
     IndCQC.specialism_count,
     IndCQC.ascwds_pir_merged,
-    IndCQC.rolling_rate_of_change_model,
+    IndCQC.cumulative_rate_of_change_model,
     IndCQC.imputed_registration_date,
     IndCQC.time_registered,
     IndCQC.features,
@@ -151,7 +151,7 @@ def main(
             IndCQC.activity_count,
             IndCQC.specialism_count,
             IndCQC.time_registered,
-            IndCQC.rolling_rate_of_change_model,
+            IndCQC.cumulative_rate_of_change_model,
         ]
         + service_keys
         + regions
