@@ -2826,19 +2826,22 @@ class ModelPrimaryServiceRateOfChange:
 
 @dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
+    roc_col_name: str = "roc_col_name"
+    roc_trendline_col_name: str = "roc_col_name"
+
     primary_service_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
     deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.rate_of_change, DoubleType(), True),
+            StructField(roc_col_name, DoubleType(), True),
             StructField("another_col", DoubleType(), True),
         ]
     )
@@ -2846,7 +2849,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.rate_of_change, DoubleType(), True),
+            StructField(roc_col_name, DoubleType(), True),
         ]
     )
 
@@ -2854,20 +2857,20 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.rate_of_change, DoubleType(), True),
+            StructField(roc_col_name, DoubleType(), True),
         ]
     )
     expected_calculate_rate_of_change_trendline_when_column_dropped_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.rate_of_change_trendline_model, DoubleType(), True),
+            StructField(roc_trendline_col_name, DoubleType(), True),
         ]
     )
     expected_calculate_rate_of_change_trendline_when_column_not_dropped = StructType(
         [
             *calculate_rate_of_change_trendline_schema,
-            StructField(IndCQC.rate_of_change_trendline_model, DoubleType(), True),
+            StructField(roc_trendline_col_name, DoubleType(), True),
         ]
     )
 

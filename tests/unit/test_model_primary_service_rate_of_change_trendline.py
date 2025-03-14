@@ -6,8 +6,7 @@ from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
-import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
+import utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChangeTrendlineData as Data
 from tests.test_file_schemas import (
     ModelPrimaryServiceRateOfChangeTrendlineSchemas as Schemas,
@@ -70,30 +69,30 @@ class ModelPrimaryServiceRateOfChangeTrendlineTests(unittest.TestCase):
 #             )
 
 
-# class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         test_df = self.spark.createDataFrame(
-#             Data.deduplicate_dataframe_rows,
-#             Schemas.deduplicate_dataframe_schema,
-#         )
-#         self.returned_df = job.deduplicate_dataframe(test_df)
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_deduplicate_dataframe_rows,
-#             Schemas.expected_deduplicate_dataframe_schema,
-#         )
+        test_df = self.spark.createDataFrame(
+            Data.deduplicate_dataframe_rows,
+            Schemas.deduplicate_dataframe_schema,
+        )
+        self.returned_df = job.deduplicate_dataframe(test_df, Schemas.roc_col_name)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_deduplicate_dataframe_rows,
+            Schemas.expected_deduplicate_dataframe_schema,
+        )
 
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.primary_service_type, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        self.returned_data = self.returned_df.sort(
+            IndCqc.primary_service_type, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-#     def test_returned_column_names_match_expected(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-#     def test_returned_deduplicated_dataframe_rows_match_expected(self):
-#         self.assertEqual(self.returned_data, self.expected_data)
+    def test_returned_deduplicated_dataframe_rows_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
 # class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
