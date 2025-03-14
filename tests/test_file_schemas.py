@@ -2819,7 +2819,7 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    add_rolling_sum_schema = StructType(
+    add_rolling_sum_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -2832,10 +2832,11 @@ class ModelPrimaryServiceRateOfChange:
             ),
         ]
     )
-    expected_add_rolling_sum_schema = StructType(
+    expected_add_rolling_sum_columns_schema = StructType(
         [
-            *add_rolling_sum_schema,
+            *add_rolling_sum_columns_schema,
             StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
     )
 

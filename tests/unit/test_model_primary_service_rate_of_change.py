@@ -371,77 +371,51 @@ class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
 #             )
 
 
-# class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class AddRollingSumColumnsTests(ModelPrimaryServiceRateOfChangeTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         number_of_days: int = 2
+        number_of_days: int = 2
 
-#         test_df = self.spark.createDataFrame(
-#             Data.add_rolling_sum_rows,
-#             Schemas.add_rolling_sum_schema,
-#         )
-#         self.returned_df = job.add_rolling_sum(
-#             test_df,
-#             number_of_days,
-#             job.TempCol.column_to_average_interpolated,
-#             job.TempCol.rolling_current_period_sum,
-#         )
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_add_rolling_sum_rows,
-#             Schemas.expected_add_rolling_sum_schema,
-#         )
+        test_df = self.spark.createDataFrame(
+            Data.add_rolling_sum_columns_rows,
+            Schemas.add_rolling_sum_columns_schema,
+        )
+        self.returned_df = job.add_rolling_sum_columns(test_df, number_of_days)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_rolling_sum_columns_rows,
+            Schemas.expected_add_rolling_sum_columns_schema,
+        )
 
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.location_id, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-#     def test_returned_column_names_match_expected(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-#     def test_returned_rolling_sum_values_match_expected(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][job.TempCol.rolling_current_period_sum],
-#                 self.expected_data[i][job.TempCol.rolling_current_period_sum],
-#                 2,
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_returned_rolling_current_period_sum_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][job.TempCol.rolling_current_period_sum],
+                self.expected_data[i][job.TempCol.rolling_current_period_sum],
+                2,
+                f"Returned row {i} does not match expected",
+            )
 
-
-# class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
-#     def setUp(self) -> None:
-#         super().setUp()
-
-#         test_df = self.spark.createDataFrame(
-#             Data.rate_of_change_rows,
-#             Schemas.rate_of_change_schema,
-#         )
-#         self.returned_df = job.calculate_rate_of_change(test_df)
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_rate_of_change_rows,
-#             Schemas.expected_rate_of_change_schema,
-#         )
-
-#         self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-#         self.expected_data = self.expected_df.collect()
-
-#     def test_returned_column_names_match_expected(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-#     def test_returned_rate_of_change_values_match_expected(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][job.TempCol.rate_of_change],
-#                 self.expected_data[i][job.TempCol.rate_of_change],
-#                 2,
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_returned_rolling_previous_period_sum_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][job.TempCol.rolling_previous_period_sum],
+                self.expected_data[i][job.TempCol.rolling_previous_period_sum],
+                2,
+                f"Returned row {i} does not match expected",
+            )
 
 
 class CalculateRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):

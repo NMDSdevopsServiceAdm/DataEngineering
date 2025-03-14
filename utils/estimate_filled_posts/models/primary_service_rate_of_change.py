@@ -177,7 +177,7 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
         number_of_days (int): The number of days to include in the rolling time period.
 
     Returns:
-        DataFrame: The DataFrame with the new rolling sum column added.
+        DataFrame: The DataFrame with the two new rolling sum columns added.
 
     """
     valid_rows = (
