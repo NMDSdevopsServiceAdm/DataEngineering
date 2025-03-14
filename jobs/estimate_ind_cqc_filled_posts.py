@@ -176,7 +176,7 @@ def main(
         IndCQC.rolling_average_model,
         F.when(
             F.col(IndCQC.care_home) == "Y",
-            "rolling_ratio_model" * IndCQC.number_of_beds,
+            F.col("rolling_ratio_model") * F.col(IndCQC.number_of_beds),
         ).otherwise(F.col(IndCQC.rolling_average_model)),
     )
     estimate_filled_posts_df = estimate_filled_posts_df.drop("rolling_ratio_model")
