@@ -152,9 +152,6 @@ def run_diagnostics_for_care_homes(
         CTCHClean.agency_and_non_agency_total_employed_imputed,
         care_home=True,
     )
-    # TO DO calculate rolling average
-    #     CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
-
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df,
