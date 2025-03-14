@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
-    PrimaryServiceRollingAverageColumns as TempCol,
+    PrimaryServiceRateOfChangeColumns as TempCol,
 )
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
@@ -18,7 +18,7 @@ def primary_service_rate_of_change(
     rate_of_change_column_name: str,
 ) -> DataFrame:
     """
-    Computes the rate of change since the previous period for a specified column over a rolling window, partition by primary service type.
+    Computes the rate of change since the previous period for a specified column over a rolling window, partitioned by primary service type.
 
     Only data from locations with at least two submissions and a consistent care home status over time are considered.
 
@@ -39,10 +39,7 @@ def primary_service_rate_of_change(
         DataFrame: The input DataFrame with an additional column containing the rate of change values.
     """
     number_of_days_for_window: int = number_of_days - 1
-    # TO DO need to create this manually
-    # df = create_single_column_with_values(
-    #     df, ratio_column_with_values, posts_column_with_values
-    # )
+
     df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
 
     df = clean_column_with_values(df)
@@ -55,32 +52,6 @@ def primary_service_rate_of_change(
     df = df.drop(*columns_to_drop)
 
     return df
-
-
-# def create_single_column_with_values(
-#     df: DataFrame,
-#     ratio_column_with_values: str,
-#     posts_column_with_values: str,
-# ) -> DataFrame:
-#     """
-#     Creates one column to average using the ratio if the location is a care home and filled posts if not.
-
-#     Args:
-#         df (DataFrame): The input DataFrame.
-#         ratio_column_with_values (str): The name of the filled posts per bed ratio column to average (for care homes only).
-#         posts_column_with_values (str): The name of the filled posts column to average.
-
-#     Returns:
-#         DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
-#     """
-#     df = df.withColumn(
-#         TempCol.column_with_values,
-#         F.when(
-#             F.col(IndCqc.care_home) == CareHome.care_home,
-#             F.col(ratio_column_with_values),
-#         ).otherwise(F.col(posts_column_with_values)),
-#     )
-#     return df
 
 
 def clean_column_with_values(df: DataFrame) -> DataFrame:
