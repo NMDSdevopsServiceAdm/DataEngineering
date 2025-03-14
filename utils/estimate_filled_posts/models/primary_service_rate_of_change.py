@@ -6,20 +6,19 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     PrimaryServiceRollingAverageColumns as TempCol,
 )
-from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
-def model_primary_service_rate_of_change(
+def primary_service_rate_of_change(
     df: DataFrame,
     column_with_values: str,
     number_of_days: int,
-    single_period_rate_of_change_column_name: str,
+    rate_of_change_column_name: str,
 ) -> DataFrame:
     """
-    Computes the rate of change from the previous period for a specified column over a rolling window, grouped by primary service type.
+    Computes the rate of change since the previous period for a specified column over a rolling window, partition by primary service type.
 
     Only data from locations with at least two submissions and a consistent care home status over time are considered.
 
@@ -34,7 +33,7 @@ def model_primary_service_rate_of_change(
         df (DataFrame): Input DataFrame.
         column_with_values (str): Column name containing the values.
         number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
-        single_period_rate_of_change_column_name (str): Name of the column to store the rate of change values.
+        rate_of_change_column_name (str): Name of the column to store the rate of change values.
 
     Returns:
         DataFrame: The input DataFrame with an additional column containing the rate of change values.
@@ -50,7 +49,7 @@ def model_primary_service_rate_of_change(
     df = interpolate_column_with_values(df)
     df = add_previous_value_column(df)
     df = add_rolling_sum_columns(df, number_of_days_for_window)
-    df = calculate_rate_of_change(df, single_period_rate_of_change_column_name)
+    df = calculate_rate_of_change(df, rate_of_change_column_name)
 
     columns_to_drop = [field.name for field in fields(TempCol())]
     df = df.drop(*columns_to_drop)
@@ -237,7 +236,7 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
 
 
 def calculate_rate_of_change(
-    df: DataFrame, single_period_rate_of_change_column_name: str
+    df: DataFrame, rate_of_change_column_name: str
 ) -> DataFrame:
     """
     Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
@@ -247,16 +246,16 @@ def calculate_rate_of_change(
 
     Args:
         df (DataFrame): The input DataFrame.
-        single_period_rate_of_change_column_name (str): Name of the column to store the rate of change values.
+        rate_of_change_column_name (str): Name of the column to store the rate of change values.
 
     Returns:
         DataFrame: The DataFrame with the single period rate of change column added.
 
     """
     df = df.withColumn(
-        single_period_rate_of_change_column_name,
+        rate_of_change_column_name,
         F.col(TempCol.rolling_current_period_sum)
         / F.col(TempCol.rolling_previous_period_sum),
     )
-    df = df.na.fill({single_period_rate_of_change_column_name: 1.0})
+    df = df.na.fill({rate_of_change_column_name: 1.0})
     return df

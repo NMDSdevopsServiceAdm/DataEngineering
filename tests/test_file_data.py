@@ -5431,9 +5431,9 @@ class ImputeIndCqcAscwdsAndPirData:
 
 
 @dataclass
-class ModelPrimaryServiceCumulativeRateOfChange:
+class ModelPrimaryServiceRateOfChange:
     # fmt: off
-    primary_service_cumulative_rate_of_change_rows = [
+    primary_service_rate_of_change_trendline_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8),
         ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4),
@@ -5448,7 +5448,7 @@ class ModelPrimaryServiceCumulativeRateOfChange:
         ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 40.0, 4.0),
         ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None),
     ]
-    expected_primary_service_cumulative_rate_of_change_rows = [
+    expected_primary_service_rate_of_change_trendline_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0, 1.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8, 1.03999),
         ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4, 1.16235),
@@ -5667,7 +5667,7 @@ class ModelPrimaryServiceCumulativeRateOfChange:
         (PrimaryServiceType.non_residential, 1672617600, 10.0),
     ]
 
-    cumulative_rate_of_change_rows = [
+    rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0),
         (PrimaryServiceType.care_home_only, 1672617600, 1.5),
         (PrimaryServiceType.care_home_only, 1672704000, 2.0),
@@ -5677,7 +5677,7 @@ class ModelPrimaryServiceCumulativeRateOfChange:
         (PrimaryServiceType.non_residential, 1672704000, 1.0),
         (PrimaryServiceType.non_residential, 1672790400, 1.5),
     ]
-    expected_cumulative_rate_of_change_rows = [
+    expected_rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0),
         (PrimaryServiceType.care_home_only, 1672617600, 1.5),
         (PrimaryServiceType.care_home_only, 1672704000, 3.0),

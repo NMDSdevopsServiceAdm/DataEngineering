@@ -91,7 +91,7 @@ class IndCqcColumns:
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    cumulative_rate_of_change_model: str = "cumulative_rate_of_change_model"
+    rate_of_change_trendline_model: str = "rate_of_change_trendline_model"
     current_ccg: str = ONSClean.current_ccg
     current_constituancy: str = ONSClean.current_constituancy
     current_cssr: str = ONSClean.current_cssr
