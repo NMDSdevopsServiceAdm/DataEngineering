@@ -105,7 +105,7 @@ def calculate_rate_of_change_trendline(
     Args:
         df (DataFrame): The input DataFrame.
         rate_of_change_column_name (str): Column name containing the single period rate of change values.
-        trendline_column_name (str): Name of the new column to store the cumulative trendline.
+        rate_of_change_trendline_column_name (str): Name of the new column to store the rate of change trendline.
 
     Returns:
         DataFrame: The deduplicated DataFrame.
