@@ -5607,7 +5607,7 @@ class ModelPrimaryServiceRateOfChange:
 
 
 @dataclass
-class PrimaryServiceRateOfChangeTrendlineData:
+class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: off
     primary_service_rate_of_change_rows = [
         ("1-001", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 3.0),

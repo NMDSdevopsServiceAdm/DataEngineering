@@ -2825,7 +2825,7 @@ class ModelPrimaryServiceRateOfChange:
 
 
 @dataclass
-class PrimaryServiceRateOfChangeTrendlineSchemas:
+class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     primary_service_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
