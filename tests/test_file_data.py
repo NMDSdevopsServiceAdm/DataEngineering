@@ -5669,7 +5669,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineData:
         (PrimaryServiceType.non_residential, 1672704000, 1.0),
         (PrimaryServiceType.non_residential, 1672790400, 1.5),
     ]
-    expected_calculate_rate_of_change_trendline_when_column_dropped_rows = [
+    expected_calculate_rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0),
         (PrimaryServiceType.care_home_only, 1672617600, 1.5),
         (PrimaryServiceType.care_home_only, 1672704000, 3.0),
@@ -5678,16 +5678,6 @@ class ModelPrimaryServiceRateOfChangeTrendlineData:
         (PrimaryServiceType.non_residential, 1672617600, 1.2),
         (PrimaryServiceType.non_residential, 1672704000, 1.2),
         (PrimaryServiceType.non_residential, 1672790400, 1.8),
-    ]
-    expected_calculate_rate_of_change_trendline_when_column_not_dropped_rows = [
-        (PrimaryServiceType.care_home_only, 1672531200, 1.0, 1.0),
-        (PrimaryServiceType.care_home_only, 1672617600, 1.5, 1.5),
-        (PrimaryServiceType.care_home_only, 1672704000, 2.0, 3.0),
-        (PrimaryServiceType.care_home_only, 1672790400, 1.5, 4.5),
-        (PrimaryServiceType.non_residential, 1672531200, 1.0, 1.0),
-        (PrimaryServiceType.non_residential, 1672617600, 1.2, 1.2),
-        (PrimaryServiceType.non_residential, 1672704000, 1.0, 1.2),
-        (PrimaryServiceType.non_residential, 1672790400, 1.5, 1.8),
     ]
 
 

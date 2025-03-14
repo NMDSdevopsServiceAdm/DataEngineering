@@ -77,7 +77,7 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
             Data.deduplicate_dataframe_rows,
             Schemas.deduplicate_dataframe_schema,
         )
-        self.returned_df = job.deduplicate_dataframe(test_df, Schemas.roc_col_name)
+        self.returned_df = job.deduplicate_dataframe(test_df, Schemas.rate_of_change)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_deduplicate_dataframe_rows,
             Schemas.expected_deduplicate_dataframe_schema,
@@ -95,37 +95,39 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
-# class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class CalculateRateOfChangeTrendlineTests(
+    ModelPrimaryServiceRateOfChangeTrendlineTests
+):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         test_df = self.spark.createDataFrame(
-#             Data.rate_of_change_trendline_rows,
-#             Schemas.rate_of_change_trendline_schema,
-#         )
-#         self.returned_df = job.calculate_rate_of_change_trendline(
-#             test_df, IndCqc.rate_of_change_trendline_model
-#         )
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_rate_of_change_trendline_rows,
-#             Schemas.expected_rate_of_change_trendline_schema,
-#         )
+        test_df = self.spark.createDataFrame(
+            Data.calculate_rate_of_change_trendline_rows,
+            Schemas.calculate_rate_of_change_trendline_schema,
+        )
+        self.returned_df = job.calculate_rate_of_change_trendline(
+            test_df, Schemas.rate_of_change, Schemas.rate_of_change_trendline
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_rate_of_change_trendline_rows,
+            Schemas.expected_calculate_rate_of_change_trendline_schema,
+        )
 
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.primary_service_type, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        self.returned_data = self.returned_df.sort(
+            IndCqc.primary_service_type, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-#     def test_returned_column_names_match_expected(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+    def test_returned_column_names_match_expected(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-#     def test_rate_of_change_trendline_returns_correct_values_in_rate_of_change_trendline_model_column(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][IndCqc.rate_of_change_trendline_model],
-#                 self.expected_data[i][IndCqc.rate_of_change_trendline_model],
-#                 2,
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_rate_of_change_trendline_returns_correct_values_in_rate_of_change_trendline_model_column(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][Schemas.rate_of_change_trendline],
+                self.expected_data[i][Schemas.rate_of_change_trendline],
+                2,
+                f"Returned row {i} does not match expected",
+            )
