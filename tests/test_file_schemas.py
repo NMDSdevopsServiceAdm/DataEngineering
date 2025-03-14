@@ -2709,21 +2709,6 @@ class ModelPrimaryServiceRateOfChange:
     #     ]
     # )
 
-    # single_column_with_values_schema = StructType(
-    #     [
-    #         StructField(IndCQC.location_id, StringType(), False),
-    #         StructField(IndCQC.care_home, StringType(), False),
-    #         StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-    #         StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-    #     ]
-    # )
-    # expected_single_column_with_values_schema = StructType(
-    #     [
-    #         *single_column_with_values_schema,
-    #         StructField(RoC_TempCol.column_with_values, DoubleType(), True),
-    #     ]
-    # )
-
     clean_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -3324,6 +3309,22 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+
+    combined_col_name: str = "combined_col_name"
+    combine_care_home_ratios_and_non_res_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+    expected_combine_care_home_ratios_and_non_res_posts_schema = StructType(
+        [
+            *combine_care_home_ratios_and_non_res_posts_schema,
+            StructField(combined_col_name, DoubleType(), True),
         ]
     )
 

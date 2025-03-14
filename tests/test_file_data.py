@@ -5465,27 +5465,6 @@ class ModelPrimaryServiceRateOfChange:
     # ]
     # # fmt: on
 
-    # single_column_to_average_rows = [
-    #     ("1-001", CareHome.care_home, 20.0, 1.6),
-    #     ("1-002", CareHome.care_home, 10.0, None),
-    #     ("1-003", CareHome.care_home, None, 1.8),
-    #     ("1-004", CareHome.care_home, None, None),
-    #     ("1-005", CareHome.not_care_home, 20.0, 1.6),
-    #     ("1-006", CareHome.not_care_home, 10.0, None),
-    #     ("1-007", CareHome.not_care_home, None, 1.6),
-    #     ("1-008", CareHome.not_care_home, None, None),
-    # ]
-    # expected_single_column_to_average_rows = [
-    #     ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
-    #     ("1-002", CareHome.care_home, 10.0, None, None),
-    #     ("1-003", CareHome.care_home, None, 1.8, 1.8),
-    #     ("1-004", CareHome.care_home, None, None, None),
-    #     ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
-    #     ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
-    #     ("1-007", CareHome.not_care_home, None, 1.8, None),
-    #     ("1-008", CareHome.not_care_home, None, None, None),
-    # ]
-
     clean_column_with_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, None),
@@ -6348,6 +6327,27 @@ class EstimateFilledPostsModelsUtils:
 
     set_min_prediction_value_when_null_rows = [
         ("1-001", None, None),
+    ]
+
+    combine_care_home_ratios_and_non_res_posts_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None),
+        ("1-003", CareHome.care_home, None, 1.8),
+        ("1-004", CareHome.care_home, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6),
+        ("1-006", CareHome.not_care_home, 10.0, None),
+        ("1-007", CareHome.not_care_home, None, 1.6),
+        ("1-008", CareHome.not_care_home, None, None),
+    ]
+    expected_combine_care_home_ratios_and_non_res_posts_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
+        ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
+        ("1-007", CareHome.not_care_home, None, 1.8, None),
+        ("1-008", CareHome.not_care_home, None, None, None),
     ]
 
 
