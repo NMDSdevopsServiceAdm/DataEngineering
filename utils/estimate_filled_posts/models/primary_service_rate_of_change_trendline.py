@@ -11,7 +11,7 @@ def primary_service_rate_of_change_trendline(
     column_with_values: str,
     number_of_days: int,
     rate_of_change_column_name: str,
-    trendline_column_name: str,
+    rate_of_change_trendline_column_name: str,
     drop_rate_of_change: bool = True,
 ) -> DataFrame:
     """
@@ -40,7 +40,7 @@ def primary_service_rate_of_change_trendline(
         column_with_values (str): Column name containing the values.
         number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
         rate_of_change_column_name (str): Column containing the single-period rate of change values.
-        trendline_column_name (str): Name of the new column to store the cumulative trendline.
+        rate_of_change_trendline_column_name (str): Name of the new column to store the cumulative trendline.
         drop_rate_of_change (bool, optional): If True (default), drops the single-period rate of change column
                                               after adding the trendline.
 
@@ -54,7 +54,7 @@ def primary_service_rate_of_change_trendline(
     deduped_df = deduplicate_dataframe(df, rate_of_change_column_name)
 
     rate_of_change_trendline_df = calculate_rate_of_change_trendline(
-        deduped_df, rate_of_change_column_name, trendline_column_name
+        deduped_df, rate_of_change_column_name, rate_of_change_trendline_column_name
     )
 
     df = df.join(

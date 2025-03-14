@@ -5609,7 +5609,7 @@ class ModelPrimaryServiceRateOfChange:
 @dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: off
-    primary_service_rate_of_change_rows = [
+    primary_service_rate_of_change_trendline_rows = [
         ("1-001", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 3.0),
         ("1-001", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, 2.8),
         ("1-001", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, 3.4),
@@ -5624,7 +5624,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineData:
         ("1-005", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 4.0),
         ("1-005", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 50.0),
     ]
-    expected_primary_service_rate_of_change_rows = [
+    expected_primary_service_rate_of_change_trendline_rows = [
         ("1-001", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 3.0, 1.0, 1.0),
         ("1-001", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, 2.8, 1.0399, 1.03999),
         ("1-001", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, 3.4, 1.1176, 1.16235),

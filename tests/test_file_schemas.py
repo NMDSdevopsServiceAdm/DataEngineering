@@ -2819,7 +2819,7 @@ class ModelPrimaryServiceRateOfChange:
     expected_calculate_rate_of_change_schema = StructType(
         [
             *calculate_rate_of_change_schema,
-            StructField(RoC_TempCol.rate_of_change, DoubleType(), True),
+            StructField(rate_of_change_col_name, DoubleType(), True),
         ]
     )
 
@@ -2833,10 +2833,27 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
+    expected_primary_service_rate_of_change_trendline_when_column_is_dropped_schema = (
+        StructType(
+            [
+                *primary_service_rate_of_change_trendline_schema,
+                StructField(rate_of_change_trendline, DoubleType(), True),
+            ]
+        )
+    )
+    expected_primary_service_rate_of_change_trendline_when_column_is_not_dropped_schema = StructType(
+        [
+            *primary_service_rate_of_change_trendline_schema,
+            StructField(rate_of_change, DoubleType(), True),
+            StructField(rate_of_change_trendline, DoubleType(), True),
+        ]
+    )
+
     deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),

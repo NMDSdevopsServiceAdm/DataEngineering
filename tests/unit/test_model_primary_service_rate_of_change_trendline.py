@@ -1,8 +1,5 @@
 import unittest
-from unittest.mock import patch, Mock
 import warnings
-
-from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -21,52 +18,84 @@ class ModelPrimaryServiceRateOfChangeTrendlineTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-# class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         number_of_days: int = 3
-#         self.test_df = self.spark.createDataFrame(
-#             Data.primary_service_rate_of_change_trendline_rows,
-#             Schemas.primary_service_rate_of_change_trendline_schema,
-#         )
-#         self.returned_df = job.primary_service_rate_of_change(
-#             self.test_df,
-#             IndCqc.filled_posts_per_bed_ratio,
-#             IndCqc.ascwds_filled_posts_dedup_clean,
-#             number_of_days,
-#             IndCqc.rate_of_change_trendline_model,
-#         )
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_primary_service_rate_of_change_trendline_rows,
-#             Schemas.expected_primary_service_rate_of_change_trendline_schema,
-#         )
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.location_id, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        self.number_of_days: int = 3
+        self.test_df = self.spark.createDataFrame(
+            Data.primary_service_rate_of_change_trendline_rows,
+            Schemas.primary_service_rate_of_change_trendline_schema,
+        )
+        self.returned_df = job.primary_service_rate_of_change_trendline(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            self.number_of_days,
+            Schemas.rate_of_change,
+            Schemas.rate_of_change_trendline,
+            drop_rate_of_change=False,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_rate_of_change_trendline_rows,
+            Schemas.expected_primary_service_rate_of_change_trendline_when_column_is_not_dropped_schema,
+        )
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-#     def test_row_count_unchanged_after_running_full_job(self):
-#         self.assertEqual(self.test_df.count(), self.returned_df.count())
+    def test_row_count_unchanged_after_running_full_job(self):
+        self.assertEqual(self.test_df.count(), self.returned_df.count())
 
-#     def test_primary_service_rate_of_change_returns_expected_columns(
-#         self,
-#     ):
-#         self.assertEqual(
-#             sorted(self.returned_df.columns),
-#             sorted(self.expected_df.columns),
-#         )
+    def test_returned_rate_of_change_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][Schemas.rate_of_change],
+                self.expected_data[i][Schemas.rate_of_change],
+                3,
+                f"Returned row {i} does not match expected",
+            )
 
-#     def test_returned_rate_of_change_trendline_model_values_match_expected(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][IndCqc.rate_of_change_trendline_model],
-#                 self.expected_data[i][IndCqc.rate_of_change_trendline_model],
-#                 3,
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_returned_rate_of_change_trendline_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][Schemas.rate_of_change_trendline],
+                self.expected_data[i][Schemas.rate_of_change_trendline],
+                3,
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_primary_service_rate_of_change_trendline_returns_expected_columns_when_column_is_not_dropped(
+        self,
+    ):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_primary_service_rate_of_change_trendline_returns_expected_columns_when_column_is_dropped(
+        self,
+    ):
+        returned_df = job.primary_service_rate_of_change_trendline(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            self.number_of_days,
+            Schemas.rate_of_change,
+            Schemas.rate_of_change_trendline,
+        )
+        expected_df = self.spark.createDataFrame(
+            [],
+            Schemas.expected_primary_service_rate_of_change_trendline_when_column_is_dropped_schema,
+        )
+
+        self.assertEqual(
+            sorted(returned_df.columns),
+            sorted(expected_df.columns),
+        )
 
 
 class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):

@@ -348,7 +348,7 @@ class CalculateRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
             Schemas.calculate_rate_of_change_schema,
         )
         self.returned_df = job.calculate_rate_of_change(
-            test_df, job.TempCol.rate_of_change
+            test_df, Schemas.rate_of_change_col_name
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_calculate_rate_of_change_rows,
@@ -366,8 +366,8 @@ class CalculateRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][job.TempCol.rate_of_change],
-                self.expected_data[i][job.TempCol.rate_of_change],
+                self.returned_data[i][Schemas.rate_of_change_col_name],
+                self.expected_data[i][Schemas.rate_of_change_col_name],
                 2,
                 f"Returned row {i} does not match expected",
             )
