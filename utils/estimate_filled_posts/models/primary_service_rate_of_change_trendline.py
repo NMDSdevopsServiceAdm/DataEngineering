@@ -89,12 +89,18 @@ def deduplicate_dataframe(df: DataFrame, rate_of_change_column_name: str) -> Dat
     return df
 
 
-# previously calculate_cumulative_rate_of_change
 def calculate_rate_of_change_trendline(
-    df: DataFrame, rate_of_change_column_name: str, trendline_column_name: str
+    df: DataFrame,
+    rate_of_change_column_name: str,
+    rate_of_change_trendline_column_name: str,
 ) -> DataFrame:
     """
-    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
+    Computes a trendline from a sequence of single-period rate of change values, starting at 1.0 in the first period.
+
+    The trendline is then derived by iteratively multiplying each rate of change value, resulting in a cumulative
+    measure of change over time.
+    This is calculated by taking the exponential of the sum of the logarithms of the values.
+    This approach avoids issues in pyspark with direct multiplication of many numbers.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -107,7 +113,7 @@ def calculate_rate_of_change_trendline(
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
     trendline_df = df.withColumn(
-        trendline_column_name,
+        rate_of_change_trendline_column_name,
         F.exp(F.sum(F.log(rate_of_change_column_name)).over(w)),
     )
 
