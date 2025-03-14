@@ -64,21 +64,15 @@ def model_interpolation(
             IndCqc.previous_non_null_value,
             "last",
         )
-        df.show()
-        print("WATCH OUT FOR THIS!")
         df = calculate_residuals(
             df,
             column_with_null_values,
             IndCqc.previous_non_null_value,
             window_spec_forwards,
         )
-        df.show()
-        print("WATCH OUT FOR THIS!")
         df = calculate_interpolated_values(
             df, IndCqc.previous_non_null_value, new_column_name
         )
-        df.show()
-        print("WATCH OUT FOR THIS!")
         df = df.drop(IndCqc.previous_non_null_value)
 
     else:
