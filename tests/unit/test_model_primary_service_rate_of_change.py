@@ -67,59 +67,59 @@ class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
 #             )
 
 
-# class CleanColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class CleanColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         test_df = self.spark.createDataFrame(
-#             Data.clean_column_to_average_rows,
-#             Schemas.clean_column_to_average_schema,
-#         )
-#         self.returned_df = job.clean_column_to_average(test_df)
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_clean_column_to_average_rows,
-#             Schemas.expected_clean_column_to_average_schema,
-#         )
+        test_df = self.spark.createDataFrame(
+            Data.clean_column_with_values_rows,
+            Schemas.clean_column_with_values_schema,
+        )
+        self.returned_df = job.clean_column_with_values(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_with_values_rows,
+            Schemas.expected_clean_column_with_values_schema,
+        )
 
-#     def test_clean_column_to_average_returns_expected_columns(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+    def test_clean_column_with_values_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-#     def test_clean_column_to_average_is_not_nulled_when_submitted_more_than_once_and_consistent_care_home_status(
-#         self,
-#     ):
-#         returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
-#         expected_data = self.expected_df.collect()
-#         self.assertEqual(returned_data, expected_data)
+    def test_clean_column_with_values_is_not_nulled_when_submitted_more_than_once_and_consistent_care_home_status(
+        self,
+    ):
+        returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
-#     def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
-#         one_submission_df = self.spark.createDataFrame(
-#             Data.clean_column_to_average_one_submission_rows,
-#             Schemas.clean_column_to_average_schema,
-#         )
-#         returned_df = job.clean_column_to_average(one_submission_df)
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_clean_column_to_average_one_submission_rows,
-#             Schemas.expected_clean_column_to_average_schema,
-#         )
-#         returned_data = returned_df.sort(IndCqc.unix_time).collect()
-#         expected_data = expected_df.collect()
-#         self.assertEqual(returned_data, expected_data)
+    def test_clean_column_with_values_is_nulled_when_location_only_submitted_once(self):
+        one_submission_df = self.spark.createDataFrame(
+            Data.clean_column_with_values_one_submission_rows,
+            Schemas.clean_column_with_values_schema,
+        )
+        returned_df = job.clean_column_with_values(one_submission_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_with_values_one_submission_rows,
+            Schemas.expected_clean_column_with_values_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
-#     def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
-#         self,
-#     ):
-#         both_statuses_df = self.spark.createDataFrame(
-#             Data.clean_column_to_average_both_statuses_rows,
-#             Schemas.clean_column_to_average_schema,
-#         )
-#         returned_df = job.clean_column_to_average(both_statuses_df)
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_clean_column_to_average_both_statuses_rows,
-#             Schemas.expected_clean_column_to_average_schema,
-#         )
-#         returned_data = returned_df.sort(IndCqc.unix_time).collect()
-#         expected_data = expected_df.collect()
-#         self.assertEqual(returned_data, expected_data)
+    def test_clean_column_with_values_is_nulled_when_location_switched_between_care_home_and_non_res(
+        self,
+    ):
+        both_statuses_df = self.spark.createDataFrame(
+            Data.clean_column_with_values_both_statuses_rows,
+            Schemas.clean_column_with_values_schema,
+        )
+        returned_df = job.clean_column_with_values(both_statuses_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_column_with_values_both_statuses_rows,
+            Schemas.expected_clean_column_with_values_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.unix_time).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
 
 
 class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRateOfChangeTests):
