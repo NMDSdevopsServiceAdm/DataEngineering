@@ -2694,20 +2694,22 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 @dataclass
 class ModelPrimaryServiceRateOfChange:
-    # primary_service_rate_of_change_trendline_schema = StructType(
-    #     [
-    #         StructField(IndCQC.location_id, StringType(), False),
-    #         StructField(IndCQC.unix_time, IntegerType(), False),
-    #         StructField(IndCQC.primary_service_type, StringType(), False),
-    #         StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-    #     ]
-    # )
-    # expected_primary_service_rate_of_change_trendline_schema = StructType(
-    #     [
-    #         *primary_service_rate_of_change_trendline_schema,
-    #         StructField(IndCQC.rate_of_change_trendline_model, DoubleType(), True),
-    #     ]
-    # )
+    rate_of_change_col_name: str = "rate_of_change_col_name"
+    primary_service_rate_of_change_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+        ]
+    )
+    expected_primary_service_rate_of_change_schema = StructType(
+        [
+            *primary_service_rate_of_change_schema,
+            StructField(rate_of_change_col_name, DoubleType(), True),
+        ]
+    )
 
     clean_column_with_values_schema = StructType(
         [

@@ -19,52 +19,52 @@ class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-# class MainTests(ModelPrimaryServiceRateOfChangeTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class MainTests(ModelPrimaryServiceRateOfChangeTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#         number_of_days: int = 3
-#         self.test_df = self.spark.createDataFrame(
-#             Data.primary_service_rate_of_change_trendline_rows,
-#             Schemas.primary_service_rate_of_change_trendline_schema,
-#         )
-#         self.returned_df = job.primary_service_rate_of_change(
-#             self.test_df,
-#             IndCqc.filled_posts_per_bed_ratio,
-#             IndCqc.ascwds_filled_posts_dedup_clean,
-#             number_of_days,
-#             IndCqc.rate_of_change_trendline_model,
-#         )
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_primary_service_rate_of_change_trendline_rows,
-#             Schemas.expected_primary_service_rate_of_change_trendline_schema,
-#         )
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.location_id, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        number_of_days: int = 3
 
-#     def test_row_count_unchanged_after_running_full_job(self):
-#         self.assertEqual(self.test_df.count(), self.returned_df.count())
+        self.test_df = self.spark.createDataFrame(
+            Data.primary_service_rate_of_change_rows,
+            Schemas.primary_service_rate_of_change_schema,
+        )
+        self.returned_df = job.primary_service_rate_of_change(
+            self.test_df,
+            IndCqc.ascwds_filled_posts_dedup_clean,
+            number_of_days,
+            Schemas.rate_of_change_col_name,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_rate_of_change_rows,
+            Schemas.expected_primary_service_rate_of_change_schema,
+        )
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-#     def test_primary_service_rate_of_change_returns_expected_columns(
-#         self,
-#     ):
-#         self.assertEqual(
-#             sorted(self.returned_df.columns),
-#             sorted(self.expected_df.columns),
-#         )
+    def test_row_count_unchanged_after_running_full_job(self):
+        self.assertEqual(self.test_df.count(), self.returned_df.count())
 
-#     def test_returned_rate_of_change_trendline_model_values_match_expected(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][IndCqc.rate_of_change_trendline_model],
-#                 self.expected_data[i][IndCqc.rate_of_change_trendline_model],
-#                 3,
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_primary_service_rate_of_change_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_returned_rate_of_change_model_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][Schemas.rate_of_change_col_name],
+                self.expected_data[i][Schemas.rate_of_change_col_name],
+                3,
+                f"Returned row {i} does not match expected",
+            )
 
 
 class CleanColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
