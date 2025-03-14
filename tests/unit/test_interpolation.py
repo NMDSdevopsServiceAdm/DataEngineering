@@ -70,7 +70,7 @@ class DefineWindowSpecsTests(ModelInterpolationTests):
         super().setUp()
 
     def test_define_window_spec_return_type(self):
-        returned_window_specs = job.define_window_specs()
+        returned_window_specs = job.define_window_specs(IndCqc.location_id)
         self.assertIsInstance(returned_window_specs, tuple)
         self.assertEqual(len(returned_window_specs), 3)
         self.assertIsInstance(returned_window_specs[0], WindowSpec)
