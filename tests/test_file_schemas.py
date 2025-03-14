@@ -2740,18 +2740,18 @@ class ModelPrimaryServiceRateOfChange:
     #     ]
     # )
 
-    # calculate_care_home_status_count_schema = StructType(
-    #     [
-    #         StructField(IndCQC.location_id, StringType(), False),
-    #         StructField(IndCQC.care_home, StringType(), False),
-    #     ]
-    # )
-    # expected_calculate_care_home_status_count_schema = StructType(
-    #     [
-    #         *calculate_care_home_status_count_schema,
-    #         StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
-    #     ]
-    # )
+    calculate_care_home_status_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+        ]
+    )
+    expected_calculate_care_home_status_count_schema = StructType(
+        [
+            *calculate_care_home_status_count_schema,
+            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
+        ]
+    )
 
     calculate_submission_count_schema = StructType(
         [
