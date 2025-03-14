@@ -69,6 +69,7 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
+    combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
@@ -91,7 +92,10 @@ class IndCqcColumns:
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    rate_of_change_trendline_model: str = "rate_of_change_trendline_model"
+    rate_of_change_since_previous_period: str = "rate_of_change_since_previous_period"
+    rate_of_change_trendline_model: str = (
+        "rolling_rate_of_change_model"  # TODO update this name when make new models
+    )
     current_ccg: str = ONSClean.current_ccg
     current_constituancy: str = ONSClean.current_constituancy
     current_cssr: str = ONSClean.current_cssr

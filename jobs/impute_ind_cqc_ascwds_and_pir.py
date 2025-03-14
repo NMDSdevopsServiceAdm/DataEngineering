@@ -8,11 +8,14 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    primary_service_rate_of_change_trendline,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
+)
+from utils.estimate_filled_posts.models.utils import (
+    combine_care_home_ratios_and_non_res_posts,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
@@ -43,12 +46,20 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    df = primary_service_rate_of_change(
+    df = combine_care_home_ratios_and_non_res_posts(
         df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.combined_ratio_and_filled_posts,
+    )
+
+    df = primary_service_rate_of_change_trendline(
+        df,
+        IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        IndCQC.rate_of_change_since_previous_period,
         IndCQC.rate_of_change_trendline_model,
+        drop_rate_of_change=False,
     )
 
     df = blend_pir_and_ascwds_when_ascwds_out_of_date(

@@ -35,13 +35,27 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
+        "jobs.impute_ind_cqc_ascwds_and_pir.model_imputation_with_extrapolation_and_interpolation"
+    )
+    @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
+    @patch(
+        "jobs.impute_ind_cqc_ascwds_and_pir.primary_service_rate_of_change_trendline"
+    )
+    @patch(
+        "jobs.impute_ind_cqc_ascwds_and_pir.combine_care_home_ratios_and_non_res_posts"
+    )
+    @patch("utils.utils.create_unix_timestamp_variable_from_date_column")
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        create_unix_timestamp_variable_from_date_column_mock: Mock,
+        combine_care_home_ratios_and_non_res_posts_mock: Mock,
+        primary_service_rate_of_change_trendline_mock: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
+        model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -52,10 +66,15 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             self.NON_RES_PIR_MODEL,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
+        read_from_parquet_patch.assert_called_once()
+        create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
+        combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
+        primary_service_rate_of_change_trendline_mock.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
-        write_to_parquet_patch.assert_any_call(
+        self.assertEqual(
+            model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
+        )
+        write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
