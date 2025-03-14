@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -161,6 +161,26 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.rolling_average_model,
     )
+
+    ################################################################################
+    # TODO - TEMP CODE - REMOVE WHEN NEW MODELS ADDED
+    # 3 care home records get the rolling average because the model predicts a negative value so this is a temp fudge so they get a value for now
+    estimate_filled_posts_df = model_calculate_rolling_average(
+        estimate_filled_posts_df,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        IndCQC.primary_service_type,
+        "rolling_ratio_model",
+    )
+    estimate_filled_posts_df = estimate_filled_posts_df.withColumn(
+        IndCQC.rolling_average_model,
+        F.when(
+            F.col(IndCQC.care_home) == "Y",
+            "rolling_ratio_model" * IndCQC.number_of_beds,
+        ).otherwise(F.col(IndCQC.rolling_average_model)),
+    )
+    estimate_filled_posts_df = estimate_filled_posts_df.drop("rolling_ratio_model")
+    ################################################################################
 
     # TODO: add imputation for other non res models
 
