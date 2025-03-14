@@ -261,7 +261,7 @@
 #         "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline.add_rolling_sum"
 #     )
 #     @patch(
-#         "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline.calculate_single_period_rate_of_change"
+#         "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline.calculate_rate_of_change"
 #     )
 #     @patch(
 #         "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline.deduplicate_dataframe"
@@ -273,7 +273,7 @@
 #         self,
 #         calculate_rate_of_change_trendline: Mock,
 #         deduplicate_dataframe: Mock,
-#         calculate_single_period_rate_of_change: Mock,
+#         calculate_rate_of_change: Mock,
 #         add_rolling_sum: Mock,
 #         add_previous_value_column: Mock,
 #     ):
@@ -285,7 +285,7 @@
 
 #         self.assertEqual(add_previous_value_column.call_count, 1)
 #         self.assertEqual(add_rolling_sum.call_count, 2)
-#         self.assertEqual(calculate_single_period_rate_of_change.call_count, 1)
+#         self.assertEqual(calculate_rate_of_change.call_count, 1)
 #         self.assertEqual(deduplicate_dataframe.call_count, 1)
 #         self.assertEqual(calculate_rate_of_change_trendline.call_count, 1)
 
@@ -408,38 +408,6 @@
 #             self.assertAlmostEqual(
 #                 self.returned_data[i][job.TempCol.rolling_current_period_sum],
 #                 self.expected_data[i][job.TempCol.rolling_current_period_sum],
-#                 2,
-#                 f"Returned row {i} does not match expected",
-#             )
-
-
-# class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
-#     def setUp(self) -> None:
-#         super().setUp()
-
-#         test_df = self.spark.createDataFrame(
-#             Data.single_period_rate_of_change_rows,
-#             Schemas.single_period_rate_of_change_schema,
-#         )
-#         self.returned_df = job.calculate_single_period_rate_of_change(test_df)
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_single_period_rate_of_change_rows,
-#             Schemas.expected_single_period_rate_of_change_schema,
-#         )
-
-#         self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-#         self.expected_data = self.expected_df.collect()
-
-#     def test_returned_column_names_match_expected(self):
-#         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-#     def test_returned_single_period_rate_of_change_values_match_expected(
-#         self,
-#     ):
-#         for i in range(len(self.returned_data)):
-#             self.assertAlmostEqual(
-#                 self.returned_data[i][job.TempCol.single_period_rate_of_change],
-#                 self.expected_data[i][job.TempCol.single_period_rate_of_change],
 #                 2,
 #                 f"Returned row {i} does not match expected",
 #             )
