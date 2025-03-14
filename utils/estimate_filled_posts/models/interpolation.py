@@ -4,6 +4,8 @@ from typing import Optional, Tuple, List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
+# test
+
 
 def model_interpolation(
     df: DataFrame,
@@ -24,7 +26,7 @@ def model_interpolation(
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
         new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
-        partition_columns (Optional[List[str]]): A list of partition column. With the default being 'location_id'
+        partition_columns (Optional[List[str]]): A list of partition columns. With the default being 'location_id'
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
@@ -93,7 +95,7 @@ def define_window_specs(
     The third window specification ('window_spec_lagged') includes all rows from the start of the partition up to the current row, excluding the current row.
 
     Args:
-        partition_columns (Optional[List[str]]): A list of partition column. With the default being 'location_id'
+        partition_columns (Optional[List[str]]): A list of partition columns. With the default being 'location_id'
 
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.
