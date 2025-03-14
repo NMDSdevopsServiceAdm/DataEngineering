@@ -252,7 +252,7 @@ class IndCqcColumns:
 
 
 @dataclass
-class PrimaryServiceRollingAverageColumns:
+class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rate of change process."""
 
     care_home_status_count: str = "care_home_status_count"
@@ -263,5 +263,5 @@ class PrimaryServiceRollingAverageColumns:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
+    rate_of_change: str = "rate_of_change"
     submission_count: str = "submission_count"
