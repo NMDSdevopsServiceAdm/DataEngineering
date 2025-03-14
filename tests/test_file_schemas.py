@@ -2783,24 +2783,6 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    # calculate_rolling_rate_of_change_schema = StructType(
-    #     [
-    #         StructField(IndCQC.location_id, StringType(), False),
-    #         StructField(IndCQC.care_home, StringType(), False),
-    #         StructField(IndCQC.primary_service_type, StringType(), False),
-    #         StructField(IndCQC.unix_time, IntegerType(), False),
-    #         StructField(
-    #             RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-    #         ),
-    #     ]
-    # )
-    # expected_calculate_rolling_rate_of_change_schema = StructType(
-    #     [
-    #         *calculate_rolling_rate_of_change_schema,
-    #         StructField(IndCQC.rate_of_change_trendline_model, DoubleType(), True),
-    #     ]
-    # )
-
     add_previous_value_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

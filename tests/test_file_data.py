@@ -5571,31 +5571,6 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", 1704326400, None, None),
     ]
 
-    # # fmt: off
-    # calculate_rolling_rate_of_change_rows = [
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 1.1),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 1.2),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 1.3),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 1.4),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.4),
-    #     ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.3),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, 10.0),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, 20.0),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, 30.0),
-    # ]
-    # expected_calculate_rolling_rate_of_change_rows = [
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 1.1, 1.0),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.0909),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.1858),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 1.4, 1.2846),
-    #     ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.4, 1.3505),
-    #     ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 1.3, 1.3505),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, 10.0, 1.0),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, 20.0, 2.0),
-    #     ("1-003", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, 30.0, 3.333),
-    # ]
-    # # fmt: on
-
     add_previous_value_column_rows = [
         ("1-001", 1672531200, 1.1),
         ("1-001", 1672617600, 1.2),
