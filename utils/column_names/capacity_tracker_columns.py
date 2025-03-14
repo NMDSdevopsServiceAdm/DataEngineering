@@ -124,11 +124,8 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
     )
     capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
-    cqc_care_workers_employed_rolling_avg: str = (
-        CapacityTrackerNonResColumns.cqc_care_workers_employed + "_rolling_avg"
-    )
     cqc_care_workers_employed_rate_of_change_trendline: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed
-        + "_rolling_rate_of_change"
+        + "_rate_of_change_trendline"
     )
     unix_timestamp: str = "unix_timestamp"

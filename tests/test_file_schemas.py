@@ -5054,9 +5054,6 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(CTNRClean.cqc_id, StringType(), False),
             StructField(CTNRClean.capacity_tracker_import_date, DateType(), False),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
-            StructField(
-                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
-            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -5081,9 +5078,6 @@ class DiagnosticsOnCapacityTrackerSchemas:
             *estimate_filled_posts_schema,
             StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
             StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
-            StructField(
-                CTNRClean.cqc_care_workers_employed_rolling_avg, FloatType(), True
-            ),
             StructField(CTNRClean.service_user_count, IntegerType(), True),
         ]
     )
