@@ -1,5 +1,4 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql import Window
 from pyspark.sql.types import LongType
 from typing import List
 
