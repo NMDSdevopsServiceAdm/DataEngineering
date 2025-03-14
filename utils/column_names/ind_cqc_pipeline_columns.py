@@ -92,8 +92,10 @@ class IndCqcColumns:
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    rate_of_change_since_previous_period: str = "rate_of_change_since_previous_period"
-    rate_of_change_trendline_model: str = (
+    ascwds_rate_of_change_since_previous_period: str = (
+        "ascwds_rate_of_change_since_previous_period"
+    )
+    ascwds_rate_of_change_trendline_model: str = (
         "rolling_rate_of_change_model"  # TODO update this name when make new models
     )
     current_ccg: str = ONSClean.current_ccg

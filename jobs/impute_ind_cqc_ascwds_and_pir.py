@@ -57,8 +57,8 @@ def main(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
-        IndCQC.rate_of_change_since_previous_period,
-        IndCQC.rate_of_change_trendline_model,
+        IndCQC.ascwds_rate_of_change_since_previous_period,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         drop_rate_of_change=False,
     )
 
@@ -69,7 +69,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ascwds_pir_merged,
-        IndCQC.rate_of_change_trendline_model,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
     )
@@ -77,7 +77,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rate_of_change_trendline_model,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
     )
@@ -85,7 +85,7 @@ def main(
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.pir_people_directly_employed_dedup,
-        IndCQC.rate_of_change_trendline_model,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
     )
