@@ -4,8 +4,6 @@ from typing import Optional, Tuple, List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
-# test
-
 
 def model_interpolation(
     df: DataFrame,
