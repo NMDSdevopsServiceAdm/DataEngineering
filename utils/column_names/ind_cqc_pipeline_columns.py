@@ -263,5 +263,4 @@ class PrimaryServiceRateOfChangeColumns:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    rate_of_change: str = "rate_of_change"
     submission_count: str = "submission_count"
