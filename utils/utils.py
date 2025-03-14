@@ -292,3 +292,30 @@ def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
         DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
     """
     return df.filter(F.col(column).isNotNull())
+
+
+# TODO - is this the best place?
+# def create_single_column_with_values(
+#     df: DataFrame,
+#     ratio_column_with_values: str,
+#     posts_column_with_values: str,
+# ) -> DataFrame:
+#     """
+#     Creates one column to average using the ratio if the location is a care home and filled posts if not.
+
+#     Args:
+#         df (DataFrame): The input DataFrame.
+#         ratio_column_with_values (str): The name of the filled posts per bed ratio column to average (for care homes only).
+#         posts_column_with_values (str): The name of the filled posts column to average.
+
+#     Returns:
+#         DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
+#     """
+#     df = df.withColumn(
+#         TempCol.column_with_values,
+#         F.when(
+#             F.col(IndCqc.care_home) == CareHome.care_home,
+#             F.col(ratio_column_with_values),
+#         ).otherwise(F.col(posts_column_with_values)),
+#     )
+#     return df
