@@ -24,7 +24,7 @@ class MainTests(ModelRollingAverageTests):
             Data.rolling_average_rows,
             Schemas.rolling_average_schema,
         )
-        self.returned_df = job.calculate_rolling_average(
+        self.returned_df = job.model_calculate_rolling_average(
             df=test_df,
             column_to_average=column_to_average,
             number_of_days=number_of_days,
@@ -41,7 +41,7 @@ class MainTests(ModelRollingAverageTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_calculate_rolling_average_returns_expected_columns(self):
+    def test_model_calculate_rolling_average_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),

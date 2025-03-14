@@ -4,7 +4,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.utils import convert_days_to_unix_time
 
 
-def calculate_rolling_average(
+def model_calculate_rolling_average(
     df: DataFrame,
     column_to_average: str,
     number_of_days: int,

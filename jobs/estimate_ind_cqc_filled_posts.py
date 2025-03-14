@@ -1,4 +1,5 @@
 import sys
+from dataclasses import dataclass
 
 from pyspark.sql import DataFrame
 
@@ -20,7 +21,16 @@ from utils.estimate_filled_posts.models.non_res_without_dormancy import (
 from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
     model_non_res_pir_linear_regression,
 )
+from utils.estimate_filled_posts.models.rolling_average import (
+    model_calculate_rolling_average,
+)
 from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
+
+
+@dataclass
+class NumericalValues:
+    NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 185  # Note: using 185 as a proxy for 6 months
+
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -55,7 +65,6 @@ ind_cqc_columns = [
     IndCQC.current_region,
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
-    IndCQC.rolling_average_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.imputed_non_res_pir_people_directly_employed,
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
@@ -143,6 +152,14 @@ def main(
         IndCQC.non_res_with_dormancy_model,
         IndCQC.imputed_posts_non_res_with_dormancy_model,
         care_home=False,
+    )
+
+    estimate_filled_posts_df = model_calculate_rolling_average(
+        estimate_filled_posts_df,
+        IndCQC.imputed_filled_post_model,
+        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        IndCQC.primary_service_type,
+        IndCQC.rolling_average_model,
     )
 
     # TODO: add imputation for other non res models
