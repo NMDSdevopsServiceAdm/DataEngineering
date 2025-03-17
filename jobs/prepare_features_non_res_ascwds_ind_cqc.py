@@ -29,6 +29,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 )
 from utils.features.helper import (
     add_array_column_count,
+    add_date_index_column,
     calculate_time_registered_for,
     cap_integer_at_max_value,
     column_expansion_with_dict,
@@ -154,7 +155,7 @@ def main(
         )
     )
 
-    features_df = calculate_time_registered_for(df=features_df)
+    features_df = calculate_time_registered_for(features_df)
 
     features_df = cap_integer_at_max_value(
         df=features_df,
@@ -171,6 +172,11 @@ def main(
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
+    )
+
+    features_without_dormancy_df = add_date_index_column(features_df)
+    features_with_known_dormancy_df = add_date_index_column(
+        features_with_known_dormancy_df
     )
 
     list_for_vectorisation: List[str] = sorted(

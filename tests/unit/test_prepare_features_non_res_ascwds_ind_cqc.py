@@ -25,6 +25,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
     @patch("utils.utils.select_rows_with_non_null_value")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.calculate_time_registered_for")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_index_column")
     @patch(
         "jobs.prepare_features_non_res_ascwds_ind_cqc.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
     )
@@ -41,6 +43,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         cap_integer_at_max_value_mock: Mock,
         column_expansion_with_dict_mock: Mock,
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
+        add_date_index_column_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -61,6 +65,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
             5,
         )
+        self.assertEqual(add_date_index_column_mock.call_count, 2)
+        self.assertEqual(calculate_time_registered_for_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)
 
