@@ -2740,27 +2740,13 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
         [
             *calculate_submission_count_schema,
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
-        ]
-    )
-
-    interpolate_column_to_average_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_to_average, DoubleType(), True),
-        ]
-    )
-    expected_interpolate_column_to_average_schema = StructType(
-        [
-            *interpolate_column_to_average_schema,
-            StructField(RoC_TempCol.column_to_average_interpolated, DoubleType(), True),
         ]
     )
 
