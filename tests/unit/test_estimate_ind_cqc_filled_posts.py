@@ -13,20 +13,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 
 class EstimateIndCQCFilledPostsTests(unittest.TestCase):
-    def setUp(self):
-        self.spark = utils.get_spark()
-
-        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
-            Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
-        )
-
-        warnings.filterwarnings("ignore", category=ResourceWarning)
-
-
-class MainTests(EstimateIndCQCFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     CARE_HOMES_FEATURES = "care home features"
     CARE_HOME_MODEL = (
@@ -53,9 +39,16 @@ class MainTests(EstimateIndCQCFilledPostsTests):
         Keys.import_date,
     ]
 
+    def setUp(self):
+        self.spark = utils.get_spark()
+        self.test_cleaned_ind_cqc_df = self.spark.createDataFrame(
+            Data.cleaned_ind_cqc_rows, Schemas.cleaned_ind_cqc_schema
+        )
+
+        warnings.filterwarnings("ignore", category=ResourceWarning)
+
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.estimate_ind_cqc_filled_posts.merge_columns_in_order")
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_calculate_rolling_average")
     @patch(
         "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
     )
@@ -72,7 +65,6 @@ class MainTests(EstimateIndCQCFilledPostsTests):
         model_non_res_without_dormancy_patch: Mock,
         model_non_res_pir_linear_regression_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
-        model_calculate_rolling_average_mock: Mock,
         merge_columns_in_order_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
@@ -106,7 +98,6 @@ class MainTests(EstimateIndCQCFilledPostsTests):
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation.call_count, 2
         )
-        self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
@@ -115,14 +106,6 @@ class MainTests(EstimateIndCQCFilledPostsTests):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-
-
-class NumericalValuesTests(EstimateIndCQCFilledPostsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_number_of_days_in_rolling_average_value(self):
-        self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE, 185)
 
 
 if __name__ == "__main__":

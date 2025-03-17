@@ -34,6 +34,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.impute_ind_cqc_ascwds_and_pir.model_calculate_rolling_average")
     @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.model_imputation_with_extrapolation_and_interpolation"
     )
@@ -56,6 +57,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         primary_service_rate_of_change_trendline_mock: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
+        model_calculate_rolling_average_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -68,12 +70,13 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
-        combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
+        self.assertEqual(combine_care_home_ratios_and_non_res_posts_mock.call_count, 2)
         primary_service_rate_of_change_trendline_mock.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
         )
+        model_calculate_rolling_average_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
