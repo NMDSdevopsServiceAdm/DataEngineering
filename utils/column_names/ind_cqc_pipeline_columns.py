@@ -56,6 +56,7 @@ class IndCqcColumns:
     )
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -70,6 +71,10 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
+    combined_imputed_ratio_and_filled_posts: str = (
+        "combined_imputed_ratio_and_filled_posts"
+    )
+    combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
@@ -211,6 +216,7 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_rolling_average: str = "prediction_rolling_average"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -236,10 +242,10 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rolling_average_model: str = "rolling_average_model"
-    rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
@@ -254,16 +260,15 @@ class IndCqcColumns:
 
 
 @dataclass
-class PrimaryServiceRollingAverageColumns:
-    """The names of the temporary columns created during the rolling average process."""
+class PrimaryServiceRateOfChangeColumns:
+    """The names of the temporary columns created during the rate of change process."""
 
     care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
+    column_with_values: str = "column_with_values"
+    column_with_values_interpolated: str = "column_with_values_interpolated"
+    previous_column_with_values_interpolated: str = (
+        "previous_column_with_values_interpolated"
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
