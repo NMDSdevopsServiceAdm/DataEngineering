@@ -95,6 +95,9 @@ class IndCqcColumns:
     )
     contemporary_sub_icb: str = ONSClean.contemporary_sub_icb
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
+    cqc_location_import_date_indexed: str = (
+        CQCLClean.cqc_location_import_date + "_indexed"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     current_ccg: str = ONSClean.current_ccg

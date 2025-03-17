@@ -254,3 +254,25 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
 
     def test_cap_integer_at_max_value_returns_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class AddDateIndexColumnTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.add_date_index_column_rows, Schemas.add_date_index_column_schema
+        )
+        self.returned_df = job.add_date_index_column(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_date_index_column_rows,
+            Schemas.expected_add_date_index_column_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_add_date_index_column_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_add_date_index_column_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)

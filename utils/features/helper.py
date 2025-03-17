@@ -1,6 +1,6 @@
 from typing import List, Dict
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 from pyspark.ml.feature import VectorAssembler
 
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -114,3 +114,22 @@ def cap_integer_at_max_value(
         ).otherwise(None),
     )
     return df
+
+
+def add_date_index_column(df: DataFrame) -> DataFrame:
+    """
+    Creates an index column in the DataFrame based on the cqc_location_import_date column.
+
+    Arg:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with an added index column.
+    """
+    windowSpec = Window.orderBy(IndCQC.cqc_location_import_date)
+
+    df_with_index = df.withColumn(
+        IndCQC.cqc_location_import_date_indexed, F.dense_rank().over(windowSpec)
+    )
+
+    return df_with_index

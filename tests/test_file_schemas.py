@@ -3127,6 +3127,7 @@ class ModelFeatures:
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
+
     calculate_time_registered_for_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -3174,6 +3175,19 @@ class ModelFeatures:
         [
             *add_array_column_count_schema,
             StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+
+    add_date_index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_add_date_index_column_schema = StructType(
+        [
+            *add_date_index_column_schema,
+            StructField(IndCQC.cqc_location_import_date_indexed, IntegerType(), True),
         ]
     )
 
