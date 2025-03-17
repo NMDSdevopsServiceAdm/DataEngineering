@@ -137,7 +137,7 @@ def main(
         )
     )
 
-    dormancy = list(DormancyFeatures.labels_dict.keys())
+    dormancy_key = list(DormancyFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
@@ -182,6 +182,9 @@ def main(
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.rolling_average_model,
+            IndCQC.cqc_location_import_date_indexed,
             IndCQC.service_count_capped,
         ]
         + related_location
@@ -195,11 +198,13 @@ def main(
     )
 
     list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation + [IndCQC.time_registered_capped_at_ten_years] + dormancy
+        list_for_vectorisation
+        + [IndCQC.time_registered_capped_at_ten_years]
+        + dormancy_key
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
-        df=features_df,
+        df=features_without_dormancy_df,
         list_for_vectorisation=list_for_vectorisation_without_dormancy,
     )
     vectorised_features_with_dormancy_df = vectorise_dataframe(
