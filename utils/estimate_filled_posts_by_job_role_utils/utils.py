@@ -360,3 +360,24 @@ def create_estimate_filled_posts_by_job_role_map_column(
     )
 
     return df
+
+
+def pivot_interpolated_job_role_ratios(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Pivots the job role ratio interpolated mapped column so that the key are column names
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
+    """
+    df_result = (
+        df.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+    )
+
+    return df_result

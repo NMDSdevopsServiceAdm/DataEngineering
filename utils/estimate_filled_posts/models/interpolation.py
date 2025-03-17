@@ -10,7 +10,7 @@ def model_interpolation(
     column_with_null_values: str,
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
-    partition_columns: Optional[List[str]] = IndCqc.location_id,
+    partition_columns: Optional[List[str]] = [IndCqc.location_id],
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
@@ -24,7 +24,7 @@ def model_interpolation(
         column_with_null_values (str): The name of the column that contains null values to be interpolated.
         method (str): The choice of method. Must be either 'straight' or 'trend'
         new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
-        partition_columns (Optional[List[str]]): A list of partition columns. With the default being 'location_id'
+        partition_columns (Optional[List[str]]): A list of partition columns ordered by unix time, which the default being 'location_id' if left blank.
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
@@ -83,7 +83,7 @@ def model_interpolation(
 
 
 def define_window_specs(
-    partition_columns: Optional[List[str]] = IndCqc.location_id,
+    partition_columns: Optional[List[str]] = [IndCqc.location_id],
 ) -> Tuple[Window, Window, Window]:
     """
     Defines three window specifications, partitioned by 'location_id' and ordered by 'unix_time'.
@@ -93,7 +93,7 @@ def define_window_specs(
     The third window specification ('window_spec_lagged') includes all rows from the start of the partition up to the current row, excluding the current row.
 
     Args:
-        partition_columns (Optional[List[str]]): A list of partition columns. With the default being 'location_id'
+        partition_columns (Optional[List[str]]): A list of partition columns ordered by unix time, which the default being 'location_id' if left blank
 
     Returns:
         Tuple[Window, Window, Window]: A tuple containing the three window specifications.

@@ -10459,7 +10459,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_data = [
+    interpolate_job_role_ratios_data = [
         (
             "1000",
             1000,
@@ -10492,7 +10492,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_data = [
+    expected_interpolate_job_role_ratios_data = [
         (
             "1000",
             1000,
@@ -10543,7 +10543,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_two_records_with_nulls_data = [
+    interpolate_job_role_ratios_with_two_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10586,7 +10586,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_two_records_with_nulls_data = [
+    expected_interpolate_job_role_ratios_with_two_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10653,7 +10653,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_two_partitions_data = [
+    interpolate_job_role_ratios_with_two_partitions_data = [
         (
             "1000",
             1000,
@@ -10726,7 +10726,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_two_partitions_data = [
+    expected_interpolate_job_role_ratios_with_two_partitions_data = [
         (
             "1000",
             1000,
@@ -10841,7 +10841,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_three_records_with_nulls_data = [
+    interpolate_job_role_ratios_with_three_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10894,7 +10894,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_three_records_with_nulls_data = [
+    expected_interpolate_job_role_ratios_with_three_records_with_nulls_data = [
         (
             "1000",
             1000,
@@ -10977,7 +10977,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_null_records_which_cannot_be_interpolated_data = [
+    interpolate_job_role_ratios_with_null_records_which_cannot_be_interpolated_data = [
         (
             "1000",
             1000,
@@ -11050,7 +11050,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_null_records_which_cannot_be_interpolated_data = [
+    expected_interpolate_job_role_ratios_with_null_records_which_cannot_be_interpolated_data = [
         (
             "1000",
             1000,
@@ -11165,7 +11165,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_an_empty_record_which_cannot_be_interpolated_data = [
+    interpolate_job_role_ratios_with_an_empty_record_which_cannot_be_interpolated_data = [
         (
             "1000",
             1000,
@@ -11193,7 +11193,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_an_empty_record_which_cannot_be_interpolated_data = [
+    expected_interpolate_job_role_ratios_with_an_empty_record_which_cannot_be_interpolated_data = [
         (
             "1000",
             1000,
@@ -11239,7 +11239,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    interpolate_job_role_count_with_an_sequential_none_records_data = [
+    interpolate_job_role_ratios_with_an_sequential_none_records_data = [
         (
             "1000",
             1000,
@@ -11292,7 +11292,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_interpolate_job_role_count_with_an_sequential_none_records_data = [
+    expected_interpolate_job_role_ratios_with_an_sequential_none_records_data = [
         (
             "1000",
             1000,
@@ -11372,5 +11372,503 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.senior_care_worker: 7.0,
                 MainJobRoleLabels.senior_management: 8.0,
             },
+        ),
+    ]
+
+    pivot_interpolated_job_role_ratios_data = [
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_management,
+            1.0,
+            1.0,
+        ),
+    ]
+
+    expected_pivot_interpolated_job_role_ratios_data = [
+        (
+            "1000",
+            1000,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ),
+    ]
+
+    pivot_interpolated_job_role_ratios_with_different_unix_time_data = [
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.care_worker,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.registered_nurse,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.registered_nurse,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_management,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.senior_management,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.senior_management,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    expected_pivot_interpolated_job_role_ratios_with_different_unix_time_data = [
+        (
+            "1000",
+            1000,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    pivot_interpolated_job_role_ratios_with_different_unix_time_and_null_interpolated_values_data = [
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.registered_nurse,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.registered_nurse,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_management,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            MainJobRoleLabels.senior_management,
+            2.0,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            MainJobRoleLabels.senior_management,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    expected_pivot_interpolated_job_role_ratios_with_different_unix_time_and_null_interpolated_values_data = [
+        (
+            "1000",
+            1000,
+            1.0,
+            1.0,
+            None,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            None,
+            2.0,
+            None,
+            2.0,
+        ),
+        (
+            "1000",
+            1002,
+            None,
+            3.0,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    pivot_interpolated_job_role_ratios_with_different_location_id_data = [
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.care_worker,
+            None,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            None,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_management,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.senior_management,
+            None,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.senior_management,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    expected_pivot_interpolated_job_role_ratios_with_different_location_id_data = [
+        (
+            "1000",
+            1000,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            2.0,
+            2.0,
+            2.0,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            3.0,
+            3.0,
+            3.0,
+            3.0,
+        ),
+    ]
+
+    pivot_interpolated_job_role_ratios_with_different_location_id_and_null_interpolated_values_data = [
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            2.0,
+            2.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            2.0,
+            2.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.registered_nurse,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            None,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            MainJobRoleLabels.senior_management,
+            None,
+            None,
+        ),
+        (
+            "1001",
+            1000,
+            MainJobRoleLabels.senior_management,
+            4.0,
+            4.0,
+        ),
+        (
+            "1002",
+            1000,
+            MainJobRoleLabels.senior_management,
+            4.0,
+            4.0,
+        ),
+    ]
+
+    expected_pivot_interpolated_job_role_ratios_with_different_location_id_and_null_interpolated_values_data = [
+        (
+            "1000",
+            1000,
+            1.0,
+            2.0,
+            3.0,
+            None,
+        ),
+        (
+            "1001",
+            1000,
+            1.0,
+            2.0,
+            None,
+            4.0,
+        ),
+        (
+            "1002",
+            1000,
+            1.0,
+            None,
+            3.0,
+            4.0,
         ),
     ]
