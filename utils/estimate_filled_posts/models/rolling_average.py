@@ -40,8 +40,7 @@ def model_calculate_rolling_average(
 
     df = df.withColumn(
         new_column_name,
-        F.round(F.avg(column_to_average).over(window_spec)),
-        two_decimal_places,
+        F.round(F.avg(column_to_average).over(window_spec), two_decimal_places),
     )
 
     return df
