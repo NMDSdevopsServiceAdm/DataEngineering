@@ -22,7 +22,6 @@ from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
 )
 from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
-
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
