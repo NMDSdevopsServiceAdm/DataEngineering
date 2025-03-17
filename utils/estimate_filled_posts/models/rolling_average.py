@@ -30,6 +30,7 @@ def model_calculate_rolling_average(
         DataFrame: A new DataFrame with an additional column containing the rolling average.
     """
     number_of_days_for_window: int = number_of_days - 1
+    two_decimal_places: int = 2
 
     window_spec = (
         Window.partitionBy(column_to_partition_by)
@@ -37,6 +38,10 @@ def model_calculate_rolling_average(
         .rangeBetween(-convert_days_to_unix_time(number_of_days_for_window), 0)
     )
 
-    df = df.withColumn(new_column_name, F.avg(column_to_average).over(window_spec))
+    df = df.withColumn(
+        new_column_name,
+        F.round(F.avg(column_to_average).over(window_spec)),
+        two_decimal_places,
+    )
 
     return df
