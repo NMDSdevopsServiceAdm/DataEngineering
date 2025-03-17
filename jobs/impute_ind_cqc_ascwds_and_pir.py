@@ -98,8 +98,8 @@ def main(
         IndCQC.combined_imputed_ratio_and_filled_posts,
     )
 
-    estimate_filled_posts_df = model_calculate_rolling_average(
-        estimate_filled_posts_df,
+    df = model_calculate_rolling_average(
+        df,
         IndCQC.combined_imputed_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
         IndCQC.primary_service_type,
