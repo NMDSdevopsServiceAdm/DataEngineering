@@ -14,6 +14,9 @@ from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
+from utils.estimate_filled_posts.models.rolling_average import (
+    model_calculate_rolling_average,
+)
 from utils.estimate_filled_posts.models.utils import (
     combine_care_home_ratios_and_non_res_posts,
 )
@@ -88,6 +91,21 @@ def main(
         IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
+    )
+
+    df = combine_care_home_ratios_and_non_res_posts(
+        df,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        IndCQC.imputed_filled_post_model,
+        IndCQC.combined_imputed_ratio_and_filled_posts,
+    )
+
+    estimate_filled_posts_df = model_calculate_rolling_average(
+        estimate_filled_posts_df,
+        IndCQC.combined_imputed_ratio_and_filled_posts,
+        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        IndCQC.primary_service_type,
+        IndCQC.rolling_average_model,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
