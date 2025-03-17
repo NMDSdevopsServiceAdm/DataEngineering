@@ -3,14 +3,14 @@ import warnings
 from unittest.mock import ANY, Mock, patch
 
 
-import jobs.estimate_missing_ascwds_ind_cqc_filled_posts as job
-from tests.test_file_data import EstimateMissingAscwdsFilledPostsData as Data
-from tests.test_file_schemas import EstimateMissingAscwdsFilledPostsSchemas as Schemas
+import jobs.impute_ind_cqc_ascwds_and_pir as job
+from tests.test_file_data import ImputeIndCqcAscwdsAndPirData as Data
+from tests.test_file_schemas import ImputeIndCqcAscwdsAndPirSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
-class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
+class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
     ESTIMATES_DESTINATION = "estimates destination"
     NON_RES_PIR_MODEL = (
@@ -32,10 +32,10 @@ class EstimateMissingAscwdsFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
 
-class MainTests(EstimateMissingAscwdsFilledPostsTests):
+class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "jobs.estimate_missing_ascwds_ind_cqc_filled_posts.blend_pir_and_ascwds_when_ascwds_out_of_date"
+        "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
@@ -63,7 +63,7 @@ class MainTests(EstimateMissingAscwdsFilledPostsTests):
         )
 
 
-class NumericalValuesTests(EstimateMissingAscwdsFilledPostsTests):
+class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
     def setUp(self) -> None:
         super().setUp()
 

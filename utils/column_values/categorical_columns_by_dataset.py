@@ -169,7 +169,7 @@ class CleanedIndCQCCategoricalValues:
 
 
 @dataclass
-class EstimatedMissingAscwdsCategoricalValues:
+class ImputedIndCqcAscwdsAndPirCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     sector_column_values = Sector(
         IndCQC.cqc_sector, value_to_remove=Sector.local_authority
