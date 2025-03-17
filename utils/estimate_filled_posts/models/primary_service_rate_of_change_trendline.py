@@ -44,7 +44,7 @@ def primary_service_rate_of_change_trendline(
     """
 
     df = primary_service_rate_of_change(
-        df, column_with_values, number_of_days, single_period_rate_of_change
+        df, column_with_values, number_of_days, IndCqc.single_period_rate_of_change
     )
 
     deduped_df = deduplicate_dataframe(df)
@@ -59,7 +59,7 @@ def primary_service_rate_of_change_trendline(
         "left",
     )
 
-    df = df.drop(single_period_rate_of_change)
+    df = df.drop(IndCqc.single_period_rate_of_change)
 
     return df
 
@@ -77,7 +77,7 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     df = df.select(
         IndCqc.primary_service_type,
         IndCqc.unix_time,
-        single_period_rate_of_change,
+        IndCqc.single_period_rate_of_change,
     ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
 
     return df
@@ -106,9 +106,9 @@ def calculate_rate_of_change_trendline(
 
     trendline_df = df.withColumn(
         rate_of_change_trendline_column_name,
-        F.exp(F.sum(F.log(single_period_rate_of_change)).over(w)),
+        F.exp(F.sum(F.log(IndCqc.single_period_rate_of_change)).over(w)),
     )
 
-    trendline_df = trendline_df.drop(single_period_rate_of_change)
+    trendline_df = trendline_df.drop(IndCqc.single_period_rate_of_change)
 
     return trendline_df
