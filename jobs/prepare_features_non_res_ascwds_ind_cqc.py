@@ -41,16 +41,17 @@ from utils.features.helper import (
 vectorised_features_column_list: List[str] = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
+    IndCQC.imputed_registration_date,
+    IndCQC.time_registered,
+    IndCQC.related_location,
     IndCQC.current_region,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.dormancy,
     IndCQC.care_home,
     IndCQC.service_count,
     IndCQC.activity_count,
-    IndCQC.ascwds_pir_merged,
-    IndCQC.ascwds_rate_of_change_trendline_model,
-    IndCQC.imputed_registration_date,
-    IndCQC.time_registered,
+    IndCQC.imputed_filled_post_model,
+    IndCQC.rolling_average_model,
     IndCQC.features,
     Keys.year,
     Keys.month,
@@ -219,23 +220,15 @@ def main(
         vectorised_features_column_list
     )
 
-    # TODO - check what these are actually doing! is it the count of features or the count of columns we happen to select?
     print(
         f"number of features without dormancy: {len(list_for_vectorisation_without_dormancy)}"
     )
     print(
-        f"length of features without dormancy df: {vectorised_features_without_dormancy_df.count()}"
-    )
-
-    print(
         f"number of features with dormancy: {len(list_for_vectorisation_with_dormancy)}"
     )
-    print(
-        f"length of features with dormancy df: {vectorised_features_with_dormancy_df.count()}"
-    )
 
     print(
-        f"Exporting as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
+        f"Exporting non_res_ascwds_inc_dormancy_ind_cqc_features as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
     )
     utils.write_to_parquet(
         vectorised_features_with_dormancy_df,
@@ -245,7 +238,7 @@ def main(
     )
 
     print(
-        f"Exporting as parquet to {non_res_ascwds_without_dormancy_ind_cqc_features_destination}"
+        f"Exporting non_res_ascwds_without_dormancy_ind_cqc_features as parquet to {non_res_ascwds_without_dormancy_ind_cqc_features_destination}"
     )
     utils.write_to_parquet(
         vectorised_features_without_dormancy_df,
