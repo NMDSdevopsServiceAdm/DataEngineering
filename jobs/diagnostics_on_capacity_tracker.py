@@ -52,7 +52,6 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_window: int = 185  # Note: using 185 as a proxy for 6 months
-temp_rate_of_change_col: str = "temp_col"
 
 
 def main(
@@ -141,9 +140,7 @@ def run_diagnostics_for_care_homes(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_window,
-        temp_rate_of_change_col,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
-        drop_rate_of_change=True,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
@@ -207,9 +204,7 @@ def run_diagnostics_for_non_residential(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_window,
-        temp_rate_of_change_col,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
-        drop_rate_of_change=True,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,

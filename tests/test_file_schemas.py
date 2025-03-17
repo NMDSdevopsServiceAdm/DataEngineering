@@ -2830,31 +2830,21 @@ class ModelPrimaryServiceRateOfChange:
 
 @dataclass
 class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
-    rate_of_change: str = "rate_of_change"
-    rate_of_change_trendline: str = "rate_of_change_trendline"
-
     primary_service_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
         ]
     )
-    expected_primary_service_rate_of_change_trendline_when_column_is_dropped_schema = (
-        StructType(
-            [
-                *primary_service_rate_of_change_trendline_schema,
-                StructField(rate_of_change_trendline, DoubleType(), True),
-            ]
-        )
-    )
-    expected_primary_service_rate_of_change_trendline_when_column_is_not_dropped_schema = StructType(
+    expected_primary_service_rate_of_change_trendline_schema = StructType(
         [
             *primary_service_rate_of_change_trendline_schema,
-            StructField(rate_of_change, DoubleType(), True),
-            StructField(rate_of_change_trendline, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
         ]
     )
 
@@ -2862,7 +2852,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
             StructField("another_col", DoubleType(), True),
         ]
     )
@@ -2870,7 +2860,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
@@ -2878,14 +2868,16 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
     expected_calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(rate_of_change_trendline, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
         ]
     )
 

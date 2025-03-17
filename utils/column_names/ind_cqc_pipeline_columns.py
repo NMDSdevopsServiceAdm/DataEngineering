@@ -95,9 +95,6 @@ class IndCqcColumns:
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    ascwds_rate_of_change_since_previous_period: str = (
-        "ascwds_rate_of_change_since_previous_period"
-    )
     ascwds_rate_of_change_trendline_model: str = (
         "rolling_rate_of_change_model"  # TODO update this name when make new models
     )
@@ -249,6 +246,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"

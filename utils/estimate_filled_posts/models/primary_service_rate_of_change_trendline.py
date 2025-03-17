@@ -10,9 +10,7 @@ def primary_service_rate_of_change_trendline(
     df: DataFrame,
     column_with_values: str,
     number_of_days: int,
-    rate_of_change_column_name: str,
     rate_of_change_trendline_column_name: str,
-    drop_rate_of_change: bool = True,
 ) -> DataFrame:
     """
     Computes a trendline from a sequence of single-period rate of change values, starting at 1.0 in the first period.
@@ -39,22 +37,20 @@ def primary_service_rate_of_change_trendline(
         df (DataFrame): The input DataFrame.
         column_with_values (str): Column name containing the values.
         number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
-        rate_of_change_column_name (str): Column containing the single-period rate of change values.
         rate_of_change_trendline_column_name (str): Name of the new column to store the cumulative trendline.
-        drop_rate_of_change (bool, optional): If True (default), drops the single-period rate of change column
-                                              after adding the trendline.
 
     Returns:
-        DataFrame: The DataFrame with the trendline column (and optionally the rate of change column).
+        DataFrame: The DataFrame with the trendline column.
     """
+
     df = primary_service_rate_of_change(
-        df, column_with_values, number_of_days, rate_of_change_column_name
+        df, column_with_values, number_of_days, single_period_rate_of_change
     )
 
-    deduped_df = deduplicate_dataframe(df, rate_of_change_column_name)
+    deduped_df = deduplicate_dataframe(df)
 
     rate_of_change_trendline_df = calculate_rate_of_change_trendline(
-        deduped_df, rate_of_change_column_name, rate_of_change_trendline_column_name
+        deduped_df, rate_of_change_trendline_column_name
     )
 
     df = df.join(
@@ -63,19 +59,17 @@ def primary_service_rate_of_change_trendline(
         "left",
     )
 
-    if drop_rate_of_change:
-        df = df.drop(rate_of_change_column_name)
+    df = df.drop(single_period_rate_of_change)
 
     return df
 
 
-def deduplicate_dataframe(df: DataFrame, rate_of_change_column_name: str) -> DataFrame:
+def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
     Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
 
     Args:
         df (DataFrame): The input DataFrame.
-        rate_of_change_column_name (str): Column name containing the single period rate of change values.
 
     Returns:
         DataFrame: The deduplicated DataFrame.
@@ -83,7 +77,7 @@ def deduplicate_dataframe(df: DataFrame, rate_of_change_column_name: str) -> Dat
     df = df.select(
         IndCqc.primary_service_type,
         IndCqc.unix_time,
-        rate_of_change_column_name,
+        single_period_rate_of_change,
     ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
 
     return df
@@ -91,7 +85,6 @@ def deduplicate_dataframe(df: DataFrame, rate_of_change_column_name: str) -> Dat
 
 def calculate_rate_of_change_trendline(
     df: DataFrame,
-    rate_of_change_column_name: str,
     rate_of_change_trendline_column_name: str,
 ) -> DataFrame:
     """
@@ -104,19 +97,18 @@ def calculate_rate_of_change_trendline(
 
     Args:
         df (DataFrame): The input DataFrame.
-        rate_of_change_column_name (str): Column name containing the single period rate of change values.
         rate_of_change_trendline_column_name (str): Name of the new column to store the rate of change trendline.
 
     Returns:
-        DataFrame: The deduplicated DataFrame.
+        DataFrame: The DataFrame with the rate of change trendline included.
     """
     w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
 
     trendline_df = df.withColumn(
         rate_of_change_trendline_column_name,
-        F.exp(F.sum(F.log(rate_of_change_column_name)).over(w)),
+        F.exp(F.sum(F.log(single_period_rate_of_change)).over(w)),
     )
 
-    trendline_df = trendline_df.drop(rate_of_change_column_name)
+    trendline_df = trendline_df.drop(single_period_rate_of_change)
 
     return trendline_df

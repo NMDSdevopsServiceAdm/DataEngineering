@@ -60,9 +60,7 @@ def main(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
-        IndCQC.ascwds_rate_of_change_since_previous_period,
         IndCQC.ascwds_rate_of_change_trendline_model,
-        drop_rate_of_change=False,
     )
 
     df = blend_pir_and_ascwds_when_ascwds_out_of_date(
