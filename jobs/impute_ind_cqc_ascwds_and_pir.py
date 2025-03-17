@@ -30,7 +30,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 @dataclass
 class NumericalValues:
-    NUMBER_OF_DAYS_IN_WINDOW = 185  # Note: using 185 as a proxy for 6 months
+    NUMBER_OF_DAYS_IN_WINDOW = 95  # Note: using 95 as a proxy for 3 months
 
 
 def main(

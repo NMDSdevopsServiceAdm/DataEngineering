@@ -90,7 +90,7 @@ class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
         super().setUp()
 
     def test_number_of_days_in_window_value(self):
-        self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_WINDOW, 185)
+        self.assertEqual(job.NumericalValues.NUMBER_OF_DAYS_IN_WINDOW, 95)
 
 
 if __name__ == "__main__":
