@@ -120,7 +120,7 @@ def add_date_index_column(df: DataFrame) -> DataFrame:
     """
     Creates an index column in the DataFrame based on the cqc_location_import_date column.
 
-    Arg:
+    Args:
         df (DataFrame): Input DataFrame.
 
     Returns:
