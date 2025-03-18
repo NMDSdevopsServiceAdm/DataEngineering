@@ -52,7 +52,7 @@ vectorised_features_column_list: List[str] = [
     IndCQC.time_registered,
     IndCQC.related_location,
     IndCQC.imputed_filled_post_model,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.features,
     Keys.year,
     Keys.month,
@@ -185,7 +185,7 @@ def main(
         [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
-            IndCQC.rolling_average_model,
+            IndCQC.posts_rolling_average_model,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.service_count_capped,
         ]

@@ -27,7 +27,7 @@ class MainTests(ModelRollingAverageTests):
             column_to_average=IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days=number_of_days,
             column_to_partition_by=IndCqc.location_id,
-            new_column_name=IndCqc.rolling_average_model,
+            new_column_name=IndCqc.posts_rolling_average_model,
         )
 
         self.expected_df = self.spark.createDataFrame(
@@ -50,8 +50,8 @@ class MainTests(ModelRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_average_model],
-                self.expected_data[i][IndCqc.rolling_average_model],
+                self.returned_data[i][IndCqc.posts_rolling_average_model],
+                self.expected_data[i][IndCqc.posts_rolling_average_model],
                 2,
                 f"Returned row {i} does not match expected",
             )

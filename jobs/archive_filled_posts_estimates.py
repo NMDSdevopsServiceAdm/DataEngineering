@@ -47,7 +47,7 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.provider_id,
     IndCQC.provider_name,
     IndCQC.related_location,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.total_staff_bounded,
     IndCQC.worker_records_bounded,
 ]

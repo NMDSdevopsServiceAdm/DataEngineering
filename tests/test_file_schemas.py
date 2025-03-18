@@ -2253,7 +2253,7 @@ class IndCQCDataUtils:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
         ]
     )
     expected_get_selected_value_schema = StructType(
@@ -2584,7 +2584,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
@@ -2610,7 +2610,7 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
             ),
@@ -2884,7 +2884,7 @@ class ModelRollingAverageSchemas:
     expected_rolling_average_schema = StructType(
         [
             *rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
         ]
     )
 
@@ -2952,7 +2952,7 @@ class ModelExtrapolation:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), False),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), False),
         ]
     )
 
@@ -2976,7 +2976,7 @@ class ModelExtrapolation:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), False),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), False),
         ]
     )
     expected_extrapolation_forwards_schema = StructType(
@@ -3000,7 +3000,7 @@ class ModelExtrapolation:
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.first_submission_time, IntegerType(), True),
             StructField(IndCQC.final_submission_time, IntegerType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), False),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), False),
         ]
     )
     expected_extrapolation_backwards_schema = StructType(
@@ -4840,7 +4840,7 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home_model, DoubleType(), True),
         ]
     )
@@ -4973,7 +4973,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
@@ -5000,7 +5000,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.rolling_average_model, FloatType(), True),
+            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
             StructField(IndCQC.care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_care_home_model, FloatType(), True),
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),

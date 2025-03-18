@@ -71,9 +71,6 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
-    combined_imputed_ratio_and_filled_posts: str = (
-        "combined_imputed_ratio_and_filled_posts"
-    )
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
@@ -217,6 +214,7 @@ class IndCqcColumns:
         pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
+    posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_rolling_average: str = "prediction_rolling_average"
@@ -232,6 +230,7 @@ class IndCqcColumns:
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
+    ratio_rolling_average_model: str = "ratio_rolling_average_model"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
@@ -244,7 +243,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_model: str = "rolling_average_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered

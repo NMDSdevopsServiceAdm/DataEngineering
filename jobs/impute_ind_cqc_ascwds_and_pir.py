@@ -91,19 +91,20 @@ def main(
         care_home=False,
     )
 
-    df = combine_care_home_ratios_and_non_res_posts(
+    df = model_calculate_rolling_average(
         df,
-        IndCQC.imputed_filled_posts_per_bed_ratio_model,
         IndCQC.imputed_filled_post_model,
-        IndCQC.combined_imputed_ratio_and_filled_posts,
+        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        IndCQC.primary_service_type,
+        IndCQC.posts_rolling_average_model,
     )
 
     df = model_calculate_rolling_average(
         df,
-        IndCQC.combined_imputed_ratio_and_filled_posts,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
         IndCQC.primary_service_type,
-        IndCQC.rolling_average_model,
+        IndCQC.ratio_rolling_average_model,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
