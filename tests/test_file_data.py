@@ -10459,6 +10459,91 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    interpolate_example_data = [
+        (
+            "1000",
+            1,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            2,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
+        ),
+        (
+            "1000",
+            3,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+    ]
+
+    expected_interpolate_example_data = [
+        (
+            "1000",
+            1,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            2,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 4.0,
+            },
+        ),
+        (
+            "1000",
+            3,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+    ]
+
+
     interpolate_job_role_ratios_data = [
         (
             "1000",
@@ -11870,5 +11955,119 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
             3.0,
             4.0,
+        ),
+    ]
+
+    pivot_example_data = [
+        (
+            "1000",
+            1,
+            MainJobRoleLabels.care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1,
+            MainJobRoleLabels.registered_nurse,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1,
+            MainJobRoleLabels.senior_management,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            2,
+            MainJobRoleLabels.care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            2,
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            2,
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            2,
+            MainJobRoleLabels.senior_management,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            3,
+            MainJobRoleLabels.senior_care_worker,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            3,
+            MainJobRoleLabels.senior_management,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            3,
+            MainJobRoleLabels.senior_management,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            3,
+            MainJobRoleLabels.senior_management,
+            None,
+            None,
+        ),
+    ]
+
+    expected_pivot_example_data = [
+        (
+            "1000",
+            1,
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            2,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ),
+        (
+            "1000",
+            3,
+            None,
+            None,
+            None,
+            None,
         ),
     ]

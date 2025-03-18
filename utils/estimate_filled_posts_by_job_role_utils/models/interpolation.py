@@ -49,6 +49,8 @@ def model_job_role_ratio_interpolation(
         ),
     )
 
+    df_to_interpolate.show(truncate=False)
+
     df_to_interpolate = interpolation.model_interpolation(
         df_to_interpolate,
         "ratios",
@@ -56,6 +58,8 @@ def model_job_role_ratio_interpolation(
         IndCQC.ascwds_job_role_ratios_interpolated,
         [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
     )
+
+    df_to_interpolate.show(truncate=False)
 
     df_to_interpolate = df_to_interpolate.withColumn(
         IndCQC.ascwds_job_role_ratios_interpolated,
@@ -72,6 +76,8 @@ def model_job_role_ratio_interpolation(
         IndCQC.ascwds_job_role_ratios_interpolated,
         create_map_column(columns_to_interpolate),
     )
+
+    df_to_interpolate.show(truncate=False)
 
     df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
 
