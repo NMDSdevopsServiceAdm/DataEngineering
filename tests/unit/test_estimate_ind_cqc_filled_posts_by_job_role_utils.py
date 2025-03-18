@@ -923,8 +923,9 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             .collect(),
         )
 
-    def test_example(self,):
-
+    def test_example(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.interpolate_example_data,
             Schemas.interpolate_job_role_ratios_schema,
@@ -1265,8 +1266,9 @@ class PivotInterpolatedJobRolesMappedColumn(
             returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
         )
 
-    def test(self,):
-
+    def test(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.pivot_example_data,
             Schemas.pivot_interpolated_job_role_ratios_schema,

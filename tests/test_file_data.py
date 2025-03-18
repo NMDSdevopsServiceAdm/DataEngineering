@@ -10543,7 +10543,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-
     interpolate_job_role_ratios_data = [
         (
             "1000",
