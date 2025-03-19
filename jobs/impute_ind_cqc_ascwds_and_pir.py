@@ -8,7 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rolling_average import (
+from utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change import (
     model_primary_service_rolling_average_and_rate_of_change,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
@@ -29,78 +29,76 @@ class NumericalValues:
 
 def main(
     cleaned_ind_cqc_source: str,
-    estimated_missing_ascwds_ind_cqc_destination: str,
+    imputed_ind_cqc_ascwds_and_pir_destination: str,
     linear_regression_model_source: str,
 ) -> DataFrame:
-    print("Estimating missing ASCWDS independent CQC filled posts...")
+    print("Imputing independent CQC ASCWDS and PIR values...")
 
-    cleaned_ind_cqc_df = utils.read_from_parquet(cleaned_ind_cqc_source)
+    df = utils.read_from_parquet(cleaned_ind_cqc_source)
 
-    estimate_missing_ascwds_df = utils.create_unix_timestamp_variable_from_date_column(
-        cleaned_ind_cqc_df,
+    df = utils.create_unix_timestamp_variable_from_date_column(
+        df,
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
     )
 
-    estimate_missing_ascwds_df = (
-        model_primary_service_rolling_average_and_rate_of_change(
-            estimate_missing_ascwds_df,
-            IndCQC.filled_posts_per_bed_ratio,
-            IndCQC.ascwds_filled_posts_dedup_clean,
-            NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-            IndCQC.rolling_average_model,
-            IndCQC.rolling_rate_of_change_model,
-        )
+    df = model_primary_service_rolling_average_and_rate_of_change(
+        df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        IndCQC.rolling_average_model,
+        IndCQC.rolling_rate_of_change_model,
     )
 
-    estimate_missing_ascwds_df = blend_pir_and_ascwds_when_ascwds_out_of_date(
-        estimate_missing_ascwds_df, linear_regression_model_source
+    df = blend_pir_and_ascwds_when_ascwds_out_of_date(
+        df, linear_regression_model_source
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.ascwds_pir_merged,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_filled_post_model,
         care_home=False,
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
     )
 
-    estimate_missing_ascwds_df = model_imputation_with_extrapolation_and_interpolation(
-        estimate_missing_ascwds_df,
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
         IndCQC.pir_people_directly_employed_dedup,
         IndCQC.rolling_rate_of_change_model,
         IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
     )
 
-    print(f"Exporting as parquet to {estimated_missing_ascwds_ind_cqc_destination}")
+    print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 
     utils.write_to_parquet(
-        estimate_missing_ascwds_df,
-        estimated_missing_ascwds_ind_cqc_destination,
+        df,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
 
-    print("Completed estimate missing ASCWDS independent CQC filled posts")
+    print("Completed imputing independent CQC ASCWDS and PIR")
 
 
 if __name__ == "__main__":
-    print("Spark job 'estimate_missing_ascwds_ind_cqc_filled_posts' starting...")
+    print("Spark job 'impute_ind_cqc_ascwds_and_pir' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_ind_cqc_source,
-        estimated_missing_ascwds_ind_cqc_destination,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         linear_regression_model_source,
     ) = utils.collect_arguments(
         (
@@ -108,8 +106,8 @@ if __name__ == "__main__":
             "Source s3 directory for cleaned_ind_cqc_filled_posts",
         ),
         (
-            "--estimated_missing_ascwds_ind_cqc_destination",
-            "Destination s3 directory for outputting estimate missing ASCWDS filled posts",
+            "--imputed_ind_cqc_ascwds_and_pir_destination",
+            "Destination s3 directory for outputting imputed ind cqc ascwds and pir data",
         ),
         (
             "--linear_regression_model_source",
@@ -119,6 +117,6 @@ if __name__ == "__main__":
 
     main(
         cleaned_ind_cqc_source,
-        estimated_missing_ascwds_ind_cqc_destination,
+        imputed_ind_cqc_ascwds_and_pir_destination,
         linear_regression_model_source,
     )

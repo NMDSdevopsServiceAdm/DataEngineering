@@ -2675,7 +2675,7 @@ class EstimateIndCQCFilledPostsSchemas:
 
 
 @dataclass
-class EstimateMissingAscwdsFilledPostsSchemas:
+class ImputeIndCqcAscwdsAndPirSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -4646,14 +4646,14 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ValidateEstimatedMissingAscwdsFilledPostsData:
+class ValidateImputedIndCqcAscwdsAndPir:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
-    estimated_missing_ascwds_filled_posts_schema = StructType(
+    imputed_ind_cqc_ascwds_and_pir_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
