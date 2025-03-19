@@ -32,12 +32,12 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.models.interpolation.model_job_role_ratio_interpolation"
-    )
-    @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.models.interpolation.model_job_role_ratio_interpolation"
+    )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
     )
@@ -66,9 +66,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         transform_job_role_count_map_to_ratios_map_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
+        model_job_role_ratio_interpolation_mock: Mock,
         unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
-        model_job_role_ratio_interpolation_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -100,7 +100,64 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
         model_job_role_ratio_interpolation_mock.assert_called_once()
-
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
+
+
+#
+
+# class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
+#     @patch("utils.utils.write_to_parquet")
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
+#     )
+#     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.models.interpolation.model_job_role_ratio_interpolation"
+#     )
+#     @patch("utils.ind_cqc_filled_posts_utils.utils.merge_columns_in_order") # moved below create_estimate_filled_posts_by_job_role_map_column
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
+#     ) # moved above merge_columns_in_order
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_count_map_to_ratios_map"
+#     )
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.sum_job_role_count_split_by_service"
+#     )
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds"
+#     )
+#     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
+#     @patch(
+#         "utils.estimate_filled_posts_by_job_role_utils.utils.aggregate_ascwds_worker_job_roles_per_establishment"
+#     )
+#     @patch("utils.utils.read_from_parquet")
+#     def test_main_function(
+#         self,
+#         read_from_parquet_mock: Mock,
+#         aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
+#         merge_dataframes_mock: Mock,
+#         remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock: Mock,
+#         sum_job_role_count_split_by_service_mock: Mock,
+#         transform_job_role_count_map_to_ratios_map_mock: Mock,
+#         create_estimate_filled_posts_by_job_role_map_column_mock: Mock, # moved above merge_columns_in_order
+#         merge_columns_in_order_mock: Mock, # moved below create_estimate_filled_posts_by_job_role_map_column
+#         model_job_role_ratio_interpolation_mock: Mock,
+#         unpack_mapped_column_mock: Mock,
+#         count_registered_manager_names_mock: Mock,
+#         write_to_parquet_mock: Mock,
+#     ):
+#         read_from_parquet_mock.side_effect = [
+#             self.test_estimated_ind_cqc_filled_posts_df,
+#             self.test_cleaned_ascwds_worker_df,
+#         ]
+#         job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
+
+#         # ... (rest of the assertions remain the same) ...
+
+#         model_job_role_ratio_interpolation_mock.assert_called_once()
+#         write_to_parquet_mock.assert_called_once_with(
+#             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
+#         )
