@@ -70,7 +70,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
-        self.assertEqual(combine_care_home_ratios_and_non_res_posts_mock.call_count, 2)
+        combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
         primary_service_rate_of_change_trendline_mock.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(
