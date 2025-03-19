@@ -2583,6 +2583,7 @@ class NonResAscwdsFeaturesSchema(object):
             ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
             StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.care_home, StringType(), True),
