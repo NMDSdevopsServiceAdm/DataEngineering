@@ -8,9 +8,10 @@ from utils.estimate_filled_posts_by_job_role_utils.utils import (
     unpack_mapped_column,
     create_map_column,
     pivot_interpolated_job_role_ratios,
+    convert_map_with_all_null_values_to_null,
 )
 
-import utils.estimate_filled_posts.models.interpolation as interpolation
+from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 def model_job_role_ratio_interpolation(
@@ -27,7 +28,12 @@ def model_job_role_ratio_interpolation(
 
     """
 
+    print("this is the start!")
+    df.show(truncate=False)
+
     df_to_interpolate = unpack_mapped_column(df, IndCQC.ascwds_job_role_ratios)
+
+    df_to_interpolate.show(truncate=False)
 
     df_keys = df_to_interpolate.select(
         F.explode(F.map_keys(F.col(IndCQC.ascwds_job_role_ratios)))
@@ -51,7 +57,7 @@ def model_job_role_ratio_interpolation(
 
     df_to_interpolate.show(truncate=False)
 
-    df_to_interpolate = interpolation.model_interpolation(
+    df_to_interpolate = model_interpolation(
         df_to_interpolate,
         "ratios",
         "straight",
@@ -81,8 +87,10 @@ def model_job_role_ratio_interpolation(
 
     df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
 
-    df_result = df_to_interpolate.join(
+    df_to_interpolate = df_to_interpolate.join(
         df, on=[IndCQC.location_id, IndCQC.unix_time], how="inner"
     )
+
+    df_result = convert_map_with_all_null_values_to_null(df_to_interpolate)
 
     return df_result

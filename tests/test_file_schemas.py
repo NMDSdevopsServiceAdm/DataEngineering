@@ -6224,7 +6224,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
-            StructField("ratios", FloatType(), True),
             StructField(IndCQC.ascwds_job_role_ratios_interpolated, FloatType(), True),
         ]
     )
@@ -6237,6 +6236,24 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
             StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
             StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+        ]
+    )
+
+    convert_map_with_all_null_values_to_null_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, StringType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_convert_map_with_all_null_values_to_null_schema = StructType(
+        [
+            *convert_map_with_all_null_values_to_null_schema,
         ]
     )
 

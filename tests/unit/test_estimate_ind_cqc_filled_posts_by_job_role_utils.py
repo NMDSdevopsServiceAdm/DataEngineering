@@ -896,168 +896,10 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     ):
         self.assertEqual(len(self.new_columns_added), 1)
 
-    def test_model_interpolation_count_of_rows(
+    def test_model_interpolation_does_not_change_the_number_of_rows(
         self,
     ):
         self.assertEqual(self.test_df.count(), self.return_df.count())
-
-    def test_model_interpolation_when_one_record_of_null_values_in_between_populated_records_return_dataframe_with_interpolated_values(
-        self,
-    ):
-        self.assertEqual(
-            self.expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            self.return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_example(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_example_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_example_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        returned_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_model_interpolation_when_two_records_of_null_values_in_between_populated_records_return_dataframe_with_interpolated_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_ratios_with_two_records_with_nulls_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_ratios_with_two_records_with_nulls_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_model_interpolation_when_two_paritions_in_dataframe_return_dataframe_with_interpolated_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_ratios_with_two_partitions_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_ratios_with_two_partitions_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_model_interpolation_when_three_record_of_null_values_in_between_populated_records_return_dataframe_with_interpolated_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_ratios_with_three_records_with_nulls_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_ratios_with_three_records_with_nulls_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
 
     def test_model_interpolation_when_data_includes_nulls_which_cannot_be_interpolated_return_dataframe_with_no_incorrect_population_of_values(
         self,
@@ -1069,74 +911,6 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
 
         expected_df = self.spark.createDataFrame(
             Data.expected_interpolate_job_role_ratios_with_null_records_which_cannot_be_interpolated_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_model_interpolation_when_data_includes_empty_record_which_cannot_be_interpolated_return_dataframe_with_no_incorrect_population_of_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_ratios_with_an_empty_record_which_cannot_be_interpolated_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_ratios_with_an_empty_record_which_cannot_be_interpolated_data,
-            Schemas.expected_interpolate_job_role_ratios_schema,
-        )
-
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
-
-        self.assertEqual(
-            expected_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-            return_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
-                IndCQC.ascwds_job_role_ratios_interpolated,
-            )
-            .sort(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_model_interpolation_when_data_includes_sequential_null_values_return_dataframe(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.interpolate_job_role_ratios_with_an_sequential_none_records_data,
-            Schemas.interpolate_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_job_role_ratios_with_an_sequential_none_records_data,
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
@@ -1266,28 +1040,78 @@ class PivotInterpolatedJobRolesMappedColumn(
             returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
         )
 
-    def test(
+
+class ConvertMapWithAllNullValuesToNul(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_no_null_returns_identical_dataframe(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.pivot_example_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
+            Data.convert_map_with_all_null_values_to_null_map_has_no_nulls_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_example_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
+            Data.expected_convert_map_with_all_null_values_to_null_map_has_no_nulls_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
         )
 
-        returned_df = job.pivot_interpolated_job_role_ratios(test_df)
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
 
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+    def test_convert_map_with_all_null_values_to_null_when_map_has_all_null_returns_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_map_has_all_nulls,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
         )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_map_has_all_nulls,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
+        )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_returns_identical_record_and_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
+        )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_some_null_returns_identical_dataframe(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
+        )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
