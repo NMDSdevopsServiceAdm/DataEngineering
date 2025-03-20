@@ -40,6 +40,35 @@ def convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
     return df
 
 
+# TODO - merge column_expansion_with_dict and convert_categorical_variable_to_binary_variables_based_on_a_dictionary into this
+def expand_and_convert_to_binary(
+    df: DataFrame, col_name: str, lookup_dict: Dict[str, str], is_array_col: bool
+) -> DataFrame:
+    """
+    Expands a column and converts categorical or array values into binary variables
+    based on a lookup dictionary.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        col_name (str): Name of the column to be expanded and converted.
+        lookup_dict (Dict[str, str]): Dictionary where keys are new column names and
+            values are the lookup values to compare with.
+        is_array_col (bool): If True, treats the column as an array and checks for
+            array membership using array_contains. If False, performs equality comparison.
+
+    Returns:
+        DataFrame: A DataFrame with new binary columns added.
+    """
+    for key, value in lookup_dict.items():
+        if is_array_col:
+            df = df.withColumn(
+                key, F.array_contains(F.col(col_name), value).cast("integer")
+            )
+        else:
+            df = df.withColumn(key, (F.col(col_name) == value).cast("integer"))
+    return df
+
+
 def add_array_column_count(
     df: DataFrame, new_col_name: str, col_to_check: str
 ) -> DataFrame:
@@ -130,3 +159,25 @@ def add_date_index_column(df: DataFrame) -> DataFrame:
     )
 
     return df_with_index
+
+
+# TODO - Add tests for this function
+def lag_column_value(df: DataFrame, col_name: str, new_col_name: str) -> DataFrame:
+    """
+    Adds a new column with the previous value of a specified column.
+
+    This function adds a new column to the given data frame which contains the previous value of the specified column.
+
+    Args:
+        df (DataFrame): A dataframe containing the column to be lagged.
+        col_name (str): The name of the column to be lagged.
+        new_col_name (str): The name for the new column with the lagged values.
+
+    Returns:
+        DataFrame: A dataframe with the new column containing the lagged values.
+    """
+    window = Window.partitionBy(IndCQC.location_id).orderBy(
+        IndCQC.cqc_location_import_date
+    )
+
+    return df.withColumn(new_col_name, F.lag(F.col(col_name)).over(window))

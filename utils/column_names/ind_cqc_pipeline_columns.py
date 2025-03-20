@@ -215,6 +215,7 @@ class IndCqcColumns:
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
+    posts_rolling_average_model_lag: str = "posts_rolling_average_model_lag"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_rolling_average: str = "prediction_rolling_average"
