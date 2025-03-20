@@ -369,11 +369,15 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     """
     Calculates count of CQC registered managers minus our estimate of registered managers.
 
+    A positive value is when CQC have recorded more registered managers than we have estimated.
+    A negative value is when we have estimated more registered managers than CQC have recorded.
+    CQC have the official count of registered managers. Our estimate is based on records in ASC-WDS.
+
     Args:
         df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
 
     Returns:
-        DataFrame: A dataframe with an additional column showing our estimate minus count from CQC.
+        DataFrame: A dataframe with an additional column showing count from CQC minus our estimate of registered managers.
     """
     df = df.withColumn(
         IndCQC.difference_between_estimate_and_cqc_registered_managers,
