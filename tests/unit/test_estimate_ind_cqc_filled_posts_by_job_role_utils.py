@@ -1094,6 +1094,9 @@ class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsT
 
         returned_df = job.convert_map_with_all_null_values_to_null(test_df)
 
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
+
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
     def test_convert_map_with_all_null_values_to_null_when_map_has_some_null_returns_identical_dataframe(

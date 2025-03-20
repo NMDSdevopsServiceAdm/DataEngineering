@@ -11215,29 +11215,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data = [
-        (
-            "1000",
-            1,
-            {
-                MainJobRoleLabels.care_worker: None,
-                MainJobRoleLabels.registered_nurse: None,
-                MainJobRoleLabels.senior_care_worker: None,
-                MainJobRoleLabels.senior_management: None,
-            },
-        ),
-        (
-            "1001",
-            1,
-            {
-                MainJobRoleLabels.care_worker: 1.0,
-                MainJobRoleLabels.registered_nurse: 2.0,
-                MainJobRoleLabels.senior_care_worker: 3.0,
-                MainJobRoleLabels.senior_management: 4.0,
-            },
-        ),
-    ]
-
     convert_map_with_all_null_values_to_null_when_map_has_some_nulls_data = [
         (
             "1002",
