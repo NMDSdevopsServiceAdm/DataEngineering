@@ -394,24 +394,18 @@ def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with the aascwds_job_role_ratios_interpolated with null values instead of map records with only null values.
     """
 
-    df_boolean_column = df.withColumn(
-        "ascwds_interpolated_ratio_null_boolean",
-        F.size(
-            F.filter(
-                F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
-                lambda x: ~(F.isnull(x)),
-            )
-        )
-        == 0,
-    )
-
-    df_replace_interpolation = df_boolean_column.withColumn(
+    df_result = df.withColumn(
         IndCQC.ascwds_job_role_ratios_interpolated,
-        F.when(F.col("ascwds_interpolated_ratio_null_boolean"), F.lit(None)).otherwise(
-            F.col(IndCQC.ascwds_job_role_ratios_interpolated)
-        ),
+        F.when(
+            F.size(
+                F.filter(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                    lambda x: ~F.isnull(x),
+                )
+            )
+            == 0,
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
     )
-
-    df_result = df_replace_interpolation.drop("ascwds_interpolated_ratio_null_boolean")
 
     return df_result

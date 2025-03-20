@@ -1041,7 +1041,7 @@ class PivotInterpolatedJobRolesMappedColumn(
         )
 
 
-class ConvertMapWithAllNullValuesToNul(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 

@@ -1,5 +1,4 @@
-from pyspark.sql import DataFrame, functions as F, Window
-from typing import Optional, Tuple
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -46,13 +45,13 @@ def model_job_role_ratio_interpolation(
         IndCQC.location_id,
         IndCQC.unix_time,
         F.explode(IndCQC.ascwds_job_role_ratios_temporary).alias(
-            IndCQC.main_job_role_clean_labelled, "ratios"
+            IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_ratios_exploded
         ),
     )
 
     df_to_interpolate = model_interpolation(
         df_to_interpolate,
-        "ratios",
+        IndCQC.ascwds_job_role_ratios_exploded,
         "straight",
         IndCQC.ascwds_job_role_ratios_interpolated,
         [IndCQC.location_id, IndCQC.main_job_role_clean_labelled],
@@ -60,7 +59,10 @@ def model_job_role_ratio_interpolation(
 
     df_to_interpolate = df_to_interpolate.withColumn(
         IndCQC.ascwds_job_role_ratios_interpolated,
-        F.coalesce(F.col(IndCQC.ascwds_job_role_ratios_interpolated), F.col("ratios")),
+        F.coalesce(
+            F.col(IndCQC.ascwds_job_role_ratios_interpolated),
+            F.col(IndCQC.ascwds_job_role_ratios_exploded),
+        ),
     )
 
     df_to_interpolate = pivot_interpolated_job_role_ratios(df_to_interpolate)
@@ -72,10 +74,10 @@ def model_job_role_ratio_interpolation(
 
     df_to_interpolate = df_to_interpolate.drop(*columns_to_interpolate)
 
-    df_to_interpolate = df_to_interpolate.join(
-        df, on=[IndCQC.location_id, IndCQC.unix_time], how="inner"
+    df_joined = df.join(
+        df_to_interpolate, on=[IndCQC.location_id, IndCQC.unix_time], how="inner"
     )
 
-    df_result = convert_map_with_all_null_values_to_null(df_to_interpolate)
+    df_result = convert_map_with_all_null_values_to_null(df_joined)
 
     return df_result

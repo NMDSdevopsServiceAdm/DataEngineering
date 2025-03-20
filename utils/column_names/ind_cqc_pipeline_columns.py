@@ -49,6 +49,7 @@ class IndCqcColumns:
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
+    ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
     ascwds_job_role_counts_by_primary_service: str = (
         "ascwds_job_role_counts_by_primary_service"
     )
