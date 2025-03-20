@@ -363,6 +363,55 @@ def create_estimate_filled_posts_by_job_role_map_column(
     return df
 
 
+def pivot_interpolated_job_role_ratios(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Pivots the job role ratio interpolated mapped column so that the key are column names
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
+    """
+    df_result = (
+        df.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+    )
+
+    return df_result
+
+
+def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
+    """
+    convert a map with only null values to be just a null not in map format
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the aascwds_job_role_ratios_interpolated with null values instead of map records with only null values.
+    """
+
+    df_result = df.withColumn(
+        IndCQC.ascwds_job_role_ratios_interpolated,
+        F.when(
+            F.size(
+                F.filter(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                    lambda x: ~F.isnull(x),
+                )
+            )
+            == 0,
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+    )
+
+    return df_result
+
+
 def calculate_difference_between_estimate_and_cqc_registered_managers(
     df: DataFrame,
 ) -> DataFrame:

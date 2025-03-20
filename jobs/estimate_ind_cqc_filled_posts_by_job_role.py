@@ -6,6 +6,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
+from utils.estimate_filled_posts_by_job_role_utils.models.interpolation import (
+    model_job_role_ratio_interpolation,
+)
 from utils.ind_cqc_filled_posts_utils import utils as FPutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -123,6 +126,10 @@ def main(
         JRutils.create_estimate_filled_posts_by_job_role_map_column(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = model_job_role_ratio_interpolation(
+        estimated_ind_cqc_filled_posts_by_job_role_df
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.unpack_mapped_column(
