@@ -2,6 +2,7 @@ import sys
 from typing import List
 
 from pyspark.sql import DataFrame
+from typing import Tuple
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -92,7 +93,16 @@ def main(
 
 
 # TODO add tests
-def create_general_non_res_feature_columns(df):
+def create_general_non_res_feature_columns(df: DataFrame) -> DataFrame:
+    """
+    Create features which apply to both non-res models.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The output DataFrame with the added features.
+    """
     df = utils.select_rows_with_value(df, IndCQC.care_home, CareHome.not_care_home)
 
     df = add_array_column_count(
@@ -157,7 +167,16 @@ def create_general_non_res_feature_columns(df):
 
 
 # TODO add tests
-def create_features_specific_to_without_dormancy_model(df):
+def create_features_specific_to_without_dormancy_model(df: DataFrame) -> DataFrame:
+    """
+    Create additional features specific to the model without dormancy.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The output DataFrame with the added features.
+    """
     df = add_date_index_column(df)
 
     df = cap_integer_at_max_value(
@@ -170,7 +189,16 @@ def create_features_specific_to_without_dormancy_model(df):
 
 
 # TODO add tests
-def create_features_specific_to_with_dormancy_model(df):
+def create_features_specific_to_with_dormancy_model(df: DataFrame) -> DataFrame:
+    """
+    Create additional features specific to the model with dormancy.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+
+    Returns:
+        DataFrame: The output DataFrame with the added features.
+    """
     df = utils.select_rows_with_non_null_value(df, IndCQC.dormancy)
 
     df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
@@ -191,7 +219,8 @@ def create_features_specific_to_with_dormancy_model(df):
     return df
 
 
-def create_feature_lists():
+# TODO add tests
+def create_feature_lists() -> Tuple[List[str], List[str]]:
     """
     Create lists of features for vectorisation.
 
