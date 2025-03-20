@@ -1,8 +1,7 @@
 import sys
-from typing import List
 
 from pyspark.sql import DataFrame
-from typing import Tuple
+from typing import List, Tuple
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
