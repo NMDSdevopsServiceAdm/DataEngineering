@@ -411,6 +411,7 @@ def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
 
     return df_result
 
+
 def calculate_difference_between_estimate_and_cqc_registered_managers(
     df: DataFrame,
 ) -> DataFrame:

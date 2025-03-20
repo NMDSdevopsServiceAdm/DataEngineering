@@ -1100,12 +1100,12 @@ class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsT
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Data.convert_map_with_all_null_values_to_null_when_map_has_some_nulls_data,
             Schemas.convert_map_with_all_null_values_to_null_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_some_nulls_data,
             Schemas.expected_convert_map_with_all_null_values_to_null_schema,
         )
 
