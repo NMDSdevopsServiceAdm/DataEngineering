@@ -367,7 +367,7 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Calculates the difference between our estimate of registered managers and the count from CQC data.
+    Calculates count of CQC registered managers minus our estimate of registered managers.
 
     Args:
         df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
@@ -377,8 +377,8 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     """
     df = df.withColumn(
         IndCQC.difference_between_estimate_and_cqc_registered_managers,
-        F.col(MainJobRoleLabels.registered_manager)
-        - F.col(IndCQC.registered_manager_count),
+        F.col(IndCQC.registered_manager_count)
+        - F.col(MainJobRoleLabels.registered_manager),
     )
 
     return df
