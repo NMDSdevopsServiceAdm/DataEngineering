@@ -110,6 +110,9 @@ class IndCqcColumns:
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
+    difference_between_estimate_and_cqc_registered_managers: str = (
+        "difference_between_estimate_and_cqc_registered_managers"
+    )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"

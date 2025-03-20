@@ -5,6 +5,7 @@ from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
@@ -409,3 +410,27 @@ def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
     )
 
     return df_result
+
+def calculate_difference_between_estimate_and_cqc_registered_managers(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Calculates count of CQC registered managers minus our estimate of registered managers.
+
+    A positive value is when CQC have recorded more registered managers than we have estimated.
+    A negative value is when we have estimated more registered managers than CQC have recorded.
+    CQC have the official count of registered managers. Our estimate is based on records in ASC-WDS.
+
+    Args:
+        df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing count from CQC minus our estimate of registered managers.
+    """
+    df = df.withColumn(
+        IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        F.col(IndCQC.registered_manager_count)
+        - F.col(MainJobRoleLabels.registered_manager),
+    )
+
+    return df

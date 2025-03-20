@@ -1183,3 +1183,46 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.estimate_and_cqc_registered_manager_rows,
+            Schemas.estimate_and_cqc_registered_manager_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_estimate_and_cqc_registered_manager_rows,
+            Schemas.expected_estimate_and_cqc_registered_manager_schema,
+        )
+        self.returned_df = (
+            job.calculate_difference_between_estimate_and_cqc_registered_managers(
+                self.test_df
+            )
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_difference_between_estimate_and_cqc_registered_managers_adds_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        )
+
+    def test_calculate_difference_between_estimate_and_cqc_registered_managers_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+        self.assertEqual(expected_data, returned_data)
