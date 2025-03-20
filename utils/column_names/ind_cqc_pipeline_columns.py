@@ -250,7 +250,7 @@ class IndCqcColumns:
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
-    time_registered_capped_at_five_years: str = "time_registered_capped_at_five_years"
+    time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded

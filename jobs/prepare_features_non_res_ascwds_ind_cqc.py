@@ -162,13 +162,13 @@ def main(
     features_df = cap_integer_at_max_value(
         df=features_df,
         col_name=IndCQC.time_registered,
-        max_value=5,
-        new_col_name=IndCQC.time_registered_capped_at_five_years,
+        max_value=48,
+        new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
     features_df = cap_integer_at_max_value(
         df=features_df,
         col_name=IndCQC.time_registered,
-        max_value=10,
+        max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
 
@@ -196,7 +196,7 @@ def main(
         + specialisms_keys
     )
     list_for_vectorisation_without_dormancy: List[str] = sorted(
-        list_for_vectorisation + [IndCQC.time_registered_capped_at_five_years]
+        list_for_vectorisation + [IndCQC.time_registered_capped_at_four_years]
     )
 
     list_for_vectorisation_with_dormancy: List[str] = sorted(

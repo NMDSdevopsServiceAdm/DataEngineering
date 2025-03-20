@@ -39,17 +39,17 @@ class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_time_registered_returns_zero_when_dates_are_exact_years_apart(
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_exact_years_apart_rows,
+            Data.calculate_time_registered_exact_months_apart_rows,
             Schemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_exact_years_apart_rows,
+            Data.expected_calculate_time_registered_exact_months_apart_rows,
             Schemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
@@ -57,17 +57,17 @@ class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_time_registered_returns_zero_when_dates_are_one_day_less_than_a_full_year_apart(
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_less_than_a_full_year_apart_rows,
+            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
             Schemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_less_than_a_full_year_apart_rows,
+            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
             Schemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
@@ -75,17 +75,17 @@ class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_time_registered_returns_zero_when_dates_are_one_day_more_than_a_full_year_apart(
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_more_than_a_full_year_apart_rows,
+            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
             Schemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_more_than_a_full_year_apart_rows,
+            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
             Schemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()

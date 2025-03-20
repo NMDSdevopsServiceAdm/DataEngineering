@@ -6006,33 +6006,31 @@ class ModelFeatures:
         ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 0),
     ]
 
-    calculate_time_registered_exact_years_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 1, 1)),
-        ("1-0002", date(2025, 1, 1), date(2019, 1, 1)),
-        ("1-0003", date(2025, 1, 1), date(2014, 1, 1)),
+    calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
     ]
-    expected_calculate_time_registered_exact_years_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 1, 1), 1),
-        ("1-0002", date(2025, 1, 1), date(2019, 1, 1), 6),
-        ("1-0003", date(2025, 1, 1), date(2014, 1, 1), 11),
+    expected_calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 1),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 12),
     ]
 
-    calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 1, 2)),
-        ("1-0002", date(2025, 6, 8), date(2019, 6, 9)),
+    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
     ]
-    expected_calculate_time_registered_one_day_less_than_a_full_year_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 1, 2), 0),
-        ("1-0002", date(2025, 6, 8), date(2019, 6, 9), 5),
+    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 0),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 4),
     ]
 
-    calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 1, 1)),
-        ("1-0002", date(2025, 6, 1), date(2019, 5, 31)),
+    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
     ]
-    expected_calculate_time_registered_one_day_more_than_a_full_year_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 1, 1), 1),
-        ("1-0002", date(2025, 6, 1), date(2019, 5, 31), 6),
+    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 1),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 4),
     ]
 
     cap_integer_at_max_value_rows = [
