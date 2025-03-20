@@ -32,6 +32,9 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_difference_between_estimate_and_cqc_registered_managers"
+    )
+    @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
     )
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
@@ -65,6 +68,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
         unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
+        calculate_difference_between_estimate_and_cqc_registered_managers_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -95,6 +99,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
         unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
+        calculate_difference_between_estimate_and_cqc_registered_managers_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys

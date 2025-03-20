@@ -10458,3 +10458,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
+
+    estimate_and_cqc_registered_manager_rows = [
+        ("1-001", 1, 0.0),
+        ("1-002", 1, 10.0),
+        ("1-003", 1, None),
+        ("1-004", None, 10.0),
+    ]
+    expected_estimate_and_cqc_registered_manager_rows = [
+        ("1-001", 1, 0.0, 1.0),
+        ("1-002", 1, 10.0, -9.0),
+        ("1-003", 1, None, None),
+        ("1-004", None, 10.0, None),
+    ]

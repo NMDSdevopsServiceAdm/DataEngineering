@@ -136,6 +136,12 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.calculate_difference_between_estimate_and_cqc_registered_managers(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
     utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
