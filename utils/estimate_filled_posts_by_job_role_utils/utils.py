@@ -5,6 +5,7 @@ from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
@@ -357,6 +358,27 @@ def create_estimate_filled_posts_by_job_role_map_column(
                 lambda v: v * F.col(IndCQC.estimate_filled_posts),
             ),
         ),
+    )
+
+    return df
+
+
+def calculate_difference_between_estimate_and_cqc_registered_managers(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Calculates the difference between our estimate of registered managers and the count from CQC data.
+
+    Args:
+        df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing our estimate minus count from CQC.
+    """
+    df = df.withColumn(
+        IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        F.col(MainJobRoleLabels.registered_manager)
+        - F.col(IndCQC.registered_manager_count),
     )
 
     return df

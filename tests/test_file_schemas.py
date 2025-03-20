@@ -6218,3 +6218,21 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(MainJobRoleLabels.senior_management, FloatType(), True),
         ]
     )
+
+    estimate_and_cqc_registered_manager_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(MainJobRoleLabels.registered_manager, FloatType(), True),
+            StructField(IndCQC.registered_manager_count, IntegerType(), True),
+        ]
+    )
+    expected_estimate_and_cqc_registered_manager_schema = StructType(
+        [
+            *estimate_and_cqc_registered_manager_schema,
+            StructField(
+                IndCQC.difference_between_estimate_and_cqc_registered_managers,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
