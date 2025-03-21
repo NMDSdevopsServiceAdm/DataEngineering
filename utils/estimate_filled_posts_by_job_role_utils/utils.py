@@ -360,3 +360,18 @@ def create_estimate_filled_posts_by_job_role_map_column(
     )
 
     return df
+
+
+def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    doc string here
+
+    Args:
+        df (DataFrame): A dataframe which contains estimates of filled posts per job role.
+    Returns:
+        DataFrame: A dataframe with an additional column for the sum of non registered manager estimated filled posts
+        and a map column of non registered manager estimated post proportions split per role.
+    """
+    return df
