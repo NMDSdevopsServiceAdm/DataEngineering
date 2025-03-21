@@ -75,13 +75,13 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 #     write_to_parquet_calls = [
 #         call(
 #             ANY,
-#             self.WITH_DORMANCY_DESTINATION,
+#             self.WITHOUT_DORMANCY_DESTINATION,
 #             mode="overwrite",
 #             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
 #         ),
 #         call(
 #             ANY,
-#             self.WITHOUT_DORMANCY_DESTINATION,
+#             self.WITH_DORMANCY_DESTINATION,
 #             mode="overwrite",
 #             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
 #         ),
