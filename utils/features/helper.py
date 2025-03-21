@@ -152,7 +152,9 @@ def add_date_index_column(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with an added index column.
     """
-    windowSpec = Window.orderBy(IndCQC.cqc_location_import_date)
+    windowSpec = Window.partitionBy(IndCQC.care_home).orderBy(
+        IndCQC.cqc_location_import_date
+    )
 
     df_with_index = df.withColumn(
         IndCQC.cqc_location_import_date_indexed, F.dense_rank().over(windowSpec)

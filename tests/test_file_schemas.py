@@ -3180,6 +3180,7 @@ class ModelFeatures:
     add_date_index_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
         ]
     )
