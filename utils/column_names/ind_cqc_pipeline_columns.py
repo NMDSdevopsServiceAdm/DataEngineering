@@ -112,6 +112,9 @@ class IndCqcColumns:
     current_ons_import_date: str = ONSClean.current_ons_import_date
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
+    current_rural_urban_indicator_2011_for_non_res_model: str = (
+        ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
+    )
     current_sub_icb: str = ONSClean.current_sub_icb
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"

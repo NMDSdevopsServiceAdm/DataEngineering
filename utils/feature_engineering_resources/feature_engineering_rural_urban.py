@@ -35,4 +35,5 @@ class FeatureEngineeringValueLabelsRuralUrban:
         # "rui_urban_city_sparse": CatValues.current_rui_column_values.urban_city_sparse,
         "rui_urban_major": CatValues.current_rui_column_values.urban_major,
         "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
+        "rui_sparse": "Sparse setting",
     }

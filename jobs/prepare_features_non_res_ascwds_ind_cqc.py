@@ -34,6 +34,7 @@ from utils.features.helper import (
     cap_integer_at_max_value,
     column_expansion_with_dict,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    group_rural_urban_sparse_categories,
     lag_column_value,
     vectorise_dataframe,
 )
@@ -137,10 +138,10 @@ def create_general_non_res_feature_columns(df: DataFrame) -> DataFrame:
         col_name=IndCQC.specialisms_offered,
         lookup_dict=SpecialismsFeatures.non_res_model_labels_dict,
     )
-
+    df = group_rural_urban_sparse_categories(df)
     df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         df,
-        categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
+        categorical_col_name=IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
         lookup_dict=RuralUrbanFeatures.non_res_model_labels_dict,
     )
 
