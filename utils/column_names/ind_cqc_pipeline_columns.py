@@ -216,6 +216,9 @@ class IndCqcColumns:
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
+    proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
+        "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
+    )
     proportion_of_time_between_submissions: str = (
         "proportion_of_time_between_submissions"
     )
@@ -242,6 +245,9 @@ class IndCqcColumns:
     specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    sum_non_rm_managerial_estimated_filled_posts: str = (
+        "sum_non_rm_managerial_estimated_filled_posts"
+    )
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
