@@ -17,21 +17,81 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
 
-class AddTimeRegisteredForIntoDfTests(LocationsFeatureEngineeringTests):
+class CalculateTimeRegisteredForTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_time_registered_into_df(self):
+    def test_calculate_time_registered_returns_zero_when_dates_are_on_the_same_day(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
-            Data.add_time_registered_rows, Schemas.add_time_registered_schema
+            Data.calculate_time_registered_same_day_rows,
+            Schemas.calculate_time_registered_for_schema,
         )
-        returned_df = job.add_time_registered_into_df(df=test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_add_time_registered_rows,
-            Schemas.expected_add_time_registered_schema,
-        )
+        returned_df = job.calculate_time_registered_for(test_df)
 
-        self.assertEqual(expected_df.collect(), returned_df.collect())
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_same_day_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_exact_months_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_exact_months_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 class ConvertCategoricalVariableToBinaryVariablesBasedOnADictionaryTests(
@@ -193,4 +253,26 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
     def test_cap_integer_at_max_value_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
+class AddDateIndexColumnTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.add_date_index_column_rows, Schemas.add_date_index_column_schema
+        )
+        self.returned_df = job.add_date_index_column(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_date_index_column_rows,
+            Schemas.expected_add_date_index_column_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_add_date_index_column_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+    def test_add_date_index_column_returns_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)

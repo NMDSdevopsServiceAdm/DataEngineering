@@ -36,6 +36,7 @@ class ArchivePartitionKeys:
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
+    activity_count_capped: str = "activity_count_capped"
     ascwds_pir_merged: str = "ascwds_pir_merged"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
@@ -58,6 +59,7 @@ class IndCqcColumns:
     )
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -72,6 +74,7 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
+    combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
@@ -92,6 +95,9 @@ class IndCqcColumns:
     )
     contemporary_sub_icb: str = ONSClean.contemporary_sub_icb
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
+    cqc_location_import_date_indexed: str = (
+        CQCLClean.cqc_location_import_date + "_indexed"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     current_ccg: str = ONSClean.current_ccg
@@ -109,6 +115,9 @@ class IndCqcColumns:
     current_ons_import_date: str = ONSClean.current_ons_import_date
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
+    current_rural_urban_indicator_2011_for_non_res_model: str = (
+        ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
+    )
     current_sub_icb: str = ONSClean.current_sub_icb
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
@@ -214,8 +223,11 @@ class IndCqcColumns:
         pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
+    posts_rolling_average_model: str = "posts_rolling_average_model"
+    posts_rolling_average_model_lag: str = "posts_rolling_average_model_lag"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_rolling_average: str = "prediction_rolling_average"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -228,6 +240,7 @@ class IndCqcColumns:
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
+    ratio_rolling_average_model: str = "ratio_rolling_average_model"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
@@ -240,14 +253,15 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_model: str = "rolling_average_model"
-    rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    time_registered: str = "time_registered"
+    time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
+    time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
@@ -257,16 +271,15 @@ class IndCqcColumns:
 
 
 @dataclass
-class PrimaryServiceRollingAverageColumns:
-    """The names of the temporary columns created during the rolling average process."""
+class PrimaryServiceRateOfChangeColumns:
+    """The names of the temporary columns created during the rate of change process."""
 
     care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
+    column_with_values: str = "column_with_values"
+    column_with_values_interpolated: str = "column_with_values_interpolated"
+    previous_column_with_values_interpolated: str = (
+        "previous_column_with_values_interpolated"
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
