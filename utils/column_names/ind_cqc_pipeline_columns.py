@@ -48,6 +48,9 @@ class IndCqcColumns:
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
+    ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
+    ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
     ascwds_job_role_counts_by_primary_service: str = (
         "ascwds_job_role_counts_by_primary_service"
     )
@@ -116,6 +119,9 @@ class IndCqcColumns:
         ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
     )
     current_sub_icb: str = ONSClean.current_sub_icb
+    difference_between_estimate_and_cqc_registered_managers: str = (
+        "difference_between_estimate_and_cqc_registered_managers"
+    )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
