@@ -24,8 +24,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     cap_integer_at_max_value,
-    column_expansion_with_dict,
-    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    expand_encode_and_extract_features,
     vectorise_dataframe,
 )
 
@@ -64,34 +63,30 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    df = column_expansion_with_dict(
+    df, service_list = expand_encode_and_extract_features(
         df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.care_home_labels_dict,
+        IndCQC.services_offered,
+        ServicesFeatures.care_home_labels_dict,
+        is_array_col=True,
     )
 
-    df = column_expansion_with_dict(
+    df, specialisms_list = expand_encode_and_extract_features(
         df,
-        col_name=IndCQC.specialisms_offered,
-        lookup_dict=SpecialismsFeatures.labels_dict,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.labels_dict,
+        is_array_col=True,
     )
 
-    df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+    df, rui_indicators_list = expand_encode_and_extract_features(
         df,
-        categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-        lookup_dict=RuralUrbanFeatures.care_home_labels_dict,
+        IndCQC.current_rural_urban_indicator_2011,
+        RuralUrbanFeatures.care_home_labels_dict,
+        is_array_col=False,
     )
 
-    df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-        df,
-        categorical_col_name=IndCQC.current_region,
-        lookup_dict=RegionFeatures.labels_dict,
+    df, region_list = expand_encode_and_extract_features(
+        df, IndCQC.current_region, RegionFeatures.labels_dict, is_array_col=False
     )
-
-    regions = list(RegionFeatures.labels_dict.keys())
-    rui_indicators = list(RuralUrbanFeatures.care_home_labels_dict.keys())
-    service_keys = list(ServicesFeatures.care_home_labels_dict.keys())
-    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
 
     feature_list: List[str] = sorted(
         [
@@ -101,10 +96,10 @@ def main(
             IndCQC.ratio_rolling_average_model,
             IndCQC.service_count_capped,
         ]
-        + regions
-        + rui_indicators
-        + service_keys
-        + specialisms_keys
+        + region_list
+        + rui_indicators_list
+        + service_list
+        + specialisms_list
     )
 
     print(f"Number of features: {len(feature_list)}")
