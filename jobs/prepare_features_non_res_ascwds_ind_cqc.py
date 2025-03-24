@@ -136,8 +136,9 @@ def create_general_non_res_feature_columns(df: DataFrame) -> DataFrame:
     df = column_expansion_with_dict(
         df,
         col_name=IndCQC.specialisms_offered,
-        lookup_dict=SpecialismsFeatures.non_res_model_labels_dict,
+        lookup_dict=SpecialismsFeatures.labels_dict,
     )
+
     df = group_rural_urban_sparse_categories(df)
     df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         df,
@@ -227,12 +228,12 @@ def create_feature_lists() -> Tuple[List[str], List[str]]:
     Returns:
         Tuple[List[str], List[str]]: A tuple containing two lists of feature names.
     """
-    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
-    specialisms_keys = list(SpecialismsFeatures.non_res_model_labels_dict.keys())
-    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
+    dormancy_key = list(DormancyFeatures.labels_dict.keys())
     regions = list(RegionFeatures.labels_dict.keys())
     related_location = list(RelatedLocationFeatures.labels_dict.keys())
-    dormancy_key = list(DormancyFeatures.labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
+    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
+    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
 
     without_dormancy_feature_list: List[str] = sorted(
         [
@@ -243,8 +244,8 @@ def create_feature_lists() -> Tuple[List[str], List[str]]:
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_four_years,
         ]
-        + related_location
         + regions
+        + related_location
         + rui_indicators
         + service_keys
         + specialisms_keys
@@ -260,11 +261,11 @@ def create_feature_lists() -> Tuple[List[str], List[str]]:
             IndCQC.time_registered_capped_at_ten_years,
         ]
         + dormancy_key
+        + regions
         + related_location
+        + rui_indicators
         + service_keys
         + specialisms_keys
-        + regions
-        + rui_indicators
     )
 
     return without_dormancy_feature_list, with_dormancy_feature_list

@@ -25,14 +25,7 @@ class FeatureEngineeringValueLabelsRuralUrban:
     }
 
     non_res_model_labels_dict = {
-        # "rui_rural_hamlet": CatValues.current_rui_column_values.rural_hamlet,
-        # "rui_rural_hamlet_sparse": CatValues.current_rui_column_values.rural_hamlet_sparse,
-        # "rui_rural_town": CatValues.current_rui_column_values.rural_town,
-        # "rui_rural_town_sparse": CatValues.current_rui_column_values.rural_town_sparse,
-        # "rui_rural_village": CatValues.current_rui_column_values.rural_village,
-        # "rui_rural_village_sparse": CatValues.current_rui_column_values.rural_village_sparse,
         "rui_urban_city": CatValues.current_rui_column_values.urban_city,
-        # "rui_urban_city_sparse": CatValues.current_rui_column_values.urban_city_sparse,
         "rui_urban_major": CatValues.current_rui_column_values.urban_major,
         "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
         "rui_sparse": "Sparse setting",
