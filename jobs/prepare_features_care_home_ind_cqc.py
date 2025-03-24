@@ -63,12 +63,12 @@ def main(
         )
     )
 
-    regions = list(RegionFeatures.care_home_labels_dict.keys())
+    regions = list(RegionFeatures.labels_dict.keys())
     features_df = (
         convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
             df=features_df,
             categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.care_home_labels_dict,
+            lookup_dict=RegionFeatures.labels_dict,
         )
     )
 

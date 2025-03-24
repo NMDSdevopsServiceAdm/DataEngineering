@@ -148,7 +148,7 @@ def create_general_non_res_feature_columns(df: DataFrame) -> DataFrame:
     df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
         df,
         categorical_col_name=IndCQC.current_region,
-        lookup_dict=RegionFeatures.non_res_model_labels_dict,
+        lookup_dict=RegionFeatures.labels_dict,
     )
 
     df = convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
@@ -230,7 +230,7 @@ def create_feature_lists() -> Tuple[List[str], List[str]]:
     service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
     specialisms_keys = list(SpecialismsFeatures.non_res_model_labels_dict.keys())
     rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
-    regions = list(RegionFeatures.non_res_model_labels_dict.keys())
+    regions = list(RegionFeatures.labels_dict.keys())
     related_location = list(RelatedLocationFeatures.labels_dict.keys())
     dormancy_key = list(DormancyFeatures.labels_dict.keys())
 
