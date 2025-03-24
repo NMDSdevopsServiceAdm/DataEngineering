@@ -59,7 +59,45 @@ def main(
         features_df
     )
 
-    without_dormancy_feature_list, with_dormancy_feature_list = create_feature_lists()
+    dormancy_key = list(DormancyFeatures.labels_dict.keys())
+    regions = list(RegionFeatures.labels_dict.keys())
+    related_location = list(RelatedLocationFeatures.labels_dict.keys())
+    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
+    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
+    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
+
+    without_dormancy_feature_list: List[str] = sorted(
+        [
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.posts_rolling_average_model_lag,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_four_years,
+        ]
+        + regions
+        + related_location
+        + rui_indicators
+        + service_keys
+        + specialisms_keys
+    )
+
+    with_dormancy_feature_list: List[str] = sorted(
+        [
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.posts_rolling_average_model_lag,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_ten_years,
+        ]
+        + dormancy_key
+        + regions
+        + related_location
+        + rui_indicators
+        + service_keys
+        + specialisms_keys
+    )
 
     print(f"number of features without dormancy: {len(without_dormancy_feature_list)}")
     print(f"number of features with dormancy: {len(with_dormancy_feature_list)}")
@@ -218,57 +256,6 @@ def create_features_specific_to_with_dormancy_model(df: DataFrame) -> DataFrame:
     )
 
     return df
-
-
-# TODO add tests
-def create_feature_lists() -> Tuple[List[str], List[str]]:
-    """
-    Create lists of features for vectorisation.
-
-    Returns:
-        Tuple[List[str], List[str]]: A tuple containing two lists of feature names.
-    """
-    dormancy_key = list(DormancyFeatures.labels_dict.keys())
-    regions = list(RegionFeatures.labels_dict.keys())
-    related_location = list(RelatedLocationFeatures.labels_dict.keys())
-    rui_indicators = list(RuralUrbanFeatures.non_res_model_labels_dict.keys())
-    service_keys = list(ServicesFeatures.non_res_model_labels_dict.keys())
-    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
-
-    without_dormancy_feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.posts_rolling_average_model,
-            IndCQC.posts_rolling_average_model_lag,
-            IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years,
-        ]
-        + regions
-        + related_location
-        + rui_indicators
-        + service_keys
-        + specialisms_keys
-    )
-
-    with_dormancy_feature_list: List[str] = sorted(
-        [
-            IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
-            IndCQC.posts_rolling_average_model,
-            IndCQC.posts_rolling_average_model_lag,
-            IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_ten_years,
-        ]
-        + dormancy_key
-        + regions
-        + related_location
-        + rui_indicators
-        + service_keys
-        + specialisms_keys
-    )
-
-    return without_dormancy_feature_list, with_dormancy_feature_list
 
 
 if __name__ == "__main__":
