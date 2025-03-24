@@ -1,11 +1,10 @@
-from typing import List, Dict
+from typing import Dict, List, Tuple
 
 from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
@@ -40,33 +39,42 @@ def convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
     return df
 
 
-# TODO - merge column_expansion_with_dict and convert_categorical_variable_to_binary_variables_based_on_a_dictionary into this
-def expand_and_convert_to_binary(
+def expand_encode_and_extract_features(
     df: DataFrame, col_name: str, lookup_dict: Dict[str, str], is_array_col: bool
-) -> DataFrame:
+) -> Tuple[DataFrame, List[str]]:
     """
-    Expands a column and converts categorical or array values into binary variables
-    based on a lookup dictionary.
+    Expands a categorical or array column and converts values into binary variables,
+    returning the modified DataFrame and a list of feature names.
+
+    This function iterates through a lookup dictionary and creates new binary columns
+    where each column corresponds to a key in the dictionary. If the column is an array,
+    it checks for array membership using `array_contains`. Otherwise, it performs an
+    equality comparison.
 
     Args:
         df (DataFrame): Input DataFrame.
-        col_name (str): Name of the column to be expanded and converted.
+        col_name (str): Name of the column to be expanded and encoded.
         lookup_dict (Dict[str, str]): Dictionary where keys are new column names and
-            values are the lookup values to compare with.
+            values are the lookup values to compare against.
         is_array_col (bool): If True, treats the column as an array and checks for
-            array membership using array_contains. If False, performs equality comparison.
+            array membership. If False, performs equality comparison.
 
     Returns:
-        DataFrame: A DataFrame with new binary columns added.
+        Tuple[DataFrame, List[str]]:
+            - DataFrame with new binary columns added.
+            - List of feature names (keys) from the lookup dictionary.
     """
     for key, value in lookup_dict.items():
         if is_array_col:
             df = df.withColumn(
-                key, F.array_contains(F.col(col_name), value).cast("integer")
+                key, F.array_contains(F.col(col_name), value).cast(IntegerType())
             )
         else:
-            df = df.withColumn(key, (F.col(col_name) == value).cast("integer"))
-    return df
+            df = df.withColumn(key, (F.col(col_name) == value).cast(IntegerType()))
+
+    key_list = list(lookup_dict.keys())
+
+    return df, key_list
 
 
 def add_array_column_count(
