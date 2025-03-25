@@ -2546,35 +2546,6 @@ class NonResAscwdsFeaturesSchema(object):
                         [
                             StructField(IndCQC.name, StringType(), True),
                             StructField(IndCQC.code, StringType(), True),
-                            StructField(
-                                IndCQC.contacts,
-                                ArrayType(
-                                    StructType(
-                                        [
-                                            StructField(
-                                                IndCQC.person_family_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_given_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_roles,
-                                                ArrayType(StringType(), True),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_title, StringType(), True
-                                            ),
-                                        ]
-                                    ),
-                                    True,
-                                ),
-                                True,
-                            ),
                         ]
                     ),
                     True,
