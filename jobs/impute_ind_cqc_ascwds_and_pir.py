@@ -1,13 +1,14 @@
 import sys
 from dataclasses import dataclass
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import Services
 from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
     primary_service_rate_of_change_trendline,
 )
@@ -23,7 +24,6 @@ from utils.estimate_filled_posts.models.utils import (
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
 )
-
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -113,6 +113,19 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.ratio_rolling_average_model,
     )
+    # TODO make function
+    df = df.withColumn(
+        IndCQC.number_of_beds_banded,
+        F.when(
+            (F.col(IndCQC.number_of_beds_banded) == 1)
+            & (
+                F.col(IndCQC.primary_service_type)
+                == Services.care_home_service_with_nursing
+            ),
+            F.lit(2),
+        ).otherwise(F.col(IndCQC.number_of_beds_banded)),
+    )
+
     df = model_calculate_rolling_average(
         df,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
