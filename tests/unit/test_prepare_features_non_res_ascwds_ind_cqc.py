@@ -26,6 +26,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     )
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.cap_integer_at_max_value")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.calculate_time_registered_for")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_log_column")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_index_column")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.write_to_parquet")
@@ -40,6 +41,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         write_to_parquet_mock: Mock,
         add_array_column_count_mock: Mock,
         add_date_index_column_mock: Mock,
+        add_log_column_mock: Mock,
         calculate_time_registered_for_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
         group_rural_urban_sparse_categories_mock: Mock,
@@ -74,6 +76,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(add_date_index_column_mock.call_count, 2)
+        self.assertEqual(add_log_column_mock.call_count, 2)
         self.assertEqual(calculate_time_registered_for_mock.call_count, 1)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
         self.assertEqual(group_rural_urban_sparse_categories_mock.call_count, 1)

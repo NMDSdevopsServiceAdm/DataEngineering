@@ -1,8 +1,6 @@
 import sys
 from typing import List
 
-from pyspark.sql import DataFrame
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
@@ -30,6 +28,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
+    add_log_column,
     calculate_time_registered_for,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
@@ -111,6 +110,11 @@ def main(
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
+    without_dormancy_features_df = add_log_column(
+        without_dormancy_features_df,
+        IndCQC.time_registered_capped_at_four_years,
+        IndCQC.time_registered_capped_at_four_years_logged,
+    )
 
     with_dormancy_features_df = utils.select_rows_with_non_null_value(
         df, IndCQC.dormancy
@@ -131,6 +135,11 @@ def main(
         max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
+    with_dormancy_features_df = add_log_column(
+        with_dormancy_features_df,
+        IndCQC.time_registered_capped_at_ten_years,
+        IndCQC.time_registered_capped_at_ten_years_logged,
+    )
 
     without_dormancy_feature_list: List[str] = sorted(
         [
@@ -138,7 +147,7 @@ def main(
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years,
+            IndCQC.time_registered_capped_at_four_years_logged,
         ]
         + region_list
         + related_location
@@ -153,7 +162,7 @@ def main(
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_ten_years,
+            IndCQC.time_registered_capped_at_ten_years_logged,
         ]
         + dormancy_key
         + region_list

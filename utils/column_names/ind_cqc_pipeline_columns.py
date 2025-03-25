@@ -262,7 +262,13 @@ class IndCqcColumns:
     standardised_residual: str = "standardised_residual"
     time_registered: str = "time_registered"
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
+    time_registered_capped_at_four_years_logged: str = (
+        "time_registered_capped_at_four_years_logged"
+    )
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_registered_capped_at_ten_years_logged: str = (
+        "time_registered_capped_at_ten_years_logged"
+    )
     time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"

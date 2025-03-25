@@ -186,3 +186,19 @@ def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     )
 
     return df
+
+
+# TODO - Add tests for this function
+def add_log_column(df: DataFrame, input_col: str, output_col: str) -> DataFrame:
+    """
+    Adds a new column to the DataFrame which is the logarithm of the specified input column.
+
+    Args
+        df (DataFrame): Input DataFrame.
+        input_col (str): Name of the column to take the logarithm of.
+        output_col (str): Name of the new column to be added.
+
+    Returns:
+        DataFrame: DataFrame with the new column added.
+    """
+    return df.withColumn(output_col, F.log(F.col(input_col)))
