@@ -734,3 +734,31 @@ class RemoveDuplicatesBasedOnColumnOrderTests(unittest.TestCase):
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class CreateBandedBedCountColumnTests(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.spark = utils.get_spark()
+
+    def test_create_banded_bed_count_column(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_banded_bed_count_column_rows,
+            Schemas.create_banded_bed_count_column_schema,
+        )
+        returned_df = job.create_banded_bed_count_column(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_banded_bed_count_column_rows,
+            Schemas.expected_create_banded_bed_count_column_schema,
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCQC.number_of_beds_banded],
+                expected_data[i][IndCQC.number_of_beds_banded],
+                f"Returned value in row {i} does not match expected",
+            )

@@ -55,6 +55,8 @@ def main(
         locations_df, IndCQC.ascwds_filled_posts_dedup
     )
 
+    locations_df = cUtils.create_banded_bed_count_column(locations_df)
+
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
