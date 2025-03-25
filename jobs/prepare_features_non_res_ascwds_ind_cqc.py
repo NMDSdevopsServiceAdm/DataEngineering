@@ -1,7 +1,7 @@
 import sys
+from typing import List
 
 from pyspark.sql import DataFrame
-from typing import List, Tuple
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -34,7 +34,6 @@ from utils.features.helper import (
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     group_rural_urban_sparse_categories,
-    lag_column_value,
     vectorise_dataframe,
 )
 
@@ -43,7 +42,7 @@ def main(
     ind_cqc_filled_posts_cleaned_source: str,
     with_dormancy_features_destination: str,
     without_dormancy_features_destination: str,
-) -> DataFrame:
+):
     print("Creating non res ascwds inc dormancy features dataset...")
 
     df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
@@ -52,8 +51,8 @@ def main(
 
     df = expand_encode_and_extract_features(
         df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.non_res_model_labels_dict,
+        IndCQC.services_offered,
+        ServicesFeatures.non_res_model_labels_dict,
         is_array_col=True,
     )
     df = add_array_column_count(df, IndCQC.service_count, IndCQC.services_offered)
@@ -104,11 +103,6 @@ def main(
     )
 
     df = calculate_time_registered_for(df)
-
-    # TODO fix lag function (null values)
-    df = lag_column_value(
-        df, IndCQC.posts_rolling_average_model, IndCQC.posts_rolling_average_model_lag
-    )
 
     model_without_dormancy_features_df = (
         create_features_specific_to_without_dormancy_model(df)

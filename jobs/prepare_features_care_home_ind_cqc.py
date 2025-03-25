@@ -41,33 +41,28 @@ def main(
 
     df = utils.select_rows_with_non_null_value(df, IndCQC.number_of_beds)
 
-    df = add_array_column_count(
-        df, new_col_name=IndCQC.service_count, col_to_check=IndCQC.services_offered
-    )
-    df = cap_integer_at_max_value(
-        df,
-        col_name=IndCQC.service_count,
-        max_value=4,
-        new_col_name=IndCQC.service_count_capped,
-    )
-
-    df = add_array_column_count(
-        df,
-        new_col_name=IndCQC.activity_count,
-        col_to_check=IndCQC.imputed_regulated_activities,
-    )
-    df = cap_integer_at_max_value(
-        df,
-        col_name=IndCQC.activity_count,
-        max_value=3,
-        new_col_name=IndCQC.activity_count_capped,
-    )
-
     df, service_list = expand_encode_and_extract_features(
         df,
         IndCQC.services_offered,
         ServicesFeatures.care_home_labels_dict,
         is_array_col=True,
+    )
+    df = add_array_column_count(df, IndCQC.service_count, IndCQC.services_offered)
+    df = cap_integer_at_max_value(
+        df,
+        IndCQC.service_count,
+        max_value=4,
+        new_col_name=IndCQC.service_count_capped,
+    )
+
+    df = add_array_column_count(
+        df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
+    )
+    df = cap_integer_at_max_value(
+        df,
+        IndCQC.activity_count,
+        max_value=3,
+        new_col_name=IndCQC.activity_count_capped,
     )
 
     df, specialisms_list = expand_encode_and_extract_features(

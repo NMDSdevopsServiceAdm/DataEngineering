@@ -98,6 +98,13 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.posts_rolling_average_model,
     )
+    df = model_calculate_rolling_average(
+        df,
+        IndCQC.imputed_filled_post_model,
+        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        [IndCQC.primary_service_type, IndCQC.current_region],
+        "regional_posts_rolling_average_model",
+    )
 
     df = model_calculate_rolling_average(
         df,
@@ -105,6 +112,13 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
         IndCQC.primary_service_type,
         IndCQC.ratio_rolling_average_model,
+    )
+    df = model_calculate_rolling_average(
+        df,
+        IndCQC.imputed_filled_posts_per_bed_ratio_model,
+        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
+        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded],
+        IndCQC.banded_bed_ratio_rolling_average_model,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")

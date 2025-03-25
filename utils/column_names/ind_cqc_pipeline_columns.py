@@ -71,6 +71,9 @@ class IndCqcColumns:
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
     )
+    banded_bed_ratio_rolling_average_model: str = (
+        "banded_bed_ratio_rolling_average_model"
+    )
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
@@ -224,7 +227,6 @@ class IndCqcColumns:
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
-    posts_rolling_average_model_lag: str = "posts_rolling_average_model_lag"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_rolling_average: str = "prediction_rolling_average"

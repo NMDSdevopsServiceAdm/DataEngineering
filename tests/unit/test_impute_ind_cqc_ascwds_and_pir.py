@@ -76,7 +76,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
         )
-        self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
+        self.assertEqual(model_calculate_rolling_average_mock.call_count, 4)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,

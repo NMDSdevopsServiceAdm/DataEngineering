@@ -162,28 +162,6 @@ def add_date_index_column(df: DataFrame) -> DataFrame:
 
 
 # TODO - Add tests for this function
-def lag_column_value(df: DataFrame, col_name: str, new_col_name: str) -> DataFrame:
-    """
-    Adds a new column with the previous value of a specified column.
-
-    This function adds a new column to the given data frame which contains the previous value of the specified column.
-
-    Args:
-        df (DataFrame): A dataframe containing the column to be lagged.
-        col_name (str): The name of the column to be lagged.
-        new_col_name (str): The name for the new column with the lagged values.
-
-    Returns:
-        DataFrame: A dataframe with the new column containing the lagged values.
-    """
-    window = Window.partitionBy(IndCQC.location_id).orderBy(
-        IndCQC.cqc_location_import_date
-    )
-
-    return df.withColumn(new_col_name, F.lag(F.col(col_name)).over(window))
-
-
-# TODO - Add tests for this function
 def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     """
     Copies the values in the rural urban indicator column into a new column and replaces all categories which contains the word "sparse" with "Sparse setting".
