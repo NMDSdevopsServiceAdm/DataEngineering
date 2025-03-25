@@ -104,13 +104,14 @@ class ExpandEncodeAndExtractFeaturesTests(LocationsFeatureEngineeringTests):
             Data.expand_encode_and_extract_features_when_not_array_rows,
             Schemas.expand_encode_and_extract_features_when_not_array_schema,
         )
-        self.returned_not_array_df, self.returned_array_keys = (
-            job.expand_encode_and_extract_features(
-                not_array_test_df,
-                col_with_categories,
-                Data.expand_encode_and_extract_features_lookup_dict,
-                is_array_col=False,
-            )
+        (
+            self.returned_not_array_df,
+            self.returned_array_keys,
+        ) = job.expand_encode_and_extract_features(
+            not_array_test_df,
+            col_with_categories,
+            Data.expand_encode_and_extract_features_lookup_dict,
+            is_array_col=False,
         )
         self.expected_not_array_df = self.spark.createDataFrame(
             Data.expected_expand_encode_and_extract_features_when_not_array_rows,
@@ -121,13 +122,14 @@ class ExpandEncodeAndExtractFeaturesTests(LocationsFeatureEngineeringTests):
             Data.expand_encode_and_extract_features_when_is_array_rows,
             Schemas.expand_encode_and_extract_features_when_is_array_schema,
         )
-        self.returned_is_array_df, self.returned_is_array_keys = (
-            job.expand_encode_and_extract_features(
-                is_array_test_df,
-                col_with_categories,
-                Data.expand_encode_and_extract_features_lookup_dict,
-                is_array_col=True,
-            )
+        (
+            self.returned_is_array_df,
+            self.returned_is_array_keys,
+        ) = job.expand_encode_and_extract_features(
+            is_array_test_df,
+            col_with_categories,
+            Data.expand_encode_and_extract_features_lookup_dict,
+            is_array_col=True,
         )
         self.expected_is_array_df = self.spark.createDataFrame(
             Data.expected_expand_encode_and_extract_features_when_is_array_rows,

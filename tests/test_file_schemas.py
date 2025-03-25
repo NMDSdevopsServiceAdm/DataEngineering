@@ -2577,15 +2577,21 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+                CQCLClean.imputed_regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                        ]
+                    )
+                ),
             ),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.ratio_rolling_average_model, DoubleType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),

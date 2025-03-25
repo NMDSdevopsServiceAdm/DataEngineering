@@ -122,6 +122,11 @@ def main(
         ml_model_metrics_destination,
     )
 
+    # TODO - adjust non-dormancy to reflect dormancy for non res
+    # use data between 2022 only and 2022-2025 to create ratios for
+    # % ratio diff between non-dormancy and dormancy outputs split
+    # by time registered for and related_location
+
     estimate_filled_posts_df = model_non_res_pir_linear_regression(
         estimate_filled_posts_df,
         non_res_pir_linear_regression_features_df,

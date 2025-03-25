@@ -23,6 +23,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 )
 from utils.features.helper import (
     add_array_column_count,
+    add_date_index_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     vectorise_dataframe,
@@ -41,12 +42,15 @@ def main(
 
     df = utils.select_rows_with_non_null_value(df, IndCQC.number_of_beds)
 
+    df = add_date_index_column(df)
+
     df, service_list = expand_encode_and_extract_features(
         df,
         IndCQC.services_offered,
         ServicesFeatures.care_home_labels_dict,
         is_array_col=True,
     )
+
     df = add_array_column_count(df, IndCQC.service_count, IndCQC.services_offered)
     df = cap_integer_at_max_value(
         df,
