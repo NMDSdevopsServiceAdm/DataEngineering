@@ -260,7 +260,7 @@ class IndCqcColumns:
     single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
-    time_registered: str = "time_registered"
+    time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_four_years_logged: str = (
         "time_registered_capped_at_four_years_logged"
@@ -269,7 +269,6 @@ class IndCqcColumns:
     time_registered_capped_at_ten_years_logged: str = (
         "time_registered_capped_at_ten_years_logged"
     )
-    time_registered: str = "time_registered"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

@@ -89,32 +89,6 @@ def add_array_column_count(
     )
 
 
-def calculate_time_registered_for(df: DataFrame) -> DataFrame:
-    """
-    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded down).
-
-    This function adds a new integer column to the given data frame which represents the number of months (rounded down) between the
-    imputed registration date and the cqc location import date.
-
-    Args:
-        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
-
-    Returns:
-        DataFrame: A dataframe with the new time_registered column added.
-    """
-    df = df.withColumn(
-        IndCQC.time_registered,
-        F.floor(
-            F.months_between(
-                F.col(IndCQC.cqc_location_import_date),
-                F.col(IndCQC.imputed_registration_date),
-            )
-        ),
-    )
-
-    return df
-
-
 def cap_integer_at_max_value(
     df: DataFrame, col_name: str, max_value: int, new_col_name: str
 ) -> DataFrame:

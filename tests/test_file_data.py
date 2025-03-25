@@ -3068,6 +3068,40 @@ class CQCLocationsData:
     ]
     # fmt: on
 
+    calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
+    ]
+    expected_calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 0),
+    ]
+
+    calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
+    ]
+    expected_calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 1),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 12),
+    ]
+
+    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
+    ]
+    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 0),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 4),
+    ]
+
+    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
+    ]
+    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 1),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 4),
+    ]
+
     clean_provider_id_column_rows = [
         ("loc_1", None, "20240101"),
         ("loc_1", "123456789", "20240201"),
@@ -5907,40 +5941,6 @@ class ModelFeatures:
     expected_vectorised_feature_rows = [
         ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-
-    calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
-    ]
-    expected_calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 0),
-    ]
-
-    calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
-    ]
-    expected_calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 1),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 12),
-    ]
-
-    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
-    ]
-    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 0),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 4),
-    ]
-
-    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
-    ]
-    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 1),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 4),
     ]
 
     expand_encode_and_extract_features_lookup_dict = {

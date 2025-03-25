@@ -29,7 +29,6 @@ from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
     add_log_column,
-    calculate_time_registered_for,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     group_rural_urban_sparse_categories,
@@ -100,8 +99,6 @@ def main(
         RelatedLocationFeatures.labels_dict,
         is_array_col=False,
     )
-
-    df = calculate_time_registered_for(df)
 
     without_dormancy_features_df = add_date_index_column(df)
     without_dormancy_features_df = cap_integer_at_max_value(
