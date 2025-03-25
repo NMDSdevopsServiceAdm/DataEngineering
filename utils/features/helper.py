@@ -193,7 +193,7 @@ def add_log_column(df: DataFrame, input_col: str, output_col: str) -> DataFrame:
     """
     Adds a new column to the DataFrame which is the logarithm of the specified input column.
 
-    Args
+    Args:
         df (DataFrame): Input DataFrame.
         input_col (str): Name of the column to take the logarithm of.
         output_col (str): Name of the new column to be added.
