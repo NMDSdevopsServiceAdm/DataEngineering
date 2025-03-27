@@ -31,10 +31,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_features_care_home_ind_cqc.vectorise_dataframe")
-    @patch(
-        "jobs.prepare_features_care_home_ind_cqc.convert_categorical_variable_to_binary_variables_based_on_a_dictionary"
-    )
-    @patch("jobs.prepare_features_care_home_ind_cqc.column_expansion_with_dict")
     @patch("jobs.prepare_features_care_home_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_non_null_value")
     @patch("utils.utils.select_rows_with_value")
@@ -45,8 +41,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         select_rows_with_value_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         add_array_column_count_mock: Mock,
-        column_expansion_with_dict_mock: Mock,
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock: Mock,
         vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -60,11 +54,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_mock.call_count, 1)
-        self.assertEqual(column_expansion_with_dict_mock.call_count, 1)
-        self.assertEqual(
-            convert_categorical_variable_to_binary_variables_based_on_a_dictionary_mock.call_count,
-            2,
-        )
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
 
         write_to_parquet_mock.assert_called_once_with(
