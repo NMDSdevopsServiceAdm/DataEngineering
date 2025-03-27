@@ -32,7 +32,6 @@ from utils.features.helper import (
     column_expansion_with_dict,
     add_array_column_count,
     convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
-    add_time_registered_into_df,
 )
 
 
@@ -135,10 +134,6 @@ def main(
             categorical_col_name=IndCQC.dormancy,
             lookup_dict=DormancyFeatures.labels_dict,
         )
-    )
-
-    features_df = add_time_registered_into_df(
-        df=features_df,
     )
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
