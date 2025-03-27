@@ -5989,6 +5989,47 @@ class ModelFeatures:
         (date(2013, 1, 10), date(2023, 1, 10), 20),
     ]
 
+    expand_encode_and_extract_features_lookup_dict = {
+        "has_A": "A",
+        "has_B": "B",
+        "has_C": "C",
+    }
+    expected_expand_encode_and_extract_features_feature_list = [
+        "has_A",
+        "has_B",
+        "has_C",
+    ]
+
+    expand_encode_and_extract_features_when_not_array_rows = [
+        ("1-0001", "A"),
+        ("1-0002", "C"),
+        ("1-0003", "B"),
+        ("1-0004", "D"),
+        ("1-0005", None),
+    ]
+    expected_expand_encode_and_extract_features_when_not_array_rows = [
+        ("1-0001", "A", 1, 0, 0),
+        ("1-0002", "C", 0, 0, 1),
+        ("1-0003", "B", 0, 1, 0),
+        ("1-0004", "D", 0, 0, 0),
+        ("1-0005", None, None, None, None),
+    ]
+
+    expand_encode_and_extract_features_when_is_array_rows = [
+        ("1-0001", ["A", "B"]),
+        ("1-0002", ["B"]),
+        ("1-0003", ["C", "A"]),
+        ("1-0004", ["B", "D"]),
+        ("1-0005", None),
+    ]
+    expected_expand_encode_and_extract_features_when_is_array_rows = [
+        ("1-0001", ["A", "B"], 1, 1, 0),
+        ("1-0002", ["B"], 0, 1, 0),
+        ("1-0003", ["C", "A"], 1, 0, 1),
+        ("1-0004", ["B", "D"], 0, 1, 0),
+        ("1-0005", None, None, None, None),
+    ]
+
     cap_integer_at_max_value_rows = [
         ("1-0001", 1),
         ("1-0002", 2),
