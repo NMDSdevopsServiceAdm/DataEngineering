@@ -3072,7 +3072,7 @@ class CQCLocationsData:
         ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
     ]
     expected_calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 0),
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
     ]
 
     calculate_time_registered_exact_months_apart_rows = [
@@ -3080,8 +3080,8 @@ class CQCLocationsData:
         ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
     ]
     expected_calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 1),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 12),
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
     ]
 
     calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
@@ -3089,8 +3089,8 @@ class CQCLocationsData:
         ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
     ]
     expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 0),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 4),
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
     ]
 
     calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
@@ -3098,8 +3098,8 @@ class CQCLocationsData:
         ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
     ]
     expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 1),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 4),
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
     ]
 
     clean_provider_id_column_rows = [
