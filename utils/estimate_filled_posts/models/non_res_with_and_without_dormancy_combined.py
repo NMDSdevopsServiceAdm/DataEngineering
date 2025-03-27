@@ -61,7 +61,7 @@ def combine_non_res_with_and_without_dormancy_models(
 # TODO add tests
 def select_relevant_data(df: DataFrame) -> DataFrame:
     """
-    Selects columns required for the adjustment process and filters to locations with known 'without_dormancy' predictions only.
+    Selects columns required for the adjustment process and filters to non-residential locations only.
 
     Args:
         df (DataFrame): Input DataFrame containing model predictions.
@@ -76,7 +76,7 @@ def select_relevant_data(df: DataFrame) -> DataFrame:
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
-    ).where(F.col(IndCqc.care_home) == CareHome.care_home)
+    ).where(F.col(IndCqc.care_home) == CareHome.not_care_home)
 
     return filtered_df
 
