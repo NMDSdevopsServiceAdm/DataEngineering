@@ -392,9 +392,8 @@ def pivot_rolling_sum_job_role_counts(df: DataFrame):
         df (DataFrame): A dataframe which contains ascwds_job_role_counts_rolling_sum.
 
     Returns:
-        DataFrame: A dataframe with a rolling sum of each job role which has its each column.
+        DataFrame: The pivoted dataframe with a rolling sum of each job role as individual columns.
     """
-
     df_result = (
         df.groupBy(IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type)
         .pivot(IndCQC.main_job_role_clean_labelled)

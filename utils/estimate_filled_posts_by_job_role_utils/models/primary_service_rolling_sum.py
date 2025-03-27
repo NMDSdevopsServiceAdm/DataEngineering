@@ -52,7 +52,7 @@ def calculate_rolling_sum_of_job_roles(df: DataFrame) -> DataFrame:
         ),
     )
 
-    df_rolling_sum = add_rolling_sum_new(
+    df_rolling_sum = add_rolling_sum_partitioned_by_primary_service_type(
         df_rolling_sum,
         185,
         IndCQC.ascwds_job_role_counts_exploded,
@@ -78,7 +78,7 @@ def calculate_rolling_sum_of_job_roles(df: DataFrame) -> DataFrame:
     return df_result
 
 
-def add_rolling_sum_new(
+def add_rolling_sum_partitioned_by_primary_service_type(
     df: DataFrame,
     number_of_days: int,
     column_to_sum: str,
