@@ -8,7 +8,7 @@ from tests.test_file_data import (
     ValidateNonResASCWDSIncDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSIndCqcFeaturesSchema as Schemas,
+    ValidateNonResASCWDSIncDormancyIndCqcFeaturesSchema as Schemas,
 )
 
 from utils import utils
@@ -77,8 +77,10 @@ class CalculateExpectedSizeofDataset(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
-            test_df
+        returned_row_count = (
+            job.calculate_expected_size_of_non_res_inc_dormancy_features_dataset(
+                test_df
+            )
         )
         self.assertEqual(returned_row_count, expected_row_count)
 
