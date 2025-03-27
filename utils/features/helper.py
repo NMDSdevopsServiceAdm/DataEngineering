@@ -180,9 +180,7 @@ def add_log_column(df: DataFrame, input_col: str, output_col: str) -> DataFrame:
 
 
 # TODO - Add tests for this function
-def filter_without_dormancy_features_to_pre_2025(
-    without_dormancy_df: DataFrame,
-) -> DataFrame:
+def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     """
     Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
 
@@ -196,6 +194,4 @@ def filter_without_dormancy_features_to_pre_2025(
     Returns:
         DataFrame: Filtered DataFrame.
     """
-    return without_dormancy_df.filter(
-        F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1)
-    )
+    return df.filter(F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1))
