@@ -38,9 +38,9 @@ def expand_encode_and_extract_features(
     returning the modified DataFrame and a list of feature names.
 
     This function iterates through a lookup dictionary and creates new binary columns
-    where each column corresponds to a key in the dictionary. If the column is an array,
-    it checks for array membership using `array_contains`. Otherwise, it performs an
-    equality comparison.
+    where each column corresponds to a key in the dictionary.
+    If the column is an array, it checks for array membership using 'array_contains'.
+    Otherwise, it performs an equality comparison.
 
     Args:
         df (DataFrame): Input DataFrame.
