@@ -66,7 +66,7 @@ def combine_non_res_with_and_without_dormancy_models(
 # TODO add tests
 def select_relevant_data(df: DataFrame) -> DataFrame:
     """
-    Selects columns required for the adjustment process and filters to locations with known 'without_dormancy' predictions only.
+    Selects columns required for the adjustment process and filters to non-residential locations only.
 
     Args:
         df (DataFrame): Input DataFrame containing model predictions.
