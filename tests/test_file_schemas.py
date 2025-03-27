@@ -2621,7 +2621,9 @@ class CareHomeFeaturesSchema:
             ),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.ratio_rolling_average_model, DoubleType(), True),
+            StructField(
+                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
+            ),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -4798,24 +4800,32 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSIndCqcFeaturesSchema:
+class ValidateNonResASCWDSIncDormancyIndCqcFeaturesSchema:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
-            StructField(
-                IndCQC.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
+        ]
+    )
+    non_res_ascwds_ind_cqc_features_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
+class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema:
+    cleaned_ind_cqc_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(
@@ -5020,9 +5030,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -5047,9 +5055,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
