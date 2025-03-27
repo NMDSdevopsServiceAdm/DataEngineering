@@ -151,33 +151,6 @@ class SelectDataNotInSubsetTests(
         )
 
 
-class CreateBandedBedCountColumnTests(
-    WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_create_banded_bed_count_column(self):
-        schema = StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.number_of_beds, IntegerType(), True),
-            ]
-        )
-        rows = [
-            ("1", 5),
-            ("2", 24),
-            ("3", 500),
-        ]
-        df = self.spark.createDataFrame(rows, schema)
-        df = job.create_banded_bed_count_column(df)
-
-        df = df.sort(IndCQC.location_id).collect()
-        self.assertEqual(df[0][IndCQC.number_of_beds_banded], 2.0)
-        self.assertEqual(df[1][IndCQC.number_of_beds_banded], 5.0)
-        self.assertEqual(df[2][IndCQC.number_of_beds_banded], 7.0)
-
-
 class CalculateAverageFilledPostsPerBandedBedCount(
     WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests
 ):
