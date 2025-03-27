@@ -836,7 +836,7 @@ class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtils
                 IndCQC.ascwds_worker_import_date,
                 IndCQC.ascwds_job_role_counts,
                 IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_by_primary_service,
+                IndCQC.ascwds_job_role_counts_rolling_sum,
             )
             .sort(IndCQC.primary_service_type)
             .collect(),
@@ -866,7 +866,7 @@ class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtils
                 IndCQC.ascwds_worker_import_date,
                 IndCQC.ascwds_job_role_counts,
                 IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_by_primary_service,
+                IndCQC.ascwds_job_role_counts_rolling_sum,
             )
             .sort(IndCQC.primary_service_type)
             .collect(),

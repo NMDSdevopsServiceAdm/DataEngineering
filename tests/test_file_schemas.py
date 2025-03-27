@@ -6191,7 +6191,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *sum_job_role_split_by_service_schema,
             StructField(
-                IndCQC.ascwds_job_role_counts_by_primary_service,
+                IndCQC.ascwds_job_role_counts_rolling_sum,
                 MapType(StringType(), IntegerType()),
                 True,
             ),

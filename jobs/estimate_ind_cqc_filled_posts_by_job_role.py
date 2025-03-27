@@ -108,7 +108,7 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_job_role_count_map_to_ratios_map(
             estimated_ind_cqc_filled_posts_by_job_role_df,
-            IndCQC.ascwds_job_role_counts_by_primary_service,
+            IndCQC.ascwds_job_role_counts_rolling_sum,
             IndCQC.ascwds_job_role_ratios_by_primary_service,
         )
     )

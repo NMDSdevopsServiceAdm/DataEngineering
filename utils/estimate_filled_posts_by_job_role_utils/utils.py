@@ -295,7 +295,7 @@ def sum_job_role_count_split_by_service(
     )
 
     df_explode_grouped_with_map_column = df_explode_grouped.withColumn(
-        IndCQC.ascwds_job_role_counts_by_primary_service,
+        IndCQC.ascwds_job_role_counts_rolling_sum,
         create_map_column(list_of_job_roles),
     ).drop(*list_of_job_roles)
 
