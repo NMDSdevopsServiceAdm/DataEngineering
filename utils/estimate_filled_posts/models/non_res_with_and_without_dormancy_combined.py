@@ -40,20 +40,25 @@ def combine_non_res_with_and_without_dormancy_models(
         DataFrame: The original DataFrame with the continuous trendline predictions joined in.
     """
     combined_models_df = select_relevant_data(locations_df)
-
+    combined_models_df.show()
     combined_models_df = calculate_and_apply_model_ratios(combined_models_df)
+    combined_models_df.show()
 
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
+    combined_models_df.show()
 
     combined_models_df = combine_model_predictions(combined_models_df)
+    combined_models_df.show()
 
     combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
+    combined_models_df.show()
 
     locations_df = insert_predictions_into_pipeline(
         locations_df,
         combined_models_df,
         IndCqc.non_res_combined_model,
     )
+    locations_df.show()
 
     return locations_df
 
@@ -76,7 +81,7 @@ def select_relevant_data(df: DataFrame) -> DataFrame:
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
-    ).where(F.col(IndCqc.care_home) == CareHome.care_home)
+    ).where(F.col(IndCqc.care_home) == CareHome.not_care_home)
 
     return filtered_df
 
