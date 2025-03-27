@@ -296,13 +296,12 @@ def remove_duplicates_based_on_column_order(
     return df
 
 
-def create_banded_bed_count_column(
-    input_df: DataFrame,
-) -> DataFrame:
+def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
     """
     Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
 
-    This function uses a Bucketizer to categorise the number of beds into specified bands. The banded bed counts are joined into the original DataFrame.
+    This function uses a Bucketizer to categorise the number of beds into specified bands.
+    The banded bed counts are joined into the original DataFrame.
 
     Args:
         input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
