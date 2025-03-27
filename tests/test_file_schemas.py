@@ -3299,6 +3299,21 @@ class ModelNonResWithoutDormancy:
 
 
 @dataclass
+class ModelNonResWithAndWithoutDormancyCombinedSchemas:
+    estimated_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelNonResPirLinearRegressionSchemas:
     non_res_pir_cleaned_ind_cqc_schema = StructType(
         [

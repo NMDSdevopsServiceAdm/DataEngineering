@@ -17,6 +17,9 @@ from utils.estimate_filled_posts.models.non_res_with_dormancy import (
 from utils.estimate_filled_posts.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
+from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
+)
 from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
     model_non_res_pir_linear_regression,
 )
@@ -123,10 +126,9 @@ def main(
         ml_model_metrics_destination,
     )
 
-    # TODO - adjust non-dormancy to reflect dormancy for non res
-    # use data between 2022 only and 2022-2025 to create ratios for
-    # % ratio diff between non-dormancy and dormancy outputs split
-    # by time registered for and related_location
+    estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
+        estimate_filled_posts_df
+    )
 
     estimate_filled_posts_df = model_non_res_pir_linear_regression(
         estimate_filled_posts_df,
