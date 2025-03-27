@@ -384,7 +384,7 @@ def pivot_interpolated_job_role_ratios(
     return df_result
 
 
-def pivot_rolling_sum_job_role_counts(df: DataFrame):
+def pivot_rolling_sum_job_role_counts(df: DataFrame) -> DataFrame:
     """
     Pivots the main_job_role_clean_labelled so that the key are individual column names.
 
