@@ -31,6 +31,7 @@ from utils.features.helper import (
     add_log_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
+    filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
     vectorise_dataframe,
 )
@@ -100,7 +101,8 @@ def main(
         is_array_col=False,
     )
 
-    without_dormancy_features_df = add_date_index_column(df)
+    without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(df)
+    without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
     without_dormancy_features_df = cap_integer_at_max_value(
         without_dormancy_features_df,
         col_name=IndCQC.time_registered,
