@@ -11253,3 +11253,684 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-003", 1, None, None),
         ("1-004", None, 10.0, None),
     ]
+
+    pivot_rolling_sum_job_role_counts_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.care_worker,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_management,
+            1.0,
+        ),
+    ]
+
+    expected_pivot_rolling_sum_job_role_counts_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+        ),
+    ]
+
+    pivot_rolling_sum_job_role_counts_when_null_values_present_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.care_worker,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.registered_nurse,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_care_worker,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_management,
+            1.0,
+        ),
+    ]
+
+    expected_pivot_rolling_sum_job_role_counts_when_null_values_present_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            None,
+            None,
+            None,
+            1.0,
+        ),
+    ]
+
+    pivot_rolling_sum_job_role_counts_when_registered_managers_are_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.care_worker,
+            1.0,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_only",
+            MainJobRoleLabels.registered_nurse,
+            2.0,
+        ),
+        (
+            "1000",
+            1000,
+            "non-residential",
+            MainJobRoleLabels.senior_care_worker,
+            3.0,
+        ),
+        (
+            "1000",
+            1000,
+            "non-residential",
+            MainJobRoleLabels.senior_management,
+            None,
+        ),
+    ]
+
+    expected_pivot_rolling_sum_job_role_counts_when_registered_managers_are_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            1.0,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            "care_home_only",
+            None,
+            2.0,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1000,
+            "non-residential",
+            None,
+            None,
+            3.0,
+            None,
+        ),
+    ]
+
+    pivot_rolling_sum_job_role_counts_when_location_id_is_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.care_worker,
+            1.0,
+        ),
+        (
+            "1001",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+        ),
+        (
+            "1002",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+        ),
+        (
+            "1003",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_management,
+            1.0,
+        ),
+    ]
+
+    expected_pivot_rolling_sum_job_role_counts_when_location_id_is_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            1.0,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1001",
+            1000,
+            "care_home_with_nursing",
+            None,
+            1.0,
+            None,
+            None,
+        ),
+        (
+            "1002",
+            1000,
+            "care_home_with_nursing",
+            None,
+            None,
+            1.0,
+            None,
+        ),
+        (
+            "1003",
+            1000,
+            "care_home_with_nursing",
+            None,
+            None,
+            None,
+            1.0,
+        ),
+    ]
+
+    pivot_rolling_sum_job_role_counts_when_unix_time_is_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            MainJobRoleLabels.care_worker,
+            1.0,
+        ),
+        (
+            "1000",
+            1001,
+            "care_home_with_nursing",
+            MainJobRoleLabels.registered_nurse,
+            1.0,
+        ),
+        (
+            "1000",
+            1002,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_care_worker,
+            1.0,
+        ),
+        (
+            "1000",
+            1003,
+            "care_home_with_nursing",
+            MainJobRoleLabels.senior_management,
+            1.0,
+        ),
+    ]
+
+    expected_pivot_rolling_sum_job_role_counts_when_unix_time_is_different_data = [
+        (
+            "1000",
+            1000,
+            "care_home_with_nursing",
+            1.0,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1001,
+            "care_home_with_nursing",
+            None,
+            1.0,
+            None,
+            None,
+        ),
+        (
+            "1000",
+            1002,
+            "care_home_with_nursing",
+            None,
+            None,
+            1.0,
+            None,
+        ),
+        (
+            "1000",
+            1003,
+            "care_home_with_nursing",
+            None,
+            None,
+            None,
+            1.0,
+        ),
+    ]
+
+    primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+    ]
+
+    primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_and_null_job_role_count_present_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1000",
+            3,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_and_null_job_role_count_present_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            3,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+    ]
+
+    primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_185_days_data = [
+        (
+            "1000",
+            1704067200,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            1720137600,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_185_days_data = [
+        (
+            "1000",
+            1704067200,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            1720137600,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            1,
+            "care_home_only",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_only",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    expected_primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1000",
+            1,
+            "care_home_only",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1000",
+            2,
+            "care_home_only",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+    ]
+
+    primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1001",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+    ]
+
+    expected_primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_185_days_data = [
+        (
+            "1000",
+            1,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1001",
+            2,
+            "care_home_with_nursing",
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+    ]

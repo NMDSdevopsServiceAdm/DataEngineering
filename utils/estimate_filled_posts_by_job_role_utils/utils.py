@@ -384,6 +384,26 @@ def pivot_interpolated_job_role_ratios(
     return df_result
 
 
+def pivot_rolling_sum_job_role_counts(df: DataFrame):
+    """
+    Pivots the main_job_role_clean_labelled so that the key are individual column names.
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_counts_rolling_sum.
+
+    Returns:
+        DataFrame: A dataframe with a rolling sum of each job role which has its each column.
+    """
+
+    df_result = (
+        df.groupBy(IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(IndCQC.ascwds_job_role_counts_rolling_sum, ignorenulls=False))
+    )
+
+    return df_result
+
+
 def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
     """
     convert a map with only null values to be just a null not in map format
