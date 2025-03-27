@@ -184,7 +184,7 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_calculate_time_registered_returns_zero_when_dates_are_on_the_same_day(
+    def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):
         test_df = self.spark.createDataFrame(
