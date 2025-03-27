@@ -1262,15 +1262,32 @@ class CalculateRollingSumOfCountOfJobRoles(
             test_df
         )
 
-        test_df.show(truncate=False)
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
-
         self.assertEqual(
             expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
             returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
         )
 
+    def test_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data,
+            Schemas.primary_service_rolling_sum_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data,
+            Schemas.expected_primary_service_rolling_sum_schema,
+        )
+
+        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
+            test_df
+        )
+
+        self.assertEqual(
+            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+        )
 
 class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
