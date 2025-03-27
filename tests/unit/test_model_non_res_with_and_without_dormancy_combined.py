@@ -14,7 +14,6 @@ from tests.test_file_schemas import (
 
 
 class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
-
     def setUp(self):
         self.spark = utils.get_spark()
 
