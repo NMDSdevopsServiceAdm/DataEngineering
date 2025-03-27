@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-
+from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
@@ -25,6 +25,7 @@ class TempColumns:
     )
 
 
+# TODO add tests
 def combine_non_res_with_and_without_dormancy_models(
     locations_df: DataFrame,
 ) -> DataFrame:
@@ -57,6 +58,7 @@ def combine_non_res_with_and_without_dormancy_models(
     return locations_df
 
 
+# TODO add tests
 def select_relevant_data(df: DataFrame) -> DataFrame:
     """
     Selects columns required for the adjustment process and filters to locations with known 'without_dormancy' predictions only.
@@ -74,11 +76,12 @@ def select_relevant_data(df: DataFrame) -> DataFrame:
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
-    ).where(F.col(IndCqc.non_res_without_dormancy_model).isNotNull())
+    ).where(F.col(IndCqc.care_home) == CareHome.care_home)
 
     return filtered_df
 
 
+# TODO add tests
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
@@ -101,6 +104,7 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
     Averages model predictions by 'related_location' and 'time_registered'.
@@ -111,7 +115,14 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     Returns:
         DataFrame: DataFrame with averaged model predictions.
     """
-    avg_df = df.groupBy(IndCqc.related_location, IndCqc.time_registered).agg(
+    both_models_known_df = df.where(
+        F.col(IndCqc.non_res_with_dormancy_model).isNotNull()
+        & F.col(IndCqc.non_res_without_dormancy_model).isNotNull()
+    )
+
+    avg_df = both_models_known_df.groupBy(
+        IndCqc.related_location, IndCqc.time_registered
+    ).agg(
         F.avg(IndCqc.non_res_with_dormancy_model).alias(TempColumns.avg_with_dormancy),
         F.avg(IndCqc.non_res_without_dormancy_model).alias(
             TempColumns.avg_without_dormancy
@@ -120,6 +131,7 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     return avg_df
 
 
+# TODO add tests
 def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
@@ -141,6 +153,7 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Applies the adjustment ratio to 'without_dormancy' model predictions.
@@ -160,6 +173,7 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def get_first_overlap_date(df: DataFrame) -> DataFrame:
     """
     Identifies the first available date where both models exist for each location.
@@ -187,6 +201,7 @@ def get_first_overlap_date(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates residuals between 'with_dormancy' and 'adjusted_without_dormancy' models at the first overlap date.
@@ -212,6 +227,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     return residual_df
 
 
+# TODO add tests
 def apply_residuals(df: DataFrame) -> DataFrame:
     """
     Applies the residuals to smooth predictions.
@@ -233,6 +249,7 @@ def apply_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates and applies residuals between models to smooth predictions.
@@ -254,6 +271,7 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO add tests
 def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
     Uses the 'with_dormancy' model predictions where available, otherwise uses the adjusted 'without_dormancy' model predictions.
