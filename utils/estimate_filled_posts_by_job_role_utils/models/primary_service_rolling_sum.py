@@ -95,6 +95,7 @@ def add_rolling_sum_new(
         number_of_days (int): The number of days to include in the rolling time period.
         column_to_sum (str): The name of the column to sum.
         rolling_sum_column_name (str): The name of the new column to store the rolling sum.
+        partition_columns (Optional[List[str]]): The columns we partition by in the window specific which defaults to IndCQC.primary_service_type if empty
 
     Returns:
         DataFrame: The DataFrame with the new rolling sum column added.
