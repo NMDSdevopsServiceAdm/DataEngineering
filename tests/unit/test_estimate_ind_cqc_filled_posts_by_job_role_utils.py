@@ -1289,6 +1289,7 @@ class CalculateRollingSumOfCountOfJobRoles(
             returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
         )
 
+
 class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
