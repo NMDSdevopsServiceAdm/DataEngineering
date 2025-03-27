@@ -92,7 +92,7 @@ def main(
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.number_of_beds,
-            IndCQC.ratio_rolling_average_model,
+            IndCQC.banded_bed_ratio_rolling_average_model,
             IndCQC.service_count_capped,
         ]
         + region_list
