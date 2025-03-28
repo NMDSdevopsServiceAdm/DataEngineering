@@ -322,6 +322,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with the new time_registered column added.
     """
+    six_months = 6
     df = df.withColumn(
         CQCLClean.time_registered,
         F.floor(
@@ -330,7 +331,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
                 F.col(CQCLClean.imputed_registration_date),
             )
         )
-        + 1,
+        / six_months,
     )
 
     return df
