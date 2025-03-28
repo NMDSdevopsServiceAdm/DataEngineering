@@ -56,41 +56,70 @@ class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
         self.assertIsNone(expected_df[IndCqc.estimate_filled_posts])
 
 
-class SetMinimumPredictionValueTests(EstimateFilledPostsModelsUtilsTests):
+class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
-
-    def test_set_min_prediction_value_replaces_predictions_below_minimum_value(self):
-        test_df = self.spark.createDataFrame(
-            Data.set_min_prediction_value_when_below_minimum_rows,
-            Schemas.set_min_prediction_value_schema,
+        self.test_df = self.spark.createDataFrame(
+            Data.set_min_value_when_below_minimum_rows,
+            Schemas.set_min_value_schema,
         )
-        returned_df = job.set_min_prediction_value(test_df, 1.0)
+
+    def test_set_min_value_replaces_values_below_min_value(self):
+        returned_df = job.set_min_value(self.test_df, IndCqc.prediction, 2.0)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_set_min_prediction_value_when_below_minimum_rows,
-            Schemas.set_min_prediction_value_schema,
+            Data.expected_set_min_value_when_below_min_value_rows,
+            Schemas.set_min_value_schema,
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_set_min_prediction_value_does_not_replace_predictions_above_minimum_value(
+    def test_set_min_value_replaces_value_with_the_default_when_below_min_value_and_value_not_set(
+        self,
+    ):
+        returned_df = job.set_min_value(self.test_df, IndCqc.prediction)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_set_min_value_when_below_minimum_and_default_not_set_rows,
+            Schemas.set_min_value_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_set_min_value_replaces_value_with_the_greatest_value_when_both_are_negative(
+        self,
+    ):
+        returned_df = job.set_min_value(self.test_df, IndCqc.prediction, -5.0)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_set_min_value_when_below_minimum_and_min_value_is_negative_rows,
+            Schemas.set_min_value_schema,
+        )
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_set_min_value_does_not_replace_value_when_min_value_is_none(
+        self,
+    ):
+        returned_df = job.set_min_value(self.test_df, IndCqc.prediction, None)
+
+        self.assertEqual(returned_df.collect(), self.test_df.collect())
+
+    def test_set_min_value_does_not_replace_predictions_above_minimum_value(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.set_min_prediction_value_when_above_minimum_rows,
-            Schemas.set_min_prediction_value_schema,
+            Data.set_min_value_when_above_minimum_rows,
+            Schemas.set_min_value_schema,
         )
-        returned_df = job.set_min_prediction_value(test_df, 1.0)
+        returned_df = job.set_min_value(test_df, IndCqc.prediction, 1.0)
         expected_df = test_df
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
-    def test_set_min_prediction_value_does_not_replace_null_predictions(self):
+    def test_set_min_value_does_not_replace_null_predictions(self):
         test_df = self.spark.createDataFrame(
-            Data.set_min_prediction_value_when_null_rows,
-            Schemas.set_min_prediction_value_schema,
+            Data.set_min_value_when_null_rows,
+            Schemas.set_min_value_schema,
         )
-        returned_df = job.set_min_prediction_value(test_df, 1.0)
+        returned_df = job.set_min_value(test_df, IndCqc.prediction, 1.0)
         expected_df = test_df
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
