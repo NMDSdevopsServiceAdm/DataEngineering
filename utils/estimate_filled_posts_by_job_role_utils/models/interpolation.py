@@ -12,21 +12,21 @@ from utils.estimate_filled_posts.models.interpolation import model_interpolation
 
 
 def model_job_role_ratio_interpolation(
-    df: DataFrame, column_list: List[str]
+    df: DataFrame, job_role_column_list: List[str]
 ) -> DataFrame:
     """
     Performs interpolation on ascwds_job_role_ratio column
 
     Args:
         df (DataFrame): The input DataFrame containing the columng ascwds_job_role_ratio column
+        job_role_column_list (List[str]): List of all job roles in ASCWDS.
 
     Returns:
         DataFrame: The DataFrame with the ascwds_job_role_ratio_interpolated column
-
     """
     df_to_interpolate = unpack_mapped_column(df, IndCQC.ascwds_job_role_ratios)
     df_to_interpolate = create_map_column(
-        df_to_interpolate, column_list, IndCQC.ascwds_job_role_ratios_temporary
+        df_to_interpolate, job_role_column_list, IndCQC.ascwds_job_role_ratios_temporary
     )
 
     df_to_interpolate = df_to_interpolate.select(
@@ -56,7 +56,9 @@ def model_job_role_ratio_interpolation(
     df_to_interpolate = pivot_interpolated_job_role_ratios(df_to_interpolate)
 
     df_to_interpolate = create_map_column(
-        df_to_interpolate, column_list, IndCQC.ascwds_job_role_ratios_interpolated
+        df_to_interpolate,
+        job_role_column_list,
+        IndCQC.ascwds_job_role_ratios_interpolated,
     )
 
     df_joined = df.join(

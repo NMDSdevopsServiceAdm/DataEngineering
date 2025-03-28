@@ -60,7 +60,7 @@ def create_map_column(
 
     Args:
         df (DataFrame): DataFrame containing the list of columns to be mapped.
-        columns (List[str]): List of column names to be mapped.
+        column_list (List[str]): List of column names to be mapped.
         new_col_name (str): Name of the new mapped column to be added.
         drop_original_columns (bool, optional): If True, drops the original columns after creating
             the map column. Defaults to True.
