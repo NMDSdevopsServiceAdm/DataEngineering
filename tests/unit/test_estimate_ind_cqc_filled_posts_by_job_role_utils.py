@@ -192,9 +192,11 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_all_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_all_columns_populated_rows,
@@ -213,9 +215,11 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_some_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_some_columns_populated_rows,
@@ -234,13 +238,37 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_no_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_no_columns_populated_rows,
             Schemas.expected_create_map_column_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][Schemas.test_map_column],
+            expected_data[0][Schemas.test_map_column],
+        )
+
+    def test_create_map_column_drops_columns_when_drop_original_columns_is_true(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_map_column_when_all_columns_populated_rows,
+            Schemas.create_map_column_schema,
+        )
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
+            Schemas.test_map_column,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_map_column_when_all_columns_populated_and_drop_columns_is_true_rows,
+            Schemas.expected_create_map_column_when_drop_columns_is_true_schema,
         )
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
@@ -874,6 +902,8 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
+        self.test_col_list = Data.list_of_job_roles_for_tests
+
         self.test_df = self.spark.createDataFrame(
             Data.interpolate_job_role_ratios_data,
             Schemas.interpolate_job_role_ratios_schema,
@@ -883,7 +913,9 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.expected_interpolate_job_role_ratios_data,
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
-        self.return_df = interp.model_job_role_ratio_interpolation(self.test_df)
+        self.return_df = interp.model_job_role_ratio_interpolation(
+            self.test_df, self.test_col_list
+        )
 
         self.new_columns_added = [
             column
@@ -914,7 +946,9 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = interp.model_job_role_ratio_interpolation(test_df)
+        return_df = interp.model_job_role_ratio_interpolation(
+            test_df, self.test_col_list
+        )
 
         self.assertEqual(
             expected_df.select(

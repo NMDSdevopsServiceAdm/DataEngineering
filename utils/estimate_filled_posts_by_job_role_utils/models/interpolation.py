@@ -3,6 +3,7 @@ from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
+    unpack_mapped_column,
     create_map_column,
     pivot_interpolated_job_role_ratios,
     convert_map_with_all_null_values_to_null,
@@ -23,10 +24,15 @@ def model_job_role_ratio_interpolation(
         DataFrame: The DataFrame with the ascwds_job_role_ratio_interpolated column
 
     """
-    df_to_interpolate = df.select(
+    df_to_interpolate = unpack_mapped_column(df, IndCQC.ascwds_job_role_ratios)
+    df_to_interpolate = create_map_column(
+        df_to_interpolate, column_list, IndCQC.ascwds_job_role_ratios_temporary
+    )
+
+    df_to_interpolate = df_to_interpolate.select(
         IndCQC.location_id,
         IndCQC.unix_time,
-        F.explode(IndCQC.ascwds_job_role_ratios).alias(
+        F.explode(IndCQC.ascwds_job_role_ratios_temporary).alias(
             IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_ratios_exploded
         ),
     )
