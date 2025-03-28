@@ -316,7 +316,7 @@ def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
     )
 
     set_banded_boundaries = Bucketizer(
-        splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
+        splits=[0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
         inputCol=IndCQC.number_of_beds,
         outputCol=IndCQC.number_of_beds_banded,
     )
