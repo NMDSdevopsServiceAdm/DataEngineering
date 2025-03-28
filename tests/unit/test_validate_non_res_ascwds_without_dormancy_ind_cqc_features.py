@@ -8,7 +8,7 @@ from tests.test_file_data import (
     ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSIndCqcFeaturesSchema as Schemas,
+    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema as Schemas,
 )
 
 from utils import utils
@@ -16,7 +16,7 @@ from utils import utils
 
 class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
-    TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE = "some/other/directory"
+    TEST_NON_RES_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -56,7 +56,7 @@ class MainTests(ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests):
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CLEANED_IND_CQC_SOURCE,
-                self.TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE,
+                self.TEST_NON_RES_FEATURES_SOURCE,
                 self.TEST_DESTINATION,
             )
 
@@ -70,15 +70,17 @@ class CalculateExpectedSizeofDataset(
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_non_res_without_dormancy_features_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 2
-        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
-            test_df
+        expected_row_count = 1
+        returned_row_count = (
+            job.calculate_expected_size_of_non_res_without_dormancy_features_dataset(
+                test_df
+            )
         )
         self.assertEqual(returned_row_count, expected_row_count)
 

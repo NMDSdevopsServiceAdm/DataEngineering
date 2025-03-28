@@ -18,10 +18,14 @@ from utils.feature_engineering_resources.feature_engineering_rural_urban import 
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
+)
 from utils.features.helper import (
     add_array_column_count,
-    column_expansion_with_dict,
-    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    add_date_index_column,
+    cap_integer_at_max_value,
+    expand_encode_and_extract_features,
     vectorise_dataframe,
 )
 
@@ -32,82 +36,78 @@ def main(
 ) -> DataFrame:
     print("Creating care home features dataset...")
 
-    locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
+    df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    filtered_loc_data = utils.select_rows_with_value(
-        locations_df, IndCQC.care_home, CareHome.care_home
-    )
-    filtered_loc_data = utils.select_rows_with_non_null_value(
-        filtered_loc_data, IndCQC.number_of_beds
-    )
+    df = utils.select_rows_with_value(df, IndCQC.care_home, CareHome.care_home)
 
-    features_df = add_array_column_count(
-        df=filtered_loc_data,
-        new_col_name=IndCQC.service_count,
-        col_to_check=IndCQC.services_offered,
-    )
+    df = utils.select_rows_with_non_null_value(df, IndCQC.number_of_beds)
 
-    service_keys = list(ServicesFeatures.labels_dict.keys())
-    features_df = column_expansion_with_dict(
-        df=features_df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.labels_dict,
+    df = add_date_index_column(df)
+
+    df, service_list = expand_encode_and_extract_features(
+        df,
+        IndCQC.services_offered,
+        ServicesFeatures.care_home_labels_dict,
+        is_array_col=True,
     )
 
-    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.labels_dict,
-        )
+    df = add_array_column_count(df, IndCQC.service_count, IndCQC.services_offered)
+    df = cap_integer_at_max_value(
+        df,
+        IndCQC.service_count,
+        max_value=4,
+        new_col_name=IndCQC.service_count_capped,
     )
 
-    regions = list(RegionFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.labels_dict,
-        )
+    df = add_array_column_count(
+        df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
+    )
+    df = cap_integer_at_max_value(
+        df,
+        IndCQC.activity_count,
+        max_value=3,
+        new_col_name=IndCQC.activity_count_capped,
     )
 
-    list_for_vectorisation: List[str] = sorted(
+    df, specialisms_list = expand_encode_and_extract_features(
+        df,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.labels_dict,
+        is_array_col=True,
+    )
+
+    df, rui_indicators_list = expand_encode_and_extract_features(
+        df,
+        IndCQC.current_rural_urban_indicator_2011,
+        RuralUrbanFeatures.care_home_labels_dict,
+        is_array_col=False,
+    )
+
+    df, region_list = expand_encode_and_extract_features(
+        df, IndCQC.current_region, RegionFeatures.labels_dict, is_array_col=False
+    )
+
+    feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
             IndCQC.number_of_beds,
-            IndCQC.rolling_rate_of_change_model,
+            IndCQC.banded_bed_ratio_rolling_average_model,
+            IndCQC.service_count_capped,
         ]
-        + service_keys
-        + regions
-        + rui_indicators
+        + region_list
+        + rui_indicators_list
+        + service_list
+        + specialisms_list
     )
 
-    vectorised_dataframe = vectorise_dataframe(
-        df=features_df, list_for_vectorisation=list_for_vectorisation
-    )
-    vectorised_features_df = vectorised_dataframe.select(
-        IndCQC.location_id,
-        IndCQC.cqc_location_import_date,
-        IndCQC.current_region,
-        IndCQC.number_of_beds,
-        IndCQC.pir_people_directly_employed,
-        IndCQC.care_home,
-        IndCQC.features,
-        IndCQC.ascwds_pir_merged,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_rate_of_change_model,
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
-    )
+    print(f"Number of features: {len(feature_list)}")
 
-    print("number_of_features:")
-    print(len(list_for_vectorisation))
-    print(f"length of feature df: {vectorised_dataframe.count()}")
+    vectorised_features_df = vectorise_dataframe(df, feature_list)
 
-    print(f"Exporting as parquet to {care_home_ind_cqc_features_destination}")
+    print(
+        f"Exporting vectorised_features_df as parquet to {care_home_ind_cqc_features_destination}"
+    )
 
     utils.write_to_parquet(
         vectorised_features_df,
