@@ -295,7 +295,7 @@ def sum_job_role_count_split_by_service(
     )
 
     df_explode_grouped_with_map_column = df_explode_grouped.withColumn(
-        IndCQC.ascwds_job_role_counts_by_primary_service,
+        IndCQC.ascwds_job_role_counts_rolling_sum,
         create_map_column(list_of_job_roles),
     ).drop(*list_of_job_roles)
 
@@ -379,6 +379,25 @@ def pivot_interpolated_job_role_ratios(
         df.groupBy(IndCQC.location_id, IndCQC.unix_time)
         .pivot(IndCQC.main_job_role_clean_labelled)
         .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+    )
+
+    return df_result
+
+
+def pivot_rolling_sum_job_role_counts(df: DataFrame) -> DataFrame:
+    """
+    Pivots the main_job_role_clean_labelled so that the key are individual column names.
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_counts_rolling_sum.
+
+    Returns:
+        DataFrame: The pivoted dataframe with a rolling sum of each job role as individual columns.
+    """
+    df_result = (
+        df.groupBy(IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(IndCQC.ascwds_job_role_counts_rolling_sum, ignorenulls=False))
     )
 
     return df_result
