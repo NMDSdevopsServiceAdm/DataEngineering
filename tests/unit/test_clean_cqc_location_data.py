@@ -180,6 +180,90 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 
+class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    """
+    TODO
+    This function will soon be updated to the number of months, the tests below reflect that change.
+    However, in order to not break the current pipeline, I've left the function as being 6 monthly.
+    Unhash out these tests once we change the function.
+
+    def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_same_day_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_same_day_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_exact_months_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_exact_months_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)"
+        """
+
+
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()

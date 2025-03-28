@@ -3068,6 +3068,40 @@ class CQCLocationsData:
     ]
     # fmt: on
 
+    calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
+    ]
+    expected_calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
+    ]
+
+    calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
+    ]
+    expected_calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
+    ]
+
+    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
+    ]
+    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
+    ]
+
+    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
+    ]
+    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
+    ]
+
     clean_provider_id_column_rows = [
         ("loc_1", None, "20240101"),
         ("loc_1", "123456789", "20240201"),
@@ -5216,16 +5250,16 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '01', '20220101'),
-        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220112'),
-        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.hospice_services], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220212'),
-        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '01', '20220301'),
-        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), Region.south_west, None, [Services.specialist_college_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_town, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, 25.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), Region.north_west, None, [Services.care_home_service_without_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_only, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '15', '20220315'),
-        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), 35, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '01', '20220101'),
+        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), 35, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220112'),
+        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), 35, Region.north_east, Dormancy.dormant, [Services.hospice_services], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220212'),
+        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), 35, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '01', '20220301'),
+        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), 37, Region.south_west, None, [Services.specialist_college_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_town, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), 37, Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), 37, Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, 25.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
+        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), 37, Region.north_west, None, [Services.care_home_service_without_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_only, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '15', '20220315'),
+        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), 38, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '04', '22', '20220422'),
     ]
     # fmt: on
 
@@ -6000,12 +6034,6 @@ class ModelFeatures:
     expected_vectorised_feature_rows = [
         ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-    add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10)),
-    ]
-    expected_add_time_registered_rows = [
-        (date(2013, 1, 10), date(2023, 1, 10), 20),
     ]
 
     cap_integer_at_max_value_rows = [

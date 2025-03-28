@@ -45,3 +45,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     )
     services_offered: str = "services_offered"
     specialisms_offered: str = "specialisms_offered"
+    time_registered: str = "time_registered"
