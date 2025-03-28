@@ -6425,10 +6425,16 @@ class EstimateFilledPostsModelsUtils:
     ]
 
     set_min_value_when_below_minimum_rows = [
-        ("1-001", 0.5, -7.6),
+        ("1-001", 0.5, -7.5),
     ]
-    expected_set_min_value_when_below_minimum_rows = [
+    expected_set_min_value_when_below_min_value_rows = [
+        ("1-001", 0.5, 2.0),
+    ]
+    expected_set_min_value_when_below_minimum_and_default_not_set_rows = [
         ("1-001", 0.5, 1.0),
+    ]
+    expected_set_min_value_when_below_minimum_and_min_value_is_negative_rows = [
+        ("1-001", 0.5, -5.0),
     ]
 
     set_min_value_when_above_minimum_rows = [
