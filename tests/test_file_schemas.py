@@ -1390,6 +1390,21 @@ class CQCLocationsSchema:
             StructField(CQCLClean.imputed_registration_date, StringType(), True),
         ]
     )
+
+    calculate_time_registered_for_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.imputed_registration_date, DateType(), True),
+        ]
+    )
+    expected_calculate_time_registered_for_schema = StructType(
+        [
+            *calculate_time_registered_for_schema,
+            StructField(CQCLClean.time_registered, IntegerType(), True),
+        ]
+    )
+
     remove_late_registration_dates_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -2551,6 +2566,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.imputed_registration_date, DateType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
@@ -3135,16 +3151,34 @@ class ModelFeatures:
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
-    add_time_registered_schema = StructType(
+
+    expand_encode_and_extract_features_when_not_array_schema = StructType(
         [
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("categories", StringType(), True),
         ]
     )
-    expected_add_time_registered_schema = StructType(
+    expected_expand_encode_and_extract_features_when_not_array_schema = StructType(
         [
-            *add_time_registered_schema,
-            StructField(IndCQC.time_registered, IntegerType(), True),
+            *expand_encode_and_extract_features_when_not_array_schema,
+            StructField("has_A", IntegerType(), True),
+            StructField("has_B", IntegerType(), True),
+            StructField("has_C", IntegerType(), True),
+        ]
+    )
+
+    expand_encode_and_extract_features_when_is_array_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField("categories", ArrayType(StringType()), True),
+        ]
+    )
+    expected_expand_encode_and_extract_features_when_is_array_schema = StructType(
+        [
+            *expand_encode_and_extract_features_when_is_array_schema,
+            StructField("has_A", IntegerType(), True),
+            StructField("has_B", IntegerType(), True),
+            StructField("has_C", IntegerType(), True),
         ]
     )
 

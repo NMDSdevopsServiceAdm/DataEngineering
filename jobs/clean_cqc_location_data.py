@@ -106,6 +106,7 @@ def main(
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
+    cqc_location_df = calculate_time_registered_for(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
@@ -304,6 +305,37 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
             ),
         ).otherwise(df[CQCLClean.imputed_registration_date]),
     )
+    return df
+
+
+def calculate_time_registered_for(df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called time_registered.
+
+    This function adds a new integer column to the given data frame which represents the length of time between the imputed
+    registration date and the cqc location import date, split into 6 month time bands (rounded down).
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with the new column of integers added.
+    """
+
+    # TODO - unhash out tests when function updated to calculate difference in months.
+
+    six_months = 6
+    df = df.withColumn(
+        CQCLClean.time_registered,
+        F.floor(
+            F.months_between(
+                F.col(CQCLClean.cqc_location_import_date),
+                F.col(CQCLClean.imputed_registration_date),
+            )
+        )
+        / six_months,
+    )
+
     return df
 
 
