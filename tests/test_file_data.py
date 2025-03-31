@@ -6367,6 +6367,7 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
     ]
 
+<<<<<<< HEAD
     average_models_by_related_location_and_time_registered_rows = [
         ("1-001", RelatedLocation.no_related_location, 1, 5.0, 14.0),
         ("1-002", RelatedLocation.no_related_location, 1, 6.0, 15.0),
@@ -6381,6 +6382,8 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         (RelatedLocation.has_related_location, 2, 4.5, 13.5),
     ]
 
+=======
+>>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:

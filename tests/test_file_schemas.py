@@ -3317,6 +3317,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+<<<<<<< HEAD
     average_models_by_related_location_and_time_registered_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -3335,6 +3336,8 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+=======
+>>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 @dataclass
 class ModelNonResPirLinearRegressionSchemas:

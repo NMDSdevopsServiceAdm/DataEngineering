@@ -1,8 +1,13 @@
+<<<<<<< HEAD
 from pyspark.sql import DataFrame, Window, functions as F
+=======
+from pyspark.sql import DataFrame
+>>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
+<<<<<<< HEAD
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
 from utils.column_values.categorical_column_values import CareHome
@@ -13,6 +18,12 @@ from utils.estimate_filled_posts.models.utils import (
 
 
 # TODO add tests
+=======
+)
+from utils.column_values.categorical_column_values import CareHome
+
+
+>>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 def combine_non_res_with_and_without_dormancy_models(
     locations_df: DataFrame,
 ) -> DataFrame:
@@ -39,6 +50,7 @@ def combine_non_res_with_and_without_dormancy_models(
         locations_df, IndCqc.care_home, CareHome.not_care_home
     )
 
+<<<<<<< HEAD
     non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
     non_res_locations_df = calculate_and_apply_residuals(non_res_locations_df)
@@ -266,3 +278,14 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     )
 
     return df
+=======
+    # TODO - 2 - calculate and apply model ratios
+
+    # TODO - 3 - calculate and apply residuals
+
+    # TODO - 4 - combine model predictions
+
+    # TODO - 5 - set_min_value and insert predictions into pipeline
+
+    return locations_df
+>>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
