@@ -208,12 +208,12 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_rolling_average,
         CTNRClean.cqc_care_workers_employed_rolling_avg,
-        CTNRClean.cqc_care_workers_employed_rolling_rate_of_change,
+        CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
-        CTNRClean.cqc_care_workers_employed_rolling_rate_of_change,
+        CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
         CTNRClean.cqc_care_workers_employed_imputed,
         care_home=False,
     )
