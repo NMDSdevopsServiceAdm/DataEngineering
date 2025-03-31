@@ -27,20 +27,33 @@ class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
         pass
 
 
-# select_relevant_data
-# class ...Tests(ModelNonResWithAndWithoutDormancyCombinedTests):
-#     def setUp(self) -> None:
-#         super().setUp()
-
 # calculate_and_apply_model_ratios
 # class ...Tests(ModelNonResWithAndWithoutDormancyCombinedTests):
 #     def setUp(self) -> None:
 #         super().setUp()
 
-# average_models_by_related_location_and_time_registered
-# class ...Tests(ModelNonResWithAndWithoutDormancyCombinedTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+
+class AverageModelsByRelatedLocationAndTimeRegisteredTests(
+    ModelNonResWithAndWithoutDormancyCombinedTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.average_models_by_related_location_and_time_registered_rows,
+            Schemas.average_models_by_related_location_and_time_registered_schema,
+        )
+        self.returned_df = job.average_models_by_related_location_and_time_registered(
+            test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_average_models_by_related_location_and_time_registered_rows,
+            Schemas.expected_average_models_by_related_location_and_time_registered_schema,
+        )
+
+    def test_name(self):
+        pass
+
 
 # calculate_adjustment_ratios
 # class ...Tests(ModelNonResWithAndWithoutDormancyCombinedTests):

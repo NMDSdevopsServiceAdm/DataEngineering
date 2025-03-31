@@ -6367,6 +6367,20 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
     ]
 
+    average_models_by_related_location_and_time_registered_rows = [
+        ("1-001", RelatedLocation.no_related_location, 1, 5.0, 14.0),
+        ("1-002", RelatedLocation.no_related_location, 1, 6.0, 15.0),
+        ("1-003", RelatedLocation.has_related_location, 1, 1.0, 10.0),
+        ("1-004", RelatedLocation.has_related_location, 1, 2.0, 11.0),
+        ("1-005", RelatedLocation.has_related_location, 2, 3.0, 12.0),
+        ("1-006", RelatedLocation.has_related_location, 2, 4.0, 13.0),
+    ]
+    expected_average_models_by_related_location_and_time_registered_rows = [
+        (RelatedLocation.no_related_location, 1, 5.5, 14.5),
+        (RelatedLocation.has_related_location, 1, 1.5, 10.5),
+        (RelatedLocation.has_related_location, 2, 4.5, 13.5),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:

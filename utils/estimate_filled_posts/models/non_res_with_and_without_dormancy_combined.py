@@ -1,8 +1,10 @@
-from dataclasses import dataclass
-
 from pyspark.sql import DataFrame, Window, functions as F
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+    NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
+)
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
@@ -10,42 +12,38 @@ from utils.estimate_filled_posts.models.utils import (
 )
 
 
-@dataclass
-class TempColumns:
-    """Temporary columns used in the adjustment process."""
-
-    adjustment_ratio: str = "adjustment_ratio"
-    avg_with_dormancy: str = "avg_with_dormancy"
-    avg_without_dormancy: str = "avg_without_dormancy"
-    first_overlap_date: str = "first_overlap_date"
-    residual_at_overlap: str = "residual_at_overlap"
-    adjusted_without_dormancy_model: str = "adjusted_without_dormancy_model"
-    adjusted_and_residual_applied_without_dormancy_model: str = (
-        "adjusted_and_residual_applied_without_dormancy_model"
-    )
-
-
 # TODO add tests
 def combine_non_res_with_and_without_dormancy_models(
     locations_df: DataFrame,
 ) -> DataFrame:
     """
-    Creates a continuous trendline by adjusting the 'without_dormancy' model to align with
+    Creates a combined model prediction by adjusting the 'without_dormancy' model to align with
     the 'with_dormancy' model and applying residual corrections for smoothing.
 
     Args:
-        locations_df (DataFrame): Input DataFrame containing model predictions.
+        locations_df (DataFrame): Input DataFrame containing 'without_dormancy' and 'with_dormancy' model predictions.
 
     Returns:
-        DataFrame: The original DataFrame with the continuous trendline predictions joined in.
+        DataFrame: The original DataFrame with the combined model predictions joined in.
     """
-    combined_models_df = select_relevant_data(locations_df)
+    locations_df = locations_df.select(
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        IndCqc.related_location,
+        IndCqc.time_registered,
+        IndCqc.non_res_without_dormancy_model,
+        IndCqc.non_res_with_dormancy_model,
+    )
 
-    combined_models_df = calculate_and_apply_model_ratios(combined_models_df)
+    non_res_locations_df = utils.select_rows_with_value(
+        locations_df, IndCqc.care_home, CareHome.not_care_home
+    )
 
-    combined_models_df = calculate_and_apply_residuals(combined_models_df)
+    non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
-    combined_models_df = combine_model_predictions(combined_models_df)
+    non_res_locations_df = calculate_and_apply_residuals(non_res_locations_df)
+
+    combined_models_df = combine_model_predictions(non_res_locations_df)
 
     combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
 
@@ -56,29 +54,6 @@ def combine_non_res_with_and_without_dormancy_models(
     )
 
     return locations_df
-
-
-# TODO add tests
-def select_relevant_data(df: DataFrame) -> DataFrame:
-    """
-    Selects columns required for the adjustment process and filters to non-residential locations only.
-
-    Args:
-        df (DataFrame): Input DataFrame containing model predictions.
-
-    Returns:
-        DataFrame: DataFrame with relevant columns selected.
-    """
-    filtered_df = df.select(
-        IndCqc.location_id,
-        IndCqc.cqc_location_import_date,
-        IndCqc.related_location,
-        IndCqc.time_registered,
-        IndCqc.non_res_without_dormancy_model,
-        IndCqc.non_res_with_dormancy_model,
-    ).where(F.col(IndCqc.care_home) == CareHome.not_care_home)
-
-    return filtered_df
 
 
 # TODO add tests

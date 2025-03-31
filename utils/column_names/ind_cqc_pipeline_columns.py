@@ -183,6 +183,7 @@ class IndCqcColumns:
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
     non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
+    non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
@@ -270,3 +271,18 @@ class PrimaryServiceRollingAverageColumns:
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
+
+
+@dataclass
+class NonResWithAndWithoutDormancyCombinedColumns:
+    """The names of the temporary columns used in the combining of the models process."""
+
+    adjustment_ratio: str = "adjustment_ratio"
+    avg_with_dormancy: str = "avg_with_dormancy"
+    avg_without_dormancy: str = "avg_without_dormancy"
+    first_overlap_date: str = "first_overlap_date"
+    residual_at_overlap: str = "residual_at_overlap"
+    adjusted_without_dormancy_model: str = "adjusted_without_dormancy_model"
+    adjusted_and_residual_applied_without_dormancy_model: str = (
+        "adjusted_and_residual_applied_without_dormancy_model"
+    )
