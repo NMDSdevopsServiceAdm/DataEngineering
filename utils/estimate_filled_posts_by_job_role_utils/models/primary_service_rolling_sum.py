@@ -99,7 +99,7 @@ def add_rolling_sum_partitioned_by_primary_service_type(
         number_of_days (int): The number of days to include in the rolling time period.
         column_to_sum (str): The name of the column to sum.
         rolling_sum_column_name (str): The name of the new column to store the rolling sum.
-        
+
     Returns:
         DataFrame: The DataFrame with the new rolling sum column added.
 
