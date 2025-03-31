@@ -44,64 +44,70 @@ def main(
 ):
     print("Creating non res ascwds inc dormancy features dataset...")
 
-    df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
+    locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
 
-    df = utils.select_rows_with_value(df, IndCQC.care_home, CareHome.not_care_home)
+    filtered_df = utils.select_rows_with_value(
+        locations_df, IndCQC.care_home, CareHome.not_care_home
+    )
 
-    df, service_list = expand_encode_and_extract_features(
-        df,
+    features_df, service_list = expand_encode_and_extract_features(
+        filtered_df,
         IndCQC.services_offered,
         ServicesFeatures.non_res_model_labels_dict,
         is_array_col=True,
     )
-    df = add_array_column_count(df, IndCQC.service_count, IndCQC.services_offered)
-    df = cap_integer_at_max_value(
-        df,
+    features_df = add_array_column_count(
+        features_df, IndCQC.service_count, IndCQC.services_offered
+    )
+    features_df = cap_integer_at_max_value(
+        features_df,
         IndCQC.service_count,
         max_value=4,
         new_col_name=IndCQC.service_count_capped,
     )
 
-    df = add_array_column_count(
-        df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
+    features_df = add_array_column_count(
+        features_df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
     )
-    df = cap_integer_at_max_value(
-        df,
+    features_df = cap_integer_at_max_value(
+        features_df,
         IndCQC.activity_count,
         max_value=3,
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    df, specialisms_list = expand_encode_and_extract_features(
-        df,
+    features_df, specialisms_list = expand_encode_and_extract_features(
+        features_df,
         IndCQC.specialisms_offered,
         SpecialismsFeatures.labels_dict,
         is_array_col=True,
     )
 
-    df = group_rural_urban_sparse_categories(df)
-    df, rui_indicators_list = expand_encode_and_extract_features(
-        df,
+    features_df = group_rural_urban_sparse_categories(features_df)
+    features_df, rui_indicators_list = expand_encode_and_extract_features(
+        features_df,
         IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
         RuralUrbanFeatures.non_res_model_labels_dict,
         is_array_col=False,
     )
 
-    df, region_list = expand_encode_and_extract_features(
-        df,
+    features_df, region_list = expand_encode_and_extract_features(
+        features_df,
         IndCQC.current_region,
         RegionFeatures.labels_dict,
         is_array_col=False,
     )
 
-    df, related_location = expand_encode_and_extract_features(
-        df,
+    features_df, related_location = expand_encode_and_extract_features(
+        features_df,
         IndCQC.related_location,
         RelatedLocationFeatures.labels_dict,
         is_array_col=False,
     )
 
-    without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(df)
+    without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(
+        features_df
+    )
     without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
     without_dormancy_features_df = cap_integer_at_max_value(
         without_dormancy_features_df,
@@ -116,7 +122,7 @@ def main(
     )
 
     with_dormancy_features_df = utils.select_rows_with_non_null_value(
-        df, IndCQC.dormancy
+        features_df, IndCQC.dormancy
     )
 
     with_dormancy_features_df, dormancy_key = expand_encode_and_extract_features(
