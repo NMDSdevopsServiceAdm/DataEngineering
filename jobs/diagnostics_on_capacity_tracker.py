@@ -142,12 +142,12 @@ def run_diagnostics_for_care_homes(
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_rolling_average,
         CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_rate_of_change,
+        CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_rate_of_change,
+        CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
         CTCHClean.agency_and_non_agency_total_employed_imputed,
         care_home=True,
     )
