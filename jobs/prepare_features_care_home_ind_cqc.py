@@ -71,7 +71,7 @@ def main(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.rolling_rate_of_change_model,
+            IndCQC.ascwds_rate_of_change_trendline_model,
         ]
         + service_list
         + region_list
@@ -91,7 +91,7 @@ def main(
         IndCQC.features,
         IndCQC.ascwds_pir_merged,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_rate_of_change_model,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         Keys.year,
         Keys.month,
         Keys.day,

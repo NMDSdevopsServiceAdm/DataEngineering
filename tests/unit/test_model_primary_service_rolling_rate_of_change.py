@@ -37,7 +37,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
             IndCqc.rolling_average_model,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_primary_service_rolling_average_rows,
@@ -75,8 +75,8 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
-                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
+                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
                 3,
                 f"Returned row {i} does not match expected",
             )
@@ -418,7 +418,7 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         job.calculate_rolling_rate_of_change(
             self.calculate_roc_df,
             self.number_of_days,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
         self.assertEqual(add_previous_value_column.call_count, 1)
@@ -431,10 +431,12 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         returned_df = job.calculate_rolling_rate_of_change(
             self.calculate_roc_df,
             self.number_of_days,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
-        self.assertTrue(IndCqc.rolling_rate_of_change_model in returned_df.columns)
+        self.assertTrue(
+            IndCqc.ascwds_rate_of_change_trendline_model in returned_df.columns
+        )
 
 
 class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
@@ -594,7 +596,7 @@ class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTest
             Schemas.cumulative_rate_of_change_schema,
         )
         self.returned_df = job.calculate_cumulative_rate_of_change(
-            test_df, IndCqc.rolling_rate_of_change_model
+            test_df, IndCqc.ascwds_rate_of_change_trendline_model
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_cumulative_rate_of_change_rows,
@@ -614,8 +616,8 @@ class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTest
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
-                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
+                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
                 2,
                 f"Returned row {i} does not match expected",
             )
