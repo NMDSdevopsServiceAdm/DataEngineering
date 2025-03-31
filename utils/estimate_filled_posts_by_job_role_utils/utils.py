@@ -374,9 +374,9 @@ def pivot_mapped_column(
     to convert to column and the finally aggregating by another column.
 
     Args:
-        df (DataFrame): A dataframe which contains the mapped column you want to pivot
-        grouping_column (List[str]): Columns you want to group by. The default being a list containing location id and unix time.
-        aggregation_column (str): Column you want to aggregate by. The default being ascwds_job_role_ratios_interpolated
+        df (DataFrame): A dataframe which contains the mapped column you want to pivot.
+        grouping_columns (List[str]): Columns you want to group by. The default being a list containing location id and unix time.
+        aggregation_column (str): Column you want to aggregate by. The default being ascwds_job_role_ratios_interpolated.
 
     Returns:
         DataFrame: A dataframe with the pivoted mapped column.
