@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome, Services
+from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
 
 
 def insert_predictions_into_pipeline(
@@ -84,7 +84,6 @@ def combine_care_home_ratios_and_non_res_posts(
     return df
 
 
-# TODO add tests
 def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
     """
     Cleans the number_of_beds_banded column by merging 'care home with nursing' bands 1 & 2 due to low bases.
@@ -107,7 +106,7 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
             (F.col(IndCqc.number_of_beds_banded) == band_one)
             & (
                 F.col(IndCqc.primary_service_type)
-                == Services.care_home_service_with_nursing
+                == PrimaryServiceType.care_home_with_nursing
             ),
             F.lit(band_two),
         ).otherwise(F.col(IndCqc.number_of_beds_banded)),

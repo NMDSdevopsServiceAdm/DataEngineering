@@ -3387,6 +3387,14 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    clean_number_of_beds_banded_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class MLModelMetrics:

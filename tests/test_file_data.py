@@ -6384,6 +6384,23 @@ class EstimateFilledPostsModelsUtils:
         ("1-008", CareHome.not_care_home, None, None, None),
     ]
 
+    clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 1.0),
+        ("1-005", PrimaryServiceType.care_home_with_nursing, 2.0),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 3.0),
+    ]
+    expected_clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0),
+        ("1-004", PrimaryServiceType.care_home_with_nursing, 2.0),
+        ("1-005", PrimaryServiceType.care_home_with_nursing, 2.0),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 3.0),
+    ]
+
 
 @dataclass
 class MLModelMetrics:

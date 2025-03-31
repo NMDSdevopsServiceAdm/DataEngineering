@@ -159,3 +159,29 @@ class CombineCareHomeRatiosAndNonResPostsTests(EstimateFilledPostsModelsUtilsTes
                 expected_not_care_home_data[i][IndCqc.combined_ratio_and_filled_posts],
                 f"Returned row {i} does not match expected",
             )
+
+
+class CleanNumberOfBedsBandedTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_returned_number_of_beds_banded_column_values_match_expected(self):
+        test_df = self.spark.createDataFrame(
+            Data.clean_number_of_beds_banded_rows,
+            Schemas.clean_number_of_beds_banded_schema,
+        )
+        returned_df = job.clean_number_of_beds_banded(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_clean_number_of_beds_banded_rows,
+            Schemas.clean_number_of_beds_banded_schema,
+        )
+
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.number_of_beds_banded],
+                expected_data[i][IndCqc.number_of_beds_banded],
+                f"Returned row {i} does not match expected",
+            )
