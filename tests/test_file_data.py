@@ -6338,6 +6338,37 @@ class ModelNonResWithoutDormancy:
 
 
 @dataclass
+class ModelNonResWithAndWithoutDormancyCombinedRows:
+    estimated_posts_rows = [
+        ("1-001", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None),
+        ("1-001", date(2022, 2, 1), CareHome.not_care_home, "Y", 2, 3.0, None),
+        ("1-001", date(2023, 3, 1), CareHome.not_care_home, "Y", 3, 4.0, 5.0),
+        ("1-001", date(2024, 4, 1), CareHome.not_care_home, "Y", 4, 5.0, 5.5),
+        ("1-001", date(2025, 5, 1), CareHome.not_care_home, "Y", 5, 6.0, 6.0),
+        ("1-001", date(2025, 6, 1), CareHome.not_care_home, "Y", 6, 7.0, 6.5),
+        ("1-002", date(2021, 1, 1), CareHome.not_care_home, "Y", 3, 8.0, None),
+        ("1-002", date(2022, 2, 1), CareHome.not_care_home, "Y", 4, 8.0, None),
+        ("1-002", date(2023, 3, 1), CareHome.not_care_home, "Y", 5, 8.0, 4.0),
+        ("1-002", date(2024, 4, 1), CareHome.not_care_home, "Y", 6, 8.0, 4.5),
+        ("1-002", date(2025, 5, 1), CareHome.not_care_home, "Y", 7, 8.0, 5.0),
+        ("1-002", date(2025, 6, 1), CareHome.not_care_home, "Y", 8, 8.0, 5.5),
+        ("1-003", date(2021, 1, 1), CareHome.not_care_home, "N", 1, 2.0, None),
+        ("1-003", date(2022, 2, 1), CareHome.not_care_home, "N", 2, 2.0, None),
+        ("1-003", date(2021, 3, 1), CareHome.not_care_home, "N", 3, 4.0, None),
+        ("1-003", date(2022, 4, 1), CareHome.not_care_home, "N", 4, 4.0, None),
+        ("1-003", date(2023, 5, 1), CareHome.not_care_home, "N", 5, 6.0, 8.0),
+        ("1-003", date(2024, 6, 1), CareHome.not_care_home, "N", 6, 6.0, 9.0),
+        ("1-004", date(2024, 4, 1), CareHome.care_home, "Y", 1, None, None),
+        ("1-005", date(2024, 5, 1), CareHome.not_care_home, "Y", 1, 4.0, 2.0),
+        ("1-005", date(2024, 6, 1), CareHome.not_care_home, "Y", 2, 5.0, 2.5),
+        ("1-006", date(2024, 5, 1), CareHome.not_care_home, "N", 1, 3.0, 2.5),
+        ("1-006", date(2024, 6, 1), CareHome.not_care_home, "N", 2, 3.0, 3.0),
+        ("1-006", date(2024, 7, 1), CareHome.not_care_home, "N", 3, 3.0, 3.0),
+        ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
+    ]
+
+
+@dataclass
 class ModelNonResPirLinearRegressionRows:
     non_res_pir_cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
