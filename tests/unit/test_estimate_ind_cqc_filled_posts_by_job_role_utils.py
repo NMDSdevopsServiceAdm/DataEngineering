@@ -808,6 +808,7 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             expected_df.collect(),
         )
 
+
 class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()

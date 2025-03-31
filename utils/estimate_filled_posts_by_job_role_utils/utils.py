@@ -268,6 +268,7 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
 
     return df
 
+
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Unpacks a MapType column in a DataFrame into separate columns (sorted alphabetically), with keys as column names and values as row values.
@@ -369,7 +370,16 @@ def pivot_mapped_column(
     aggregation_column: str = IndCQC.ascwds_job_role_ratios_interpolated,
 ) -> DataFrame:
     """
-    left to populate
+    pivots a mapped column by first grouping a dataframe by a set of columns, then pivoting a column which has values which you want
+    to convert to column and the finally aggregating by another column.
+
+    Args:
+        df (DataFrame): A dataframe which contains the mapped column you want to pivot
+        grouping_column (List[str]): Columns you want to group by. The default being a list containing location id and unix time.
+        aggregation_column (str): Column you want to aggregate by. The default being ascwds_job_role_ratios_interpolated
+
+    Returns:
+        DataFrame: A dataframe with the pivoted mapped column.
     """
 
     df_result = (

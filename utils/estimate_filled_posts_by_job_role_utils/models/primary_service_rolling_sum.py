@@ -23,6 +23,7 @@ def calculate_rolling_sum_of_job_roles(
 
     Args:
         df (DataFrame): The input DataFrame, which has the job role counts mapped column
+        number_of_days_in_rolling_sum (int): The number of days to include in the rolling time period which will be used within add_rolling_sum_partitioned_by_primary_service_type.
 
     Returns:
         DataFrame: The DataFrame with the new rolling sum of job role counts mapped column
@@ -37,8 +38,6 @@ def calculate_rolling_sum_of_job_roles(
 
     job_roles_list = sorted([row[0] for row in df_keys.collect()])
 
-    print("pass1")
-
     # df_rolling_sum = df_rolling_sum.withColumn(
     #     IndCQC.ascwds_job_role_counts_temporary,
     #     create_map_column(job_roles_list),
@@ -47,8 +46,6 @@ def calculate_rolling_sum_of_job_roles(
     # df_rolling_sum = df_rolling_sum.drop(*job_roles_list)
 
     df_rolling_sum = df
-
-    print("pass2")
 
     df_rolling_sum = df_rolling_sum.select(
         IndCQC.location_id,
@@ -59,8 +56,6 @@ def calculate_rolling_sum_of_job_roles(
         ),
     )
 
-    print("pass3")
-
     df_rolling_sum = add_rolling_sum_partitioned_by_primary_service_type(
         df_rolling_sum,
         number_of_days_in_rolling_sum,
@@ -68,34 +63,24 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
-    print("pass4")
-
     df_rolling_sum = pivot_mapped_column(
         df_rolling_sum,
         [IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
-    print("pass5")
-
     df_rolling_sum = df_rolling_sum.withColumn(
         IndCQC.ascwds_job_role_counts_rolling_sum,
         create_map_column(job_roles_list),
     )
 
-    print("pass6")
-
     df_rolling_sum = df_rolling_sum.drop(*job_roles_list)
-
-    print("pass7")
 
     df_result = df.join(
         df_rolling_sum,
         on=[IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
         how="left",
     )
-
-    print("pass8")
 
     return df_result
 
