@@ -99,7 +99,7 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class CreateSingleColumnToAverageTests(EstimateFilledPostsModelsUtilsTests):
+class CombineCareHomeRatiosAndNonResPostsTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
