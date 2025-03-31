@@ -1,4 +1,5 @@
 import sys
+from dataclasses import dataclass
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -56,6 +57,11 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
 ]
 
 
+@dataclass
+class NumericalValues:
+    number_of_days_in_rolling_sum = 185  # Note: using 185 as a proxy for 6 months
+
+
 def main(
     estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
@@ -94,7 +100,8 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = calculate_rolling_sum_of_job_roles(
-        estimated_ind_cqc_filled_posts_by_job_role_df
+        estimated_ind_cqc_filled_posts_by_job_role_df,
+        NumericalValues.number_of_days_in_rolling_sum,
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
