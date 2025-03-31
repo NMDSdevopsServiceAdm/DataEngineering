@@ -3394,6 +3394,12 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
         ]
     )
+    expected_clean_number_of_beds_banded_schema = StructType(
+        [
+            *clean_number_of_beds_banded_schema,
+            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
+        ]
+    )
 
 
 @dataclass

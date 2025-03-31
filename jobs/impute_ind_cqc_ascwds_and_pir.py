@@ -121,7 +121,7 @@ def main(
         df,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
-        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded],
+        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_cleaned],
         IndCQC.banded_bed_ratio_rolling_average_model,
     )
 
