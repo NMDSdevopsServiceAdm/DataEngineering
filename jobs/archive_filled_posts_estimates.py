@@ -19,6 +19,7 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.ascwds_workplace_import_date,
     IndCQC.care_home,
     IndCQC.care_home_model,
+    IndCQC.care_home_rolling_average_model,
     IndCQC.cqc_location_import_date,
     IndCQC.cqc_pir_import_date,
     IndCQC.current_cssr,
