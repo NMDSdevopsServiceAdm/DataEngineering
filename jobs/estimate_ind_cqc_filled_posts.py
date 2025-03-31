@@ -36,6 +36,7 @@ ind_cqc_columns = [
     IndCQC.imputed_gac_service_types,
     IndCQC.imputed_registration_date,
     IndCQC.related_location,
+    IndCQC.time_registered,
     IndCQC.registered_manager_names,
     IndCQC.cqc_pir_import_date,
     IndCQC.pir_people_directly_employed_dedup,

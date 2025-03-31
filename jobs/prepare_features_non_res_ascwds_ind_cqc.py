@@ -128,10 +128,6 @@ def main(
         is_array_col=False,
     )
 
-    features_df = add_time_registered_into_df(
-        df=features_df,
-    )
-
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
     )
