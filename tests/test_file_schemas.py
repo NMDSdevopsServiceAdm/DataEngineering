@@ -3335,6 +3335,21 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    calculate_adjustment_ratios_schema = StructType(
+        [
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(NRModel_TempCol.avg_with_dormancy, FloatType(), True),
+            StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
+        ]
+    )
+    expected_calculate_adjustment_ratios_schema = StructType(
+        [
+            *calculate_adjustment_ratios_schema,
+            StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelNonResPirLinearRegressionSchemas:

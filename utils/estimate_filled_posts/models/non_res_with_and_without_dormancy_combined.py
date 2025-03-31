@@ -24,6 +24,7 @@ def combine_non_res_with_and_without_dormancy_models(
     locations_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
+        IndCqc.care_home,
         IndCqc.related_location,
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
@@ -94,7 +95,6 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     return avg_df
 
 
-# TODO add tests
 def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
@@ -107,11 +107,7 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         TempColumns.adjustment_ratio,
-        F.when(
-            F.col(TempColumns.avg_without_dormancy) != 0,
-            F.col(TempColumns.avg_with_dormancy)
-            / F.col(TempColumns.avg_without_dormancy),
-        ).otherwise(1.0),
+        F.col(TempColumns.avg_with_dormancy) / F.col(TempColumns.avg_without_dormancy),
     )
     return df
 

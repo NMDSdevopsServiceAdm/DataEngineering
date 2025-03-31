@@ -78,3 +78,33 @@ class AverageModelsByRelatedLocationAndTimeRegisteredTests(
                 places=3,
                 msg=f"Returned without dormancy average for row {i} does not match expected",
             )
+
+
+class CalculateAdjustmentRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_adjustment_ratios_schema,
+            Schemas.calculate_adjustment_ratios_schema,
+        )
+        self.returned_df = job.calculate_adjustment_ratios(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_adjustment_ratios_schema,
+            Schemas.expected_calculate_adjustment_ratios_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.related_location).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_average_models_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_average_models_returns_expected_ratios(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.adjustment_ratio],
+                self.expected_data[i][NRModel_TempCol.adjustment_ratio],
+                places=3,
+                msg=f"Returned adjustment ratio for row {i} does not match expected",
+            )

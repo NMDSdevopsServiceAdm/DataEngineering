@@ -6383,6 +6383,15 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         (RelatedLocation.has_related_location, 2, 3.5, 12.5),
     ]
 
+    calculate_adjustment_ratios_schema = [
+        (RelatedLocation.no_related_location, 1, 5.0, 10.0),
+        (RelatedLocation.has_related_location, 1, 4.5, 1.5),
+    ]
+    expected_calculate_adjustment_ratios_schema = [
+        (RelatedLocation.no_related_location, 1, 5.0, 10.0, 0.5),
+        (RelatedLocation.has_related_location, 1, 4.5, 1.5, 3.0),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:
