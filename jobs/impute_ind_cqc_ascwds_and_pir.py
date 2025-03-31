@@ -20,6 +20,7 @@ from utils.estimate_filled_posts.models.rolling_average import (
 )
 from utils.estimate_filled_posts.models.utils import (
     combine_care_home_ratios_and_non_res_posts,
+    clean_number_of_beds_banded,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
@@ -113,18 +114,8 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.ratio_rolling_average_model,
     )
-    # TODO make function
-    df = df.withColumn(
-        IndCQC.number_of_beds_banded,
-        F.when(
-            (F.col(IndCQC.number_of_beds_banded) == 1)
-            & (
-                F.col(IndCQC.primary_service_type)
-                == Services.care_home_service_with_nursing
-            ),
-            F.lit(2),
-        ).otherwise(F.col(IndCQC.number_of_beds_banded)),
-    )
+
+    df = clean_number_of_beds_banded(df)
 
     df = model_calculate_rolling_average(
         df,
