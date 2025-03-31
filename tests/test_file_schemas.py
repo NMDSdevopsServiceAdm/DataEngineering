@@ -48,6 +48,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
     PrimaryServiceRollingAverageColumns as RA_TempCol,
+    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -3313,6 +3314,24 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+        ]
+    )
+
+    average_models_by_related_location_and_time_registered_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+        ]
+    )
+    expected_average_models_by_related_location_and_time_registered_schema = StructType(
+        [
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(NRModel_TempCol.avg_with_dormancy, FloatType(), True),
+            StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
         ]
     )
 
