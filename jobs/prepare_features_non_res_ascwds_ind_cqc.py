@@ -28,10 +28,9 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
     FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
 from utils.features.helper import (
-    vectorise_dataframe,
-    column_expansion_with_dict,
     add_array_column_count,
-    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    expand_encode_and_extract_features,
+    vectorise_dataframe,
 )
 
 
@@ -86,54 +85,46 @@ def main(
         col_to_check=IndCQC.imputed_specialisms,
     )
 
-    service_keys = list(ServicesFeatures.labels_dict.keys())
-    features_df = column_expansion_with_dict(
-        df=features_df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.labels_dict,
+    features_df, service_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.services_offered,
+        ServicesFeatures.labels_dict,
+        is_array_col=True,
     )
 
-    specialisms_keys = list(SpecialismsFeatures.labels_dict.keys())
-    features_df = column_expansion_with_dict(
-        df=features_df,
-        col_name=IndCQC.specialisms_offered,
-        lookup_dict=SpecialismsFeatures.labels_dict,
+    features_df, specialisms_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.labels_dict,
+        is_array_col=True,
     )
 
-    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.labels_dict,
-        )
+    features_df, rui_indicators_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.current_rural_urban_indicator_2011,
+        RuralUrbanFeatures.labels_dict,
+        is_array_col=False,
     )
 
-    regions = list(RegionFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.labels_dict,
-        )
+    features_df, region_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.current_region,
+        RegionFeatures.labels_dict,
+        is_array_col=False,
     )
 
-    related_location = list(RelatedLocationFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.related_location,
-            lookup_dict=RelatedLocationFeatures.labels_dict,
-        )
+    features_df, related_location = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.related_location,
+        RelatedLocationFeatures.labels_dict,
+        is_array_col=False,
     )
 
-    dormancy = list(DormancyFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.dormancy,
-            lookup_dict=DormancyFeatures.labels_dict,
-        )
+    features_df, dormancy_key = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.dormancy,
+        DormancyFeatures.labels_dict,
+        is_array_col=False,
     )
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
@@ -148,12 +139,12 @@ def main(
             IndCQC.time_registered,
             IndCQC.rolling_rate_of_change_model,
         ]
-        + service_keys
-        + regions
-        + rui_indicators
+        + service_list
+        + region_list
+        + rui_indicators_list
     )
     list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation_without_dormancy + dormancy
+        list_for_vectorisation_without_dormancy + dormancy_key
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
