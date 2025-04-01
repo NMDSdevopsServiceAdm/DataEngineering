@@ -157,6 +157,16 @@ class Sector(ColumnValues):
 
 
 @dataclass
+class JobGroupLabels(ColumnValues):
+    """The possible values of the job group column in ASCWDS data"""
+
+    direct_care: str = "direct_care"
+    managers: str = "managers"
+    regulated_professions: str = "regulated_professions"
+    other: str = "other"
+
+
+@dataclass
 class MainJobRoleLabels(ColumnValues):
     """The possible values of the main job role column in ASCWDS data"""
 

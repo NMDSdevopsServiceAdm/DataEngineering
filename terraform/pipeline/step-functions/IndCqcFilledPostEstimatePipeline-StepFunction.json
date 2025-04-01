@@ -62,7 +62,15 @@
                   }
                 }
               ],
-              "End": true
+              "Next": "Run ascwds crawler"
+            },
+            "Run ascwds crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${ascwds_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
           }
         },
@@ -103,7 +111,15 @@
                           "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
                         }
                       },
-                      "End": true
+                      "Next": "Run ons crawler"
+                    },
+                    "Run ons crawler": {
+                      "Type": "Task",
+                      "End": true,
+                      "Parameters": {
+                        "Name": "${ons_crawler_name}"
+                      },
+                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
                     }
                   }
                 },
@@ -139,7 +155,15 @@
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
                 }
               },
-              "End": true
+              "Next": "Run cqc crawler"
+            },
+            "Run cqc crawler": {
+              "Type": "Task",
+              "End": true,
+              "Parameters": {
+                "Name": "${cqc_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
           }
         }
@@ -326,6 +350,14 @@
                   "--charts_destination": "${dataset_bucket_name}"
                 }
               },
+              "Next": "run ind crawler pre validations"
+            },
+            "run ind crawler pre validations": {
+              "Type": "Task",
+              "Parameters": {
+                "Name": "${ind_cqc_filled_posts_crawler_name}"
+              },
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Next": "Start gold validation"
             },
             "Start gold validation": {
@@ -350,9 +382,9 @@
                   "--annual_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
                 }
               },
-              "Next": "run ind crawler"
+              "Next": "run ind crawler final"
             },
-            "run ind crawler": {
+            "run ind crawler final": {
               "Type": "Task",
               "Parameters": {
                 "Name": "${ind_cqc_filled_posts_crawler_name}"
@@ -375,45 +407,6 @@
                 }
               },
               "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Run ons crawler",
-          "States": {
-            "Run ons crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${ons_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-            }
-          }
-        },
-        {
-          "StartAt": "Run ascwds crawler",
-          "States": {
-            "Run ascwds crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${ascwds_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-            }
-          }
-        },
-        {
-          "StartAt": "Run cqc crawler",
-          "States": {
-            "Run cqc crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${cqc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
             }
           }
         }
