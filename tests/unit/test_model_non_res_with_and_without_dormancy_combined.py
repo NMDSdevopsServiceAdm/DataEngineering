@@ -25,12 +25,25 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
         )
 
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.insert_predictions_into_pipeline"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.set_min_value"
+    )
     @patch("utils.utils.select_rows_with_value")
-    def test_models_runs(self, select_rows_with_value_mock: Mock):
+    def test_models_runs(
+        self,
+        select_rows_with_value_mock: Mock,
+        set_min_value_mock: Mock,
+        insert_predictions_into_pipeline_mock: Mock,
+    ):
         returned_df = job.combine_non_res_with_and_without_dormancy_models(
             self.estimated_posts_df
         )
 
         select_rows_with_value_mock.assert_called_once()
+        set_min_value_mock.assert_called_once()
+        insert_predictions_into_pipeline_mock.assert_called_once()
 
     # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
