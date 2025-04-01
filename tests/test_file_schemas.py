@@ -4459,6 +4459,7 @@ class ValidateLocationsAPICleanedData:
     calculate_expected_size_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
