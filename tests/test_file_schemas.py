@@ -48,6 +48,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
     PrimaryServiceRollingAverageColumns as RA_TempCol,
+    PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -2724,54 +2725,36 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
-    primary_service_rolling_average_schema = StructType(
+class ModelPrimaryServiceRateOfChange:
+    primary_service_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
-    expected_primary_service_rolling_average_schema = StructType(
+    expected_primary_service_rate_of_change_schema = StructType(
         [
-            *primary_service_rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            *primary_service_rate_of_change_schema,
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
-    single_column_to_average_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
-    expected_single_column_to_average_schema = StructType(
-        [
-            *single_column_to_average_schema,
-            StructField(RA_TempCol.column_to_average, DoubleType(), True),
-        ]
-    )
-
-    clean_column_to_average_schema = StructType(
+    clean_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RA_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
-    expected_clean_column_to_average_schema = StructType(
+    expected_clean_column_with_values_schema = StructType(
         [
-            *clean_column_to_average_schema,
-            StructField(RA_TempCol.care_home_status_count, IntegerType(), True),
-            StructField(RA_TempCol.submission_count, IntegerType(), True),
+            *clean_column_with_values_schema,
+            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
+            StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )
 
@@ -2784,7 +2767,7 @@ class ModelPrimaryServiceRollingAverage:
     expected_calculate_care_home_status_count_schema = StructType(
         [
             *calculate_care_home_status_count_schema,
-            StructField(RA_TempCol.care_home_status_count, IntegerType(), True),
+            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
         ]
     )
 
@@ -2792,97 +2775,88 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RA_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
         [
             *calculate_submission_count_schema,
-            StructField(RA_TempCol.submission_count, IntegerType(), True),
+            StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )
 
-    interpolate_column_to_average_schema = StructType(
+    interpolate_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RA_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
-    expected_interpolate_column_to_average_schema = StructType(
+    expected_interpolate_column_with_values_schema = StructType(
         [
-            *interpolate_column_to_average_schema,
-            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+            *interpolate_column_with_values_schema,
+            StructField(
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
         ]
     )
-
-    calculate_rolling_average_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
-        ]
-    )
-    expected_calculate_rolling_average_schema = StructType(
-        [
-            *calculate_rolling_average_schema,
-            StructField(IndCQC.rolling_average_model, DoubleType(), True),
-        ]
-    )
-
-    calculate_rolling_rate_of_change_schema = calculate_rolling_average_schema
 
     add_previous_value_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
+            StructField(
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
         ]
     )
     expected_add_previous_value_column_schema = StructType(
         [
             *add_previous_value_column_schema,
             StructField(
-                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
             ),
         ]
     )
 
-    add_rolling_sum_schema = StructType(
+    add_rolling_sum_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RA_TempCol.column_to_average_interpolated, DoubleType(), True),
             StructField(
-                RA_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
+            StructField(
+                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
             ),
         ]
     )
-    expected_add_rolling_sum_schema = StructType(
+    expected_add_rolling_sum_columns_schema = StructType(
         [
-            *add_rolling_sum_schema,
-            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
+            *add_rolling_sum_columns_schema,
+            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
     )
 
-    single_period_rate_of_change_schema = StructType(
+    calculate_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(RA_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RA_TempCol.rolling_previous_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
     )
-    expected_single_period_rate_of_change_schema = StructType(
+    expected_calculate_rate_of_change_schema = StructType(
         [
-            *single_period_rate_of_change_schema,
-            StructField(RA_TempCol.single_period_rate_of_change, DoubleType(), True),
+            *calculate_rate_of_change_schema,
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
+
+@dataclass
+class ModelPrimaryServiceRollingAverage:
     deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),

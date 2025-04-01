@@ -245,6 +245,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
@@ -254,6 +255,21 @@ class IndCqcColumns:
     upper_percentile: str = "upper_percentile"
     value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
+
+
+@dataclass
+class PrimaryServiceRateOfChangeColumns:
+    """The names of the temporary columns created during the rate of change process."""
+
+    care_home_status_count: str = "care_home_status_count"
+    column_with_values: str = "column_with_values"
+    column_with_values_interpolated: str = "column_with_values_interpolated"
+    previous_column_with_values_interpolated: str = (
+        "previous_column_with_values_interpolated"
+    )
+    rolling_current_period_sum: str = "rolling_current_period_sum"
+    rolling_previous_period_sum: str = "rolling_previous_period_sum"
+    submission_count: str = "submission_count"
 
 
 @dataclass
