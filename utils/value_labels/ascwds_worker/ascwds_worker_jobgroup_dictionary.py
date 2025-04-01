@@ -8,8 +8,7 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class AscwdsWorkerValueLabelsJobGroup:
-    """A dict where keys = job role and values = job group
-    and a dict where keys = job group and values = list of job role within job group"""
+    """A dict where keys = job role and values = job group"""
 
     job_role_to_job_group_dict = {
         MainJobRoleLabels.senior_management: JobGroupLabels.managers,
