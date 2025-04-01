@@ -48,7 +48,6 @@ def combine_non_res_with_and_without_dormancy_models(
     return non_res_locations_df  # TODO add tests
 
 
-# TODO add tests
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
