@@ -34,6 +34,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 raw_cqc_locations_columns_to_import = [
     Keys.import_date,
     CQCL.location_id,
+    CQCL.provider_id,
     CQCL.type,
     CQCL.registration_status,
     CQCL.gac_service_types,
@@ -55,9 +56,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
