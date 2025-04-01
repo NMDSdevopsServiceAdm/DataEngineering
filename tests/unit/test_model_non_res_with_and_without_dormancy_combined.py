@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, Mock
-import warnings
 
 from utils import utils
 import utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined as job
@@ -17,11 +16,21 @@ class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
-    def test_combine_non_res_with_and_without_dormancy_models_runs(self):
-        test_df = self.spark.createDataFrame(
+
+class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.estimated_posts_df = self.spark.createDataFrame(
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
         )
 
-        returned_df = job.combine_non_res_with_and_without_dormancy_models(test_df)
+    @patch("utils.utils.select_rows_with_value")
+    def test_models_runs(self, select_rows_with_value_mock: Mock):
+        returned_df = job.combine_non_res_with_and_without_dormancy_models(
+            self.estimated_posts_df
+        )
 
-        pass
+        select_rows_with_value_mock.assert_called_once()
+
+    # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)

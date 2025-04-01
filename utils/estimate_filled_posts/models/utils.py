@@ -37,7 +37,7 @@ def insert_predictions_into_pipeline(
 
 def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataFrame:
     """
-    Sets the minimum value of a specified column to a specified value (default is 1.0).
+    The function takes the greatest value between the existing value and the specified min_value which defaults to 1.0.
 
     Args:
         df (DataFrame): A dataframe containing the specified column.
@@ -45,7 +45,7 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
         min_value (float): The minimum value allowed in the specified column.
 
     Returns:
-        DataFrame: A dataframe with the specified column set to the minimum value.
+        DataFrame: A dataframe with the specified column set to greatest value of the original value or the min_value.
     """
     return df.withColumn(
         col_name,
