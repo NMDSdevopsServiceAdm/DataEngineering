@@ -85,12 +85,12 @@ class CalculateAdjustmentRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTe
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.calculate_adjustment_ratios_schema,
+            Data.calculate_adjustment_ratios_rows,
             Schemas.calculate_adjustment_ratios_schema,
         )
         self.returned_df = job.calculate_adjustment_ratios(test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_adjustment_ratios_schema,
+            Data.expected_calculate_adjustment_ratios_rows,
             Schemas.expected_calculate_adjustment_ratios_schema,
         )
 
@@ -107,4 +107,55 @@ class CalculateAdjustmentRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTe
                 self.expected_data[i][NRModel_TempCol.adjustment_ratio],
                 places=3,
                 msg=f"Returned adjustment ratio for row {i} does not match expected",
+            )
+
+
+class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.apply_model_ratios_returns_expected_values_when_all_values_known_rows,
+            Schemas.apply_model_ratios_schema,
+        )
+        self.returned_df = job.apply_model_ratios(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_apply_model_ratios_returns_expected_values_when_all_values_known_rows,
+            Schemas.expected_apply_model_ratios_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_apply_model_ratios_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_apply_model_ratios_returns_expected_values_when_all_values_known(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                self.expected_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                places=3,
+                msg=f"Returned values for row {i} does not match expected",
+            )
+
+    def test_apply_model_ratios_returns_none_when_none_values_present(self):
+        test_df = self.spark.createDataFrame(
+            Data.apply_model_ratios_returns_none_when_none_values_present_rows,
+            Schemas.apply_model_ratios_schema,
+        )
+        returned_df = job.apply_model_ratios(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_apply_model_ratios_returns_none_when_none_values_present_rows,
+            Schemas.expected_apply_model_ratios_schema,
+        )
+
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                expected_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                f"Returned values for row {i} does not match expected",
             )

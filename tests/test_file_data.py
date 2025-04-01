@@ -6383,13 +6383,33 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         (RelatedLocation.has_related_location, 2, 3.5, 12.5),
     ]
 
-    calculate_adjustment_ratios_schema = [
+    calculate_adjustment_ratios_rows = [
         (RelatedLocation.no_related_location, 1, 5.0, 10.0),
         (RelatedLocation.has_related_location, 1, 4.5, 1.5),
     ]
-    expected_calculate_adjustment_ratios_schema = [
+    expected_calculate_adjustment_ratios_rows = [
         (RelatedLocation.no_related_location, 1, 5.0, 10.0, 0.5),
         (RelatedLocation.has_related_location, 1, 4.5, 1.5, 3.0),
+    ]
+
+    apply_model_ratios_returns_expected_values_when_all_values_known_rows = [
+        ("1-001", 5.0, 14.0, 0.25),
+        ("1-002", 6.0, 15.0, 2.0),
+    ]
+    expected_apply_model_ratios_returns_expected_values_when_all_values_known_rows = [
+        ("1-001", 5.0, 14.0, 0.25, 3.5),
+        ("1-002", 6.0, 15.0, 2.0, 30.0),
+    ]
+
+    apply_model_ratios_returns_none_when_none_values_present_rows = [
+        ("1-001", 5.0, None, 0.2),
+        ("1-002", 5.0, 10.0, None),
+        ("1-003", 5.0, None, None),
+    ]
+    expected_apply_model_ratios_returns_none_when_none_values_present_rows = [
+        ("1-001", 5.0, None, 0.2, None),
+        ("1-002", 5.0, 10.0, None, None),
+        ("1-003", 5.0, None, None, None),
     ]
 
 
