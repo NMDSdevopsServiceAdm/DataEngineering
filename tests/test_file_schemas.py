@@ -3317,6 +3317,28 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    calculate_and_apply_model_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+        ]
+    )
+    expected_calculate_and_apply_model_ratios_schema = StructType(
+        [
+            *calculate_and_apply_model_ratios_schema,
+            StructField(NRModel_TempCol.avg_with_dormancy, FloatType(), True),
+            StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
+            StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
+            StructField(
+                NRModel_TempCol.adjusted_without_dormancy_model, FloatType(), True
+            ),
+        ]
+    )
+
     average_models_by_related_location_and_time_registered_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

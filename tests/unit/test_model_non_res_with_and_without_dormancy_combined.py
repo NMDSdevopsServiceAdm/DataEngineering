@@ -17,22 +17,47 @@ class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
-        self.test_df = self.spark.createDataFrame(
-            Data.estimated_posts_rows, Schemas.estimated_posts_schema
-        )
-
 
 class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
         super().setUp()
 
+        self.estimated_posts_df = self.spark.createDataFrame(
+            Data.estimated_posts_rows, Schemas.estimated_posts_schema
+        )
+
     @patch("utils.utils.select_rows_with_value")
     def test_models_runs(self, select_rows_with_value_mock: Mock):
-        returned_df = job.combine_non_res_with_and_without_dormancy_models(self.test_df)
+        returned_df = job.combine_non_res_with_and_without_dormancy_models(
+            self.estimated_posts_df
+        )
 
         select_rows_with_value_mock.assert_called_once()
 
     # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
+
+
+class CalculateAndApplyModelRatioTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_and_apply_model_ratios_rows,
+            Schemas.calculate_and_apply_model_ratios_schema,
+        )
+        self.returned_df = job.calculate_and_apply_model_ratios(self.test_df)
+
+        self.empty_expected_df = self.spark.createDataFrame(
+            [], Schemas.expected_calculate_and_apply_model_ratios_schema
+        )
+
+    def test_calculate_and_apply_model_ratios_returns_the_original_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
+
+    def test_calculate_and_apply_model_ratios_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.empty_expected_df.columns)
+        )
 
 
 class AverageModelsByRelatedLocationAndTimeRegisteredTests(

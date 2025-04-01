@@ -6367,6 +6367,20 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
     ]
 
+    calculate_and_apply_model_ratios_rows = [
+        ("1-001", date(2022, 2, 1), "Y", 2, 3.0, None),
+        ("1-001", date(2023, 3, 1), "Y", 3, 4.0, 5.0),
+        ("1-002", date(2022, 2, 1), "Y", 4, 8.0, None),
+        ("1-002", date(2023, 3, 1), "Y", 5, 8.0, 4.0),
+        ("1-003", date(2022, 2, 1), "N", 2, 2.0, None),
+        ("1-003", date(2021, 3, 1), "N", 3, 4.0, None),
+        ("1-003", date(2022, 4, 1), "N", 4, 4.0, None),
+        ("1-003", date(2023, 5, 1), "N", 5, 6.0, 8.0),
+        ("1-003", date(2024, 6, 1), "N", 6, 6.0, 9.0),
+        ("1-004", date(2024, 5, 1), "Y", 1, 4.0, 2.0),
+        ("1-004", date(2024, 6, 1), "Y", 2, 5.0, 2.5),
+    ]
+
     average_models_by_related_location_and_time_registered_rows = [
         ("1-001", RelatedLocation.no_related_location, 1, 5.0, 14.0),
         ("1-002", RelatedLocation.no_related_location, 1, 6.0, 15.0),
