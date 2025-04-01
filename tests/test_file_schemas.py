@@ -3438,7 +3438,7 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
-    set_min_prediction_value_schema = StructType(
+    set_min_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
