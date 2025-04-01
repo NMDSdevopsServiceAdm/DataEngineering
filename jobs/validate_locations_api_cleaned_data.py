@@ -4,6 +4,7 @@ import sys
 os.environ["SPARK_VERSION"] = "3.3"
 
 from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql.types import ArrayType
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -54,9 +55,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -74,9 +75,13 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
     has_a_known_regulated_activity: str = "has_a_known_regulated_activity"
+    has_a_known_provider_id: str = "has_a_known_provider_id"
 
-    raw_location_df = identify_if_location_has_a_known_regulated_activity(
-        raw_location_df, has_a_known_regulated_activity
+    raw_location_df = identify_if_location_has_a_known_value(
+        raw_location_df, CQCL.regulated_activities, has_a_known_regulated_activity
+    )
+    raw_location_df = identify_if_location_has_a_known_value(
+        raw_location_df, CQCL.provider_id, has_a_known_provider_id
     )
 
     expected_size = raw_location_df.where(
@@ -99,38 +104,53 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
             | (raw_location_df[CQCL.gac_service_types].isNull())
         )
         & (raw_location_df[has_a_known_regulated_activity] == True)
+        & (raw_location_df[has_a_known_provider_id] == True)
     ).count()
     return expected_size
 
 
-def identify_if_location_has_a_known_regulated_activity(
-    df: DataFrame, new_col_name: str
+def identify_if_location_has_a_known_value(
+    df: DataFrame, col_to_check: str, new_col_name: str
 ) -> DataFrame:
     """
-    Identifies if a location has any known regulated activities and adds a new column to the DataFrame.
+    Identifies if a location has ever had a known valid response and adds a new column to the DataFrame.
 
-    This function partitions the DataFrame by location ID and checks if there are any regulated activities
-    associated with each location. If any regulated activities are found, it sets the value of the new column
-    to True; otherwise, it sets it to False.
+    This function partitions the DataFrame by location ID and checks if there are any known values within each location.
+    If the column is an array type, the 'known value' is defined as the array being of size greater than zero.
+    Otherwise, a known value is identified as a non-null value.
+    If any valid responses are found, it sets the value of the new column to True; otherwise, it sets it to False.
 
     Args:
         df (DataFrame): The input DataFrame containing location data.
+        col_to_check (str): The name of the column to check.
         new_col_name (str): The name of the new column to be added to the DataFrame.
 
     Returns:
-        DataFrame: The DataFrame with the new column indicating the presence of regulated activities.
+        DataFrame: The DataFrame with the new column indicating the presence of valid responses.
     """
     window_spec = Window.partitionBy(
         CQCL.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
-    df = df.withColumn(
-        new_col_name,
-        F.when(
-            F.max(F.size(CQCL.regulated_activities)).over(window_spec) > 0,
-            True,
-        ).otherwise(False),
-    )
+    if isinstance(df.schema[col_to_check].dataType, ArrayType):
+        df = df.withColumn(
+            new_col_name,
+            F.when(
+                F.max(F.size(df[col_to_check])).over(window_spec) > 0,
+                True,
+            ).otherwise(False),
+        )
+    else:
+        df = df.withColumn(
+            new_col_name,
+            F.when(
+                F.max(F.when(df[col_to_check].isNotNull(), 1).otherwise(0)).over(
+                    window_spec
+                )
+                > 0,
+                True,
+            ).otherwise(False),
+        )
     return df
 
 
