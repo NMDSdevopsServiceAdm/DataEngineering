@@ -35,6 +35,8 @@ def combine_non_res_with_and_without_dormancy_models(
         locations_df, IndCqc.care_home, CareHome.not_care_home
     )
 
+    # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
+
     non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
     # TODO - 3 - calculate and apply residuals
@@ -112,7 +114,6 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO add tests
 def apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Applies the adjustment ratio to 'without_dormancy' model predictions.
