@@ -11380,7 +11380,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-004", None, 10.0, None),
     ]
 
-    sum_job_group_counts_rows = [
+    sum_job_group_counts_from_job_role_count_map_rows = [
         (
             "1-001",
             1000,
@@ -11424,7 +11424,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         ),
     ]
-    expected_sum_job_group_counts_rows = [
+    expected_sum_job_group_counts_from_job_role_count_map_rows = [
         (
             "1-001",
             1000,

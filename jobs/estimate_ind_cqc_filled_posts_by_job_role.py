@@ -98,16 +98,20 @@ def main(
         )
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.calculate_job_group_sum(
-        estimated_ind_cqc_filled_posts_by_job_role_df,
-        IndCQC.ascwds_job_role_counts,
-        IndCQC.ascwds_job_group_counts,
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.calculate_job_group_sum_from_job_role_map_column(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_counts,
+            IndCQC.ascwds_job_group_counts,
+        )
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.calculate_job_group_sum(
-        estimated_ind_cqc_filled_posts_by_job_role_df,
-        IndCQC.ascwds_job_role_ratios,
-        IndCQC.ascwds_job_group_ratios,
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.calculate_job_group_sum_from_job_role_map_column(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.ascwds_job_group_ratios,
+        )
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (

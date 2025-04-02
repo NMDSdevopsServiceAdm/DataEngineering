@@ -6360,7 +6360,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    sum_job_group_counts_schema = StructType(
+    sum_job_group_counts_from_job_role_count_map_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
@@ -6371,9 +6371,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-    expected_sum_job_group_counts_schema = StructType(
+    expected_sum_job_group_counts_from_job_role_count_map_schema = StructType(
         [
-            *sum_job_group_counts_schema,
+            *sum_job_group_counts_from_job_role_count_map_schema,
             StructField(
                 IndCQC.ascwds_job_group_counts,
                 MapType(StringType(), IntegerType()),

@@ -440,8 +440,8 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     return df
 
 
-def calculate_job_group_sum(
-    df: DataFrame, job_role_level_values_column: str, new_column_name: str
+def calculate_job_group_sum_from_job_role_map_column(
+    df: DataFrame, job_role_level_map_column: str, new_job_group_map_column_name: str
 ) -> DataFrame:
     """
     doc string here
@@ -450,7 +450,7 @@ def calculate_job_group_sum(
     df_exploded = df.select(
         IndCQC.location_id,
         IndCQC.unix_time,
-        F.explode(job_role_level_values_column).alias("job_role", "value"),
+        F.explode(job_role_level_map_column).alias("job_role", "value"),
     )
 
     df_exploded = df_exploded.withColumn("job_group", F.col("job_role"))
@@ -466,7 +466,7 @@ def calculate_job_group_sum(
     )
 
     df_exploded = df_exploded.withColumn(
-        new_column_name,
+        new_job_group_map_column_name,
         create_map_column(
             list(
                 set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
