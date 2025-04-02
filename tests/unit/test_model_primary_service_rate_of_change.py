@@ -7,7 +7,7 @@ from pyspark.sql import functions as F
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-import utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change as job
+import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
