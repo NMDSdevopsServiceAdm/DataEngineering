@@ -391,19 +391,19 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
         )
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_previous_value_column"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_previous_value_column"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_rolling_sum"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_rolling_sum"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_single_period_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_single_period_rate_of_change"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.deduplicate_dataframe"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.deduplicate_dataframe"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_cumulative_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_cumulative_rate_of_change"
     )
     def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
@@ -457,7 +457,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         self.expected_data = self.expected_df.collect()
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.get_selected_value"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.get_selected_value"
     )
     def test_functions_called_in_add_previous_value_column_function(
         self,
