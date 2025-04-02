@@ -29,6 +29,14 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
         )
 
 
+class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_number_of_days_in_window_value(self):
+        self.assertEqual(job.NumericalValues.number_of_days_in_rolling_sum, 185)
+
+
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(

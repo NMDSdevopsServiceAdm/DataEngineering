@@ -4,11 +4,7 @@ from unittest.mock import patch, Mock
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils import utils as job
-from jobs.estimate_ind_cqc_filled_posts_by_job_role import NumericalValues
 from utils.estimate_filled_posts_by_job_role_utils.models import interpolation as interp
-from utils.estimate_filled_posts_by_job_role_utils.models import (
-    primary_service_rolling_sum,
-)
 from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
 from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
@@ -879,389 +875,124 @@ class PivotMappedColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_pivot_mapped_column_returns_pivoted_job_role_labels(self):
+    def test_pivot_mapped_column_when_same_unix_time_and_primary_serivice_type_returns_pivoted_job_role_labels(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_data,
+            Data.pivot_mapped_column_same_unix_time_and_primary_serivice_type_data,
             Schemas.pivot_interpolated_job_role_ratios_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_data,
+            Data.expected_pivot_mapped_column_same_unix_time_and_primary_serivice_type_data,
             Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(test_df)
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_unix_time_is_different_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_different_unix_time_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_different_unix_time_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(test_df)
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_unix_time_is_different_and_null_interpolated_values_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_different_unix_time_and_null_interpolated_values_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_different_unix_time_and_null_interpolated_values_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(test_df)
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_location_id_is_different_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_different_location_id_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_different_location_id_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(test_df)
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_location_id_is_different_and_null_interpreted_values_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_different_location_id_and_null_interpolated_values_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_different_location_id_and_null_interpolated_values_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(test_df)
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    # def test_pivot_mapped_column_returns_pivoted_job_role_labels(self):
-    #     test_df = self.spark.createDataFrame(
-    #         Data.pivot_rolling_sum_job_role_counts_data,
-    #         Schemas.pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_pivot_rolling_sum_job_role_counts_data,
-    #         Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     returned_df = job.pivot_mapped_column(test_df,[IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],IndCQC.ascwds_job_role_counts_rolling_sum)
-
-    #     self.assertEqual(
-    #         expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #         returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #     )
-
-    def test_pivot_mapped_column_when_null_values_present_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_rolling_sum_job_role_counts_when_null_values_present_data,
-            Schemas.pivot_rolling_sum_job_role_counts_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_rolling_sum_job_role_counts_when_null_values_present_data,
-            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
         )
 
         returned_df = job.pivot_mapped_column(
-            test_df,
-            [IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
-            IndCQC.ascwds_job_role_counts_rolling_sum,
+            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
         )
 
         self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.collect(),
+            returned_df.collect(),
         )
 
-    def test_pivot_mapped_column_when_registered_managers_are_different_returns_pivoted_job_role_labels(
+    def test_pivot_mapped_column_when_unix_time_is_different_and_primary_service_type_is_the_same_returns_pivoted_job_role_labels(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_when_registered_managers_are_different_data,
-            Schemas.pivot_rolling_sum_job_role_counts_schema,
+            Data.pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data,
+            Schemas.pivot_interpolated_job_role_ratios_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_when_registered_managers_are_different_data,
-            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
+            Data.expected_pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data,
+            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
         )
 
         returned_df = job.pivot_mapped_column(
-            test_df,
-            [IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
-            IndCQC.ascwds_job_role_counts_rolling_sum,
+            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
         )
 
-        self.assertEqual(
-            expected_df.orderBy(
-                IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type
-            ).collect(),
-            returned_df.orderBy(
-                IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type
-            ).collect(),
-        )
-
-    # def test_pivot_mapped_column_when_location_id_is_different_returns_pivoted_job_role_labels(
-    #     self,
-    # ):
-    #     test_df = self.spark.createDataFrame(
-    #         Data.pivot_rolling_sum_job_role_counts_when_location_id_is_different_data,
-    #         Schemas.pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_pivot_rolling_sum_job_role_counts_when_location_id_is_different_data,
-    #         Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     returned_df = job.pivot_mapped_column(test_df,[IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],IndCQC.ascwds_job_role_counts_rolling_sum)
-
-    #     self.assertEqual(
-    #         expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #         returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #     )
-
-    # def test_pivot_mapped_column_when_unix_time_is_different_returns_pivoted_job_role_labels(
-    #     self,
-    # ):
-    #     test_df = self.spark.createDataFrame(
-    #         Data.pivot_rolling_sum_job_role_counts_when_unix_time_is_different_data,
-    #         Schemas.pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     expected_df = self.spark.createDataFrame(
-    #         Data.expected_pivot_rolling_sum_job_role_counts_when_unix_time_is_different_data,
-    #         Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
-    #     )
-
-    #     returned_df = job.pivot_mapped_column(test_df,[IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],IndCQC.ascwds_job_role_counts_rolling_sum)
-
-    #     self.assertEqual(
-    #         expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #         returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-    #     )
-
-
-class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_number_of_days_in_window_value(self):
-        self.assertEqual(NumericalValues.number_of_days_in_rolling_sum, 185)
-
-
-class CalculateRollingSumOfCountOfJobRoles(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        self.returned_df = (
-            primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-                self.test_df, NumericalValues.number_of_days_in_rolling_sum
-            )
-        )
-
-    def test_primary_service_rolling_sum_returns_expected_columns(
-        self,
-    ):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-    def test_primary_service_rolling_sum_returns_same_row_count_as_original_estimated_filled_posts_df(
-        self,
-    ):
-        self.assertEqual(self.returned_df.count(), self.test_df.count())
-
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days(
-        self,
-    ):
-        # test_df = self.spark.createDataFrame(
-        #     Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data,
-        #     Schemas.primary_service_rolling_sum_schema,
-        # )
-
-        # expected_df = self.spark.createDataFrame(
-        #     Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_data,
-        #     Schemas.expected_primary_service_rolling_sum_schema,
-        # )
-
-        # returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-        #     test_df
-        # )
-
-        self.assertEqual(
-            self.expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            self.returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_and_null_job_role_count_present(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_and_null_job_role_count_present_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_185_days_and_null_job_role_count_present_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, NumericalValues.number_of_days_in_rolling_sum
-        )
-
-        test_df.show(truncate=False)
         expected_df.show(truncate=False)
         returned_df.show(truncate=False)
 
         self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.sort(IndCQC.unix_time).collect(),
+            returned_df.sort(IndCQC.unix_time).collect(),
         )
 
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_185_days(
+    def test_pivot_mapped_column_when_unix_time_is_different_and_primary_service_type_is_the_same_and_null_interpolated_values_returns_pivoted_job_role_labels(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_185_days_data,
-            Schemas.primary_service_rolling_sum_schema,
+            Data.pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data,
+            Schemas.pivot_interpolated_job_role_ratios_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_185_days_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
+            Data.expected_pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data,
+            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, NumericalValues.number_of_days_in_rolling_sum
+        returned_df = job.pivot_mapped_column(
+            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
         )
 
         self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.sort(IndCQC.unix_time).collect(),
+            returned_df.sort(IndCQC.unix_time).collect(),
         )
 
-    def test_primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_185_days(
+    def test_pivot_mapped_column_when_unix_time_is_the_same_and_primary_service_type_is_the_same_and_null_values_present_returns_pivoted_job_role_labels(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_185_days_data,
-            Schemas.primary_service_rolling_sum_schema,
+            Data.pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data,
+            Schemas.pivot_rolling_sum_job_role_counts_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_185_days_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
+            Data.expected_pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data,
+            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, NumericalValues.number_of_days_in_rolling_sum
+        returned_df = job.pivot_mapped_column(
+            test_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_counts_rolling_sum,
         )
 
         self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.sort(IndCQC.unix_time).collect(),
+            returned_df.sort(IndCQC.unix_time).collect(),
         )
 
-    def test_primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_185_days(
+    def test_pivot_mapped_column_when_primary_service_type_is_different_returns_pivoted_job_role_labels(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_185_days_data,
-            Schemas.primary_service_rolling_sum_schema,
+            Data.pivot_mapped_column_when_primary_service_type_is_different_data,
+            Schemas.pivot_rolling_sum_job_role_counts_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_185_days_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
+            Data.expected_pivot_mapped_column_when_primary_service_type_is_different_data,
+            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, NumericalValues.number_of_days_in_rolling_sum
+        returned_df = job.pivot_mapped_column(
+            test_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_counts_rolling_sum,
         )
 
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-        )
-
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_185_days_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, NumericalValues.number_of_days_in_rolling_sum
-        )
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
 
         self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
+            expected_df.sort(IndCQC.primary_service_type).collect(),
+            returned_df.sort(IndCQC.primary_service_type).collect(),
         )
 
 

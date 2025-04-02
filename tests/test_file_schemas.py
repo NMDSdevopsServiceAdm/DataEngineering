@@ -6285,8 +6285,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     pivot_interpolated_job_role_ratios_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
             StructField(IndCQC.ascwds_job_role_ratios_interpolated, FloatType(), True),
         ]
@@ -6294,8 +6294,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     expected_pivot_interpolated_job_role_ratios_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(MainJobRoleLabels.care_worker, FloatType(), True),
             StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
             StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
@@ -6362,7 +6362,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     pivot_rolling_sum_job_role_counts_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
@@ -6372,7 +6371,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     expected_pivot_rolling_sum_job_role_counts_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(MainJobRoleLabels.care_worker, FloatType(), True),
@@ -6410,5 +6408,21 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 MapType(StringType(), FloatType()),
                 True,
             ),
+        ]
+    )
+
+    add_rolling_sum_partitioned_by_primary_service_type_schema = StructType(
+        [
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
+            StructField(IndCQC.ascwds_job_role_counts_exploded, FloatType(), True),
+        ]
+    )
+
+    expected_add_rolling_sum_partitioned_by_primary_service_type_schema = StructType(
+        [
+            *add_rolling_sum_partitioned_by_primary_service_type_schema,
+            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
         ]
     )

@@ -30,24 +30,13 @@ def calculate_rolling_sum_of_job_roles(
 
     """
 
-    # df_rolling_sum = unpack_mapped_column(df, IndCQC.ascwds_job_role_counts)
-
     df_keys = df.select(
         F.explode(F.map_keys(F.col(IndCQC.ascwds_job_role_counts)))
     ).distinct()
 
     job_roles_list = sorted([row[0] for row in df_keys.collect()])
 
-    # df_rolling_sum = df_rolling_sum.withColumn(
-    #     IndCQC.ascwds_job_role_counts_temporary,
-    #     create_map_column(job_roles_list),
-    # )
-
-    # df_rolling_sum = df_rolling_sum.drop(*job_roles_list)
-
-    df_rolling_sum = df
-
-    df_rolling_sum = df_rolling_sum.select(
+    df_rolling_sum = df.select(
         IndCQC.location_id,
         IndCQC.unix_time,
         IndCQC.primary_service_type,
@@ -65,7 +54,7 @@ def calculate_rolling_sum_of_job_roles(
 
     df_rolling_sum = pivot_mapped_column(
         df_rolling_sum,
-        [IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
+        [IndCQC.unix_time, IndCQC.primary_service_type],
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
@@ -78,7 +67,7 @@ def calculate_rolling_sum_of_job_roles(
 
     df_result = df.join(
         df_rolling_sum,
-        on=[IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type],
+        on=[IndCQC.unix_time, IndCQC.primary_service_type],
         how="left",
     )
 
