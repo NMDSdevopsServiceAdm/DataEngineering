@@ -17,49 +17,85 @@ class LocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
 
-class AddTimeRegisteredForIntoDfTests(LocationsFeatureEngineeringTests):
+class ExpandEncodeAndExtractFeaturesTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_add_time_registered_into_df(self):
-        test_df = self.spark.createDataFrame(
-            Data.add_time_registered_rows, Schemas.add_time_registered_schema
+        col_with_categories: str = "categories"
+
+        not_array_test_df = self.spark.createDataFrame(
+            Data.expand_encode_and_extract_features_when_not_array_rows,
+            Schemas.expand_encode_and_extract_features_when_not_array_schema,
         )
-        returned_df = job.add_time_registered_into_df(df=test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_add_time_registered_rows,
-            Schemas.expected_add_time_registered_schema,
+        (
+            self.returned_not_array_df,
+            self.returned_array_keys,
+        ) = job.expand_encode_and_extract_features(
+            not_array_test_df,
+            col_with_categories,
+            Data.expand_encode_and_extract_features_lookup_dict,
+            is_array_col=False,
+        )
+        self.expected_not_array_df = self.spark.createDataFrame(
+            Data.expected_expand_encode_and_extract_features_when_not_array_rows,
+            Schemas.expected_expand_encode_and_extract_features_when_not_array_schema,
         )
 
-        self.assertEqual(expected_df.collect(), returned_df.collect())
+        is_array_test_df = self.spark.createDataFrame(
+            Data.expand_encode_and_extract_features_when_is_array_rows,
+            Schemas.expand_encode_and_extract_features_when_is_array_schema,
+        )
+        (
+            self.returned_is_array_df,
+            self.returned_is_array_keys,
+        ) = job.expand_encode_and_extract_features(
+            is_array_test_df,
+            col_with_categories,
+            Data.expand_encode_and_extract_features_lookup_dict,
+            is_array_col=True,
+        )
+        self.expected_is_array_df = self.spark.createDataFrame(
+            Data.expected_expand_encode_and_extract_features_when_is_array_rows,
+            Schemas.expected_expand_encode_and_extract_features_when_is_array_schema,
+        )
 
-
-class ConvertCategoricalVariableToBinaryVariablesBasedOnADictionaryTests(
-    LocationsFeatureEngineeringTests
-):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
+    def test_expand_encode_and_extract_features_returns_expected_key_list(
         self,
     ):
-        cols = ["location", "rui_2011"]
-        rows = [
-            (
-                "1-0001",
-                "Rural hamlet and isolated dwellings in a sparse setting",
-            )
-        ]
-        df = self.spark.createDataFrame(rows, cols)
-        result = job.convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=df,
-            categorical_col_name="rui_2011",
-            lookup_dict={
-                "indicator_1": "Rural hamlet and isolated dwellings in a sparse setting"
-            },
+        self.assertEqual(
+            self.returned_array_keys,
+            Data.expected_expand_encode_and_extract_features_feature_list,
         )
-        result_rows = result.collect()
-        self.assertEqual(result_rows[0].indicator_1, 1)
+
+    def test_expand_encode_and_extract_features_returns_expected_columns_when_not_array(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_not_array_df.columns, self.expected_not_array_df.columns
+        )
+
+    def test_expand_encode_and_extract_features_returns_expected_data_when_not_array(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_not_array_df.sort(IndCQC.location_id).collect(),
+            self.expected_not_array_df.collect(),
+        )
+
+    def test_expand_encode_and_extract_features_returns_expected_columns_when_is_array(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_is_array_df.columns, self.expected_is_array_df.columns
+        )
+
+    def test_expand_encode_and_extract_features_returns_expected_data_when_is_array(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_is_array_df.sort(IndCQC.location_id).collect(),
+            self.expected_is_array_df.collect(),
+        )
 
 
 class AddArrayColumnCountTests(LocationsFeatureEngineeringTests):

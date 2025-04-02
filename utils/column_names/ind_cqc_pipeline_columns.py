@@ -252,7 +252,7 @@ class IndCqcColumns:
     specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
-    time_registered: str = "time_registered"
+    time_registered: str = CQCLClean.time_registered
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
