@@ -36,7 +36,6 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
-            IndCqc.rolling_average_model,
             IndCqc.rolling_rate_of_change_model,
         )
         self.expected_df = self.spark.createDataFrame(
@@ -58,17 +57,6 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
         )
-
-    def test_returned_rolling_average_model_values_match_expected(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_average_model],
-                self.expected_data[i][IndCqc.rolling_average_model],
-                3,
-                f"Returned row {i} does not match expected",
-            )
 
     def test_returned_rolling_rate_of_change_model_values_match_expected(
         self,
@@ -315,69 +303,6 @@ class InterpolateColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             self.assertEqual(
                 self.returned_data[i][job.TempCol.column_to_average_interpolated],
                 self.expected_data[i][job.TempCol.column_to_average_interpolated],
-                f"Returned row {i} does not match expected",
-            )
-
-
-class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        number_of_days: int = 2
-
-        test_df = self.spark.createDataFrame(
-            Data.calculate_rolling_average_rows,
-            Schemas.calculate_rolling_average_schema,
-        )
-        self.returned_df = job.calculate_rolling_average(
-            test_df, number_of_days, IndCqc.rolling_average_model
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_rolling_average_rows,
-            Schemas.expected_calculate_rolling_average_schema,
-        )
-        self.returned_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) == CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        self.returned_not_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) != CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        self.expected_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) == CareHome.care_home
-        ).collect()
-        self.expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) != CareHome.care_home
-        ).collect()
-
-    def test_calculate_rolling_average_returns_expected_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
-
-    def test_returned_rolling_average_values_match_expected_when_care_home(
-        self,
-    ):
-        for i in range(len(self.returned_care_home_data)):
-            self.assertAlmostEqual(
-                self.returned_care_home_data[i][IndCqc.rolling_average_model],
-                self.expected_care_home_data[i][IndCqc.rolling_average_model],
-                2,
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_rolling_average_values_match_expected_when_not_care_home(
-        self,
-    ):
-        for i in range(len(self.returned_not_care_home_data)):
-            self.assertAlmostEqual(
-                self.returned_not_care_home_data[i][IndCqc.rolling_average_model],
-                self.expected_not_care_home_data[i][IndCqc.rolling_average_model],
-                2,
                 f"Returned row {i} does not match expected",
             )
 

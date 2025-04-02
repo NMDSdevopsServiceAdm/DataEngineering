@@ -51,7 +51,6 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
-        IndCQC.rolling_average_model,
         IndCQC.rolling_rate_of_change_model,
     )
 
