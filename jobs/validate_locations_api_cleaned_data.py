@@ -56,9 +56,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_cqc_locations_dataset(raw_location_df)
+    )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
         cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
@@ -133,25 +133,25 @@ def identify_if_location_has_a_known_value(
         CQCL.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
-    if isinstance(df.schema[col_to_check].dataType, ArrayType):
+    col_to_check_is_array = isinstance(df.schema[col_to_check].dataType, ArrayType)
+
+    has_known_array_expr = F.max(F.size(df[col_to_check])).over(window_spec) > 0
+
+    has_non_null_value_expr = (
+        F.max(F.when(df[col_to_check].isNotNull(), 1)).over(window_spec) > 0
+    )
+
+    if col_to_check_is_array:
         df = df.withColumn(
             new_col_name,
-            F.when(
-                F.max(F.size(df[col_to_check])).over(window_spec) > 0,
-                True,
-            ).otherwise(False),
+            F.when(has_known_array_expr, True).otherwise(False),
         )
     else:
         df = df.withColumn(
             new_col_name,
-            F.when(
-                F.max(F.when(df[col_to_check].isNotNull(), 1).otherwise(0)).over(
-                    window_spec
-                )
-                > 0,
-                True,
-            ).otherwise(False),
+            F.when(has_non_null_value_expr, True).otherwise(False),
         )
+
     return df
 
 
