@@ -444,7 +444,20 @@ def calculate_job_group_sum_from_job_role_map_column(
     df: DataFrame, job_role_level_map_column: str, new_job_group_map_column_name: str
 ) -> DataFrame:
     """
-    doc string here
+    Sums the values from a job role map column up to job group level.
+
+    This function takes a job role level map column, explodes the key/value pairs into rows,
+    adds a new column to show the job group each job role belongs to,
+    sums the value column by job group into job group columns, then packages those columns into a new map column.
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column.
+        job_role_level_map_column (str): The name of the job role map column you want to sum.
+        new_job_group_map_column_name (str): The name to give the job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing values summed to job group.
+
     """
 
     df_exploded = df.select(
