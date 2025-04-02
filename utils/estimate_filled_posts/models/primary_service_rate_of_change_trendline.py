@@ -2,11 +2,11 @@ from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    primary_service_rate_of_change,
+    model_primary_service_rate_of_change,
 )
 
 
-def primary_service_rate_of_change_trendline(
+def model_primary_service_rate_of_change_trendline(
     df: DataFrame,
     column_with_values: str,
     number_of_days: int,
@@ -42,7 +42,7 @@ def primary_service_rate_of_change_trendline(
         DataFrame: The DataFrame with the trendline column.
     """
 
-    df = primary_service_rate_of_change(
+    df = model_primary_service_rate_of_change(
         df, column_with_values, number_of_days, IndCqc.single_period_rate_of_change
     )
 

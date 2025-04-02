@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import Services
 from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
-    primary_service_rate_of_change_trendline,
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -57,7 +57,7 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
     )
 
-    df = primary_service_rate_of_change_trendline(
+    df = model_primary_service_rate_of_change_trendline(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,

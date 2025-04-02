@@ -43,7 +43,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
     @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.primary_service_rate_of_change_trendline"
+        "jobs.impute_ind_cqc_ascwds_and_pir.model_primary_service_rate_of_change_trendline"
     )
     @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.combine_care_home_ratios_and_non_res_posts"
@@ -55,7 +55,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         read_from_parquet_patch: Mock,
         create_unix_timestamp_variable_from_date_column_mock: Mock,
         combine_care_home_ratios_and_non_res_posts_mock: Mock,
-        primary_service_rate_of_change_trendline_mock: Mock,
+        model_primary_service_rate_of_change_trendline_mock: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
@@ -73,7 +73,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
         combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
-        primary_service_rate_of_change_trendline_mock.assert_called_once()
+        model_primary_service_rate_of_change_trendline_mock.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3

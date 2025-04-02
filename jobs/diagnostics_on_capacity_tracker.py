@@ -18,7 +18,7 @@ from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interp
     model_imputation_with_extrapolation_and_interpolation,
 )
 from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
-    primary_service_rate_of_change_trendline,
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -137,7 +137,7 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    care_home_diagnostics_df = primary_service_rate_of_change_trendline(
+    care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_window,
@@ -201,7 +201,7 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
-    non_res_diagnostics_df = primary_service_rate_of_change_trendline(
+    non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_window,
