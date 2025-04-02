@@ -29,7 +29,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
             Data.primary_service_rate_of_change_rows,
             Schemas.primary_service_rate_of_change_schema,
         )
-        self.returned_df = job.primary_service_rate_of_change(
+        self.returned_df = job.model_primary_service_rate_of_change(
             self.test_df,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,

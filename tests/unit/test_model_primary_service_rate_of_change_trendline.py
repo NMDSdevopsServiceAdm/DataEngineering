@@ -27,7 +27,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
             Data.primary_service_rate_of_change_trendline_rows,
             Schemas.primary_service_rate_of_change_trendline_schema,
         )
-        self.returned_df = job.primary_service_rate_of_change_trendline(
+        self.returned_df = job.model_primary_service_rate_of_change_trendline(
             self.test_df,
             IndCqc.combined_ratio_and_filled_posts,
             self.number_of_days,
