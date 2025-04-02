@@ -2,6 +2,7 @@ from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import LongType
 from typing import List
 
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -9,6 +10,9 @@ from utils.column_values.categorical_column_values import (
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
 list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
@@ -433,5 +437,50 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
         F.col(IndCQC.registered_manager_count)
         - F.col(MainJobRoleLabels.registered_manager),
     )
+
+    return df
+
+
+def calculate_job_group_sum(
+    df: DataFrame, job_role_level_values_column: str, new_column_name: str
+) -> DataFrame:
+    """
+    doc string here
+    """
+
+    df_exploded = df.select(
+        IndCQC.location_id,
+        IndCQC.unix_time,
+        F.explode(job_role_level_values_column).alias("job_role", "value"),
+    )
+
+    temp_dict = {"job_role": AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict}
+    df_exploded = cUtils.apply_categorical_labels(
+        df_exploded,
+        temp_dict,
+        temp_dict.keys(),
+        add_as_new_column=True,
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot("job_role_labels")
+        .agg(F.sum("value"))
+    )
+
+    df_exploded = df_exploded.withColumn(
+        new_column_name,
+        create_map_column(
+            list(
+                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
+            )
+        ),
+    )
+
+    df_exploded = df_exploded.drop(
+        *AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()
+    )
+
+    df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
 
     return df
