@@ -55,8 +55,7 @@ def main(
 
     df = model_primary_service_rolling_average_and_rate_of_change(
         df,
-        IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         IndCQC.rolling_average_model,
         IndCQC.rolling_rate_of_change_model,

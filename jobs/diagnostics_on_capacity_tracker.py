@@ -139,7 +139,6 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = model_primary_service_rolling_average_and_rate_of_change(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
-        CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_rolling_average,
         CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
         CTCHClean.agency_and_non_agency_total_employed_rolling_rate_of_change,
@@ -204,7 +203,6 @@ def run_diagnostics_for_non_residential(
     )
     non_res_diagnostics_df = model_primary_service_rolling_average_and_rate_of_change(
         non_res_diagnostics_df,
-        CTNRClean.cqc_care_workers_employed,
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_rolling_average,
         CTNRClean.cqc_care_workers_employed_rolling_avg,

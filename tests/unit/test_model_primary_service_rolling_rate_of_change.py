@@ -33,8 +33,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
         )
         self.returned_df = job.model_primary_service_rolling_average_and_rate_of_change(
             self.estimates_df,
-            IndCqc.filled_posts_per_bed_ratio,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.combined_ratio_and_filled_posts,
             number_of_days,
             IndCqc.rolling_average_model,
             IndCqc.rolling_rate_of_change_model,
@@ -78,67 +77,6 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
                 self.returned_data[i][IndCqc.rolling_rate_of_change_model],
                 self.expected_data[i][IndCqc.rolling_rate_of_change_model],
                 3,
-                f"Returned row {i} does not match expected",
-            )
-
-
-class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.single_column_to_average_rows,
-            Schemas.single_column_to_average_schema,
-        )
-        self.returned_df = job.create_single_column_to_average(
-            test_df,
-            IndCqc.filled_posts_per_bed_ratio,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_single_column_to_average_rows,
-            Schemas.expected_single_column_to_average_schema,
-        )
-        self.returned_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) == CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        self.returned_not_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) != CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        self.expected_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) == CareHome.care_home
-        ).collect()
-        self.expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) != CareHome.care_home
-        ).collect()
-
-    def test_create_single_column_to_average_returns_expected_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
-
-    def test_returned_column_to_average_values_match_expected_when_care_home(
-        self,
-    ):
-        for i in range(len(self.returned_care_home_data)):
-            self.assertEqual(
-                self.returned_care_home_data[i][job.TempCol.column_to_average],
-                self.expected_care_home_data[i][job.TempCol.column_to_average],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_column_to_average_values_match_expected_when_not_care_home(
-        self,
-    ):
-        for i in range(len(self.returned_not_care_home_data)):
-            self.assertEqual(
-                self.returned_not_care_home_data[i][job.TempCol.column_to_average],
-                self.expected_not_care_home_data[i][job.TempCol.column_to_average],
                 f"Returned row {i} does not match expected",
             )
 
