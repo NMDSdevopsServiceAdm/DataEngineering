@@ -32,7 +32,6 @@ def model_primary_service_rolling_average_and_rate_of_change(
         ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
         posts_column_to_average (str): The name of the filled posts column to average.
         number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
-        rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
         rolling_rate_of_change_model_column_name (str): The name of the new column to store the rolling rate of change model values.
 
     Returns:
