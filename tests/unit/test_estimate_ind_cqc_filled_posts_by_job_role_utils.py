@@ -1229,3 +1229,42 @@ class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
         expected_data = self.expected_df.collect()
         returned_data = self.returned_df.collect()
         self.assertEqual(expected_data, returned_data)
+
+
+class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.sum_job_group_counts_rows,
+            Schemas.sum_job_group_counts_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_sum_job_group_counts_rows,
+            Schemas.expected_sum_job_group_counts_schema,
+        )
+        self.returned_df = job.calculate_job_group_sum(
+            self.test_df, IndCQC.ascwds_job_role_counts, IndCQC.ascwds_job_group_counts
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_sum_job_group_counts_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(self.new_columns_added[0], IndCQC.ascwds_job_group_counts)
+
+    def test_sum_job_group_counts_does_not_change_row_count(self):
+        self.assertEqual(self.test_df.count(), self.returned_df.count())
+
+    def test_sum_job_group_counts_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+        self.assertEqual(expected_data, returned_data)
