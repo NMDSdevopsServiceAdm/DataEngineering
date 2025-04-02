@@ -47,7 +47,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
-    PrimaryServiceRollingAverageColumns as RA_TempCol,
+    PrimaryServiceRateOfChangeColumns as RA_TempCol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,

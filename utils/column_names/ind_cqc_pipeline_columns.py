@@ -261,7 +261,7 @@ class IndCqcColumns:
 
 
 @dataclass
-class PrimaryServiceRollingAverageColumns:
+class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rolling average process."""
 
     care_home_status_count: str = "care_home_status_count"
