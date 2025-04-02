@@ -37,10 +37,14 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
+    @patch(
+        "jobs.impute_ind_cqc_ascwds_and_pir.combine_care_home_ratios_and_non_res_posts"
+    )
     @patch("utils.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        combine_care_home_ratios_and_non_res_posts_mock: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
@@ -53,6 +57,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         )
 
         self.assertEqual(read_from_parquet_patch.call_count, 1)
+        combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
