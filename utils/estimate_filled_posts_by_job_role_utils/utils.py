@@ -2,7 +2,6 @@ from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import LongType
 from typing import List
 
-import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
@@ -454,17 +453,15 @@ def calculate_job_group_sum(
         F.explode(job_role_level_values_column).alias("job_role", "value"),
     )
 
-    temp_dict = {"job_role": AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict}
-    df_exploded = cUtils.apply_categorical_labels(
-        df_exploded,
-        temp_dict,
-        temp_dict.keys(),
-        add_as_new_column=True,
+    df_exploded = df_exploded.withColumn("job_group", F.col("job_role"))
+    df_exploded = df_exploded.replace(
+        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict,
+        subset="job_group",
     )
 
     df_exploded = (
         df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
-        .pivot("job_role_labels")
+        .pivot("job_group")
         .agg(F.sum("value"))
     )
 
