@@ -5484,9 +5484,9 @@ class ImputeIndCqcAscwdsAndPirData:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
+class ModelPrimaryServiceRateOfChange:
     # fmt: off
-    primary_service_rolling_average_rows = [
+    primary_service_rate_of_change_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8),
         ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4),
@@ -5501,7 +5501,7 @@ class ModelPrimaryServiceRollingAverage:
         ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 40.0, 4.0),
         ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, None),
     ]
-    expected_primary_service_rolling_average_rows = [
+    expected_primary_service_rate_of_change_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 30.0, 3.0, 25.0, 1.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 28.0, 2.8, 25.5, 1.03999),
         ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 34.0, 3.4, 27.3333, 1.16235),

@@ -2728,8 +2728,8 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
-    primary_service_rolling_average_schema = StructType(
+class ModelPrimaryServiceRateOfChange:
+    primary_service_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
@@ -2740,9 +2740,9 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
-    expected_primary_service_rolling_average_schema = StructType(
+    expected_primary_service_rate_of_change_schema = StructType(
         [
-            *primary_service_rolling_average_schema,
+            *primary_service_rate_of_change_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
