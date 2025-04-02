@@ -123,3 +123,37 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         expected_df = test_df
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
+
+
+class CleanNumberOfBedsBandedTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.clean_number_of_beds_banded_rows,
+            Schemas.clean_number_of_beds_banded_schema,
+        )
+        self.returned_df = job.clean_number_of_beds_banded(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_clean_number_of_beds_banded_rows,
+            Schemas.expected_clean_number_of_beds_banded_schema,
+        )
+
+    def test_clean_number_of_beds_banded_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(
+            sorted(self.returned_df.columns),
+            sorted(self.expected_df.columns),
+        )
+
+    def test_clean_number_of_beds_banded_returns_expected_data(self):
+        returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        expected_data = self.expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i],
+                expected_data[i],
+                f"Returned row {i} does not match expected",
+            )

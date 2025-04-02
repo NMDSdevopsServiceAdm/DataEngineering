@@ -6406,6 +6406,27 @@ class ModelNonResPirLinearRegressionRows:
         ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
     ]
 
+    clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0),
+        ("1-004", PrimaryServiceType.care_home_only, 4.0),
+        ("1-005", PrimaryServiceType.care_home_with_nursing, 1.0),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 2.0),
+        ("1-007", PrimaryServiceType.care_home_with_nursing, 3.0),
+        ("1-008", PrimaryServiceType.care_home_with_nursing, 4.0),
+    ]
+    expected_clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 2.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0, 3.0),
+        ("1-004", PrimaryServiceType.care_home_only, 4.0, 4.0),
+        ("1-005", PrimaryServiceType.care_home_with_nursing, 1.0, 3.0),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 2.0, 3.0),
+        ("1-007", PrimaryServiceType.care_home_with_nursing, 3.0, 3.0),
+        ("1-008", PrimaryServiceType.care_home_with_nursing, 4.0, 4.0),
+    ]
+
 
 @dataclass
 class EstimateFilledPostsModelsUtils:

@@ -1,6 +1,7 @@
 from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
 
 
 def insert_predictions_into_pipeline(
@@ -53,3 +54,40 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
             F.greatest(F.col(col_name), F.lit(min_value)),
         ).otherwise(F.lit(None)),
     )
+
+
+def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
+    """
+    Cleans the number_of_beds_banded column by merging together bands which have low bases.
+
+    Bands below 3 are grouped together for locations with the primary service 'care home with nursing'.
+    Bands below 2 are grouped together for locations with the primary service 'care home only'.
+    All other bands remain as they were.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'number_of_beds_banded' column.
+
+    Returns:
+        DataFrame: The input DataFrame with the new 'number_of_beds_banded_cleaned' column added.
+    """
+    band_two: int = 2.0
+    band_three: int = 3.0
+
+    df = df.withColumn(
+        IndCqc.number_of_beds_banded_cleaned,
+        F.when(
+            (
+                F.col(IndCqc.primary_service_type)
+                == PrimaryServiceType.care_home_with_nursing
+            )
+            & (F.col(IndCqc.number_of_beds_banded) < band_three),
+            F.lit(band_three),
+        )
+        .when(
+            (F.col(IndCqc.primary_service_type) == PrimaryServiceType.care_home_only)
+            & (F.col(IndCqc.number_of_beds_banded) < band_two),
+            F.lit(band_two),
+        )
+        .otherwise(F.col(IndCqc.number_of_beds_banded)),
+    )
+    return df
