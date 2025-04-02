@@ -17,6 +17,9 @@ from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interp
 from utils.estimate_filled_posts.models.rolling_average import (
     model_calculate_rolling_average,
 )
+from utils.estimate_filled_posts.models.utils import (
+    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,
+)
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
 )
@@ -96,6 +99,12 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
         [IndCQC.primary_service_type, IndCQC.number_of_beds_banded],
         IndCQC.banded_bed_ratio_rolling_average_model,
+    )
+
+    df = convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+        df,
+        IndCQC.banded_bed_ratio_rolling_average_model,
+        IndCQC.posts_rolling_average_model,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
