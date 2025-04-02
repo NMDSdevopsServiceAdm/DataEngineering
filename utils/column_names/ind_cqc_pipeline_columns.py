@@ -47,6 +47,9 @@ class IndCqcColumns:
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
+    ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
+    ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
     ascwds_job_role_counts_by_primary_service: str = (
         "ascwds_job_role_counts_by_primary_service"
     )
@@ -108,6 +111,9 @@ class IndCqcColumns:
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
     current_sub_icb: str = ONSClean.current_sub_icb
+    difference_between_estimate_and_cqc_registered_managers: str = (
+        "difference_between_estimate_and_cqc_registered_managers"
+    )
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -243,7 +249,7 @@ class IndCqcColumns:
     specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
-    time_registered: str = "time_registered"
+    time_registered: str = CQCLClean.time_registered
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

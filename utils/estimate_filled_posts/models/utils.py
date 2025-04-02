@@ -35,22 +35,23 @@ def insert_predictions_into_pipeline(
     return locations_with_predictions
 
 
-def set_min_prediction_value(
-    df: DataFrame, min_prediction_value: float = 1.0
-) -> DataFrame:
+def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataFrame:
     """
-    Sets the minimum value of the 'prediction' column to a specified value (default is 1.0).
+    The function takes the greatest value between the existing value and the specified min_value which defaults to 1.0.
+
     Args:
-        df (DataFrame): A dataframe containing the 'prediction' column.
-        min_prediction_value (float): The minimum value allowed in the 'prediction' column.
+        df (DataFrame): A dataframe containing the specified column.
+        col_name (str): The name of the column to set the minimum value for.
+        min_value (float): The minimum value allowed in the specified column.
+
     Returns:
-        DataFrame: A dataframe with the 'prediction' column set to the minimum value.
+        DataFrame: A dataframe with the specified column set to greatest value of the original value or the min_value.
     """
     return df.withColumn(
-        IndCqc.prediction,
+        col_name,
         F.when(
-            F.col(IndCqc.prediction).isNotNull(),
-            F.greatest(F.col(IndCqc.prediction), F.lit(min_prediction_value)),
+            F.col(col_name).isNotNull(),
+            F.greatest(F.col(col_name), F.lit(min_value)),
         ).otherwise(F.lit(None)),
     )
 

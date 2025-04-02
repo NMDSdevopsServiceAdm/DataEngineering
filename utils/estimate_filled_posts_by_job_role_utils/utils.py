@@ -5,6 +5,7 @@ from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid,
@@ -357,6 +358,80 @@ def create_estimate_filled_posts_by_job_role_map_column(
                 lambda v: v * F.col(IndCQC.estimate_filled_posts),
             ),
         ),
+    )
+
+    return df
+
+
+def pivot_interpolated_job_role_ratios(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Pivots the job role ratio interpolated mapped column so that the key are column names
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
+    """
+    df_result = (
+        df.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+    )
+
+    return df_result
+
+
+def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
+    """
+    convert a map with only null values to be just a null not in map format
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the aascwds_job_role_ratios_interpolated with null values instead of map records with only null values.
+    """
+
+    df_result = df.withColumn(
+        IndCQC.ascwds_job_role_ratios_interpolated,
+        F.when(
+            F.size(
+                F.filter(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                    lambda x: ~F.isnull(x),
+                )
+            )
+            == 0,
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+    )
+
+    return df_result
+
+
+def calculate_difference_between_estimate_and_cqc_registered_managers(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Calculates count of CQC registered managers minus our estimate of registered managers.
+
+    A positive value is when CQC have recorded more registered managers than we have estimated.
+    A negative value is when we have estimated more registered managers than CQC have recorded.
+    CQC have the official count of registered managers. Our estimate is based on records in ASC-WDS.
+
+    Args:
+        df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing count from CQC minus our estimate of registered managers.
+    """
+    df = df.withColumn(
+        IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        F.col(IndCQC.registered_manager_count)
+        - F.col(MainJobRoleLabels.registered_manager),
     )
 
     return df
