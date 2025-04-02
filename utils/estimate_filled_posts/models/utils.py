@@ -57,18 +57,15 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
 
 
 def combine_care_home_ratios_and_non_res_posts(
-    df: DataFrame,
-    ratio_column_with_values: str,
-    posts_column_with_values: str,
-    new_column_name: str,
+    df: DataFrame, ratio_column: str, posts_column: str, new_column_name: str
 ) -> DataFrame:
     """
     Creates one column which inputs the ratio value if the location is a care home and the filled post value if not.
 
     Args:
         df (DataFrame): The input DataFrame.
-        ratio_column_with_values (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_with_values (str): The name of the filled posts column to average.
+        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
+        posts_column (str): The name of the filled posts column.
         new_column_name (str): The name of the new column with combined values.
 
     Returns:
@@ -78,7 +75,7 @@ def combine_care_home_ratios_and_non_res_posts(
         new_column_name,
         F.when(
             F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column_with_values),
-        ).otherwise(F.col(posts_column_with_values)),
+            F.col(ratio_column),
+        ).otherwise(F.col(posts_column)),
     )
     return df
