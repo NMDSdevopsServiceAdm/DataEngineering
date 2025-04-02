@@ -14,6 +14,9 @@ from utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change i
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
+from utils.estimate_filled_posts.models.utils import (
+    combine_care_home_ratios_and_non_res_posts,
+)
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
 )
@@ -41,6 +44,13 @@ def main(
         date_col=IndCQC.cqc_location_import_date,
         date_format="yyyy-MM-dd",
         new_col_name=IndCQC.unix_time,
+    )
+
+    df = combine_care_home_ratios_and_non_res_posts(
+        df,
+        IndCQC.filled_posts_per_bed_ratio,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.combined_ratio_and_filled_posts,
     )
 
     df = model_primary_service_rolling_average_and_rate_of_change(
