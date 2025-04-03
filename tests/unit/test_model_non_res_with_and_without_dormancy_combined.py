@@ -184,3 +184,8 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
                 expected_data[i][NRModel_TempCol.without_dormancy_model_adjusted],
                 f"Returned values for row {i} does not match expected",
             )
+
+
+# TODO - calculate_and_apply_residuals
+# TODO - calculate_residuals
+# TODO - apply_residuals
