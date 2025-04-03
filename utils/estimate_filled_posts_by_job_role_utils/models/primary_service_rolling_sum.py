@@ -12,6 +12,7 @@ from utils.utils import convert_days_to_unix_time
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
     create_map_column,
     pivot_mapped_column,
+    list_of_job_roles_sorted,
 )
 
 
@@ -29,12 +30,6 @@ def calculate_rolling_sum_of_job_roles(
         DataFrame: The DataFrame with the new rolling sum of job role counts mapped column
 
     """
-
-    df_keys = df.select(
-        F.explode(F.map_keys(F.col(IndCQC.ascwds_job_role_counts)))
-    ).distinct()
-
-    job_roles_list = sorted([row[0] for row in df_keys.collect()])
 
     df_rolling_sum = df.select(
         IndCQC.location_id,
@@ -59,7 +54,10 @@ def calculate_rolling_sum_of_job_roles(
     )
 
     df_rolling_sum = create_map_column(
-        df_rolling_sum, job_roles_list, IndCQC.ascwds_job_role_counts_rolling_sum, True
+        df_rolling_sum,
+        list_of_job_roles_sorted,
+        IndCQC.ascwds_job_role_counts_rolling_sum,
+        True,
     )
 
     df_result = df.join(
