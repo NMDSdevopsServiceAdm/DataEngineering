@@ -1,6 +1,7 @@
 from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_values.categorical_column_values import CareHome
 
 
 def insert_predictions_into_pipeline(
@@ -53,3 +54,31 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
             F.greatest(F.col(col_name), F.lit(min_value)),
         ).otherwise(F.lit(None)),
     )
+
+
+def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+    df: DataFrame,
+    ratio_column: str,
+    posts_column: str,
+) -> DataFrame:
+    """
+    Multiplies the filled posts per bed ratio values by the number of beds at each care home location to create a filled posts figure.
+
+    If the location is not a care home, the original filled posts figure is kept.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
+        posts_column (str): The name of the filled posts column.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
+    """
+    df = df.withColumn(
+        posts_column,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(ratio_column) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(posts_column)),
+    )
+    return df

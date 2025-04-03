@@ -3381,6 +3381,18 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
+            ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class MLModelMetrics:
