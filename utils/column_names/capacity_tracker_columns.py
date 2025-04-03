@@ -51,8 +51,8 @@ class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
-    agency_and_non_agency_total_employed_rolling_rate_of_change: str = (
-        agency_and_non_agency_total_employed + "_rolling_rate_of_change"
+    agency_and_non_agency_total_employed_rate_of_change_trendline: str = (
+        agency_and_non_agency_total_employed + "_rate_of_change_trendline"
     )
     agency_and_non_agency_total_employed_imputed: str = (
         agency_and_non_agency_total_employed + "_imputed"
@@ -121,8 +121,8 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
     )
     capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
-    cqc_care_workers_employed_rolling_rate_of_change: str = (
+    cqc_care_workers_employed_rate_of_change_trendline: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed
-        + "_rolling_rate_of_change"
+        + "_rate_of_change_trendline"
     )
     unix_timestamp: str = "unix_timestamp"
