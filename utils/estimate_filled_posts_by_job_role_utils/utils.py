@@ -503,15 +503,10 @@ def calculate_job_group_sum_from_job_role_map_column(
         .na.fill(0, subset=list_of_job_groups)
     )
 
-    df_exploded = df_exploded.withColumn(
-        new_job_group_map_column_name,
-        create_map_column(list_of_job_groups),
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups, new_job_group_map_column_name
     )
 
-    df_exploded = df_exploded.drop(*list_of_job_groups)
-
     df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
-
-    df.show()
 
     return df
