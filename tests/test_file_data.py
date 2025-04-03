@@ -7943,6 +7943,19 @@ class ValidationUtils:
         ),
     ]
 
+    identify_if_location_has_a_known_value_when_not_array_type_rows = [
+        ("loc_1", None),
+        ("loc_1", "prov_1"),
+        ("loc_1", None),
+        ("loc_2", None),
+    ]
+    expected_identify_if_location_has_a_known_value_when_not_array_type_rows = [
+        ("loc_1", None, True),
+        ("loc_1", "prov_1", True),
+        ("loc_1", None, True),
+        ("loc_2", None, False),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPICleanedData:
