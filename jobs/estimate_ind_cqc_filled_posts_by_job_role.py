@@ -86,7 +86,7 @@ def main(
 
     aggregated_job_roles_per_establishment_df = (
         JRutils.aggregate_ascwds_worker_job_roles_per_establishment(
-            cleaned_ascwds_worker_df, JRutils.list_of_job_roles
+            cleaned_ascwds_worker_df, JRutils.list_of_job_roles_sorted
         )
     )
 
@@ -137,7 +137,7 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = model_job_role_ratio_interpolation(
-        estimated_ind_cqc_filled_posts_by_job_role_df
+        estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles_sorted
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.unpack_mapped_column(

@@ -8,10 +8,10 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
+    AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
 
-list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
+list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -40,26 +40,45 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
     df = df.na.fill(0, subset=list_of_job_roles)
 
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_counts, create_map_column(list_of_job_roles)
-    )
-
-    df = df.drop(*list_of_job_roles)
+    df = create_map_column(df, list_of_job_roles, IndCQC.ascwds_job_role_counts)
 
     return df
 
 
-def create_map_column(columns: List[str]) -> F.Column:
+def create_map_column(
+    df: DataFrame,
+    column_list: List[str],
+    new_col_name: str,
+    drop_original_columns: bool = True,
+) -> DataFrame:
     """
-    Creates a Spark map column from a list of columns where keys are column names and values are the respective column values.
+    Creates a new map column in a DataFrame by mapping the specified columns to their values.
+
+    This function generates a map column where the keys are the column names and the values are the corresponding column values.
+    The column list is sorted alphabetically before creating the map.
+    The original columns can be optionally dropped after the map column is created.
 
     Args:
-        columns (List[str]): List of column names to be mapped.
+        df (DataFrame): DataFrame containing the list of columns to be mapped.
+        column_list (List[str]): List of column names to be mapped.
+        new_col_name (str): Name of the new mapped column to be added.
+        drop_original_columns (bool, optional): If True, drops the original columns after creating
+            the map column. Defaults to True.
 
     Returns:
-        F.Column: A Spark column containing a map of job role names to counts.
+        DataFrame: A DataFrame with the new map column added and optionally the original columns dropped.
     """
-    return F.create_map(*[x for col in columns for x in (F.lit(col), F.col(col))])
+    sorted_column_list = sorted(column_list)
+
+    map_columns = F.create_map(
+        *[x for col in sorted_column_list for x in (F.lit(col), F.col(col))]
+    )
+    df = df.withColumn(new_col_name, map_columns)
+
+    if drop_original_columns:
+        df = df.drop(*sorted_column_list)
+
+    return df
 
 
 def merge_dataframes(
@@ -269,6 +288,46 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
     return df
 
 
+def sum_job_role_count_split_by_service(
+    df: DataFrame, list_of_job_roles: list
+) -> DataFrame:
+    """
+    Takes the mapped column of job counts from the dataframes and does a sum for each
+    job role for each partition of service type. This is done through a combination of
+    explode, group by and left join
+
+    Args:
+        df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
+        list_of_job_roles (list): A list containing the ASC-WDS job role.
+
+    Returns:
+        DataFrame: A dataframe with unique establishmentid and import date.
+    """
+    df_explode = df.select(
+        IndCQC.primary_service_type, F.explode(IndCQC.ascwds_job_role_counts)
+    )
+
+    df_explode_grouped = (
+        df_explode.groupBy(IndCQC.primary_service_type)
+        .pivot("key", list_of_job_roles)
+        .sum("value")
+    )
+
+    df_explode_grouped_with_map_column = create_map_column(
+        df_explode_grouped,
+        list_of_job_roles,
+        IndCQC.ascwds_job_role_counts_by_primary_service,
+    )
+
+    df_result = df.join(
+        df_explode_grouped_with_map_column,
+        IndCQC.primary_service_type,
+        "left",
+    )
+
+    return df_result
+
+
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Unpacks a MapType column in a DataFrame into separate columns (sorted alphabetically), with keys as column names and values as row values.
@@ -322,47 +381,6 @@ def create_estimate_filled_posts_by_job_role_map_column(
     )
 
     return df
-
-
-# def pivot_interpolated_job_role_ratios(
-#     df: DataFrame,
-# ) -> DataFrame:
-#     """
-#     Pivots the job role ratio interpolated mapped column so that the key are column names
-
-#     Args:
-#         df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
-
-#     Returns:
-#         DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
-#     """
-#     df_result = (
-#         df.groupBy(IndCQC.location_id, IndCQC.unix_time)
-#         .pivot(IndCQC.main_job_role_clean_labelled)
-#         .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
-#     )
-
-#     return df_result
-
-
-# def pivot_rolling_sum_job_role_counts(df: DataFrame) -> DataFrame:
-#     """
-#     Pivots the main_job_role_clean_labelled so that the key are individual column names.
-
-#     Args:
-#         df (DataFrame): A dataframe which contains ascwds_job_role_counts_rolling_sum.
-
-#     Returns:
-#         DataFrame: The pivoted dataframe with a rolling sum of each job role as individual columns.
-#     """
-#     df_result = (
-#         df.groupBy(IndCQC.location_id, IndCQC.unix_time, IndCQC.primary_service_type)
-#         .pivot(IndCQC.main_job_role_clean_labelled)
-#         .agg(F.first(IndCQC.ascwds_job_role_counts_rolling_sum, ignorenulls=False))
-#     )
-
-# return df_result
-
 
 def pivot_mapped_column(
     df: DataFrame,

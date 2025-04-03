@@ -6087,6 +6087,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+    expected_create_map_column_when_drop_columns_is_true_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
+            StructField(
+                test_map_column,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
 
     aggregate_ascwds_worker_with_additional_column_schema = StructType(
         [
