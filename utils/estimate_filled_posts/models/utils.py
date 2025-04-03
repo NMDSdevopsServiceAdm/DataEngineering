@@ -119,3 +119,31 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
         .otherwise(F.col(IndCqc.number_of_beds_banded)),
     )
     return df
+
+
+def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+    df: DataFrame,
+    ratio_column: str,
+    posts_column: str,
+) -> DataFrame:
+    """
+    Multiplies the filled posts per bed ratio values by the number of beds at each care home location to create a filled posts figure.
+
+    If the location is not a care home, the original filled posts figure is kept.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
+        posts_column (str): The name of the filled posts column.
+
+    Returns:
+        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
+    """
+    df = df.withColumn(
+        posts_column,
+        F.when(
+            F.col(IndCqc.care_home) == CareHome.care_home,
+            F.col(ratio_column) * F.col(IndCqc.number_of_beds),
+        ).otherwise(F.col(posts_column)),
+    )
+    return df

@@ -6411,6 +6411,35 @@ class EstimateFilledPostsModelsUtils:
         ("1-008", PrimaryServiceType.care_home_with_nursing, 4.0, 4.0),
     ]
 
+    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 20.0),
+        ("1-002", CareHome.care_home, 5, None, 10.0),
+        ("1-003", CareHome.care_home, None, 1.6, 20.0),
+        ("1-004", CareHome.care_home, None, None, 10.0),
+        ("1-005", CareHome.care_home, 5, 1.8, None),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+    expected_convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
+        ("1-001", CareHome.care_home, 5, 1.6, 8.0),
+        ("1-002", CareHome.care_home, 5, None, None),
+        ("1-003", CareHome.care_home, None, 1.6, None),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.care_home, 5, 1.8, 9.0),
+        ("1-006", CareHome.care_home, 5, None, None),
+        ("1-007", CareHome.care_home, None, 1.8, None),
+        ("1-008", CareHome.care_home, None, None, None),
+        ("1-009", CareHome.not_care_home, 5, 1.6, 20.0),
+        ("1-010", CareHome.not_care_home, None, None, 10.0),
+        ("1-011", CareHome.not_care_home, 5, 1.6, None),
+        ("1-012", CareHome.not_care_home, None, None, None),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
