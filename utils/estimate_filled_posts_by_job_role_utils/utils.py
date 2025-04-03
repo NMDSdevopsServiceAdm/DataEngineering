@@ -446,9 +446,10 @@ def calculate_job_group_sum_from_job_role_map_column(
     """
     Sums the values from a job role map column up to job group level.
 
-    This function takes a job role level map column, explodes the key/value pairs into rows,
+    This function takes a job role level map column, explodes the key/value pairs into rows as two columns,
     adds a new column to show the job group each job role belongs to,
-    sums the value column by job group into job group columns, then packages those columns into a new map column.
+    sums the value column by job group and pivots it into job group columns,
+    then packages those columns into a new map column.
 
     Args:
         df (DataFrame): A dataframe with a job role map column.
@@ -472,25 +473,25 @@ def calculate_job_group_sum_from_job_role_map_column(
         subset="job_group",
     )
 
+    list_of_job_groups = list(
+        set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
+    )
     df_exploded = (
         df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
         .pivot("job_group")
         .agg(F.sum("value"))
+        .na.fill(0, subset=list_of_job_groups)
     )
 
     df_exploded = df_exploded.withColumn(
         new_job_group_map_column_name,
-        create_map_column(
-            list(
-                set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-            )
-        ),
+        create_map_column(list_of_job_groups),
     )
 
-    df_exploded = df_exploded.drop(
-        *AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()
-    )
+    df_exploded = df_exploded.drop(*list_of_job_groups)
 
     df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
+
+    df.show()
 
     return df
