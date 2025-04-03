@@ -4337,6 +4337,7 @@ class ValidateLocationsAPICleanedData:
     raw_cqc_locations_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -4459,6 +4460,7 @@ class ValidateLocationsAPICleanedData:
     calculate_expected_size_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
@@ -4514,7 +4516,7 @@ class ValidateLocationsAPICleanedData:
         ]
     )
 
-    identify_if_location_has_a_known_regulated_activity_schema = StructType(
+    identify_if_location_has_a_known_value_when_array_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
@@ -4524,45 +4526,32 @@ class ValidateLocationsAPICleanedData:
                         [
                             StructField(CQCL.name, StringType(), True),
                             StructField(CQCL.code, StringType(), True),
-                            StructField(
-                                CQCL.contacts,
-                                ArrayType(
-                                    StructType(
-                                        [
-                                            StructField(
-                                                CQCL.person_family_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_given_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_roles,
-                                                ArrayType(StringType(), True),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_title, StringType(), True
-                                            ),
-                                        ]
-                                    )
-                                ),
-                                True,
-                            ),
                         ]
                     )
                 ),
             ),
         ]
     )
-    expected_identify_if_location_has_a_known_regulated_activity_schema = StructType(
+    expected_identify_if_location_has_a_known_value_when_array_type_schema = StructType(
         [
-            *identify_if_location_has_a_known_regulated_activity_schema,
-            StructField("has_known_regulated_activity", BooleanType(), True),
+            *identify_if_location_has_a_known_value_when_array_type_schema,
+            StructField("has_known_value", BooleanType(), True),
         ]
+    )
+
+    identify_if_location_has_a_known_value_when_not_array_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+        ]
+    )
+    expected_identify_if_location_has_a_known_value_when_not_array_type_schema = (
+        StructType(
+            [
+                *identify_if_location_has_a_known_value_when_not_array_type_schema,
+                StructField("has_known_value", BooleanType(), True),
+            ]
+        )
     )
 
 
