@@ -69,6 +69,9 @@ class IndCqcColumns:
     avg_residuals_estimate_filled_posts_non_res_pir: str = (
         "avg_residuals_estimate_filled_posts_non_res_pir"
     )
+    banded_bed_ratio_rolling_average_model: str = (
+        "banded_bed_ratio_rolling_average_model"
+    )
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
@@ -214,6 +217,7 @@ class IndCqcColumns:
         pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
+    posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     previous_model_value: str = "previous_model_value"
@@ -241,7 +245,7 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rolling_average_model: str = "rolling_average_model"
-    rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
