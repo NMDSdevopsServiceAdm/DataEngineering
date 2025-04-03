@@ -70,8 +70,8 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The input DataFrame with the new 'number_of_beds_banded_cleaned' column added.
     """
-    band_two: int = 2.0
-    band_three: int = 3.0
+    band_two: float = 2.0
+    band_three: float = 3.0
 
     df = df.withColumn(
         IndCqc.number_of_beds_banded_cleaned,
