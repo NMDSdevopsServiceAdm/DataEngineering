@@ -53,9 +53,13 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
+    existing_columns = [
+        col for col in list_of_job_roles_sorted if col in df_rolling_sum.columns
+    ]
+
     df_rolling_sum = create_map_column(
         df_rolling_sum,
-        list_of_job_roles_sorted,
+        existing_columns,
         IndCQC.ascwds_job_role_counts_rolling_sum,
         True,
     )
