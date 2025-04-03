@@ -3397,6 +3397,26 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    apply_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(
+                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+            ),
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+        ]
+    )
+    expected_apply_residuals_schema = StructType(
+        [
+            *apply_residuals_schema,
+            StructField(
+                NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
 
 @dataclass
 class ModelNonResPirLinearRegressionSchemas:

@@ -38,7 +38,7 @@ def combine_non_res_with_and_without_dormancy_models(
 
     # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
 
-    non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
+    combined_models_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
@@ -191,7 +191,7 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
 
 def apply_residuals(df: DataFrame) -> DataFrame:
     """
-    Applies the residuals to smooth predictions.
+    Applies the residuals to smooth predictions when both the model value and residual are not null.
 
     Args:
         df (DataFrame): DataFrame with model predictions and residuals.
@@ -199,10 +199,15 @@ def apply_residuals(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with smoothed predictions.
     """
+    model_and_residual_are_not_null = (
+        F.col(TempColumns.without_dormancy_model_adjusted).isNotNull()
+        & F.col(TempColumns.residual_at_overlap).isNotNull()
+    )
+
     df = df.withColumn(
         TempColumns.without_dormancy_model_adjusted_and_residual_applied,
         F.when(
-            F.col(TempColumns.residual_at_overlap).isNotNull(),
+            model_and_residual_are_not_null,
             F.col(TempColumns.without_dormancy_model_adjusted)
             + F.col(TempColumns.residual_at_overlap),
         ).otherwise(F.col(TempColumns.without_dormancy_model_adjusted)),

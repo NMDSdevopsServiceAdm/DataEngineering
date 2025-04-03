@@ -6426,6 +6426,28 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-003", 5.0, None, None, None),
     ]
 
+    apply_residuals_when_no_null_values_rows = [
+        ("1-001", 7.0, 12.0),
+        ("1-002", 5.0, -0.5),
+        ("1-003", 1.0, -2.5),
+    ]
+    expected_apply_residuals_when_no_null_values_rows = [
+        ("1-001", 7.0, 12.0, 19.0),
+        ("1-002", 5.0, -0.5, 4.5),
+        ("1-003", 1.0, -2.5, -1.5),
+    ]
+
+    apply_residuals_when_null_values_present_rows = [
+        ("1-001", 10.0, None),
+        ("1-002", None, -1.0),
+        ("1-003", None, None),
+    ]
+    expected_apply_residuals_when_null_values_present_rows = [
+        ("1-001", 10.0, None, 10.0),
+        ("1-002", None, -1.0, None),
+        ("1-003", None, None, None),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:
