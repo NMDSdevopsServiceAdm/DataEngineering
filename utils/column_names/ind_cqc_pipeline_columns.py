@@ -275,3 +275,18 @@ class PrimaryServiceRollingAverageColumns:
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
+
+
+@dataclass
+class NonResWithAndWithoutDormancyCombinedColumns:
+    """The names of the temporary columns used in the combining of the models process."""
+
+    adjustment_ratio: str = "adjustment_ratio"
+    avg_with_dormancy: str = "avg_with_dormancy"
+    avg_without_dormancy: str = "avg_without_dormancy"
+    first_overlap_date: str = "first_overlap_date"
+    residual_at_overlap: str = "residual_at_overlap"
+    without_dormancy_model_adjusted: str = "without_dormancy_model_adjusted"
+    without_dormancy_model_adjusted_and_residual_applied: str = (
+        "without_dormancy_model_adjusted_and_residual_applied"
+    )
