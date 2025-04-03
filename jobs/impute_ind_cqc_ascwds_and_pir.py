@@ -15,6 +15,7 @@ from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interp
     model_imputation_with_extrapolation_and_interpolation,
 )
 from utils.estimate_filled_posts.models.utils import (
+    clean_number_of_beds_banded,
     combine_care_home_ratios_and_non_res_posts,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
@@ -88,6 +89,8 @@ def main(
         IndCQC.imputed_non_res_pir_people_directly_employed,
         care_home=False,
     )
+
+    df = clean_number_of_beds_banded(df)
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 
