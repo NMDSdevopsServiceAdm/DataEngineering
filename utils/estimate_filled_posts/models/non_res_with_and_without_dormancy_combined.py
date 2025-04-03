@@ -6,6 +6,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
 from utils.column_values.categorical_column_values import CareHome
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 def combine_non_res_with_and_without_dormancy_models(
@@ -134,7 +135,7 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
 
 def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     """
-    Calculates and applies residuals between models to smooth predictions.
+    Calculates and applies residuals between models at the first point in time when both models exist to smooth predictions.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
@@ -142,7 +143,17 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with smoothed predictions.
     """
-    df = get_first_overlap_date(df)
+    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
+        IndCqc.cqc_location_import_date
+    )
+    df = get_selected_value(
+        df,
+        window_spec,
+        column_with_null_values=IndCqc.non_res_with_dormancy_model,
+        column_with_data=IndCqc.cqc_location_import_date,
+        new_column=TempColumns.first_overlap_date,
+        selection="first",
+    )
 
     residual_df = calculate_residuals(df)
 
@@ -150,33 +161,6 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
 
     df = apply_residuals(df)
 
-    return df
-
-
-def get_first_overlap_date(df: DataFrame) -> DataFrame:
-    """
-    Identifies the first available date where both models exist for each location.
-
-    Args:
-        df (DataFrame): DataFrame with model predictions.
-
-    Returns:
-        DataFrame: DataFrame with 'first_overlap_date' added.
-    """
-    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
-        IndCqc.cqc_location_import_date
-    )
-
-    df = df.withColumn(
-        TempColumns.first_overlap_date,
-        F.first(
-            F.when(
-                F.col(IndCqc.non_res_with_dormancy_model).isNotNull(),
-                F.col(IndCqc.cqc_location_import_date),
-            ),
-            True,
-        ).over(window_spec),
-    )
     return df
 
 
