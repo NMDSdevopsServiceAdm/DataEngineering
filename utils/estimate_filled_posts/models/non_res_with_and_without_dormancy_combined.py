@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -39,7 +39,7 @@ def combine_non_res_with_and_without_dormancy_models(
 
     non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
-    # TODO - 3 - calculate and apply residuals
+    combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
     # TODO - 4 - combine model predictions
 
@@ -124,9 +124,103 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
         DataFrame: DataFrame with adjusted 'without_dormancy' model predictions.
     """
     df = df.withColumn(
-        TempColumns.adjusted_without_dormancy_model,
+        TempColumns.without_dormancy_model_adjusted,
         F.col(IndCqc.non_res_without_dormancy_model)
         * F.col(TempColumns.adjustment_ratio),
     )
 
+    return df
+
+
+def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
+    """
+    Calculates and applies residuals between models to smooth predictions.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with smoothed predictions.
+    """
+    df = get_first_overlap_date(df)
+
+    residual_df = calculate_residuals(df)
+
+    df = df.join(residual_df, IndCqc.location_id, "left")
+
+    df = apply_residuals(df)
+
+    return df
+
+
+def get_first_overlap_date(df: DataFrame) -> DataFrame:
+    """
+    Identifies the first available date where both models exist for each location.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with 'first_overlap_date' added.
+    """
+    window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
+        IndCqc.cqc_location_import_date
+    )
+
+    df = df.withColumn(
+        TempColumns.first_overlap_date,
+        F.first(
+            F.when(
+                F.col(IndCqc.non_res_with_dormancy_model).isNotNull(),
+                F.col(IndCqc.cqc_location_import_date),
+            ),
+            True,
+        ).over(window_spec),
+    )
+    return df
+
+
+def calculate_residuals(df: DataFrame) -> DataFrame:
+    """
+    Calculates residuals between 'with_dormancy' and 'without_dormancy_model_adjusted' models at the first overlap date.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with calculated residuals.
+    """
+    residual_df = (
+        df.filter(
+            F.col(IndCqc.cqc_location_import_date)
+            == F.col(TempColumns.first_overlap_date)
+        )
+        .withColumn(
+            TempColumns.residual_at_overlap,
+            F.col(IndCqc.non_res_with_dormancy_model)
+            - F.col(TempColumns.without_dormancy_model_adjusted),
+        )
+        .select(IndCqc.location_id, TempColumns.residual_at_overlap)
+    )
+    return residual_df
+
+
+def apply_residuals(df: DataFrame) -> DataFrame:
+    """
+    Applies the residuals to smooth predictions.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions and residuals.
+
+    Returns:
+        DataFrame: DataFrame with smoothed predictions.
+    """
+    df = df.withColumn(
+        TempColumns.without_dormancy_model_adjusted_and_residual_applied,
+        F.when(
+            F.col(TempColumns.residual_at_overlap).isNotNull(),
+            F.col(TempColumns.without_dormancy_model_adjusted)
+            + F.col(TempColumns.residual_at_overlap),
+        ).otherwise(F.col(TempColumns.without_dormancy_model_adjusted)),
+    )
     return df
