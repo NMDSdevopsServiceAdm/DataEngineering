@@ -12,7 +12,7 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
-def model_primary_service_rolling_average_and_rate_of_change(
+def model_primary_service_rate_of_change(
     df: DataFrame,
     column_with_values: str,
     number_of_days: int,

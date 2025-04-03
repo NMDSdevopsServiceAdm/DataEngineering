@@ -77,28 +77,26 @@ class CalculateExpectedSizeofDataset(ValidateLocationsAPICleanedDatasetTests):
         self.assertEqual(returned_row_count, expected_row_count)
 
 
-class IdentifyIfLocationHasAKnownRegulatedActivity(
-    ValidateLocationsAPICleanedDatasetTests
-):
+class IdentifyIfLocationHasAKnownValueTests(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_identify_if_location_has_a_known_regulated_activity_returns_correct_df(
+        self.has_known_value: str = "has_known_value"
+
+    def test_identify_if_location_has_a_known_value_when_array_type_returns_expected_values(
         self,
     ):
-        has_known_regulated_activity: str = "has_known_regulated_activity"
-
         test_df = self.spark.createDataFrame(
-            Data.identify_if_location_has_a_known_regulated_activity_rows,
-            Schemas.identify_if_location_has_a_known_regulated_activity_schema,
+            Data.identify_if_location_has_a_known_value_when_array_type_rows,
+            Schemas.identify_if_location_has_a_known_value_when_array_type_schema,
         )
 
-        returned_df = job.identify_if_location_has_a_known_regulated_activity(
-            test_df, has_known_regulated_activity
+        returned_df = job.identify_if_location_has_a_known_value(
+            test_df, CQCL.regulated_activities, self.has_known_value
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_identify_if_location_has_a_known_regulated_activity_rows,
-            Schemas.expected_identify_if_location_has_a_known_regulated_activity_schema,
+            Data.expected_identify_if_location_has_a_known_value_when_array_type_rows,
+            Schemas.expected_identify_if_location_has_a_known_value_when_array_type_schema,
         )
 
         returned_data = returned_df.sort(CQCL.location_id).collect()
@@ -106,9 +104,35 @@ class IdentifyIfLocationHasAKnownRegulatedActivity(
 
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][has_known_regulated_activity],
-                expected_data[i][has_known_regulated_activity],
-                f"Row {i} has a known regulated activity column which doesn't match expected",
+                returned_data[i][self.has_known_value],
+                expected_data[i][self.has_known_value],
+                f"Row {i} has known value column which doesn't match expected",
+            )
+
+    def test_identify_if_location_has_a_known_value_when_not_array_type_returns_expected_values(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.identify_if_location_has_a_known_value_when_not_array_type_rows,
+            Schemas.identify_if_location_has_a_known_value_when_not_array_type_schema,
+        )
+
+        returned_df = job.identify_if_location_has_a_known_value(
+            test_df, CQCL.provider_id, self.has_known_value
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_identify_if_location_has_a_known_value_when_not_array_type_rows,
+            Schemas.expected_identify_if_location_has_a_known_value_when_not_array_type_schema,
+        )
+
+        returned_data = returned_df.sort(CQCL.location_id).collect()
+        expected_data = expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][self.has_known_value],
+                expected_data[i][self.has_known_value],
+                f"Row {i} has known value column which doesn't match expected",
             )
 
 

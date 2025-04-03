@@ -242,7 +242,7 @@ class IndCqcColumns:
         "residuals_estimate_filled_posts_non_res_pir"
     )
     rolling_average_model: str = "rolling_average_model"
-    rolling_rate_of_change_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
