@@ -24,20 +24,20 @@ class AddRollingSumPartitionedByPrimaryServiceTyoe(
 
         self.number_of_days_in_rolling_sum = 1
 
-    def test_add_rolling_sum_partitioned_by_primary_service_type(
+    def test_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.add_rolling_sum_partitioned_by_primary_service_type_data,
-            Schemas.add_rolling_sum_partitioned_by_primary_service_type_schema,
+            Data.add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_data,
+            Schemas.add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_add_rolling_sum_partitioned_by_primary_service_type_data,
-            Schemas.expected_add_rolling_sum_partitioned_by_primary_service_type_schema,
+            Data.expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_data,
+            Schemas.expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
         )
 
-        returned_df = primary_service_rolling_sum.add_rolling_sum_partitioned_by_primary_service_type(
+        returned_df = primary_service_rolling_sum.add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled(
             test_df,
             self.number_of_days_in_rolling_sum,
             IndCQC.ascwds_job_role_counts_exploded,
@@ -89,6 +89,10 @@ class CalculateRollingSumOfCountOfJobRoles(
     def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window(
         self,
     ):
+        self.test_df.show(truncate=False)
+        self.returned_df.show(truncate=False)
+        self.expected_df.show(truncate=False)
+
         self.assertEqual(
             self.expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
             self.returned_df.select(

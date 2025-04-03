@@ -382,14 +382,17 @@ def create_estimate_filled_posts_by_job_role_map_column(
 
     return df
 
+
 def pivot_mapped_column(
     df: DataFrame,
     grouping_columns: List[str] = [IndCQC.location_id, IndCQC.unix_time],
     aggregation_column: str = IndCQC.ascwds_job_role_ratios_interpolated,
 ) -> DataFrame:
     """
-    pivots a mapped column by first grouping a dataframe by a set of columns, then pivoting a column which has values which you want
-    to convert to column and the finally aggregating by another column.
+    pivots grouped data on IndCQC.main_job_role_clean_labelled. The columns you group by are given by grouping_columns, which default to location_id and unix_time. The could you aggregate by is given by
+    aggregation_column which defaults to IndCQC.ascwds_job_role_ratios_interpolated.
+
+    A pivot is the process of transforming data, creating new columns from the values in an existing column. in our case these columns will be job roles found in IndCQC.main_job_role_clean_labelled.
 
     Args:
         df (DataFrame): A dataframe which contains the mapped column you want to pivot.

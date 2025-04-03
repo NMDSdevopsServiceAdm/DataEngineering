@@ -948,9 +948,6 @@ class PivotMappedColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
         )
 
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
-
         self.assertEqual(
             expected_df.sort(IndCQC.unix_time).collect(),
             returned_df.sort(IndCQC.unix_time).collect(),
@@ -1020,9 +1017,6 @@ class PivotMappedColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             [IndCQC.unix_time, IndCQC.primary_service_type],
             IndCQC.ascwds_job_role_counts_rolling_sum,
         )
-
-        expected_df.show(truncate=False)
-        returned_df.show(truncate=False)
 
         self.assertEqual(
             expected_df.sort(IndCQC.primary_service_type).collect(),

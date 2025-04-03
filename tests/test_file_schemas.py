@@ -6421,7 +6421,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    add_rolling_sum_partitioned_by_primary_service_type_schema = StructType(
+    add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
         [
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -6430,9 +6430,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    expected_add_rolling_sum_partitioned_by_primary_service_type_schema = StructType(
+    expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
         [
-            *add_rolling_sum_partitioned_by_primary_service_type_schema,
+            *add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
             StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
         ]
     )

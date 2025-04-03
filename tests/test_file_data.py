@@ -11470,7 +11470,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    add_rolling_sum_partitioned_by_primary_service_type_data = [
+    add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_data = [
         (
             0,
             PrimaryServiceType.care_home_with_nursing,
@@ -11533,7 +11533,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    expected_add_rolling_sum_partitioned_by_primary_service_type_data = [
+    expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_data = [
         (
             0,
             PrimaryServiceType.care_home_with_nursing,
