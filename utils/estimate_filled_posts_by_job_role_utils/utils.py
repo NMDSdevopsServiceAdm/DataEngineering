@@ -8,13 +8,13 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
+    AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
-list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
+list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -43,26 +43,45 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
     df = df.na.fill(0, subset=list_of_job_roles)
 
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_counts, create_map_column(list_of_job_roles)
-    )
-
-    df = df.drop(*list_of_job_roles)
+    df = create_map_column(df, list_of_job_roles, IndCQC.ascwds_job_role_counts)
 
     return df
 
 
-def create_map_column(columns: List[str]) -> F.Column:
+def create_map_column(
+    df: DataFrame,
+    column_list: List[str],
+    new_col_name: str,
+    drop_original_columns: bool = True,
+) -> DataFrame:
     """
-    Creates a Spark map column from a list of columns where keys are column names and values are the respective column values.
+    Creates a new map column in a DataFrame by mapping the specified columns to their values.
+
+    This function generates a map column where the keys are the column names and the values are the corresponding column values.
+    The column list is sorted alphabetically before creating the map.
+    The original columns can be optionally dropped after the map column is created.
 
     Args:
-        columns (List[str]): List of column names to be mapped.
+        df (DataFrame): DataFrame containing the list of columns to be mapped.
+        column_list (List[str]): List of column names to be mapped.
+        new_col_name (str): Name of the new mapped column to be added.
+        drop_original_columns (bool, optional): If True, drops the original columns after creating
+            the map column. Defaults to True.
 
     Returns:
-        F.Column: A Spark column containing a map of job role names to counts.
+        DataFrame: A DataFrame with the new map column added and optionally the original columns dropped.
     """
-    return F.create_map(*[x for col in columns for x in (F.lit(col), F.col(col))])
+    sorted_column_list = sorted(column_list)
+
+    map_columns = F.create_map(
+        *[x for col in sorted_column_list for x in (F.lit(col), F.col(col))]
+    )
+    df = df.withColumn(new_col_name, map_columns)
+
+    if drop_original_columns:
+        df = df.drop(*sorted_column_list)
+
+    return df
 
 
 def merge_dataframes(
@@ -297,10 +316,11 @@ def sum_job_role_count_split_by_service(
         .sum("value")
     )
 
-    df_explode_grouped_with_map_column = df_explode_grouped.withColumn(
+    df_explode_grouped_with_map_column = create_map_column(
+        df_explode_grouped,
+        list_of_job_roles,
         IndCQC.ascwds_job_role_counts_by_primary_service,
-        create_map_column(list_of_job_roles),
-    ).drop(*list_of_job_roles)
+    )
 
     df_result = df.join(
         df_explode_grouped_with_map_column,
