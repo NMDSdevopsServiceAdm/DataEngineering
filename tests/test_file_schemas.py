@@ -3334,7 +3334,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
             StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
             StructField(
-                NRModel_TempCol.adjusted_without_dormancy_model, FloatType(), True
+                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
             ),
         ]
     )
@@ -3384,7 +3384,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             *apply_model_ratios_schema,
             StructField(
-                NRModel_TempCol.adjusted_without_dormancy_model, FloatType(), True
+                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
             ),
         ]
     )
