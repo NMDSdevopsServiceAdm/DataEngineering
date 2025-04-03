@@ -191,6 +191,7 @@ class IndCqcColumns:
     number_of_beds: str = CQCLClean.number_of_beds
     number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
+    number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
