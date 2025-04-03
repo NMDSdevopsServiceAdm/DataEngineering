@@ -9905,6 +9905,17 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         )
     ]
+    expected_create_map_column_when_all_columns_populated_and_drop_columns_is_true_rows = [
+        (
+            "123",
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.registered_nurse: 10,
+                MainJobRoleLabels.senior_care_worker: 20,
+                MainJobRoleLabels.senior_management: 30,
+            },
+        )
+    ]
     create_map_column_when_some_columns_populated_rows = [("123", 0, None, 20, None)]
     expected_create_map_column_when_some_columns_populated_rows = [
         (
