@@ -5,16 +5,14 @@ import warnings
 from pyspark.sql import functions as F
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-import utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change as job
-from tests.test_file_data import ModelPrimaryServiceRollingAverage as Data
-from tests.test_file_schemas import ModelPrimaryServiceRollingAverage as Schemas
+import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
+from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
+from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
 
-class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
+class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
@@ -22,26 +20,26 @@ class ModelPrimaryServiceRollingAverageTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-class MainTests(ModelPrimaryServiceRollingAverageTests):
+class MainTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
         number_of_days: int = 3
         self.estimates_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_average_rows,
-            Schemas.primary_service_rolling_average_schema,
+            Data.primary_service_rate_of_change_rows,
+            Schemas.primary_service_rate_of_change_schema,
         )
-        self.returned_df = job.model_primary_service_rolling_average_and_rate_of_change(
+        self.returned_df = job.model_primary_service_rate_of_change(
             self.estimates_df,
             IndCqc.filled_posts_per_bed_ratio,
             IndCqc.ascwds_filled_posts_dedup_clean,
             number_of_days,
             IndCqc.rolling_average_model,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_average_rows,
-            Schemas.expected_primary_service_rolling_average_schema,
+            Data.expected_primary_service_rate_of_change_rows,
+            Schemas.expected_primary_service_rate_of_change_schema,
         )
         self.returned_data = self.returned_df.sort(
             IndCqc.location_id, IndCqc.unix_time
@@ -51,7 +49,7 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.estimates_df.count(), self.returned_df.count())
 
-    def test_model_primary_service_rolling_average_and_rate_of_change_returns_expected_columns(
+    def test_model_primary_service_rate_of_change_returns_expected_columns(
         self,
     ):
         self.assertEqual(
@@ -75,14 +73,14 @@ class MainTests(ModelPrimaryServiceRollingAverageTests):
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
-                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
+                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
                 3,
                 f"Returned row {i} does not match expected",
             )
 
 
-class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+class CreateSingleColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -143,7 +141,7 @@ class CreateSingleColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+class CleanColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -198,7 +196,7 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -231,7 +229,7 @@ class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateSubmissionCountTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -286,7 +284,7 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class InterpolateColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
+class InterpolateColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -319,7 +317,7 @@ class InterpolateColumnToAverageTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateRollingAverageTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -382,7 +380,7 @@ class CalculateRollingAverageTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -393,19 +391,19 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         )
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_previous_value_column"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_previous_value_column"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.add_rolling_sum"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_rolling_sum"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_single_period_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_single_period_rate_of_change"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.deduplicate_dataframe"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.deduplicate_dataframe"
     )
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.calculate_cumulative_rate_of_change"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_cumulative_rate_of_change"
     )
     def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
@@ -418,7 +416,7 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         job.calculate_rolling_rate_of_change(
             self.calculate_roc_df,
             self.number_of_days,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
         self.assertEqual(add_previous_value_column.call_count, 1)
@@ -431,13 +429,15 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
         returned_df = job.calculate_rolling_rate_of_change(
             self.calculate_roc_df,
             self.number_of_days,
-            IndCqc.rolling_rate_of_change_model,
+            IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
-        self.assertTrue(IndCqc.rolling_rate_of_change_model in returned_df.columns)
+        self.assertTrue(
+            IndCqc.ascwds_rate_of_change_trendline_model in returned_df.columns
+        )
 
 
-class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
+class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -457,7 +457,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
         self.expected_data = self.expected_df.collect()
 
     @patch(
-        "utils.estimate_filled_posts.models.primary_service_rolling_rate_of_change.get_selected_value"
+        "utils.estimate_filled_posts.models.primary_service_rate_of_change.get_selected_value"
     )
     def test_functions_called_in_add_previous_value_column_function(
         self,
@@ -486,7 +486,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class AddRollingSumTests(ModelPrimaryServiceRollingAverageTests):
+class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -527,7 +527,7 @@ class AddRollingSumTests(ModelPrimaryServiceRollingAverageTests):
             )
 
 
-class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -559,7 +559,7 @@ class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRollingAverageTe
             )
 
 
-class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
+class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -585,7 +585,7 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRollingAverageTests):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
-class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTests):
+class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -594,7 +594,7 @@ class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTest
             Schemas.cumulative_rate_of_change_schema,
         )
         self.returned_df = job.calculate_cumulative_rate_of_change(
-            test_df, IndCqc.rolling_rate_of_change_model
+            test_df, IndCqc.ascwds_rate_of_change_trendline_model
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_cumulative_rate_of_change_rows,
@@ -614,8 +614,8 @@ class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRollingAverageTest
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.rolling_rate_of_change_model],
-                self.expected_data[i][IndCqc.rolling_rate_of_change_model],
+                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
                 2,
                 f"Returned row {i} does not match expected",
             )

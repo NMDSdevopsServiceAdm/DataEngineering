@@ -2622,7 +2622,9 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
             StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
@@ -2649,7 +2651,9 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -2724,8 +2728,8 @@ class ImputeIndCqcAscwdsAndPirSchemas:
 
 
 @dataclass
-class ModelPrimaryServiceRollingAverage:
-    primary_service_rolling_average_schema = StructType(
+class ModelPrimaryServiceRateOfChange:
+    primary_service_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
@@ -2736,11 +2740,13 @@ class ModelPrimaryServiceRollingAverage:
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
         ]
     )
-    expected_primary_service_rolling_average_schema = StructType(
+    expected_primary_service_rate_of_change_schema = StructType(
         [
-            *primary_service_rolling_average_schema,
+            *primary_service_rate_of_change_schema,
             StructField(IndCQC.rolling_average_model, DoubleType(), True),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
         ]
     )
 
@@ -2910,7 +2916,9 @@ class ModelPrimaryServiceRollingAverage:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.rolling_rate_of_change_model, DoubleType(), True),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
         ]
     )
 
@@ -3384,6 +3392,18 @@ class EstimateFilledPostsModelsUtils:
         [
             *clean_number_of_beds_banded_schema,
             StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
+        ]
+    )
+
+    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
+            ),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
         ]
     )
 
@@ -4351,6 +4371,7 @@ class ValidateLocationsAPICleanedData:
     raw_cqc_locations_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -4473,6 +4494,7 @@ class ValidateLocationsAPICleanedData:
     calculate_expected_size_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
             StructField(CQCL.type, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
@@ -4528,7 +4550,7 @@ class ValidateLocationsAPICleanedData:
         ]
     )
 
-    identify_if_location_has_a_known_regulated_activity_schema = StructType(
+    identify_if_location_has_a_known_value_when_array_type_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(
@@ -4538,45 +4560,32 @@ class ValidateLocationsAPICleanedData:
                         [
                             StructField(CQCL.name, StringType(), True),
                             StructField(CQCL.code, StringType(), True),
-                            StructField(
-                                CQCL.contacts,
-                                ArrayType(
-                                    StructType(
-                                        [
-                                            StructField(
-                                                CQCL.person_family_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_given_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_roles,
-                                                ArrayType(StringType(), True),
-                                                True,
-                                            ),
-                                            StructField(
-                                                CQCL.person_title, StringType(), True
-                                            ),
-                                        ]
-                                    )
-                                ),
-                                True,
-                            ),
                         ]
                     )
                 ),
             ),
         ]
     )
-    expected_identify_if_location_has_a_known_regulated_activity_schema = StructType(
+    expected_identify_if_location_has_a_known_value_when_array_type_schema = StructType(
         [
-            *identify_if_location_has_a_known_regulated_activity_schema,
-            StructField("has_known_regulated_activity", BooleanType(), True),
+            *identify_if_location_has_a_known_value_when_array_type_schema,
+            StructField("has_known_value", BooleanType(), True),
         ]
+    )
+
+    identify_if_location_has_a_known_value_when_not_array_type_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+        ]
+    )
+    expected_identify_if_location_has_a_known_value_when_not_array_type_schema = (
+        StructType(
+            [
+                *identify_if_location_has_a_known_value_when_not_array_type_schema,
+                StructField("has_known_value", BooleanType(), True),
+            ]
+        )
     )
 
 
@@ -6094,6 +6103,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     expected_create_map_column_schema = StructType(
         [
             *create_map_column_schema,
+            StructField(
+                test_map_column,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+    expected_create_map_column_when_drop_columns_is_true_schema = StructType(
+        [
+            StructField(IndCQC.establishment_id, StringType(), True),
             StructField(
                 test_map_column,
                 MapType(StringType(), IntegerType()),

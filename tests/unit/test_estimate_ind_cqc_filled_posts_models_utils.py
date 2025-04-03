@@ -157,3 +157,38 @@ class CleanNumberOfBedsBandedTests(EstimateFilledPostsModelsUtilsTests):
                 expected_data[i],
                 f"Returned row {i} does not match expected",
             )
+
+
+class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
+    EstimateFilledPostsModelsUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows,
+            Schemas.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema,
+        )
+        self.returned_df = job.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+            self.test_df,
+            IndCqc.banded_bed_ratio_rolling_average_model,
+            IndCqc.posts_rolling_average_model,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows,
+            Schemas.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema,
+        )
+
+    def test_returned_columns_match_original_data_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
+
+    def test_returned_column_values_match_expected_when_not_care_home(self):
+        returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        expected_data = self.expected_df.collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i],
+                expected_data[i],
+                f"Returned row {i} does not match expected",
+            )
