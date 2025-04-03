@@ -6426,6 +6426,10 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-003", 5.0, None, None, None),
     ]
 
+    # TODO - filters to expected rows
+    # TODO - expected residuals
+    # TODO - expected cols
+
     apply_residuals_when_no_null_values_rows = [
         ("1-001", 7.0, 12.0),
         ("1-002", 5.0, -0.5),

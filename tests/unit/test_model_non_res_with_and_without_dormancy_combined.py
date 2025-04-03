@@ -187,7 +187,13 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
 
 
 # TODO - calculate_and_apply_residuals
-# TODO - calculate_residuals
+class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        # TODO - filters to expected rows
+        # TODO - expected residuals
+        # TODO - expected cols
 
 
 class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):

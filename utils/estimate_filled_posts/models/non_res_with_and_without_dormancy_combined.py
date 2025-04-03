@@ -168,24 +168,34 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates residuals between 'with_dormancy' and 'without_dormancy_model_adjusted' models at the first overlap date.
 
+    This function filters the DataFrame at the first point in time when the 'with_dormancy_model' has values, and to locations
+    who have both a 'with_dormancy' and 'without_dormancy_adjusted' model prediction.
+    The residual is calculated as 'with_dormancy' values minus 'without_dormancy_adjusted'.
+    Only the columns 'location_id' and 'residual_at_overlap' are returned.
+
     Args:
         df (DataFrame): DataFrame with model predictions.
 
     Returns:
-        DataFrame: DataFrame with calculated residuals.
+        DataFrame: DataFrame with 'location_id' and 'residual_at_overlap'.
     """
-    residual_df = (
-        df.filter(
+    filtered_df = df.where(
+        (
             F.col(IndCqc.cqc_location_import_date)
             == F.col(TempColumns.first_overlap_date)
         )
-        .withColumn(
-            TempColumns.residual_at_overlap,
-            F.col(IndCqc.non_res_with_dormancy_model)
-            - F.col(TempColumns.without_dormancy_model_adjusted),
-        )
-        .select(IndCqc.location_id, TempColumns.residual_at_overlap)
+        & F.col(IndCqc.non_res_with_dormancy_model).isNotNull()
+        & F.col(TempColumns.without_dormancy_model_adjusted).isNotNull()
     )
+    residual_df = filtered_df.withColumn(
+        TempColumns.residual_at_overlap,
+        F.col(IndCqc.non_res_with_dormancy_model)
+        - F.col(TempColumns.without_dormancy_model_adjusted),
+    )
+    residual_df = residual_df.select(
+        IndCqc.location_id, TempColumns.residual_at_overlap
+    )
+
     return residual_df
 
 
