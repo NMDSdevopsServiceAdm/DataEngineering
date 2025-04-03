@@ -966,3 +966,13 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
             for column in self.returned_df.columns
             if column not in self.test_df.columns
         ]
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_adds_two_columns(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 2)
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+        self,
+    ):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
