@@ -485,7 +485,7 @@ class EstimateFilledPostsSource(ColumnValues):
     non_res_pir_linear_regression_model: str = (
         IndCQC.non_res_pir_linear_regression_model
     )
-    rolling_average_model: str = IndCQC.rolling_average_model
+    posts_rolling_average_model: str = IndCQC.posts_rolling_average_model
 
 
 @dataclass

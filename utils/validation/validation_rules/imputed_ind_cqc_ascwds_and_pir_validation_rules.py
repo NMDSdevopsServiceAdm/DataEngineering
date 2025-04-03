@@ -45,7 +45,7 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,
             IndCqcColumns.filled_posts_per_bed_ratio: 0.0,
-            IndCqcColumns.rolling_average_model: 0.0,
+            IndCqcColumns.posts_rolling_average_model: 0.0,
             IndCqcColumns.imputed_filled_post_model: 0.0,
             IndCqcColumns.imputed_filled_posts_per_bed_ratio_model: 0.0,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
@@ -57,7 +57,7 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
             IndCqcColumns.total_staff_bounded: 3000,
             IndCqcColumns.worker_records_bounded: 3000,
             IndCqcColumns.filled_posts_per_bed_ratio: 20.0,
-            IndCqcColumns.rolling_average_model: 3000.0,
+            IndCqcColumns.posts_rolling_average_model: 3000.0,
             IndCqcColumns.imputed_filled_post_model: 3000.0,
             IndCqcColumns.imputed_filled_posts_per_bed_ratio_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
