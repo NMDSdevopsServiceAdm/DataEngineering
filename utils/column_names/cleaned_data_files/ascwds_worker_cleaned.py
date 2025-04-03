@@ -5,6 +5,7 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 )
 
 
+# delete
 @dataclass
 class AscwdsWorkerCleanedColumns(AscwdsWorkerColumns):
     ascwds_worker_import_date: str = "ascwds_worker_import_date"
