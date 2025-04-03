@@ -34,6 +34,7 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch("utils.utils.write_to_parquet")
+    @patch("jobs.impute_ind_cqc_ascwds_and_pir.clean_number_of_beds_banded")
     @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
     )
@@ -42,6 +43,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self,
         read_from_parquet_patch: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
+        clean_number_of_beds_banded_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -52,10 +54,10 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             self.NON_RES_PIR_MODEL,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
+        read_from_parquet_patch.assert_called_once()
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
-        write_to_parquet_patch.assert_any_call(
+        clean_number_of_beds_banded_mock.assert_called_once()
+        write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
             mode="overwrite",
