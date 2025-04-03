@@ -1,6 +1,7 @@
 from typing import Dict, List, Tuple
 
-from pyspark.sql import DataFrame, functions as F
+from datetime import date
+from pyspark.sql import DataFrame, Window, functions as F
 from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
 
@@ -8,6 +9,19 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
+    """
+    Combines specified columns into a single feature vector for the modelling process.
+
+    This function uses `VectorAssembler` to merge multiple input columns into a single vector column.
+    Invalid values are skipped to prevent transformation errors.
+
+    Args:
+        df (DataFrame): Input DataFrame containing columns to be vectorised.
+        list_for_vectorisation (List[str]): List of column names to be combined into the feature vector.
+
+    Returns:
+        DataFrame: A DataFrame with an additional 'features' column.
+    """
     loc_df = VectorAssembler(
         inputCols=list_for_vectorisation,
         outputCol=IndCQC.features,
@@ -99,3 +113,85 @@ def cap_integer_at_max_value(
         ).otherwise(None),
     )
     return df
+
+
+def add_date_index_column(df: DataFrame) -> DataFrame:
+    """
+    Creates an index column in the DataFrame based on the cqc_location_import_date column.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with an added index column.
+    """
+    windowSpec = Window.partitionBy(IndCQC.care_home).orderBy(
+        IndCQC.cqc_location_import_date
+    )
+
+    df_with_index = df.withColumn(
+        IndCQC.cqc_location_import_date_indexed, F.dense_rank().over(windowSpec)
+    )
+
+    return df_with_index
+
+
+# TODO - Add tests for this function
+def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
+    """
+    Copies the values in the rural urban indicator column into a new column and replaces all categories which contains the word "sparse" with "Sparse setting".
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with the new rural urban indicator column with recoded sparse categories.
+    """
+    sparse_identifier: str = "sparse"
+    sparse_replacement_cateogry_name: str = "Sparse setting"
+
+    df = df.withColumn(
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        F.when(
+            F.col(IndCQC.current_rural_urban_indicator_2011).contains(
+                sparse_identifier
+            ),
+            sparse_replacement_cateogry_name,
+        ).otherwise(F.col(IndCQC.current_rural_urban_indicator_2011)),
+    )
+
+    return df
+
+
+# TODO - Add tests for this function
+def add_log_column(df: DataFrame, input_col: str, output_col: str) -> DataFrame:
+    """
+    Adds a new column to the DataFrame which is the logarithm of the specified input column.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        input_col (str): Name of the column to take the logarithm of.
+        output_col (str): Name of the new column to be added.
+
+    Returns:
+        DataFrame: DataFrame with the new column added.
+    """
+    return df.withColumn(output_col, F.log(F.col(input_col)))
+
+
+# TODO - Add tests for this function
+def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
+    """
+    Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
+
+    The 'with_dormancy' model started in 2022 and is an improvement on the 'without_dormancy' model.
+    In other to ensure a smooth transition between the two models, we predict both models for a 3 year period.
+    We are filtering the features dataframe to be in line with the point at which the model was last retrained.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: Filtered DataFrame.
+    """
+    return df.filter(F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1))

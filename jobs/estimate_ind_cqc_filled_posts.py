@@ -7,6 +7,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -16,6 +17,9 @@ from utils.estimate_filled_posts.models.non_res_with_dormancy import (
 )
 from utils.estimate_filled_posts.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
+)
+from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
 )
 from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
     model_non_res_pir_linear_regression,
@@ -56,7 +60,8 @@ ind_cqc_columns = [
     IndCQC.current_region,
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
+    IndCQC.banded_bed_ratio_rolling_average_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.imputed_non_res_pir_people_directly_employed,
     IndCQC.imputed_filled_posts_per_bed_ratio_model,
@@ -110,6 +115,14 @@ def main(
         ml_model_metrics_destination,
     )
 
+    # TODO make function
+    # Do I need to replace nulls in CH with this figure so imputation works?
+    estimate_filled_posts_df = calculate_filled_posts_from_beds_and_ratio(
+        estimate_filled_posts_df,
+        IndCQC.banded_bed_ratio_rolling_average_model,
+        IndCQC.care_home_rolling_average_model,
+    )
+
     estimate_filled_posts_df = model_non_res_with_dormancy(
         estimate_filled_posts_df,
         non_res_with_dormancy_features_df,
@@ -121,6 +134,10 @@ def main(
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
         ml_model_metrics_destination,
+    )
+
+    estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
+        estimate_filled_posts_df
     )
 
     estimate_filled_posts_df = model_non_res_pir_linear_regression(
@@ -141,12 +158,10 @@ def main(
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
         IndCQC.ascwds_pir_merged,
-        IndCQC.non_res_with_dormancy_model,
-        IndCQC.imputed_posts_non_res_with_dormancy_model,
+        IndCQC.non_res_combined_model,
+        IndCQC.imputed_posts_non_res_combined_model,
         care_home=False,
     )
-
-    # TODO: add imputation for other non res models
 
     estimate_filled_posts_df = merge_columns_in_order(
         estimate_filled_posts_df,
@@ -154,12 +169,11 @@ def main(
             IndCQC.ascwds_pir_merged,
             IndCQC.imputed_posts_care_home_model,
             IndCQC.care_home_model,
-            IndCQC.imputed_filled_post_model,
-            IndCQC.imputed_posts_non_res_with_dormancy_model,
+            IndCQC.imputed_posts_non_res_combined_model,
             IndCQC.non_res_pir_linear_regression_model,
-            IndCQC.non_res_with_dormancy_model,
-            IndCQC.non_res_without_dormancy_model,
-            IndCQC.rolling_average_model,
+            IndCQC.non_res_combined_model,
+            IndCQC.care_home_rolling_average_model,
+            IndCQC.posts_rolling_average_model,
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,

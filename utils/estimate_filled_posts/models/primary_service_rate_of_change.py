@@ -4,9 +4,8 @@ from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
-    PrimaryServiceRollingAverageColumns as TempCol,
+    PrimaryServiceRateOfChangeColumns as TempCol,
 )
-from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
@@ -14,46 +13,40 @@ from utils.utils import convert_days_to_unix_time
 
 def model_primary_service_rate_of_change(
     df: DataFrame,
-    ratio_column_to_average: str,
-    posts_column_to_average: str,
+    column_with_values: str,
     number_of_days: int,
-    rolling_average_model_column_name: str,
-    rolling_rate_of_change_model_column_name: str,
+    rate_of_change_column_name: str,
 ) -> DataFrame:
     """
-    Calculates the rolling average and rate of change split by primary service type of specified columns over a given window of days.
+    Computes the rate of change since the previous period for a specified column over a rolling window, partitioned by primary service type.
 
-    Calculates the rolling average and rate of change of specified columns over a given window of days partitioned by primary service type.
-    Only data from locations who have at least 2 submissions and a consistent care_home status throughout time are included in the calculations.
-    One day is removed from the provided number_of_days value because the pyspark range between function is inclusive at both the start and end point whereas we only want it to be inclusive of the end point.
-    For example, for a 3 day rolling average we want the current day plus the two days prior.
+    Only data from locations with at least two submissions and a consistent care home status over time are considered.
+
+    A rolling window is applied to smooth fluctuations in the data by combining values over a specified number of days.
+    This helps produce more stable and reliable trends by reducing the impact of short-term variations.
+
+    Since the PySpark `rangeBetween` function is inclusive on both ends, one day is subtracted from the provided
+    `window_days` value to ensure the window includes only the current day and the specified number of prior days.
+    For example, a 3-day rolling average includes the current day plus the two preceding days.
 
     Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_to_average (str): The name of the filled posts column to average.
-        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
-        rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
-        rolling_rate_of_change_model_column_name (str): The name of the new column to store the rolling rate of change model values.
+        df (DataFrame): Input DataFrame.
+        column_with_values (str): Column name containing the values.
+        number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
+        rate_of_change_column_name (str): Name of the column to store the rate of change values.
 
     Returns:
-        DataFrame: The input DataFrame with the new column containing the rolling average and rolling rate of change modelled outputs.
+        DataFrame: The input DataFrame with an additional column containing the rate of change values.
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = create_single_column_to_average(
-        df, ratio_column_to_average, posts_column_to_average
-    )
-    df = clean_column_to_average(df)
-    df = interpolate_column_to_average(df)
+    df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
 
-    df = calculate_rolling_average(
-        df, number_of_days_for_window, rolling_average_model_column_name
-    )
-
-    df = calculate_rolling_rate_of_change(
-        df, number_of_days_for_window, rolling_rate_of_change_model_column_name
-    )
+    df = clean_column_with_values(df)
+    df = interpolate_column_with_values(df)
+    df = add_previous_value_column(df)
+    df = add_rolling_sum_columns(df, number_of_days_for_window)
+    df = calculate_rate_of_change(df, rate_of_change_column_name)
 
     columns_to_drop = [field.name for field in fields(TempCol())]
     df = df.drop(*columns_to_drop)
@@ -61,35 +54,9 @@ def model_primary_service_rate_of_change(
     return df
 
 
-def create_single_column_to_average(
-    df: DataFrame,
-    ratio_column_to_average: str,
-    posts_column_to_average: str,
-) -> DataFrame:
+def clean_column_with_values(df: DataFrame) -> DataFrame:
     """
-    Creates one column to average using the ratio if the location is a care home and filled posts if not.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_to_average (str): The name of the filled posts column to average.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
-    """
-    df = df.withColumn(
-        TempCol.column_to_average,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column_to_average),
-        ).otherwise(F.col(posts_column_to_average)),
-    )
-    return df
-
-
-def clean_column_to_average(df: DataFrame) -> DataFrame:
-    """
-    Only keep values in the column_to_average for locations who have only submitted at least twice and only had one care home status.
+    Keep values for locations who have submitted at least twice and have only ever had one care home status.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -103,11 +70,11 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
     df = calculate_care_home_status_count(df)
     df = calculate_submission_count(df)
     df = df.withColumn(
-        TempCol.column_to_average,
+        TempCol.column_with_values,
         F.when(
             (F.col(TempCol.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
-            F.col(TempCol.column_to_average),
+            F.col(TempCol.column_with_values),
         ).otherwise(F.lit(None)),
     )
     return df
@@ -145,114 +112,31 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = df.withColumn(
-        TempCol.submission_count, F.count(TempCol.column_to_average).over(w)
+        TempCol.submission_count, F.count(TempCol.column_with_values).over(w)
     )
     return df
 
 
-def interpolate_column_to_average(df: DataFrame) -> DataFrame:
+def interpolate_column_with_values(df: DataFrame) -> DataFrame:
     """
-    Interpolate column_to_average and coalesce known column_to_average values with interpolated values.
+    Interpolate column_with_values and coalesce with original values.
 
     Args:
         df (DataFrame): The input DataFrame.
 
     Returns:
-        DataFrame: The input DataFrame with submission count.
+        DataFrame: The input DataFrame with interpolated values.
     """
     df = model_interpolation(
         df,
-        TempCol.column_to_average,
+        TempCol.column_with_values,
         "straight",
-        TempCol.column_to_average_interpolated,
+        TempCol.column_with_values_interpolated,
     )
     df = df.withColumn(
-        TempCol.column_to_average_interpolated,
-        F.coalesce(TempCol.column_to_average, TempCol.column_to_average_interpolated),
+        TempCol.column_with_values_interpolated,
+        F.coalesce(TempCol.column_with_values, TempCol.column_with_values_interpolated),
     )
-    return df
-
-
-def calculate_rolling_average(
-    df: DataFrame, number_of_days: int, rolling_average_model_column_name: str
-) -> DataFrame:
-    """
-    Calculates the filled post rolling average of a specified column over a given window of days partitioned by primary service type.
-
-    Calculates the filled post rolling average of a specified column over a given window of days partitioned by primary service type.
-    Non-care homes figures are already represented as filled posts, whereas for care homes the column contains a ratio which needs to be multiplied by the number of beds to get the equivalent filled posts.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
-        rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing the calculated rolling average.
-    """
-    window = (
-        Window.partitionBy(IndCqc.primary_service_type)
-        .orderBy(F.col(IndCqc.unix_time))
-        .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
-    )
-
-    rolling_average = F.avg(TempCol.column_to_average_interpolated).over(window)
-
-    df = df.withColumn(
-        rolling_average_model_column_name,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            rolling_average * F.col(IndCqc.number_of_beds),
-        ).otherwise(rolling_average),
-    )
-    return df
-
-
-def calculate_rolling_rate_of_change(
-    df: DataFrame, number_of_days: int, rate_of_change_model_column_name: str
-) -> DataFrame:
-    """
-    Calculates the rolling rate of change of a specified column over a given window of days partitioned by primary service type.
-
-    This function sequentially calls other functions to:
-    1. Add a column with previous values.
-    2. When both current and previous values exist, adds the rolling sum of both columns over a specified number of days into separate columns.
-    3. Calculate the rate of change for a single period.
-    4. Calculate the rolling rate of change model.
-    The rolling rate of change model values are then joined into the original DataFrame.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the data.
-        number_of_days (int): The number of days to include in the rolling time period.
-        rate_of_change_model_column_name (str): The name of the column to store the rate of change model.
-
-    Returns:
-        DataFrame: The DataFrame with the calculated rolling rate of change.
-    """
-    df = add_previous_value_column(df)
-    df = add_rolling_sum(
-        df,
-        number_of_days,
-        TempCol.column_to_average_interpolated,
-        TempCol.rolling_current_period_sum,
-    )
-    df = add_rolling_sum(
-        df,
-        number_of_days,
-        TempCol.previous_column_to_average_interpolated,
-        TempCol.rolling_previous_period_sum,
-    )
-    df = calculate_single_period_rate_of_change(df)
-    deduped_df = deduplicate_dataframe(df)
-    cumulative_rate_of_change_df = calculate_cumulative_rate_of_change(
-        deduped_df, rate_of_change_model_column_name
-    )
-    df = df.join(
-        cumulative_rate_of_change_df,
-        [IndCqc.primary_service_type, IndCqc.unix_time],
-        "left",
-    )
-
     return df
 
 
@@ -274,36 +158,30 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     df = get_selected_value(
         df,
         location_window,
-        TempCol.column_to_average_interpolated,
-        TempCol.column_to_average_interpolated,
-        TempCol.previous_column_to_average_interpolated,
+        TempCol.column_with_values_interpolated,
+        TempCol.column_with_values_interpolated,
+        TempCol.previous_column_with_values_interpolated,
         "last",
     )
     return df
 
 
-def add_rolling_sum(
-    df: DataFrame, number_of_days: int, column_to_sum: str, rolling_sum_column_name: str
-) -> DataFrame:
+def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
     """
-    Adds a rolling sum column to a DataFrame based on a specified number of days.
+    Adds rolling sum columns for the current and previous period to a DataFrame over a specified number of days.
 
-    Adds a rolling sum column to a DataFrame based on a specified number of days.
-    Only values where both the current and previously interpolated values are known are included in the sum.
+    The rolling sum includes only rows where both the current and previous interpolated values are not null.
 
     Args:
         df (DataFrame): The input DataFrame.
         number_of_days (int): The number of days to include in the rolling time period.
-        column_to_sum (str): The name of the column to sum.
-        rolling_sum_column_name (str): The name of the new column to store the rolling sum.
 
     Returns:
-        DataFrame: The DataFrame with the new rolling sum column added.
-
+        DataFrame: The DataFrame with the two new rolling sum columns added.
     """
-    both_periods_not_null = (
-        F.col(TempCol.column_to_average_interpolated).isNotNull()
-        & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
+    valid_rows = (
+        F.col(TempCol.column_with_values_interpolated).isNotNull()
+        & F.col(TempCol.previous_column_with_values_interpolated).isNotNull()
     )
 
     rolling_sum_window = (
@@ -313,15 +191,23 @@ def add_rolling_sum(
     )
 
     df = df.withColumn(
-        rolling_sum_column_name,
-        F.sum(F.when(both_periods_not_null, F.col(column_to_sum))).over(
+        TempCol.rolling_current_period_sum,
+        F.sum(F.when(valid_rows, F.col(TempCol.column_with_values_interpolated))).over(
             rolling_sum_window
         ),
+    )
+    df = df.withColumn(
+        TempCol.rolling_previous_period_sum,
+        F.sum(
+            F.when(valid_rows, F.col(TempCol.previous_column_with_values_interpolated))
+        ).over(rolling_sum_window),
     )
     return df
 
 
-def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
+def calculate_rate_of_change(
+    df: DataFrame, rate_of_change_column_name: str
+) -> DataFrame:
     """
     Calculates the rate of change from the 'previous' to the 'current' (at that point in time) period.
 
@@ -330,63 +216,15 @@ def calculate_single_period_rate_of_change(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): The input DataFrame.
+        rate_of_change_column_name (str): Name of the column to store the rate of change values.
 
     Returns:
         DataFrame: The DataFrame with the single period rate of change column added.
-
     """
     df = df.withColumn(
-        TempCol.single_period_rate_of_change,
+        rate_of_change_column_name,
         F.col(TempCol.rolling_current_period_sum)
         / F.col(TempCol.rolling_previous_period_sum),
     )
-    df = df.na.fill({TempCol.single_period_rate_of_change: 1.0})
-    return df
-
-
-def deduplicate_dataframe(df: DataFrame) -> DataFrame:
-    """
-    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The deduplicated DataFrame.
-    """
-    df = df.select(
-        IndCqc.primary_service_type,
-        IndCqc.unix_time,
-        TempCol.single_period_rate_of_change,
-    ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
-    return df
-
-
-def calculate_cumulative_rate_of_change(
-    df: DataFrame, rate_of_change_model_column_name: str
-) -> DataFrame:
-    """
-    Calculates the cumulative rate of change for a DataFrame.
-
-    The cumulative rate of change is a multiplication of all the single rates of change up to and including that point.
-    For example, period one is 'a', period two is 'a*b', period three is 'a*b*c', etc.
-    The cumulative product is calculated by taking the exponential of the sum of the logarithms of the values.
-    This approach avoids issues in pyspark with direct multiplication of many numbers.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        rate_of_change_model_column_name (str): The name of the new column to store the cumulative rate of change.
-
-    Returns:
-        DataFrame: The DataFrame with the cumulative rate of change column added.
-    """
-    w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
-
-    cumulative_rate_of_change = F.exp(
-        F.sum(F.log(TempCol.single_period_rate_of_change)).over(w)
-    )
-
-    df = df.withColumn(
-        rate_of_change_model_column_name, cumulative_rate_of_change
-    ).drop(TempCol.single_period_rate_of_change)
+    df = df.na.fill({rate_of_change_column_name: 1.0})
     return df

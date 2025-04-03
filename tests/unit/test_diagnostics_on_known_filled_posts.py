@@ -2,16 +2,10 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_known_filled_posts as job
-from tests.test_file_schemas import (
-    DiagnosticsOnKnownFilledPostsSchemas as Schemas,
-)
-from tests.test_file_data import (
-    DiagnosticsOnKnownFilledPostsData as Data,
-)
+from tests.test_file_schemas import DiagnosticsOnKnownFilledPostsSchemas as Schemas
+from tests.test_file_data import DiagnosticsOnKnownFilledPostsData as Data
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 
 class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):

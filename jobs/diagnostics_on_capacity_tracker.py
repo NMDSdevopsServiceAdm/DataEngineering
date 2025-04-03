@@ -17,8 +17,8 @@ from utils.diagnostics_utils import diagnostics_utils as dUtils
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -30,14 +30,15 @@ estimate_filled_posts_columns: list = [
     IndCQC.cqc_location_import_date,
     IndCQC.care_home,
     IndCQC.primary_service_type,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.care_home_model,
+    IndCQC.care_home_rolling_average_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.non_res_pir_linear_regression_model,
     IndCQC.imputed_posts_care_home_model,
-    IndCQC.imputed_posts_non_res_with_dormancy_model,
+    IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
     IndCQC.number_of_beds,
     IndCQC.current_region,
@@ -51,7 +52,7 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
-number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
+number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
 
 
 def main(
@@ -136,12 +137,10 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    care_home_diagnostics_df = model_primary_service_rate_of_change(
+    care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
-        CTCHClean.agency_and_non_agency_total_employed,
-        number_of_days_in_rolling_average,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
+        number_of_days_in_window,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
@@ -202,12 +201,10 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
-    non_res_diagnostics_df = model_primary_service_rate_of_change(
+    non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
-        CTNRClean.cqc_care_workers_employed,
-        number_of_days_in_rolling_average,
-        CTNRClean.cqc_care_workers_employed_rolling_avg,
+        number_of_days_in_window,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(

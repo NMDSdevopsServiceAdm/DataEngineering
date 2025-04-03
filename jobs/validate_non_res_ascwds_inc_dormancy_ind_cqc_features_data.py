@@ -48,7 +48,7 @@ def main(
 
     rules[
         RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+    ] = calculate_expected_size_of_non_res_inc_dormancy_features_dataset(
         cleaned_ind_cqc_df
     )
 
@@ -62,7 +62,7 @@ def main(
         raise_exception_if_any_checks_failed(check_result_df)
 
 
-def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+def calculate_expected_size_of_non_res_inc_dormancy_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
     """
@@ -79,7 +79,6 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
         & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
-        & (cleaned_ind_cqc_df[IndCQC.imputed_gac_service_types].isNotNull())
     ).count()
     return expected_size
 

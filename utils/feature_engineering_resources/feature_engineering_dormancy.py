@@ -12,5 +12,5 @@ class FeatureEngineeringValueLabelsDormancy:
     column_name: str = CatValues.dormancy_column_values.column_name
 
     labels_dict = {
-        "dorm_Y": CatValues.dormancy_column_values.dormant,
+        "not_dormant": CatValues.dormancy_column_values.not_dormant,
     }
