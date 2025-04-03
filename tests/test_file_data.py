@@ -6458,6 +6458,35 @@ class EstimateFilledPostsModelsUtils:
         ("1-001", None, None),
     ]
 
+    clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0),
+        ("1-004", PrimaryServiceType.care_home_only, 4.0),
+        ("1-005", PrimaryServiceType.care_home_only, None),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 1.0),
+        ("1-007", PrimaryServiceType.care_home_with_nursing, 2.0),
+        ("1-008", PrimaryServiceType.care_home_with_nursing, 3.0),
+        ("1-009", PrimaryServiceType.care_home_with_nursing, 4.0),
+        ("1-010", PrimaryServiceType.care_home_with_nursing, None),
+        ("1-011", PrimaryServiceType.non_residential, 1.0),
+        ("1-012", PrimaryServiceType.non_residential, None),
+    ]
+    expected_clean_number_of_beds_banded_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 2.0),
+        ("1-002", PrimaryServiceType.care_home_only, 2.0, 2.0),
+        ("1-003", PrimaryServiceType.care_home_only, 3.0, 3.0),
+        ("1-004", PrimaryServiceType.care_home_only, 4.0, 4.0),
+        ("1-005", PrimaryServiceType.care_home_only, None, None),
+        ("1-006", PrimaryServiceType.care_home_with_nursing, 1.0, 3.0),
+        ("1-007", PrimaryServiceType.care_home_with_nursing, 2.0, 3.0),
+        ("1-008", PrimaryServiceType.care_home_with_nursing, 3.0, 3.0),
+        ("1-009", PrimaryServiceType.care_home_with_nursing, 4.0, 4.0),
+        ("1-010", PrimaryServiceType.care_home_with_nursing, None, None),
+        ("1-011", PrimaryServiceType.non_residential, 1.0, 1.0),
+        ("1-012", PrimaryServiceType.non_residential, None, None),
+    ]
+
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [
         ("1-001", CareHome.care_home, 5, 1.6, 20.0),
         ("1-002", CareHome.care_home, 5, None, 10.0),
