@@ -6403,6 +6403,21 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:
+    add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
+        [
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
+            StructField(IndCQC.ascwds_job_role_counts_exploded, FloatType(), True),
+        ]
+    )
+    expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
+        [
+            *add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
+            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
+        ]
+    )
+
     primary_service_rolling_sum_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -6415,7 +6430,6 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             ),
         ]
     )
-
     expected_primary_service_rolling_sum_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -6431,21 +6445,5 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
                 MapType(StringType(), FloatType()),
                 True,
             ),
-        ]
-    )
-
-    add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
-        [
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
-            StructField(IndCQC.ascwds_job_role_counts_exploded, FloatType(), True),
-        ]
-    )
-
-    expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
-        [
-            *add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
-            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
         ]
     )
