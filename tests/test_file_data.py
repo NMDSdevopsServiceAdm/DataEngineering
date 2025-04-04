@@ -10625,339 +10625,63 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    pivot_mapped_column_same_unix_time_and_primary_serivice_type_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            1.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            1.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            1.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            1.0,
-        ),
+    # fmt: off
+    pivot_job_role_column_returns_expected_pivot_rows = [
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 1.0),
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 2.0),
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_care_worker, 3.0),
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.senior_management, 4.0),
     ]
+    expected_pivot_job_role_column_returns_expected_pivot_rows = [
+        (1000,PrimaryServiceType.care_home_only, 1.0, 2.0, 3.0, 4.0),
+    ]
+    # fmt: on
 
-    expected_pivot_mapped_column_same_unix_time_and_primary_serivice_type_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-        ),
+    # fmt: off
+    pivot_job_role_column_with_multiple_grouping_column_options_rows = [
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0),
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 6.0),
+        (1001, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 2.0),
+        (1001, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 5.0),
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 3.0),
+        (1000, PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 4.0),
+        (1001, PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 4.0),
+        (1001, PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 3.0),
+        (1000, PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, 5.0),
+        (1000, PrimaryServiceType.non_residential, MainJobRoleLabels.registered_nurse, 2.0),
+        (1001, PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, 6.0),
+        (1001, PrimaryServiceType.non_residential, MainJobRoleLabels.registered_nurse, 1.0),
+        (1002, PrimaryServiceType.non_residential, MainJobRoleLabels.care_worker, None),
+        (1002, PrimaryServiceType.non_residential, MainJobRoleLabels.registered_nurse, None),
     ]
+    expected_pivot_job_role_column_with_multiple_grouping_column_options_rows = [
+        (1000, PrimaryServiceType.care_home_with_nursing, 1.0, 6.0),
+        (1000, PrimaryServiceType.care_home_only, 3.0, 4.0),
+        (1000, PrimaryServiceType.non_residential, 5.0, 2.0),
+        (1001, PrimaryServiceType.care_home_with_nursing, 2.0, 5.0),
+        (1001, PrimaryServiceType.care_home_only, 4.0, 3.0),
+        (1001, PrimaryServiceType.non_residential, 6.0, 1.0),
+        (1002, PrimaryServiceType.non_residential, None, None),
+    ]
+    # fmt: on
 
-    pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            3.0,
-        ),
+    # fmt: off
+    pivot_job_role_column_returns_first_aggregation_column_value_rows = [
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 1.0),
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.care_worker, 2.0),
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 3.0),
+        (1000, PrimaryServiceType.care_home_with_nursing, MainJobRoleLabels.registered_nurse, 4.0),
+        (1001, PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 5.0),
+        (1001, PrimaryServiceType.care_home_only, MainJobRoleLabels.care_worker, 6.0),
+        (1002, PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 7.0),
+        (1002, PrimaryServiceType.care_home_only, MainJobRoleLabels.registered_nurse, 8.0),
     ]
-
-    expected_pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-        ),
+    expected_pivot_job_role_column_returns_first_aggregation_column_value_rows = [
+        (1000, PrimaryServiceType.care_home_with_nursing, 1.0, 3.0),
+        (1001, PrimaryServiceType.care_home_only, 5.0, None),
+        (1002, PrimaryServiceType.care_home_only, None, 7.0),
     ]
-
-    pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            None,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            None,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            None,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            3.0,
-        ),
-    ]
-
-    expected_pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            1.0,
-            1.0,
-            None,
-            1.0,
-        ),
-        (
-            1001,
-            PrimaryServiceType.care_home_with_nursing,
-            None,
-            2.0,
-            None,
-            2.0,
-        ),
-        (
-            1002,
-            PrimaryServiceType.care_home_with_nursing,
-            None,
-            3.0,
-            3.0,
-            3.0,
-        ),
-    ]
-
-    pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.registered_nurse,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_care_worker,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.senior_management,
-            1.0,
-        ),
-    ]
-
-    expected_pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            None,
-            None,
-            None,
-            1.0,
-        ),
-    ]
-
-    pivot_mapped_column_when_primary_service_type_is_different_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            MainJobRoleLabels.care_worker,
-            1.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_only,
-            MainJobRoleLabels.registered_nurse,
-            2.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.non_residential,
-            MainJobRoleLabels.senior_care_worker,
-            3.0,
-        ),
-        (
-            1000,
-            PrimaryServiceType.non_residential,
-            MainJobRoleLabels.senior_management,
-            None,
-        ),
-    ]
-
-    expected_pivot_mapped_column_when_primary_service_type_is_different_data = [
-        (
-            1000,
-            PrimaryServiceType.care_home_with_nursing,
-            1.0,
-            None,
-            None,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.care_home_only,
-            None,
-            2.0,
-            None,
-            None,
-        ),
-        (
-            1000,
-            PrimaryServiceType.non_residential,
-            None,
-            None,
-            3.0,
-            None,
-        ),
-    ]
+    # fmt: on
 
     convert_map_with_all_null_values_to_null_map_has_no_nulls_data = [
         (

@@ -11,7 +11,7 @@ from utils.utils import convert_days_to_unix_time
 
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
     create_map_column,
-    pivot_mapped_column,
+    pivot_job_role_column,
     list_of_job_roles_sorted,
 )
 
@@ -47,7 +47,7 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
-    df_rolling_sum = pivot_mapped_column(
+    df_rolling_sum = pivot_job_role_column(
         df_rolling_sum,
         [IndCQC.unix_time, IndCQC.primary_service_type],
         IndCQC.ascwds_job_role_counts_rolling_sum,

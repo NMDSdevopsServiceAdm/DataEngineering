@@ -6316,7 +6316,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    pivot_interpolated_job_role_ratios_schema = StructType(
+    pivot_job_role_column_schema = StructType(
         [
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -6324,8 +6324,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.ascwds_job_role_ratios_interpolated, FloatType(), True),
         ]
     )
-
-    expected_pivot_interpolated_job_role_ratios_schema = StructType(
+    expected_pivot_job_role_column_schema = StructType(
         [
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -6333,6 +6332,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
             StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
             StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+        ]
+    )
+    expected_pivot_job_role_column_two_job_roles_schema = StructType(
+        [
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
         ]
     )
 
@@ -6390,26 +6397,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 FloatType(),
                 True,
             ),
-        ]
-    )
-
-    pivot_rolling_sum_job_role_counts_schema = StructType(
-        [
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.main_job_role_clean_labelled, StringType(), False),
-            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
-        ]
-    )
-
-    expected_pivot_rolling_sum_job_role_counts_schema = StructType(
-        [
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
-            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
-            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
-            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
         ]
     )
 

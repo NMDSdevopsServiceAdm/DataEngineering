@@ -905,122 +905,93 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
-class PivotMappedColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class PivotJobRoleColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_pivot_mapped_column_when_same_unix_time_and_primary_serivice_type_returns_pivoted_job_role_labels(
+        test_with_identical_grouping_columns_df = self.spark.createDataFrame(
+            Data.pivot_job_role_column_returns_expected_pivot_rows,
+            Schemas.pivot_job_role_column_schema,
+        )
+        self.returned_identical_grouping_column_df = job.pivot_job_role_column(
+            test_with_identical_grouping_columns_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
+        self.expected_identical_grouping_column_df = self.spark.createDataFrame(
+            Data.expected_pivot_job_role_column_returns_expected_pivot_rows,
+            Schemas.expected_pivot_job_role_column_schema,
+        )
+
+        test_with_multiple_grouping_columns_df = self.spark.createDataFrame(
+            Data.pivot_job_role_column_with_multiple_grouping_column_options_rows,
+            Schemas.pivot_job_role_column_schema,
+        )
+        self.returned_multiple_grouping_column_df = job.pivot_job_role_column(
+            test_with_multiple_grouping_columns_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
+        self.expected_multiple_grouping_column_df = self.spark.createDataFrame(
+            Data.expected_pivot_job_role_column_with_multiple_grouping_column_options_rows,
+            Schemas.expected_pivot_job_role_column_two_job_roles_schema,
+        )
+
+    def test_pivot_job_role_column_returns_expected_pivoted_column_names(self):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.columns,
+            self.expected_identical_grouping_column_df.columns,
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_values_when_grouping_columns_are_identical(
         self,
     ):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.collect(),
+            self.expected_identical_grouping_column_df.collect(),
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_count_when_grouping_columns_are_identical(
+        self,
+    ):
+        self.assertEqual(self.returned_identical_grouping_column_df.count(), 1)
+
+    def test_pivot_job_role_column_returns_expected_values_when_multiple_grouping_columns_present(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.sort(
+                IndCQC.unix_time, IndCQC.primary_service_type
+            ).collect(),
+            self.expected_identical_grouping_column_df.collect(),
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_count_when_multiple_grouping_columns_present(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_multiple_grouping_column_df.count(),
+            self.expected_multiple_grouping_column_df.count(),
+        )
+
+    def test_pivot_job_role_column_returns_first_aggregated_value(self):
         test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_same_unix_time_and_primary_serivice_type_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
+            Data.pivot_job_role_column_returns_first_aggregation_column_value_rows,
+            Schemas.pivot_job_role_column_schema,
         )
-
+        returned_df = job.pivot_job_role_column(
+            test_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
         expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_same_unix_time_and_primary_serivice_type_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(
-            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
+            Data.expected_pivot_job_role_column_returns_first_aggregation_column_value_rows,
+            Schemas.expected_pivot_job_role_column_two_job_roles_schema,
         )
 
         self.assertEqual(
+            returned_df.sort(IndCQC.unix_time).collect(),
             expected_df.collect(),
-            returned_df.collect(),
-        )
-
-    def test_pivot_mapped_column_when_unix_time_is_different_and_primary_service_type_is_the_same_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_different_unix_time_and_same_primary_serivice_type_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(
-            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
-        )
-
-        self.assertEqual(
-            expected_df.sort(IndCQC.unix_time).collect(),
-            returned_df.sort(IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_unix_time_is_different_and_primary_service_type_is_the_same_and_null_interpolated_values_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data,
-            Schemas.pivot_interpolated_job_role_ratios_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_different_unix_time_same_primary_service_type_and_null_interpolated_values_data,
-            Schemas.expected_pivot_interpolated_job_role_ratios_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(
-            test_df, [IndCQC.unix_time, IndCQC.primary_service_type]
-        )
-
-        self.assertEqual(
-            expected_df.sort(IndCQC.unix_time).collect(),
-            returned_df.sort(IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_unix_time_is_the_same_and_primary_service_type_is_the_same_and_null_values_present_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data,
-            Schemas.pivot_rolling_sum_job_role_counts_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_with_same_unix_time_same_primary_service_type_and_null_interpolated_values_data,
-            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(
-            test_df,
-            [IndCQC.unix_time, IndCQC.primary_service_type],
-            IndCQC.ascwds_job_role_counts_rolling_sum,
-        )
-
-        self.assertEqual(
-            expected_df.sort(IndCQC.unix_time).collect(),
-            returned_df.sort(IndCQC.unix_time).collect(),
-        )
-
-    def test_pivot_mapped_column_when_primary_service_type_is_different_returns_pivoted_job_role_labels(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.pivot_mapped_column_when_primary_service_type_is_different_data,
-            Schemas.pivot_rolling_sum_job_role_counts_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_pivot_mapped_column_when_primary_service_type_is_different_data,
-            Schemas.expected_pivot_rolling_sum_job_role_counts_schema,
-        )
-
-        returned_df = job.pivot_mapped_column(
-            test_df,
-            [IndCQC.unix_time, IndCQC.primary_service_type],
-            IndCQC.ascwds_job_role_counts_rolling_sum,
-        )
-
-        self.assertEqual(
-            expected_df.sort(IndCQC.primary_service_type).collect(),
-            returned_df.sort(IndCQC.primary_service_type).collect(),
         )
 
 

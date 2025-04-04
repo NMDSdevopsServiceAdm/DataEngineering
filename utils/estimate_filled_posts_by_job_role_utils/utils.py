@@ -383,26 +383,32 @@ def create_estimate_filled_posts_by_job_role_map_column(
     return df
 
 
-def pivot_mapped_column(
+def pivot_job_role_column(
     df: DataFrame,
-    grouping_columns: List[str] = [IndCQC.location_id, IndCQC.unix_time],
-    aggregation_column: str = IndCQC.ascwds_job_role_ratios_interpolated,
+    grouping_columns: List[str],
+    aggregation_column: str,
 ) -> DataFrame:
     """
-    pivots grouped data on IndCQC.main_job_role_clean_labelled. The columns you group by are given by grouping_columns, which default to location_id and unix_time. The could you aggregate by is given by
-    aggregation_column which defaults to IndCQC.ascwds_job_role_ratios_interpolated.
+    Transforms the input DataFrame by pivoting unique job role labels into separate columns,
+    aggregating values from the specified column.
 
-    A pivot is the process of transforming data, creating new columns from the values in an existing column. in our case these columns will be job roles found in IndCQC.main_job_role_clean_labelled.
+    This function groups the data by the provided 'grouping_columns', then performs a pivot operation
+    on the 'main_job_role_clean_labelled' column—creating one column per unique job role. For each
+    group, it selects the first non-null value of the specified 'aggregation_column' for each job role.
+
+    In this context, "pivoting" means turning distinct values from one column (the job role labels)
+    into separate columns, with each column containing values from another column (the
+    'aggregation_column') for those specific roles.
 
     Args:
-        df (DataFrame): A dataframe which contains the mapped column you want to pivot.
-        grouping_columns (List[str]): Columns you want to group by. The default being a list containing location id and unix time.
-        aggregation_column (str): Column you want to aggregate by. The default being ascwds_job_role_ratios_interpolated.
+        df (DataFrame): The DataFrame containing the job role column, grouping columns and aggregation column.
+        grouping_columns (List[str]): Columns to group by before pivoting.
+        aggregation_column (str): The column from which to extract values  during aggregation.
 
     Returns:
-        DataFrame: A dataframe with the pivoted mapped column.
+        DataFrame: A pivoted DataFrame with one column per job role label and values
+        aggregated from the specified column.
     """
-
     df_result = (
         df.groupBy(grouping_columns)
         .pivot(IndCQC.main_job_role_clean_labelled)
