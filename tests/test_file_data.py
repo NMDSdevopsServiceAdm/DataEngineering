@@ -11429,6 +11429,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.registered_nurse: None,
             },
         ),
+        (
+            "1-003",
+            1000,
+            None,
+        ),
     ]
     expected_sum_job_group_counts_from_job_role_count_map_rows = [
         (
@@ -11485,5 +11490,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 JobGroupLabels.regulated_professions: 0,
                 JobGroupLabels.other: 0,
             },
+        ),
+        (
+            "1-003",
+            1000,
+            None,
+            None,
         ),
     ]
