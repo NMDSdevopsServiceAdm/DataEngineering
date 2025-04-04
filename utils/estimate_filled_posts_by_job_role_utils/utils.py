@@ -15,6 +15,9 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 )
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
+list_of_job_groups = sorted(
+    list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
+)
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -489,17 +492,13 @@ def calculate_job_group_sum_from_job_role_map_column(
         ),
     )
 
-    df_exploded = df_exploded.withColumn(
-        IndCQC.main_job_group_labelled, F.col(IndCQC.main_job_role_clean_labelled)
-    )
-    df_exploded = df_exploded.replace(
+    df_exploded = df_exploded.withColumnRenamed(
+        IndCQC.main_job_role_clean_labelled, IndCQC.main_job_group_labelled
+    ).replace(
         AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict,
         subset=IndCQC.main_job_group_labelled,
     )
 
-    list_of_job_groups = list(
-        set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values())
-    )
     df_exploded = (
         df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
         .pivot(IndCQC.main_job_group_labelled)
