@@ -26,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
@@ -383,22 +383,36 @@ def create_estimate_filled_posts_by_job_role_map_column(
     return df
 
 
-def pivot_interpolated_job_role_ratios(
+def pivot_job_role_column(
     df: DataFrame,
+    grouping_columns: List[str],
+    aggregation_column: str,
 ) -> DataFrame:
     """
-    Pivots the job role ratio interpolated mapped column so that the key are column names
+    Transforms the input DataFrame by pivoting unique job role labels into separate columns,
+    aggregating values from the specified column.
+
+    This function groups the data by the provided 'grouping_columns', then performs a pivot operation
+    on the 'main_job_role_clean_labelled' column—creating one column per unique job role. For each
+    group, it selects the first non-null value of the specified 'aggregation_column' for each job role.
+
+    In this context, "pivoting" means turning distinct values from one column (the job role labels)
+    into separate columns, with each column containing values from another column (the
+    'aggregation_column') for those specific roles.
 
     Args:
-        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+        df (DataFrame): The DataFrame containing the job role column, grouping columns and aggregation column.
+        grouping_columns (List[str]): Columns to group by before pivoting.
+        aggregation_column (str): The column from which to extract values  during aggregation.
 
     Returns:
-        DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
+        DataFrame: A pivoted DataFrame with one column per job role label and values
+        aggregated from the specified column.
     """
     df_result = (
-        df.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        df.groupBy(grouping_columns)
         .pivot(IndCQC.main_job_role_clean_labelled)
-        .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+        .agg(F.first(aggregation_column, ignorenulls=False))
     )
 
     return df_result
