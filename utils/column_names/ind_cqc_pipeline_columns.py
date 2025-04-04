@@ -171,6 +171,7 @@ class IndCqcColumns:
         "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
+    main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"

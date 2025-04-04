@@ -480,17 +480,21 @@ def calculate_job_group_sum_from_job_role_map_column(
         DataFrame: A dataframe with an additional column showing values summed to job group.
 
     """
-
+    temp_value_column = "value"
     df_exploded = df.select(
         IndCQC.location_id,
         IndCQC.unix_time,
-        F.explode(job_role_level_map_column).alias("job_role", "value"),
+        F.explode(job_role_level_map_column).alias(
+            IndCQC.main_job_role_clean_labelled, temp_value_column
+        ),
     )
 
-    df_exploded = df_exploded.withColumn("job_group", F.col("job_role"))
+    df_exploded = df_exploded.withColumn(
+        IndCQC.main_job_group_labelled, F.col(IndCQC.main_job_role_clean_labelled)
+    )
     df_exploded = df_exploded.replace(
         AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict,
-        subset="job_group",
+        subset=IndCQC.main_job_group_labelled,
     )
 
     list_of_job_groups = list(
@@ -498,8 +502,8 @@ def calculate_job_group_sum_from_job_role_map_column(
     )
     df_exploded = (
         df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
-        .pivot("job_group")
-        .agg(F.sum("value"))
+        .pivot(IndCQC.main_job_group_labelled)
+        .agg(F.sum(temp_value_column))
         .na.fill(0, subset=list_of_job_groups)
     )
 
