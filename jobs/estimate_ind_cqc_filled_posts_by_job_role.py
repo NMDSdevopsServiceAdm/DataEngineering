@@ -102,6 +102,7 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = calculate_rolling_sum_of_job_roles(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         NumericalValues.number_of_days_in_rolling_sum,
+        JRutils.list_of_job_roles_sorted,
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
