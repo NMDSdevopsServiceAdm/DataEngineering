@@ -10810,6 +10810,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-004", None, 10.0, None),
     ]
 
+
+@dataclass
+class EstimateJobRolesPrimaryServiceRollingSumData:
+    list_of_job_roles_for_tests = [
+        MainJobRoleLabels.care_worker,
+        MainJobRoleLabels.registered_nurse,
+        MainJobRoleLabels.senior_care_worker,
+        MainJobRoleLabels.senior_management,
+    ]
+
     primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_data = [
         (
             "1000",

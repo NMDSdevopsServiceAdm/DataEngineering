@@ -6400,6 +6400,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+
+@dataclass
+class EstimateJobRolesPrimaryServiceRollingSumSchemas:
     primary_service_rolling_sum_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
