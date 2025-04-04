@@ -15,7 +15,7 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 )
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
-list_of_job_groups = sorted(
+list_of_job_groups_sorted = sorted(
     list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
 )
 
@@ -503,11 +503,11 @@ def calculate_job_group_sum_from_job_role_map_column(
         df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
         .pivot(IndCQC.main_job_group_labelled)
         .agg(F.sum(temp_value_column))
-        .na.fill(0, subset=list_of_job_groups)
+        .na.fill(0, subset=list_of_job_groups_sorted)
     )
 
     df_exploded = create_map_column(
-        df_exploded, list_of_job_groups, new_job_group_map_column_name
+        df_exploded, list_of_job_groups_sorted, new_job_group_map_column_name
     )
 
     df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
