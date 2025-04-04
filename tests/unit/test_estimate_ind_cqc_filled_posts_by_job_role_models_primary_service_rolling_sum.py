@@ -60,12 +60,12 @@ class CalculateRollingSumOfCountOfJobRoles(
         self.list_of_job_roles_for_tests = Data.list_of_job_roles_for_tests
 
         self.test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_data,
+            Data.primary_service_rolling_sum_when_one_primary_service_present_rows,
             Schemas.primary_service_rolling_sum_schema,
         )
 
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_data,
+            Data.expected_primary_service_rolling_sum_when_one_primary_service_present_rows,
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
@@ -82,12 +82,12 @@ class CalculateRollingSumOfCountOfJobRoles(
             sorted(self.returned_df.columns), sorted(self.expected_df.columns)
         )
 
-    def test_primary_service_rolling_sum_returns_same_row_count_as_original_estimated_filled_posts_df(
+    def test_primary_service_rolling_sum_returns_original_row_count(
         self,
     ):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window(
+    def test_primary_service_rolling_sum_returns_expected_rolling_sum_when_one_primary_service_present(
         self,
     ):
         self.assertEqual(
@@ -103,16 +103,16 @@ class CalculateRollingSumOfCountOfJobRoles(
             .collect(),
         )
 
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_and_null_job_role_count_present(
+    def test_primary_service_rolling_sum_returns_expected_rolling_sum_when_multiple_primary_services_present(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_and_null_job_role_count_present_data,
+            Data.primary_service_rolling_sum_when_multiple_primary_services_present_rows,
             Schemas.primary_service_rolling_sum_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_and_null_job_role_count_present_data,
+            Data.expected_primary_service_rolling_sum_when_multiple_primary_services_present_rows,
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
@@ -135,112 +135,16 @@ class CalculateRollingSumOfCountOfJobRoles(
             .collect(),
         )
 
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_rolling_window(
+    def test_primary_service_rolling_sum_does_not_sum_values_outside_of_rolling_window(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_rolling_window_data,
+            Data.primary_service_rolling_sum_when_days_not_within_rolling_window_rows,
             Schemas.primary_service_rolling_sum_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_but_not_within_rolling_window_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        returned_df = job.calculate_rolling_sum_of_job_roles(
-            test_df,
-            self.number_of_days_in_rolling_sum,
-            self.list_of_job_roles_for_tests,
-        )
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
-            )
-            .orderBy(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_rolling_window(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_rolling_window_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_different_primary_service_types_and_same_location_id_and_within_rolling_window_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        returned_df = job.calculate_rolling_sum_of_job_roles(
-            test_df,
-            self.number_of_days_in_rolling_sum,
-            self.list_of_job_roles_for_tests,
-        )
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
-            )
-            .orderBy(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_rolling_window(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_rolling_window_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_but_different_location_id_and_within_rolling_window_data,
-            Schemas.expected_primary_service_rolling_sum_schema,
-        )
-
-        returned_df = job.calculate_rolling_sum_of_job_roles(
-            test_df,
-            self.number_of_days_in_rolling_sum,
-            self.list_of_job_roles_for_tests,
-        )
-
-        self.assertEqual(
-            expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
-            returned_df.select(
-                IndCQC.location_id,
-                IndCQC.unix_time,
-                IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
-            )
-            .orderBy(IndCQC.location_id, IndCQC.unix_time)
-            .collect(),
-        )
-
-    def test_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_rolling_window(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_rolling_window_data,
-            Schemas.primary_service_rolling_sum_schema,
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_primary_service_rolling_sum_when_same_primary_service_type_and_unix_time_but_different_location_id_within_rolling_window_data,
+            Data.expected_primary_service_rolling_sum_when_days_not_within_rolling_window_rows,
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
