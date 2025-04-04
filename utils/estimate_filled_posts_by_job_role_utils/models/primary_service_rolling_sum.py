@@ -1,19 +1,12 @@
 from pyspark.sql import DataFrame, functions as F, Window
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from typing import Optional, List
-
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
-
-from utils.utils import convert_days_to_unix_time
-
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
     create_map_column,
     pivot_job_role_column,
     list_of_job_roles_sorted,
 )
+from utils.utils import convert_days_to_unix_time
 
 
 def calculate_rolling_sum_of_job_roles(
@@ -96,7 +89,7 @@ def add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_
         Window.partitionBy(
             [IndCQC.primary_service_type, IndCQC.main_job_role_clean_labelled]
         )
-        .orderBy(F.col(IndCqc.unix_time))
+        .orderBy(F.col(IndCQC.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)
     )
 
