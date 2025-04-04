@@ -26,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
