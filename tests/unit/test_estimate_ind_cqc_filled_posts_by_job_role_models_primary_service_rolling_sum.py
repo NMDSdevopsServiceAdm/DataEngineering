@@ -3,21 +3,21 @@ import unittest
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils.models import (
-    primary_service_rolling_sum,
+    primary_service_rolling_sum as job,
 )
-from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
+from tests.test_file_data import EstimateJobRolesPrimaryServiceRollingSumData as Data
 from tests.test_file_schemas import (
-    EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
+    EstimateJobRolesPrimaryServiceRollingSumSchemas as Schemas,
 )
 
 
-class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
+class EstimateJobRolesPrimaryServiceRollingSumTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
 
 class AddRollingSumPartitionedByPrimaryServiceTyoe(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+    EstimateJobRolesPrimaryServiceRollingSumTests
 ):
     def setUp(self) -> None:
         super().setUp()
@@ -37,7 +37,7 @@ class AddRollingSumPartitionedByPrimaryServiceTyoe(
             Schemas.expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
         )
 
-        returned_df = primary_service_rolling_sum.add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled(
+        returned_df = job.add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled(
             test_df,
             self.number_of_days_in_rolling_sum,
             IndCQC.ascwds_job_role_counts_exploded,
@@ -51,12 +51,13 @@ class AddRollingSumPartitionedByPrimaryServiceTyoe(
 
 
 class CalculateRollingSumOfCountOfJobRoles(
-    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+    EstimateJobRolesPrimaryServiceRollingSumTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
         self.number_of_days_in_rolling_sum = 185
+        self.list_of_job_roles_for_tests = Data.list_of_job_roles_for_tests
 
         self.test_df = self.spark.createDataFrame(
             Data.primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window_data,
@@ -68,10 +69,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        self.returned_df = (
-            primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-                self.test_df, self.number_of_days_in_rolling_sum
-            )
+        self.returned_df = job.calculate_rolling_sum_of_job_roles(
+            self.test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
     def test_primary_service_rolling_sum_returns_expected_columns(
@@ -115,8 +116,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, self.number_of_days_in_rolling_sum
+        returned_df = job.calculate_rolling_sum_of_job_roles(
+            test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
         self.assertEqual(
@@ -145,8 +148,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, self.number_of_days_in_rolling_sum
+        returned_df = job.calculate_rolling_sum_of_job_roles(
+            test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
         self.assertEqual(
@@ -175,8 +180,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, self.number_of_days_in_rolling_sum
+        returned_df = job.calculate_rolling_sum_of_job_roles(
+            test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
         self.assertEqual(
@@ -205,8 +212,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, self.number_of_days_in_rolling_sum
+        returned_df = job.calculate_rolling_sum_of_job_roles(
+            test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
         self.assertEqual(
@@ -235,8 +244,10 @@ class CalculateRollingSumOfCountOfJobRoles(
             Schemas.expected_primary_service_rolling_sum_schema,
         )
 
-        returned_df = primary_service_rolling_sum.calculate_rolling_sum_of_job_roles(
-            test_df, self.number_of_days_in_rolling_sum
+        returned_df = job.calculate_rolling_sum_of_job_roles(
+            test_df,
+            self.number_of_days_in_rolling_sum,
+            self.list_of_job_roles_for_tests,
         )
 
         self.assertEqual(

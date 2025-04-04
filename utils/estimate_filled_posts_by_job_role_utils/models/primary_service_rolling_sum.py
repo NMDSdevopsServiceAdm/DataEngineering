@@ -10,14 +10,15 @@ from utils.utils import convert_days_to_unix_time
 
 
 def calculate_rolling_sum_of_job_roles(
-    df: DataFrame, number_of_days_in_rolling_sum: int
+    df: DataFrame, number_of_days_in_rolling_sum: int, list_of_job_roles: list
 ) -> DataFrame:
     """
     Adds a rolling sum of job of job role counts mapped column from the job role counts mapped column
 
     Args:
-        df (DataFrame): The input DataFrame, which has the job role counts mapped column
-        number_of_days_in_rolling_sum (int): The number of days to include in the rolling time period which will be used within add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled.
+        df (DataFrame): The input DataFrame containing the 'ascwds_job_role_counts' mapped column
+        number_of_days_in_rolling_sum (int): The number of days to include in the rolling time period.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
     Returns:
         DataFrame: The DataFrame with the new rolling sum of job role counts mapped column
@@ -46,13 +47,9 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.ascwds_job_role_counts_rolling_sum,
     )
 
-    existing_columns = [
-        col for col in list_of_job_roles_sorted if col in df_rolling_sum.columns
-    ]
-
     df_rolling_sum = create_map_column(
         df_rolling_sum,
-        existing_columns,
+        list_of_job_roles,
         IndCQC.ascwds_job_role_counts_rolling_sum,
         True,
     )
