@@ -1284,6 +1284,15 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             if column not in self.test_df.columns
         ]
 
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.create_map_column")
+    def test_sum_job_group_counts_from_job_role_count_map_calls_premade_functionality(
+        self, create_map_column_mock: Mock
+    ):
+        job.calculate_job_group_sum_from_job_role_map_column(
+            self.test_df, IndCQC.ascwds_job_role_counts, IndCQC.ascwds_job_group_counts
+        )
+        create_map_column_mock.assert_called_once()
+
     def test_sum_job_group_counts_from_job_role_count_map_adds_1_expected_column(
         self,
     ):
