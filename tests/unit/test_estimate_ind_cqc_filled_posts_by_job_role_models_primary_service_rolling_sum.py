@@ -89,10 +89,6 @@ class CalculateRollingSumOfCountOfJobRoles(
     def test_primary_service_rolling_sum_when_same_primary_service_type_and_same_location_id_and_within_rolling_window(
         self,
     ):
-        self.test_df.show(truncate=False)
-        self.returned_df.show(truncate=False)
-        self.expected_df.show(truncate=False)
-
         self.assertEqual(
             self.expected_df.orderBy(IndCQC.location_id, IndCQC.unix_time).collect(),
             self.returned_df.select(
