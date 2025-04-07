@@ -31,7 +31,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         )
         self.returned_df = job.model_primary_service_rate_of_change(
             self.test_df,
-            IndCqc.ascwds_filled_posts_dedup_clean,
+            IndCqc.combined_ratio_and_filled_posts,
             number_of_days,
             IndCqc.single_period_rate_of_change,
         )

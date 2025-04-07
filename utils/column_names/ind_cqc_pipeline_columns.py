@@ -47,6 +47,9 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
+    ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
+    ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
@@ -290,3 +293,19 @@ class PrimaryServiceRateOfChangeColumns:
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     submission_count: str = "submission_count"
+
+
+@dataclass
+class NonResWithAndWithoutDormancyCombinedColumns:
+    """The names of the temporary columns used in the combining of the models process."""
+
+    adjustment_ratio: str = "adjustment_ratio"
+    avg_with_dormancy: str = "avg_with_dormancy"
+    avg_without_dormancy: str = "avg_without_dormancy"
+    first_overlap_date: str = "first_overlap_date"
+    residual_at_overlap: str = "residual_at_overlap"
+    time_registered_banded_and_capped: str = "time_registered_banded_and_capped"
+    without_dormancy_model_adjusted: str = "without_dormancy_model_adjusted"
+    without_dormancy_model_adjusted_and_residual_applied: str = (
+        "without_dormancy_model_adjusted_and_residual_applied"
+    )
