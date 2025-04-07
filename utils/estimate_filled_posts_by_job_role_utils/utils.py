@@ -5,12 +5,13 @@ from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
+    AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
 
-list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
+list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -25,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
@@ -39,26 +40,45 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
     df = df.na.fill(0, subset=list_of_job_roles)
 
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_counts, create_map_column(list_of_job_roles)
-    )
-
-    df = df.drop(*list_of_job_roles)
+    df = create_map_column(df, list_of_job_roles, IndCQC.ascwds_job_role_counts)
 
     return df
 
 
-def create_map_column(columns: List[str]) -> F.Column:
+def create_map_column(
+    df: DataFrame,
+    column_list: List[str],
+    new_col_name: str,
+    drop_original_columns: bool = True,
+) -> DataFrame:
     """
-    Creates a Spark map column from a list of columns where keys are column names and values are the respective column values.
+    Creates a new map column in a DataFrame by mapping the specified columns to their values.
+
+    This function generates a map column where the keys are the column names and the values are the corresponding column values.
+    The column list is sorted alphabetically before creating the map.
+    The original columns can be optionally dropped after the map column is created.
 
     Args:
-        columns (List[str]): List of column names to be mapped.
+        df (DataFrame): DataFrame containing the list of columns to be mapped.
+        column_list (List[str]): List of column names to be mapped.
+        new_col_name (str): Name of the new mapped column to be added.
+        drop_original_columns (bool, optional): If True, drops the original columns after creating
+            the map column. Defaults to True.
 
     Returns:
-        F.Column: A Spark column containing a map of job role names to counts.
+        DataFrame: A DataFrame with the new map column added and optionally the original columns dropped.
     """
-    return F.create_map(*[x for col in columns for x in (F.lit(col), F.col(col))])
+    sorted_column_list = sorted(column_list)
+
+    map_columns = F.create_map(
+        *[x for col in sorted_column_list for x in (F.lit(col), F.col(col))]
+    )
+    df = df.withColumn(new_col_name, map_columns)
+
+    if drop_original_columns:
+        df = df.drop(*sorted_column_list)
+
+    return df
 
 
 def merge_dataframes(
@@ -293,10 +313,11 @@ def sum_job_role_count_split_by_service(
         .sum("value")
     )
 
-    df_explode_grouped_with_map_column = df_explode_grouped.withColumn(
+    df_explode_grouped_with_map_column = create_map_column(
+        df_explode_grouped,
+        list_of_job_roles,
         IndCQC.ascwds_job_role_counts_by_primary_service,
-        create_map_column(list_of_job_roles),
-    ).drop(*list_of_job_roles)
+    )
 
     df_result = df.join(
         df_explode_grouped_with_map_column,
@@ -374,4 +395,92 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         DataFrame: A dataframe with an additional column for the sum of non registered manager estimated filled posts
         and a map column of non registered manager estimated post proportions split per role.
     """
+    return df
+
+
+def pivot_job_role_column(
+    df: DataFrame,
+    grouping_columns: List[str],
+    aggregation_column: str,
+) -> DataFrame:
+    """
+    Transforms the input DataFrame by pivoting unique job role labels into separate columns,
+    aggregating values from the specified column.
+
+    This function groups the data by the provided 'grouping_columns', then performs a pivot operation
+    on the 'main_job_role_clean_labelled' column—creating one column per unique job role. For each
+    group, it selects the first non-null value of the specified 'aggregation_column' for each job role.
+
+    In this context, "pivoting" means turning distinct values from one column (the job role labels)
+    into separate columns, with each column containing values from another column (the
+    'aggregation_column') for those specific roles.
+
+    Args:
+        df (DataFrame): The DataFrame containing the job role column, grouping columns and aggregation column.
+        grouping_columns (List[str]): Columns to group by before pivoting.
+        aggregation_column (str): The column from which to extract values  during aggregation.
+
+    Returns:
+        DataFrame: A pivoted DataFrame with one column per job role label and values
+        aggregated from the specified column.
+    """
+    df_result = (
+        df.groupBy(grouping_columns)
+        .pivot(IndCQC.main_job_role_clean_labelled)
+        .agg(F.first(aggregation_column, ignorenulls=False))
+    )
+
+    return df_result
+
+
+def convert_map_with_all_null_values_to_null(df: DataFrame) -> DataFrame:
+    """
+    convert a map with only null values to be just a null not in map format
+
+    Args:
+        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+
+    Returns:
+        DataFrame: A dataframe with the aascwds_job_role_ratios_interpolated with null values instead of map records with only null values.
+    """
+
+    df_result = df.withColumn(
+        IndCQC.ascwds_job_role_ratios_interpolated,
+        F.when(
+            F.size(
+                F.filter(
+                    F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                    lambda x: ~F.isnull(x),
+                )
+            )
+            == 0,
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+    )
+
+    return df_result
+
+
+def calculate_difference_between_estimate_and_cqc_registered_managers(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Calculates count of CQC registered managers minus our estimate of registered managers.
+
+    A positive value is when CQC have recorded more registered managers than we have estimated.
+    A negative value is when we have estimated more registered managers than CQC have recorded.
+    CQC have the official count of registered managers. Our estimate is based on records in ASC-WDS.
+
+    Args:
+        df (DataFrame): A dataframe which contains filled post estimates by job role and a count of registered managers from CQC.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing count from CQC minus our estimate of registered managers.
+    """
+    df = df.withColumn(
+        IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        F.col(IndCQC.registered_manager_count)
+        - F.col(MainJobRoleLabels.registered_manager),
+    )
+
     return df

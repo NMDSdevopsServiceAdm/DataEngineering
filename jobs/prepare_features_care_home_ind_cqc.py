@@ -20,8 +20,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
 )
 from utils.features.helper import (
     add_array_column_count,
-    column_expansion_with_dict,
-    convert_categorical_variable_to_binary_variables_based_on_a_dictionary,
+    expand_encode_and_extract_features,
     vectorise_dataframe,
 )
 
@@ -47,40 +46,36 @@ def main(
         col_to_check=IndCQC.services_offered,
     )
 
-    service_keys = list(ServicesFeatures.labels_dict.keys())
-    features_df = column_expansion_with_dict(
-        df=features_df,
-        col_name=IndCQC.services_offered,
-        lookup_dict=ServicesFeatures.labels_dict,
+    features_df, service_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.services_offered,
+        ServicesFeatures.labels_dict,
+        is_array_col=True,
     )
 
-    rui_indicators = list(RuralUrbanFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_rural_urban_indicator_2011,
-            lookup_dict=RuralUrbanFeatures.labels_dict,
-        )
+    features_df, rui_indicators_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.current_rural_urban_indicator_2011,
+        RuralUrbanFeatures.labels_dict,
+        is_array_col=False,
     )
 
-    regions = list(RegionFeatures.labels_dict.keys())
-    features_df = (
-        convert_categorical_variable_to_binary_variables_based_on_a_dictionary(
-            df=features_df,
-            categorical_col_name=IndCQC.current_region,
-            lookup_dict=RegionFeatures.labels_dict,
-        )
+    features_df, region_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.current_region,
+        RegionFeatures.labels_dict,
+        is_array_col=False,
     )
 
     list_for_vectorisation: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.number_of_beds,
-            IndCQC.rolling_rate_of_change_model,
+            IndCQC.ascwds_rate_of_change_trendline_model,
         ]
-        + service_keys
-        + regions
-        + rui_indicators
+        + service_list
+        + region_list
+        + rui_indicators_list
     )
 
     vectorised_dataframe = vectorise_dataframe(
@@ -96,7 +91,7 @@ def main(
         IndCQC.features,
         IndCQC.ascwds_pir_merged,
         IndCQC.filled_posts_per_bed_ratio,
-        IndCQC.rolling_rate_of_change_model,
+        IndCQC.ascwds_rate_of_change_trendline_model,
         Keys.year,
         Keys.month,
         Keys.day,

@@ -4,6 +4,7 @@ from unittest.mock import patch, Mock
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils import utils as job
+from utils.estimate_filled_posts_by_job_role_utils.models import interpolation as interp
 from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
 from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
@@ -191,9 +192,11 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_all_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_all_columns_populated_rows,
@@ -212,9 +215,11 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_some_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_some_columns_populated_rows,
@@ -233,13 +238,37 @@ class CreateMapColumnTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Data.create_map_column_when_no_columns_populated_rows,
             Schemas.create_map_column_schema,
         )
-        returned_df = test_df.withColumn(
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
             Schemas.test_map_column,
-            job.create_map_column(Data.list_of_job_roles_for_tests),
+            drop_original_columns=False,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_create_map_column_when_no_columns_populated_rows,
             Schemas.expected_create_map_column_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(
+            returned_data[0][Schemas.test_map_column],
+            expected_data[0][Schemas.test_map_column],
+        )
+
+    def test_create_map_column_drops_columns_when_drop_original_columns_is_true(self):
+        test_df = self.spark.createDataFrame(
+            Data.create_map_column_when_all_columns_populated_rows,
+            Schemas.create_map_column_schema,
+        )
+        returned_df = job.create_map_column(
+            test_df,
+            Data.list_of_job_roles_for_tests,
+            Schemas.test_map_column,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_map_column_when_all_columns_populated_and_drop_columns_is_true_rows,
+            Schemas.expected_create_map_column_when_drop_columns_is_true_schema,
         )
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
@@ -804,69 +833,239 @@ class CountRegisteredManagerNamesTests(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         )
 
 
-class SumJobRoleCountSplitByServiceTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_sum_job_role_count_split_by_service_when_multiple_entries_in_partition_column(
+        self.test_col_list = Data.list_of_job_roles_for_tests
+
+        self.test_df = self.spark.createDataFrame(
+            Data.interpolate_job_role_ratios_data,
+            Schemas.interpolate_job_role_ratios_schema,
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_interpolate_job_role_ratios_data,
+            Schemas.expected_interpolate_job_role_ratios_schema,
+        )
+        self.return_df = interp.model_job_role_ratio_interpolation(
+            self.test_df, self.test_col_list
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.return_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_model_interpolation_adds_one_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+
+    def test_model_interpolation_does_not_change_the_number_of_rows(
+        self,
+    ):
+        self.assertEqual(self.test_df.count(), self.return_df.count())
+
+    def test_model_interpolation_when_data_includes_nulls_which_cannot_be_interpolated_return_dataframe_with_no_incorrect_population_of_values(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.sum_job_role_count_split_by_service_with_multiple_service_types_data,
-            Schemas.sum_job_role_split_by_service_schema,
+            Data.interpolate_job_role_ratios_with_null_records_which_cannot_be_interpolated_data,
+            Schemas.interpolate_job_role_ratios_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_sum_job_role_split_by_service_with_multiple_service_types_data,
-            Schemas.expected_sum_job_role_split_by_service_schema,
+            Data.expected_interpolate_job_role_ratios_with_null_records_which_cannot_be_interpolated_data,
+            Schemas.expected_interpolate_job_role_ratios_schema,
         )
 
-        return_df = job.sum_job_role_count_split_by_service(
-            test_df, Data.list_of_job_roles_for_tests
+        return_df = interp.model_job_role_ratio_interpolation(
+            test_df, self.test_col_list
         )
 
         self.assertEqual(
-            expected_df.sort(IndCQC.primary_service_type).collect(),
-            return_df.select(
-                IndCQC.establishment_id,
-                IndCQC.ascwds_worker_import_date,
-                IndCQC.ascwds_job_role_counts,
-                IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_by_primary_service,
+            expected_df.select(
+                IndCQC.location_id,
+                IndCQC.unix_time,
+                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_interpolated,
             )
-            .sort(IndCQC.primary_service_type)
+            .sort(IndCQC.location_id, IndCQC.unix_time)
+            .collect(),
+            return_df.select(
+                IndCQC.location_id,
+                IndCQC.unix_time,
+                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_interpolated,
+            )
+            .sort(IndCQC.location_id, IndCQC.unix_time)
             .collect(),
         )
 
-    def test_sum_job_role_count_split_by_service_when_one_entry_in_each_partition(
+
+class PivotJobRoleColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_with_identical_grouping_columns_df = self.spark.createDataFrame(
+            Data.pivot_job_role_column_returns_expected_pivot_rows,
+            Schemas.pivot_job_role_column_schema,
+        )
+        self.returned_identical_grouping_column_df = job.pivot_job_role_column(
+            test_with_identical_grouping_columns_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
+        self.expected_identical_grouping_column_df = self.spark.createDataFrame(
+            Data.expected_pivot_job_role_column_returns_expected_pivot_rows,
+            Schemas.expected_pivot_job_role_column_schema,
+        )
+
+        test_with_multiple_grouping_columns_df = self.spark.createDataFrame(
+            Data.pivot_job_role_column_with_multiple_grouping_column_options_rows,
+            Schemas.pivot_job_role_column_schema,
+        )
+        self.returned_multiple_grouping_column_df = job.pivot_job_role_column(
+            test_with_multiple_grouping_columns_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
+        self.expected_multiple_grouping_column_df = self.spark.createDataFrame(
+            Data.expected_pivot_job_role_column_with_multiple_grouping_column_options_rows,
+            Schemas.expected_pivot_job_role_column_two_job_roles_schema,
+        )
+
+    def test_pivot_job_role_column_returns_expected_pivoted_column_names(self):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.columns,
+            self.expected_identical_grouping_column_df.columns,
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_values_when_grouping_columns_are_identical(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.collect(),
+            self.expected_identical_grouping_column_df.collect(),
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_count_when_grouping_columns_are_identical(
+        self,
+    ):
+        self.assertEqual(self.returned_identical_grouping_column_df.count(), 1)
+
+    def test_pivot_job_role_column_returns_expected_values_when_multiple_grouping_columns_present(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_identical_grouping_column_df.sort(
+                IndCQC.unix_time, IndCQC.primary_service_type
+            ).collect(),
+            self.expected_identical_grouping_column_df.collect(),
+        )
+
+    def test_pivot_job_role_column_returns_expected_row_count_when_multiple_grouping_columns_present(
+        self,
+    ):
+        self.assertEqual(
+            self.returned_multiple_grouping_column_df.count(),
+            self.expected_multiple_grouping_column_df.count(),
+        )
+
+    def test_pivot_job_role_column_returns_first_aggregated_value(self):
+        test_df = self.spark.createDataFrame(
+            Data.pivot_job_role_column_returns_first_aggregation_column_value_rows,
+            Schemas.pivot_job_role_column_schema,
+        )
+        returned_df = job.pivot_job_role_column(
+            test_df,
+            [IndCQC.unix_time, IndCQC.primary_service_type],
+            IndCQC.ascwds_job_role_ratios_interpolated,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_pivot_job_role_column_returns_first_aggregation_column_value_rows,
+            Schemas.expected_pivot_job_role_column_two_job_roles_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort(IndCQC.unix_time).collect(),
+            expected_df.collect(),
+        )
+
+
+class ConvertMapWithAllNullValuesToNull(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_no_null_returns_identical_dataframe(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.sum_job_role_count_split_by_service_with_one_service_type_data,
-            Schemas.sum_job_role_split_by_service_schema,
+            Data.convert_map_with_all_null_values_to_null_map_has_no_nulls_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
         )
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_sum_job_role_count_split_by_service_with_one_service_type_data,
-            Schemas.expected_sum_job_role_split_by_service_schema,
+            Data.expected_convert_map_with_all_null_values_to_null_map_has_no_nulls_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
         )
 
-        return_df = job.sum_job_role_count_split_by_service(
-            test_df, Data.list_of_job_roles_for_tests
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_all_null_returns_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_map_has_all_nulls,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
         )
 
-        self.assertEqual(
-            expected_df.sort(IndCQC.primary_service_type).collect(),
-            return_df.select(
-                IndCQC.establishment_id,
-                IndCQC.ascwds_worker_import_date,
-                IndCQC.ascwds_job_role_counts,
-                IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_by_primary_service,
-            )
-            .sort(IndCQC.primary_service_type)
-            .collect(),
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_map_has_all_nulls,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
         )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_returns_identical_record_and_null(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_all_null_and_all_non_null_records_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
+        )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
+
+    def test_convert_map_with_all_null_values_to_null_when_map_has_some_null_returns_identical_dataframe(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.convert_map_with_all_null_values_to_null_when_map_has_some_nulls_data,
+            Schemas.convert_map_with_all_null_values_to_null_schema,
+        )
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_convert_map_with_all_null_values_to_null_when_map_has_some_nulls_data,
+            Schemas.expected_convert_map_with_all_null_values_to_null_schema,
+        )
+
+        returned_df = job.convert_map_with_all_null_values_to_null(test_df)
+
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
@@ -938,6 +1137,49 @@ class UnpackingMappedColumnsTest(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.estimate_and_cqc_registered_manager_rows,
+            Schemas.estimate_and_cqc_registered_manager_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_estimate_and_cqc_registered_manager_rows,
+            Schemas.expected_estimate_and_cqc_registered_manager_schema,
+        )
+        self.returned_df = (
+            job.calculate_difference_between_estimate_and_cqc_registered_managers(
+                self.test_df
+            )
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_difference_between_estimate_and_cqc_registered_managers_adds_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.difference_between_estimate_and_cqc_registered_managers,
+        )
+
+    def test_calculate_difference_between_estimate_and_cqc_registered_managers_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+        self.assertEqual(expected_data, returned_data)
 
 
 class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(

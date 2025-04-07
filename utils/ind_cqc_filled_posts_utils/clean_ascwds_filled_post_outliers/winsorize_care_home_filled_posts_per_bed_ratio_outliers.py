@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from pyspark.sql import DataFrame, functions as F
-from pyspark.ml.feature import Bucketizer
 
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -68,8 +67,6 @@ def winsorize_care_home_filled_posts_per_bed_ratio_outliers(
     data_not_relevant_to_filter_df = select_data_not_in_subset_df(
         input_df, care_homes_df
     )
-
-    care_homes_df = create_banded_bed_count_column(care_homes_df)
 
     expected_filled_posts_per_banded_bed_count_df = (
         calculate_average_filled_posts_per_banded_bed_count(care_homes_df)
@@ -149,35 +146,6 @@ def select_data_not_in_subset_df(
     output_df = complete_df.exceptAll(subset_df)
 
     return output_df
-
-
-def create_banded_bed_count_column(
-    input_df: DataFrame,
-) -> DataFrame:
-    """
-    Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
-
-    This function uses a Bucketizer to categorise the number of beds into specified bands. The banded bed counts are joined into the original DataFrame.
-
-    Args:
-        input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
-
-    Returns:
-        DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
-    """
-    number_of_beds_df = input_df.select(IndCQC.number_of_beds).dropDuplicates()
-
-    set_banded_boundaries = Bucketizer(
-        splits=[0, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
-        inputCol=IndCQC.number_of_beds,
-        outputCol=IndCQC.number_of_beds_banded,
-    )
-
-    number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
-        "keep"
-    ).transform(number_of_beds_df)
-
-    return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
 
 
 def calculate_average_filled_posts_per_banded_bed_count(
