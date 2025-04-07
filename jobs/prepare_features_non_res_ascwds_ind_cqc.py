@@ -132,6 +132,11 @@ def main(
         features_df, IndCQC.dormancy
     )
 
+    features_df = add_date_index_column(features_df)
+    features_with_known_dormancy_df = add_date_index_column(
+        features_with_known_dormancy_df
+    )
+
     list_for_vectorisation_without_dormancy: List[str] = sorted(
         [
             IndCQC.service_count,
