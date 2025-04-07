@@ -29,6 +29,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 )
 from utils.features.helper import (
     add_array_column_count,
+    add_date_index_column,
     expand_encode_and_extract_features,
     vectorise_dataframe,
 )
