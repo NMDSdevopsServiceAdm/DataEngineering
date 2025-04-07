@@ -6406,6 +6406,15 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         (RelatedLocation.has_related_location, 1, 4.5, 1.5, 3.0),
     ]
 
+    calculate_adjustment_ratios_when_without_dormancy_is_zero_or_null_returns_one_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 0.0),
+        (RelatedLocation.has_related_location, 1, 4.5, None),
+    ]
+    expected_calculate_adjustment_ratios_when_without_dormancy_is_zero_or_null_returns_one_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 0.0, 1.0),
+        (RelatedLocation.has_related_location, 1, 4.5, None, 1.0),
+    ]
+
     apply_model_ratios_returns_expected_values_when_all_values_known_rows = [
         ("1-001", 5.0, 14.0, 0.25),
         ("1-002", 6.0, 15.0, 2.0),

@@ -100,6 +100,9 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
 
+    If the avg_without_dormancy is not zero, the adjustment ratio is calculated as the ratio of
+    avg_with_dormancy to avg_without_dormancy. Otherwise, the adjustment ratio is set to 1.0 (no change).
+
     Args:
         df (DataFrame): DataFrame with aggregated model predictions.
 
@@ -108,7 +111,11 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         TempColumns.adjustment_ratio,
-        F.col(TempColumns.avg_with_dormancy) / F.col(TempColumns.avg_without_dormancy),
+        F.when(
+            F.col(TempColumns.avg_without_dormancy) != 0,
+            F.col(TempColumns.avg_with_dormancy)
+            / F.col(TempColumns.avg_without_dormancy),
+        ).otherwise(1.0),
     )
     return df
 
