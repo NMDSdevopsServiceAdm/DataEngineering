@@ -75,6 +75,8 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     """
     Averages model predictions by 'related_location' and 'time_registered'.
 
+    Only models predictions for locations who have a non null for both models contribute to the average.
+
     Args:
         df (DataFrame): DataFrame with model predictions.
 
