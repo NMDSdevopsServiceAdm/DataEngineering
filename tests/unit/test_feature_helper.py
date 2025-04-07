@@ -250,7 +250,7 @@ class GroupRuralUrbanSparseCategoriesTests(LocationsFeatureEngineeringTests):
         self.expected_data = self.expected_df.collect()
 
     def test_group_rural_urban_sparse_categories_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_group_rural_urban_sparse_categories_returns_expected_data(self):
         for i in range(len(self.returned_data)):
