@@ -38,6 +38,7 @@ from utils.features.helper import (
 vectorised_features_column_list: List[str] = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
+    IndCQC.cqc_location_import_date_indexed,
     IndCQC.current_region,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.dormancy,

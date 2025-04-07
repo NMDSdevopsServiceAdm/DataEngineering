@@ -87,6 +87,7 @@ def main(
     vectorised_features_df = vectorised_dataframe.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
+        IndCQC.cqc_location_import_date_indexed,
         IndCQC.current_region,
         IndCQC.number_of_beds,
         IndCQC.pir_people_directly_employed,
