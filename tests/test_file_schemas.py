@@ -3211,6 +3211,20 @@ class ModelFeatures:
         ]
     )
 
+    add_date_index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_add_date_index_column_schema = StructType(
+        [
+            *add_date_index_column_schema,
+            StructField(IndCQC.cqc_location_import_date_indexed, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
