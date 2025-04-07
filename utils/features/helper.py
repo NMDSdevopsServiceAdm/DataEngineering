@@ -8,6 +8,19 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def vectorise_dataframe(df: DataFrame, list_for_vectorisation: List[str]) -> DataFrame:
+    """
+    Combines specified columns into a single feature vector for the modelling process.
+
+    This function uses `VectorAssembler` to merge multiple input columns into a single vector column.
+    Invalid values are skipped to prevent transformation errors.
+
+    Args:
+        df (DataFrame): Input DataFrame containing columns to be vectorised.
+        list_for_vectorisation (List[str]): List of column names to be combined into the feature vector.
+
+    Returns:
+        DataFrame: A DataFrame with an additional 'features' column.
+    """
     loc_df = VectorAssembler(
         inputCols=list_for_vectorisation,
         outputCol=IndCQC.features,
