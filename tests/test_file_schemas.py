@@ -3211,6 +3211,19 @@ class ModelFeatures:
         ]
     )
 
+    add_log_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+        ]
+    )
+    expected_add_log_column_schema = StructType(
+        [
+            *add_log_column_schema,
+            StructField("logged_value", FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
