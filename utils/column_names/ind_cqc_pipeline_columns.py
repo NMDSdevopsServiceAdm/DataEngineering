@@ -279,3 +279,13 @@ class PrimaryServiceRollingAverageColumns:
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
     single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
+
+
+@dataclass
+class NonResWithAndWithoutDormancyCombinedColumns:
+    """The names of the temporary columns used in the combining of the models process."""
+
+    adjusted_without_dormancy_model: str = "adjusted_without_dormancy_model"
+    adjustment_ratio: str = "adjustment_ratio"
+    avg_with_dormancy: str = "avg_with_dormancy"
+    avg_without_dormancy: str = "avg_without_dormancy"

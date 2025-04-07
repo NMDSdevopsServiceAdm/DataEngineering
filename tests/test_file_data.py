@@ -6346,6 +6346,74 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
     ]
 
+    calculate_and_apply_model_ratios_rows = [
+        ("1-001", date(2022, 2, 1), "Y", 2, 3.0, None),
+        ("1-001", date(2023, 3, 1), "Y", 3, 4.0, 5.0),
+        ("1-002", date(2022, 2, 1), "Y", 4, 8.0, None),
+        ("1-002", date(2023, 3, 1), "Y", 5, 8.0, 4.0),
+        ("1-003", date(2022, 2, 1), "N", 2, 2.0, None),
+        ("1-003", date(2021, 3, 1), "N", 3, 4.0, None),
+        ("1-003", date(2022, 4, 1), "N", 4, 4.0, None),
+        ("1-003", date(2023, 5, 1), "N", 5, 6.0, 8.0),
+        ("1-003", date(2024, 6, 1), "N", 6, 6.0, 9.0),
+        ("1-004", date(2024, 5, 1), "Y", 1, 4.0, 2.0),
+        ("1-004", date(2024, 6, 1), "Y", 2, 5.0, 2.5),
+    ]
+
+    average_models_by_related_location_and_time_registered_rows = [
+        ("1-001", RelatedLocation.no_related_location, 1, 5.0, 14.0),
+        ("1-002", RelatedLocation.no_related_location, 1, 6.0, 15.0),
+        ("1-003", RelatedLocation.has_related_location, 1, 1.0, 10.0),
+        ("1-004", RelatedLocation.has_related_location, 1, 2.0, 11.0),
+        ("1-005", RelatedLocation.has_related_location, 2, 3.0, 12.0),
+        ("1-006", RelatedLocation.has_related_location, 2, 4.0, 13.0),
+        ("1-007", RelatedLocation.has_related_location, 2, 20.0, None),
+        ("1-008", RelatedLocation.has_related_location, 2, None, 20.0),
+    ]
+    expected_average_models_by_related_location_and_time_registered_rows = [
+        (RelatedLocation.no_related_location, 1, 5.5, 14.5),
+        (RelatedLocation.has_related_location, 1, 1.5, 10.5),
+        (RelatedLocation.has_related_location, 2, 3.5, 12.5),
+    ]
+
+    calculate_adjustment_ratios_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 10.0),
+        (RelatedLocation.has_related_location, 1, 4.5, 1.5),
+    ]
+    expected_calculate_adjustment_ratios_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 10.0, 0.5),
+        (RelatedLocation.has_related_location, 1, 4.5, 1.5, 3.0),
+    ]
+
+    calculate_adjustment_ratios_when_without_dormancy_is_zero_or_null_returns_one_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 0.0),
+        (RelatedLocation.has_related_location, 1, 4.5, None),
+    ]
+    expected_calculate_adjustment_ratios_when_without_dormancy_is_zero_or_null_returns_one_rows = [
+        (RelatedLocation.no_related_location, 1, 5.0, 0.0, 1.0),
+        (RelatedLocation.has_related_location, 1, 4.5, None, 1.0),
+    ]
+
+    apply_model_ratios_returns_expected_values_when_all_values_known_rows = [
+        ("1-001", 5.0, 14.0, 0.25),
+        ("1-002", 6.0, 15.0, 2.0),
+    ]
+    expected_apply_model_ratios_returns_expected_values_when_all_values_known_rows = [
+        ("1-001", 5.0, 14.0, 0.25, 3.5),
+        ("1-002", 6.0, 15.0, 2.0, 30.0),
+    ]
+
+    apply_model_ratios_returns_none_when_none_values_present_rows = [
+        ("1-001", 5.0, None, 0.2),
+        ("1-002", 5.0, 10.0, None),
+        ("1-003", 5.0, None, None),
+    ]
+    expected_apply_model_ratios_returns_none_when_none_values_present_rows = [
+        ("1-001", 5.0, None, 0.2, None),
+        ("1-002", 5.0, 10.0, None, None),
+        ("1-003", 5.0, None, None, None),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:
