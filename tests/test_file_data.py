@@ -6112,6 +6112,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural"),
+        ("1-002", "Rural sparse"),
+        ("1-003", "Another with sparse in it"),
+        ("1-004", "Urban"),
+        ("1-005", "Sparse with a capital S"),
+    ]
+    expected_group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural", "Rural"),
+        ("1-002", "Rural sparse", "Sparse setting"),
+        ("1-003", "Another with sparse in it", "Sparse setting"),
+        ("1-004", "Urban", "Urban"),
+        ("1-005", "Sparse with a capital S", "Sparse setting"),
+    ]
+
 
 @dataclass
 class ModelCareHomes:
