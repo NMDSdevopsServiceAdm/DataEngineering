@@ -248,7 +248,7 @@ class AddDateIndexColumnTests(LocationsFeatureEngineeringTests):
         self.expected_data = self.expected_df.collect()
 
     def test_add_date_index_column_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_add_date_index_column_returns_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)
