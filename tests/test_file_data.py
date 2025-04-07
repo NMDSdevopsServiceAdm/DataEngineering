@@ -6413,9 +6413,20 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-003", 5.0, None, None, None),
     ]
 
-    # TODO - filters to expected rows
-    # TODO - expected residuals
-    # TODO - expected cols
+    # fmt: off
+    calculate_residuals_rows = [
+        ("1-001", date(2025, 1, 1), date(2025, 2, 1), 10.0, 15.0),  # filtered out, dates not equal
+        ("1-002", date(2025, 2, 1), date(2025, 2, 1), 10.0, 15.0),  # not filtered, negative residual
+        ("1-003", date(2025, 2, 1), date(2025, 2, 1), 20.0, 15.0),  # not filtered, positive residual
+        ("1-004", date(2025, 2, 1), date(2025, 2, 1), 30.0, None),  # filtered out, null model value
+        ("1-005", date(2025, 2, 1), date(2025, 2, 1), None, 15.0),  # filtered out, null model value
+        ("1-006", date(2025, 2, 1), date(2025, 2, 1), None, None),  # filtered out, null model value
+    ]
+    expected_calculate_residuals_rows = [
+        ("1-002", -5.0),  # not filtered, negative residual
+        ("1-003", 5.0),  # not filtered, positive residual
+    ]
+    # fmt: on
 
     apply_residuals_when_no_null_values_rows = [
         ("1-001", 7.0, 12.0),

@@ -215,9 +215,40 @@ class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
         super().setUp()
 
-        # TODO - filters to expected rows
-        # TODO - expected residuals
-        # TODO - expected cols
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residuals_rows,
+            Schemas.calculate_residuals_schema,
+        )
+        self.returned_df = job.calculate_residuals(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residuals_rows,
+            Schemas.expected_calculate_residuals_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_residuals_filters_to_the_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCqc.location_id],
+                self.expected_data[i][IndCqc.location_id],
+                msg=f"Returned location_id for row {i} does not match expected",
+            )
+
+    def test_calculate_residuals_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_calculate_residuals_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.residual_at_overlap],
+                self.expected_data[i][NRModel_TempCol.residual_at_overlap],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
 
 
 class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
