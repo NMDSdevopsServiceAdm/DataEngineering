@@ -115,14 +115,6 @@ def main(
         ml_model_metrics_destination,
     )
 
-    # TODO make function
-    # Do I need to replace nulls in CH with this figure so imputation works?
-    estimate_filled_posts_df = calculate_filled_posts_from_beds_and_ratio(
-        estimate_filled_posts_df,
-        IndCQC.banded_bed_ratio_rolling_average_model,
-        IndCQC.care_home_rolling_average_model,
-    )
-
     estimate_filled_posts_df = model_non_res_with_dormancy(
         estimate_filled_posts_df,
         non_res_with_dormancy_features_df,
@@ -172,7 +164,6 @@ def main(
             IndCQC.imputed_posts_non_res_combined_model,
             IndCQC.non_res_pir_linear_regression_model,
             IndCQC.non_res_combined_model,
-            IndCQC.care_home_rolling_average_model,
             IndCQC.posts_rolling_average_model,
         ],
         IndCQC.estimate_filled_posts,
