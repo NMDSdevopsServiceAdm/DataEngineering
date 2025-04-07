@@ -5,7 +5,7 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
     unpack_mapped_column,
     create_map_column,
-    pivot_interpolated_job_role_ratios,
+    pivot_job_role_column,
     convert_map_with_all_null_values_to_null,
 )
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
@@ -53,7 +53,11 @@ def model_job_role_ratio_interpolation(
         ),
     )
 
-    df_to_interpolate = pivot_interpolated_job_role_ratios(df_to_interpolate)
+    df_to_interpolate = pivot_job_role_column(
+        df_to_interpolate,
+        [IndCQC.location_id, IndCQC.unix_time],
+        IndCQC.ascwds_job_role_ratios_interpolated,
+    )
 
     df_to_interpolate = create_map_column(
         df_to_interpolate,

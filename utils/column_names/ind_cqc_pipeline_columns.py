@@ -46,6 +46,9 @@ class IndCqcColumns:
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
+    ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
+    ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
@@ -75,6 +78,7 @@ class IndCqcColumns:
     care_home: str = CQCLClean.care_home
     care_home_model: str = "care_home_model"
     code: str = CQCLClean.code
+    combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
     contemporary_constituancy: str = ONSClean.contemporary_constituancy
@@ -191,6 +195,7 @@ class IndCqcColumns:
     number_of_beds: str = CQCLClean.number_of_beds
     number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
+    number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
