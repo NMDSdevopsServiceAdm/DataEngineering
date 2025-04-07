@@ -92,7 +92,7 @@ class AverageModelsByRelatedLocationAndTimeRegisteredTests(
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.related_location, IndCqc.time_registered
+            IndCqc.related_location, NRModel_TempCol.time_registered_banded_and_capped
         ).collect()
         self.expected_data = self.expected_df.collect()
 
