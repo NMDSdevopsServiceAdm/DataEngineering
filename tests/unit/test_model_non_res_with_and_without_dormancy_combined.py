@@ -358,3 +358,33 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
                 places=3,
                 msg=f"Returned value for row {i} does not match expected",
             )
+
+
+class CombineModelPredictionsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.combine_model_predictions_rows,
+            Schemas.combine_model_predictions_schema,
+        )
+        self.returned_df = job.combine_model_predictions(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_model_predictions_rows,
+            Schemas.expected_combine_model_predictions_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_model_predictions_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_model_predictions_returns_expected_prediction_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCqc.prediction],
+                self.expected_data[i][IndCqc.prediction],
+                places=3,
+                msg=f"Returned prediction value for row {i} does not match expected",
+            )

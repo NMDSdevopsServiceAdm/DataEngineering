@@ -42,7 +42,7 @@ def combine_non_res_with_and_without_dormancy_models(
 
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
-    # TODO - 4 - combine model predictions
+    combined_models_df = combine_model_predictions(combined_models_df)
 
     # TODO - 5 - set_min_value and insert predictions into pipeline
 
@@ -231,4 +231,26 @@ def apply_residuals(df: DataFrame) -> DataFrame:
             + F.col(TempColumns.residual_at_overlap),
         ).otherwise(F.col(TempColumns.without_dormancy_model_adjusted)),
     )
+    return df
+
+
+def combine_model_predictions(df: DataFrame) -> DataFrame:
+    """
+    Uses the 'with_dormancy' model predictions where available, otherwise uses the
+    'without_dormancy_model_adjusted_and_residual_applied' predictions.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with combined model predictions.
+    """
+    df = df.withColumn(
+        IndCqc.prediction,
+        F.coalesce(
+            IndCqc.non_res_with_dormancy_model,
+            TempColumns.without_dormancy_model_adjusted_and_residual_applied,
+        ),
+    )
+
     return df
