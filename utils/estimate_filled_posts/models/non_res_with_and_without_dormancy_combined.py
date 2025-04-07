@@ -46,7 +46,7 @@ def combine_non_res_with_and_without_dormancy_models(
 
     # TODO - 5 - set_min_value and insert predictions into pipeline
 
-    return non_res_locations_df  # TODO add tests
+    return combined_models_df  # TODO add tests
 
 
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
