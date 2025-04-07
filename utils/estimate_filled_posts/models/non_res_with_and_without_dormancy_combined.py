@@ -153,7 +153,7 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
         IndCqc.cqc_location_import_date
     )
-    df = get_selected_value(
+    first_overlap_df = get_selected_value(
         df,
         window_spec,
         column_with_null_values=IndCqc.non_res_with_dormancy_model,
@@ -162,7 +162,7 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
         selection="first",
     )
 
-    residual_df = calculate_residuals(df)
+    residual_df = calculate_residuals(first_overlap_df)
 
     df = df.join(residual_df, IndCqc.location_id, "left")
 

@@ -3381,6 +3381,28 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    calculate_and_apply_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+            ),
+        ]
+    )
+    expected_calculate_and_apply_residuals_schema = StructType(
+        [
+            *calculate_and_apply_residuals_schema,
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+            StructField(
+                NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
     calculate_residuals_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

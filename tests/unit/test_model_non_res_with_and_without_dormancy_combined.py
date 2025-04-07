@@ -210,7 +210,54 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             )
 
 
-# TODO - calculate_and_apply_residuals
+class CalculateAndApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_and_apply_residuals_rows,
+            Schemas.calculate_and_apply_residuals_schema,
+        )
+        self.returned_df = job.calculate_and_apply_residuals(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_and_apply_residuals_rows,
+            Schemas.expected_calculate_and_apply_residuals_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_and_apply_residuals_returns_original_dataframe_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
+
+    def test_calculate_and_apply_residuals_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_calculate_and_apply_residuals_returns_expected_residual_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.residual_at_overlap],
+                self.expected_data[i][NRModel_TempCol.residual_at_overlap],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
+
+    def test_calculate_and_apply_residuals_returns_expected_model_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                ],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
+
+
 class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
         super().setUp()
