@@ -3305,39 +3305,6 @@ class ModelNonResWithoutDormancy:
 
 @dataclass
 class ModelNonResWithAndWithoutDormancyCombinedSchemas:
-    estimated_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(IndCQC.time_registered, IntegerType(), True),
-            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
-            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-        ]
-    )
-
-<<<<<<< HEAD
-    average_models_by_related_location_and_time_registered_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(IndCQC.time_registered, IntegerType(), True),
-            StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
-            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-        ]
-    )
-    expected_average_models_by_related_location_and_time_registered_schema = StructType(
-        [
-            StructField(IndCQC.related_location, StringType(), True),
-            StructField(IndCQC.time_registered, IntegerType(), True),
-            StructField(NRModel_TempCol.avg_with_dormancy, FloatType(), True),
-            StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
-        ]
-    )
-
-=======
->>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 @dataclass
 class ModelNonResPirLinearRegressionSchemas:

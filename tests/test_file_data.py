@@ -6339,51 +6339,6 @@ class ModelNonResWithoutDormancy:
 
 @dataclass
 class ModelNonResWithAndWithoutDormancyCombinedRows:
-    estimated_posts_rows = [
-        ("1-001", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None),
-        ("1-001", date(2022, 2, 1), CareHome.not_care_home, "Y", 2, 3.0, None),
-        ("1-001", date(2023, 3, 1), CareHome.not_care_home, "Y", 3, 4.0, 5.0),
-        ("1-001", date(2024, 4, 1), CareHome.not_care_home, "Y", 4, 5.0, 5.5),
-        ("1-001", date(2025, 5, 1), CareHome.not_care_home, "Y", 5, 6.0, 6.0),
-        ("1-001", date(2025, 6, 1), CareHome.not_care_home, "Y", 6, 7.0, 6.5),
-        ("1-002", date(2021, 1, 1), CareHome.not_care_home, "Y", 3, 8.0, None),
-        ("1-002", date(2022, 2, 1), CareHome.not_care_home, "Y", 4, 8.0, None),
-        ("1-002", date(2023, 3, 1), CareHome.not_care_home, "Y", 5, 8.0, 4.0),
-        ("1-002", date(2024, 4, 1), CareHome.not_care_home, "Y", 6, 8.0, 4.5),
-        ("1-002", date(2025, 5, 1), CareHome.not_care_home, "Y", 7, 8.0, 5.0),
-        ("1-002", date(2025, 6, 1), CareHome.not_care_home, "Y", 8, 8.0, 5.5),
-        ("1-003", date(2021, 1, 1), CareHome.not_care_home, "N", 1, 2.0, None),
-        ("1-003", date(2022, 2, 1), CareHome.not_care_home, "N", 2, 2.0, None),
-        ("1-003", date(2021, 3, 1), CareHome.not_care_home, "N", 3, 4.0, None),
-        ("1-003", date(2022, 4, 1), CareHome.not_care_home, "N", 4, 4.0, None),
-        ("1-003", date(2023, 5, 1), CareHome.not_care_home, "N", 5, 6.0, 8.0),
-        ("1-003", date(2024, 6, 1), CareHome.not_care_home, "N", 6, 6.0, 9.0),
-        ("1-004", date(2024, 4, 1), CareHome.care_home, "Y", 1, None, None),
-        ("1-005", date(2024, 5, 1), CareHome.not_care_home, "Y", 1, 4.0, 2.0),
-        ("1-005", date(2024, 6, 1), CareHome.not_care_home, "Y", 2, 5.0, 2.5),
-        ("1-006", date(2024, 5, 1), CareHome.not_care_home, "N", 1, 3.0, 2.5),
-        ("1-006", date(2024, 6, 1), CareHome.not_care_home, "N", 2, 3.0, 3.0),
-        ("1-006", date(2024, 7, 1), CareHome.not_care_home, "N", 3, 3.0, 3.0),
-        ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
-    ]
-
-<<<<<<< HEAD
-    average_models_by_related_location_and_time_registered_rows = [
-        ("1-001", RelatedLocation.no_related_location, 1, 5.0, 14.0),
-        ("1-002", RelatedLocation.no_related_location, 1, 6.0, 15.0),
-        ("1-003", RelatedLocation.has_related_location, 1, 1.0, 10.0),
-        ("1-004", RelatedLocation.has_related_location, 1, 2.0, 11.0),
-        ("1-005", RelatedLocation.has_related_location, 2, 3.0, 12.0),
-        ("1-006", RelatedLocation.has_related_location, 2, 4.0, 13.0),
-    ]
-    expected_average_models_by_related_location_and_time_registered_rows = [
-        (RelatedLocation.no_related_location, 1, 5.5, 14.5),
-        (RelatedLocation.has_related_location, 1, 1.5, 10.5),
-        (RelatedLocation.has_related_location, 2, 4.5, 13.5),
-    ]
-
-=======
->>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:
