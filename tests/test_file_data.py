@@ -11390,23 +11390,10 @@ class EstimateJobRolesPrimaryServiceRollingSumData:
             1720137600,
             PrimaryServiceType.care_home_with_nursing,
             {
-                MainJobRoleLabels.care_worker: 10,
-                MainJobRoleLabels.senior_care_worker: 10,
-                MainJobRoleLabels.senior_management: 20,
-                MainJobRoleLabels.first_line_manager: 20,
-                MainJobRoleLabels.registered_nurse: 30,
-                MainJobRoleLabels.social_worker: 30,
-                MainJobRoleLabels.admin_staff: 40,
-                MainJobRoleLabels.ancillary_staff: 40,
-            },
-        ),
-        (
-            "1-002",
-            1000,
-            {
-                MainJobRoleLabels.care_worker: 0,
-                MainJobRoleLabels.senior_care_worker: 0,
-                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.care_worker: 5.0,
+                MainJobRoleLabels.registered_nurse: 6.0,
+                MainJobRoleLabels.senior_care_worker: 7.0,
+                MainJobRoleLabels.senior_management: 8.0,
             },
         ),
     ]
