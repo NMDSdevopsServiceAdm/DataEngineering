@@ -236,8 +236,8 @@ def apply_residuals(df: DataFrame) -> DataFrame:
 
 def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
-    Uses the 'with_dormancy' model predictions where available, otherwise uses the
-    'without_dormancy_model_adjusted_and_residual_applied' predictions.
+    Use the 'with_dormancy' model predictions when not null. Otherwise use the
+    'without_dormancy_model_adjusted_and_residual_applied' predictions wheen not null.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
