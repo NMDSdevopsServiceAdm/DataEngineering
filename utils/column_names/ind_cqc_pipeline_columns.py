@@ -45,6 +45,8 @@ class IndCqcColumns:
     )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
+    ascwds_job_group_counts: str = "ascwds_job_group_counts"
+    ascwds_job_group_ratios: str = "ascwds_job_group_ratios"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
@@ -119,6 +121,9 @@ class IndCqcColumns:
     current_ons_import_date: str = ONSClean.current_ons_import_date
     current_region: str = ONSClean.current_region
     current_rural_urban_indicator_2011: str = ONSClean.current_rural_urban_ind_11
+    current_rural_urban_indicator_2011_for_non_res_model: str = (
+        ONSClean.current_rural_urban_ind_11 + "_for_non_res_model"
+    )
     current_sub_icb: str = ONSClean.current_sub_icb
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
@@ -179,6 +184,7 @@ class IndCqcColumns:
         "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
+    main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
@@ -288,7 +294,14 @@ class PrimaryServiceRollingAverageColumns:
 class NonResWithAndWithoutDormancyCombinedColumns:
     """The names of the temporary columns used in the combining of the models process."""
 
-    adjusted_without_dormancy_model: str = "adjusted_without_dormancy_model"
     adjustment_ratio: str = "adjustment_ratio"
     avg_with_dormancy: str = "avg_with_dormancy"
     avg_without_dormancy: str = "avg_without_dormancy"
+    first_overlap_date: str = "first_overlap_date"
+    non_res_without_dormancy_model_adjusted: str = (
+        "non_res_without_dormancy_model_adjusted"
+    )
+    non_res_without_dormancy_model_adjusted_and_residual_applied: str = (
+        "non_res_without_dormancy_model_adjusted_and_residual_applied"
+    )
+    residual_at_overlap: str = "residual_at_overlap"
