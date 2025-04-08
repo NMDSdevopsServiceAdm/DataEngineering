@@ -3211,6 +3211,23 @@ class ModelFeatures:
         ]
     )
 
+    group_rural_urban_sparse_categories_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = StructType(
+        [
+            *group_rural_urban_sparse_categories_schema,
+            StructField(
+                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
     filter_without_dormancy_features_to_pre_2025_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -3456,6 +3473,24 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+
+    combine_model_predictions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_combine_model_predictions_schema = StructType(
+        [
+            *combine_model_predictions_schema,
+            StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
 

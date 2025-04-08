@@ -6113,6 +6113,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural"),
+        ("1-002", "Rural sparse"),
+        ("1-003", "Another with sparse in it"),
+        ("1-004", "Urban"),
+        ("1-005", "Sparse with a capital S"),
+    ]
+    expected_group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural", "Rural"),
+        ("1-002", "Rural sparse", "Sparse setting"),
+        ("1-003", "Another with sparse in it", "Sparse setting"),
+        ("1-004", "Urban", "Urban"),
+        ("1-005", "Sparse with a capital S", "Sparse setting"),
+    ]
+
     filter_without_dormancy_features_to_pre_2025_rows = [
         ("1-001", date(2024, 12, 31), CareHome.care_home),
         ("1-002", date(2025, 1, 1), CareHome.not_care_home),
@@ -6478,6 +6493,19 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-004", 10.0, None, 10.0),
         ("1-005", None, -1.0, None),
         ("1-006", None, None, None),
+    ]
+
+    combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0),
+        ("1-002", 11.0, None),
+        ("1-003", None, 16.0),
+        ("1-004", None, None),
+    ]
+    expected_combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0, 10.0),
+        ("1-002", 11.0, None, 11.0),
+        ("1-003", None, 16.0, 16.0),
+        ("1-004", None, None, None),
     ]
 
 

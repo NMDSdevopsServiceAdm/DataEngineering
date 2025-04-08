@@ -102,6 +102,32 @@ def cap_integer_at_max_value(
     return df
 
 
+def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
+    """
+    Copies the values in the rural urban indicator column into a new column and replaces all categories which contains the word "sparse" with "Sparse setting".
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with the new rural urban indicator column with recoded sparse categories.
+    """
+    sparse_identifier: str = "sparse"
+    sparse_replacement_string: str = "Sparse setting"
+
+    df = df.withColumn(
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        F.when(
+            F.lower(F.col(IndCQC.current_rural_urban_indicator_2011)).contains(
+                sparse_identifier
+            ),
+            sparse_replacement_string,
+        ).otherwise(F.col(IndCQC.current_rural_urban_indicator_2011)),
+    )
+
+    return df
+
+
 def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     """
     Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
