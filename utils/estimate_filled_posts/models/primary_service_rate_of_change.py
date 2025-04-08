@@ -12,10 +12,9 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 
 
-def model_primary_service_rolling_average_and_rate_of_change(
+def model_primary_service_rate_of_change(
     df: DataFrame,
-    ratio_column_to_average: str,
-    posts_column_to_average: str,
+    column_with_values: str,
     number_of_days: int,
     rolling_average_model_column_name: str,
     rolling_rate_of_change_model_column_name: str,
@@ -30,8 +29,7 @@ def model_primary_service_rolling_average_and_rate_of_change(
 
     Args:
         df (DataFrame): The input DataFrame.
-        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_to_average (str): The name of the filled posts column to average.
+        column_with_values (str): Column name containing the values.
         number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
         rolling_average_model_column_name (str): The name of the new column to store the filled posts rolling average.
         rolling_rate_of_change_model_column_name (str): The name of the new column to store the rolling rate of change model values.
@@ -41,9 +39,8 @@ def model_primary_service_rolling_average_and_rate_of_change(
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = create_single_column_to_average(
-        df, ratio_column_to_average, posts_column_to_average
-    )
+    df = df.withColumn(TempCol.column_to_average, F.col(column_with_values))
+
     df = clean_column_to_average(df)
     df = interpolate_column_to_average(df)
 
@@ -58,32 +55,6 @@ def model_primary_service_rolling_average_and_rate_of_change(
     columns_to_drop = [field.name for field in fields(TempCol())]
     df = df.drop(*columns_to_drop)
 
-    return df
-
-
-def create_single_column_to_average(
-    df: DataFrame,
-    ratio_column_to_average: str,
-    posts_column_to_average: str,
-) -> DataFrame:
-    """
-    Creates one column to average using the ratio if the location is a care home and filled posts if not.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column_to_average (str): The name of the filled posts per bed ratio column to average (for care homes only).
-        posts_column_to_average (str): The name of the filled posts column to average.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant column to average.
-    """
-    df = df.withColumn(
-        TempCol.column_to_average,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column_to_average),
-        ).otherwise(F.col(posts_column_to_average)),
-    )
     return df
 
 

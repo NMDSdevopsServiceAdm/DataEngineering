@@ -8,10 +8,16 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
-    AscwdsWorkerValueLabelsMainjrid,
+    AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
+)
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
 )
 
-list_of_job_roles = list(AscwdsWorkerValueLabelsMainjrid.labels_dict.values())
+list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
+list_of_job_groups_sorted = sorted(
+    list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
+)
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -26,7 +32,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
 
     Args:
         df (DataFrame): A dataframe containing cleaned ASC-WDS worker data.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
     Returns:
         DataFrame: A dataframe with unique establishmentid and import date.
@@ -40,26 +46,45 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
     df = df.na.fill(0, subset=list_of_job_roles)
 
-    df = df.withColumn(
-        IndCQC.ascwds_job_role_counts, create_map_column(list_of_job_roles)
-    )
-
-    df = df.drop(*list_of_job_roles)
+    df = create_map_column(df, list_of_job_roles, IndCQC.ascwds_job_role_counts)
 
     return df
 
 
-def create_map_column(columns: List[str]) -> F.Column:
+def create_map_column(
+    df: DataFrame,
+    column_list: List[str],
+    new_col_name: str,
+    drop_original_columns: bool = True,
+) -> DataFrame:
     """
-    Creates a Spark map column from a list of columns where keys are column names and values are the respective column values.
+    Creates a new map column in a DataFrame by mapping the specified columns to their values.
+
+    This function generates a map column where the keys are the column names and the values are the corresponding column values.
+    The column list is sorted alphabetically before creating the map.
+    The original columns can be optionally dropped after the map column is created.
 
     Args:
-        columns (List[str]): List of column names to be mapped.
+        df (DataFrame): DataFrame containing the list of columns to be mapped.
+        column_list (List[str]): List of column names to be mapped.
+        new_col_name (str): Name of the new mapped column to be added.
+        drop_original_columns (bool, optional): If True, drops the original columns after creating
+            the map column. Defaults to True.
 
     Returns:
-        F.Column: A Spark column containing a map of job role names to counts.
+        DataFrame: A DataFrame with the new map column added and optionally the original columns dropped.
     """
-    return F.create_map(*[x for col in columns for x in (F.lit(col), F.col(col))])
+    sorted_column_list = sorted(column_list)
+
+    map_columns = F.create_map(
+        *[x for col in sorted_column_list for x in (F.lit(col), F.col(col))]
+    )
+    df = df.withColumn(new_col_name, map_columns)
+
+    if drop_original_columns:
+        df = df.drop(*sorted_column_list)
+
+    return df
 
 
 def merge_dataframes(
@@ -294,10 +319,11 @@ def sum_job_role_count_split_by_service(
         .sum("value")
     )
 
-    df_explode_grouped_with_map_column = df_explode_grouped.withColumn(
+    df_explode_grouped_with_map_column = create_map_column(
+        df_explode_grouped,
+        list_of_job_roles,
         IndCQC.ascwds_job_role_counts_by_primary_service,
-        create_map_column(list_of_job_roles),
-    ).drop(*list_of_job_roles)
+    )
 
     df_result = df.join(
         df_explode_grouped_with_map_column,
@@ -363,22 +389,36 @@ def create_estimate_filled_posts_by_job_role_map_column(
     return df
 
 
-def pivot_interpolated_job_role_ratios(
+def pivot_job_role_column(
     df: DataFrame,
+    grouping_columns: List[str],
+    aggregation_column: str,
 ) -> DataFrame:
     """
-    Pivots the job role ratio interpolated mapped column so that the key are column names
+    Transforms the input DataFrame by pivoting unique job role labels into separate columns,
+    aggregating values from the specified column.
+
+    This function groups the data by the provided 'grouping_columns', then performs a pivot operation
+    on the 'main_job_role_clean_labelled' column—creating one column per unique job role. For each
+    group, it selects the first non-null value of the specified 'aggregation_column' for each job role.
+
+    In this context, "pivoting" means turning distinct values from one column (the job role labels)
+    into separate columns, with each column containing values from another column (the
+    'aggregation_column') for those specific roles.
 
     Args:
-        df (DataFrame): A dataframe which contains ascwds_job_role_ratios_interpolated mapped column.
+        df (DataFrame): The DataFrame containing the job role column, grouping columns and aggregation column.
+        grouping_columns (List[str]): Columns to group by before pivoting.
+        aggregation_column (str): The column from which to extract values  during aggregation.
 
     Returns:
-        DataFrame: A dataframe with the mapped column pivot when grouped by location id and unix time
+        DataFrame: A pivoted DataFrame with one column per job role label and values
+        aggregated from the specified column.
     """
     df_result = (
-        df.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        df.groupBy(grouping_columns)
         .pivot(IndCQC.main_job_role_clean_labelled)
-        .agg(F.first(IndCQC.ascwds_job_role_ratios_interpolated, ignorenulls=False))
+        .agg(F.first(aggregation_column, ignorenulls=False))
     )
 
     return df_result
@@ -433,5 +473,57 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
         F.col(IndCQC.registered_manager_count)
         - F.col(MainJobRoleLabels.registered_manager),
     )
+
+    return df
+
+
+def calculate_job_group_sum_from_job_role_map_column(
+    df: DataFrame, job_role_level_map_column: str, new_job_group_map_column_name: str
+) -> DataFrame:
+    """
+    Sums the values from a job role map column up to job group level.
+
+    This function takes a job role level map column, explodes the key/value pairs into rows as two columns,
+    adds a new column to show the job group each job role belongs to,
+    sums the value column by job group and pivots it into job group columns,
+    then packages those columns into a new map column.
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column.
+        job_role_level_map_column (str): The name of the job role map column you want to sum.
+        new_job_group_map_column_name (str): The name to give the job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing values summed to job group.
+
+    """
+    temp_value_column = "value"
+    df_exploded = df.select(
+        IndCQC.location_id,
+        IndCQC.unix_time,
+        F.explode(job_role_level_map_column).alias(
+            IndCQC.main_job_role_clean_labelled, temp_value_column
+        ),
+    )
+
+    df_exploded = df_exploded.withColumnRenamed(
+        IndCQC.main_job_role_clean_labelled, IndCQC.main_job_group_labelled
+    ).replace(
+        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict,
+        subset=IndCQC.main_job_group_labelled,
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot(IndCQC.main_job_group_labelled)
+        .agg(F.sum(temp_value_column))
+        .na.fill(0, subset=list_of_job_groups_sorted)
+    )
+
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups_sorted, new_job_group_map_column_name
+    )
+
+    df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
 
     return df

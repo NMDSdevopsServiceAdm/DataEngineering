@@ -99,3 +99,48 @@ def cap_integer_at_max_value(
         ).otherwise(None),
     )
     return df
+
+
+def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
+    """
+    Copies the values in the rural urban indicator column into a new column and replaces all categories which contains the word "sparse" with "Sparse setting".
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: DataFrame with the new rural urban indicator column with recoded sparse categories.
+    """
+    sparse_identifier: str = "sparse"
+    sparse_replacement_string: str = "Sparse setting"
+
+    df = df.withColumn(
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        F.when(
+            F.lower(F.col(IndCQC.current_rural_urban_indicator_2011)).contains(
+                sparse_identifier
+            ),
+            sparse_replacement_string,
+        ).otherwise(F.col(IndCQC.current_rural_urban_indicator_2011)),
+    )
+
+    return df
+
+
+def add_log_column(df: DataFrame, column_to_log: str) -> DataFrame:
+    """
+    Adds a new column to the DataFrame which is the logarithm of the specified input column.
+
+    The name of the new column is the original column name with "_logged" appended to it.
+    The logarithm is calculated using the natural logarithm (base e).
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        column_to_log (str): Name of the column to take the logarithm of.
+
+    Returns:
+        DataFrame: DataFrame with the new column added.
+    """
+    logged_column_name = column_to_log + "_logged"
+
+    return df.withColumn(logged_column_name, F.log(F.col(column_to_log)))

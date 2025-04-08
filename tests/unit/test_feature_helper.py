@@ -226,7 +226,71 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.expected_data = self.expected_df.collect()
 
     def test_cap_integer_at_max_value_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_cap_integer_at_max_value_returns_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)
+
+
+class GroupRuralUrbanSparseCategoriesTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.group_rural_urban_sparse_categories_rows,
+            Schemas.group_rural_urban_sparse_categories_schema,
+        )
+
+        self.returned_df = job.group_rural_urban_sparse_categories(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_group_rural_urban_sparse_categories_rows,
+            Schemas.expected_group_rural_urban_sparse_categories_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_group_rural_urban_sparse_categories_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_group_rural_urban_sparse_categories_returns_expected_data(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][
+                    IndCQC.current_rural_urban_indicator_2011_for_non_res_model
+                ],
+                self.expected_data[i][
+                    IndCQC.current_rural_urban_indicator_2011_for_non_res_model
+                ],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
+class AddLogColumnTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.col_name: str = "col_name"
+        self.logged_col_name: str = "col_name_logged"
+
+        test_df = self.spark.createDataFrame(
+            Data.add_log_column_rows, Schemas.add_log_column_schema
+        )
+        self.returned_df = job.add_log_column(test_df, self.col_name)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_log_column_rows,
+            Schemas.expected_add_log_column_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_add_log_column_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_add_log_column_returns_expected_logged_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][self.logged_col_name],
+                self.expected_data[i][self.logged_col_name],
+                places=3,
+                msg=f"Returned logged value in row {i} does not match expected",
+            )

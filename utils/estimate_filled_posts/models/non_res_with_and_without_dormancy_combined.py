@@ -1,13 +1,8 @@
-<<<<<<< HEAD
 from pyspark.sql import DataFrame, Window, functions as F
-=======
-from pyspark.sql import DataFrame
->>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
-<<<<<<< HEAD
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
 from utils.column_values.categorical_column_values import CareHome
@@ -15,12 +10,8 @@ from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
-
-
-# TODO add tests
-=======
-)
 from utils.column_values.categorical_column_values import CareHome
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 >>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
@@ -40,6 +31,7 @@ def combine_non_res_with_and_without_dormancy_models(
     locations_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
+        IndCqc.care_home,
         IndCqc.related_location,
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
@@ -50,25 +42,19 @@ def combine_non_res_with_and_without_dormancy_models(
         locations_df, IndCqc.care_home, CareHome.not_care_home
     )
 
-<<<<<<< HEAD
-    non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
+    # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
 
-    non_res_locations_df = calculate_and_apply_residuals(non_res_locations_df)
+    combined_models_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
-    combined_models_df = combine_model_predictions(non_res_locations_df)
+    combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
-    combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
+    combined_models_df = combine_model_predictions(combined_models_df)
 
-    locations_df = insert_predictions_into_pipeline(
-        locations_df,
-        combined_models_df,
-        IndCqc.non_res_combined_model,
-    )
+    # TODO - 5 - set_min_value and insert predictions into pipeline
 
-    return locations_df
+    return combined_models_df  # TODO add tests
 
 
-# TODO add tests
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
@@ -91,10 +77,11 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO add tests
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
     Averages model predictions by 'related_location' and 'time_registered'.
+
+    Only models predictions for locations who have a non null for both models contribute to the average.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
@@ -118,10 +105,12 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     return avg_df
 
 
-# TODO add tests
 def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
+
+    If the avg_without_dormancy is not zero, the adjustment ratio is calculated as the ratio of
+    avg_with_dormancy to avg_without_dormancy. Otherwise, the adjustment ratio is set to 1.0 (no change).
 
     Args:
         df (DataFrame): DataFrame with aggregated model predictions.
@@ -140,7 +129,6 @@ def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO add tests
 def apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Applies the adjustment ratio to 'without_dormancy' model predictions.
@@ -152,7 +140,7 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
         DataFrame: DataFrame with adjusted 'without_dormancy' model predictions.
     """
     df = df.withColumn(
-        TempColumns.adjusted_without_dormancy_model,
+        TempColumns.non_res_without_dormancy_model_adjusted,
         F.col(IndCqc.non_res_without_dormancy_model)
         * F.col(TempColumns.adjustment_ratio),
     )
@@ -160,96 +148,29 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO add tests
-def get_first_overlap_date(df: DataFrame) -> DataFrame:
+def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     """
-    Identifies the first available date where both models exist for each location.
+    Calculates and applies residuals between models at the first point in time when both models exist to smooth predictions.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
 
     Returns:
-        DataFrame: DataFrame with 'first_overlap_date' added.
+        DataFrame: DataFrame with smoothed predictions.
     """
     window_spec = Window.partitionBy(IndCqc.location_id).orderBy(
         IndCqc.cqc_location_import_date
     )
-
-    df = df.withColumn(
-        TempColumns.first_overlap_date,
-        F.first(
-            F.when(
-                F.col(IndCqc.non_res_with_dormancy_model).isNotNull(),
-                F.col(IndCqc.cqc_location_import_date),
-            ),
-            True,
-        ).over(window_spec),
+    first_overlap_df = get_selected_value(
+        df,
+        window_spec,
+        column_with_null_values=IndCqc.non_res_with_dormancy_model,
+        column_with_data=IndCqc.cqc_location_import_date,
+        new_column=TempColumns.first_overlap_date,
+        selection="first",
     )
-    return df
 
-
-# TODO add tests
-def calculate_residuals(df: DataFrame) -> DataFrame:
-    """
-    Calculates residuals between 'with_dormancy' and 'adjusted_without_dormancy' models at the first overlap date.
-
-    Args:
-        df (DataFrame): DataFrame with model predictions.
-
-    Returns:
-        DataFrame: DataFrame with calculated residuals.
-    """
-    residual_df = (
-        df.filter(
-            F.col(IndCqc.cqc_location_import_date)
-            == F.col(TempColumns.first_overlap_date)
-        )
-        .withColumn(
-            TempColumns.residual_at_overlap,
-            F.col(IndCqc.non_res_with_dormancy_model)
-            - F.col(TempColumns.adjusted_without_dormancy_model),
-        )
-        .select(IndCqc.location_id, TempColumns.residual_at_overlap)
-    )
-    return residual_df
-
-
-# TODO add tests
-def apply_residuals(df: DataFrame) -> DataFrame:
-    """
-    Applies the residuals to smooth predictions.
-
-    Args:
-        df (DataFrame): DataFrame with model predictions and residuals.
-
-    Returns:
-        DataFrame: DataFrame with smoothed predictions.
-    """
-    df = df.withColumn(
-        TempColumns.adjusted_and_residual_applied_without_dormancy_model,
-        F.when(
-            F.col(TempColumns.residual_at_overlap).isNotNull(),
-            F.col(TempColumns.adjusted_without_dormancy_model)
-            + F.col(TempColumns.residual_at_overlap),
-        ).otherwise(F.col(TempColumns.adjusted_without_dormancy_model)),
-    )
-    return df
-
-
-# TODO add tests
-def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
-    """
-    Calculates and applies residuals between models to smooth predictions.
-
-    Args:
-        df (DataFrame): DataFrame with model predictions.
-
-    Returns:
-        DataFrame: DataFrame with smoothed predictions.
-    """
-    df = get_first_overlap_date(df)
-
-    residual_df = calculate_residuals(df)
+    residual_df = calculate_residuals(first_overlap_df)
 
     df = df.join(residual_df, IndCqc.location_id, "left")
 
@@ -258,10 +179,76 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
     return df
 
 
-# TODO add tests
+def calculate_residuals(df: DataFrame) -> DataFrame:
+    """
+    Calculates residuals between 'with_dormancy' and 'non_res_without_dormancy_model_adjusted' models at the first overlap date.
+
+    This function filters the DataFrame at the first point in time ('first_overlap_date') when the 'with_dormancy_model' has values,
+    and to locations who have both a 'with_dormancy' and 'without_dormancy_adjusted' model prediction.
+    This is used elsewhere in the code to smooth out the predictions at the point in time when one model switches the other.
+
+    The residual is calculated as 'with_dormancy' values minus 'without_dormancy_adjusted'.
+    Only the columns 'location_id' and 'residual_at_overlap' are returned.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with 'location_id' and 'residual_at_overlap'.
+    """
+    filtered_df = df.where(
+        (
+            F.col(IndCqc.cqc_location_import_date)
+            == F.col(TempColumns.first_overlap_date)
+        )
+        & F.col(IndCqc.non_res_with_dormancy_model).isNotNull()
+        & F.col(TempColumns.non_res_without_dormancy_model_adjusted).isNotNull()
+    )
+    residual_df = filtered_df.withColumn(
+        TempColumns.residual_at_overlap,
+        F.col(IndCqc.non_res_with_dormancy_model)
+        - F.col(TempColumns.non_res_without_dormancy_model_adjusted),
+    )
+    residual_df = residual_df.select(
+        IndCqc.location_id, TempColumns.residual_at_overlap
+    )
+
+    return residual_df
+
+
+def apply_residuals(df: DataFrame) -> DataFrame:
+    """
+    Applies the residuals to smooth predictions when both the model value and residual are not null.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions and residuals.
+
+    Returns:
+        DataFrame: DataFrame with smoothed predictions.
+    """
+    model_and_residual_are_not_null = (
+        F.col(TempColumns.non_res_without_dormancy_model_adjusted).isNotNull()
+        & F.col(TempColumns.residual_at_overlap).isNotNull()
+    )
+
+    df = df.withColumn(
+        TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
+        F.when(
+            model_and_residual_are_not_null,
+            F.col(TempColumns.non_res_without_dormancy_model_adjusted)
+            + F.col(TempColumns.residual_at_overlap),
+        ).otherwise(F.col(TempColumns.non_res_without_dormancy_model_adjusted)),
+    )
+    return df
+
+
 def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
-    Uses the 'with_dormancy' model predictions where available, otherwise uses the adjusted 'without_dormancy' model predictions.
+    Coalesces the models in the order provided into a single column called 'prediction'.
+
+    The 'non_res_with_dormancy_model' values are used when they are not null.
+    If they are null, the 'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
+    If both are null, the prediction will be null.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
@@ -273,19 +260,8 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
         IndCqc.prediction,
         F.coalesce(
             IndCqc.non_res_with_dormancy_model,
-            TempColumns.adjusted_and_residual_applied_without_dormancy_model,
+            TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
         ),
     )
 
     return df
-=======
-    # TODO - 2 - calculate and apply model ratios
-
-    # TODO - 3 - calculate and apply residuals
-
-    # TODO - 4 - combine model predictions
-
-    # TODO - 5 - set_min_value and insert predictions into pipeline
-
-    return locations_df
->>>>>>> 4dd0836c003a180ee0695f4544fc3b5fd8dcf3a6
