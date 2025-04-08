@@ -3131,7 +3131,7 @@ class ModelInterpolation:
 class ModelFeatures:
     vectorise_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField("col_1", FloatType(), True),
             StructField("col_2", IntegerType(), True),
             StructField("col_3", IntegerType(), True),
@@ -3140,14 +3140,14 @@ class ModelFeatures:
     )
     expected_vectorised_feature_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
     expand_encode_and_extract_features_when_not_array_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField("categories", StringType(), True),
         ]
     )
@@ -3162,7 +3162,7 @@ class ModelFeatures:
 
     expand_encode_and_extract_features_when_is_array_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField("categories", ArrayType(StringType()), True),
         ]
     )
@@ -3177,7 +3177,7 @@ class ModelFeatures:
 
     cap_integer_at_max_value_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.service_count, IntegerType(), True),
         ]
     )
@@ -3190,7 +3190,7 @@ class ModelFeatures:
 
     add_array_column_count_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(
                 IndCQC.gac_service_types,
                 ArrayType(
@@ -3208,6 +3208,36 @@ class ModelFeatures:
         [
             *add_array_column_count_schema,
             StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+
+    group_rural_urban_sparse_categories_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = StructType(
+        [
+            *group_rural_urban_sparse_categories_schema,
+            StructField(
+                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
+    add_log_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("col_name", FloatType(), True),
+        ]
+    )
+    expected_add_log_column_schema = StructType(
+        [
+            *add_log_column_schema,
+            StructField("col_name_logged", FloatType(), True),
         ]
     )
 

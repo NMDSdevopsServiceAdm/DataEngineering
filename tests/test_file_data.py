@@ -6113,6 +6113,34 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural"),
+        ("1-002", "Rural sparse"),
+        ("1-003", "Another with sparse in it"),
+        ("1-004", "Urban"),
+        ("1-005", "Sparse with a capital S"),
+    ]
+    expected_group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural", "Rural"),
+        ("1-002", "Rural sparse", "Sparse setting"),
+        ("1-003", "Another with sparse in it", "Sparse setting"),
+        ("1-004", "Urban", "Urban"),
+        ("1-005", "Sparse with a capital S", "Sparse setting"),
+    ]
+
+    add_log_column_rows = [
+        ("1-001", 1.0),
+        ("1-002", 10.0),
+        ("1-003", 100.0),
+        ("1-004", None),
+    ]
+    expected_add_log_column_rows = [
+        ("1-001", 1.0, 0.0),
+        ("1-002", 10.0, 2.3026),
+        ("1-003", 100.0, 4.6052),
+        ("1-004", None, None),
+    ]
+
 
 @dataclass
 class ModelCareHomes:
