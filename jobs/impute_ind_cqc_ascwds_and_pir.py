@@ -21,6 +21,7 @@ from utils.estimate_filled_posts.models.rolling_average import (
 from utils.estimate_filled_posts.models.utils import (
     clean_number_of_beds_banded,
     combine_care_home_ratios_and_non_res_posts,
+    convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
@@ -107,14 +108,6 @@ def main(
         "regional_posts_rolling_average_model",
     )
 
-    df = model_calculate_rolling_average(
-        df,
-        IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
-        IndCQC.primary_service_type,
-        IndCQC.ratio_rolling_average_model,
-    )
-
     df = clean_number_of_beds_banded(df)
 
     df = model_calculate_rolling_average(
@@ -123,6 +116,12 @@ def main(
         NumericalValues.NUMBER_OF_DAYS_IN_WINDOW,
         [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_cleaned],
         IndCQC.banded_bed_ratio_rolling_average_model,
+    )
+
+    df = convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
+        df,
+        IndCQC.banded_bed_ratio_rolling_average_model,
+        IndCQC.posts_rolling_average_model,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")

@@ -61,7 +61,6 @@ ind_cqc_columns = [
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.posts_rolling_average_model,
-    IndCQC.banded_bed_ratio_rolling_average_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.imputed_non_res_pir_people_directly_employed,
     IndCQC.imputed_filled_posts_per_bed_ratio_model,

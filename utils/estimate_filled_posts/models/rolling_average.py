@@ -12,7 +12,7 @@ def model_calculate_rolling_average(
     new_column_name: str,
 ) -> DataFrame:
     """
-    Calculate the rolling average of the "prediction" column over a specified window of days and partition.
+    Calculate the rolling average of the "column_to_average" column over a specified window of days and partition.
 
     This function calculates the rolling average of a column based on a given number of days and a column to partition by.
     Since the PySpark `rangeBetween` function is inclusive on both ends, one day is subtracted from
