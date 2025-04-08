@@ -18,6 +18,9 @@ from utils.feature_engineering_resources.feature_engineering_rural_urban import 
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
+)
 from utils.features.helper import (
     add_array_column_count,
     expand_encode_and_extract_features,
@@ -50,6 +53,13 @@ def main(
         features_df,
         IndCQC.services_offered,
         ServicesFeatures.labels_dict,
+        is_array_col=True,
+    )
+
+    features_df, specialisms_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.labels_dict,
         is_array_col=True,
     )
 
