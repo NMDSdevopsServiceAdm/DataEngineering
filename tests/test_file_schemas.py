@@ -3211,6 +3211,23 @@ class ModelFeatures:
         ]
     )
 
+    group_rural_urban_sparse_categories_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = StructType(
+        [
+            *group_rural_urban_sparse_categories_schema,
+            StructField(
+                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
