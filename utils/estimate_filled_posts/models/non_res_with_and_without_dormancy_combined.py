@@ -1,8 +1,9 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
+    NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
 from utils.column_values.categorical_column_values import CareHome
 
@@ -23,6 +24,7 @@ def combine_non_res_with_and_without_dormancy_models(
     locations_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
+        IndCqc.care_home,
         IndCqc.related_location,
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
@@ -33,7 +35,9 @@ def combine_non_res_with_and_without_dormancy_models(
         locations_df, IndCqc.care_home, CareHome.not_care_home
     )
 
-    # TODO - 2 - calculate and apply model ratios
+    # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
+
+    non_res_locations_df = calculate_and_apply_model_ratios(non_res_locations_df)
 
     # TODO - 3 - calculate and apply residuals
 
@@ -41,4 +45,97 @@ def combine_non_res_with_and_without_dormancy_models(
 
     # TODO - 5 - set_min_value and insert predictions into pipeline
 
-    return locations_df
+    return non_res_locations_df  # TODO add tests
+
+
+def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
+    """
+    Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
+    the dataset based on 'related_location' and 'time_registered'.
+
+    Args:
+        df (DataFrame): Input DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with partition-level ratios applied.
+    """
+    ratio_df = average_models_by_related_location_and_time_registered(df)
+
+    ratio_df = calculate_adjustment_ratios(ratio_df)
+
+    df = df.join(ratio_df, [IndCqc.related_location, IndCqc.time_registered], "left")
+
+    df = apply_model_ratios(df)
+
+    return df
+
+
+def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
+    """
+    Averages model predictions by 'related_location' and 'time_registered'.
+
+    Only models predictions for locations who have a non null for both models contribute to the average.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions.
+
+    Returns:
+        DataFrame: DataFrame with averaged model predictions.
+    """
+    both_models_known_df = df.where(
+        F.col(IndCqc.non_res_with_dormancy_model).isNotNull()
+        & F.col(IndCqc.non_res_without_dormancy_model).isNotNull()
+    )
+
+    avg_df = both_models_known_df.groupBy(
+        IndCqc.related_location, IndCqc.time_registered
+    ).agg(
+        F.avg(IndCqc.non_res_with_dormancy_model).alias(TempColumns.avg_with_dormancy),
+        F.avg(IndCqc.non_res_without_dormancy_model).alias(
+            TempColumns.avg_without_dormancy
+        ),
+    )
+    return avg_df
+
+
+def calculate_adjustment_ratios(df: DataFrame) -> DataFrame:
+    """
+    Calculates the adjustment ratio between 'with_dormancy' and 'without_dormancy' models.
+
+    If the avg_without_dormancy is not zero, the adjustment ratio is calculated as the ratio of
+    avg_with_dormancy to avg_without_dormancy. Otherwise, the adjustment ratio is set to 1.0 (no change).
+
+    Args:
+        df (DataFrame): DataFrame with aggregated model predictions.
+
+    Returns:
+        DataFrame: DataFrame with adjustment ratios calculated.
+    """
+    df = df.withColumn(
+        TempColumns.adjustment_ratio,
+        F.when(
+            F.col(TempColumns.avg_without_dormancy) != 0,
+            F.col(TempColumns.avg_with_dormancy)
+            / F.col(TempColumns.avg_without_dormancy),
+        ).otherwise(1.0),
+    )
+    return df
+
+
+def apply_model_ratios(df: DataFrame) -> DataFrame:
+    """
+    Applies the adjustment ratio to 'without_dormancy' model predictions.
+
+    Args:
+        df (DataFrame): DataFrame with model predictions and adjustment ratios.
+
+    Returns:
+        DataFrame: DataFrame with adjusted 'without_dormancy' model predictions.
+    """
+    df = df.withColumn(
+        TempColumns.adjusted_without_dormancy_model,
+        F.col(IndCqc.non_res_without_dormancy_model)
+        * F.col(TempColumns.adjustment_ratio),
+    )
+
+    return df

@@ -95,6 +95,9 @@ def main(
     )
 
     cqc_location_df = clean_provider_id_column(cqc_location_df)
+    cqc_location_df = utils.select_rows_with_non_null_value(
+        cqc_location_df, CQCL.provider_id
+    )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = remove_records_from_locations_data(cqc_location_df)
