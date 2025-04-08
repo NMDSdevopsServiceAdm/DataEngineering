@@ -25,6 +25,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     IsParent,
     LocationType,
+    JobGroupLabels,
     MainJobRoleLabels,
     ParentsOrSinglesAndSubs,
     PrimaryServiceType,
@@ -10944,6 +10945,146 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-002", 1, 10.0, -9.0),
         ("1-003", 1, None, None),
         ("1-004", None, 10.0, None),
+    ]
+
+    sum_job_group_counts_from_job_role_count_map_rows = [
+        (
+            "1-001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 2,
+                MainJobRoleLabels.first_line_manager: 2,
+                MainJobRoleLabels.registered_nurse: 3,
+                MainJobRoleLabels.social_worker: 3,
+                MainJobRoleLabels.admin_staff: 4,
+                MainJobRoleLabels.ancillary_staff: 4,
+            },
+        ),
+        (
+            "1-001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 10,
+                MainJobRoleLabels.senior_care_worker: 10,
+                MainJobRoleLabels.senior_management: 20,
+                MainJobRoleLabels.first_line_manager: 20,
+                MainJobRoleLabels.registered_nurse: 30,
+                MainJobRoleLabels.social_worker: 30,
+                MainJobRoleLabels.admin_staff: 40,
+                MainJobRoleLabels.ancillary_staff: 40,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            1000,
+            None,
+        ),
+    ]
+    expected_sum_job_group_counts_from_job_role_count_map_rows = [
+        (
+            "1-001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 2,
+                MainJobRoleLabels.first_line_manager: 2,
+                MainJobRoleLabels.registered_nurse: 3,
+                MainJobRoleLabels.social_worker: 3,
+                MainJobRoleLabels.admin_staff: 4,
+                MainJobRoleLabels.ancillary_staff: 4,
+            },
+            {
+                JobGroupLabels.direct_care: 2,
+                JobGroupLabels.managers: 4,
+                JobGroupLabels.regulated_professions: 6,
+                JobGroupLabels.other: 8,
+            },
+        ),
+        (
+            "1-001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 10,
+                MainJobRoleLabels.senior_care_worker: 10,
+                MainJobRoleLabels.senior_management: 20,
+                MainJobRoleLabels.first_line_manager: 20,
+                MainJobRoleLabels.registered_nurse: 30,
+                MainJobRoleLabels.social_worker: 30,
+                MainJobRoleLabels.admin_staff: 40,
+                MainJobRoleLabels.ancillary_staff: 40,
+            },
+            {
+                JobGroupLabels.direct_care: 20,
+                JobGroupLabels.managers: 40,
+                JobGroupLabels.regulated_professions: 60,
+                JobGroupLabels.other: 80,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-003",
+            1000,
+            None,
+            None,
+        ),
+    ]
+    sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_rows = [
+        (
+            "1-001",
+            1001,
+            {
+                JobGroupLabels.direct_care: 20,
+                JobGroupLabels.managers: 40,
+                JobGroupLabels.regulated_professions: 60,
+                JobGroupLabels.other: 80,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-001",
+            1000,
+            {
+                JobGroupLabels.direct_care: 2,
+                JobGroupLabels.managers: 4,
+                JobGroupLabels.regulated_professions: 6,
+                JobGroupLabels.other: 8,
+            },
+        ),
     ]
 
 

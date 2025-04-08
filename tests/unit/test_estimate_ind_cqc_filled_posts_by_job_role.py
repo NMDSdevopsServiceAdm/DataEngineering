@@ -54,10 +54,13 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     )
     @patch("utils.ind_cqc_filled_posts_utils.utils.merge_columns_in_order")
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_count_map_to_ratios_map"
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.calculate_rolling_sum_of_job_roles"
     )
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.calculate_rolling_sum_of_job_roles"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_job_group_sum_from_job_role_map_column"
+    )
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_count_map_to_ratios_map"
     )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds"
@@ -73,8 +76,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
         merge_dataframes_mock: Mock,
         remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock: Mock,
-        calculate_rolling_sum_of_job_roles_mock: Mock,
         transform_job_role_count_map_to_ratios_map_mock: Mock,
+        calculate_job_group_sum_from_job_role_map_column_mock: Mock,
+        calculate_rolling_sum_of_job_roles_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
         model_job_role_ratio_interpolation_mock: Mock,
@@ -105,8 +109,11 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         merge_dataframes_mock.assert_called_once()
         remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock.assert_called_once()
-        calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
+        self.assertEqual(
+            calculate_job_group_sum_from_job_role_map_column_mock.call_count, 2
+        )
+        calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
         unpack_mapped_column_mock.assert_called_once()

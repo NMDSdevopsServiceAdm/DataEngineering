@@ -45,6 +45,8 @@ class IndCqcColumns:
     )
     ascwds_filled_posts_source: str = ascwds_filled_posts + "_source"
     ascwds_filtering_rule: str = "ascwds_filtering_rule"
+    ascwds_job_group_counts: str = "ascwds_job_group_counts"
+    ascwds_job_group_ratios: str = "ascwds_job_group_ratios"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
@@ -176,6 +178,7 @@ class IndCqcColumns:
         "locations_in_ascwds_with_data_at_provider_count"
     )
     lower_percentile: str = "lower_percentile"
+    main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
     max_filled_posts: str = "max_filled_posts"
     max_filled_posts_per_bed_ratio: str = "max_filled_posts_per_bed_ratio"
