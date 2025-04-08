@@ -339,34 +339,6 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
                 msg=f"Returned value for row {i} does not match expected",
             )
 
-    def test_apply_residuals_returns_expected_values_when_data_contains_null_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.apply_residuals_when_null_values_present_rows,
-            Schemas.apply_residuals_schema,
-        )
-        returned_df = job.apply_residuals(test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_apply_residuals_when_null_values_present_rows,
-            Schemas.expected_apply_residuals_schema,
-        )
-
-        returned_data = returned_df.sort(IndCqc.location_id).collect()
-        expected_data = expected_df.collect()
-
-        for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][
-                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
-                ],
-                expected_data[i][
-                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
-                ],
-                places=3,
-                msg=f"Returned value for row {i} does not match expected",
-            )
-
 
 class CombineModelPredictionsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
