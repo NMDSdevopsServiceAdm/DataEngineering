@@ -232,7 +232,7 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
-class filter_without_dormancy_features_to_pre_2025(LocationsFeatureEngineeringTests):
+class FilterWithoutDormancyFeaturesToPre2025Tests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
 
