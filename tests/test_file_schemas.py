@@ -3326,7 +3326,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
             StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
         ]
     )
@@ -3376,7 +3378,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             *apply_model_ratios_schema,
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
         ]
     )
@@ -3387,7 +3391,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
         ]
     )
@@ -3396,7 +3402,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             *calculate_and_apply_residuals_schema,
             StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied,
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
                 FloatType(),
                 True,
             ),
@@ -3410,7 +3416,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(NRModel_TempCol.first_overlap_date, DateType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
         ]
     )
@@ -3425,7 +3433,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
             StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
         ]
@@ -3434,7 +3444,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             *apply_residuals_schema,
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied,
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
                 FloatType(),
                 True,
             ),
@@ -3446,7 +3456,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(
-                NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied,
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
                 FloatType(),
                 True,
             ),

@@ -290,7 +290,9 @@ class NonResWithAndWithoutDormancyCombinedColumns:
     avg_without_dormancy: str = "avg_without_dormancy"
     first_overlap_date: str = "first_overlap_date"
     residual_at_overlap: str = "residual_at_overlap"
-    without_dormancy_model_adjusted: str = "without_dormancy_model_adjusted"
-    without_dormancy_model_adjusted_and_residual_applied: str = (
-        "without_dormancy_model_adjusted_and_residual_applied"
+    non_res_without_dormancy_model_adjusted: str = (
+        "non_res_without_dormancy_model_adjusted"
+    )
+    non_res_without_dormancy_model_adjusted_and_residual_applied: str = (
+        "non_res_without_dormancy_model_adjusted_and_residual_applied"
     )
