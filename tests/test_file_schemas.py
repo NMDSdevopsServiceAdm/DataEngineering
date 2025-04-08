@@ -6479,10 +6479,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
                 MapType(StringType(), FloatType()),
                 True,
-            )
+            ),
         ]
     )
-                
+
     estimate_and_cqc_registered_manager_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

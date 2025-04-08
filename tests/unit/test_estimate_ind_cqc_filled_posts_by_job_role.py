@@ -41,6 +41,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch("utils.utils.write_to_parquet")
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts"
+    )
+    @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_difference_between_estimate_and_cqc_registered_managers"
     )
     @patch(
