@@ -6470,6 +6470,19 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", None, None, None),
     ]
 
+    combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0),
+        ("1-002", 11.0, None),
+        ("1-003", None, 16.0),
+        ("1-004", None, None),
+    ]
+    expected_combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0, 10.0),
+        ("1-002", 11.0, None, 11.0),
+        ("1-003", None, 16.0, 16.0),
+        ("1-004", None, None, None),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:
