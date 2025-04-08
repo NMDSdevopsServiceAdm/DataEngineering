@@ -6414,6 +6414,61 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-003", 5.0, None, None, None),
     ]
 
+    # fmt: off
+    calculate_and_apply_residuals_rows = [
+        ("1-001", date(2025, 2, 1), 20.0, 15.0),  # dates match, both models not null, residual calculated and applied
+        ("1-002", date(2025, 1, 1), None, 16.0),  # "1-002" - with_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-002", date(2025, 2, 1), 10.0, 15.0),  # "1-002" - first period with both models present, take the residual
+        ("1-002", date(2025, 3, 1), 11.0, 14.0),  # "1-002" - residual added from date(2025, 2, 1)
+        ("1-002", date(2025, 4, 1), 12.0, None),  # "1-002" - without_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-003", date(2025, 2, 1), 30.0, None),  # doesn't pass filter, no residual, keep original model value
+        ("1-004", date(2025, 2, 1), None, 15.0),  # doesn't pass filter, no residual, keep original model value
+        ("1-005", date(2025, 2, 1), None, None),  # doesn't pass filter, no residual, keep original model value
+    ]
+    expected_calculate_and_apply_residuals_rows = [
+        ("1-001", date(2025, 2, 1), 20.0, 15.0, 5.0, 20.0),  # dates match, both models not null, residual calculated
+        ("1-002", date(2025, 1, 1), None, 16.0, -5.0, 11.0),  # "1-002" - with_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-002", date(2025, 2, 1), 10.0, 15.0, -5.0, 10.0),  # "1-002" - first period with both models present, take the residual
+        ("1-002", date(2025, 3, 1), 11.0, 14.0, -5.0, 9.0),  # "1-002" - residual added from date(2025, 2, 1)
+        ("1-002", date(2025, 4, 1), 12.0, None, -5.0, None),  # "1-002" - without_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-003", date(2025, 2, 1), 30.0, None, None, None),  # doesn't pass filter, no residual, keep original model value
+        ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
+        ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
+    ]
+    # fmt: on
+
+    # fmt: off
+    calculate_residuals_rows = [
+        ("1-001", date(2025, 1, 1), date(2025, 2, 1), 10.0, 15.0),  # filtered out, dates not equal
+        ("1-002", date(2025, 2, 1), date(2025, 2, 1), 10.0, 15.0),  # not filtered, negative residual
+        ("1-003", date(2025, 2, 1), date(2025, 2, 1), 20.0, 15.0),  # not filtered, positive residual
+        ("1-004", date(2025, 2, 1), date(2025, 2, 1), 30.0, None),  # filtered out, null model value
+        ("1-005", date(2025, 2, 1), date(2025, 2, 1), None, 15.0),  # filtered out, null model value
+        ("1-006", date(2025, 2, 1), date(2025, 2, 1), None, None),  # filtered out, null model value
+    ]
+    expected_calculate_residuals_rows = [
+        ("1-002", -5.0),  # not filtered, negative residual
+        ("1-003", 5.0),  # not filtered, positive residual
+    ]
+    # fmt: on
+
+    apply_residuals_rows = [
+        ("1-001", 7.0, 12.0),
+        ("1-002", 5.0, -0.5),
+        ("1-003", 1.0, -2.5),
+        ("1-004", 10.0, None),
+        ("1-005", None, -1.0),
+        ("1-006", None, None),
+    ]
+    expected_apply_residuals_rows = [
+        ("1-001", 7.0, 12.0, 19.0),
+        ("1-002", 5.0, -0.5, 4.5),
+        ("1-003", 1.0, -2.5, -1.5),
+        ("1-004", 10.0, None, 10.0),
+        ("1-005", None, -1.0, None),
+        ("1-006", None, None, None),
+    ]
+
 
 @dataclass
 class ModelNonResPirLinearRegressionRows:

@@ -285,7 +285,14 @@ class PrimaryServiceRollingAverageColumns:
 class NonResWithAndWithoutDormancyCombinedColumns:
     """The names of the temporary columns used in the combining of the models process."""
 
-    adjusted_without_dormancy_model: str = "adjusted_without_dormancy_model"
     adjustment_ratio: str = "adjustment_ratio"
     avg_with_dormancy: str = "avg_with_dormancy"
     avg_without_dormancy: str = "avg_without_dormancy"
+    first_overlap_date: str = "first_overlap_date"
+    non_res_without_dormancy_model_adjusted: str = (
+        "non_res_without_dormancy_model_adjusted"
+    )
+    non_res_without_dormancy_model_adjusted_and_residual_applied: str = (
+        "non_res_without_dormancy_model_adjusted_and_residual_applied"
+    )
+    residual_at_overlap: str = "residual_at_overlap"
