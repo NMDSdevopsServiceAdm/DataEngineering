@@ -1284,10 +1284,18 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             if column not in self.test_df.columns
         ]
 
+        self.returned_df_for_patch_create_map_column = self.spark.createDataFrame(
+            Data.sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_rows,
+            Schemas.sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_schema,
+        )
+
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.create_map_column")
     def test_sum_job_group_counts_from_job_role_count_map_calls_premade_functionality(
         self, create_map_column_mock: Mock
     ):
+        create_map_column_mock.return_value = (
+            self.returned_df_for_patch_create_map_column
+        )
         job.calculate_job_group_sum_from_job_role_map_column(
             self.test_df, IndCQC.ascwds_job_role_counts, IndCQC.ascwds_job_group_counts
         )

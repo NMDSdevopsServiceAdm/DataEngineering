@@ -6391,3 +6391,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+    sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_group_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )

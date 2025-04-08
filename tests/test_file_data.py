@@ -11498,3 +11498,35 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
+    sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_rows = [
+        (
+            "1-001",
+            1001,
+            {
+                JobGroupLabels.direct_care: 20,
+                JobGroupLabels.managers: 40,
+                JobGroupLabels.regulated_professions: 60,
+                JobGroupLabels.other: 80,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-001",
+            1000,
+            {
+                JobGroupLabels.direct_care: 2,
+                JobGroupLabels.managers: 4,
+                JobGroupLabels.regulated_professions: 6,
+                JobGroupLabels.other: 8,
+            },
+        ),
+    ]
