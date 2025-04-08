@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple
 
+from datetime import date
 from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
@@ -99,3 +100,20 @@ def cap_integer_at_max_value(
         ).otherwise(None),
     )
     return df
+
+
+def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
+    """
+    Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
+
+    The 'with_dormancy' model started in 2022 and is an improvement on the 'without_dormancy' model.
+    In other to ensure a smooth transition between the two models, we predict both models alongside each other for a 3 year period.
+    The features dataframe will be filtered in line with the point at which the model was last retrained.
+
+    Args:
+        df (DataFrame): Input DataFrame.
+
+    Returns:
+        DataFrame: Filtered DataFrame.
+    """
+    return df.filter(F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1))

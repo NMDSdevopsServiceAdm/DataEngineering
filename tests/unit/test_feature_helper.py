@@ -226,7 +226,33 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.expected_data = self.expected_df.collect()
 
     def test_cap_integer_at_max_value_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_cap_integer_at_max_value_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
+class filter_without_dormancy_features_to_pre_2025(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_without_dormancy_features_to_pre_2025_rows,
+            Schemas.filter_without_dormancy_features_to_pre_2025_schema,
+        )
+
+        self.returned_df = job.filter_without_dormancy_features_to_pre_2025(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_without_dormancy_features_to_pre_2025_rows,
+            Schemas.filter_without_dormancy_features_to_pre_2025_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_cap_integer_at_max_value_returns_original_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
 
     def test_cap_integer_at_max_value_returns_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)
