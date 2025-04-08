@@ -400,7 +400,6 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
 
     Args:
         df (DataFrame): A dataframe which contains estimates of filled posts per job role.
-        list_of_non_rm_managerial_job_roles (list): A list of managerial job roles (excluding registered managers)
     Returns:
         DataFrame: A dataframe with an additional column for the sum of non registered manager estimated filled posts
         and a map column of non registered manager estimated post proportions split per role.
