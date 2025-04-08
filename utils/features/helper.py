@@ -107,7 +107,7 @@ def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
     Filters the DataFrame to include only rows with a cqc_location_import_date on or before 01/01/2025.
 
     The 'with_dormancy' model started in 2022 and is an improvement on the 'without_dormancy' model.
-    In other to ensure a smooth transition between the two models, we predict both models alongside each other for a 3 year period.
+    In order to ensure a smooth transition between the two models, we predict both models alongside each other for a 3 year period.
     The features dataframe will be filtered in line with the point at which the model was last retrained.
 
     Args:
