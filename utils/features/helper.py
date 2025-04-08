@@ -125,3 +125,22 @@ def group_rural_urban_sparse_categories(df: DataFrame) -> DataFrame:
     )
 
     return df
+
+
+def add_log_column(df: DataFrame, column_to_log: str) -> DataFrame:
+    """
+    Adds a new column to the DataFrame which is the logarithm of the specified input column.
+
+    The name of the new column is the original column name with "_logged" appended to it.
+    The logarithm is calculated using the natural logarithm (base e).
+
+    Args:
+        df (DataFrame): Input DataFrame.
+        column_to_log (str): Name of the column to take the logarithm of.
+
+    Returns:
+        DataFrame: DataFrame with the new column added.
+    """
+    logged_column_name = column_to_log + "_logged"
+
+    return df.withColumn(logged_column_name, F.log(F.col(column_to_log)))
