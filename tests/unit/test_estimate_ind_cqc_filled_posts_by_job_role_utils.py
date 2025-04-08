@@ -1235,6 +1235,10 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def test_sum_job_group_counts_from_job_role_count_map_returns_expected_values(
         self,
     ):
-        expected_data = self.expected_df.collect()
-        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.sort(
+            IndCQC.location_id, IndCQC.unix_time
+        ).collect()
+        returned_data = self.returned_df.sort(
+            IndCQC.location_id, IndCQC.unix_time
+        ).collect()
         self.assertEqual(expected_data, returned_data)
