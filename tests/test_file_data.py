@@ -6452,26 +6452,21 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
     ]
     # fmt: on
 
-    apply_residuals_when_no_null_values_rows = [
+    apply_residuals_rows = [
         ("1-001", 7.0, 12.0),
         ("1-002", 5.0, -0.5),
         ("1-003", 1.0, -2.5),
+        ("1-004", 10.0, None),
+        ("1-005", None, -1.0),
+        ("1-006", None, None),
     ]
-    expected_apply_residuals_when_no_null_values_rows = [
+    expected_apply_residuals_rows = [
         ("1-001", 7.0, 12.0, 19.0),
         ("1-002", 5.0, -0.5, 4.5),
         ("1-003", 1.0, -2.5, -1.5),
-    ]
-
-    apply_residuals_when_null_values_present_rows = [
-        ("1-001", 10.0, None),
-        ("1-002", None, -1.0),
-        ("1-003", None, None),
-    ]
-    expected_apply_residuals_when_null_values_present_rows = [
-        ("1-001", 10.0, None, 10.0),
-        ("1-002", None, -1.0, None),
-        ("1-003", None, None, None),
+        ("1-004", 10.0, None, 10.0),
+        ("1-005", None, -1.0, None),
+        ("1-006", None, None, None),
     ]
 
     combine_model_predictions_rows = [

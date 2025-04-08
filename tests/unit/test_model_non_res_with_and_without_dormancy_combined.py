@@ -311,12 +311,12 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.apply_residuals_when_no_null_values_rows,
+            Data.apply_residuals_rows,
             Schemas.apply_residuals_schema,
         )
         self.returned_df = job.apply_residuals(test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_apply_residuals_when_no_null_values_rows,
+            Data.expected_apply_residuals_rows,
             Schemas.expected_apply_residuals_schema,
         )
 
@@ -326,7 +326,7 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def test_apply_residuals_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_apply_residuals_returns_expected_values_when_no_nulls_present(self):
+    def test_apply_residuals_returns_expected_values(self):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][
