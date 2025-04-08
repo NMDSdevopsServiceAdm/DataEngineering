@@ -108,10 +108,18 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
-        JRutils.transform_job_role_count_map_to_ratios_map(
+        JRutils.calculate_job_group_sum_from_job_role_map_column(
             estimated_ind_cqc_filled_posts_by_job_role_df,
-            IndCQC.ascwds_job_role_counts_rolling_sum,
-            IndCQC.ascwds_job_role_ratios_by_primary_service,
+            IndCQC.ascwds_job_role_counts,
+            IndCQC.ascwds_job_group_counts,
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.calculate_job_group_sum_from_job_role_map_column(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_ratios,
+            IndCQC.ascwds_job_group_ratios,
         )
     )
 
@@ -119,6 +127,14 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         NumericalValues.number_of_days_in_rolling_sum,
         JRutils.list_of_job_roles_sorted,
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.transform_job_role_count_map_to_ratios_map(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            IndCQC.ascwds_job_role_counts_rolling_sum,
+            IndCQC.ascwds_job_role_ratios_by_primary_service,
+        )
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
