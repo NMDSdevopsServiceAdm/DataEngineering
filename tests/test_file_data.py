@@ -11041,7 +11041,6 @@ class EstimateJobRolesPrimaryServiceRollingSumData:
             PrimaryServiceType.care_home_with_nursing,
             MainJobRoleLabels.care_worker,
             1.0,
-            1.0,
         ),
         (
             86402,
@@ -11114,7 +11113,6 @@ class EstimateJobRolesPrimaryServiceRollingSumData:
             MainJobRoleLabels.care_worker,
             1.0,
             2.0,
-            12.0,
         ),
         (
             86403,
