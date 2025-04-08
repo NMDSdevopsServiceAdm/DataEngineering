@@ -63,6 +63,7 @@ class IndCqcColumns:
     )
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
+    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -255,8 +256,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rolling_average_model: str = "rolling_average_model"
-    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
@@ -272,7 +271,7 @@ class IndCqcColumns:
 
 
 @dataclass
-class PrimaryServiceRollingAverageColumns:
+class PrimaryServiceRateOfChangeColumns:
     """The names of the temporary columns created during the rolling average process."""
 
     care_home_status_count: str = "care_home_status_count"
