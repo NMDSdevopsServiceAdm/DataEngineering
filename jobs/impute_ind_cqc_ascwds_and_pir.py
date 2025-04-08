@@ -32,7 +32,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 @dataclass
 class NumericalValues:
-    NUMBER_OF_DAYS_IN_ROLLING_AVERAGE = 185  # Note: using 185 as a proxy for 6 months
+    number_of_days_in_window = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -61,7 +61,7 @@ def main(
     df = model_primary_service_rate_of_change(
         df,
         IndCQC.combined_ratio_and_filled_posts,
-        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        NumericalValues.number_of_days_in_window,
         IndCQC.ascwds_rate_of_change_trendline_model,
     )
 
@@ -96,7 +96,7 @@ def main(
     df = model_calculate_rolling_average(
         df,
         IndCQC.imputed_filled_post_model,
-        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        NumericalValues.number_of_days_in_window,
         IndCQC.primary_service_type,
         IndCQC.posts_rolling_average_model,
     )
@@ -106,7 +106,7 @@ def main(
     df = model_calculate_rolling_average(
         df,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
-        NumericalValues.NUMBER_OF_DAYS_IN_ROLLING_AVERAGE,
+        NumericalValues.number_of_days_in_window,
         [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_cleaned],
         IndCQC.banded_bed_ratio_rolling_average_model,
     )
