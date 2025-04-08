@@ -3213,14 +3213,14 @@ class ModelFeatures:
 
     add_log_column_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("col_name", FloatType(), True),
         ]
     )
     expected_add_log_column_schema = StructType(
         [
             *add_log_column_schema,
-            StructField("logged_value", FloatType(), True),
+            StructField("col_name_logged", FloatType(), True),
         ]
     )
 

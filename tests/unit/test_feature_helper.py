@@ -236,14 +236,13 @@ class AddLogColumnTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.logged_value: str = "logged_value"
+        self.col_name: str = "col_name"
+        self.logged_col_name: str = "col_name_logged"
 
         test_df = self.spark.createDataFrame(
             Data.add_log_column_rows, Schemas.add_log_column_schema
         )
-        self.returned_df = job.add_log_column(
-            test_df, IndCQC.time_registered, self.logged_value
-        )
+        self.returned_df = job.add_log_column(test_df, self.col_name)
         self.expected_df = self.spark.createDataFrame(
             Data.expected_add_log_column_rows,
             Schemas.expected_add_log_column_schema,
@@ -257,8 +256,8 @@ class AddLogColumnTests(LocationsFeatureEngineeringTests):
     def test_add_log_column_returns_expected_logged_values(self):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][self.logged_value],
-                self.expected_data[i][self.logged_value],
+                self.returned_data[i][self.logged_col_name],
+                self.expected_data[i][self.logged_col_name],
                 places=3,
                 msg=f"Returned logged value in row {i} does not match expected",
             )
