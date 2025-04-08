@@ -182,8 +182,12 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def test_apply_model_ratios_returns_expected_values_when_all_values_known(self):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][NRModel_TempCol.without_dormancy_model_adjusted],
-                self.expected_data[i][NRModel_TempCol.without_dormancy_model_adjusted],
+                self.returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
                 places=3,
                 msg=f"Returned values for row {i} does not match expected",
             )
@@ -204,8 +208,12 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
 
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][NRModel_TempCol.without_dormancy_model_adjusted],
-                expected_data[i][NRModel_TempCol.without_dormancy_model_adjusted],
+                returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
+                expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
                 f"Returned values for row {i} does not match expected",
             )
 
@@ -248,10 +256,10 @@ class CalculateAndApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedT
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 self.expected_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 places=3,
                 msg=f"Returned residual for row {i} does not match expected",
@@ -322,10 +330,10 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 self.expected_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 places=3,
                 msg=f"Returned value for row {i} does not match expected",
@@ -350,10 +358,10 @@ class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
                 returned_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 expected_data[i][
-                    NRModel_TempCol.without_dormancy_model_adjusted_and_residual_applied
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
                 ],
                 places=3,
                 msg=f"Returned value for row {i} does not match expected",

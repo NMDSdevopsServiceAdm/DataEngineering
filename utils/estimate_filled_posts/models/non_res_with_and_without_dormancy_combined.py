@@ -134,7 +134,7 @@ def apply_model_ratios(df: DataFrame) -> DataFrame:
         DataFrame: DataFrame with adjusted 'without_dormancy' model predictions.
     """
     df = df.withColumn(
-        TempColumns.without_dormancy_model_adjusted,
+        TempColumns.non_res_without_dormancy_model_adjusted,
         F.col(IndCqc.non_res_without_dormancy_model)
         * F.col(TempColumns.adjustment_ratio),
     )
@@ -175,7 +175,7 @@ def calculate_and_apply_residuals(df: DataFrame) -> DataFrame:
 
 def calculate_residuals(df: DataFrame) -> DataFrame:
     """
-    Calculates residuals between 'with_dormancy' and 'without_dormancy_model_adjusted' models at the first overlap date.
+    Calculates residuals between 'with_dormancy' and 'non_res_without_dormancy_model_adjusted' models at the first overlap date.
 
     This function filters the DataFrame at the first point in time when the 'with_dormancy_model' has values, and to locations
     who have both a 'with_dormancy' and 'without_dormancy_adjusted' model prediction.
@@ -194,12 +194,12 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
             == F.col(TempColumns.first_overlap_date)
         )
         & F.col(IndCqc.non_res_with_dormancy_model).isNotNull()
-        & F.col(TempColumns.without_dormancy_model_adjusted).isNotNull()
+        & F.col(TempColumns.non_res_without_dormancy_model_adjusted).isNotNull()
     )
     residual_df = filtered_df.withColumn(
         TempColumns.residual_at_overlap,
         F.col(IndCqc.non_res_with_dormancy_model)
-        - F.col(TempColumns.without_dormancy_model_adjusted),
+        - F.col(TempColumns.non_res_without_dormancy_model_adjusted),
     )
     residual_df = residual_df.select(
         IndCqc.location_id, TempColumns.residual_at_overlap
@@ -219,16 +219,16 @@ def apply_residuals(df: DataFrame) -> DataFrame:
         DataFrame: DataFrame with smoothed predictions.
     """
     model_and_residual_are_not_null = (
-        F.col(TempColumns.without_dormancy_model_adjusted).isNotNull()
+        F.col(TempColumns.non_res_without_dormancy_model_adjusted).isNotNull()
         & F.col(TempColumns.residual_at_overlap).isNotNull()
     )
 
     df = df.withColumn(
-        TempColumns.without_dormancy_model_adjusted_and_residual_applied,
+        TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
         F.when(
             model_and_residual_are_not_null,
-            F.col(TempColumns.without_dormancy_model_adjusted)
+            F.col(TempColumns.non_res_without_dormancy_model_adjusted)
             + F.col(TempColumns.residual_at_overlap),
-        ).otherwise(F.col(TempColumns.without_dormancy_model_adjusted)),
+        ).otherwise(F.col(TempColumns.non_res_without_dormancy_model_adjusted)),
     )
     return df
