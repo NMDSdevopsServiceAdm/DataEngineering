@@ -177,8 +177,10 @@ def calculate_residuals(df: DataFrame) -> DataFrame:
     """
     Calculates residuals between 'with_dormancy' and 'non_res_without_dormancy_model_adjusted' models at the first overlap date.
 
-    This function filters the DataFrame at the first point in time when the 'with_dormancy_model' has values, and to locations
-    who have both a 'with_dormancy' and 'without_dormancy_adjusted' model prediction.
+    This function filters the DataFrame at the first point in time ('first_overlap_date') when the 'with_dormancy_model' has values,
+    and to locations who have both a 'with_dormancy' and 'without_dormancy_adjusted' model prediction.
+    This is used elsewhere in the code to smooth out the predictions at the point in time when one model switches the other.
+
     The residual is calculated as 'with_dormancy' values minus 'without_dormancy_adjusted'.
     Only the columns 'location_id' and 'residual_at_overlap' are returned.
 
