@@ -209,7 +209,7 @@ if __name__ == "__main__":
         ),
         (
             "--with_dormancy_features_destination",
-            "A destination directory for outputting non-res ASCWDS inc dormancy model features dataset",
+            "A destination directory for outputting non-res ASCWDS with dormancy model features dataset",
         ),
         (
             "--without_dormancy_features_destination",
