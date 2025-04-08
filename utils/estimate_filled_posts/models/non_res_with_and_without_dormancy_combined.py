@@ -236,8 +236,11 @@ def apply_residuals(df: DataFrame) -> DataFrame:
 
 def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
-    Use the 'with_dormancy' model predictions when not null. Otherwise use the
-    'non_res_without_dormancy_model_adjusted_and_residual_applied' predictions wheen not null.
+    Coalesces the models in the order provided into a single column called 'prediction'.
+
+    The 'non_res_with_dormancy_model' values are used when they are not null.
+    If they are null, the 'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
+    If both are null, the prediction will be null.
 
     Args:
         df (DataFrame): DataFrame with model predictions.
