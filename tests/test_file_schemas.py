@@ -3211,6 +3211,23 @@ class ModelFeatures:
         ]
     )
 
+    group_rural_urban_sparse_categories_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = StructType(
+        [
+            *group_rural_urban_sparse_categories_schema,
+            StructField(
+                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
     add_log_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -3312,8 +3329,8 @@ class ModelNonResWithoutDormancy:
 class ModelNonResWithAndWithoutDormancyCombinedSchemas:
     estimated_posts_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
             StructField(IndCQC.time_registered, IntegerType(), True),
@@ -3324,8 +3341,8 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
 
     calculate_and_apply_model_ratios_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.related_location, StringType(), True),
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
@@ -3339,14 +3356,16 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(NRModel_TempCol.avg_without_dormancy, FloatType(), True),
             StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
             StructField(
-                NRModel_TempCol.adjusted_without_dormancy_model, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
         ]
     )
 
     average_models_by_related_location_and_time_registered_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.related_location, StringType(), True),
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
@@ -3379,7 +3398,7 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
 
     apply_model_ratios_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(NRModel_TempCol.adjustment_ratio, FloatType(), True),
@@ -3389,8 +3408,94 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             *apply_model_ratios_schema,
             StructField(
-                NRModel_TempCol.adjusted_without_dormancy_model, FloatType(), True
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
             ),
+        ]
+    )
+
+    calculate_and_apply_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_calculate_and_apply_residuals_schema = StructType(
+        [
+            *calculate_and_apply_residuals_schema,
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(NRModel_TempCol.first_overlap_date, DateType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+        ]
+    )
+
+    apply_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
+            ),
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+        ]
+    )
+    expected_apply_residuals_schema = StructType(
+        [
+            *apply_residuals_schema,
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    combine_model_predictions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_combine_model_predictions_schema = StructType(
+        [
+            *combine_model_predictions_schema,
+            StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
 
@@ -6480,6 +6585,39 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(
                 IndCQC.difference_between_estimate_and_cqc_registered_managers,
                 FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    sum_job_group_counts_from_job_role_count_map_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+    expected_sum_job_group_counts_from_job_role_count_map_schema = StructType(
+        [
+            *sum_job_group_counts_from_job_role_count_map_schema,
+            StructField(
+                IndCQC.ascwds_job_group_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+    sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_group_counts,
+                MapType(StringType(), IntegerType()),
                 True,
             ),
         ]

@@ -25,6 +25,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     IsParent,
     LocationType,
+    JobGroupLabels,
     MainJobRoleLabels,
     ParentsOrSinglesAndSubs,
     PrimaryServiceType,
@@ -6112,6 +6113,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural"),
+        ("1-002", "Rural sparse"),
+        ("1-003", "Another with sparse in it"),
+        ("1-004", "Urban"),
+        ("1-005", "Sparse with a capital S"),
+    ]
+    expected_group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural", "Rural"),
+        ("1-002", "Rural sparse", "Sparse setting"),
+        ("1-003", "Another with sparse in it", "Sparse setting"),
+        ("1-004", "Urban", "Urban"),
+        ("1-005", "Sparse with a capital S", "Sparse setting"),
+    ]
+
     add_log_column_rows = [
         ("1-001", 1.0),
         ("1-002", 10.0),
@@ -6425,6 +6441,74 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-001", 5.0, None, 0.2, None),
         ("1-002", 5.0, 10.0, None, None),
         ("1-003", 5.0, None, None, None),
+    ]
+
+    # fmt: off
+    calculate_and_apply_residuals_rows = [
+        ("1-001", date(2025, 2, 1), 20.0, 15.0),  # dates match, both models not null, residual calculated and applied
+        ("1-002", date(2025, 1, 1), None, 16.0),  # "1-002" - with_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-002", date(2025, 2, 1), 10.0, 15.0),  # "1-002" - first period with both models present, take the residual
+        ("1-002", date(2025, 3, 1), 11.0, 14.0),  # "1-002" - residual added from date(2025, 2, 1)
+        ("1-002", date(2025, 4, 1), 12.0, None),  # "1-002" - without_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-003", date(2025, 2, 1), 30.0, None),  # doesn't pass filter, no residual, keep original model value
+        ("1-004", date(2025, 2, 1), None, 15.0),  # doesn't pass filter, no residual, keep original model value
+        ("1-005", date(2025, 2, 1), None, None),  # doesn't pass filter, no residual, keep original model value
+    ]
+    expected_calculate_and_apply_residuals_rows = [
+        ("1-001", date(2025, 2, 1), 20.0, 15.0, 5.0, 20.0),  # dates match, both models not null, residual calculated
+        ("1-002", date(2025, 1, 1), None, 16.0, -5.0, 11.0),  # "1-002" - with_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-002", date(2025, 2, 1), 10.0, 15.0, -5.0, 10.0),  # "1-002" - first period with both models present, take the residual
+        ("1-002", date(2025, 3, 1), 11.0, 14.0, -5.0, 9.0),  # "1-002" - residual added from date(2025, 2, 1)
+        ("1-002", date(2025, 4, 1), 12.0, None, -5.0, None),  # "1-002" - without_dormancy is null, residual added from date(2025, 2, 1) but not applied
+        ("1-003", date(2025, 2, 1), 30.0, None, None, None),  # doesn't pass filter, no residual, keep original model value
+        ("1-004", date(2025, 2, 1), None, 15.0, None, 15.0),  # doesn't pass filter, no residual, keep original model value
+        ("1-005", date(2025, 2, 1), None, None, None, None),  # doesn't pass filter, no residual, keep original model value
+    ]
+    # fmt: on
+
+    # fmt: off
+    calculate_residuals_rows = [
+        ("1-001", date(2025, 1, 1), date(2025, 2, 1), 10.0, 15.0),  # filtered out, dates not equal
+        ("1-002", date(2025, 2, 1), date(2025, 2, 1), 10.0, 15.0),  # not filtered, negative residual
+        ("1-003", date(2025, 2, 1), date(2025, 2, 1), 20.0, 15.0),  # not filtered, positive residual
+        ("1-004", date(2025, 2, 1), date(2025, 2, 1), 30.0, None),  # filtered out, null model value
+        ("1-005", date(2025, 2, 1), date(2025, 2, 1), None, 15.0),  # filtered out, null model value
+        ("1-006", date(2025, 2, 1), date(2025, 2, 1), None, None),  # filtered out, null model value
+    ]
+    expected_calculate_residuals_rows = [
+        ("1-002", -5.0),  # not filtered, negative residual
+        ("1-003", 5.0),  # not filtered, positive residual
+    ]
+    # fmt: on
+
+    apply_residuals_rows = [
+        ("1-001", 7.0, 12.0),
+        ("1-002", 5.0, -0.5),
+        ("1-003", 1.0, -2.5),
+        ("1-004", 10.0, None),
+        ("1-005", None, -1.0),
+        ("1-006", None, None),
+    ]
+    expected_apply_residuals_rows = [
+        ("1-001", 7.0, 12.0, 19.0),
+        ("1-002", 5.0, -0.5, 4.5),
+        ("1-003", 1.0, -2.5, -1.5),
+        ("1-004", 10.0, None, 10.0),
+        ("1-005", None, -1.0, None),
+        ("1-006", None, None, None),
+    ]
+
+    combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0),
+        ("1-002", 11.0, None),
+        ("1-003", None, 16.0),
+        ("1-004", None, None),
+    ]
+    expected_combine_model_predictions_rows = [
+        ("1-001", 10.0, 15.0, 10.0),
+        ("1-002", 11.0, None, 11.0),
+        ("1-003", None, 16.0, 16.0),
+        ("1-004", None, None, None),
     ]
 
 
@@ -10889,6 +10973,146 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-002", 1, 10.0, -9.0),
         ("1-003", 1, None, None),
         ("1-004", None, 10.0, None),
+    ]
+
+    sum_job_group_counts_from_job_role_count_map_rows = [
+        (
+            "1-001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 2,
+                MainJobRoleLabels.first_line_manager: 2,
+                MainJobRoleLabels.registered_nurse: 3,
+                MainJobRoleLabels.social_worker: 3,
+                MainJobRoleLabels.admin_staff: 4,
+                MainJobRoleLabels.ancillary_staff: 4,
+            },
+        ),
+        (
+            "1-001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 10,
+                MainJobRoleLabels.senior_care_worker: 10,
+                MainJobRoleLabels.senior_management: 20,
+                MainJobRoleLabels.first_line_manager: 20,
+                MainJobRoleLabels.registered_nurse: 30,
+                MainJobRoleLabels.social_worker: 30,
+                MainJobRoleLabels.admin_staff: 40,
+                MainJobRoleLabels.ancillary_staff: 40,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            1000,
+            None,
+        ),
+    ]
+    expected_sum_job_group_counts_from_job_role_count_map_rows = [
+        (
+            "1-001",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 1,
+                MainJobRoleLabels.senior_care_worker: 1,
+                MainJobRoleLabels.senior_management: 2,
+                MainJobRoleLabels.first_line_manager: 2,
+                MainJobRoleLabels.registered_nurse: 3,
+                MainJobRoleLabels.social_worker: 3,
+                MainJobRoleLabels.admin_staff: 4,
+                MainJobRoleLabels.ancillary_staff: 4,
+            },
+            {
+                JobGroupLabels.direct_care: 2,
+                JobGroupLabels.managers: 4,
+                JobGroupLabels.regulated_professions: 6,
+                JobGroupLabels.other: 8,
+            },
+        ),
+        (
+            "1-001",
+            1001,
+            {
+                MainJobRoleLabels.care_worker: 10,
+                MainJobRoleLabels.senior_care_worker: 10,
+                MainJobRoleLabels.senior_management: 20,
+                MainJobRoleLabels.first_line_manager: 20,
+                MainJobRoleLabels.registered_nurse: 30,
+                MainJobRoleLabels.social_worker: 30,
+                MainJobRoleLabels.admin_staff: 40,
+                MainJobRoleLabels.ancillary_staff: 40,
+            },
+            {
+                JobGroupLabels.direct_care: 20,
+                JobGroupLabels.managers: 40,
+                JobGroupLabels.regulated_professions: 60,
+                JobGroupLabels.other: 80,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                MainJobRoleLabels.care_worker: 0,
+                MainJobRoleLabels.senior_care_worker: 0,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-003",
+            1000,
+            None,
+            None,
+        ),
+    ]
+    sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_rows = [
+        (
+            "1-001",
+            1001,
+            {
+                JobGroupLabels.direct_care: 20,
+                JobGroupLabels.managers: 40,
+                JobGroupLabels.regulated_professions: 60,
+                JobGroupLabels.other: 80,
+            },
+        ),
+        (
+            "1-002",
+            1000,
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-001",
+            1000,
+            {
+                JobGroupLabels.direct_care: 2,
+                JobGroupLabels.managers: 4,
+                JobGroupLabels.regulated_professions: 6,
+                JobGroupLabels.other: 8,
+            },
+        ),
     ]
 
 

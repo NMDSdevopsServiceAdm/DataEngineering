@@ -232,6 +232,39 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
+class GroupRuralUrbanSparseCategoriesTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.group_rural_urban_sparse_categories_rows,
+            Schemas.group_rural_urban_sparse_categories_schema,
+        )
+
+        self.returned_df = job.group_rural_urban_sparse_categories(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_group_rural_urban_sparse_categories_rows,
+            Schemas.expected_group_rural_urban_sparse_categories_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_group_rural_urban_sparse_categories_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_group_rural_urban_sparse_categories_returns_expected_data(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][
+                    IndCQC.current_rural_urban_indicator_2011_for_non_res_model
+                ],
+                self.expected_data[i][
+                    IndCQC.current_rural_urban_indicator_2011_for_non_res_model
+                ],
+                f"Returned value in row {i} does not match expected",
+            )
+
+
 class AddLogColumnTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
