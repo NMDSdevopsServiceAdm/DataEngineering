@@ -5,11 +5,11 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_name     = "csv_to_parquet.py"
+  script_name     = "01_ingest/csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
