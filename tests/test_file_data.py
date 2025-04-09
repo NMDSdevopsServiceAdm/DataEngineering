@@ -5519,32 +5519,32 @@ class ModelPrimaryServiceRateOfChange:
     ]
     # fmt: on
 
-    clean_column_to_average_rows = [
+    clean_column_with_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, None),
         ("1-001", 1000000003, CareHome.care_home, 10.0),
     ]
-    expected_clean_column_to_average_rows = [
+    expected_clean_column_with_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0, 1, 2),
         ("1-001", 1000000002, CareHome.care_home, None, 1, 2),
         ("1-001", 1000000003, CareHome.care_home, 10.0, 1, 2),
     ]
 
-    clean_column_to_average_one_submission_rows = [
+    clean_column_with_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, None),
     ]
-    expected_clean_column_to_average_one_submission_rows = [
+    expected_clean_column_with_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, None, 1, 1),
         ("1-001", 1000000002, CareHome.care_home, None, 1, 1),
     ]
 
-    clean_column_to_average_both_statuses_rows = [
+    clean_column_with_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, 10.0),
         ("1-001", 1000000003, CareHome.not_care_home, 10.0),
     ]
-    expected_clean_column_to_average_both_statuses_rows = [
+    expected_clean_column_with_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
@@ -5591,13 +5591,13 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", CareHome.care_home, 10.0, 2),
     ]
 
-    interpolate_column_to_average_rows = [
+    interpolate_column_with_values_rows = [
         ("1-001", 1704067200, 30.0),
         ("1-001", 1704153600, None),
         ("1-001", 1704240000, 34.0),
         ("1-001", 1704326400, None),
     ]
-    expected_interpolate_column_to_average_rows = [
+    expected_interpolate_column_with_values_rows = [
         ("1-001", 1704067200, 30.0, 30.0),
         ("1-001", 1704153600, None, 32.0),
         ("1-001", 1704240000, 34.0, 34.0),
