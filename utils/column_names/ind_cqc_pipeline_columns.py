@@ -305,3 +305,4 @@ class NonResWithAndWithoutDormancyCombinedColumns:
         "non_res_without_dormancy_model_adjusted_and_residual_applied"
     )
     residual_at_overlap: str = "residual_at_overlap"
+    time_registered_banded_and_capped: str = "time_registered_banded_and_capped"
