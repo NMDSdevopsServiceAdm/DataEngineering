@@ -96,8 +96,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.WITHOUT_DORMANCY_DESTINATION,
         )
 
-        result_with_dormancy: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
-        result_without_dormancy: DataFrame = write_to_parquet_mock.call_args_list[1][0][
+        result_with_dormancy: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
+        result_without_dormancy: DataFrame = write_to_parquet_mock.call_args_list[0][0][
             0
         ]
 

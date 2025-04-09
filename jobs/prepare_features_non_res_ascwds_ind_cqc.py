@@ -129,7 +129,6 @@ def main(
     without_dormancy_features_df = add_log_column(
         without_dormancy_features_df,
         IndCQC.time_registered_capped_at_four_years,
-        IndCQC.time_registered_capped_at_four_years_logged,
     )
 
     without_dormancy_feature_list: List[str] = sorted(
@@ -179,7 +178,6 @@ def main(
     with_dormancy_features_df = add_log_column(
         with_dormancy_features_df,
         IndCQC.time_registered_capped_at_ten_years,
-        IndCQC.time_registered_capped_at_ten_years_logged,
     )
 
     with_dormancy_feature_list: List[str] = sorted(
