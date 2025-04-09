@@ -5503,19 +5503,19 @@ class ModelPrimaryServiceRateOfChange:
         ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0),
     ]
     expected_primary_service_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 3.0, 25.0, 1.0),
-        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 2.8, 25.5, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 3.4, 27.3333, 1.16235),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 29.6666, 1.26158),
-        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 2.0, 25.0, 1.0),
-        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, None, 25.5, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, 27.3333, 1.16235),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 29.6666, 1.26158),
-        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 40.0, 40.0, 1.0),
-        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, 45.0, 1.25),
-        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 60.0, 45.0, 1.25),
-        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 4.0, 25.0, 1.0),
-        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, 45.0, 1.25),
+        ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 3.0, 1.0),
+        ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 2.8, 1.03999),
+        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 3.4, 1.16235),
+        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.26158),
+        ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 2.0, 1.0),
+        ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, None, 1.03999),
+        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, 1.16235),
+        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.26158),
+        ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 40.0, 1.0),
+        ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, 1.25),
+        ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 60.0, 1.25),
+        ("1-005", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 4.0, 1.0),
+        ("1-005", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, 1.25),
     ]
     # fmt: on
 
@@ -5605,7 +5605,7 @@ class ModelPrimaryServiceRateOfChange:
     ]
 
     # fmt: off
-    calculate_rolling_average_rows = [
+    calculate_rolling_rate_of_change_rows = [
         ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1),
         ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2),
         ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3),
@@ -5616,20 +5616,7 @@ class ModelPrimaryServiceRateOfChange:
         ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0),
         ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0),
     ]
-    expected_calculate_rolling_average_rows = [
-        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1, 11.0),
-        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2, 11.5),
-        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3, 12.0),
-        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4, 13.0),
-        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4, 13.5),
-        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3, 13.5),
-        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0, 10.0),
-        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0, 15.0),
-        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0, 25.0),
-    ]
     # fmt: on
-
-    calculate_rolling_rate_of_change_rows = calculate_rolling_average_rows
 
     add_previous_value_column_rows = [
         ("1-001", 1672531200, 1.1),
@@ -5721,6 +5708,32 @@ class ModelPrimaryServiceRateOfChange:
         (PrimaryServiceType.non_residential, 1672617600, 1.2),
         (PrimaryServiceType.non_residential, 1672704000, 1.2),
         (PrimaryServiceType.non_residential, 1672790400, 1.8),
+    ]
+
+
+@dataclass
+class ModelRollingAverageData:
+    rolling_average_rows = [
+        ("1-001", 1672531200, 1.1),
+        ("1-001", 1672617600, 1.2),
+        ("1-001", 1672704000, 1.3),
+        ("1-001", 1672790400, 1.4),
+        ("1-001", 1672876800, 1.4),
+        ("1-001", 1672876800, 1.3),
+        ("1-002", 1672531200, 10.0),
+        ("1-002", 1672704000, 20.0),
+        ("1-002", 1672876800, 30.0),
+    ]
+    expected_rolling_average_rows = [
+        ("1-001", 1672531200, 1.1, 1.1),
+        ("1-001", 1672617600, 1.2, 1.15),
+        ("1-001", 1672704000, 1.3, 1.2),
+        ("1-001", 1672790400, 1.4, 1.3),
+        ("1-001", 1672876800, 1.4, 1.35),
+        ("1-001", 1672876800, 1.3, 1.35),
+        ("1-002", 1672531200, 10.0, 10.0),
+        ("1-002", 1672704000, 20.0, 15.0),
+        ("1-002", 1672876800, 30.0, 25.0),
     ]
 
 
@@ -6113,6 +6126,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
+    ]
+    expected_add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
+    ]
+
     group_rural_urban_sparse_categories_rows = [
         ("1-001", "Rural"),
         ("1-002", "Rural sparse"),
@@ -6139,6 +6167,16 @@ class ModelFeatures:
         ("1-002", 10.0, 2.3026),
         ("1-003", 100.0, 4.6052),
         ("1-004", None, None),
+    ]
+
+    filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 2)),
+    ]
+    expected_filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
     ]
 
 
@@ -6373,6 +6411,17 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 6, 1), CareHome.not_care_home, "N", 2, 3.0, 3.0),
         ("1-006", date(2024, 7, 1), CareHome.not_care_home, "N", 3, 3.0, 3.0),
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
+    ]
+
+    group_time_registered_to_six_month_bands_rows = [
+        ("1-001", 6),
+        ("1-002", 7),
+        ("1-003", 200),
+    ]
+    expected_group_time_registered_to_six_month_bands_rows = [
+        ("1-001", 6, 0),
+        ("1-002", 7, 1),
+        ("1-003", 200, 20),
     ]
 
     calculate_and_apply_model_ratios_rows = [
@@ -8800,7 +8849,7 @@ class DiagnosticsOnCapacityTrackerData:
         ("loc 1", date(2024, 2, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
     ]
     capacity_tracker_non_res_rows = [
-        ("loc 2", date(2024, 1, 1), 10, 10.0, 80, "2024", "01", "01", "20240101"),
+        ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
     ]
 
     join_capacity_tracker_care_home_rows = [
@@ -8907,7 +8956,6 @@ class DiagnosticsOnCapacityTrackerData:
             "20240101",
             date(2024, 1, 1),
             10,
-            10.0,
             80,
         ),
     ]

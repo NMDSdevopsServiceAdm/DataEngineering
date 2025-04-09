@@ -203,9 +203,9 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--ind_cqc_filled_posts_cleaned_source"                          = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
-    "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination"     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_inc_dormancy/"
-    "--non_res_ascwds_without_dormancy_ind_cqc_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
+    "--ind_cqc_filled_posts_cleaned_source"   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
+    "--with_dormancy_features_destination"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_inc_dormancy/"
+    "--without_dormancy_features_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
   }
 }
 

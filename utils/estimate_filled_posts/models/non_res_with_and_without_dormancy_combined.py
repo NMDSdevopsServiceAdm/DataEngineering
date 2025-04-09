@@ -5,12 +5,12 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
+
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
-from utils.column_values.categorical_column_values import CareHome
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
@@ -64,15 +64,15 @@ def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
     """
     Groups 'time_registered' into six-month bands and caps values beyond ten years.
 
-    The 'time_registered' column starts at 1 for individuals registered for up to one month.
-    To align with six-month bands where '1' represents up to six months, we subtract 1 before
-    dividing by 6.
+    The 'time_registered' column starts at one for individuals registered for up to one month.
+    To align with six-month bands where '1' represents up to six months, we subtract one before
+    dividing by six.
+
     Since registration patterns change little beyond ten years and sample sizes decrease,
-    we cap values at 10 years (equivalent to 20 six-month bands) for consistency.
+    we cap values at ten years (equivalent to 20 six-month bands) for consistency.
 
     Args:
         df (DataFrame): Input DataFrame containing the 'time_registered' column.
-
     Returns:
         DataFrame: DataFrame with 'time_registered' transformed into six-month bands,
                    capped at ten years.
