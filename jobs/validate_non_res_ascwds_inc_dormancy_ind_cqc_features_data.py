@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rules.non_res_ascwds_inc_dormancy_ind_cqc_features_validation_rules import (
-    NonResASCWDSIncDormancyIndCqcFeaturesValidationRules as Rules,
+    NonResASCWDSWithDormancyIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
     validate_dataset,
@@ -46,10 +46,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(

@@ -15,8 +15,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/source"
-    WITH_DORMANCY_DESTINATION = "some/destination"
-    WITHOUT_DORMANCY_DESTINATION = "other/destination"
+    WITH_DORMANCY_DESTINATION = "with_dormancy/destination"
+    WITHOUT_DORMANCY_DESTINATION = "without_dormancy/destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -27,6 +27,11 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
     @patch("utils.utils.select_rows_with_non_null_value")
+    @patch(
+        "jobs.prepare_features_non_res_ascwds_ind_cqc.group_rural_urban_sparse_categories"
+    )
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.cap_integer_at_max_value")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_log_column")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_index_column")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_value")
@@ -37,6 +42,9 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_value_mock: Mock,
         add_array_column_count_mock: Mock,
         add_date_index_column_mock: Mock,
+        add_log_column_mock: Mock,
+        cap_integer_at_max_value_mock: Mock,
+        group_rural_urban_sparse_categories_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -52,19 +60,22 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_mock.call_count, 3)
         self.assertEqual(add_date_index_column_mock.call_count, 2)
+        self.assertEqual(add_log_column_mock.call_count, 2)
+        self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
+        self.assertEqual(group_rural_urban_sparse_categories_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)
 
         write_to_parquet_calls = [
             call(
                 ANY,
-                self.WITH_DORMANCY_DESTINATION,
+                self.WITHOUT_DORMANCY_DESTINATION,
                 mode="overwrite",
                 partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
             ),
             call(
                 ANY,
-                self.WITHOUT_DORMANCY_DESTINATION,
+                self.WITH_DORMANCY_DESTINATION,
                 mode="overwrite",
                 partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
             ),

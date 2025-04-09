@@ -30,39 +30,20 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
+    add_log_column,
+    cap_integer_at_max_value,
     expand_encode_and_extract_features,
+    filter_without_dormancy_features_to_pre_2025,
+    group_rural_urban_sparse_categories,
     vectorise_dataframe,
 )
-
-
-vectorised_features_column_list: List[str] = [
-    IndCQC.location_id,
-    IndCQC.cqc_location_import_date,
-    IndCQC.cqc_location_import_date_indexed,
-    IndCQC.current_region,
-    IndCQC.current_rural_urban_indicator_2011,
-    IndCQC.dormancy,
-    IndCQC.care_home,
-    IndCQC.service_count,
-    IndCQC.activity_count,
-    IndCQC.specialism_count,
-    IndCQC.ascwds_pir_merged,
-    IndCQC.ascwds_rate_of_change_trendline_model,
-    IndCQC.imputed_registration_date,
-    IndCQC.time_registered,
-    IndCQC.features,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
-]
 
 
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
     with_dormancy_features_destination: str,
     without_dormancy_features_destination: str,
-) -> DataFrame:
+):
     print("Creating non res ascwds inc dormancy features dataset...")
 
     locations_df = utils.read_from_parquet(ind_cqc_filled_posts_cleaned_source)
@@ -74,9 +55,21 @@ def main(
     features_df = add_array_column_count(
         filtered_df, IndCQC.service_count, IndCQC.services_offered
     )
+    features_df = cap_integer_at_max_value(
+        features_df,
+        IndCQC.service_count,
+        max_value=4,
+        new_col_name=IndCQC.service_count_capped,
+    )
 
     features_df = add_array_column_count(
         features_df, IndCQC.activity_count, IndCQC.imputed_regulated_activities
+    )
+    features_df = cap_integer_at_max_value(
+        features_df,
+        IndCQC.activity_count,
+        max_value=3,
+        new_col_name=IndCQC.activity_count_capped,
     )
 
     features_df = add_array_column_count(
@@ -97,6 +90,7 @@ def main(
         is_array_col=True,
     )
 
+    features_df = group_rural_urban_sparse_categories(features_df)
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011,
@@ -118,23 +112,27 @@ def main(
         is_array_col=False,
     )
 
-    features_df, dormancy_key = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.dormancy,
-        DormancyFeatures.labels_dict,
-        is_array_col=False,
+    # Without dormancy features
+
+    without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(
+        features_df
     )
 
-    features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
-        features_df, IndCQC.dormancy
+    without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
+
+    without_dormancy_features_df = cap_integer_at_max_value(
+        without_dormancy_features_df,
+        col_name=IndCQC.time_registered,
+        max_value=48,
+        new_col_name=IndCQC.time_registered_capped_at_four_years,
+    )
+    without_dormancy_features_df = add_log_column(
+        without_dormancy_features_df,
+        IndCQC.time_registered_capped_at_four_years,
+        IndCQC.time_registered_capped_at_four_years_logged,
     )
 
-    features_df = add_date_index_column(features_df)
-    features_with_known_dormancy_df = add_date_index_column(
-        features_with_known_dormancy_df
-    )
-
-    list_for_vectorisation_without_dormancy: List[str] = sorted(
+    without_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.service_count,
             IndCQC.activity_count,
@@ -146,52 +144,83 @@ def main(
         + region_list
         + rui_indicators_list
     )
-    list_for_vectorisation_with_dormancy: List[str] = sorted(
-        list_for_vectorisation_without_dormancy + dormancy_key
-    )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
-        df=features_df,
-        list_for_vectorisation=list_for_vectorisation_without_dormancy,
-    )
-    vectorised_features_with_dormancy_df = vectorise_dataframe(
-        df=features_with_known_dormancy_df,
-        list_for_vectorisation=list_for_vectorisation_with_dormancy,
+        without_dormancy_features_df,
+        without_dormancy_feature_list,
     )
 
-    vectorised_features_without_dormancy_df = (
-        vectorised_features_without_dormancy_df.select(vectorised_features_column_list)
-    )
-    vectorised_features_with_dormancy_df = vectorised_features_with_dormancy_df.select(
-        vectorised_features_column_list
-    )
-
-    print(
-        f"number of features without dormancy: {len(list_for_vectorisation_without_dormancy)}"
-    )
+    print(f"number of features without dormancy: {len(without_dormancy_feature_list)}")
     print(
         f"length of features without dormancy df: {vectorised_features_without_dormancy_df.count()}"
     )
 
-    print(
-        f"number of features with dormancy: {len(list_for_vectorisation_with_dormancy)}"
+    # With dormancy features
+
+    with_dormancy_features_df = utils.select_rows_with_non_null_value(
+        features_df, IndCQC.dormancy
     )
+
+    with_dormancy_features_df, dormancy_key = expand_encode_and_extract_features(
+        with_dormancy_features_df,
+        IndCQC.dormancy,
+        DormancyFeatures.labels_dict,
+        is_array_col=False,
+    )
+
+    with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
+
+    with_dormancy_features_df = cap_integer_at_max_value(
+        with_dormancy_features_df,
+        col_name=IndCQC.time_registered,
+        max_value=120,
+        new_col_name=IndCQC.time_registered_capped_at_ten_years,
+    )
+    with_dormancy_features_df = add_log_column(
+        with_dormancy_features_df,
+        IndCQC.time_registered_capped_at_ten_years,
+        IndCQC.time_registered_capped_at_ten_years_logged,
+    )
+
+    with_dormancy_feature_list: List[str] = sorted(
+        [
+            IndCQC.service_count,
+            IndCQC.activity_count,
+            IndCQC.specialism_count,
+            IndCQC.time_registered,
+            IndCQC.ascwds_rate_of_change_trendline_model,
+        ]
+        + dormancy_key
+        + service_list
+        + region_list
+        + rui_indicators_list
+    )
+
+    vectorised_features_with_dormancy_df = vectorise_dataframe(
+        with_dormancy_features_df, with_dormancy_feature_list
+    )
+
+    print(f"number of features with dormancy: {len(with_dormancy_feature_list)}")
     print(
         f"length of features with dormancy df: {vectorised_features_with_dormancy_df.count()}"
     )
 
-    print(f"Exporting as parquet to {with_dormancy_features_destination}")
+    print(
+        f"Exporting vectorised_features_without_dormancy_df as parquet to {without_dormancy_features_destination}"
+    )
     utils.write_to_parquet(
-        vectorised_features_with_dormancy_df,
-        with_dormancy_features_destination,
+        vectorised_features_without_dormancy_df,
+        without_dormancy_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
-    print(f"Exporting as parquet to {without_dormancy_features_destination}")
+    print(
+        f"Exporting vectorised_features_with_dormancy_df as parquet to {with_dormancy_features_destination}"
+    )
     utils.write_to_parquet(
-        vectorised_features_without_dormancy_df,
-        without_dormancy_features_destination,
+        vectorised_features_with_dormancy_df,
+        with_dormancy_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
