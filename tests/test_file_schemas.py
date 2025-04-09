@@ -2759,7 +2759,6 @@ class ModelPrimaryServiceRateOfChange:
         [
             *calculate_submission_count_schema,
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
-            StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
     )
 
