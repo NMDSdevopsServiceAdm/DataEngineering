@@ -29,6 +29,7 @@ class CareHomeIndCqcFeaturesValidationRules:
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed: 0,
             IndCqcColumns.ascwds_pir_merged: 1.0,
+            IndCqcColumns.cqc_location_import_date_indexed: 1,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,

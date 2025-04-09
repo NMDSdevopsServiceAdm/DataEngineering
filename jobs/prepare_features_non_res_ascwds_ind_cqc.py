@@ -29,6 +29,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 )
 from utils.features.helper import (
     add_array_column_count,
+    add_date_index_column,
     expand_encode_and_extract_features,
     vectorise_dataframe,
 )
@@ -37,6 +38,7 @@ from utils.features.helper import (
 vectorised_features_column_list: List[str] = [
     IndCQC.location_id,
     IndCQC.cqc_location_import_date,
+    IndCQC.cqc_location_import_date_indexed,
     IndCQC.current_region,
     IndCQC.current_rural_urban_indicator_2011,
     IndCQC.dormancy,
@@ -129,6 +131,11 @@ def main(
 
     features_with_known_dormancy_df = utils.select_rows_with_non_null_value(
         features_df, IndCQC.dormancy
+    )
+
+    features_df = add_date_index_column(features_df)
+    features_with_known_dormancy_df = add_date_index_column(
+        features_with_known_dormancy_df
     )
 
     list_for_vectorisation_without_dormancy: List[str] = sorted(

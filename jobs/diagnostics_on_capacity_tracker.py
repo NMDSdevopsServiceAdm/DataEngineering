@@ -30,7 +30,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.cqc_location_import_date,
     IndCQC.care_home,
     IndCQC.primary_service_type,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.care_home_model,
     IndCQC.imputed_filled_post_model,
     IndCQC.non_res_with_dormancy_model,
@@ -140,7 +140,6 @@ def run_diagnostics_for_care_homes(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_rolling_average,
-        CTCHClean.agency_and_non_agency_total_employed_rolling_avg,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
@@ -205,7 +204,6 @@ def run_diagnostics_for_non_residential(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_rolling_average,
-        CTNRClean.cqc_care_workers_employed_rolling_avg,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
