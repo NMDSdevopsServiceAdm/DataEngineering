@@ -27,6 +27,7 @@ class CareHomeIndCqcFeaturesValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 1,
+            IndCqcColumns.cqc_location_import_date_indexed: 1,
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,

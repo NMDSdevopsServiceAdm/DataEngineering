@@ -6,6 +6,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
 from utils.column_values.categorical_column_values import CareHome
+from utils.estimate_filled_posts.models.utils import (
+    insert_predictions_into_pipeline,
+    set_min_value,
+)
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
@@ -22,7 +26,7 @@ def combine_non_res_with_and_without_dormancy_models(
     Returns:
         DataFrame: The original DataFrame with the combined model predictions joined in.
     """
-    locations_df = locations_df.select(
+    locations_reduced_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
         IndCqc.care_home,
@@ -33,7 +37,7 @@ def combine_non_res_with_and_without_dormancy_models(
     )
 
     non_res_locations_df = utils.select_rows_with_value(
-        locations_df, IndCqc.care_home, CareHome.not_care_home
+        locations_reduced_df, IndCqc.care_home, CareHome.not_care_home
     )
 
     # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
@@ -44,9 +48,15 @@ def combine_non_res_with_and_without_dormancy_models(
 
     combined_models_df = combine_model_predictions(combined_models_df)
 
-    # TODO - 5 - set_min_value and insert predictions into pipeline
+    combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
 
-    return combined_models_df  # TODO add tests
+    locations_with_predictions_df = insert_predictions_into_pipeline(
+        locations_df,
+        combined_models_df,
+        IndCqc.non_res_combined_model,
+    )
+
+    return locations_with_predictions_df
 
 
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:

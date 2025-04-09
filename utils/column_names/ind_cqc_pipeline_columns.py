@@ -102,6 +102,9 @@ class IndCqcColumns:
     )
     contemporary_sub_icb: str = ONSClean.contemporary_sub_icb
     cqc_location_import_date: str = CQCLClean.cqc_location_import_date
+    cqc_location_import_date_indexed: str = (
+        CQCLClean.cqc_location_import_date + "_indexed"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     current_ccg: str = ONSClean.current_ccg
@@ -196,6 +199,7 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
+    non_res_combined_model: str = "non_res_combined_model"
     non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"

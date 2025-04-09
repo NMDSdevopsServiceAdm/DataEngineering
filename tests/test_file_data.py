@@ -6024,6 +6024,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
+    ]
+    expected_add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
+    ]
+
     group_rural_urban_sparse_categories_rows = [
         ("1-001", "Rural"),
         ("1-002", "Rural sparse"),
@@ -6050,6 +6065,16 @@ class ModelFeatures:
         ("1-002", 10.0, 2.3026),
         ("1-003", 100.0, 4.6052),
         ("1-004", None, None),
+    ]
+
+    filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 2)),
+    ]
+    expected_filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
     ]
 
 

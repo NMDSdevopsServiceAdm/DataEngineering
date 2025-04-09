@@ -232,6 +232,28 @@ class CapIntegerAtMaxValueTests(LocationsFeatureEngineeringTests):
         self.assertEqual(self.returned_data, self.expected_data)
 
 
+class AddDateIndexColumnTests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.add_date_index_column_rows, Schemas.add_date_index_column_schema
+        )
+        self.returned_df = job.add_date_index_column(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_add_date_index_column_rows,
+            Schemas.expected_add_date_index_column_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_add_date_index_column_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_add_date_index_column_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
 class GroupRuralUrbanSparseCategoriesTests(LocationsFeatureEngineeringTests):
     def setUp(self) -> None:
         super().setUp()
@@ -294,3 +316,29 @@ class AddLogColumnTests(LocationsFeatureEngineeringTests):
                 places=3,
                 msg=f"Returned logged value in row {i} does not match expected",
             )
+
+
+class FilterWithoutDormancyFeaturesToPre2025Tests(LocationsFeatureEngineeringTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_without_dormancy_features_to_pre_2025_rows,
+            Schemas.filter_without_dormancy_features_to_pre_2025_schema,
+        )
+
+        self.returned_df = job.filter_without_dormancy_features_to_pre_2025(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_without_dormancy_features_to_pre_2025_rows,
+            Schemas.filter_without_dormancy_features_to_pre_2025_schema,
+        )
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_cap_integer_at_max_value_returns_original_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
+
+    def test_cap_integer_at_max_value_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
