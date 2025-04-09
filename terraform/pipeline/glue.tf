@@ -76,7 +76,7 @@ module "clean_cqc_pir_data_job" {
 
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
-  script_name     = "ingest_ascwds_dataset.py"
+  script_name     = "_01_ingest/ingest_ascwds_dataset.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket

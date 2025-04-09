@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import call, patch, Mock
 
-import jobs.ingest_ascwds_dataset as job
+import jobs._01_ingest.ingest_ascwds_dataset as job
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from tests.test_file_data import IngestASCWDSData as Data
-from tests.test_file_schemas import IngestASCWDSData as Schemas
+from tests.unit_test_data._01_ingest.data import IngestASCWDSData as Data
+from tests.unit_test_data._01_ingest.schemas import IngestASCWDSData as Schemas
 from utils import utils
 
 
@@ -25,8 +25,8 @@ class IngestSingleFileTest(IngestASCWDSDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.construct_destination_path")
-    @patch("jobs.ingest_ascwds_dataset.handle_job")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.construct_destination_path")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.handle_job")
     def test_ingest_single_file(
         self, handle_job_mock: Mock, construct_destination_path_mock: Mock
     ):
@@ -54,10 +54,10 @@ class IngestSingleFileTest(IngestASCWDSDatasetTests):
 
 
 class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
-    @patch("utils.utils.construct_s3_uri")
-    @patch("utils.utils.construct_destination_path")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("jobs.ingest_ascwds_dataset.handle_job")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.construct_s3_uri")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.construct_destination_path")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.get_s3_objects_list")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.handle_job")
     def test_ingest_multiple_files(
         self,
         handle_job_mock: Mock,
@@ -115,12 +115,14 @@ class IngestMultipleFilesTests(IngestASCWDSDatasetTests):
 
 
 class TestHandleJob(IngestASCWDSDatasetTests):
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.identify_csv_delimiter")
-    @patch("utils.utils.read_csv")
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
-    @patch("jobs.ingest_ascwds_dataset.fix_nmdssc_dates")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_partial_csv_content")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.identify_csv_delimiter")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_csv")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.write_to_parquet")
+    @patch(
+        "jobs._01_ingest.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values"
+    )
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.fix_nmdssc_dates")
     def test_handle_job_calls_correct_functions_when_dataset_is_ascwds(
         self,
         fix_nmdssc_dates_mock: Mock,
@@ -156,12 +158,14 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         fix_nmdssc_dates_mock.assert_not_called()
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.identify_csv_delimiter")
-    @patch("utils.utils.read_csv")
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values")
-    @patch("jobs.ingest_ascwds_dataset.fix_nmdssc_dates")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.read_partial_csv_content")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.identify_csv_delimiter")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.read_csv")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.write_to_parquet")
+    @patch(
+        "jobs._01_ingest.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values"
+    )
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.fix_nmdssc_dates")
     def test_handle_job_calls_correct_functions_when_dataset_is_nmdssc(
         self,
         fix_nmdssc_dates_mock: Mock,
@@ -198,10 +202,10 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         raise_error_mock.assert_not_called()
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.identify_csv_delimiter")
-    @patch("utils.utils.read_csv")
-    @patch("utils.utils.write_to_parquet")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_partial_csv_content")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.identify_csv_delimiter")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_csv")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.write_to_parquet")
     def test_handle_job_raises_error_if_dataset_is_not_a_valid_option(
         self,
         write_to_parquet_mock: Mock,

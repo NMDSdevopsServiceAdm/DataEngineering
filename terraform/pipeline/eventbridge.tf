@@ -95,7 +95,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
     input_template = <<EOF
     {
         "jobs": {
-            "ingest_ascwds_dataset" : {
+            "_01_ingest/ingest_ascwds_dataset" : {
                 "source": "s3://<bucket_name>/<key>"
             }
         }
