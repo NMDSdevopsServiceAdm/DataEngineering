@@ -3253,6 +3253,13 @@ class ModelFeatures:
         ]
     )
 
+    filter_without_dormancy_features_to_pre_2025_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+        ]
+    )
+
 
 @dataclass
 class ModelCareHomes:
