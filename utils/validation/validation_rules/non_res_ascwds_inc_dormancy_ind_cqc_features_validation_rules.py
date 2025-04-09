@@ -10,7 +10,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 @dataclass
-class NonResASCWDSIncDormancyIndCqcFeaturesValidationRules:
+class NonResASCWDSWithDormancyIndCqcFeaturesValidationRules:
     rules_to_check = {
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [

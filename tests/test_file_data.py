@@ -8345,35 +8345,37 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
+class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "N", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, "N", [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}]),
+    ]
+    # fmt: on
+
+    non_res_ascwds_ind_cqc_features_rows = [
+        ("1-001", date(2024, 1, 1)),
+        ("1-002", date(2024, 1, 1)),
+        ("1-001", date(2024, 1, 9)),
+        ("1-002", date(2024, 1, 9)),
     ]
 
-    non_res_ascwds_inc_dormancy_ind_cqc_features_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 1, 9),),
-        ("1-000000002", date(2024, 1, 9),),
-    ]
-
+    # fmt: off
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
-        ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
-        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
-        ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000010", date(2024, 1, 1), None, "Y", None),
-        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000012", date(2024, 1, 1), None, None, None),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, None),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, None, None),
+        ("1-005", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-006", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None, None),
+        ("1-009", date(2024, 1, 1), None, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-010", date(2024, 1, 1), None, Dormancy.dormant, None),
+        ("1-011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-012", date(2024, 1, 1), None, None, None),
     ]
     # fmt: on
 
@@ -8382,32 +8384,28 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesData:
 class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 9), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+    ]
+    # fmt: on
+
+    non_res_ascwds_ind_cqc_features_rows = [
+        ("1-001", date(2024, 1, 1)),
+        ("1-002", date(2024, 1, 1)),
+        ("1-001", date(2024, 1, 9)),
+        ("1-002", date(2024, 1, 9)),
     ]
 
-    non_res_ascwds_without_dormancy_ind_cqc_features_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 1, 9),),
-        ("1-000000002", date(2024, 1, 9),),
-    ]
-
+    # fmt: off
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home, "Y", None),
-        ("1-000000003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000004", date(2024, 1, 1), CareHome.care_home, None, None),
-        ("1-000000005", date(2024, 1, 1), CareHome.not_care_home, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000006", date(2024, 1, 1), CareHome.not_care_home, "Y", None),
-        ("1-000000007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000008", date(2024, 1, 1), CareHome.not_care_home, None, None),
-        ("1-000000009", date(2024, 1, 1), None, "Y", [{"name": "Name", "description": "Desc"}]),
-        ("1-000000010", date(2024, 1, 1), None, "Y", None),
-        ("1-000000011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-000000012", date(2024, 1, 1), None, None, None),
+        ("1-003", date(2024, 1, 1), CareHome.care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-004", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-007", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-011", date(2024, 1, 1), None, [{"name": "Name", "description": "Desc"}]),
+        ("1-012", date(2024, 1, 1), None, None),
     ]
     # fmt: on
 
