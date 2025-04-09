@@ -158,10 +158,10 @@ class TestHandleJob(IngestASCWDSDatasetTests):
         fix_nmdssc_dates_mock.assert_not_called()
         write_to_parquet_mock.assert_called_once_with(df, self.destination_path)
 
-    @patch("jobs._01_ingest.ingest_ascwds_dataset.read_partial_csv_content")
-    @patch("jobs._01_ingest.ingest_ascwds_dataset.identify_csv_delimiter")
-    @patch("jobs._01_ingest.ingest_ascwds_dataset.read_csv")
-    @patch("jobs._01_ingest.ingest_ascwds_dataset.write_to_parquet")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_partial_csv_content")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.identify_csv_delimiter")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.read_csv")
+    @patch("jobs._01_ingest.ingest_ascwds_dataset.utils.write_to_parquet")
     @patch(
         "jobs._01_ingest.ingest_ascwds_dataset.raise_error_if_mainjrid_includes_unknown_values"
     )
