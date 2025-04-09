@@ -72,6 +72,7 @@ def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing the 'time_registered' column.
+
     Returns:
         DataFrame: DataFrame with 'time_registered' transformed into six-month bands,
                    capped at ten years.
@@ -125,7 +126,7 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     """
     Averages model predictions by 'related_location' and 'time_registered_banded_and_capped'.
 
-    Only models predictions for locations who have a non null for both models contribute to the average.
+    Only model predictions for locations who have a non null for both models contribute to the average.
 
     Args:
         df (DataFrame): DataFrame with model predictions.

@@ -17,6 +17,9 @@ from utils.estimate_filled_posts.models.non_res_with_dormancy import (
 from utils.estimate_filled_posts.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
+from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
+)
 from utils.estimate_filled_posts.models.non_res_pir_linear_regression import (
     model_non_res_pir_linear_regression,
 )
@@ -121,6 +124,10 @@ def main(
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
         ml_model_metrics_destination,
+    )
+
+    estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
+        estimate_filled_posts_df
     )
 
     estimate_filled_posts_df = model_non_res_pir_linear_regression(
