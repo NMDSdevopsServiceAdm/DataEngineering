@@ -96,10 +96,8 @@ def main(
         IndCQC.cqc_location_import_date,
         IndCQC.current_region,
         IndCQC.number_of_beds,
-        IndCQC.pir_people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
-        IndCQC.ascwds_pir_merged,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_rate_of_change_trendline_model,
         Keys.year,
@@ -108,8 +106,7 @@ def main(
         Keys.import_date,
     )
 
-    print("number_of_features:")
-    print(len(list_for_vectorisation))
+    print(f"Number_of_features: {len(list_for_vectorisation)}")
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
     print(f"Exporting as parquet to {care_home_ind_cqc_features_destination}")
