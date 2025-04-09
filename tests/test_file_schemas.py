@@ -3221,6 +3221,20 @@ class ModelFeatures:
         ]
     )
 
+    add_date_index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+        ]
+    )
+    expected_add_date_index_column_schema = StructType(
+        [
+            *add_date_index_column_schema,
+            StructField(IndCQC.cqc_location_import_date_indexed, IntegerType(), False),
+        ]
+    )
+
     group_rural_urban_sparse_categories_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

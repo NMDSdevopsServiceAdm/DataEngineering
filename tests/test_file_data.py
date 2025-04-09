@@ -6126,6 +6126,21 @@ class ModelFeatures:
         ("1-001", None, 0),
     ]
 
+    add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
+    ]
+    expected_add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
+    ]
+
     group_rural_urban_sparse_categories_rows = [
         ("1-001", "Rural"),
         ("1-002", "Rural sparse"),

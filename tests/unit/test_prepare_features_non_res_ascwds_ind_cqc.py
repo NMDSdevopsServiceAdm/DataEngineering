@@ -27,6 +27,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
     @patch("utils.utils.select_rows_with_non_null_value")
+    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_index_column")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
@@ -35,6 +36,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
         add_array_column_count_mock: Mock,
+        add_date_index_column_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
         vectorise_dataframe_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -49,6 +51,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_mock.call_count, 3)
+        self.assertEqual(add_date_index_column_mock.call_count, 2)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)
 
