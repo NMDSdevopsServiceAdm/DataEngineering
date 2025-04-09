@@ -36,6 +36,7 @@ class ArchivePartitionKeys:
 class IndCqcColumns:
     absolute_residual: str = "absolute_residual"
     activity_count: str = "activity_count"
+    activity_count_capped: str = "activity_count_capped"
     ascwds_pir_merged: str = "ascwds_pir_merged"
     ascwds_filled_posts: str = "ascwds_filled_posts"
     ascwds_filled_posts_dedup: str = ascwds_filled_posts + "_deduplicated"
