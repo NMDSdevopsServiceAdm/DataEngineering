@@ -94,7 +94,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         read_from_parquet_mock.return_value = self.test_df
 
         input_df_length = self.test_df.count()
-        self.assertEqual(input_df_length, 8)
+        self.assertEqual(input_df_length, 3)
 
         job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
 
