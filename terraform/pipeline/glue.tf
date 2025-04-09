@@ -15,7 +15,6 @@ module "csv_to_parquet_job" {
     "--source"      = ""
     "--destination" = ""
     "--delimiter"   = ","
-
   }
 }
 
