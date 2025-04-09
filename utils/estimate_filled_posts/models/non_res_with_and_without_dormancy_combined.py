@@ -5,7 +5,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
 )
-
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
