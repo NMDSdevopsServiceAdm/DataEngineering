@@ -40,9 +40,9 @@ def combine_non_res_with_and_without_dormancy_models(
         locations_reduced_df, IndCqc.care_home, CareHome.not_care_home
     )
 
-    # TODO - 6 - convert time registered month bands to 6 monthly bands (capped at 10 years)
+    combined_models_df = group_time_registered_to_six_month_bands(non_res_locations_df)
 
-    combined_models_df = calculate_and_apply_model_ratios(non_res_locations_df)
+    combined_models_df = calculate_and_apply_model_ratios(combined_models_df)
 
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
 
@@ -59,10 +59,46 @@ def combine_non_res_with_and_without_dormancy_models(
     return locations_with_predictions_df
 
 
+def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
+    """
+    Groups 'time_registered' into six-month bands and caps values beyond ten years.
+
+    The 'time_registered' column starts at one for individuals registered for up to one month.
+    To align with six-month bands where '1' represents up to six months, we subtract one before
+    dividing by six.
+
+    Since registration patterns change little beyond ten years and sample sizes decrease,
+    we cap values at ten years (equivalent to 20 six-month bands) for consistency.
+
+    Args:
+        df (DataFrame): Input DataFrame containing the 'time_registered' column.
+    Returns:
+        DataFrame: DataFrame with 'time_registered' transformed into six-month bands,
+                   capped at ten years.
+    """
+    six_month_time_bands: int = 6
+    ten_years: int = 20  # 10 years is 20 six-month bands
+
+    df = df.withColumn(
+        TempColumns.time_registered_banded_and_capped,
+        F.floor(
+            (F.col(IndCqc.time_registered) - F.lit(1)) / F.lit(six_month_time_bands)
+        ),
+    )
+    df = df.withColumn(
+        TempColumns.time_registered_banded_and_capped,
+        F.least(
+            F.col(TempColumns.time_registered_banded_and_capped),
+            F.lit(ten_years),
+        ),
+    )
+    return df
+
+
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
-    the dataset based on 'related_location' and 'time_registered'.
+    the dataset based on 'related_location' and 'time_registered_banded_and_capped'.
 
     Args:
         df (DataFrame): Input DataFrame with model predictions.
@@ -74,7 +110,11 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
 
     ratio_df = calculate_adjustment_ratios(ratio_df)
 
-    df = df.join(ratio_df, [IndCqc.related_location, IndCqc.time_registered], "left")
+    df = df.join(
+        ratio_df,
+        [IndCqc.related_location, TempColumns.time_registered_banded_and_capped],
+        "left",
+    )
 
     df = apply_model_ratios(df)
 
@@ -83,7 +123,7 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
 
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
-    Averages model predictions by 'related_location' and 'time_registered'.
+    Averages model predictions by 'related_location' and 'time_registered_banded_and_capped'.
 
     Only models predictions for locations who have a non null for both models contribute to the average.
 
@@ -99,7 +139,7 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     )
 
     avg_df = both_models_known_df.groupBy(
-        IndCqc.related_location, IndCqc.time_registered
+        IndCqc.related_location, TempColumns.time_registered_banded_and_capped
     ).agg(
         F.avg(IndCqc.non_res_with_dormancy_model).alias(TempColumns.avg_with_dormancy),
         F.avg(IndCqc.non_res_without_dormancy_model).alias(

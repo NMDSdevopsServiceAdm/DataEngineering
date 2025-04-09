@@ -57,6 +57,42 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
 
 
+class GroupTimeRegisteredToSixMonthBandsTests(
+    ModelNonResWithAndWithoutDormancyCombinedTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.group_time_registered_to_six_month_bands_rows,
+            Schemas.group_time_registered_to_six_month_bands_schema,
+        )
+        self.returned_df = job.group_time_registered_to_six_month_bands(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_group_time_registered_to_six_month_bands_rows,
+            Schemas.expected_group_time_registered_to_six_month_bands_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_group_time_registered_to_six_month_bands_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_group_time_registered_to_six_month_bands_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    NRModel_TempCol.time_registered_banded_and_capped
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.time_registered_banded_and_capped
+                ],
+                places=3,
+                msg=f"Returned value for row {i} does not match expected",
+            )
+
+
 class CalculateAndApplyModelRatioTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def setUp(self) -> None:
         super().setUp()
@@ -99,7 +135,7 @@ class AverageModelsByRelatedLocationAndTimeRegisteredTests(
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.related_location, IndCqc.time_registered
+            IndCqc.related_location, NRModel_TempCol.time_registered_banded_and_capped
         ).collect()
         self.expected_data = self.expected_df.collect()
 
