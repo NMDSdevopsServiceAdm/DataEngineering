@@ -18,6 +18,9 @@ from utils.feature_engineering_resources.feature_engineering_rural_urban import 
 from utils.feature_engineering_resources.feature_engineering_services import (
     FeatureEngineeringValueLabelsServices as ServicesFeatures,
 )
+from utils.feature_engineering_resources.feature_engineering_specialisms import (
+    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
+)
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
@@ -56,6 +59,13 @@ def main(
         is_array_col=True,
     )
 
+    features_df, specialisms_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.labels_dict,
+        is_array_col=True,
+    )
+
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011,
@@ -90,10 +100,8 @@ def main(
         IndCQC.cqc_location_import_date_indexed,
         IndCQC.current_region,
         IndCQC.number_of_beds,
-        IndCQC.pir_people_directly_employed,
         IndCQC.care_home,
         IndCQC.features,
-        IndCQC.ascwds_pir_merged,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_rate_of_change_trendline_model,
         Keys.year,
@@ -102,8 +110,7 @@ def main(
         Keys.import_date,
     )
 
-    print("number_of_features:")
-    print(len(list_for_vectorisation))
+    print(f"Number_of_features: {len(list_for_vectorisation)}")
     print(f"length of feature df: {vectorised_dataframe.count()}")
 
     print(f"Exporting as parquet to {care_home_ind_cqc_features_destination}")
