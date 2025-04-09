@@ -1231,8 +1231,8 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
         ).collect()
         returned_data = self.returned_df.collect()
 
-        expected_data.show()
-        returned_data.show()
+        print(expected_data)
+        print(returned_data)
 
         for iterable in range(len(expected_data)):
             returned_ratio_dict = returned_data[iterable][
