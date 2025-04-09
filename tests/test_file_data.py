@@ -6311,6 +6311,17 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
     ]
 
+    group_time_registered_to_six_month_bands_rows = [
+        ("1-001", 6),
+        ("1-002", 7),
+        ("1-003", 200),
+    ]
+    expected_group_time_registered_to_six_month_bands_rows = [
+        ("1-001", 6, 0),
+        ("1-002", 7, 1),
+        ("1-003", 200, 20),
+    ]
+
     calculate_and_apply_model_ratios_rows = [
         ("1-001", date(2022, 2, 1), "Y", 2, 3.0, None),
         ("1-001", date(2023, 3, 1), "Y", 3, 4.0, 5.0),

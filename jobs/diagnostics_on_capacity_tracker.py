@@ -51,7 +51,7 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
-number_of_days_in_rolling_average: int = 185  # Note: using 185 as a proxy for 6 months
+number_of_days_in_window: int = 185  # Note: using 185 as a proxy for 6 months
 
 
 def main(
@@ -139,7 +139,7 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = model_primary_service_rate_of_change(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
-        number_of_days_in_rolling_average,
+        number_of_days_in_window,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
@@ -203,7 +203,7 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = model_primary_service_rate_of_change(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
-        number_of_days_in_rolling_average,
+        number_of_days_in_window,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
