@@ -2,15 +2,16 @@ import unittest
 
 from unittest.mock import patch, Mock
 
-import jobs.ingest_capacity_tracker_data as job
-
+import jobs._01_ingest.ingest_capacity_tracker_data as job
+from tests.unit_test_data._01_ingest.data import (
+    CapacityTrackerCareHomeData as CareHomeData,
+    CapacityTrackerNonResData as NonResData,
+)
+from tests.unit_test_data._01_ingest.schemas import (
+    CapacityTrackerCareHomeSchema as CareHomeSchema,
+    CapacityTrackerNonResSchema as NonResSchema,
+)
 from utils import utils
-
-from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
-from tests.test_file_data import CapacityTrackerNonResData as NonResData
-
-from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
-from tests.test_file_schemas import CapacityTrackerNonResSchema as NonResSchema
 
 
 class IngestCapacityTrackerDataTests(unittest.TestCase):
@@ -39,10 +40,12 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             NonResData.expected_rows, NonResSchema.sample_schema
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(
+        "jobs._01_ingest.ingest_capacity_tracker_data.utils.read_partial_csv_content"
+    )
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.get_s3_objects_list")
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.write_to_parquet")
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.read_csv")
     def test_main_runs_when_source_is_csv(
         self,
         read_csv_patch: Mock,
@@ -68,10 +71,12 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(
+        "jobs._01_ingest.ingest_capacity_tracker_data.utils.read_partial_csv_content"
+    )
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.get_s3_objects_list")
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.write_to_parquet")
+    @patch("jobs._01_ingest.ingest_capacity_tracker_data.utils.read_csv")
     def test_main_runs_when_source_is_directory(
         self,
         read_csv_patch: Mock,

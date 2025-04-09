@@ -34,7 +34,7 @@ module "spss_csv_to_parquet_job" {
 
 module "ingest_capacity_tracker_data_job" {
   source          = "../modules/glue-job"
-  script_name     = "ingest_capacity_tracker_data.py"
+  script_name     = "_01_ingest/ingest_capacity_tracker_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
