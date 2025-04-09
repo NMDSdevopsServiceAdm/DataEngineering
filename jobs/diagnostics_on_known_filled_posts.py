@@ -15,7 +15,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.cqc_location_import_date,
     IndCQC.ascwds_filled_posts_dedup_clean,
     IndCQC.primary_service_type,
-    IndCQC.rolling_average_model,
+    IndCQC.posts_rolling_average_model,
     IndCQC.care_home_model,
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,

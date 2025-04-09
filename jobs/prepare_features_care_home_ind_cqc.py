@@ -20,6 +20,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
 )
 from utils.features.helper import (
     add_array_column_count,
+    add_date_index_column,
     expand_encode_and_extract_features,
     vectorise_dataframe,
 )
@@ -40,8 +41,10 @@ def main(
         filtered_loc_data, IndCQC.number_of_beds
     )
 
+    features_df = add_date_index_column(filtered_loc_data)
+
     features_df = add_array_column_count(
-        df=filtered_loc_data,
+        df=features_df,
         new_col_name=IndCQC.service_count,
         col_to_check=IndCQC.services_offered,
     )
@@ -84,6 +87,7 @@ def main(
     vectorised_features_df = vectorised_dataframe.select(
         IndCQC.location_id,
         IndCQC.cqc_location_import_date,
+        IndCQC.cqc_location_import_date_indexed,
         IndCQC.current_region,
         IndCQC.number_of_beds,
         IndCQC.pir_people_directly_employed,
