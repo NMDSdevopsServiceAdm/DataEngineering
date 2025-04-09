@@ -2646,10 +2646,19 @@ class CareHomeFeaturesSchema:
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
+            StructField(
+                CQCLClean.imputed_regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
             StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
             StructField(
                 IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
