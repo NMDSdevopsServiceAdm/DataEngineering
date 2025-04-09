@@ -3269,7 +3269,6 @@ class ModelFeatures:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
         ]
     )
 

@@ -6170,13 +6170,13 @@ class ModelFeatures:
     ]
 
     filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31), CareHome.care_home),
-        ("1-002", date(2025, 1, 1), CareHome.not_care_home),
-        ("1-003", date(2025, 1, 2), CareHome.care_home),
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 2)),
     ]
     expected_filter_without_dormancy_features_to_pre_2025_rows = [
-        ("1-001", date(2024, 12, 31), CareHome.care_home),
-        ("1-002", date(2025, 1, 1), CareHome.not_care_home),
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
     ]
 
 
