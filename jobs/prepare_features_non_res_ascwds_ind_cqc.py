@@ -60,8 +60,8 @@ vectorised_features_column_list: List[str] = [
 
 def main(
     ind_cqc_filled_posts_cleaned_source: str,
-    non_res_ascwds_inc_dormancy_ind_cqc_features_destination: str,
-    non_res_ascwds_without_dormancy_ind_cqc_features_destination: str,
+    with_dormancy_features_destination: str,
+    without_dormancy_features_destination: str,
 ) -> DataFrame:
     print("Creating non res ascwds inc dormancy features dataset...")
 
@@ -184,22 +184,18 @@ def main(
         f"length of features with dormancy df: {vectorised_features_with_dormancy_df.count()}"
     )
 
-    print(
-        f"Exporting as parquet to {non_res_ascwds_inc_dormancy_ind_cqc_features_destination}"
-    )
+    print(f"Exporting as parquet to {with_dormancy_features_destination}")
     utils.write_to_parquet(
         vectorised_features_with_dormancy_df,
-        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
+        with_dormancy_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
 
-    print(
-        f"Exporting as parquet to {non_res_ascwds_without_dormancy_ind_cqc_features_destination}"
-    )
+    print(f"Exporting as parquet to {without_dormancy_features_destination}")
     utils.write_to_parquet(
         vectorised_features_without_dormancy_df,
-        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
+        without_dormancy_features_destination,
         mode="overwrite",
         partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
     )
@@ -211,27 +207,27 @@ if __name__ == "__main__":
 
     (
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
-        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
+        with_dormancy_features_destination,
+        without_dormancy_features_destination,
     ) = utils.collect_arguments(
         (
             "--ind_cqc_filled_posts_cleaned_source",
             "Source s3 directory for ind_cqc_filled_posts_cleaned dataset",
         ),
         (
-            "--non_res_ascwds_inc_dormancy_ind_cqc_features_destination",
-            "A destination directory for outputting non-res ASCWDS inc dormancy model features dataset",
+            "--with_dormancy_features_destination",
+            "A destination directory for outputting non-res ASCWDS with dormancy model features dataset",
         ),
         (
-            "--non_res_ascwds_without_dormancy_ind_cqc_features_destination",
+            "--without_dormancy_features_destination",
             "A destination directory for outputting non-res ASCWDS without dormancy model features dataset",
         ),
     )
 
     main(
         ind_cqc_filled_posts_cleaned_source,
-        non_res_ascwds_inc_dormancy_ind_cqc_features_destination,
-        non_res_ascwds_without_dormancy_ind_cqc_features_destination,
+        with_dormancy_features_destination,
+        without_dormancy_features_destination,
     )
 
     print("Spark job 'prepare_features_non_res_ascwds_ind_cqc' complete")
