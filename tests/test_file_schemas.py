@@ -2744,7 +2744,6 @@ class ModelPrimaryServiceRateOfChange:
         [
             *calculate_care_home_status_count_schema,
             StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
-            StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
         ]
     )
 
@@ -2820,8 +2819,6 @@ class ModelPrimaryServiceRateOfChange:
     calculate_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
-            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
             StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
             StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
