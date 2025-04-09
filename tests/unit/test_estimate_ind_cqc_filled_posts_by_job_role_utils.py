@@ -1219,6 +1219,10 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
     def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         self,
     ):
+        
+        self.returned_df.show(truncate=False)
+        self.expected_df.show(truncate=False)
+
         expected_data = self.expected_df.withColumn(
             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
             F.map_from_entries(
@@ -1231,9 +1235,6 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
         ).collect()
         returned_data = self.returned_df.collect()
 
-        print(expected_data)
-        print(returned_data)
-
         for iterable in range(len(expected_data)):
             returned_ratio_dict = returned_data[iterable][
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
@@ -1245,6 +1246,9 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
             if isinstance(returned_ratio_dict, dict) and isinstance(
                 expected_ratio_dict, dict
             ):
+                print(expected_data)
+                print(returned_data)
+
                 for i in list(expected_ratio_dict.keys()):
                     self.assertAlmostEqual(
                         returned_ratio_dict[i],
@@ -1263,3 +1267,16 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
                 ]
 
                 self.assertEqual(expected_ratio_value, returned_ratio_value)
+
+    def test_sample(
+        self,
+    ):
+        selected_cols = [col for col in self.expected_df.columns if col != IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role]
+
+        expected_df = self.expected_df.select(*selected_cols)
+        returned_df =  self.returned_df.select(*selected_cols)
+
+        expected_df.show(truncate=False)
+        returned_df.show(truncate=False)
+
+        self.assertEqual(expected_df.collect(), returned_df.collect())
