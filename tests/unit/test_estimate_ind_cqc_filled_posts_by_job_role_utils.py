@@ -1231,6 +1231,9 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
         ).collect()
         returned_data = self.returned_df.collect()
 
+        expected_data.show()
+        returned_data.show()
+
         for iterable in range(len(expected_data)):
             returned_ratio_dict = returned_data[iterable][
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
