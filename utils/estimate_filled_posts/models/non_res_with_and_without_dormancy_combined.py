@@ -98,7 +98,7 @@ def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
 def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
     """
     Calculates the ratio between 'with_dormancy' and 'without_dormancy' models by partitioning
-    the dataset based on 'related_location' and 'time_registered'.
+    the dataset based on 'related_location' and 'time_registered_banded_and_capped'.
 
     Args:
         df (DataFrame): Input DataFrame with model predictions.
@@ -110,7 +110,11 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
 
     ratio_df = calculate_adjustment_ratios(ratio_df)
 
-    df = df.join(ratio_df, [IndCqc.related_location, IndCqc.time_registered], "left")
+    df = df.join(
+        ratio_df,
+        [IndCqc.related_location, TempColumns.time_registered_banded_and_capped],
+        "left",
+    )
 
     df = apply_model_ratios(df)
 
@@ -119,7 +123,7 @@ def calculate_and_apply_model_ratios(df: DataFrame) -> DataFrame:
 
 def average_models_by_related_location_and_time_registered(df: DataFrame) -> DataFrame:
     """
-    Averages model predictions by 'related_location' and 'time_registered'.
+    Averages model predictions by 'related_location' and 'time_registered_banded_and_capped'.
 
     Only models predictions for locations who have a non null for both models contribute to the average.
 
@@ -135,7 +139,7 @@ def average_models_by_related_location_and_time_registered(df: DataFrame) -> Dat
     )
 
     avg_df = both_models_known_df.groupBy(
-        IndCqc.related_location, IndCqc.time_registered
+        IndCqc.related_location, TempColumns.time_registered_banded_and_capped
     ).agg(
         F.avg(IndCqc.non_res_with_dormancy_model).alias(TempColumns.avg_with_dormancy),
         F.avg(IndCqc.non_res_without_dormancy_model).alias(
