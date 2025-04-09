@@ -3358,6 +3358,21 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    group_time_registered_to_six_month_bands_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.time_registered, IntegerType(), False),
+        ]
+    )
+    expected_group_time_registered_to_six_month_bands_schema = StructType(
+        [
+            *group_time_registered_to_six_month_bands_schema,
+            StructField(
+                NRModel_TempCol.time_registered_banded_and_capped, IntegerType(), False
+            ),
+        ]
+    )
+
     calculate_and_apply_model_ratios_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
