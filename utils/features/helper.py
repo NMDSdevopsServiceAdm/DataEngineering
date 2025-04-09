@@ -117,7 +117,12 @@ def cap_integer_at_max_value(
 
 def add_date_index_column(df: DataFrame) -> DataFrame:
     """
-    Creates an index column in the DataFrame based on the cqc_location_import_date column.
+    Creates an index column in the DataFrame based on the cqc_location_import_date column, partitioned by care_home.
+
+    dense_rank has been used as it doesn't leave gaps in ranking sequence when there are ties.
+    For example, if three rows have the same date then they would all receive the same index value.
+    The first date after this would receive the next index value.
+    The difference with rank is that it leaves gaps in the sequence, so the first three dates would be indexed at 1 and the next date would be 4.
 
     Args:
         df (DataFrame): Input DataFrame.

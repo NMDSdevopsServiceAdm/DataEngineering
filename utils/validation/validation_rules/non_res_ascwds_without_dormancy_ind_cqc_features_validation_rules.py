@@ -33,6 +33,7 @@ class NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.time_registered: 0.0,
             IndCqcColumns.service_count: 1,
             IndCqcColumns.activity_count: 0,
+            IndCqcColumns.cqc_location_import_date_indexed: 1,
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_pir_merged: 3000.0,
