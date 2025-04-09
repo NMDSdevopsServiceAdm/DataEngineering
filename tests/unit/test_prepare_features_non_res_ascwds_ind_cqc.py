@@ -26,7 +26,9 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
     @patch("utils.utils.write_to_parquet")
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
-    @patch("jobs.prepare_features_care_home_ind_cqc.expand_encode_and_extract_features")
+    @patch(
+        "jobs.prepare_features_non_res_ascwds_ind_cqc.expand_encode_and_extract_features"
+    )
     @patch("utils.utils.select_rows_with_non_null_value")
     @patch(
         "jobs.prepare_features_non_res_ascwds_ind_cqc.group_rural_urban_sparse_categories"
