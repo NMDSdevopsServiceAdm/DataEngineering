@@ -5,6 +5,7 @@ from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
@@ -525,5 +526,45 @@ def calculate_job_group_sum_from_job_role_map_column(
     )
 
     df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
+
+    return df
+
+
+def filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Copies ascwds_job_role_counts into new column ascwds_job_role_counts_filtered when criteria is met.
+
+    The criteria is:
+        worker_records_bounded must be >= 1 AND
+        (Job groups direct_care must be >= 1 OR managers + regulated_professions must be >= 1)
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column and job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_filtered,
+        F.when(
+            (F.col(IndCQC.worker_records_bounded) >= 1)
+            & (
+                (F.col(IndCQC.ascwds_job_group_counts)[JobGroupLabels.direct_care] >= 1)
+                | (
+                    (
+                        F.col(IndCQC.ascwds_job_group_counts)[JobGroupLabels.managers]
+                        + F.col(IndCQC.ascwds_job_group_counts)[
+                            JobGroupLabels.regulated_professions
+                        ]
+                    )
+                    >= 1
+                )
+            ),
+            F.col(IndCQC.ascwds_job_role_counts),
+        ).otherwise(None),
+    )
 
     return df
