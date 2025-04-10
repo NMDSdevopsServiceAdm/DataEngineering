@@ -11059,6 +11059,136 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    filter_ascwds_by_job_role_breakdown_when_dc_and_manregprof_1_or_more_rows = [
+        (
+            "1-001",
+            0,
+            {
+                MainJobRoleLabels.care_worker: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-002",
+            1,
+            {
+                MainJobRoleLabels.admin_staff: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 1,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-004",
+            1,
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 1,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-005",
+            1,
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 1,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+    ]
+    expected_filter_ascwds_by_job_role_breakdown_when_dc_and_manregprof_1_or_more_rows = [
+        (
+            "1-001",
+            0,
+            {
+                MainJobRoleLabels.care_worker: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+            None,
+        ),
+        (
+            "1-002",
+            1,
+            {
+                MainJobRoleLabels.admin_staff: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 1,
+            },
+            None,
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-004",
+            1,
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 1,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-005",
+            1,
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 1,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:
