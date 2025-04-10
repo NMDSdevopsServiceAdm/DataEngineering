@@ -70,7 +70,7 @@ class CalculateExpectedSizeofDataset(
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_non_res_without_dormancy_features_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(

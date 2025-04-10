@@ -248,7 +248,6 @@ class IndCqcColumns:
     provider_id: str = CQCLClean.provider_id
     provider_name: str = CQCLClean.provider_name
     r2: str = "r2"
-    ratio_rolling_average_model: str = "ratio_rolling_average_model"
     registered_manager_count: str = "registered_manager_count"
     registered_manager_names: str = CQCLClean.registered_manager_names
     registration_date: str = CQCLClean.registration_date
