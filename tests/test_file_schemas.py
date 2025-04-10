@@ -6710,33 +6710,33 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    filter_ascwds_by_job_role_breakdown_when_dc_or_manregprof_1_or_more_schema = (
+    filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_group_counts,
+                MapType(StringType(), IntegerType()),
+                True,
+            ),
+        ]
+    )
+    expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema = (
         StructType(
             [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.worker_records_bounded, IntegerType(), True),
+                *filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
                 StructField(
-                    IndCQC.ascwds_job_role_counts,
-                    MapType(StringType(), IntegerType()),
-                    True,
-                ),
-                StructField(
-                    IndCQC.ascwds_job_group_counts,
+                    IndCQC.ascwds_job_role_counts_filtered,
                     MapType(StringType(), IntegerType()),
                     True,
                 ),
             ]
         )
-    )
-    expected_filter_ascwds_by_job_role_breakdown_when_dc_or_manregprof_1_or_more_schema = StructType(
-        [
-            *filter_ascwds_by_job_role_breakdown_when_dc_or_manregprof_1_or_more_schema,
-            StructField(
-                IndCQC.ascwds_job_role_counts_filtered,
-                MapType(StringType(), IntegerType()),
-                True,
-            ),
-        ]
     )
 
 
