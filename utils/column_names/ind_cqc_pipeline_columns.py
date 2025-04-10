@@ -286,13 +286,13 @@ class IndCqcColumns:
 
 @dataclass
 class PrimaryServiceRateOfChangeColumns:
-    """The names of the temporary columns created during the rolling average process."""
+    """The names of the temporary columns created during the rate of change process."""
 
     care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
+    column_with_values: str = "column_with_values"
+    column_with_values_interpolated: str = "column_with_values_interpolated"
+    previous_column_with_values_interpolated: str = (
+        "previous_column_with_values_interpolated"
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"

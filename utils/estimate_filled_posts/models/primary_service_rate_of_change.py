@@ -37,10 +37,10 @@ def model_primary_service_rate_of_change(
     """
     number_of_days_for_window: int = number_of_days - 1
 
-    df = df.withColumn(TempCol.column_to_average, F.col(column_with_values))
+    df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
 
-    df = clean_column_to_average(df)
-    df = interpolate_column_to_average(df)
+    df = clean_column_with_values(df)
+    df = interpolate_column_with_values(df)
 
     df = calculate_rolling_rate_of_change(
         df, number_of_days_for_window, rolling_rate_of_change_model_column_name
@@ -52,9 +52,9 @@ def model_primary_service_rate_of_change(
     return df
 
 
-def clean_column_to_average(df: DataFrame) -> DataFrame:
+def clean_column_with_values(df: DataFrame) -> DataFrame:
     """
-    Only keep values in the column_to_average for locations who have only submitted at least twice and only had one care home status.
+    Only keep values in the column_with_values for locations who have only submitted at least twice and only had one care home status.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -68,11 +68,11 @@ def clean_column_to_average(df: DataFrame) -> DataFrame:
     df = calculate_care_home_status_count(df)
     df = calculate_submission_count(df)
     df = df.withColumn(
-        TempCol.column_to_average,
+        TempCol.column_with_values,
         F.when(
             (F.col(TempCol.care_home_status_count) == one_care_home_status)
             & (F.col(TempCol.submission_count) >= two_submissions),
-            F.col(TempCol.column_to_average),
+            F.col(TempCol.column_with_values),
         ).otherwise(F.lit(None)),
     )
     return df
@@ -110,14 +110,14 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = df.withColumn(
-        TempCol.submission_count, F.count(TempCol.column_to_average).over(w)
+        TempCol.submission_count, F.count(TempCol.column_with_values).over(w)
     )
     return df
 
 
-def interpolate_column_to_average(df: DataFrame) -> DataFrame:
+def interpolate_column_with_values(df: DataFrame) -> DataFrame:
     """
-    Interpolate column_to_average and coalesce known column_to_average values with interpolated values.
+    Interpolate column_with_values and coalesce known column_with_values values with interpolated values.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -127,13 +127,13 @@ def interpolate_column_to_average(df: DataFrame) -> DataFrame:
     """
     df = model_interpolation(
         df,
-        TempCol.column_to_average,
+        TempCol.column_with_values,
         "straight",
-        TempCol.column_to_average_interpolated,
+        TempCol.column_with_values_interpolated,
     )
     df = df.withColumn(
-        TempCol.column_to_average_interpolated,
-        F.coalesce(TempCol.column_to_average, TempCol.column_to_average_interpolated),
+        TempCol.column_with_values_interpolated,
+        F.coalesce(TempCol.column_with_values, TempCol.column_with_values_interpolated),
     )
     return df
 
@@ -163,13 +163,13 @@ def calculate_rolling_rate_of_change(
     df = add_rolling_sum(
         df,
         number_of_days,
-        TempCol.column_to_average_interpolated,
+        TempCol.column_with_values_interpolated,
         TempCol.rolling_current_period_sum,
     )
     df = add_rolling_sum(
         df,
         number_of_days,
-        TempCol.previous_column_to_average_interpolated,
+        TempCol.previous_column_with_values_interpolated,
         TempCol.rolling_previous_period_sum,
     )
     df = calculate_single_period_rate_of_change(df)
@@ -204,9 +204,9 @@ def add_previous_value_column(df: DataFrame) -> DataFrame:
     df = get_selected_value(
         df,
         location_window,
-        TempCol.column_to_average_interpolated,
-        TempCol.column_to_average_interpolated,
-        TempCol.previous_column_to_average_interpolated,
+        TempCol.column_with_values_interpolated,
+        TempCol.column_with_values_interpolated,
+        TempCol.previous_column_with_values_interpolated,
         "last",
     )
     return df
@@ -232,8 +232,8 @@ def add_rolling_sum(
 
     """
     both_periods_not_null = (
-        F.col(TempCol.column_to_average_interpolated).isNotNull()
-        & F.col(TempCol.previous_column_to_average_interpolated).isNotNull()
+        F.col(TempCol.column_with_values_interpolated).isNotNull()
+        & F.col(TempCol.previous_column_with_values_interpolated).isNotNull()
     )
 
     rolling_sum_window = (
