@@ -2,12 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_data import (
-    DiagnosticsOnCapacityTrackerData as Data,
-)
-from tests.test_file_schemas import (
-    DiagnosticsOnCapacityTrackerSchemas as Schemas,
-)
+from tests.test_file_data import DiagnosticsOnCapacityTrackerData as Data
+from tests.test_file_schemas import DiagnosticsOnCapacityTrackerSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -88,7 +84,7 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
         self.assertIsInstance(job.standardised_value_cutoff, float)
 
     def test_number_of_days_in_window_is_expected_value(self):
-        self.assertEqual(job.number_of_days_in_window, 185)
+        self.assertEqual(job.number_of_days_in_window, 95)
         self.assertIsInstance(job.number_of_days_in_window, int)
 
 

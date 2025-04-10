@@ -6,15 +6,13 @@ from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.linalg import SparseVector
 
 import jobs.prepare_features_care_home_ind_cqc as job
+from tests.test_file_data import CareHomeFeaturesData as Data
+from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 from utils import utils
-
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-
-from tests.test_file_data import CareHomeFeaturesData as Data
-from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 
 
 class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
@@ -61,14 +59,16 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             self.CARE_HOME_FEATURES_DIR,
         )
 
+        read_from_parquet_mock.assert_called_once_with(
+            self.IND_FILLED_POSTS_CLEANED_DIR
+        )
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(add_date_index_column_mock.call_count, 1)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 2)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
+        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 4)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
-
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.CARE_HOME_FEATURES_DIR,
@@ -91,7 +91,9 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            51, [0, 9, 10, 17, 24, 31], [10.0, 1.0, 2.5, 1.0, 1.0, 1.0]
+            39,
+            [0, 1, 2, 3, 12, 19, 23, 25, 34],
+            [1.0, 2.5, 1.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0],
         )
         actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)

@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -26,13 +26,12 @@ from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
     blend_pir_and_ascwds_when_ascwds_out_of_date,
 )
 
-
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 @dataclass
 class NumericalValues:
-    number_of_days_in_window = 185  # Note: using 185 as a proxy for 6 months
+    number_of_days_in_window = 95  # Note: using 95 as a proxy for 3 months
 
 
 def main(
@@ -58,7 +57,7 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
     )
 
-    df = model_primary_service_rate_of_change(
+    df = model_primary_service_rate_of_change_trendline(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.number_of_days_in_window,
@@ -99,6 +98,13 @@ def main(
         NumericalValues.number_of_days_in_window,
         IndCQC.primary_service_type,
         IndCQC.posts_rolling_average_model,
+    )
+    df = model_calculate_rolling_average(
+        df,
+        IndCQC.imputed_filled_post_model,
+        NumericalValues.number_of_days_in_window,
+        [IndCQC.primary_service_type, IndCQC.current_region],
+        "regional_posts_rolling_average_model",
     )
 
     df = clean_number_of_beds_banded(df)

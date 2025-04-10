@@ -64,7 +64,7 @@ class IndCqcColumns:
     )
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
-    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -164,9 +164,7 @@ class IndCqcColumns:
         "imputed_non_res_pir_people_directly_employed"
     )
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
-    imputed_posts_non_res_with_dormancy_model: str = (
-        "imputed_posts_non_res_with_dormancy_model"
-    )
+    imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
     imputed_filled_posts_per_bed_ratio_model: str = (
         "imputed_filled_posts_per_bed_ratio_model"
@@ -265,7 +263,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     time_registered: str = CQCLClean.time_registered
@@ -286,17 +284,16 @@ class IndCqcColumns:
 
 @dataclass
 class PrimaryServiceRateOfChangeColumns:
-    """The names of the temporary columns created during the rolling average process."""
+    """The names of the temporary columns created during the rate of change process."""
 
     care_home_status_count: str = "care_home_status_count"
-    column_to_average: str = "column_to_average"
-    column_to_average_interpolated: str = "column_to_average_interpolated"
-    previous_column_to_average_interpolated: str = (
-        "previous_column_to_average_interpolated"
+    column_with_values: str = "column_with_values"
+    column_with_values_interpolated: str = "column_with_values_interpolated"
+    previous_column_with_values_interpolated: str = (
+        "previous_column_with_values_interpolated"
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
 
 

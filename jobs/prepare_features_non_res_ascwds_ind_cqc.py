@@ -70,14 +70,10 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    features_df = add_array_column_count(
-        features_df, IndCQC.specialism_count, IndCQC.imputed_specialisms
-    )
-
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
-        ServicesFeatures.labels_dict,
+        ServicesFeatures.non_res_model_labels_dict,
         is_array_col=True,
     )
 
@@ -91,8 +87,8 @@ def main(
     features_df = group_rural_urban_sparse_categories(features_df)
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
-        IndCQC.current_rural_urban_indicator_2011,
-        RuralUrbanFeatures.labels_dict,
+        IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+        RuralUrbanFeatures.non_res_model_labels_dict,
         is_array_col=False,
     )
 
@@ -120,7 +116,7 @@ def main(
 
     without_dormancy_features_df = cap_integer_at_max_value(
         without_dormancy_features_df,
-        col_name=IndCQC.time_registered,
+        IndCQC.time_registered,
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
@@ -131,15 +127,17 @@ def main(
 
     without_dormancy_feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
-            IndCQC.activity_count,
-            IndCQC.specialism_count,
-            IndCQC.time_registered,
-            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_four_years_logged,
         ]
-        + service_list
         + region_list
+        + related_location
         + rui_indicators_list
+        + service_list
+        + specialisms_list
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
@@ -169,7 +167,7 @@ def main(
 
     with_dormancy_features_df = cap_integer_at_max_value(
         with_dormancy_features_df,
-        col_name=IndCQC.time_registered,
+        IndCQC.time_registered,
         max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
@@ -180,16 +178,18 @@ def main(
 
     with_dormancy_feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
-            IndCQC.activity_count,
-            IndCQC.specialism_count,
-            IndCQC.time_registered,
-            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_ten_years_logged,
         ]
         + dormancy_key
-        + service_list
         + region_list
+        + related_location
         + rui_indicators_list
+        + service_list
+        + specialisms_list
     )
 
     vectorised_features_with_dormancy_df = vectorise_dataframe(

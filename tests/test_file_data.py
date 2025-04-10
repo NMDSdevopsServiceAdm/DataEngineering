@@ -5251,16 +5251,12 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 1, 1), date(2019, 2, 1), 35, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '01', '20220101'),
-        ("1-00003", date(2022, 1, 2), date(2019, 2, 1), 35, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220112'),
-        ("1-00004", date(2022, 1, 2), date(2019, 2, 1), 35, Region.north_east, Dormancy.dormant, [Services.hospice_services], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '01', '12', '20220212'),
-        ("1-00005", date(2022, 3, 1), date(2019, 2, 1), 35, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '01', '20220301'),
-        ("1-00006", date(2022, 3, 8), date(2019, 2, 1), 37, Region.south_west, None, [Services.specialist_college_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.rural_town, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00007", date(2022, 3, 8), date(2019, 2, 1), 37, Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00008", date(2022, 3, 8), date(2019, 2, 1), 37, Region.north_east, Dormancy.dormant, [Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, 25.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '08', '20220308'),
-        ("1-00009", date(2022, 3, 9), date(2019, 2, 1), 37, Region.north_west, None, [Services.care_home_service_without_nursing], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.care_home_only, None, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '03', '15', '20220315'),
-        ("1-00010", date(2022, 4, 2), date(2019, 2, 1), 38, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code", IndCQC.contacts:[{IndCQC.person_family_name: "name", IndCQC.person_given_name: "name", IndCQC.person_roles: ["role"], IndCQC.person_title: "title"}]}], [{IndCQC.name: "name"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '04', '22', '20220422'),
+        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
     ]
     # fmt: on
 
@@ -5280,7 +5276,6 @@ class CareHomeFeaturesData:
             RUI.rural_hamlet_sparse,
             None,
             None,
-            None,
             "2023",
             "01",
             "01",
@@ -5296,7 +5291,6 @@ class CareHomeFeaturesData:
             [{IndCQC.name: "name", IndCQC.code: "code"}],
             CareHome.care_home,
             RUI.urban_city,
-            1.8,
             2.5,
             1.5,
             "2023",
@@ -5314,7 +5308,6 @@ class CareHomeFeaturesData:
             [{IndCQC.name: "name", IndCQC.code: "code"}],
             CareHome.care_home,
             RUI.rural_town,
-            1.6,
             1.1,
             1.4,
             "2023",
@@ -5403,12 +5396,12 @@ class ModelPrimaryServiceRateOfChange:
     expected_primary_service_rate_of_change_rows = [
         ("1-001", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 3.0, 1.0),
         ("1-001", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, 2.8, 1.03999),
-        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 3.4, 1.16235),
-        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.26158),
+        ("1-001", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, 3.4, 1.1176),
+        ("1-001", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.0854),
         ("1-002", CareHome.care_home, 1704067200, PrimaryServiceType.care_home_only, 10, 2.0, 1.0),
         ("1-002", CareHome.care_home, 1704153600, PrimaryServiceType.care_home_only, 10, None, 1.03999),
-        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, 1.16235),
-        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.26158),
+        ("1-002", CareHome.care_home, 1704240000, PrimaryServiceType.care_home_only, 10, None, 1.1176),
+        ("1-002", CareHome.care_home, 1704326400, PrimaryServiceType.care_home_only, 10, 3.2, 1.0854),
         ("1-003", CareHome.not_care_home, 1704067200, PrimaryServiceType.non_residential, None, 40.0, 1.0),
         ("1-003", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 50.0, 1.25),
         ("1-004", CareHome.not_care_home, 1704153600, PrimaryServiceType.non_residential, None, 60.0, 1.25),
@@ -5417,32 +5410,32 @@ class ModelPrimaryServiceRateOfChange:
     ]
     # fmt: on
 
-    clean_column_to_average_rows = [
+    clean_column_with_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, None),
         ("1-001", 1000000003, CareHome.care_home, 10.0),
     ]
-    expected_clean_column_to_average_rows = [
+    expected_clean_column_with_values_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0, 1, 2),
         ("1-001", 1000000002, CareHome.care_home, None, 1, 2),
         ("1-001", 1000000003, CareHome.care_home, 10.0, 1, 2),
     ]
 
-    clean_column_to_average_one_submission_rows = [
+    clean_column_with_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, None),
     ]
-    expected_clean_column_to_average_one_submission_rows = [
+    expected_clean_column_with_values_one_submission_rows = [
         ("1-001", 1000000001, CareHome.care_home, None, 1, 1),
         ("1-001", 1000000002, CareHome.care_home, None, 1, 1),
     ]
 
-    clean_column_to_average_both_statuses_rows = [
+    clean_column_with_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, 10.0),
         ("1-001", 1000000002, CareHome.care_home, 10.0),
         ("1-001", 1000000003, CareHome.not_care_home, 10.0),
     ]
-    expected_clean_column_to_average_both_statuses_rows = [
+    expected_clean_column_with_values_both_statuses_rows = [
         ("1-001", 1000000001, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000002, CareHome.care_home, None, 2, 2),
         ("1-001", 1000000003, CareHome.not_care_home, None, 2, 1),
@@ -5489,32 +5482,18 @@ class ModelPrimaryServiceRateOfChange:
         ("1-001", CareHome.care_home, 10.0, 2),
     ]
 
-    interpolate_column_to_average_rows = [
+    interpolate_column_with_values_rows = [
         ("1-001", 1704067200, 30.0),
         ("1-001", 1704153600, None),
         ("1-001", 1704240000, 34.0),
         ("1-001", 1704326400, None),
     ]
-    expected_interpolate_column_to_average_rows = [
+    expected_interpolate_column_with_values_rows = [
         ("1-001", 1704067200, 30.0, 30.0),
         ("1-001", 1704153600, None, 32.0),
         ("1-001", 1704240000, 34.0, 34.0),
         ("1-001", 1704326400, None, None),
     ]
-
-    # fmt: off
-    calculate_rolling_rate_of_change_rows = [
-        ("1-001", CareHome.care_home, PrimaryServiceType.care_home_only, 1672531200, 10, 1.1),
-        ("1-002", CareHome.care_home, PrimaryServiceType.care_home_only, 1672617600, 10, 1.2),
-        ("1-003", CareHome.care_home, PrimaryServiceType.care_home_only, 1672704000, 10, 1.3),
-        ("1-004", CareHome.care_home, PrimaryServiceType.care_home_only, 1672790400, 10, 1.4),
-        ("1-005", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.4),
-        ("1-006", CareHome.care_home, PrimaryServiceType.care_home_only, 1672876800, 10, 1.3),
-        ("1-007", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672531200, None, 10.0),
-        ("1-008", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672704000, None, 20.0),
-        ("1-009", CareHome.not_care_home, PrimaryServiceType.non_residential, 1672876800, None, 30.0),
-    ]
-    # fmt: on
 
     add_previous_value_column_rows = [
         ("1-001", 1672531200, 1.1),
@@ -5533,7 +5512,8 @@ class ModelPrimaryServiceRateOfChange:
         ("1-002", 1672704000, 10.3, 10.2),
     ]
 
-    add_rolling_sum_rows = [
+    # fmt: off
+    add_rolling_sum_columns_rows = [
         ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None),
         ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1),
         ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2),
@@ -5544,30 +5524,67 @@ class ModelPrimaryServiceRateOfChange:
         ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0),
         ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0),
     ]
-    expected_add_rolling_sum_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1, 2.5),
-        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2, 3.8),
-        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3, 3.8),
-        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4, 2.5),
-        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None, None),
-        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0, 20.0),
-        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0, 50.0),
+    expected_add_rolling_sum_columns_rows = [
+        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None, None, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1, 2.5, 2.5),
+        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2, 3.8, 3.7),
+        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3, 3.8, 3.7),
+        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None, None, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4, 2.5, 2.5),
+        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None, None, None),
+        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0, 20.0, 10.0),
+        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0, 50.0, 30.0),
     ]
+    # fmt: on
 
-    single_period_rate_of_change_rows = [
+    calculate_rate_of_change_rows = [
         ("1-001", 12.0, 10.0),
         ("1-002", 15.0, None),
         ("1-003", None, 20.0),
         ("1-004", None, None),
     ]
-    expected_single_period_rate_of_change_rows = [
+    expected_calculate_rate_of_change_rows = [
         ("1-001", 12.0, 10.0, 1.2),
         ("1-002", 15.0, None, 1.0),
         ("1-003", None, 20.0, 1.0),
         ("1-004", None, None, 1.0),
     ]
+
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeTrendlineData:
+    # fmt: off
+    primary_service_rate_of_change_trendline_rows = [
+        ("1-001", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 3.0),
+        ("1-001", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, 2.8),
+        ("1-001", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, 3.4),
+        ("1-001", 1704326400, CareHome.care_home, PrimaryServiceType.care_home_only, 3.2),
+        ("1-002", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 2.0),
+        ("1-002", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, None),
+        ("1-002", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, None),
+        ("1-002", 1704326400, CareHome.care_home, PrimaryServiceType.care_home_only, 3.2),
+        ("1-003", 1704067200, CareHome.not_care_home, PrimaryServiceType.non_residential, 40.0),
+        ("1-003", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 50.0),
+        ("1-004", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 60.0),
+        ("1-005", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 4.0),
+        ("1-005", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 50.0),
+    ]
+    expected_primary_service_rate_of_change_trendline_rows = [
+        ("1-001", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 3.0, 1.0),
+        ("1-001", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, 2.8, 1.03999),
+        ("1-001", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, 3.4, 1.16235),
+        ("1-001", 1704326400, CareHome.care_home, PrimaryServiceType.care_home_only, 3.2, 1.26158),
+        ("1-002", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 2.0, 1.0),
+        ("1-002", 1704153600, CareHome.care_home, PrimaryServiceType.care_home_only, None, 1.03999),
+        ("1-002", 1704240000, CareHome.care_home, PrimaryServiceType.care_home_only, None, 1.16235),
+        ("1-002", 1704326400, CareHome.care_home, PrimaryServiceType.care_home_only, 3.2, 1.26158),
+        ("1-003", 1704067200, CareHome.not_care_home, PrimaryServiceType.non_residential, 40.0, 1.0),
+        ("1-003", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 50.0, 1.25),
+        ("1-004", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 60.0, 1.25),
+        ("1-005", 1704067200, CareHome.care_home, PrimaryServiceType.care_home_only, 4.0, 1.0),
+        ("1-005", 1704153600, CareHome.not_care_home, PrimaryServiceType.non_residential, 50.0, 1.25),
+    ]
+    # fmt: on
 
     deduplicate_dataframe_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0, 2.0),
@@ -5587,7 +5604,7 @@ class ModelPrimaryServiceRateOfChange:
         (PrimaryServiceType.non_residential, 1672617600, 10.0),
     ]
 
-    cumulative_rate_of_change_rows = [
+    calculate_rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0),
         (PrimaryServiceType.care_home_only, 1672617600, 1.5),
         (PrimaryServiceType.care_home_only, 1672704000, 2.0),
@@ -5597,7 +5614,7 @@ class ModelPrimaryServiceRateOfChange:
         (PrimaryServiceType.non_residential, 1672704000, 1.0),
         (PrimaryServiceType.non_residential, 1672790400, 1.5),
     ]
-    expected_cumulative_rate_of_change_rows = [
+    expected_calculate_rate_of_change_trendline_rows = [
         (PrimaryServiceType.care_home_only, 1672531200, 1.0),
         (PrimaryServiceType.care_home_only, 1672617600, 1.5),
         (PrimaryServiceType.care_home_only, 1672704000, 3.0),
@@ -8377,7 +8394,6 @@ class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
         ("1-011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
         ("1-012", date(2024, 1, 1), None, None, None),
     ]
-    # fmt: on
 
 
 @dataclass
@@ -8659,6 +8675,7 @@ class DiagnosticsOnKnownFilledPostsData:
             10.0,
             10.0,
             10.0,
+            10.0,
             None,
             None,
             None,
@@ -8684,6 +8701,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            10.0,
             None,
             None,
             None,
@@ -8701,6 +8719,7 @@ class DiagnosticsOnCapacityTrackerData:
             date(2024, 2, 2),
             CareHome.care_home,
             PrimaryServiceType.care_home_only,
+            10.0,
             10.0,
             10.0,
             10.0,
@@ -8725,6 +8744,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,
@@ -8821,6 +8841,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             10.0,
+            10.0,
             None,
             1704067200,
             "2024",
@@ -8838,6 +8859,7 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             None,
+            10.0,
             10.0,
             10.0,
             10.0,

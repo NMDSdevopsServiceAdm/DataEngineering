@@ -1,9 +1,12 @@
-from pyspark.ml.regression import GBTRegressionModel
+from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.estimate_filled_posts.models.utils import insert_predictions_into_pipeline
+from utils.estimate_filled_posts.models.utils import (
+    insert_predictions_into_pipeline,
+    set_min_value,
+)
 from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
 
 
@@ -13,23 +16,26 @@ def model_care_homes(
     model_source: str,
     metrics_destination: str,
 ) -> DataFrame:
-    gbt_trained_model = GBTRegressionModel.load(model_source)
+    trained_model = LinearRegressionModel.load(model_source)
 
-    care_home_predictions_df = gbt_trained_model.transform(features_df)
+    ratio_predictions_df = trained_model.transform(features_df)
+
+    filled_post_predictions_df = calculate_filled_posts_from_beds_and_ratio(
+        ratio_predictions_df, IndCqc.prediction, IndCqc.prediction
+    )
+    filled_post_predictions_df = set_min_value(
+        filled_post_predictions_df, IndCqc.prediction, 1.0
+    )
 
     save_model_metrics(
-        care_home_predictions_df,
-        IndCqc.filled_posts_per_bed_ratio,
+        filled_post_predictions_df,
+        IndCqc.ascwds_filled_posts_dedup_clean,
         model_source,
         metrics_destination,
     )
 
-    care_home_predictions_df = calculate_filled_posts_from_beds_and_ratio(
-        care_home_predictions_df, IndCqc.prediction, IndCqc.prediction
-    )
-
     locations_df = insert_predictions_into_pipeline(
-        locations_df, care_home_predictions_df, IndCqc.care_home_model
+        locations_df, filled_post_predictions_df, IndCqc.care_home_model
     )
 
     return locations_df
