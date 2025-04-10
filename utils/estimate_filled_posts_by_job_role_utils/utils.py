@@ -461,12 +461,12 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         ),
     )
 
-    columns_to_select = [IndCQC.location_id] + non_rm_managers
+    columns_to_select = [IndCQC.location_id, IndCQC.unix_time] + non_rm_managers
     selected_df = df.select(*columns_to_select)
 
     df_result = selected_df.join(
         df_result,
-        IndCQC.location_id,
+        [IndCQC.location_id, IndCQC.unix_time],
         "left",
     )
 

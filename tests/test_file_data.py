@@ -10514,14 +10514,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     # fmt: off
     non_rm_managerial_estimate_filled_posts_rows = [
-        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
-        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
-        ("1-003", None, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,),
-        ("1-004", None, None, None, None, None, None, None, None, None, None),
+        ("1-001",1000, 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+        ("1-002",1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+        ("1-003",1000, None, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,),
+        ("1-004",1000,  None, None, None, None, None, None, None, None, None, None),
     ]
     
     expected_non_rm_managerial_estimate_filled_posts_rows = [
-        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 
+        ("1-001",1000, 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 
          20.0, 
          {MainJobRoleLabels.senior_management: 0.45,
           MainJobRoleLabels.middle_management: 0.15,
@@ -10534,7 +10534,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
           MainJobRoleLabels.it_manager: 0.05,
           MainJobRoleLabels.it_service_desk_manager: 0.05},
          ),
-        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+        ("1-002",1000, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
          0.0, 
          {MainJobRoleLabels.senior_management: 0.0,
           MainJobRoleLabels.middle_management: 0.0,
@@ -10547,7 +10547,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
           MainJobRoleLabels.it_manager: 0.0,
           MainJobRoleLabels.it_service_desk_manager: 0.0}
          ),
-        ("1-003", None, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
+        ("1-003",1000, None, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 
          5.0,
          {MainJobRoleLabels.senior_management: 0.0,
           MainJobRoleLabels.middle_management: 1.0,
@@ -10560,7 +10560,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
           MainJobRoleLabels.it_manager: 0.0,
           MainJobRoleLabels.it_service_desk_manager: 0.0}
          ),
-        ("1-004", None, None, None, None, None, None, None, None, None, None, 
+        ("1-004",1000, None, None, None, None, None, None, None, None, None, None, 
          None, 
          None
          ),
