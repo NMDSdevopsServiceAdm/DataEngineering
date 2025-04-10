@@ -50,14 +50,8 @@ def main(
         locations_df, IndCQC.care_home, CareHome.not_care_home
     )
 
-    features_df, service_list = expand_encode_and_extract_features(
-        filtered_df,
-        IndCQC.services_offered,
-        ServicesFeatures.non_res_model_labels_dict,
-        is_array_col=True,
-    )
     features_df = add_array_column_count(
-        features_df, IndCQC.service_count, IndCQC.services_offered
+        filtered_df, IndCQC.service_count, IndCQC.services_offered
     )
     features_df = cap_integer_at_max_value(
         features_df,
@@ -74,6 +68,13 @@ def main(
         IndCQC.activity_count,
         max_value=3,
         new_col_name=IndCQC.activity_count_capped,
+    )
+
+    features_df, service_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.services_offered,
+        ServicesFeatures.non_res_model_labels_dict,
+        is_array_col=True,
     )
 
     features_df, specialisms_list = expand_encode_and_extract_features(
@@ -110,7 +111,9 @@ def main(
     without_dormancy_features_df = filter_without_dormancy_features_to_pre_2025(
         features_df
     )
+
     without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
+
     without_dormancy_features_df = cap_integer_at_max_value(
         without_dormancy_features_df,
         IndCQC.time_registered,
@@ -159,7 +162,9 @@ def main(
         DormancyFeatures.labels_dict,
         is_array_col=False,
     )
+
     with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
+
     with_dormancy_features_df = cap_integer_at_max_value(
         with_dormancy_features_df,
         IndCQC.time_registered,
