@@ -11059,7 +11059,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    filter_ascwds_by_job_role_breakdown_when_dc_and_manregprof_1_or_more_rows = [
+    filter_ascwds_by_job_role_breakdown_when_dc_or_manregprof_1_or_more_rows = [
         (
             "1-001",
             0,
@@ -11119,7 +11119,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         ),
     ]
-    expected_filter_ascwds_by_job_role_breakdown_when_dc_and_manregprof_1_or_more_rows = [
+    expected_filter_ascwds_by_job_role_breakdown_when_dc_or_manregprof_1_or_more_rows = [
         (
             "1-001",
             0,
