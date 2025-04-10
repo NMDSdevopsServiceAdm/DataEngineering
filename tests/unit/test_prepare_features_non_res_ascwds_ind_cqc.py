@@ -92,6 +92,29 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
 
+    # TODO specific test for features
+    # @patch("utils.utils.write_to_parquet")
+    # @patch("utils.utils.read_from_parquet")
+    # def test_main_produces_dataframe_with_features(
+    #     self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    # ):
+    #     read_from_parquet_mock.return_value = self.test_df
+
+    #     job.main(self.IND_FILLED_POSTS_CLEANED_DIR, self.CARE_HOME_FEATURES_DIR)
+
+    #     result: DataFrame = write_to_parquet_mock.call_args[0][0].orderBy(
+    #         F.col(IndCQC.location_id)
+    #     )
+
+    #     self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
+    #     expected_features = SparseVector(
+    #         39,
+    #         [0, 1, 2, 3, 12, 19, 23, 25, 34],
+    #         [1.0, 2.5, 1.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    #     )
+    #     actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
+    #     self.assertEqual(actual_features, expected_features)
+
     @patch("utils.utils.write_to_parquet")
     @patch("utils.utils.read_from_parquet")
     def test_main_is_filtering_out_rows_missing_data_for_features(
