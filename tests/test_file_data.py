@@ -11062,19 +11062,18 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows = [
         (
             "1-001",
-            0,
-            {
-                MainJobRoleLabels.care_worker: 0,
-            },
-            {
-                JobGroupLabels.direct_care: 0,
-                JobGroupLabels.managers: 0,
-                JobGroupLabels.regulated_professions: 0,
-                JobGroupLabels.other: 0,
-            },
+            None,
+            None,
+            None,
         ),
         (
             "1-002",
+            0,
+            None,
+            None,
+        ),
+        (
+            "1-003",
             1,
             {
                 MainJobRoleLabels.admin_staff: 0,
@@ -11085,12 +11084,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 JobGroupLabels.regulated_professions: 0,
                 JobGroupLabels.other: 1,
             },
-        ),
-        (
-            "1-003",
-            None,
-            None,
-            None,
         ),
         (
             "1-004",
@@ -11115,6 +11108,19 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 JobGroupLabels.direct_care: 0,
                 JobGroupLabels.managers: 1,
                 JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-006",
+            1,
+            {
+                MainJobRoleLabels.social_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 1,
                 JobGroupLabels.other: 0,
             },
         ),
@@ -11122,20 +11128,20 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows = [
         (
             "1-001",
-            0,
-            {
-                MainJobRoleLabels.care_worker: 0,
-            },
-            {
-                JobGroupLabels.direct_care: 0,
-                JobGroupLabels.managers: 0,
-                JobGroupLabels.regulated_professions: 0,
-                JobGroupLabels.other: 0,
-            },
+            None,
+            None,
+            None,
             None,
         ),
         (
             "1-002",
+            0,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-003",
             1,
             {
                 MainJobRoleLabels.admin_staff: 0,
@@ -11146,13 +11152,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 JobGroupLabels.regulated_professions: 0,
                 JobGroupLabels.other: 1,
             },
-            None,
-        ),
-        (
-            "1-003",
-            None,
-            None,
-            None,
             None,
         ),
         (
@@ -11185,6 +11184,22 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
             {
                 MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+        (
+            "1-006",
+            1,
+            {
+                MainJobRoleLabels.social_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 1,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.social_worker: 1,
             },
         ),
     ]
