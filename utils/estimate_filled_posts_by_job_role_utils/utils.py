@@ -419,7 +419,12 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
     ]
 
     df_result = df.withColumn(
-        "all_null", F.expr(" AND ".join([f"{col} IS NULL" for col in non_rm_managers]))
+        "all_null",
+        F.array_contains(
+            F.array(*[F.isnull(F.col(col)) for col in non_rm_managers]),
+            F.lit(False),
+        )
+        == F.lit(False),
     )
 
     sum_expression = sum(F.coalesce(F.col(c), F.lit(0)) for c in non_rm_managers)
