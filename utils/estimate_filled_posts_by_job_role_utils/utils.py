@@ -536,7 +536,13 @@ def apply_quality_filters_to_ascwds_job_role_data(
     """
     Applies the filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more function.
 
-    A later update will add another filter to this function
+    A later update will add another filter to this function.
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column and job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
     """
 
     df = filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(df)
