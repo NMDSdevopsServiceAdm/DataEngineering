@@ -76,8 +76,8 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.write_to_parquet")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.read_from_parquet")
     def test_main_produces_dataframe_with_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
@@ -98,8 +98,8 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.write_to_parquet")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.read_from_parquet")
     def test_main_is_filtering_out_rows_missing_data_for_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
