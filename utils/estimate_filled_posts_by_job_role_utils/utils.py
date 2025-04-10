@@ -10,6 +10,9 @@ from utils.column_values.categorical_column_values import (
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
@@ -21,6 +24,9 @@ from utils.column_values.categorical_column_values import (
 
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
+list_of_job_groups_sorted = sorted(
+    list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
+)
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
@@ -543,5 +549,57 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
         F.col(IndCQC.registered_manager_count)
         - F.col(MainJobRoleLabels.registered_manager),
     )
+
+    return df
+
+
+def calculate_job_group_sum_from_job_role_map_column(
+    df: DataFrame, job_role_level_map_column: str, new_job_group_map_column_name: str
+) -> DataFrame:
+    """
+    Sums the values from a job role map column up to job group level.
+
+    This function takes a job role level map column, explodes the key/value pairs into rows as two columns,
+    adds a new column to show the job group each job role belongs to,
+    sums the value column by job group and pivots it into job group columns,
+    then packages those columns into a new map column.
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column.
+        job_role_level_map_column (str): The name of the job role map column you want to sum.
+        new_job_group_map_column_name (str): The name to give the job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing values summed to job group.
+
+    """
+    temp_value_column = "value"
+    df_exploded = df.select(
+        IndCQC.location_id,
+        IndCQC.unix_time,
+        F.explode(job_role_level_map_column).alias(
+            IndCQC.main_job_role_clean_labelled, temp_value_column
+        ),
+    )
+
+    df_exploded = df_exploded.withColumnRenamed(
+        IndCQC.main_job_role_clean_labelled, IndCQC.main_job_group_labelled
+    ).replace(
+        AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict,
+        subset=IndCQC.main_job_group_labelled,
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.location_id, IndCQC.unix_time)
+        .pivot(IndCQC.main_job_group_labelled)
+        .agg(F.sum(temp_value_column))
+        .na.fill(0, subset=list_of_job_groups_sorted)
+    )
+
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups_sorted, new_job_group_map_column_name
+    )
+
+    df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
 
     return df

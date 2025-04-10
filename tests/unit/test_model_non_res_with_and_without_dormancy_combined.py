@@ -26,15 +26,71 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
         )
 
-    @patch("utils.utils.select_rows_with_value")
-    def test_models_runs(self, select_rows_with_value_mock: Mock):
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.set_min_value"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.utils.select_rows_with_value"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.insert_predictions_into_pipeline"
+    )
+    @patch(
+        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.get_selected_value"
+    )
+    def test_models_runs(
+        self,
+        get_selected_value_mock: Mock,
+        insert_predictions_into_pipeline_mock: Mock,
+        select_rows_with_value_mock: Mock,
+        set_min_value_mock: Mock,
+    ):
         returned_df = job.combine_non_res_with_and_without_dormancy_models(
             self.estimated_posts_df
         )
 
+        get_selected_value_mock.assert_called_once()
+        insert_predictions_into_pipeline_mock.assert_called_once()
         select_rows_with_value_mock.assert_called_once()
+        set_min_value_mock.assert_called_once()
 
     # TODO flesh out main tests to usual standard (expected columns/rows/anything else?)
+
+
+class GroupTimeRegisteredToSixMonthBandsTests(
+    ModelNonResWithAndWithoutDormancyCombinedTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.group_time_registered_to_six_month_bands_rows,
+            Schemas.group_time_registered_to_six_month_bands_schema,
+        )
+        self.returned_df = job.group_time_registered_to_six_month_bands(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_group_time_registered_to_six_month_bands_rows,
+            Schemas.expected_group_time_registered_to_six_month_bands_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_group_time_registered_to_six_month_bands_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_group_time_registered_to_six_month_bands_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    NRModel_TempCol.time_registered_banded_and_capped
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.time_registered_banded_and_capped
+                ],
+                places=3,
+                msg=f"Returned value for row {i} does not match expected",
+            )
 
 
 class CalculateAndApplyModelRatioTests(ModelNonResWithAndWithoutDormancyCombinedTests):
@@ -79,7 +135,7 @@ class AverageModelsByRelatedLocationAndTimeRegisteredTests(
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.related_location, IndCqc.time_registered
+            IndCqc.related_location, NRModel_TempCol.time_registered_banded_and_capped
         ).collect()
         self.expected_data = self.expected_df.collect()
 
@@ -182,8 +238,12 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
     def test_apply_model_ratios_returns_expected_values_when_all_values_known(self):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
-                self.expected_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                self.returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
                 places=3,
                 msg=f"Returned values for row {i} does not match expected",
             )
@@ -204,7 +264,163 @@ class ApplyModelRatiosTests(ModelNonResWithAndWithoutDormancyCombinedTests):
 
         for i in range(len(returned_data)):
             self.assertEqual(
-                returned_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
-                expected_data[i][NRModel_TempCol.adjusted_without_dormancy_model],
+                returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
+                expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted
+                ],
                 f"Returned values for row {i} does not match expected",
+            )
+
+
+class CalculateAndApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_and_apply_residuals_rows,
+            Schemas.calculate_and_apply_residuals_schema,
+        )
+        self.returned_df = job.calculate_and_apply_residuals(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_and_apply_residuals_rows,
+            Schemas.expected_calculate_and_apply_residuals_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_and_apply_residuals_returns_original_dataframe_row_count(self):
+        self.assertEqual(self.returned_df.count(), self.test_df.count())
+
+    def test_calculate_and_apply_residuals_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.expected_df.columns)
+        )
+
+    def test_calculate_and_apply_residuals_returns_expected_residual_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.residual_at_overlap],
+                self.expected_data[i][NRModel_TempCol.residual_at_overlap],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
+
+    def test_calculate_and_apply_residuals_returns_expected_model_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
+                ],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
+
+
+class CalculateResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_residuals_rows,
+            Schemas.calculate_residuals_schema,
+        )
+        self.returned_df = job.calculate_residuals(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_residuals_rows,
+            Schemas.expected_calculate_residuals_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_calculate_residuals_filters_to_the_expected_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCqc.location_id],
+                self.expected_data[i][IndCqc.location_id],
+                msg=f"Returned location_id for row {i} does not match expected",
+            )
+
+    def test_calculate_residuals_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_calculate_residuals_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][NRModel_TempCol.residual_at_overlap],
+                self.expected_data[i][NRModel_TempCol.residual_at_overlap],
+                places=3,
+                msg=f"Returned residual for row {i} does not match expected",
+            )
+
+
+class ApplyResidualsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.apply_residuals_rows,
+            Schemas.apply_residuals_schema,
+        )
+        self.returned_df = job.apply_residuals(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_apply_residuals_rows,
+            Schemas.expected_apply_residuals_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_apply_residuals_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_apply_residuals_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
+                ],
+                self.expected_data[i][
+                    NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied
+                ],
+                places=3,
+                msg=f"Returned value for row {i} does not match expected",
+            )
+
+
+class CombineModelPredictionsTests(ModelNonResWithAndWithoutDormancyCombinedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.combine_model_predictions_rows,
+            Schemas.combine_model_predictions_schema,
+        )
+        self.returned_df = job.combine_model_predictions(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_model_predictions_rows,
+            Schemas.expected_combine_model_predictions_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_model_predictions_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_model_predictions_returns_expected_prediction_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][IndCqc.prediction],
+                self.expected_data[i][IndCqc.prediction],
+                places=3,
+                msg=f"Returned prediction value for row {i} does not match expected",
             )

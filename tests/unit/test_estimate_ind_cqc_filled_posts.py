@@ -53,6 +53,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
     )
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_pir_linear_regression")
+    @patch(
+        "jobs.estimate_ind_cqc_filled_posts.combine_non_res_with_and_without_dormancy_models"
+    )
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
     @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
@@ -63,6 +66,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_care_homes_patch: Mock,
         model_non_res_with_dormancy_patch: Mock,
         model_non_res_without_dormancy_patch: Mock,
+        combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_non_res_pir_linear_regression_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
@@ -94,6 +98,9 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         self.assertEqual(model_care_homes_patch.call_count, 1)
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
         self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
+        self.assertEqual(
+            combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
+        )
         self.assertEqual(model_non_res_pir_linear_regression_patch.call_count, 1)
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation.call_count, 2

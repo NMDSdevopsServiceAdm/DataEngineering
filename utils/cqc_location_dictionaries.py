@@ -123,6 +123,7 @@ class InvalidPostcodes:
         "SY6LG": "SY2 6LG",
         "TE15 1ED": "TD15 1ED",
         "TF7 3BY": "TF4 3BY",
+        "TF7 3QH": "TF7 4EH",
         "TN15OSQ": "TN15 0SQ",
         "TS12 1SU": "TS12 1DY",
         "TS17 3TB": "TS18 3TB",

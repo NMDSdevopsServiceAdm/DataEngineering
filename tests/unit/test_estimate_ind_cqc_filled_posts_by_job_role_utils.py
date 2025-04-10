@@ -1184,6 +1184,68 @@ class CalculateDifferenceBetweenEstimatedAndCqcRegisteredManagers(
         self.assertEqual(expected_data, returned_data)
 
 
+class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.sum_job_group_counts_from_job_role_count_map_rows,
+            Schemas.sum_job_group_counts_from_job_role_count_map_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_sum_job_group_counts_from_job_role_count_map_rows,
+            Schemas.expected_sum_job_group_counts_from_job_role_count_map_schema,
+        )
+        self.returned_df = job.calculate_job_group_sum_from_job_role_map_column(
+            self.test_df, IndCQC.ascwds_job_role_counts, IndCQC.ascwds_job_group_counts
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+        self.returned_df_for_patch_create_map_column = self.spark.createDataFrame(
+            Data.sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_rows,
+            Schemas.sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_schema,
+        )
+
+    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.create_map_column")
+    def test_sum_job_group_counts_from_job_role_count_map_calls_premade_functionality(
+        self, create_map_column_mock: Mock
+    ):
+        create_map_column_mock.return_value = (
+            self.returned_df_for_patch_create_map_column
+        )
+        job.calculate_job_group_sum_from_job_role_map_column(
+            self.test_df, IndCQC.ascwds_job_role_counts, IndCQC.ascwds_job_group_counts
+        )
+        create_map_column_mock.assert_called_once()
+
+    def test_sum_job_group_counts_from_job_role_count_map_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(self.new_columns_added[0], IndCQC.ascwds_job_group_counts)
+
+    def test_sum_job_group_counts_from_job_role_count_map_does_not_change_row_count(
+        self,
+    ):
+        self.assertEqual(self.test_df.count(), self.returned_df.count())
+
+    def test_sum_job_group_counts_from_job_role_count_map_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.sort(
+            IndCQC.location_id, IndCQC.unix_time
+        ).collect()
+        returned_data = self.returned_df.sort(
+            IndCQC.location_id, IndCQC.unix_time
+        ).collect()
+        self.assertEqual(expected_data, returned_data)
+
+
 class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
     EstimateIndCQCFilledPostsByJobRoleUtilsTests
 ):
