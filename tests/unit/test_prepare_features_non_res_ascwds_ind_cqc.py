@@ -66,7 +66,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         )
 
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
-        self.assertEqual(add_array_column_count_mock.call_count, 3)
+        self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(add_date_index_column_mock.call_count, 2)
         self.assertEqual(add_log_column_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
@@ -110,9 +110,9 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             0
         ]
 
-        self.assertEqual(self.test_df.count(), 10)
-        self.assertEqual(result_with_dormancy.count(), 6)
-        self.assertEqual(result_without_dormancy.count(), 7)
+        self.assertEqual(self.test_df.count(), 6)
+        self.assertEqual(result_with_dormancy.count(), 4)
+        self.assertEqual(result_without_dormancy.count(), 5)
 
 
 if __name__ == "__main__":
