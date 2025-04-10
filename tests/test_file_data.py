@@ -6126,25 +6126,17 @@ class ModelCareHomes:
     care_homes_features_rows = [
         (
             "1-000000001",
-            "Care home with nursing",
-            10.0,
-            "Y",
-            "South West",
-            67,
             date(2022, 3, 29),
-            Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
-            34,
+            10,
+            62.0,
+            Vectors.sparse(39, {0: 1.0, 1: 1.2, 2: 1.0, 3: 50.0}),
         ),
         (
             "1-000000003",
-            "Care home with nursing",
-            20.0,
-            "N",
-            "Merseyside",
-            34,
             date(2022, 3, 29),
+            15,
+            45.0,
             None,
-            0,
         ),
     ]
 
