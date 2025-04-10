@@ -123,6 +123,12 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.apply_quality_filters_to_ascwds_job_role_data(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
     estimated_ind_cqc_filled_posts_by_job_role_df = calculate_rolling_sum_of_job_roles(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         NumericalValues.number_of_days_in_rolling_sum,
