@@ -6,15 +6,13 @@ from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.linalg import SparseVector
 
 import jobs.prepare_features_care_home_ind_cqc as job
+from tests.test_file_data import CareHomeFeaturesData as Data
+from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 from utils import utils
-
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-
-from tests.test_file_data import CareHomeFeaturesData as Data
-from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
 
 
 class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
@@ -29,15 +27,17 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.write_to_parquet")
     @patch("jobs.prepare_features_care_home_ind_cqc.vectorise_dataframe")
     @patch("jobs.prepare_features_care_home_ind_cqc.expand_encode_and_extract_features")
     @patch("jobs.prepare_features_care_home_ind_cqc.cap_integer_at_max_value")
     @patch("jobs.prepare_features_care_home_ind_cqc.add_date_index_column")
     @patch("jobs.prepare_features_care_home_ind_cqc.add_array_column_count")
-    @patch("utils.utils.select_rows_with_non_null_value")
-    @patch("utils.utils.select_rows_with_value")
-    @patch("utils.utils.read_from_parquet")
+    @patch(
+        "jobs.prepare_features_care_home_ind_cqc.utils.select_rows_with_non_null_value"
+    )
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.select_rows_with_value")
+    @patch("jobs.prepare_features_care_home_ind_cqc.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
@@ -91,7 +91,9 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            51, [0, 9, 10, 17, 24, 31], [10.0, 1.0, 2.5, 1.0, 1.0, 1.0]
+            39,
+            [0, 1, 2, 3, 12, 19, 23, 25, 34],
+            [1.0, 1.8, 1.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0],
         )
         actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
