@@ -2,11 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 import warnings
 
-from pyspark.sql import functions as F
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
@@ -72,50 +69,50 @@ class CleanColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.clean_column_to_average_rows,
-            Schemas.clean_column_to_average_schema,
+            Data.clean_column_with_values_rows,
+            Schemas.clean_column_with_values_schema,
         )
-        self.returned_df = job.clean_column_to_average(test_df)
+        self.returned_df = job.clean_column_with_values(test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_clean_column_to_average_rows,
-            Schemas.expected_clean_column_to_average_schema,
+            Data.expected_clean_column_with_values_rows,
+            Schemas.expected_clean_column_with_values_schema,
         )
 
-    def test_clean_column_to_average_returns_expected_columns(self):
+    def test_clean_column_with_values_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_clean_column_to_average_is_not_nulled_when_submitted_more_than_once_and_consistent_care_home_status(
+    def test_clean_column_with_values_is_not_nulled_when_submitted_more_than_once_and_consistent_care_home_status(
         self,
     ):
         returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_clean_column_to_average_is_nulled_when_location_only_submitted_once(self):
+    def test_clean_column_with_values_is_nulled_when_location_only_submitted_once(self):
         one_submission_df = self.spark.createDataFrame(
-            Data.clean_column_to_average_one_submission_rows,
-            Schemas.clean_column_to_average_schema,
+            Data.clean_column_with_values_one_submission_rows,
+            Schemas.clean_column_with_values_schema,
         )
-        returned_df = job.clean_column_to_average(one_submission_df)
+        returned_df = job.clean_column_with_values(one_submission_df)
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_column_to_average_one_submission_rows,
-            Schemas.expected_clean_column_to_average_schema,
+            Data.expected_clean_column_with_values_one_submission_rows,
+            Schemas.expected_clean_column_with_values_schema,
         )
         returned_data = returned_df.sort(IndCqc.unix_time).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_clean_column_to_average_is_nulled_when_location_switched_between_care_home_and_non_res(
+    def test_clean_column_with_values_is_nulled_when_location_switched_between_care_home_and_non_res(
         self,
     ):
         both_statuses_df = self.spark.createDataFrame(
-            Data.clean_column_to_average_both_statuses_rows,
-            Schemas.clean_column_to_average_schema,
+            Data.clean_column_with_values_both_statuses_rows,
+            Schemas.clean_column_with_values_schema,
         )
-        returned_df = job.clean_column_to_average(both_statuses_df)
+        returned_df = job.clean_column_with_values(both_statuses_df)
         expected_df = self.spark.createDataFrame(
-            Data.expected_clean_column_to_average_both_statuses_rows,
-            Schemas.expected_clean_column_to_average_schema,
+            Data.expected_clean_column_with_values_both_statuses_rows,
+            Schemas.expected_clean_column_with_values_schema,
         )
         returned_data = returned_df.sort(IndCqc.unix_time).collect()
         expected_data = expected_df.collect()
@@ -215,30 +212,30 @@ class InterpolateColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.interpolate_column_to_average_rows,
-            Schemas.interpolate_column_to_average_schema,
+            Data.interpolate_column_with_values_rows,
+            Schemas.interpolate_column_with_values_schema,
         )
-        self.returned_df = job.interpolate_column_to_average(test_df)
+        self.returned_df = job.interpolate_column_with_values(test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_interpolate_column_to_average_rows,
-            Schemas.expected_interpolate_column_to_average_schema,
+            Data.expected_interpolate_column_with_values_rows,
+            Schemas.expected_interpolate_column_with_values_schema,
         )
         self.returned_data = self.returned_df.sort(IndCqc.unix_time).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_interpolate_column_to_average_returns_expected_columns(self):
+    def test_interpolate_column_with_values_returns_expected_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns),
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_column_to_average_interpolated_values_match_expected(
+    def test_returned_column_with_values_interpolated_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertEqual(
-                self.returned_data[i][job.TempCol.column_to_average_interpolated],
-                self.expected_data[i][job.TempCol.column_to_average_interpolated],
+                self.returned_data[i][job.TempCol.column_with_values_interpolated],
+                self.expected_data[i][job.TempCol.column_with_values_interpolated],
                 f"Returned row {i} does not match expected",
             )
 
@@ -339,10 +336,10 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
                 self.returned_data[i][
-                    job.TempCol.previous_column_to_average_interpolated
+                    job.TempCol.previous_column_with_values_interpolated
                 ],
                 self.expected_data[i][
-                    job.TempCol.previous_column_to_average_interpolated
+                    job.TempCol.previous_column_with_values_interpolated
                 ],
                 2,
                 f"Returned row {i} does not match expected",
@@ -362,7 +359,7 @@ class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
         self.returned_df = job.add_rolling_sum(
             test_df,
             number_of_days,
-            job.TempCol.column_to_average_interpolated,
+            job.TempCol.column_with_values_interpolated,
             job.TempCol.rolling_current_period_sum,
         )
         self.expected_df = self.spark.createDataFrame(
