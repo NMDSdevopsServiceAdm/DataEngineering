@@ -67,7 +67,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(add_date_index_column_mock.call_count, 1)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 2)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
+        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 4)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
         write_to_parquet_mock.assert_called_once_with(
             ANY,
@@ -91,7 +91,9 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
 
         self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
         expected_features = SparseVector(
-            51, [0, 9, 10, 17, 24, 31], [10.0, 1.0, 2.5, 1.0, 1.0, 1.0]
+            39,
+            [0, 1, 2, 3, 12, 19, 23, 25, 34],
+            [1.0, 2.5, 1.0, 10.0, 1.0, 1.0, 1.0, 1.0, 1.0],
         )
         actual_features = result.select(F.col(IndCQC.features)).collect()[0].features
         self.assertEqual(actual_features, expected_features)
