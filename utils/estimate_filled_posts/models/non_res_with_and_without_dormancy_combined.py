@@ -70,6 +70,7 @@ def group_time_registered_to_six_month_bands(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing the 'time_registered' column.
+
     Returns:
         DataFrame: DataFrame with 'time_registered' transformed into six-month bands,
                    capped at ten years.

@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rules.non_res_ascwds_inc_dormancy_ind_cqc_features_validation_rules import (
-    NonResASCWDSIncDormancyIndCqcFeaturesValidationRules as Rules,
+    NonResASCWDSWithDormancyIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
     validate_dataset,

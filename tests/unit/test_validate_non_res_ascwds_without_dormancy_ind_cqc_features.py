@@ -27,7 +27,7 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests(unittest.Tes
         )
         self.test_non_res_ascwds_without_dormancy_ind_cqc_features_df = (
             self.spark.createDataFrame(
-                Data.non_res_ascwds_without_dormancy_ind_cqc_features_rows,
+                Data.non_res_ascwds_ind_cqc_features_rows,
                 Schemas.non_res_ascwds_ind_cqc_features_schema,
             )
         )
@@ -77,10 +77,8 @@ class CalculateExpectedSizeofDataset(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = (
-            job.calculate_expected_size_of_non_res_without_dormancy_features_dataset(
-                test_df
-            )
+        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
+            test_df
         )
         self.assertEqual(returned_row_count, expected_row_count)
 

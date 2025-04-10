@@ -5,18 +5,18 @@ from unittest.mock import Mock, patch
 import jobs.validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data as job
 
 from tests.test_file_data import (
-    ValidateNonResASCWDSIncDormancyIndCqcFeaturesData as Data,
+    ValidateNonResASCWDSWithDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSIncDormancyIndCqcFeaturesSchema as Schemas,
+    ValidateNonResASCWDSWithDormancyIndCqcFeaturesSchema as Schemas,
 )
 
 from utils import utils
 
 
-class ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests(unittest.TestCase):
+class ValidateNonResASCWDSWithDormancyIndCqcFeaturesDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
-    TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE = "some/other/directory"
+    TEST_NON_RES_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -27,7 +27,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests(unittest.TestCas
         )
         self.test_non_res_ascwds_inc_dormancy_ind_cqc_features_df = (
             self.spark.createDataFrame(
-                Data.non_res_ascwds_inc_dormancy_ind_cqc_features_rows,
+                Data.non_res_ascwds_ind_cqc_features_rows,
                 Schemas.non_res_ascwds_ind_cqc_features_schema,
             )
         )
@@ -37,7 +37,7 @@ class ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests(unittest.TestCas
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests):
+class MainTests(ValidateNonResASCWDSWithDormancyIndCqcFeaturesDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -56,7 +56,7 @@ class MainTests(ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests):
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CLEANED_IND_CQC_SOURCE,
-                self.TEST_NON_RES_ASCWDS_INC_DORMANCY_IND_CQC_FEATURES_SOURCE,
+                self.TEST_NON_RES_FEATURES_SOURCE,
                 self.TEST_DESTINATION,
             )
 
@@ -65,7 +65,7 @@ class MainTests(ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(
-    ValidateNonResASCWDSIncDormancyIndCqcFeaturesDatasetTests
+    ValidateNonResASCWDSWithDormancyIndCqcFeaturesDatasetTests
 ):
     def setUp(self) -> None:
         return super().setUp()

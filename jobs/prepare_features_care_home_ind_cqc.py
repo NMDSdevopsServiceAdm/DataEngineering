@@ -48,13 +48,6 @@ def main(
 
     features_df = add_date_index_column(filtered_df)
 
-    features_df, service_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.services_offered,
-        ServicesFeatures.care_home_labels_dict,
-        is_array_col=True,
-    )
-
     features_df = add_array_column_count(
         features_df, IndCQC.service_count, IndCQC.services_offered
     )
@@ -79,6 +72,13 @@ def main(
         features_df,
         IndCQC.specialisms_offered,
         SpecialismsFeatures.labels_dict,
+        is_array_col=True,
+    )
+
+    features_df, service_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.services_offered,
+        ServicesFeatures.care_home_labels_dict,
         is_array_col=True,
     )
 
@@ -110,9 +110,10 @@ def main(
         + specialisms_list
     )
 
-    print(f"Number of features: {len(feature_list)}")
-
     vectorised_features_df = vectorise_dataframe(features_df, feature_list)
+
+    print(f"Number of features: {len(feature_list)}")
+    print(f"Length of feature df: {vectorised_features_df.count()}")
 
     print(
         f"Exporting vectorised_features_df as parquet to {care_home_ind_cqc_features_destination}"
