@@ -8,7 +8,9 @@ import jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from tests.test_file_data import NonResAscwdsFeaturesData as Data
 from tests.test_file_schemas import NonResAscwdsFeaturesSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
@@ -37,11 +39,10 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
     @patch("utils.utils.select_rows_with_value")
     @patch("utils.utils.read_from_parquet")
-    def test_main_calls_all_functions(
+    def test_main(
         self,
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
-        write_to_parquet_mock: Mock,
         add_array_column_count_mock: Mock,
         add_date_index_column_mock: Mock,
         add_log_column_mock: Mock,
@@ -50,6 +51,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_non_null_value_mock: Mock,
         expand_encode_and_extract_features_mock: Mock,
         vectorise_dataframe_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
         expand_encode_and_extract_features_mock.return_value = (
