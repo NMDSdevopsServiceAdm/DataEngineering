@@ -1244,6 +1244,29 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self.assertEqual(expected_data, returned_data)
 
 
+class ApplyQualityFiltersToAscwdsJobRoleData(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows,
+            Schemas.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
+        )
+
+    @patch(
+        "utils.estimate_filled_posts_by_job_role_utils.utils.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more"
+    )
+    def test_apply_quality_filters_to_ascwds_job_role_data_calls_premade_functionality(
+        self, filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_mock: Mock
+    ):
+        job.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(
+            self.test_df,
+        )
+        filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_mock.assert_called_once()
+
+
 class FilterAscwdsByJobRoleBreakdownWhenDcAndManregprof1OrMore(
     EstimateIndCQCFilledPostsByJobRoleUtilsTests
 ):

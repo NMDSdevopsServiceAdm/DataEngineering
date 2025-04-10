@@ -530,6 +530,20 @@ def calculate_job_group_sum_from_job_role_map_column(
     return df
 
 
+def apply_quality_filters_to_ascwds_job_role_data(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Applies the filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more function.
+
+    A later update will add another filter to this function
+    """
+
+    df = filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(df)
+
+    return df
+
+
 def filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(
     df: DataFrame,
 ) -> DataFrame:
