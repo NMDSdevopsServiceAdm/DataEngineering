@@ -441,7 +441,10 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         denominator = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
 
         df_result = df_result.withColumn(
-            col, F.when(numerator == 0.0, F.lit(0.0)).otherwise(numerator / denominator)
+            col,
+            F.when(denominator == 0.0, F.lit(0.1))
+            .when(numerator == 0.0, F.lit(0.0))
+            .otherwise(numerator / denominator),
         )
 
     df_result = create_map_column(
