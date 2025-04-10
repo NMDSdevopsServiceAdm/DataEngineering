@@ -8401,31 +8401,12 @@ class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
 
 @dataclass
 class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
+    # fmt: off
     cleaned_ind_cqc_rows = [
-        (
-            "1-001",
-            date(2024, 1, 1),
-            CareHome.not_care_home,
-            [{"name": "Name", "description": "Desc"}],
-        ),
-        (
-            "1-002",
-            date(2024, 1, 1),
-            CareHome.not_care_home,
-            [{"name": "Name", "description": "Desc"}],
-        ),
-        (
-            "1-001",
-            date(2024, 1, 9),
-            CareHome.not_care_home,
-            [{"name": "Name", "description": "Desc"}],
-        ),
-        (
-            "1-002",
-            date(2024, 1, 9),
-            CareHome.not_care_home,
-            [{"name": "Name", "description": "Desc"}],
-        ),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
     ]
     # fmt: on
 
