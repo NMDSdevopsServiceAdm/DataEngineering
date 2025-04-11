@@ -154,7 +154,7 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         [
-            IndCQC.ascwds_job_role_ratios,
+            IndCQC.ascwds_job_role_ratios_filtered,
             IndCQC.ascwds_job_role_ratios_by_primary_service,
         ],
         IndCQC.ascwds_job_role_ratios_merged,
