@@ -1278,7 +1278,7 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
     ):
         self.assertEqual(len(self.new_columns_added), 2)
 
-    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column(
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_returns_expected_values(
         self,
     ):
         expected_data = (
@@ -1327,7 +1327,7 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
 
                 self.assertEqual(expected_ratio_value, returned_ratio_value)
 
-    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns(
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
         self,
     ):
         selected_cols = [

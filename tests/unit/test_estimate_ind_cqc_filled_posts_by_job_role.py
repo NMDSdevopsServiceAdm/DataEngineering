@@ -50,14 +50,14 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     )
     @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.model_job_role_ratio_interpolation"
-    )
-    @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
     )
     @patch("utils.ind_cqc_filled_posts_utils.utils.merge_columns_in_order")
     @patch(
         "jobs.estimate_ind_cqc_filled_posts_by_job_role.calculate_rolling_sum_of_job_roles"
+    )
+    @patch(
+        "jobs.estimate_ind_cqc_filled_posts_by_job_role.model_job_role_ratio_interpolation"
     )
     @patch(
         "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_job_group_sum_from_job_role_map_column"
@@ -81,10 +81,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock: Mock,
         transform_job_role_count_map_to_ratios_map_mock: Mock,
         calculate_job_group_sum_from_job_role_map_column_mock: Mock,
+        model_job_role_ratio_interpolation_mock: Mock,
         calculate_rolling_sum_of_job_roles_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
-        model_job_role_ratio_interpolation_mock: Mock,
         unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
         calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock: Mock,
@@ -117,13 +117,13 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         self.assertEqual(
             calculate_job_group_sum_from_job_role_map_column_mock.call_count, 2
         )
+        model_job_role_ratio_interpolation_mock.assert_called_once()
         calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
         unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
         calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock.assert_called_once()
-
         model_job_role_ratio_interpolation_mock.assert_called_once()
         calculate_difference_between_estimate_and_cqc_registered_managers_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(

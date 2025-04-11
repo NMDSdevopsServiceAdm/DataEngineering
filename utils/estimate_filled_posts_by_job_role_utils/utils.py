@@ -402,7 +402,8 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
     df: DataFrame,
 ) -> DataFrame:
     """
-    doc string here
+    A function to caclulate both the total number of estimated non rm managerial filled posts, and also to calculate the proportion of non rm managerial
+    estimated filled posts per location.
 
     Args:
         df (DataFrame): A dataframe which contains estimates of filled posts per job role.
@@ -427,7 +428,7 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         == F.lit(False),
     )
 
-    sum_expression = sum(F.coalesce(F.col(c), F.lit(0)) for c in non_rm_managers)
+    sum_expression = sum(F.coalesce(F.col(col), F.lit(0)) for col in non_rm_managers)
 
     df_result = df_result.withColumn(
         IndCQC.sum_non_rm_managerial_estimated_filled_posts,
