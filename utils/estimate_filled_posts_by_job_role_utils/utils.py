@@ -545,12 +545,16 @@ def apply_quality_filters_to_ascwds_job_role_data(
         DataFrame: A dataframe with an additional column of filtered job role counts.
     """
 
-    df = filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(df)
+    df = filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+        df
+    )
+
+    # TODO: create a filter for job role counts when job group ratios are within boundaries.
 
     return df
 
 
-def filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(
+def filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
     df: DataFrame,
 ) -> DataFrame:
     """

@@ -6722,7 +6722,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(
                 IndCQC.ascwds_job_role_counts,
@@ -6773,7 +6773,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts,
+                IndCQC.ascwds_job_role_counts_filtered,
                 MapType(StringType(), FloatType()),
                 True,
             ),
@@ -6785,7 +6785,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts,
+                IndCQC.ascwds_job_role_counts_filtered,
                 MapType(StringType(), FloatType()),
                 True,
             ),

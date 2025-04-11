@@ -1267,7 +1267,7 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
         filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_mock.assert_called_once()
 
 
-class FilterAscwdsByJobRoleBreakdownWhenDcAndManregprof1OrMore(
+class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(
     EstimateIndCQCFilledPostsByJobRoleUtilsTests
 ):
     def setUp(self) -> None:
@@ -1281,8 +1281,8 @@ class FilterAscwdsByJobRoleBreakdownWhenDcAndManregprof1OrMore(
             Data.expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows,
             Schemas.expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
         )
-        self.returned_df = (
-            job.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(self.test_df)
+        self.returned_df = job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+            self.test_df
         )
 
         self.new_columns_added = [
@@ -1291,7 +1291,7 @@ class FilterAscwdsByJobRoleBreakdownWhenDcAndManregprof1OrMore(
             if column not in self.test_df.columns
         ]
 
-    def test_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_adds_1_expected_column(
+    def test_filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_adds_1_expected_column(
         self,
     ):
         self.assertEqual(len(self.new_columns_added), 1)
@@ -1299,7 +1299,7 @@ class FilterAscwdsByJobRoleBreakdownWhenDcAndManregprof1OrMore(
             self.new_columns_added[0], IndCQC.ascwds_job_role_counts_filtered
         )
 
-    def test_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_returns_expected_data(
+    def test_filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_returns_expected_data(
         self,
     ):
         expected_data = self.expected_df.collect()
