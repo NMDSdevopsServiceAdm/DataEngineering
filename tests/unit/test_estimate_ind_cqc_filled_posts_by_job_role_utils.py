@@ -889,7 +889,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             expected_df.select(
                 IndCQC.location_id,
                 IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_filtered,
                 IndCQC.ascwds_job_role_ratios_interpolated,
             )
             .sort(IndCQC.location_id, IndCQC.unix_time)
@@ -897,7 +897,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             return_df.select(
                 IndCQC.location_id,
                 IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_filtered,
                 IndCQC.ascwds_job_role_ratios_interpolated,
             )
             .sort(IndCQC.location_id, IndCQC.unix_time)
