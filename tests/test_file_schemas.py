@@ -6585,7 +6585,9 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
             ),
         ]
     )
