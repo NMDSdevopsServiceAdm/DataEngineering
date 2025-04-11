@@ -15,16 +15,16 @@ def model_job_role_ratio_interpolation(
     df: DataFrame, job_role_column_list: List[str]
 ) -> DataFrame:
     """
-    Performs interpolation on ascwds_job_role_ratio column
+    Performs interpolation on ascwds_job_role_ratio_filtered column
 
     Args:
-        df (DataFrame): The input DataFrame containing the columng ascwds_job_role_ratio column
+        df (DataFrame): The input DataFrame containing the columng ascwds_job_role_ratio_filtered column
         job_role_column_list (List[str]): List of all job roles in ASCWDS.
 
     Returns:
         DataFrame: The DataFrame with the ascwds_job_role_ratio_interpolated column
     """
-    df_to_interpolate = unpack_mapped_column(df, IndCQC.ascwds_job_role_ratios)
+    df_to_interpolate = unpack_mapped_column(df, IndCQC.ascwds_job_role_ratios_filtered)
     df_to_interpolate = create_map_column(
         df_to_interpolate, job_role_column_list, IndCQC.ascwds_job_role_ratios_temporary
     )
