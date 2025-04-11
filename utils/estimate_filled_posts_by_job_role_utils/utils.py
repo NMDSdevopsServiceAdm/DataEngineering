@@ -14,6 +14,15 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
 
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
+from utils.column_values.categorical_column_values import (
+    JobGroupLabels,
+    MainJobRoleLabels,
+)
+
+
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 list_of_job_groups_sorted = sorted(
     list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
@@ -387,6 +396,85 @@ def create_estimate_filled_posts_by_job_role_map_column(
     )
 
     return df
+
+
+def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    A function to caclulate both the total number of estimated non rm managerial filled posts, and also to calculate the proportion of non rm managerial
+    estimated filled posts per location.
+
+    Args:
+        df (DataFrame): A dataframe which contains estimates of filled posts per job role.
+    Returns:
+        DataFrame: A dataframe with an additional column for the sum of non registered manager estimated filled posts
+        and a map column of non registered manager estimated post proportions split per role.
+    """
+
+    non_rm_managers = [
+        job_role
+        for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+        if job_group == JobGroupLabels.managers
+        and job_role != MainJobRoleLabels.registered_manager
+    ]
+
+    df_result = df.withColumn(
+        "all_null",
+        F.array_contains(
+            F.array(*[F.isnull(F.col(col)) for col in non_rm_managers]),
+            F.lit(False),
+        )
+        == F.lit(False),
+    )
+
+    sum_expression = sum(F.coalesce(F.col(col), F.lit(0)) for col in non_rm_managers)
+
+    df_result = df_result.withColumn(
+        IndCQC.sum_non_rm_managerial_estimated_filled_posts,
+        F.when(F.col("all_null"), F.lit(None)).otherwise(sum_expression),
+    )
+
+    df_result = df_result.drop("all_null")
+
+    for col in non_rm_managers:
+        numerator = F.coalesce(F.col(col), F.lit(0.0))
+        denominator = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
+
+        df_result = df_result.withColumn(
+            col,
+            F.when(denominator == 0.0, F.lit(0.1))
+            .when(numerator == 0.0, F.lit(0.0))
+            .otherwise(numerator / denominator),
+        )
+
+    df_result = create_map_column(
+        df_result,
+        non_rm_managers,
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        True,
+    )
+
+    df_result = df_result.withColumn(
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        F.when(
+            F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts).isNull(),
+            F.lit(None),
+        ).otherwise(
+            F.col(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
+        ),
+    )
+
+    columns_to_select = [IndCQC.location_id, IndCQC.unix_time] + non_rm_managers
+    selected_df = df.select(*columns_to_select)
+
+    df_result = selected_df.join(
+        df_result,
+        [IndCQC.location_id, IndCQC.unix_time],
+        "left",
+    )
+
+    return df_result
 
 
 def pivot_job_role_column(

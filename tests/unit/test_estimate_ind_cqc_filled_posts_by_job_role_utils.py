@@ -10,6 +10,8 @@ from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
 
+import pyspark.sql.functions as F
+
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
     def setUp(self):
@@ -1242,3 +1244,103 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             IndCQC.location_id, IndCQC.unix_time
         ).collect()
         self.assertEqual(expected_data, returned_data)
+
+
+class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.non_rm_managerial_estimate_filled_posts_schema,
+        )
+        self.returned_df = (
+            job.calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+                self.test_df
+            )
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.expected_non_rm_managerial_estimate_filled_posts_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_adds_two_columns(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 2)
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_returns_expected_values(
+        self,
+    ):
+        expected_data = (
+            self.expected_df.withColumn(
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+                F.map_from_entries(
+                    F.sort_array(
+                        F.map_entries(
+                            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                        )
+                    )
+                ),
+            )
+            .sort(IndCQC.location_id)
+            .collect()
+        )
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+        for iterable in range(len(expected_data)):
+            returned_ratio_dict = returned_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+            expected_ratio_dict = expected_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+
+            if isinstance(returned_ratio_dict, dict) and isinstance(
+                expected_ratio_dict, dict
+            ):
+                for i in list(expected_ratio_dict.keys()):
+                    self.assertAlmostEqual(
+                        returned_ratio_dict[i],
+                        expected_ratio_dict[i],
+                        places=3,
+                        msg=f"Dict element {i} does not match",
+                    )
+
+            else:
+                expected_ratio_value = expected_data[iterable][
+                    IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                ]
+
+                returned_ratio_value = returned_data[iterable][
+                    IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                ]
+
+                self.assertEqual(expected_ratio_value, returned_ratio_value)
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
+        self,
+    ):
+        selected_cols = [
+            col
+            for col in self.expected_df.columns
+            if col
+            != IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        ]
+
+        expected_df = self.expected_df.select(*selected_cols)
+        returned_df = self.returned_df.select(*selected_cols)
+
+        self.assertEqual(
+            expected_df.sort(IndCQC.location_id).collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )
