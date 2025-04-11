@@ -1256,15 +1256,16 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
         )
 
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more"
+        "utils.estimate_filled_posts_by_job_role_utils.utils.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one"
     )
     def test_apply_quality_filters_to_ascwds_job_role_data_calls_premade_functionality(
-        self, filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_mock: Mock
+        self,
+        filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock: Mock,
     ):
-        job.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more(
+        job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
             self.test_df,
         )
-        filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_mock.assert_called_once()
+        filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock.assert_called_once()
 
 
 class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(
