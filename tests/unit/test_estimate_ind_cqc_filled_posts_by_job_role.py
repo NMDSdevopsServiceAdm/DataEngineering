@@ -113,7 +113,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         merge_dataframes_mock.assert_called_once()
         remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds_mock.assert_called_once()
-        self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 2)
+        self.assertEqual(transform_job_role_count_map_to_ratios_map_mock.call_count, 3)
         self.assertEqual(
             calculate_job_group_sum_from_job_role_map_column_mock.call_count, 2
         )
