@@ -11,6 +11,7 @@ from tests.test_file_schemas import (
 )
 
 import pyspark.sql.functions as F
+from collections import OrderedDict
 
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
@@ -1281,7 +1282,7 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
     def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_returns_expected_values(
         self,
     ):
-        expected_data = (
+        expected_df = (
             self.expected_df.withColumn(
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
                 F.map_from_entries(
@@ -1292,10 +1293,20 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
                     )
                 ),
             )
+            .select(
+                IndCQC.location_id,
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+            )
             .sort(IndCQC.location_id)
-            .collect()
         )
-        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+        returned_df = self.returned_df.select(
+            IndCQC.location_id,
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        ).sort(IndCQC.location_id)
+
+        expected_data = expected_df.collect()
+        returned_data = returned_df.collect()
 
         for iterable in range(len(expected_data)):
             returned_ratio_dict = returned_data[iterable][
@@ -1304,11 +1315,15 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
             expected_ratio_dict = expected_data[iterable][
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
             ]
+            print(returned_ratio_dict)
+            print(expected_ratio_dict)
 
             if isinstance(returned_ratio_dict, dict) and isinstance(
                 expected_ratio_dict, dict
             ):
                 for i in list(expected_ratio_dict.keys()):
+                    # print("HELLO")
+                    # print(i)
                     self.assertAlmostEqual(
                         returned_ratio_dict[i],
                         expected_ratio_dict[i],
@@ -1326,6 +1341,65 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
                 ]
 
                 self.assertEqual(expected_ratio_value, returned_ratio_value)
+
+    #
+    # expected_df = self.expected_df.withColumn(
+    #     IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+    #     F.map_from_entries(
+    #         F.sort_array(
+    #             F.map_entries(
+    #                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #             )
+    #         ),
+    #     ),
+    # ).select(IndCQC.location_id, IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role).sort(
+    #     IndCQC.location_id
+    # )
+
+    # returned_df = self.returned_df.select(
+    #     IndCQC.location_id, IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    # ).sort(IndCQC.location_id)
+
+    # print("pause!")
+
+    # expected_data = expected_df.collect()
+    # returned_data = returned_df.collect()
+
+    # for iterable in range(len(expected_data)):
+    #     returned_ratio_dict = returned_data[iterable][
+    #         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #     ]
+    #     expected_ratio_dict = expected_data[iterable][
+    #         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #     ]
+    #     print(returned_ratio_dict)
+    #     print(expected_ratio_dict)
+
+    #     if isinstance(returned_ratio_dict, dict) and isinstance(
+    #         expected_ratio_dict, dict
+    #     ):
+    #         # Convert to OrderedDict for comparison
+    #         returned_ordered = OrderedDict(sorted(returned_ratio_dict.items()))
+    #         expected_ordered = OrderedDict(sorted(expected_ratio_dict.items()))
+
+    #         for i in list(expected_ordered.keys()):
+    #             self.assertAlmostEqual(
+    #                 returned_ordered[i],
+    #                 expected_ordered[i],
+    #                 places=3,
+    #                 msg=f"Dict element {i} does not match",
+    #             )
+
+    #     else:
+    #         expected_ratio_value = expected_data[iterable][
+    #             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #         ]
+
+    #         returned_ratio_value = returned_data[iterable][
+    #             IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #         ]
+
+    #         self.assertEqual(expected_ratio_value, returned_ratio_value)
 
     def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
         self,
