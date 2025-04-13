@@ -419,6 +419,7 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         and job_role != MainJobRoleLabels.registered_manager
     ]
 
+    # TODO: Can be deleted during the refactoring. There should be no records with estimated filled posts as nulls so the below three sections of code is redundant.
     df_result = df.withColumn(
         "all_null",
         F.array_contains(
@@ -437,13 +438,17 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
 
     df_result = df_result.drop("all_null")
 
+    # TODO: Coalesce can be changed as similiar as before, no records with estimated filled posts as nulls do they can be removed.
     for col in non_rm_managers:
         numerator = F.coalesce(F.col(col), F.lit(0.0))
         denominator = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
 
         df_result = df_result.withColumn(
             col,
-            F.when(denominator == 0.0, F.lit(0.1))
+            F.when(
+                denominator == 0.0,
+                F.lit(1 / F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)),
+            )
             .when(numerator == 0.0, F.lit(0.0))
             .otherwise(numerator / denominator),
         )
