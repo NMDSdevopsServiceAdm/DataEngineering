@@ -6670,7 +6670,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     non_rm_managerial_estimate_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, StringType(), False),
             StructField(MainJobRoleLabels.senior_management, FloatType(), True),
             StructField(MainJobRoleLabels.middle_management, FloatType(), True),
             StructField(MainJobRoleLabels.first_line_manager, FloatType(), True),

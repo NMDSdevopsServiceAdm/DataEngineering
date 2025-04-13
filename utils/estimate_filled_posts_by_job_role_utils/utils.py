@@ -467,14 +467,6 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         True,
     )
 
-    # df_result = df_result.withColumn(
-    #     IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-    #     F.transform_keys(
-    #         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-    #         lambda k, v: F.substring(k, 1, F.length(k) - 4),
-    #     ),
-    # )
-
     df_result = df_result.withColumn(
         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
         F.expr(
@@ -492,8 +484,6 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
             F.col(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
         ),
     )
-
-    # df_result = df_result.withColumn(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role, F.sort_array(F.map_entries(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)))
 
     return df_result
 
