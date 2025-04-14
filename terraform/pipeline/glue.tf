@@ -254,7 +254,7 @@ module "clean_ind_cqc_filled_posts_job" {
 module "bulk_cqc_providers_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_providers.py"
-  script_dir      = "/tmp/project/jobs"
+  script_dir      = "/tmp/project/_01_ingest/cqc_api/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -269,7 +269,7 @@ module "bulk_cqc_providers_download_job" {
 module "bulk_cqc_locations_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_locations.py"
-  script_dir      = "/tmp/project/jobs"
+  script_dir      = "/tmp/project/_01_ingest/cqc_api/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
