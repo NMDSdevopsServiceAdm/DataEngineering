@@ -4363,7 +4363,7 @@ class IndCQCDataUtils:
 
     list_of_map_columns_to_be_merged = [
         IndCQC.ascwds_job_role_ratios,
-        IndCQC.ascwds_job_role_ratios_by_primary_service,
+        IndCQC.ascwds_job_role_rolling_ratio,
     ]
 
     # fmt: off
@@ -4398,7 +4398,7 @@ class IndCQCDataUtils:
          None,
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_ratios_by_primary_service)
+         IndCQC.ascwds_job_role_rolling_ratio)
     ]
     # fmt: on
 

@@ -38,19 +38,19 @@ def calculate_rolling_sum_of_job_roles(
         df_rolling_sum,
         number_of_days_in_rolling_sum,
         IndCQC.ascwds_job_role_counts_exploded,
-        IndCQC.ascwds_job_role_counts_rolling_sum,
+        IndCQC.ascwds_job_role_rolling_sum,
     )
 
     df_rolling_sum = pivot_job_role_column(
         df_rolling_sum,
         [IndCQC.unix_time, IndCQC.primary_service_type],
-        IndCQC.ascwds_job_role_counts_rolling_sum,
+        IndCQC.ascwds_job_role_rolling_sum,
     )
 
     df_rolling_sum = create_map_column(
         df_rolling_sum,
         list_of_job_roles,
-        IndCQC.ascwds_job_role_counts_rolling_sum,
+        IndCQC.ascwds_job_role_rolling_sum,
         True,
     )
 

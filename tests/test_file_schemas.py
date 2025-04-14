@@ -2249,7 +2249,7 @@ class IndCQCDataUtils:
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
             ),
             StructField(
-                IndCQC.ascwds_job_role_ratios_by_primary_service,
+                IndCQC.ascwds_job_role_rolling_ratio,
                 MapType(StringType(), DoubleType()),
                 True,
             ),
@@ -6573,7 +6573,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *sum_job_role_split_by_service_schema,
             StructField(
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
                 MapType(StringType(), IntegerType()),
                 True,
             ),
@@ -6732,7 +6732,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
     expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
         [
             *add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
-            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
+            StructField(IndCQC.ascwds_job_role_rolling_sum, FloatType(), True),
         ]
     )
 
@@ -6759,7 +6759,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
                 True,
             ),
             StructField(
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
                 MapType(StringType(), FloatType()),
                 True,
             ),

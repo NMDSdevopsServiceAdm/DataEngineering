@@ -41,7 +41,7 @@ class AddRollingSumPartitionedByPrimaryServiceTyoe(
             test_df,
             self.number_of_days_in_rolling_sum,
             IndCQC.ascwds_job_role_counts_exploded,
-            IndCQC.ascwds_job_role_counts_rolling_sum,
+            IndCQC.ascwds_job_role_rolling_sum,
         )
 
         self.assertEqual(
@@ -97,7 +97,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
                 IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)
             .collect(),
@@ -129,7 +129,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
                 IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)
             .collect(),
@@ -161,7 +161,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
                 IndCQC.ascwds_job_role_counts,
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)
             .collect(),
