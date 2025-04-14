@@ -69,7 +69,7 @@ jobs:
       - run:
           name: Check Python fomatting
           command: black . --check
-  
+
   lint-docstrings:
     docker:
       - image: circleci/python:3.9.6
@@ -102,6 +102,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Debug working directory and files
+          command: |
+            echo "Working directory: $(pwd)"
+            echo "Listing all files:"
+            find . -type f | sort
+      - run:
           name: terraform plan
           command: |
             cd terraform/pipeline
@@ -124,7 +130,7 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-          
+
       - run:
           name: terraform apply
           command: |
@@ -136,7 +142,7 @@ jobs:
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
-          
+
       - run:
           name: save datasets bucket name
           command: |
@@ -148,7 +154,7 @@ jobs:
           paths:
             - ./terraform/pipeline/pipeline_resources_bucket_name
             - ./terraform/pipeline/datasets_bucket_name
-  
+
   deploy-dependencies:
     docker:
       - image: circleci/python:3.9.6
@@ -192,7 +198,7 @@ jobs:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
-      
+
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
@@ -242,7 +248,7 @@ workflows:
           requires:
             - terraform-apply
 
-  
+
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
