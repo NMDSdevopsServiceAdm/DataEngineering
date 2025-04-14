@@ -4,7 +4,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils.utils import (
     create_map_column,
     pivot_job_role_column,
-    list_of_job_roles_sorted,
 )
 from utils.utils import convert_days_to_unix_time
 
