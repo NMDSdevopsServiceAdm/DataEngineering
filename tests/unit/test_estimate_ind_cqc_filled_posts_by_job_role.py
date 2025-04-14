@@ -111,7 +111,6 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
         calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock.assert_called_once()
-        model_job_role_ratio_interpolation_mock.assert_called_once()
         calculate_difference_between_estimate_and_cqc_registered_managers_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys

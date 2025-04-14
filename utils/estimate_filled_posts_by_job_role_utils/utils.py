@@ -412,14 +412,18 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         and a map column of non registered manager estimated post proportions split per role.
     """
 
-    non_rm_managers = [
-        job_role
-        for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
-        if job_group == JobGroupLabels.managers
-        and job_role != MainJobRoleLabels.registered_manager
-    ]
+    temp_suffix: str = "_temp"
 
-    non_rm_managers_temporary = [job_role + "_temp" for job_role in non_rm_managers]
+    non_rm_managers = sorted(
+        [
+            job_role
+            for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+            if job_group == JobGroupLabels.managers
+            and job_role != MainJobRoleLabels.registered_manager
+        ]
+    )
+
+    non_rm_managers_temporary = [job_role + temp_suffix for job_role in non_rm_managers]
 
     for col, new_col in zip(non_rm_managers, non_rm_managers_temporary):
         df = df.withColumn(new_col, F.col(col))
