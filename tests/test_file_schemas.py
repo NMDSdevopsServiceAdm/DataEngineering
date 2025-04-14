@@ -2637,17 +2637,17 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    clean_column_to_average_schema = StructType(
+    clean_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
-    expected_clean_column_to_average_schema = StructType(
+    expected_clean_column_with_values_schema = StructType(
         [
-            *clean_column_to_average_schema,
+            *clean_column_with_values_schema,
             StructField(RoC_TempCol.care_home_status_count, IntegerType(), True),
             StructField(RoC_TempCol.submission_count, IntegerType(), True),
         ]
@@ -2670,7 +2670,7 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
     expected_calculate_submission_count_schema = StructType(
@@ -2680,17 +2680,19 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    interpolate_column_to_average_schema = StructType(
+    interpolate_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_to_average, DoubleType(), True),
+            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
         ]
     )
-    expected_interpolate_column_to_average_schema = StructType(
+    expected_interpolate_column_with_values_schema = StructType(
         [
-            *interpolate_column_to_average_schema,
-            StructField(RoC_TempCol.column_to_average_interpolated, DoubleType(), True),
+            *interpolate_column_with_values_schema,
+            StructField(
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
         ]
     )
 
@@ -2701,7 +2703,9 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(RoC_TempCol.column_to_average_interpolated, DoubleType(), True),
+            StructField(
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
         ]
     )
 
@@ -2709,14 +2713,16 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_to_average_interpolated, DoubleType(), True),
+            StructField(
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
         ]
     )
     expected_add_previous_value_column_schema = StructType(
         [
             *add_previous_value_column_schema,
             StructField(
-                RoC_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
             ),
         ]
     )
@@ -2726,9 +2732,11 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.column_to_average_interpolated, DoubleType(), True),
             StructField(
-                RoC_TempCol.previous_column_to_average_interpolated, DoubleType(), True
+                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
+            ),
+            StructField(
+                RoC_TempCol.previous_column_with_values_interpolated, DoubleType(), True
             ),
         ]
     )
