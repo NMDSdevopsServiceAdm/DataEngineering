@@ -40,11 +40,18 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.ascwds_job_role_counts_exploded,
         IndCQC.ascwds_job_role_rolling_sum,
     )
+    df_rolling_sum.where(
+        (F.col(IndCQC.unix_time) == 1569888000)
+        & (F.col(IndCQC.primary_service_type) == "Care home with nursing")
+    ).show(200)
 
     df_rolling_sum = pivot_job_role_column(
         df_rolling_sum,
         [IndCQC.unix_time, IndCQC.primary_service_type],
         IndCQC.ascwds_job_role_rolling_sum,
+    )
+    df_rolling_sum.sort(IndCQC.primary_service_type, IndCQC.unix_time).show(
+        100, truncate=False
     )
 
     df_rolling_sum = create_map_column(
@@ -52,6 +59,9 @@ def calculate_rolling_sum_of_job_roles(
         list_of_job_roles,
         IndCQC.ascwds_job_role_rolling_sum,
         True,
+    )
+    df_rolling_sum.sort(IndCQC.primary_service_type, IndCQC.unix_time).show(
+        500, truncate=False
     )
 
     df_result = df.join(
