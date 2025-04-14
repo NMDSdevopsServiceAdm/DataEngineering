@@ -11,7 +11,8 @@ from tests.test_file_schemas import (
 )
 
 import pyspark.sql.functions as F
-from collections import OrderedDict
+
+PATCH_PATH = "utils.estimate_filled_posts_by_job_role_utils.utils"
 
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
@@ -406,12 +407,8 @@ class TransformJobRoleCountsMapToRatiosMap(
             if column not in self.test_df.columns
         ]
 
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.create_ratios_map_from_count_map_and_total"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_total_sum_of_values_in_a_map_column"
-    )
+    @patch(f"{PATCH_PATH}.create_ratios_map_from_count_map_and_total")
+    @patch(f"{PATCH_PATH}.calculate_total_sum_of_values_in_a_map_column")
     def test_transform_job_role_count_map_to_ratios_map_function(
         self,
         calculate_total_sum_of_values_in_a_map_column: Mock,
