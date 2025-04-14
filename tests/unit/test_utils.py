@@ -12,7 +12,7 @@ from pyspark.sql.types import (
 
 from tests.test_file_data import UtilsData, CQCPirCleanedData
 from tests.test_file_schemas import UtilsSchema, CQCPIRCleanSchema
-
+from _01_ingest.utils.utils.ingest_utils import read_csv
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns,
@@ -126,7 +126,7 @@ class GeneralUtilsTests(UtilsTests):
         )
 
     def test_write(self):
-        df = utils.read_csv(self.test_csv_path)
+        df = read_csv(self.test_csv_path)
         utils.write_to_parquet(df, self.tmp_dir)
 
         self.assertTrue(Path("tmp-out").is_dir())
