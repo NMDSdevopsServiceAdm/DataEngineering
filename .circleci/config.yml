@@ -102,12 +102,6 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Debug working directory and files
-          command: |
-            echo "Working directory: $(pwd)"
-            echo "Listing all files:"
-            find . -type f | sort
-      - run:
           name: terraform plan
           command: |
             cd terraform/pipeline
