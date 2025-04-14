@@ -98,7 +98,7 @@ module "ingest_ascwds_dataset_job" {
 module "clean_ascwds_worker_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_worker_data.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -146,7 +146,7 @@ module "clean_capacity_tracker_non_res_job" {
 module "clean_ascwds_workplace_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_workplace_data.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -418,7 +418,7 @@ module "clean_cqc_provider_data_job" {
 module "clean_cqc_location_data_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_cqc_location_data.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
@@ -452,7 +452,7 @@ module "reconciliation_job" {
 module "merge_ind_cqc_data_job" {
   source            = "../modules/glue-job"
   script_name       = "merge_ind_cqc_data.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
@@ -850,7 +850,7 @@ module "prepare_features_care_home_ind_cqc_job" {
 module "impute_ind_cqc_ascwds_and_pir_job" {
   source            = "../modules/glue-job"
   script_name       = "impute_ind_cqc_ascwds_and_pir.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -867,7 +867,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
 module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
   script_name       = "estimate_ind_cqc_filled_posts.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -892,7 +892,7 @@ module "estimate_ind_cqc_filled_posts_job" {
 module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   source            = "../modules/glue-job"
   script_name       = "estimate_ind_cqc_filled_posts_by_job_role.py"
-  script_dir      = "${path.root}/../jobs"
+  script_dir        = "${path.root}/../jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
