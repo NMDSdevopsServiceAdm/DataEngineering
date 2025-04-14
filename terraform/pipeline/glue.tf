@@ -6,7 +6,7 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
   script_name     = "csv_to_parquet.py"
-  script_dir      = "${path.root}/_01_ingest/csv_files/jobs"
+  script_dir      = "/tmp/project/_01_ingest/csv_files/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -22,7 +22,7 @@ module "csv_to_parquet_job" {
 module "spss_csv_to_parquet_job" {
   source          = "../modules/glue-job"
   script_name     = "spss_csv_to_parquet.py"
-  script_dir      = "${path.root}/_01_ingest/csv_files/jobs"
+  script_dir      = "/tmp/project/_01_ingest/csv_files/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -37,7 +37,7 @@ module "spss_csv_to_parquet_job" {
 module "ingest_capacity_tracker_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_capacity_tracker_data.py"
-  script_dir      = "${path.root}/_01_ingest/capacity_tracker/jobs"
+  script_dir      = "/tmp/project/_01_ingest/capacity_tracker/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -52,7 +52,7 @@ module "ingest_capacity_tracker_data_job" {
 module "ingest_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_cqc_pir_data.py"
-  script_dir      = "${path.root}/_01_ingest/cqc_pir/jobs"
+  script_dir      = "/tmp/project/_01_ingest/cqc_pir/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -67,7 +67,7 @@ module "ingest_cqc_pir_data_job" {
 module "clean_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_cqc_pir_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -82,7 +82,7 @@ module "clean_cqc_pir_data_job" {
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ascwds_dataset.py"
-  script_dir      = "${path.root}/_01_ingest/ascwds/jobs"
+  script_dir      = "/tmp/project/_01_ingest/ascwds/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -98,7 +98,7 @@ module "ingest_ascwds_dataset_job" {
 module "clean_ascwds_worker_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_worker_data.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -116,7 +116,7 @@ module "clean_ascwds_worker_job" {
 module "clean_capacity_tracker_care_home_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_capacity_tracker_care_home_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -131,7 +131,7 @@ module "clean_capacity_tracker_care_home_job" {
 module "clean_capacity_tracker_non_res_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_capacity_tracker_non_res_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -146,7 +146,7 @@ module "clean_capacity_tracker_non_res_job" {
 module "clean_ascwds_workplace_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_ascwds_workplace_data.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -165,7 +165,7 @@ module "clean_ascwds_workplace_job" {
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_ons_data.py"
-  script_dir      = "${path.root}/_01_ingest/onspd/jobs"
+  script_dir      = "/tmp/project/_01_ingest/onspd/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -180,7 +180,7 @@ module "ingest_ons_data_job" {
 module "clean_ons_data_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_ons_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -194,7 +194,7 @@ module "clean_ons_data_job" {
 module "archive_filled_posts_estimates_job" {
   source          = "../modules/glue-job"
   script_name     = "archive_filled_posts_estimates.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -210,7 +210,7 @@ module "archive_filled_posts_estimates_job" {
 module "prepare_features_non_res_ascwds_ind_cqc_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_features_non_res_ascwds_ind_cqc.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -226,7 +226,7 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 module "prepare_features_non_res_pir_ind_cqc_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_features_non_res_pir_ind_cqc.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -240,7 +240,7 @@ module "prepare_features_non_res_pir_ind_cqc_job" {
 module "clean_ind_cqc_filled_posts_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_ind_cqc_filled_posts.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -254,7 +254,7 @@ module "clean_ind_cqc_filled_posts_job" {
 module "bulk_cqc_providers_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_providers.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -269,7 +269,7 @@ module "bulk_cqc_providers_download_job" {
 module "bulk_cqc_locations_download_job" {
   source          = "../modules/glue-job"
   script_name     = "bulk_download_cqc_locations.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -285,7 +285,7 @@ module "bulk_cqc_locations_download_job" {
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_dpr_external_data.py"
-  script_dir      = "${path.root}/_01_ingest/dpr/jobs"
+  script_dir      = "/tmp/project/_01_ingest/dpr/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -300,7 +300,7 @@ module "ingest_dpr_external_data_job" {
 module "ingest_dpr_survey_data_job" {
   source          = "../modules/glue-job"
   script_name     = "ingest_dpr_survey_data.py"
-  script_dir      = "${path.root}/_01_ingest/dpr/jobs"
+  script_dir      = "/tmp/project/_01_ingest/dpr/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -315,7 +315,7 @@ module "ingest_dpr_survey_data_job" {
 module "prepare_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_dpr_external_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -329,7 +329,7 @@ module "prepare_dpr_external_data_job" {
 module "prepare_dpr_survey_data_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_dpr_survey_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -343,7 +343,7 @@ module "prepare_dpr_survey_data_job" {
 module "merge_dpr_data_job" {
   source          = "../modules/glue-job"
   script_name     = "merge_dpr_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -358,7 +358,7 @@ module "merge_dpr_data_job" {
 module "estimate_direct_payments_job" {
   source          = "../modules/glue-job"
   script_name     = "estimate_direct_payments.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -373,7 +373,7 @@ module "estimate_direct_payments_job" {
 module "split_pa_filled_posts_into_icb_areas_job" {
   source          = "../modules/glue-job"
   script_name     = "split_pa_filled_posts_into_icb_areas.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -388,7 +388,7 @@ module "split_pa_filled_posts_into_icb_areas_job" {
 module "flatten_cqc_ratings_job" {
   source          = "../modules/glue-job"
   script_name     = "flatten_cqc_ratings.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -404,7 +404,7 @@ module "flatten_cqc_ratings_job" {
 module "clean_cqc_provider_data_job" {
   source          = "../modules/glue-job"
   script_name     = "clean_cqc_provider_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -418,7 +418,7 @@ module "clean_cqc_provider_data_job" {
 module "clean_cqc_location_data_job" {
   source            = "../modules/glue-job"
   script_name       = "clean_cqc_location_data.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
@@ -436,7 +436,7 @@ module "clean_cqc_location_data_job" {
 module "reconciliation_job" {
   source          = "../modules/glue-job"
   script_name     = "reconciliation.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -452,7 +452,7 @@ module "reconciliation_job" {
 module "merge_ind_cqc_data_job" {
   source            = "../modules/glue-job"
   script_name       = "merge_ind_cqc_data.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
@@ -471,7 +471,7 @@ module "merge_ind_cqc_data_job" {
 module "merge_coverage_data_job" {
   source          = "../modules/glue-job"
   script_name     = "merge_coverage_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -489,7 +489,7 @@ module "merge_coverage_data_job" {
 module "validate_locations_api_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_locations_api_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -505,7 +505,7 @@ module "validate_locations_api_cleaned_data_job" {
 module "validate_providers_api_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_providers_api_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -521,7 +521,7 @@ module "validate_providers_api_cleaned_data_job" {
 module "validate_pir_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_pir_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -536,7 +536,7 @@ module "validate_pir_cleaned_data_job" {
 module "validate_ascwds_workplace_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_ascwds_workplace_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -551,7 +551,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
 module "validate_ascwds_worker_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_ascwds_worker_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -566,7 +566,7 @@ module "validate_ascwds_worker_cleaned_data_job" {
 module "validate_postcode_directory_cleaned_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_postcode_directory_cleaned_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -582,7 +582,7 @@ module "validate_postcode_directory_cleaned_data_job" {
 module "validate_merged_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_merged_ind_cqc_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -598,7 +598,7 @@ module "validate_merged_ind_cqc_data_job" {
 module "validate_merge_coverage_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_merge_coverage_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -614,7 +614,7 @@ module "validate_merge_coverage_data_job" {
 module "validate_cleaned_ind_cqc_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_cleaned_ind_cqc_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -630,7 +630,7 @@ module "validate_cleaned_ind_cqc_data_job" {
 module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_imputed_ind_cqc_ascwds_and_pir_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -646,7 +646,7 @@ module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
 module "validate_care_home_ind_cqc_features_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_care_home_ind_cqc_features_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -662,7 +662,7 @@ module "validate_care_home_ind_cqc_features_data_job" {
 module "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -679,7 +679,7 @@ module "validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data_job" {
 module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -696,7 +696,7 @@ module "validate_non_res_ascwds_without_dormancy_ind_cqc_features_data_job" {
 module "validate_non_res_pir_ind_cqc_features_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_non_res_pir_ind_cqc_features_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -713,7 +713,7 @@ module "validate_non_res_pir_ind_cqc_features_data_job" {
 module "validate_estimated_ind_cqc_filled_posts_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -730,7 +730,7 @@ module "validate_estimated_ind_cqc_filled_posts_data_job" {
 module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_estimated_ind_cqc_filled_posts_by_job_role_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -746,7 +746,7 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
 module "validate_ascwds_workplace_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_ascwds_workplace_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -761,7 +761,7 @@ module "validate_ascwds_workplace_raw_data_job" {
 module "validate_ascwds_worker_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_ascwds_worker_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -776,7 +776,7 @@ module "validate_ascwds_worker_raw_data_job" {
 module "validate_locations_api_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_locations_api_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -791,7 +791,7 @@ module "validate_locations_api_raw_data_job" {
 module "validate_providers_api_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_providers_api_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -806,7 +806,7 @@ module "validate_providers_api_raw_data_job" {
 module "validate_pir_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_pir_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -821,7 +821,7 @@ module "validate_pir_raw_data_job" {
 module "validate_postcode_directory_raw_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_postcode_directory_raw_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -836,7 +836,7 @@ module "validate_postcode_directory_raw_data_job" {
 module "prepare_features_care_home_ind_cqc_job" {
   source          = "../modules/glue-job"
   script_name     = "prepare_features_care_home_ind_cqc.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -850,7 +850,7 @@ module "prepare_features_care_home_ind_cqc_job" {
 module "impute_ind_cqc_ascwds_and_pir_job" {
   source            = "../modules/glue-job"
   script_name       = "impute_ind_cqc_ascwds_and_pir.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -867,7 +867,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
 module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
   script_name       = "estimate_ind_cqc_filled_posts.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -892,7 +892,7 @@ module "estimate_ind_cqc_filled_posts_job" {
 module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   source            = "../modules/glue-job"
   script_name       = "estimate_ind_cqc_filled_posts_by_job_role.py"
-  script_dir        = "${path.root}/jobs"
+  script_dir        = "/tmp/project/jobs"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
   number_of_workers = 4
@@ -909,7 +909,7 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
 module "diagnostics_on_known_filled_posts_job" {
   source          = "../modules/glue-job"
   script_name     = "diagnostics_on_known_filled_posts.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -925,7 +925,7 @@ module "diagnostics_on_known_filled_posts_job" {
 module "diagnostics_on_capacity_tracker_job" {
   source          = "../modules/glue-job"
   script_name     = "diagnostics_on_capacity_tracker.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -944,7 +944,7 @@ module "diagnostics_on_capacity_tracker_job" {
 module "validate_cleaned_capacity_tracker_care_home_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_cleaned_capacity_tracker_care_home_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -960,7 +960,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
 module "validate_cleaned_capacity_tracker_non_res_data_job" {
   source          = "../modules/glue-job"
   script_name     = "validate_cleaned_capacity_tracker_non_res_data.py"
-  script_dir      = "${path.root}/jobs"
+  script_dir      = "/tmp/project/jobs"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
