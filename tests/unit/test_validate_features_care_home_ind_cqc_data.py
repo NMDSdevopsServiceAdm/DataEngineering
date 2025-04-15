@@ -1,13 +1,12 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_care_home_ind_cqc_features_data as job
-
+import jobs.validate_features_care_home_ind_cqc_data as job
 from tests.test_file_data import ValidateCareHomeIndCqcFeaturesData as Data
 from tests.test_file_schemas import ValidateCareHomeIndCqcFeaturesData as Schemas
-
 from utils import utils
+
+PATCH_PATH: str = "jobs.validate_features_care_home_ind_cqc_data"
 
 
 class ValidateCareHomeIndCQCFeaturesDatasetTests(unittest.TestCase):
@@ -35,8 +34,8 @@ class MainTests(ValidateCareHomeIndCQCFeaturesDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
@@ -68,7 +67,7 @@ class CalculateExpectedSizeofDataset(ValidateCareHomeIndCQCFeaturesDatasetTests)
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
-        expected_row_count = 2
+        expected_row_count = 1
         returned_row_count = (
             job.calculate_expected_size_of_care_home_ind_cqc_features_dataset(test_df)
         )

@@ -6114,25 +6114,17 @@ class ModelCareHomes:
     care_homes_features_rows = [
         (
             "1-000000001",
-            "Care home with nursing",
-            10.0,
-            "Y",
-            "South West",
-            67,
             date(2022, 3, 29),
-            Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
-            34,
+            10,
+            62.0,
+            Vectors.sparse(39, {0: 1.0, 1: 1.2, 2: 1.0, 3: 50.0}),
         ),
         (
             "1-000000003",
-            "Care home with nursing",
-            20.0,
-            "N",
-            "Merseyside",
-            34,
             date(2022, 3, 29),
+            15,
+            45.0,
             None,
-            0,
         ),
     ]
 
@@ -8310,10 +8302,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 9), PrimaryServiceType.care_home_only),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000001", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -8324,10 +8316,12 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home),
-        ("1-000000002", date(2024, 1, 9), None),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name"}]),
+        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-005", date(2024, 1, 1), None, [{"name": "Name"}]),
+        ("1-006", date(2024, 1, 1), None, None),
     ]
     # fmt: on
 
