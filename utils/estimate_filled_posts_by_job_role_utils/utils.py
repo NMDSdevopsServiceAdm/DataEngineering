@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import LongType
+from pyspark.sql.types import LongType, MapType, StringType, DoubleType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -215,15 +215,29 @@ def calculate_total_sum_of_values_in_a_map_column(
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
+    if isinstance(
+        df.schema[map_column_name].dataType, MapType(StringType(), LongType())
+    ):
+        df = df.withColumn(
+            total_sum_column_name,
+            F.aggregate(
+                F.map_values(F.col(map_column_name)),
+                F.lit(0).cast(LongType()),
+                lambda a, b: a + b,
+            ),
+        )
 
-    df = df.withColumn(
-        total_sum_column_name,
-        F.aggregate(
-            F.map_values(F.col(map_column_name)),
-            F.lit(0).cast(LongType()),
-            lambda a, b: a + b,
-        ),
-    )
+    elif isinstance(
+        df.schema[map_column_name].dataType, MapType(StringType(), DoubleType())
+    ):
+        df = df.withColumn(
+            total_sum_column_name,
+            F.aggregate(
+                F.map_values(F.col(map_column_name)),
+                F.lit(0).cast(DoubleType()),
+                lambda a, b: a + b,
+            ),
+        )
 
     return df
 
