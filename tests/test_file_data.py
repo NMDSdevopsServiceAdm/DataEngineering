@@ -6101,25 +6101,17 @@ class ModelCareHomes:
     care_homes_features_rows = [
         (
             "1-000000001",
-            "Care home with nursing",
-            10.0,
-            "Y",
-            "South West",
-            67,
             date(2022, 3, 29),
-            Vectors.sparse(46, {0: 1.0, 1: 60.0, 3: 1.0, 32: 97.0, 33: 1.0}),
-            34,
+            10,
+            62.0,
+            Vectors.sparse(39, {0: 1.0, 1: 1.2, 2: 1.0, 3: 50.0}),
         ),
         (
             "1-000000003",
-            "Care home with nursing",
-            20.0,
-            "N",
-            "Merseyside",
-            34,
             date(2022, 3, 29),
+            15,
+            45.0,
             None,
-            0,
         ),
     ]
 
@@ -8297,10 +8289,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 9), PrimaryServiceType.care_home_only),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000001", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -8311,10 +8303,12 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home),
-        ("1-000000002", date(2024, 1, 9), None),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name"}]),
+        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-005", date(2024, 1, 1), None, [{"name": "Name"}]),
+        ("1-006", date(2024, 1, 1), None, None),
     ]
     # fmt: on
 
@@ -11031,6 +11025,219 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 JobGroupLabels.regulated_professions: 6,
                 JobGroupLabels.other: 8,
             },
+        ),
+    ]
+
+    filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows = [
+        (
+            "1-001",
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            0,
+            None,
+            None,
+        ),
+        (
+            "1-003",
+            1,
+            {
+                MainJobRoleLabels.admin_staff: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 1,
+            },
+        ),
+        (
+            "1-004",
+            1,
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 1,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-005",
+            1,
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 1,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+        ),
+        (
+            "1-006",
+            1,
+            {
+                MainJobRoleLabels.social_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 1,
+                JobGroupLabels.other: 0,
+            },
+        ),
+    ]
+    expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows = [
+        (
+            "1-001",
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            0,
+            None,
+            None,
+            None,
+        ),
+        (
+            "1-003",
+            1,
+            {
+                MainJobRoleLabels.admin_staff: 0,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 1,
+            },
+            None,
+        ),
+        (
+            "1-004",
+            1,
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 1,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-005",
+            1,
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 1,
+                JobGroupLabels.regulated_professions: 0,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.senior_management: 1,
+            },
+        ),
+        (
+            "1-006",
+            1,
+            {
+                MainJobRoleLabels.social_worker: 1,
+            },
+            {
+                JobGroupLabels.direct_care: 0,
+                JobGroupLabels.managers: 0,
+                JobGroupLabels.regulated_professions: 1,
+                JobGroupLabels.other: 0,
+            },
+            {
+                MainJobRoleLabels.social_worker: 1,
+            },
+        ),
+    ]
+
+    transform_interpolated_job_role_ratios_to_counts_rows = [
+        (
+            "1-001",
+            100.0,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+        ),
+        (
+            "1-003",
+            100.0,
+            None,
+        ),
+    ]
+    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+        (
+            "1-001",
+            100.0,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+            {
+                MainJobRoleLabels.care_worker: 10.0,
+                MainJobRoleLabels.registered_nurse: 20.0,
+                MainJobRoleLabels.senior_care_worker: 30.0,
+                MainJobRoleLabels.senior_management: 40.0,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1-003",
+            100.0,
+            None,
+            None,
         ),
     ]
 
