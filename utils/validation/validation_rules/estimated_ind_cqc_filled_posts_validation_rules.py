@@ -38,7 +38,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.care_home_model: 1.0,
             # IndCqcColumns.imputed_posts_non_res_with_dormancy_model: 1.0, # temporarily removed until non res models are fixed
             IndCqcColumns.estimate_filled_posts: 1.0,
-            IndCqcColumns.imputed_posts_care_home_model: 1.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed_dedup: 1,
             IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
