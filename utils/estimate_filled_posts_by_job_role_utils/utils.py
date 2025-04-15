@@ -534,9 +534,7 @@ def apply_quality_filters_to_ascwds_job_role_data(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Applies the filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more function.
-
-    A later update will add another filter to this function.
+    This function calls each of the asc-wds job role filtering functions.
 
     Args:
         df (DataFrame): A dataframe with a job role map column and job group map column.
@@ -548,8 +546,6 @@ def apply_quality_filters_to_ascwds_job_role_data(
     df = filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
         df
     )
-
-    # TODO: create a filter for job role counts when job group ratios are within boundaries.
 
     return df
 
