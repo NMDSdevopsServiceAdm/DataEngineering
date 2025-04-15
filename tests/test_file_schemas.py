@@ -6752,6 +6752,26 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         )
     )
 
+    transform_interpolated_job_role_ratios_to_counts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+            ),
+        ]
+    )
+    expected_transform_interpolated_job_role_ratios_to_counts_schema = StructType(
+        [
+            *transform_interpolated_job_role_ratios_to_counts_schema,
+            StructField(
+                IndCQC.ascwds_job_role_counts_interpolated,
+                MapType(StringType(), FloatType()),
+            ),
+        ]
+    )
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:

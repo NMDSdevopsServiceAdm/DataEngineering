@@ -11186,6 +11186,74 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    transform_interpolated_job_role_ratios_to_counts_rows = [
+        (
+            "1-001",
+            100.0,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+        ),
+        (
+            "1-003",
+            100.0,
+            None,
+        ),
+    ]
+    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+        (
+            "1-001",
+            100.0,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+            {
+                MainJobRoleLabels.care_worker: 10.0,
+                MainJobRoleLabels.registered_nurse: 20.0,
+                MainJobRoleLabels.senior_care_worker: 30.0,
+                MainJobRoleLabels.senior_management: 40.0,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.10,
+                MainJobRoleLabels.registered_nurse: 0.20,
+                MainJobRoleLabels.senior_care_worker: 0.30,
+                MainJobRoleLabels.senior_management: 0.40,
+            },
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+                MainJobRoleLabels.senior_care_worker: None,
+                MainJobRoleLabels.senior_management: None,
+            },
+        ),
+        (
+            "1-003",
+            100.0,
+            None,
+            None,
+        ),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:
