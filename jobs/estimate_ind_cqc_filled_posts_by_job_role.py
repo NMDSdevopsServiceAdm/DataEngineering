@@ -137,6 +137,10 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = model_job_role_ratio_interpolation(
+        estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles_sorted
+    )
+
     estimated_ind_cqc_filled_posts_by_job_role_df = calculate_rolling_sum_of_job_roles(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         NumericalValues.number_of_days_in_rolling_sum,
@@ -155,6 +159,7 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         [
             IndCQC.ascwds_job_role_ratios_filtered,
+            IndCQC.ascwds_job_role_ratios_interpolated,
             IndCQC.ascwds_job_role_ratios_by_primary_service,
         ],
         IndCQC.ascwds_job_role_ratios_merged,
@@ -165,10 +170,6 @@ def main(
         JRutils.create_estimate_filled_posts_by_job_role_map_column(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
-    )
-
-    estimated_ind_cqc_filled_posts_by_job_role_df = model_job_role_ratio_interpolation(
-        estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles_sorted
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.unpack_mapped_column(

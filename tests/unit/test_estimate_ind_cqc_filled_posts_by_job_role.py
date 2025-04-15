@@ -10,6 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+PATCH_PATH = "jobs.estimate_ind_cqc_filled_posts_by_job_role"
 
 
 class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
@@ -38,41 +39,25 @@ class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
 
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
-    @patch("utils.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_difference_between_estimate_and_cqc_registered_managers"
+        f"{PATCH_PATH}.JRutils.calculate_difference_between_estimate_and_cqc_registered_managers"
     )
+    @patch(f"{PATCH_PATH}.JRutils.count_registered_manager_names")
+    @patch(f"{PATCH_PATH}.JRutils.unpack_mapped_column")
+    @patch(f"{PATCH_PATH}.JRutils.create_estimate_filled_posts_by_job_role_map_column")
+    @patch(f"{PATCH_PATH}.FPutils.merge_columns_in_order")
+    @patch(f"{PATCH_PATH}.calculate_rolling_sum_of_job_roles")
+    @patch(f"{PATCH_PATH}.model_job_role_ratio_interpolation")
+    @patch(f"{PATCH_PATH}.JRutils.apply_quality_filters_to_ascwds_job_role_data")
+    @patch(f"{PATCH_PATH}.JRutils.calculate_job_group_sum_from_job_role_map_column")
+    @patch(f"{PATCH_PATH}.JRutils.transform_job_role_count_map_to_ratios_map")
     @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.count_registered_manager_names"
+        f"{PATCH_PATH}.JRutils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds"
     )
-    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.unpack_mapped_column")
-    @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.model_job_role_ratio_interpolation"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.create_estimate_filled_posts_by_job_role_map_column"
-    )
-    @patch("utils.ind_cqc_filled_posts_utils.utils.merge_columns_in_order")
-    @patch(
-        "jobs.estimate_ind_cqc_filled_posts_by_job_role.calculate_rolling_sum_of_job_roles"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.apply_quality_filters_to_ascwds_job_role_data"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_job_group_sum_from_job_role_map_column"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.transform_job_role_count_map_to_ratios_map"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds"
-    )
-    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.merge_dataframes")
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.aggregate_ascwds_worker_job_roles_per_establishment"
-    )
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.JRutils.merge_dataframes")
+    @patch(f"{PATCH_PATH}.JRutils.aggregate_ascwds_worker_job_roles_per_establishment")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_function(
         self,
         read_from_parquet_mock: Mock,
@@ -82,10 +67,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         transform_job_role_count_map_to_ratios_map_mock: Mock,
         calculate_job_group_sum_from_job_role_map_column_mock: Mock,
         apply_quality_filters_to_ascwds_job_role_data_mock: Mock,
+        model_job_role_ratio_interpolation_mock: Mock,
         calculate_rolling_sum_of_job_roles_mock: Mock,
         merge_columns_in_order_mock: Mock,
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
-        model_job_role_ratio_interpolation_mock: Mock,
         unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
         calculate_difference_between_estimate_and_cqc_registered_managers_mock: Mock,
@@ -118,12 +103,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             calculate_job_group_sum_from_job_role_map_column_mock.call_count, 2
         )
         apply_quality_filters_to_ascwds_job_role_data_mock.assert_called_once()
+        model_job_role_ratio_interpolation_mock.assert_called_once()
         calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
         create_estimate_filled_posts_by_job_role_map_column_mock.assert_called_once()
         unpack_mapped_column_mock.assert_called_once()
         count_registered_manager_names_mock.assert_called_once()
-        model_job_role_ratio_interpolation_mock.assert_called_once()
         calculate_difference_between_estimate_and_cqc_registered_managers_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
