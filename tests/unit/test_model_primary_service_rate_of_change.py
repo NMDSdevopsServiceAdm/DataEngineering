@@ -2,8 +2,6 @@ import unittest
 from unittest.mock import patch, Mock
 import warnings
 
-from pyspark.sql import functions as F
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
