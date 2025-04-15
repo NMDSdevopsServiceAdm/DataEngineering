@@ -806,7 +806,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
   job_parameters = {
     "--cleaned_ind_cqc_source"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
     "--imputed_ind_cqc_ascwds_and_pir_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
-    "--linear_regression_model_source"             = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
+    "--linear_regression_model_source"             = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.1/"
   }
 }
 
@@ -828,7 +828,7 @@ module "estimate_ind_cqc_filled_posts_job" {
     "--non_res_without_dormancy_features_source"      = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
     "--non_res_without_dormancy_model_source"         = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/3.0.0/"
     "--non_res_pir_linear_regression_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_pir/"
-    "--non_res_pir_linear_regression_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.0/"
+    "--non_res_pir_linear_regression_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_res_pir_linear_regression_prediction/2.0.1/"
     "--estimated_ind_cqc_destination"                 = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
     "--ml_model_metrics_destination"                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_ml_model_metrics/"
   }
@@ -976,5 +976,3 @@ module "capacity_tracker_crawler" {
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
-
-
