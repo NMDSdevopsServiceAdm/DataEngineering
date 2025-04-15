@@ -71,6 +71,7 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 2)
         self.assertEqual(expand_encode_and_extract_features_mock.call_count, 4)
         self.assertEqual(vectorise_dataframe_mock.call_count, 1)
+
         write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.CARE_HOME_FEATURES_DIR,

@@ -2626,6 +2626,9 @@ class CareHomeFeaturesSchema:
             StructField(
                 IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
             ),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),

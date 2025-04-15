@@ -41,7 +41,6 @@ def main(
     filtered_df = utils.select_rows_with_value(
         locations_df, IndCQC.care_home, CareHome.care_home
     )
-
     filtered_df = utils.select_rows_with_non_null_value(
         filtered_df, IndCQC.number_of_beds
     )
