@@ -15,7 +15,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -283,48 +282,6 @@ class IndCqcColumns:
     upper_percentile: str = "upper_percentile"
     value_unix_time: str = "value_unix_time"
     worker_records_bounded: str = AWPClean.worker_records_bounded
-    activites_worker: str = MainJobRoleLabels.activites_worker
-    admin_staff: str = MainJobRoleLabels.admin_staff
-    advocacy: str = MainJobRoleLabels.advocacy
-    allied_health_professional: str = MainJobRoleLabels.allied_health_professional
-    ancillary_staff: str = MainJobRoleLabels.ancillary_staff
-    assessment_officer: str = MainJobRoleLabels.assessment_officer
-    care_coordinator: str = MainJobRoleLabels.care_coordinator
-    care_worker: str = MainJobRoleLabels.care_worker
-    childrens_roles: str = MainJobRoleLabels.childrens_roles
-    community_support_and_outreach: str = (
-        MainJobRoleLabels.community_support_and_outreach
-    )
-    data_analyst: str = MainJobRoleLabels.data_analyst
-    data_governance_manager: str = MainJobRoleLabels.data_governance_manager
-    deputy_manager: str = MainJobRoleLabels.deputy_manager
-    employment_support: str = MainJobRoleLabels.employment_support
-    first_line_manager: str = MainJobRoleLabels.first_line_manager
-    it_and_digital_support: str = MainJobRoleLabels.it_and_digital_support
-    it_manager: str = MainJobRoleLabels.it_manager
-    it_service_desk_manager: str = MainJobRoleLabels.it_service_desk_manager
-    learning_and_development_lead: str = MainJobRoleLabels.learning_and_development_lead
-    middle_management: str = MainJobRoleLabels.middle_management
-    nursing_assistant: str = MainJobRoleLabels.nursing_assistant
-    occupational_therapist: str = MainJobRoleLabels.occupational_therapist
-    occupational_therapist_assistant: str = (
-        MainJobRoleLabels.occupational_therapist_assistant
-    )
-    other_care_role: str = MainJobRoleLabels.other_care_role
-    other_managerial_staff: str = MainJobRoleLabels.other_managerial_staff
-    other_non_care_related_staff: str = MainJobRoleLabels.other_non_care_related_staff
-    registered_manager: str = MainJobRoleLabels.registered_manager
-    registered_nurse: str = MainJobRoleLabels.registered_nurse
-    registered_nursing_associate: str = MainJobRoleLabels.registered_nursing_associate
-    safeguarding_officer: str = MainJobRoleLabels.safeguarding_officer
-    senior_care_worker: str = MainJobRoleLabels.senior_care_worker
-    senior_management: str = MainJobRoleLabels.senior_management
-    social_worker: str = MainJobRoleLabels.social_worker
-    software_developer: str = MainJobRoleLabels.software_developer
-    supervisor: str = MainJobRoleLabels.supervisor
-    support_worker: str = MainJobRoleLabels.support_worker
-    team_leader: str = MainJobRoleLabels.team_leader
-    technician: str = MainJobRoleLabels.technician
 
 
 @dataclass
