@@ -99,13 +99,6 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.posts_rolling_average_model,
     )
-    df = model_calculate_rolling_average(
-        df,
-        IndCQC.imputed_filled_post_model,
-        NumericalValues.number_of_days_in_window,
-        [IndCQC.primary_service_type, IndCQC.current_region],
-        "regional_posts_rolling_average_model",
-    )
 
     df = clean_number_of_beds_banded(df)
 
