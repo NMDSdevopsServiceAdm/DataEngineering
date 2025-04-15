@@ -6793,7 +6793,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_filtered,
+                IndCQC.ascwds_job_role_counts_interpolated,
                 MapType(StringType(), FloatType()),
                 True,
             ),
@@ -6805,7 +6805,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_filtered,
+                IndCQC.ascwds_job_role_counts_interpolated,
                 MapType(StringType(), FloatType()),
                 True,
             ),
