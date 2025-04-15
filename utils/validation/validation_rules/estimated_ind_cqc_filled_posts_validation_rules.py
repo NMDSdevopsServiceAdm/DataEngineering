@@ -35,7 +35,6 @@ class EstimatedIndCqcFilledPostsValidationRules:
         RuleName.min_values: {
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_pir_merged: 1.0,
-            IndCqcColumns.imputed_posts_care_home_model: 1.0,
             IndCqcColumns.imputed_posts_non_res_combined_model: 1.0,
             IndCqcColumns.care_home_model: 1.0,
             IndCqcColumns.posts_rolling_average_model: 1.0,

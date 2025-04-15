@@ -68,17 +68,17 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    features_df, specialisms_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.specialisms_offered,
-        SpecialismsFeatures.labels_dict,
-        is_array_col=True,
-    )
-
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
         ServicesFeatures.care_home_labels_dict,
+        is_array_col=True,
+    )
+
+    features_df, specialisms_list = expand_encode_and_extract_features(
+        features_df,
+        IndCQC.specialisms_offered,
+        SpecialismsFeatures.care_home_labels_dict,
         is_array_col=True,
     )
 

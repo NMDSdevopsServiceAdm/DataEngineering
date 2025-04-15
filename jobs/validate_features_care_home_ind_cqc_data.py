@@ -30,6 +30,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
     IndCQC.care_home,
+    IndCQC.imputed_specialisms,
 ]
 
 
@@ -66,12 +67,13 @@ def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
 ) -> int:
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.care_home)
+        & (cleaned_ind_cqc_df[IndCQC.imputed_specialisms].isNotNull())
     ).count()
     return expected_size
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_care_home_ind_cqc_features_data' starting...")
+    print("Spark job 'validate_features_care_home_ind_cqc_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -104,4 +106,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_care_home_ind_cqc_features_data' complete")
+    print("Spark job 'validate_features_care_home_ind_cqc_data' complete")
