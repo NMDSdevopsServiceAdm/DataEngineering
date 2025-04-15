@@ -28,7 +28,6 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
-    add_log_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     filter_without_dormancy_features_to_pre_2025,
@@ -124,20 +123,18 @@ def main(
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
-    without_dormancy_features_df = add_log_column(
-        without_dormancy_features_df,
-        IndCQC.time_registered_capped_at_four_years,
-    )
 
     without_dormancy_feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
-            IndCQC.activity_count,
-            IndCQC.specialism_count,
-            IndCQC.time_registered,
-            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_four_years,
         ]
+        + related_location
         + service_list
+        + specialisms_list
         + region_list
         + rui_indicators_list
     )
@@ -173,21 +170,19 @@ def main(
         max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
-    with_dormancy_features_df = add_log_column(
-        with_dormancy_features_df,
-        IndCQC.time_registered_capped_at_ten_years,
-    )
 
     with_dormancy_feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
-            IndCQC.activity_count,
-            IndCQC.specialism_count,
-            IndCQC.time_registered,
-            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.posts_rolling_average_model,
+            IndCQC.service_count_capped,
+            IndCQC.time_registered_capped_at_ten_years,
         ]
         + dormancy_key
+        + related_location
         + service_list
+        + specialisms_list
         + region_list
         + rui_indicators_list
     )
