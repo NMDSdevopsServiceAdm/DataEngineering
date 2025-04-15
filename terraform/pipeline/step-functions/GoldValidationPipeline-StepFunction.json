@@ -68,7 +68,7 @@
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_care_home_ind_cqc_features_data_job_name}",
+                  "JobName": "${validate_features_care_home_ind_cqc_data_job_name}",
                   "Arguments": {
                     "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
                     "--care_home_ind_cqc_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/",
