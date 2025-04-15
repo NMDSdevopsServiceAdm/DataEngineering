@@ -8302,10 +8302,10 @@ class ValidateImputedIndCqcAscwdsAndPir:
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 1), PrimaryServiceType.care_home_only),
-        ("1-000000001", date(2024, 1, 9), PrimaryServiceType.care_home_only),
-        ("1-000000002", date(2024, 1, 9), PrimaryServiceType.care_home_only),
+        ("1-000000001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000001", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
+        ("1-000000002", date(2024, 1, 9), CareHome.care_home, [{"name": "Name"}]),
     ]
 
     care_home_ind_cqc_features_rows = [
@@ -8316,10 +8316,12 @@ class ValidateCareHomeIndCqcFeaturesData:
     ]
 
     calculate_expected_size_rows = [
-        ("1-000000001", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000002", date(2024, 1, 1), CareHome.care_home),
-        ("1-000000001", date(2024, 1, 9), CareHome.not_care_home),
-        ("1-000000002", date(2024, 1, 9), None),
+        ("1-001", date(2024, 1, 1), CareHome.care_home, [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name"}]),
+        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
+        ("1-005", date(2024, 1, 1), None, [{"name": "Name"}]),
+        ("1-006", date(2024, 1, 1), None, None),
     ]
     # fmt: on
 

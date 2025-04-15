@@ -30,6 +30,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
     IndCQC.care_home,
+    IndCQC.imputed_specialisms,
 ]
 
 
@@ -66,6 +67,7 @@ def calculate_expected_size_of_care_home_ind_cqc_features_dataset(
 ) -> int:
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.care_home)
+        & (cleaned_ind_cqc_df[IndCQC.imputed_specialisms].isNotNull())
     ).count()
     return expected_size
 

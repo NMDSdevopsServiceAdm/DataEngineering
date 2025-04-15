@@ -5048,6 +5048,13 @@ class ValidateCareHomeIndCqcFeaturesData:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.care_home, StringType(), True),
+            StructField(
+                IndCQC.imputed_specialisms,
+                ArrayType(
+                    StructType([StructField(IndCQC.name, StringType(), True)]), True
+                ),
+                True,
+            ),
         ]
     )
     care_home_ind_cqc_features_schema = StructType(
