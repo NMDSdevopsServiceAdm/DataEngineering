@@ -2,19 +2,21 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_non_res_pir_ind_cqc_features_data as job
+import jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data as job
+
 from tests.test_file_data import (
-    ValidateNonResPirIndCqcFeaturesData as Data,
+    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResPirIndCqcFeaturesSchema as Schemas,
+    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema as Schemas,
 )
+
 from utils import utils
 
 
-class ValidateNonResPirIndCqcFeaturesDatasetTests(unittest.TestCase):
+class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
-    TEST_NON_RES_PIR_IND_CQC_FEATURES_SOURCE = "some/other/directory"
+    TEST_NON_RES_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -23,9 +25,11 @@ class ValidateNonResPirIndCqcFeaturesDatasetTests(unittest.TestCase):
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,
         )
-        self.test_non_res_pir_ind_cqc_features_df = self.spark.createDataFrame(
-            Data.non_res_pir_ind_cqc_features_rows,
-            Schemas.non_res_pir_ind_cqc_features_schema,
+        self.test_non_res_ascwds_without_dormancy_ind_cqc_features_df = (
+            self.spark.createDataFrame(
+                Data.non_res_ascwds_ind_cqc_features_rows,
+                Schemas.non_res_ascwds_ind_cqc_features_schema,
+            )
         )
 
     def tearDown(self) -> None:
@@ -33,7 +37,7 @@ class ValidateNonResPirIndCqcFeaturesDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateNonResPirIndCqcFeaturesDatasetTests):
+class MainTests(ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -46,13 +50,13 @@ class MainTests(ValidateNonResPirIndCqcFeaturesDatasetTests):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
-            self.test_non_res_pir_ind_cqc_features_df,
+            self.test_non_res_ascwds_without_dormancy_ind_cqc_features_df,
         ]
 
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CLEANED_IND_CQC_SOURCE,
-                self.TEST_NON_RES_PIR_IND_CQC_FEATURES_SOURCE,
+                self.TEST_NON_RES_FEATURES_SOURCE,
                 self.TEST_DESTINATION,
             )
 
@@ -60,19 +64,21 @@ class MainTests(ValidateNonResPirIndCqcFeaturesDatasetTests):
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class CalculateExpectedSizeofDataset(ValidateNonResPirIndCqcFeaturesDatasetTests):
+class CalculateExpectedSizeofDataset(
+    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests
+):
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_non_res_pir_ind_cqc_features_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = (
-            job.calculate_expected_size_of_non_res_pir_ind_cqc_features_dataset(test_df)
+        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
+            test_df
         )
         self.assertEqual(returned_row_count, expected_row_count)
 

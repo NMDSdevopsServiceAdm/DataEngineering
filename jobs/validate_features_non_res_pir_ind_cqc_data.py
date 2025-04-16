@@ -9,7 +9,7 @@ from pyspark.sql import DataFrame, functions as F
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-from utils.validation.validation_rules.non_res_pir_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.features_non_res_pir_ind_cqc_validation_rules import (
     NonResPirIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
@@ -76,7 +76,7 @@ def calculate_expected_size_of_non_res_pir_ind_cqc_features_dataset(
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_non_res_pir_ind_cqc_features_data' starting...")
+    print("Spark job 'validate_features_non_res_pir_ind_cqc_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -109,4 +109,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_non_res_pir_ind_cqc_features_data' complete")
+    print("Spark job 'validate_features_non_res_pir_ind_cqc_data' complete")
