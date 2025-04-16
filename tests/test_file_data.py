@@ -6042,19 +6042,6 @@ class ModelFeatures:
         ("1-005", "Sparse with a capital S", "Sparse setting"),
     ]
 
-    add_log_column_rows = [
-        ("1-001", 1.0),
-        ("1-002", 10.0),
-        ("1-003", 100.0),
-        ("1-004", None),
-    ]
-    expected_add_log_column_rows = [
-        ("1-001", 1.0, 0.0),
-        ("1-002", 10.0, 2.3026),
-        ("1-003", 100.0, 4.6052),
-        ("1-004", None, None),
-    ]
-
     filter_without_dormancy_features_to_pre_2025_rows = [
         ("1-001", date(2024, 12, 31)),
         ("1-002", date(2025, 1, 1)),

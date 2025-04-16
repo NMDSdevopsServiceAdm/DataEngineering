@@ -3269,19 +3269,6 @@ class ModelFeatures:
         ]
     )
 
-    add_log_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField("col_name", FloatType(), True),
-        ]
-    )
-    expected_add_log_column_schema = StructType(
-        [
-            *add_log_column_schema,
-            StructField("col_name_logged", FloatType(), True),
-        ]
-    )
-
     filter_without_dormancy_features_to_pre_2025_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
