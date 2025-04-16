@@ -317,10 +317,11 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
 
     This function adds a new integer column to the given data frame which represents the number of months (rounded down) between the
     imputed registration date and the cqc location import date.
-    One is added the the time_registered column to account for the fact that the first month is counted as 0 (which the models treat as 'missing').
+
+    One is added the the time_registered column so the first month is indexed as 1.
 
     Args:
-        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
 
     Returns:
         DataFrame: A dataframe with the new time_registered column added.
