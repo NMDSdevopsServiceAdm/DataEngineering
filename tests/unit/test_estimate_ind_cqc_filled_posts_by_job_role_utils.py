@@ -545,7 +545,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
                         returned_ratio_dict[key],
                         expected_ratio_dict[key],
                         places=3,
-                        msg=f"Dict element {key} does not match",
+                        msg=f"In {row}, dict element {key} does not match",
                     )
 
             except:
@@ -588,7 +588,7 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
                         returned_ratio_dict[key],
                         expected_ratio_dict[key],
                         places=3,
-                        msg=f"Dict element {key} does not match",
+                        msg=f"In {row}, dict element {key} does not match",
                     )
 
             except:
