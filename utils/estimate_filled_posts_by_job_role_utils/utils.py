@@ -205,18 +205,18 @@ def calculate_total_sum_of_values_in_a_map_column(
     total_sum_column_name: str,
 ) -> DataFrame:
     """
-    Adds a column which contains the total of values from a given map column of type any:long.
+    Adds a column which contains the total of values from a given map column of type string:long or string:double.
 
     Args:
         df (DataFrame): A dataframe containing a count map.
-        map_column_name (str): A map column of type any:long.
+        map_column_name (str): A map column of type string:long or string:double.
         total_sum_column_name (str): The name to give to the total column being added.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
     if isinstance(
-        df.schema[map_column_name].dataType, MapType(StringType(), LongType())
+        df.schema[map_column_name].dataType, type(MapType(StringType(), LongType()))
     ):
         df = df.withColumn(
             total_sum_column_name,
@@ -228,7 +228,7 @@ def calculate_total_sum_of_values_in_a_map_column(
         )
 
     elif isinstance(
-        df.schema[map_column_name].dataType, MapType(StringType(), DoubleType())
+        df.schema[map_column_name].dataType, type(MapType(StringType(), DoubleType()))
     ):
         df = df.withColumn(
             total_sum_column_name,
