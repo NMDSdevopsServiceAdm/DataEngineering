@@ -126,7 +126,7 @@ def main(
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years_logged,
+            IndCQC.time_registered_capped_at_four_years,
         ]
         + region_list
         + related_location
@@ -173,7 +173,7 @@ def main(
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_ten_years_logged,
+            IndCQC.time_registered_capped_at_ten_years,
         ]
         + dormancy_key
         + region_list
