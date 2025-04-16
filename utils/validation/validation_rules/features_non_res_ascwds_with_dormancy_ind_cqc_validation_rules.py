@@ -21,10 +21,9 @@ class NonResASCWDSWithDormancyIndCqcFeaturesValidationRules:
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
             IndCqcColumns.imputed_registration_date,
-            IndCqcColumns.time_registered,
+            IndCqcColumns.time_registered_capped_at_ten_years,
             IndCqcColumns.service_count,
-            IndCqcColumns.activity_count,
-            IndCqcColumns.specialism_count,
+            IndCqcColumns.activity_count_capped,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -33,13 +32,13 @@ class NonResASCWDSWithDormancyIndCqcFeaturesValidationRules:
         RuleName.min_values: {
             IndCqcColumns.ascwds_pir_merged: 1.0,
             IndCqcColumns.time_registered_capped_at_ten_years: 1.0,
-            # IndCqcColumns.service_count: 1, # Temporarily removed whilst we fix DQ
-            IndCqcColumns.activity_count: 0,
-            IndCqcColumns.specialism_count: 0,
+            IndCqcColumns.service_count_capped: 1,
+            IndCqcColumns.activity_count_capped: 0,
             IndCqcColumns.cqc_location_import_date_indexed: 1,
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_pir_merged: 3000.0,
+            IndCqcColumns.activity_count_capped: 3,
             IndCqcColumns.time_registered_capped_at_ten_years: 120.0,
         },
         RuleName.categorical_values_in_columns: {
