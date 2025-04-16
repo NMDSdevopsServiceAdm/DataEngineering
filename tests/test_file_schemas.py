@@ -5074,7 +5074,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSWithDormancyIndCqcFeaturesSchema:
+class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -5105,7 +5105,7 @@ class ValidateNonResASCWDSWithDormancyIndCqcFeaturesSchema:
 
 
 @dataclass
-class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema:
+class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -5135,7 +5135,7 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema:
 
 
 @dataclass
-class ValidateNonResPirIndCqcFeaturesSchema:
+class ValidateFeaturesNonResPirIndCqcSchema:
     cleaned_ind_cqc_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),

@@ -13,6 +13,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
+PATCH_PATH: str = "jobs.prepare_features_non_res_pir_ind_cqc"
+
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     CLEANED_IMPORT_DATA = "some/source"
@@ -26,11 +28,11 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_features_non_res_pir_ind_cqc.vectorise_dataframe")
-    @patch("utils.utils.select_rows_with_non_null_value")
-    @patch("utils.utils.select_rows_with_value")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.vectorise_dataframe")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
@@ -55,8 +57,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             partitionKeys=[Keys.year, Keys.month, Keys.day, Keys.import_date],
         )
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_is_filtering_out_rows_missing_data_for_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
@@ -69,8 +71,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(self.test_df.count(), 4)
         self.assertEqual(result.count(), 2)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_produces_dataframe_with_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
