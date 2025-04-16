@@ -79,7 +79,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
         )
         clean_number_of_beds_banded_mock.assert_called_once()
-        self.assertEqual(model_calculate_rolling_average_mock.call_count, 3)
+        self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
