@@ -321,7 +321,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     One is added the the time_registered column so the first month is indexed as 1.
 
     Args:
-        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
 
     Returns:
         DataFrame: A dataframe with the new time_registered column added.
