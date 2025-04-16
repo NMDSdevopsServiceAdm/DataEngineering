@@ -167,9 +167,7 @@ class IndCqcColumns:
         "imputed_non_res_pir_people_directly_employed"
     )
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
-    imputed_posts_non_res_with_dormancy_model: str = (
-        "imputed_posts_non_res_with_dormancy_model"
-    )
+    imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
     imputed_filled_posts_per_bed_ratio_model: str = (
         "imputed_filled_posts_per_bed_ratio_model"
