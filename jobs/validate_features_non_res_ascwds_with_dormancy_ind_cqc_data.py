@@ -34,26 +34,26 @@ cleaned_ind_cqc_columns_to_import = [
 
 def main(
     cleaned_ind_cqc_source: str,
-    non_res_ascwds_inc_dormancy_ind_cqc_features_source: str,
+    non_res_ascwds_with_dormancy_ind_cqc_features_source: str,
     report_destination: str,
 ):
     cleaned_ind_cqc_df = utils.read_from_parquet(
         cleaned_ind_cqc_source,
         selected_columns=cleaned_ind_cqc_columns_to_import,
     )
-    non_res_ascwds_inc_dormancy_ind_cqc_features_df = utils.read_from_parquet(
-        non_res_ascwds_inc_dormancy_ind_cqc_features_source,
+    non_res_ascwds_with_dormancy_ind_cqc_features_df = utils.read_from_parquet(
+        non_res_ascwds_with_dormancy_ind_cqc_features_source,
     )
     rules = Rules.rules_to_check
 
     rules[
         RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+    ] = calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dataset(
         cleaned_ind_cqc_df
     )
 
     check_result_df = validate_dataset(
-        non_res_ascwds_inc_dormancy_ind_cqc_features_df, rules
+        non_res_ascwds_with_dormancy_ind_cqc_features_df, rules
     )
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
@@ -62,7 +62,7 @@ def main(
         raise_exception_if_any_checks_failed(check_result_df)
 
 
-def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+def calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dataset(
     cleaned_ind_cqc_df: DataFrame,
 ) -> int:
     """
@@ -86,13 +86,13 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
 
 if __name__ == "__main__":
     print(
-        "Spark job 'validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data' starting..."
+        "Spark job 'validate_features_non_res_ascwds_with_dormancy_ind_cqc_data' starting..."
     )
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_ind_cqc_source,
-        non_res_ascwds_inc_dormancy_ind_cqc_features_source,
+        non_res_ascwds_with_dormancy_ind_cqc_features_source,
         report_destination,
     ) = utils.collect_arguments(
         (
@@ -100,7 +100,7 @@ if __name__ == "__main__":
             "Source s3 directory for parquet cleaned independent CQC dataset",
         ),
         (
-            "--non_res_ascwds_inc_dormancy_ind_cqc_features_source",
+            "--non_res_ascwds_with_dormancy_ind_cqc_features_source",
             "Source s3 directory for parquet non residential ASCWDS including dormancy independent CQC features dataset",
         ),
         (
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     try:
         main(
             cleaned_ind_cqc_source,
-            non_res_ascwds_inc_dormancy_ind_cqc_features_source,
+            non_res_ascwds_with_dormancy_ind_cqc_features_source,
             report_destination,
         )
     finally:
@@ -121,5 +121,5 @@ if __name__ == "__main__":
         spark.stop()
 
     print(
-        "Spark job 'validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data' complete"
+        "Spark job 'validate_features_non_res_ascwds_with_dormancy_ind_cqc_data' complete"
     )

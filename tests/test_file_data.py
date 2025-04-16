@@ -6062,19 +6062,6 @@ class ModelFeatures:
         ("1-005", "Sparse with a capital S", "Sparse setting"),
     ]
 
-    add_log_column_rows = [
-        ("1-001", 1.0),
-        ("1-002", 10.0),
-        ("1-003", 100.0),
-        ("1-004", None),
-    ]
-    expected_add_log_column_rows = [
-        ("1-001", 1.0, 0.0),
-        ("1-002", 10.0, 2.3026),
-        ("1-003", 100.0, 4.6052),
-        ("1-004", None, None),
-    ]
-
     filter_without_dormancy_features_to_pre_2025_rows = [
         ("1-001", date(2024, 12, 31)),
         ("1-002", date(2025, 1, 1)),
@@ -8347,7 +8334,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
+class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
@@ -8382,7 +8369,7 @@ class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
+class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
@@ -8412,7 +8399,7 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResPirIndCqcFeaturesData:
+class ValidateFeaturesNonResPirIndCqcData:
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
         ("1-002", date(2024, 1, 1), CareHome.not_care_home, 10.0),
