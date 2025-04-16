@@ -215,9 +215,7 @@ def calculate_total_sum_of_values_in_a_map_column(
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
-    if isinstance(
-        df.schema[map_column_name].dataType, type(MapType(StringType(), LongType()))
-    ):
+    if df.schema[map_column_name].dataType == MapType(StringType(), LongType()):
         df = df.withColumn(
             total_sum_column_name,
             F.aggregate(
@@ -227,9 +225,7 @@ def calculate_total_sum_of_values_in_a_map_column(
             ),
         )
 
-    elif isinstance(
-        df.schema[map_column_name].dataType, type(MapType(StringType(), DoubleType()))
-    ):
+    elif df.schema[map_column_name].dataType == MapType(StringType(), DoubleType()):
         df = df.withColumn(
             total_sum_column_name,
             F.aggregate(
