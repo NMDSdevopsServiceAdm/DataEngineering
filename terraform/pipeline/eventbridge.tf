@@ -73,7 +73,7 @@ resource "aws_iam_role" "start_state_machines" {
     }
   ]
 }
-EOF 
+EOF
 }
 
 resource "aws_iam_role_policy_attachment" "start_state_machines" {
@@ -95,7 +95,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
     input_template = <<EOF
     {
         "jobs": {
-            "_01_ingest/ingest_ascwds_dataset" : {
+            "ingest_ascwds_dataset" : {
                 "source": "s3://<bucket_name>/<key>"
             }
         }
