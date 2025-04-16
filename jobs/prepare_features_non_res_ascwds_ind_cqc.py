@@ -69,10 +69,6 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    features_df = add_array_column_count(
-        features_df, IndCQC.specialism_count, IndCQC.imputed_specialisms
-    )
-
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
