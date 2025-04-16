@@ -6503,33 +6503,31 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         )
     )
 
-    ascwds_job_role_count_map_to_ratios_map_when_counts_are_integers_schema = (
+    create_ratios_from_counts_when_counts_are_integers_schema = (
         expected_create_total_from_values_in_map_column_when_counts_are_integers_schema
     )
-    expected_ascwds_job_role_count_map_to_ratios_map_when_counts_are_integers_schema = StructType(
+    expected_create_ratios_from_counts_when_counts_are_integers_schema = StructType(
         [
-            *ascwds_job_role_count_map_to_ratios_map_when_counts_are_integers_schema,
+            *create_ratios_from_counts_when_counts_are_integers_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
             ),
         ]
     )
 
-    ascwds_job_role_count_map_to_ratios_map_when_counts_are_floats_schema = (
+    create_ratios_from_counts_when_counts_are_floats_schema = (
         expected_create_total_from_values_in_map_column_when_counts_are_floats_schema
     )
 
-    expected_ascwds_job_role_count_map_to_ratios_map_when_counts_are_floats_schema = (
-        StructType(
-            [
-                *ascwds_job_role_count_map_to_ratios_map_when_counts_are_floats_schema,
-                StructField(
-                    IndCQC.ascwds_job_role_ratios,
-                    MapType(StringType(), DoubleType()),
-                    True,
-                ),
-            ]
-        )
+    expected_create_ratios_from_counts_when_counts_are_floats_schema = StructType(
+        [
+            *create_ratios_from_counts_when_counts_are_floats_schema,
+            StructField(
+                IndCQC.ascwds_job_role_ratios,
+                MapType(StringType(), DoubleType()),
+                True,
+            ),
+        ]
     )
 
     create_estimate_filled_posts_by_job_role_map_column_schema = StructType(
