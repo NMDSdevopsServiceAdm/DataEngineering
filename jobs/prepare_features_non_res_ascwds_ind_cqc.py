@@ -28,7 +28,6 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
-    add_log_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     filter_without_dormancy_features_to_pre_2025,
@@ -124,10 +123,6 @@ def main(
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
-    without_dormancy_features_df = add_log_column(
-        without_dormancy_features_df,
-        IndCQC.time_registered_capped_at_four_years,
-    )
 
     without_dormancy_feature_list: List[str] = sorted(
         [
@@ -172,10 +167,6 @@ def main(
         col_name=IndCQC.time_registered,
         max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
-    )
-    with_dormancy_features_df = add_log_column(
-        with_dormancy_features_df,
-        IndCQC.time_registered_capped_at_ten_years,
     )
 
     with_dormancy_feature_list: List[str] = sorted(
