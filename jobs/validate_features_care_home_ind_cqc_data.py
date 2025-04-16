@@ -8,14 +8,12 @@ from pyspark.sql.dataframe import DataFrame
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
 )
-from utils.validation.validation_rules.care_home_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.features_care_home_ind_cqc_validation_rules import (
     CareHomeIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (

@@ -8314,7 +8314,7 @@ class ValidateCareHomeIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
+class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
@@ -8350,7 +8350,7 @@ class ValidateNonResASCWDSWithDormancyIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
+class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
@@ -8380,7 +8380,7 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData:
 
 
 @dataclass
-class ValidateNonResPirIndCqcFeaturesData:
+class ValidateFeaturesNonResPirIndCqcData:
     cleaned_ind_cqc_rows = [
         ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
         ("1-002", date(2024, 1, 1), CareHome.not_care_home, 10.0),

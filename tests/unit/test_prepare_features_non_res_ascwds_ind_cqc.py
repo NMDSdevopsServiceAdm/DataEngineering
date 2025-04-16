@@ -12,6 +12,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
+PATCH_PATH: str = "jobs.prepare_features_non_res_ascwds_ind_cqc"
+
 
 class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/source"
@@ -24,31 +26,29 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.vectorise_dataframe")
-    @patch(
-        "jobs.prepare_features_non_res_ascwds_ind_cqc.expand_encode_and_extract_features"
-    )
-    @patch("utils.utils.select_rows_with_non_null_value")
-    @patch(
-        "jobs.prepare_features_non_res_ascwds_ind_cqc.group_rural_urban_sparse_categories"
-    )
-    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.cap_integer_at_max_value")
-    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_date_index_column")
-    @patch("jobs.prepare_features_non_res_ascwds_ind_cqc.add_array_column_count")
-    @patch("utils.utils.select_rows_with_value")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
+    @patch(f"{PATCH_PATH}.vectorise_dataframe")
+    @patch(f"{PATCH_PATH}.add_date_index_column")
+    @patch(f"{PATCH_PATH}.filter_without_dormancy_features_to_pre_2025")
+    @patch(f"{PATCH_PATH}.group_rural_urban_sparse_categories")
+    @patch(f"{PATCH_PATH}.expand_encode_and_extract_features")
+    @patch(f"{PATCH_PATH}.cap_integer_at_max_value")
+    @patch(f"{PATCH_PATH}.add_array_column_count")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         select_rows_with_value_mock: Mock,
         add_array_column_count_mock: Mock,
-        add_date_index_column_mock: Mock,
         cap_integer_at_max_value_mock: Mock,
-        group_rural_urban_sparse_categories_mock: Mock,
-        select_rows_with_non_null_value_mock: Mock,
         expand_encode_and_extract_features_mock: Mock,
+        group_rural_urban_sparse_categories_mock: Mock,
+        filter_without_dormancy_features_to_pre_2025_mock: Mock,
+        add_date_index_column_mock: Mock,
         vectorise_dataframe_mock: Mock,
+        select_rows_with_non_null_value_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -62,15 +62,6 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.WITH_DORMANCY_DESTINATION,
             self.WITHOUT_DORMANCY_DESTINATION,
         )
-
-        self.assertEqual(select_rows_with_value_mock.call_count, 1)
-        self.assertEqual(add_array_column_count_mock.call_count, 3)
-        self.assertEqual(add_date_index_column_mock.call_count, 2)
-        self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
-        self.assertEqual(group_rural_urban_sparse_categories_mock.call_count, 1)
-        self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 6)
-        self.assertEqual(vectorise_dataframe_mock.call_count, 2)
 
         write_to_parquet_calls = [
             call(
@@ -87,10 +78,19 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             ),
         ]
 
+        select_rows_with_value_mock.assert_called_once()
+        self.assertEqual(add_array_column_count_mock.call_count, 3)
+        self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
+        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 6)
+        group_rural_urban_sparse_categories_mock.assert_called_once()
+        filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
+        self.assertEqual(add_date_index_column_mock.call_count, 2)
+        self.assertEqual(vectorise_dataframe_mock.call_count, 2)
+        select_rows_with_non_null_value_mock.assert_called_once()
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_is_filtering_out_rows_missing_data_for_features(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
