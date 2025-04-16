@@ -32,7 +32,7 @@ class NonResASCWDSWithDormancyIndCqcFeaturesValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.ascwds_pir_merged: 1.0,
-            IndCqcColumns.time_registered: 0.0,
+            IndCqcColumns.time_registered_capped_at_ten_years: 1.0,
             # IndCqcColumns.service_count: 1, # Temporarily removed whilst we fix DQ
             IndCqcColumns.activity_count: 0,
             IndCqcColumns.specialism_count: 0,
@@ -40,6 +40,7 @@ class NonResASCWDSWithDormancyIndCqcFeaturesValidationRules:
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_pir_merged: 3000.0,
+            IndCqcColumns.time_registered_capped_at_ten_years: 120.0,
         },
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_non_care_home_values.categorical_values,
