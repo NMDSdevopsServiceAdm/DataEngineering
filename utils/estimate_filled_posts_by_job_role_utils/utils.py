@@ -268,7 +268,7 @@ def create_ratios_map_from_count_map_and_total(
 def count_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     Updates the 'registered_manager_count' column with a binary indicator of whether
-    a location has at least one registered manager name in the pre-CQC API data.
+    a location has at least one registered manager name in the 'registered_manager_names' column.
 
     This MVP logic sets the count to:
       - 1 if the 'registered_manager_names' array is non-empty (i.e., has >= 1 name).
