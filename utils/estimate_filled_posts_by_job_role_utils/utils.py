@@ -269,7 +269,7 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     Updates the 'registered_manager_count' column with a binary indicator of whether
     a location has at least one registered manager name in the pre-CQC API data.
-    
+
     This MVP logic sets the count to:
       - 1 if the 'registered_manager_names' array is non-empty (i.e., has >= 1 name).
       - 0 if 'registered_manager_names' is None or an empty list.
@@ -288,9 +288,10 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.registered_manager_count,
         F.when(
-            (F.col(IndCQC.registered_manager_names).isNull()) | (F.size(F.col(IndCQC.registered_manager_names)) == 0),
-            F.lit(0)
-        ).otherwise(F.lit(1))
+            (F.col(IndCQC.registered_manager_names).isNull())
+            | (F.size(F.col(IndCQC.registered_manager_names)) == 0),
+            F.lit(0),
+        ).otherwise(F.lit(1)),
     )
     return df
 

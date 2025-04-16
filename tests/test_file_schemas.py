@@ -6549,7 +6549,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-    
+
     expected_count_registered_manager_names_schema = StructType(
         [
             *count_registered_manager_names_schema,
