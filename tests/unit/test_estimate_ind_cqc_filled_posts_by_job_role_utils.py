@@ -1321,7 +1321,7 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
                         returned_ratio_dict[i],
                         expected_ratio_dict[i],
                         places=3,
-                        msg=f"Dict element {i} does not match",
+                        msg=f"In row {iterable}, dict element {i} does not match",
                     )
 
     def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_is_null_returns_expected_values(
