@@ -175,7 +175,7 @@ def transform_job_role_count_map_to_ratios_map(
 
     Args:
         df (DataFrame): A dataframe containing a job role count map at workplace level.
-        count_map_column_name (str): A map column of type any:long.
+        count_map_column_name (str): A map column of type string:number.
         ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
