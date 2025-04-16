@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import LongType, MapType, StringType, DoubleType
+from pyspark.sql.types import MapType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -205,11 +205,11 @@ def calculate_total_sum_of_values_in_a_map_column(
     total_sum_column_name: str,
 ) -> DataFrame:
     """
-    Adds a column which contains the total of values from a given map column of type string:long or string:double.
+    Adds a column which contains the total of values from a given map column of type string:number.
 
     Args:
         df (DataFrame): A dataframe containing a count map.
-        map_column_name (str): A map column of type string:long or string:double.
+        map_column_name (str): A map column of type string:number.
         total_sum_column_name (str): The name to give to the total column being added.
 
     Returns:
