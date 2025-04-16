@@ -2564,11 +2564,11 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema:
 class NonResAscwdsFeaturesSchema(object):
     basic_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.time_registered, IntegerType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.imputed_registration_date, DateType(), False),
+            StructField(IndCQC.time_registered, IntegerType(), False),
+            StructField(IndCQC.current_region, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
             StructField(
@@ -2578,61 +2578,24 @@ class NonResAscwdsFeaturesSchema(object):
                         [
                             StructField(IndCQC.name, StringType(), True),
                             StructField(IndCQC.code, StringType(), True),
-                            StructField(
-                                IndCQC.contacts,
-                                ArrayType(
-                                    StructType(
-                                        [
-                                            StructField(
-                                                IndCQC.person_family_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_given_name,
-                                                StringType(),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_roles,
-                                                ArrayType(StringType(), True),
-                                                True,
-                                            ),
-                                            StructField(
-                                                IndCQC.person_title, StringType(), True
-                                            ),
-                                        ]
-                                    ),
-                                    True,
-                                ),
-                                True,
-                            ),
                         ]
                     ),
                     True,
                 ),
                 True,
             ),
-            StructField(
-                IndCQC.imputed_specialisms,
-                ArrayType(
-                    StructType([StructField(IndCQC.name, StringType(), True)]), True
-                ),
-                True,
-            ),
             StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
+            StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
-            StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
-            ),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
+            StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), False),
             StructField(IndCQC.related_location, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(Keys.year, StringType(), False),
+            StructField(Keys.month, StringType(), False),
+            StructField(Keys.day, StringType(), False),
+            StructField(Keys.import_date, StringType(), False),
         ]
     )
 
