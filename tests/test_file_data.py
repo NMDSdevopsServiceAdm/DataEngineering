@@ -10329,50 +10329,62 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     # fmt: on
 
+    # For a location with one registered manager:
     count_registered_manager_names_when_location_has_one_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"])
     ]
     expected_count_registered_manager_names_when_location_has_one_registered_manager_rows = [
+        # 1 because there's at least one name
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1)
     ]
 
+    # For a location with two registered managers:
     count_registered_manager_names_when_location_has_two_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
     ]
     expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
-        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+        # Previously was 2, but now 1 to reflect "at least one manager"
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1)
     ]
 
+    # For a location with a null managers field:
     count_registered_manager_names_when_location_has_null_registered_manager_rows = [
         ("1-0000000001", date(2025, 1, 1), None)
     ]
     expected_count_registered_manager_names_when_location_has_null_registered_manager_rows = [
+        # No managers, so 0
         ("1-0000000001", date(2025, 1, 1), None, 0)
     ]
 
+    # For a location with an empty list:
     count_registered_manager_names_when_location_has_empty_list_rows = [
         ("1-0000000001", date(2025, 1, 1), [])
     ]
     expected_count_registered_manager_names_when_location_has_empty_list_rows = [
+        # No managers, so 0
         ("1-0000000001", date(2025, 1, 1), [], 0)
     ]
 
+    # Two locations with different numbers of managers – now both become 1 if the list has at least one name
     count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
         ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"]),
     ]
     expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+        # For the second location, even though there are two managers, the MVP approach is "1" if at least one
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
+    # Same location, different import dates, and different # of managers
     count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"]),
         ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"]),
     ]
     expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
+        # In both cases, there's at least one manager, so it should be 1 for each date
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     unpacked_mapped_column_with_one_record_data = [

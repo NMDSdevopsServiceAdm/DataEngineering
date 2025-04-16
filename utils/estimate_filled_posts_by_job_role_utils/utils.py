@@ -267,31 +267,31 @@ def create_ratios_map_from_count_map_and_total(
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:
     """
-    Adds a column with a count of elements within list of registered manager names.
+    Updates the 'registered_manager_count' column with a binary indicator of whether
+    a location has at least one registered manager name in the pre-CQC API data.
+    
+    This MVP logic sets the count to:
+      - 1 if the 'registered_manager_names' array is non-empty (i.e., has >= 1 name).
+      - 0 if 'registered_manager_names' is None or an empty list.
 
-    This function uses the size method to count elements in list of strings. This method
-    returns the count, including null elements within a list, when list partially populated.
-    It returns 0 when list is empty. It returns -1 when row is null.
-    Therefore, after the counting, this function recodes values of -1 to 0.
+    This approach aligns with historical Excel structures where each location
+    was effectively recorded with at most one registered manager.
 
     Args:
-        df (DataFrame): A dataframe containing list of registered manager names.
+        df (DataFrame): A Spark DataFrame containing the column 'registered_manager_names'
+            (ArrayType(StringType())). Each row represents a location's registered manager name data.
 
     Returns:
-        DataFrame: A dataframe with count of elements in list of registered manager names.
+        DataFrame: A Spark DataFrame with an additional or updated 'registered_manager_count' column
+            set to 1 if there is at least one name, or 0 otherwise.
     """
-
-    df = df.withColumn(
-        IndCQC.registered_manager_count, F.size(F.col(IndCQC.registered_manager_names))
-    )
-
     df = df.withColumn(
         IndCQC.registered_manager_count,
-        F.when(F.col(IndCQC.registered_manager_count) == -1, F.lit(0)).otherwise(
-            F.col(IndCQC.registered_manager_count)
-        ),
+        F.when(
+            (F.col(IndCQC.registered_manager_names).isNull()) | (F.size(F.col(IndCQC.registered_manager_names)) == 0),
+            F.lit(0)
+        ).otherwise(F.lit(1))
     )
-
     return df
 
 
