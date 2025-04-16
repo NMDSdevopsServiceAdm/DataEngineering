@@ -1357,15 +1357,12 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
     def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
         self,
     ):
-        selected_cols = [
-            col
-            for col in self.expected_df.columns
-            if col
-            != IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-        ]
-
-        expected_df = self.expected_df.select(*selected_cols)
-        returned_df = self.returned_df.select(*selected_cols)
+        expected_df = self.expected_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+        returned_df = self.returned_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
 
         self.assertEqual(
             expected_df.sort(IndCQC.location_id).collect(),
