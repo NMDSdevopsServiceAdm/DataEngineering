@@ -2,7 +2,7 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_features_non_res_ascwds_inc_dormancy_ind_cqc_data as job
+import jobs.validate_features_non_res_ascwds_with_dormancy_ind_cqc_data as job
 from tests.test_file_data import (
     ValidateFeaturesNonResASCWDSWithDormancyIndCqcData as Data,
 )
@@ -11,7 +11,7 @@ from tests.test_file_schemas import (
 )
 from utils import utils
 
-PATCH_PATH: str = "jobs.validate_features_non_res_ascwds_inc_dormancy_ind_cqc_data"
+PATCH_PATH: str = "jobs.validate_features_non_res_ascwds_with_dormancy_ind_cqc_data"
 
 
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests(unittest.TestCase):
@@ -25,7 +25,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests(unittest.TestCa
             Data.cleaned_ind_cqc_rows,
             Schemas.cleaned_ind_cqc_schema,
         )
-        self.test_non_res_ascwds_inc_dormancy_ind_cqc_features_df = (
+        self.test_non_res_ascwds_with_dormancy_ind_cqc_features_df = (
             self.spark.createDataFrame(
                 Data.non_res_ascwds_ind_cqc_features_rows,
                 Schemas.non_res_ascwds_ind_cqc_features_schema,
@@ -50,7 +50,7 @@ class MainTests(ValidateFeaturesNonResASCWDSWithDormancyIndCqcDatasetTests):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_cleaned_ind_cqc_df,
-            self.test_non_res_ascwds_inc_dormancy_ind_cqc_features_df,
+            self.test_non_res_ascwds_with_dormancy_ind_cqc_features_df,
         ]
 
         with self.assertRaises(ValueError):
@@ -70,14 +70,14 @@ class CalculateExpectedSizeofDataset(
     def setUp(self) -> None:
         return super().setUp()
 
-    def test_calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
+    def test_calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dataset_returns_correct_row_count(
         self,
     ):
         test_df = self.spark.createDataFrame(
             Data.calculate_expected_size_rows, Schemas.calculate_expected_size_schema
         )
         expected_row_count = 1
-        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_dataset(
+        returned_row_count = job.calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dataset(
             test_df
         )
         self.assertEqual(returned_row_count, expected_row_count)
