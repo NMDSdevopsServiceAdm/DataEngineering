@@ -115,7 +115,7 @@ def main(
 
     without_dormancy_features_df = cap_integer_at_max_value(
         without_dormancy_features_df,
-        col_name=IndCQC.time_registered,
+        IndCQC.time_registered,
         max_value=48,
         new_col_name=IndCQC.time_registered_capped_at_four_years,
     )
@@ -162,7 +162,7 @@ def main(
 
     with_dormancy_features_df = cap_integer_at_max_value(
         with_dormancy_features_df,
-        col_name=IndCQC.time_registered,
+        IndCQC.time_registered,
         max_value=120,
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
