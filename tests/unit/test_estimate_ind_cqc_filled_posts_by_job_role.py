@@ -74,8 +74,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         create_estimate_filled_posts_by_job_role_map_column_mock: Mock,
         unpack_mapped_column_mock: Mock,
         count_registered_manager_names_mock: Mock,
-        calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock: Mock,
         calculate_difference_between_estimate_and_cqc_registered_managers_mock: Mock,
+        calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
