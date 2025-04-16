@@ -10153,7 +10153,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
 
-    create_total_from_values_in_map_column_when_counts_are_integers_rows = [
+    create_total_from_values_in_map_column_when_counts_are_longs_rows = [
         (
             "1-001",
             {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
@@ -10170,7 +10170,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
-    expected_create_total_from_values_in_map_column_when_counts_are_integers_rows = [
+    expected_create_total_from_values_in_map_column_when_counts_are_longs_rows = [
         (
             "1-001",
             {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
@@ -10191,7 +10191,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    create_total_from_values_in_map_column_when_counts_are_floats_rows = [
+    create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
         (
             "1-001",
             {
@@ -10200,7 +10200,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
         ),
     ]
-    expected_create_total_from_values_in_map_column_when_counts_are_floats_rows = [
+    expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
         (
             "1-001",
             {
@@ -10211,10 +10211,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    create_ratios_from_counts_when_counts_are_integers_rows = (
-        expected_create_total_from_values_in_map_column_when_counts_are_integers_rows
+    create_ratios_from_counts_when_counts_are_longs_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_longs_rows
     )
-    expected_create_ratios_from_counts_when_counts_are_integers_rows = [
+    expected_create_ratios_from_counts_when_counts_are_longs_rows = [
         (
             "1-001",
             {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
@@ -10244,10 +10244,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    create_ratios_from_counts_when_counts_are_floats_rows = (
-        expected_create_total_from_values_in_map_column_when_counts_are_floats_rows
+    create_ratios_from_counts_when_counts_are_doubles_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows
     )
-    expected_create_ratios_from_counts_when_counts_are_floats_rows = [
+    expected_create_ratios_from_counts_when_counts_are_doubles_rows = [
         (
             "1-001",
             {

@@ -6465,7 +6465,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    create_total_from_values_in_map_column_when_counts_are_integers_schema = StructType(
+    create_total_from_values_in_map_column_when_counts_are_longs_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -6475,16 +6475,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-    expected_create_total_from_values_in_map_column_when_counts_are_integers_schema = (
+    expected_create_total_from_values_in_map_column_when_counts_are_longs_schema = (
         StructType(
             [
-                *create_total_from_values_in_map_column_when_counts_are_integers_schema,
+                *create_total_from_values_in_map_column_when_counts_are_longs_schema,
                 StructField("temp_total_count_of_worker_records", LongType(), True),
             ]
         )
     )
 
-    create_total_from_values_in_map_column_when_counts_are_floats_schema = StructType(
+    create_total_from_values_in_map_column_when_counts_are_doubles_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -6494,34 +6494,33 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-    expected_create_total_from_values_in_map_column_when_counts_are_floats_schema = (
+    expected_create_total_from_values_in_map_column_when_counts_are_doubles_schema = (
         StructType(
             [
-                *create_total_from_values_in_map_column_when_counts_are_floats_schema,
+                *create_total_from_values_in_map_column_when_counts_are_doubles_schema,
                 StructField("temp_total_count_of_worker_records", DoubleType(), True),
             ]
         )
     )
 
-    create_ratios_from_counts_when_counts_are_integers_schema = (
-        expected_create_total_from_values_in_map_column_when_counts_are_integers_schema
+    create_ratios_from_counts_when_counts_are_longs_schema = (
+        expected_create_total_from_values_in_map_column_when_counts_are_longs_schema
     )
-    expected_create_ratios_from_counts_when_counts_are_integers_schema = StructType(
+    expected_create_ratios_from_counts_when_counts_are_longs_schema = StructType(
         [
-            *create_ratios_from_counts_when_counts_are_integers_schema,
+            *create_ratios_from_counts_when_counts_are_longs_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
             ),
         ]
     )
 
-    create_ratios_from_counts_when_counts_are_floats_schema = (
-        expected_create_total_from_values_in_map_column_when_counts_are_floats_schema
+    create_ratios_from_counts_when_counts_are_doubles_schema = (
+        expected_create_total_from_values_in_map_column_when_counts_are_doubles_schema
     )
-
-    expected_create_ratios_from_counts_when_counts_are_floats_schema = StructType(
+    expected_create_ratios_from_counts_when_counts_are_doubles_schema = StructType(
         [
-            *create_ratios_from_counts_when_counts_are_floats_schema,
+            *create_ratios_from_counts_when_counts_are_doubles_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios,
                 MapType(StringType(), DoubleType()),
