@@ -12,7 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from utils.validation.validation_rules.non_res_ascwds_inc_dormancy_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.features_non_res_ascwds_with_dormancy_ind_cqc_validation_rules import (
     NonResASCWDSWithDormancyIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (

@@ -9,7 +9,7 @@ from pyspark.sql import DataFrame, functions as F
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-from utils.validation.validation_rules.non_res_pir_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.features_non_res_pir_ind_cqc_validation_rules import (
     NonResPirIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_rule_names import RuleNames as RuleName
