@@ -86,7 +86,7 @@ def calculate_expected_size_of_non_res_ascwds_inc_dormancy_ind_cqc_features_data
 
 if __name__ == "__main__":
     print(
-        "Spark job 'validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data' starting..."
+        "Spark job 'validate_features_non_res_ascwds_inc_dormancy_ind_cqc_data' starting..."
     )
     print(f"Job parameters: {sys.argv}")
 
@@ -121,5 +121,5 @@ if __name__ == "__main__":
         spark.stop()
 
     print(
-        "Spark job 'validate_non_res_ascwds_inc_dormancy_ind_cqc_features_data' complete"
+        "Spark job 'validate_features_non_res_ascwds_inc_dormancy_ind_cqc_data' complete"
     )

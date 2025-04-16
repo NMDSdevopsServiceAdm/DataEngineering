@@ -76,7 +76,7 @@ def calculate_expected_size_of_non_res_pir_ind_cqc_features_dataset(
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_non_res_pir_ind_cqc_features_data' starting...")
+    print("Spark job 'validate_features_non_res_pir_ind_cqc_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
@@ -109,4 +109,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_non_res_pir_ind_cqc_features_data' complete")
+    print("Spark job 'validate_features_non_res_pir_ind_cqc_data' complete")
