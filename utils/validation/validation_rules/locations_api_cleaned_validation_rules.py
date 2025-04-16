@@ -43,7 +43,7 @@ class LocationsAPICleanedValidationRules:
         ],
         RuleName.min_values: {
             CQCLClean.number_of_beds: 0,
-            CQCLClean.time_registered: 1,
+            CQCLClean.time_registered: 0,
             Validation.location_id_length: 3,
             Validation.provider_id_length: 3,
         },
