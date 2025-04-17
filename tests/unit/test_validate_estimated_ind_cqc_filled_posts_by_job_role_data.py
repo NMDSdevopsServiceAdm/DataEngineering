@@ -51,11 +51,12 @@ class MainTests(ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests):
             self.test_estimated_ind_cqc_filled_posts_by_job_roledf,
         ]
 
-        job.main(
-            self.TEST_CLEANED_IND_CQC_SOURCE,
-            self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_BY_JOB_ROLE_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_CLEANED_IND_CQC_SOURCE,
+                self.TEST_ESTIMATED_IND_CQC_FILLED_POSTS_BY_JOB_ROLE_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
         self.assertEqual(read_from_parquet_patch.call_count, 2)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
