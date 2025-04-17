@@ -19,8 +19,10 @@ def combine_non_res_with_and_without_dormancy_models(
     """
     Creates a combined model prediction by adjusting the 'without_dormancy' model to align with
     the 'with_dormancy' model and applying residual corrections for smoothing.
+
     Args:
         locations_df (DataFrame): Input DataFrame containing 'without_dormancy' and 'with_dormancy' model predictions.
+
     Returns:
         DataFrame: The original DataFrame with the combined model predictions joined in.
     """
