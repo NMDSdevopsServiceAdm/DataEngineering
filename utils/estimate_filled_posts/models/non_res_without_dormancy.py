@@ -22,6 +22,8 @@ def model_non_res_without_dormancy(
     predictions model on non residential without dormancy features data.
     It then saves the model metrics and adds the predictions into the main dataset.
 
+    Predictions are capped at a minimum of one.
+
     Args:
         locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
         features_df (DataFrame): A dataframe containing model features for the non res without dormancy model. This should only contain rows where the primary service type is non-residential.
@@ -34,6 +36,7 @@ def model_non_res_without_dormancy(
     trained_model = LinearRegressionModel.load(model_source)
 
     predictions_df = trained_model.transform(features_df)
+
     predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
     save_model_metrics(

@@ -21,7 +21,7 @@ class FeatureEngineeringValueLabelsServices:
         "service_supported_living": CatValues.services_column_values.supported_living_service,
     }
 
-    non_res_model_labels_dict = {
+    non_res_labels_dict = {
         "service_domiciliary": CatValues.services_column_values.domiciliary_care_service,
         "service_extra_care_housing": CatValues.services_column_values.extra_care_housing_services,
         "service_shared_lives": CatValues.services_column_values.shared_lives,

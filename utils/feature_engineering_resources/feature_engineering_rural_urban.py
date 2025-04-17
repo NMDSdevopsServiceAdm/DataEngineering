@@ -24,7 +24,7 @@ class FeatureEngineeringValueLabelsRuralUrban:
         "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
     }
 
-    non_res_model_labels_dict = {
+    non_res_labels_dict = {
         "rui_urban_city": CatValues.current_rui_column_values.urban_city,
         "rui_urban_major": CatValues.current_rui_column_values.urban_major,
         "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,

@@ -2,13 +2,15 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch, call
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
+from pyspark.ml.linalg import SparseVector
 
 import jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from tests.test_file_data import NonResAscwdsFeaturesData as Data
 from tests.test_file_schemas import NonResAscwdsFeaturesSchema as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 
@@ -91,7 +93,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    def test_main_is_filtering_out_rows_missing_data_for_features(
+    def test_main_produces_dataframes_with_expected_features_for_with_dormancy_model(
         self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -101,15 +103,58 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
             self.WITH_DORMANCY_DESTINATION,
             self.WITHOUT_DORMANCY_DESTINATION,
         )
+        result: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
 
-        result_with_dormancy: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
-        result_without_dormancy: DataFrame = write_to_parquet_mock.call_args_list[0][0][
-            0
-        ]
+        expected_features = SparseVector(
+            32,
+            [0, 1, 4, 10, 18, 19, 26, 31],
+            [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0],
+        )
+        returned_features = result.select(F.col(IndCQC.features)).collect()[0].features
 
-        self.assertEqual(self.test_df.count(), 6)
-        self.assertEqual(result_with_dormancy.count(), 4)
-        self.assertEqual(result_without_dormancy.count(), 5)
+        self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
+        self.assertEqual(returned_features, expected_features)
+
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    def test_main_produces_dataframes_with_expected_features_for_without_dormancy_model(
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(
+            self.CLEANED_IND_CQC_TEST_DATA,
+            self.WITH_DORMANCY_DESTINATION,
+            self.WITHOUT_DORMANCY_DESTINATION,
+        )
+        result: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
+
+        expected_features = SparseVector(
+            31, [0, 1, 3, 9, 17, 18, 25, 30], [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0]
+        )
+        returned_features = result.select(F.col(IndCQC.features)).collect()[0].features
+
+        self.assertTrue(result.filter(F.col(IndCQC.features).isNull()).count() == 0)
+        self.assertEqual(returned_features, expected_features)
+
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    def test_main_is_filtering_out_rows_as_expected(
+        self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(
+            self.CLEANED_IND_CQC_TEST_DATA,
+            self.WITH_DORMANCY_DESTINATION,
+            self.WITHOUT_DORMANCY_DESTINATION,
+        )
+        with_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[1][0][0]
+        without_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
+
+        self.assertEqual(self.test_df.count(), 7)
+        self.assertEqual(with_dormancy_df.count(), 4)
+        self.assertEqual(without_dormancy_df.count(), 5)
 
 
 if __name__ == "__main__":

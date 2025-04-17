@@ -72,7 +72,7 @@ def main(
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
-        ServicesFeatures.non_res_model_labels_dict,
+        ServicesFeatures.non_res_labels_dict,
         is_array_col=True,
     )
 
@@ -87,7 +87,7 @@ def main(
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
-        RuralUrbanFeatures.non_res_model_labels_dict,
+        RuralUrbanFeatures.non_res_labels_dict,
         is_array_col=False,
     )
 

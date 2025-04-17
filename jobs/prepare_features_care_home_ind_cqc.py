@@ -77,7 +77,7 @@ def main(
     features_df, specialisms_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.specialisms_offered,
-        SpecialismsFeatures.care_home_labels_dict,
+        SpecialismsFeatures.labels_dict,
         is_array_col=True,
     )
 

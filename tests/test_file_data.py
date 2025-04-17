@@ -5239,12 +5239,13 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
+        ("1-00001", date(2022, 2, 1), date(2019, 1, 1), 35, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 17.5, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
         ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
         ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
         ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
         ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], None, PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00007", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
     ]
     # fmt: on
 
@@ -6170,35 +6171,25 @@ class ModelNonResWithDormancy:
     non_res_with_dormancy_features_rows = [
         (
             "1-000000001",
-            PrimaryServiceType.non_residential,
-            10.0,
-            "Y",
-            "South West",
             date(2022, 3, 29),
+            10.0,
             Vectors.sparse(
-                53,
+                32,
                 {
-                    0: 204.0,
+                    0: 1.0,
                     1: 1.0,
-                    11: 1.0,
-                    21: 1.0,
-                    25: 1.0,
-                    46: 1.0,
-                    51: 2.0,
-                    52: 1096.0,
+                    4: 17.5,
+                    10: 1.0,
+                    18: 1.0,
+                    31: 35.0,
                 },
             ),
-            34,
         ),
         (
             "1-000000003",
-            PrimaryServiceType.non_residential,
-            20.0,
-            "N",
-            "Merseyside",
             date(2022, 3, 29),
+            20.0,
             None,
-            0,
         ),
     ]
 
@@ -6237,33 +6228,25 @@ class ModelNonResWithoutDormancy:
     non_res_without_dormancy_features_rows = [
         (
             "1-000000001",
-            PrimaryServiceType.non_residential,
-            10.0,
-            "Y",
-            "South West",
             date(2022, 3, 29),
+            10.0,
             Vectors.sparse(
-                51,
+                31,
                 {
-                    0: 427.0,
+                    0: 1.0,
+                    1: 1.0,
+                    3: 17.5,
                     9: 1.0,
-                    16: 1.0,
-                    44: 1.0,
-                    49: 1.0,
-                    50: 895.0,
+                    17: 1.0,
+                    30: 35.0,
                 },
             ),
-            34,
         ),
         (
             "1-000000003",
-            PrimaryServiceType.non_residential,
-            20.0,
-            "N",
-            "Merseyside",
             date(2022, 3, 29),
+            20.0,
             None,
-            0,
         ),
     ]
 
@@ -8337,10 +8320,10 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, Dormancy.not_dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
     ]
     # fmt: on
 
@@ -8353,18 +8336,11 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-002", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, None),
-        ("1-003", date(2024, 1, 1), CareHome.care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-004", date(2024, 1, 1), CareHome.care_home, None, None),
-        ("1-005", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-006", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None),
-        ("1-007", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None, None),
-        ("1-009", date(2024, 1, 1), None, Dormancy.dormant, [{"name": "Name", "description": "Desc"}]),
-        ("1-010", date(2024, 1, 1), None, Dormancy.dormant, None),
-        ("1-011", date(2024, 1, 1), None, None, [{"name": "Name", "description": "Desc"}]),
-        ("1-012", date(2024, 1, 1), None, None, None),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, Dormancy.dormant, None, [{"name": "Name"}]), # filtered - null service
+        ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
+        ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
     ]
 
 
@@ -8372,10 +8348,10 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
     # fmt: off
     cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-001", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 9), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
     ]
     # fmt: on
 
@@ -8388,12 +8364,11 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
 
     # fmt: off
     calculate_expected_size_rows = [
-        ("1-003", date(2024, 1, 1), CareHome.care_home, [{"name": "Name", "description": "Desc"}]),
-        ("1-004", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-007", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}]),
-        ("1-008", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-011", date(2024, 1, 1), None, [{"name": "Name", "description": "Desc"}]),
-        ("1-012", date(2024, 1, 1), None, None),
+        ("1-001", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]),
+        ("1-002", date(2024, 1, 1), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], None), # filtered - null specialism
+        ("1-003", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name"}]), # filtered - null service
+        ("1-004", date(2024, 1, 1), CareHome.care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
+        ("1-005", date(2025, 1, 2), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - date after 1/1/2025
     ]
     # fmt: on
 
@@ -10159,99 +10134,114 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
 
-    # fmt: off
-    create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}
-        )
-    ]
-    expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
-         3
-        )
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_total_from_values_in_map_column_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None}
-        )
-    ]
-    expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
-         None
-        )
-    ]
-    # fmt: on
-
-    create_total_from_values_in_map_column_when_count_column_is_null_rows = [
-        ("1-001", None)
-    ]
-    expected_create_total_from_values_in_map_column_when_count_column_is_null_rows = [
-        ("1-001", None, None)
-    ]
-
-    # fmt: off
-    create_total_from_values_in_map_column_at_multiple_locations_rows = [
-        ("1-001", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
-        ("1-002", {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3}),
-    ]
-    expected_create_total_from_values_in_map_column_at_multiple_locations_rows = [
-        ("1-001", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}, 1),
-        ("1-002", {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3}, 5),
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_ratios_from_counts_when_all_count_values_above_zero_rows = (
-        expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows
-    )
-    expected_create_ratios_from_counts_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
-         3,
-         {MainJobRoleLabels.care_worker: 0.333, MainJobRoleLabels.registered_nurse: 0.667}),
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_ratios_from_counts_when_all_count_values_are_null_rows = expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows
-    expected_create_ratios_from_counts_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
-         None,
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
+    create_total_from_values_in_map_column_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+        ),
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            None,
         ),
     ]
-    # fmt: on
-
-    create_ratios_from_counts_when_count_map_column_is_null_rows = (
-        expected_create_total_from_values_in_map_column_when_count_column_is_null_rows
-    )
-    expected_create_ratios_from_counts_when_count_map_column_is_null_rows = [
-        ("1-001", None, None, None),
-    ]
-
-    # fmt: off
-    create_ratios_from_counts_at_multiple_establishments_rows = (
-        expected_create_total_from_values_in_map_column_at_multiple_locations_rows
-    )
-    expected_create_ratios_from_counts_at_multiple_establishments_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1},
-         1,
-         {MainJobRoleLabels.care_worker: 0.0, MainJobRoleLabels.registered_nurse: 1.0}
+    expected_create_total_from_values_in_map_column_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            3,
         ),
-        ("1-002",
-         {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3},
-         1,
-         {MainJobRoleLabels.care_worker: 0.4, MainJobRoleLabels.registered_nurse: 0.6}
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            None,
+        ),
+        (
+            "1-003",
+            None,
+            None,
         ),
     ]
-    # fmt: on
+
+    create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+        ),
+    ]
+    expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+            5.0,
+        ),
+    ]
+
+    create_ratios_from_counts_when_counts_are_longs_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_longs_rows
+    )
+    expected_create_ratios_from_counts_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            3,
+            {
+                MainJobRoleLabels.care_worker: 0.333,
+                MainJobRoleLabels.registered_nurse: 0.667,
+            },
+        ),
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            None,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    create_ratios_from_counts_when_counts_are_doubles_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows
+    )
+    expected_create_ratios_from_counts_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+            5.0,
+            {
+                MainJobRoleLabels.care_worker: 0.4,
+                MainJobRoleLabels.registered_nurse: 0.6,
+            },
+        ),
+    ]
 
     # fmt: off
     create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows = [
@@ -10346,7 +10336,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
     ]
     expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
-        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1)
     ]
 
     count_registered_manager_names_when_location_has_null_registered_manager_rows = [
@@ -10369,7 +10359,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
@@ -10378,7 +10368,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     unpacked_mapped_column_with_one_record_data = [
@@ -10506,6 +10496,42 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    # fmt: off
+    non_rm_managerial_estimate_filled_posts_rows = [
+        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ]
+
+    expected_non_rm_managerial_estimate_filled_posts_rows = [
+        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+         20.0,
+         {MainJobRoleLabels.senior_management: 0.45,
+          MainJobRoleLabels.middle_management: 0.15,
+          MainJobRoleLabels.first_line_manager: 0.05,
+          MainJobRoleLabels.supervisor: 0.05,
+          MainJobRoleLabels.other_managerial_staff: 0.05,
+          MainJobRoleLabels.deputy_manager: 0.05,
+          MainJobRoleLabels.team_leader: 0.05,
+          MainJobRoleLabels.data_governance_manager: 0.05,
+          MainJobRoleLabels.it_manager: 0.05,
+          MainJobRoleLabels.it_service_desk_manager: 0.05},
+         ),
+        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0,
+         {MainJobRoleLabels.senior_management: 0.1,
+          MainJobRoleLabels.middle_management: 0.1,
+          MainJobRoleLabels.first_line_manager: 0.1,
+          MainJobRoleLabels.supervisor: 0.1,
+          MainJobRoleLabels.other_managerial_staff: 0.1,
+          MainJobRoleLabels.deputy_manager: 0.1,
+          MainJobRoleLabels.team_leader: 0.1,
+          MainJobRoleLabels.data_governance_manager: 0.1,
+          MainJobRoleLabels.it_manager: 0.1,
+          MainJobRoleLabels.it_service_desk_manager: 0.1}
+         ),
+    ]
+
+    # fmt: on
     interpolate_job_role_ratios_data = [
         (
             "1000",
