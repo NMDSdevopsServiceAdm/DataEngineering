@@ -271,7 +271,6 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     sum_non_rm_managerial_estimated_filled_posts: str = (
