@@ -5281,10 +5281,9 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_combined_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -5308,10 +5307,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_combined_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
