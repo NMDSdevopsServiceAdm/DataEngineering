@@ -412,8 +412,6 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         and a map column of non registered manager estimated post proportions split per role.
     """
 
-    temp_suffix: str = "_temp"
-
     non_rm_managers = sorted(
         [
             job_role
@@ -423,38 +421,22 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         ]
     )
 
+    temp_suffix: str = "_temp"
     non_rm_managers_temporary = [job_role + temp_suffix for job_role in non_rm_managers]
 
     for col, new_col in zip(non_rm_managers, non_rm_managers_temporary):
         df = df.withColumn(new_col, F.col(col))
 
-    # TODO: Can be deleted during the refactoring. There should be no records with estimated filled posts as nulls so the below three sections of code is redundant.
-    df_result = df.withColumn(
-        "all_null",
-        F.array_contains(
-            F.array(*[F.isnull(F.col(col)) for col in non_rm_managers_temporary]),
-            F.lit(False),
-        )
-        == F.lit(False),
-    )
-
-    sum_expression = sum(
-        F.coalesce(F.col(col), F.lit(0)) for col in non_rm_managers_temporary
-    )
-
-    df_result = df_result.withColumn(
+    df = df.withColumn(
         IndCQC.sum_non_rm_managerial_estimated_filled_posts,
-        F.when(F.col("all_null"), F.lit(None)).otherwise(sum_expression),
+        sum(F.col(new_col) for new_col in non_rm_managers_temporary),
     )
 
-    df_result = df_result.drop("all_null")
-
-    # TODO: Coalesce can be changed as similiar as before during refactoring, no records with estimated filled posts as nulls do they can be removed.
     for col in non_rm_managers_temporary:
-        numerator = F.coalesce(F.col(col), F.lit(0.0))
+        numerator = F.col(col)
         denominator = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
 
-        df_result = df_result.withColumn(
+        df = df.withColumn(
             col,
             F.when(
                 denominator == 0.0,
@@ -464,32 +446,21 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
             .otherwise(numerator / denominator),
         )
 
-    df_result = create_map_column(
-        df_result,
+    df = create_map_column(
+        df,
         non_rm_managers_temporary,
         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-        True,
+        drop_original_columns=True,
     )
 
-    df_result = df_result.withColumn(
+    df = df.withColumn(
         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
         F.expr(
             "transform_keys(map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role, (k,v) -> substring(k , 1, length(k) - 5))"
         ),
     )
 
-    # TODO: Can be deleted similiar to before during refactoring, no records with estimated filled posts as nulls, neither should the sum.
-    df_result = df_result.withColumn(
-        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-        F.when(
-            F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts).isNull(),
-            F.lit(None),
-        ).otherwise(
-            F.col(IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role)
-        ),
-    )
-
-    return df_result
+    return df
 
 
 def pivot_job_role_column(
