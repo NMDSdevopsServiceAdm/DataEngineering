@@ -13,7 +13,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from utils.validation.validation_rules.non_res_ascwds_without_dormancy_ind_cqc_features_validation_rules import (
+from utils.validation.validation_rules.features_non_res_ascwds_without_dormancy_ind_cqc_validation_rules import (
     NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
@@ -87,7 +87,7 @@ def calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_
 
 if __name__ == "__main__":
     print(
-        "Spark job 'validate_non_res_ascwds_without_dormancy_ind_cqc_features_data' starting..."
+        "Spark job 'validate_features_non_res_ascwds_without_dormancy_ind_cqc_data' starting..."
     )
     print(f"Job parameters: {sys.argv}")
 
@@ -122,5 +122,5 @@ if __name__ == "__main__":
         spark.stop()
 
     print(
-        "Spark job 'validate_non_res_ascwds_without_dormancy_ind_cqc_features_data' complete"
+        "Spark job 'validate_features_non_res_ascwds_without_dormancy_ind_cqc_data' complete"
     )

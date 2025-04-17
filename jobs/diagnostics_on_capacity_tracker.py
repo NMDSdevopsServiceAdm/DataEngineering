@@ -51,7 +51,7 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
-number_of_days_in_window: int = 185  # Note: using 185 as a proxy for 6 months
+number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
 
 
 def main(

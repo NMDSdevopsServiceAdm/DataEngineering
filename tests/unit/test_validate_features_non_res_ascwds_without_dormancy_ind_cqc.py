@@ -2,19 +2,19 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_non_res_ascwds_without_dormancy_ind_cqc_features_data as job
-
+import jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data as job
 from tests.test_file_data import (
-    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesData as Data,
+    ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData as Data,
 )
 from tests.test_file_schemas import (
-    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesSchema as Schemas,
+    ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema as Schemas,
 )
-
 from utils import utils
 
+PATCH_PATH: str = "jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data"
 
-class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests(unittest.TestCase):
+
+class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
     TEST_NON_RES_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
@@ -37,12 +37,12 @@ class ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests(unittest.Tes
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests):
+class MainTests(ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
@@ -65,7 +65,7 @@ class MainTests(ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests):
 
 
 class CalculateExpectedSizeofDataset(
-    ValidateNonResASCWDSWithoutDormancyIndCqcFeaturesDatasetTests
+    ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests
 ):
     def setUp(self) -> None:
         return super().setUp()

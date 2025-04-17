@@ -5,11 +5,11 @@ from datetime import date
 
 from utils import utils
 import utils.estimate_filled_posts.models.care_homes as job
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from tests.test_file_data import ModelCareHomes as Data
 from tests.test_file_schemas import ModelCareHomes as Schemas
+
+PATCH_PATH: str = "utils.estimate_filled_posts.models.care_homes"
 
 
 class TestModelCareHome(unittest.TestCase):
@@ -28,10 +28,16 @@ class TestModelCareHome(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    @patch("utils.estimate_filled_posts.models.care_homes.save_model_metrics")
+    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
+    @patch(f"{PATCH_PATH}.save_model_metrics")
+    @patch(f"{PATCH_PATH}.set_min_value")
+    @patch(f"{PATCH_PATH}.calculate_filled_posts_from_beds_and_ratio")
     def test_model_care_homes_runs(
         self,
-        save_model_metrics: Mock,
+        calculate_filled_posts_from_beds_and_ratio_mock: Mock,
+        set_min_value_mock: Mock,
+        save_model_metrics_mock: Mock,
+        insert_predictions_into_pipeline_mock: Mock,
     ):
         job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
@@ -40,12 +46,15 @@ class TestModelCareHome(unittest.TestCase):
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(save_model_metrics.call_count, 1)
+        calculate_filled_posts_from_beds_and_ratio_mock.assert_called_once()
+        set_min_value_mock.assert_called_once()
+        save_model_metrics_mock.assert_called_once()
+        insert_predictions_into_pipeline_mock.assert_called_once()
 
-    @patch("utils.estimate_filled_posts.models.care_homes.save_model_metrics")
+    @patch(f"{PATCH_PATH}.save_model_metrics")
     def test_model_care_homes_returns_expected_data(
         self,
-        save_model_metrics: Mock,
+        save_model_metrics_mock: Mock,
     ):
         df = job.model_care_homes(
             self.care_homes_cleaned_ind_cqc_df,
@@ -64,5 +73,5 @@ class TestModelCareHome(unittest.TestCase):
             df[IndCqc.location_id] == "1-000000002"
         ).collect()[0]
 
-        self.assertIsNotNone(expected_location_with_prediction.care_home_model)
-        self.assertIsNone(expected_location_without_prediction.care_home_model)
+        self.assertIsNotNone(expected_location_with_prediction[IndCqc.care_home_model])
+        self.assertIsNone(expected_location_without_prediction[IndCqc.care_home_model])
