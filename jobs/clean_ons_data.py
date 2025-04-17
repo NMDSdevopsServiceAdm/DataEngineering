@@ -30,12 +30,17 @@ def main(ons_source: str, cleaned_ons_destination: str):
         refactored_current_ons_df, ONSClean.postcode, "left"
     )
 
+    # TODO - truncate last 2 letters, count splits in each and keep the most common
+    # save as truncated file
+
     utils.write_to_parquet(
         contemporary_with_current_ons_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
     )
+
+    # TODO save truncated file
 
 
 def prepare_current_ons_data(df: DataFrame) -> DataFrame:
