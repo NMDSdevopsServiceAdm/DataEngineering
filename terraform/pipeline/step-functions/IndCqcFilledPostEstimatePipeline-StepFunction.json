@@ -492,7 +492,7 @@
                 {
                   "StartAt": "Run estimate ind cqc filled posts by job role job",
                   "States": {
-                    "Run clean ind cqc data job": {
+                    "Run estimate ind cqc filled posts by job role job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -534,7 +534,7 @@
                 {
                   "StartAt": "Run diagnostics on known filled posts job",
                   "States": {
-                    "Run clean ind cqc data job": {
+                    "Run diagnostics on known filled posts job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
