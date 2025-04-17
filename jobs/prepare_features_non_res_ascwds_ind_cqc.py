@@ -128,11 +128,11 @@ def main(
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_four_years,
         ]
-        + region_list
         + related_location
-        + rui_indicators_list
         + service_list
         + specialisms_list
+        + region_list
+        + rui_indicators_list
     )
 
     vectorised_features_without_dormancy_df = vectorise_dataframe(
@@ -176,11 +176,11 @@ def main(
             IndCQC.time_registered_capped_at_ten_years,
         ]
         + dormancy_key
-        + region_list
         + related_location
-        + rui_indicators_list
         + service_list
         + specialisms_list
+        + region_list
+        + rui_indicators_list
     )
 
     vectorised_features_with_dormancy_df = vectorise_dataframe(
