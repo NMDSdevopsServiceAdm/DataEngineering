@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import LongType
+from pyspark.sql.types import MapType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -175,7 +175,7 @@ def transform_job_role_count_map_to_ratios_map(
 
     Args:
         df (DataFrame): A dataframe containing a job role count map at workplace level.
-        count_map_column_name (str): A map column of type any:long.
+        count_map_column_name (str): A map column of type string:number.
         ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
@@ -205,22 +205,23 @@ def calculate_total_sum_of_values_in_a_map_column(
     total_sum_column_name: str,
 ) -> DataFrame:
     """
-    Adds a column which contains the total of values from a given map column of type any:long.
+    Adds a column which contains the total of values from a given map column of type string:number.
 
     Args:
         df (DataFrame): A dataframe containing a count map.
-        map_column_name (str): A map column of type any:long.
+        map_column_name (str): A map column of type string:number.
         total_sum_column_name (str): The name to give to the total column being added.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
 
+    map_type: MapType = df.schema[map_column_name].dataType
     df = df.withColumn(
         total_sum_column_name,
         F.aggregate(
             F.map_values(F.col(map_column_name)),
-            F.lit(0).cast(LongType()),
+            F.lit(0).cast(map_type.valueType),
             lambda a, b: a + b,
         ),
     )
