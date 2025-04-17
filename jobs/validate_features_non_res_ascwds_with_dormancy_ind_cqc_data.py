@@ -29,6 +29,7 @@ cleaned_ind_cqc_columns_to_import = [
     IndCQC.care_home,
     IndCQC.dormancy,
     IndCQC.imputed_gac_service_types,
+    IndCQC.imputed_specialisms,
 ]
 
 
