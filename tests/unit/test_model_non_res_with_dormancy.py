@@ -5,18 +5,18 @@ from datetime import date
 
 from utils import utils
 import utils.estimate_filled_posts.models.non_res_with_dormancy as job
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from tests.test_file_data import ModelNonResWithDormancy as Data
 from tests.test_file_schemas import ModelNonResWithDormancy as Schemas
+
+PATCH_PATH: str = "utils.estimate_filled_posts.models.non_res_with_dormancy"
 
 
 class TestModelNonResWithDormancy(unittest.TestCase):
     NON_RES_WITH_DORMANCY_MODEL = (
         "tests/test_models/non_residential_with_dormancy_prediction/1.0.0/"
     )
-    METRICS_DESTINATION = "metrics destination"
+    METRICS_DESTINATION = "metrics_destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -31,12 +31,14 @@ class TestModelNonResWithDormancy(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_dormancy.save_model_metrics"
-    )
+    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
+    @patch(f"{PATCH_PATH}.save_model_metrics")
+    @patch(f"{PATCH_PATH}.set_min_value")
     def test_model_non_res_with_dormancy_runs(
         self,
-        save_model_metrics: Mock,
+        set_min_value_mock: Mock,
+        save_model_metrics_mock: Mock,
+        insert_predictions_into_pipeline_mock: Mock,
     ):
         job.model_non_res_with_dormancy(
             self.non_res_with_dormancy_cleaned_ind_cqc_df,
@@ -45,11 +47,11 @@ class TestModelNonResWithDormancy(unittest.TestCase):
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(save_model_metrics.call_count, 1)
+        set_min_value_mock.assert_called_once()
+        save_model_metrics_mock.assert_called_once()
+        insert_predictions_into_pipeline_mock.assert_called_once()
 
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_dormancy.save_model_metrics"
-    )
+    @patch(f"{PATCH_PATH}.save_model_metrics")
     def test_model_non_res_with_dormancy_returns_expected_data(
         self,
         save_model_metrics: Mock,
@@ -72,8 +74,8 @@ class TestModelNonResWithDormancy(unittest.TestCase):
         ).collect()[0]
 
         self.assertIsNotNone(
-            expected_location_with_prediction.non_res_with_dormancy_model
+            expected_location_with_prediction[IndCqc.non_res_with_dormancy_model]
         )
         self.assertIsNone(
-            expected_location_without_prediction.non_res_with_dormancy_model
+            expected_location_without_prediction[IndCqc.non_res_with_dormancy_model]
         )
