@@ -1333,3 +1333,82 @@ class TransformInterpolatedJobRoleRatiosToCounts(
                     )
             except:
                 self.assertEqual(expected_dict, returned_dict)
+
+
+class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.non_rm_managerial_estimate_filled_posts_schema,
+        )
+        self.returned_df = (
+            job.calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+                self.test_df
+            )
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.expected_non_rm_managerial_estimate_filled_posts_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_adds_two_columns(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 2)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.sum_non_rm_managerial_estimated_filled_posts,
+        )
+        self.assertEqual(
+            self.new_columns_added[1],
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        )
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_is_not_null_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+        for iterable in range(len(expected_data)):
+            returned_ratio_dict = returned_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+            expected_ratio_dict = expected_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+
+            self.assertEqual(returned_ratio_dict.keys(), expected_ratio_dict.keys())
+
+            for key in list(expected_ratio_dict.keys()):
+                self.assertAlmostEqual(
+                    returned_ratio_dict[key],
+                    expected_ratio_dict[key],
+                    places=3,
+                    msg=f"In row {iterable}, dict element {key} does not match",
+                )
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
+        self,
+    ):
+        expected_df = self.expected_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+        returned_df = self.returned_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+
+        self.assertEqual(
+            expected_df.sort(IndCQC.location_id).collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )
