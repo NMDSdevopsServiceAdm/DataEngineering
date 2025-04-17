@@ -6455,7 +6455,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    create_total_from_values_in_map_column_schema = StructType(
+    create_total_from_values_in_map_column_when_counts_are_longs_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
@@ -6465,28 +6465,56 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+    expected_create_total_from_values_in_map_column_when_counts_are_longs_schema = (
+        StructType(
+            [
+                *create_total_from_values_in_map_column_when_counts_are_longs_schema,
+                StructField("temp_total_count_of_worker_records", LongType(), True),
+            ]
+        )
+    )
 
-    expected_create_total_from_values_in_map_column_schema = StructType(
+    create_total_from_values_in_map_column_when_counts_are_doubles_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(
                 IndCQC.ascwds_job_role_counts,
-                MapType(StringType(), LongType()),
+                MapType(StringType(), DoubleType()),
                 True,
             ),
-            StructField("temp_total_count_of_worker_records", LongType(), True),
+        ]
+    )
+    expected_create_total_from_values_in_map_column_when_counts_are_doubles_schema = (
+        StructType(
+            [
+                *create_total_from_values_in_map_column_when_counts_are_doubles_schema,
+                StructField("temp_total_count_of_worker_records", DoubleType(), True),
+            ]
+        )
+    )
+
+    create_ratios_from_counts_when_counts_are_longs_schema = (
+        expected_create_total_from_values_in_map_column_when_counts_are_longs_schema
+    )
+    expected_create_ratios_from_counts_when_counts_are_longs_schema = StructType(
+        [
+            *create_ratios_from_counts_when_counts_are_longs_schema,
+            StructField(
+                IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
+            ),
         ]
     )
 
-    ascwds_job_role_count_map_to_ratios_map_schema = StructType(
-        [*expected_create_total_from_values_in_map_column_schema]
+    create_ratios_from_counts_when_counts_are_doubles_schema = (
+        expected_create_total_from_values_in_map_column_when_counts_are_doubles_schema
     )
-
-    expected_ascwds_job_role_count_map_to_ratios_map_schema = StructType(
+    expected_create_ratios_from_counts_when_counts_are_doubles_schema = StructType(
         [
-            *ascwds_job_role_count_map_to_ratios_map_schema,
+            *create_ratios_from_counts_when_counts_are_doubles_schema,
             StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), FloatType()), True
+                IndCQC.ascwds_job_role_ratios,
+                MapType(StringType(), DoubleType()),
+                True,
             ),
         ]
     )
@@ -6539,6 +6567,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
+
     expected_count_registered_manager_names_schema = StructType(
         [
             *count_registered_manager_names_schema,
@@ -6783,7 +6812,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_filtered,
+                IndCQC.ascwds_job_role_counts_interpolated,
                 MapType(StringType(), FloatType()),
                 True,
             ),
@@ -6795,7 +6824,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_filtered,
+                IndCQC.ascwds_job_role_counts_interpolated,
                 MapType(StringType(), FloatType()),
                 True,
             ),

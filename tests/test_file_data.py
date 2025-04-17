@@ -10134,99 +10134,114 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
 
     temp_total_count_of_worker_records = "temp_total_count_of_worker_records"
 
-    # fmt: off
-    create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2}
-        )
-    ]
-    expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
-         3
-        )
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_total_from_values_in_map_column_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None}
-        )
-    ]
-    expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
-         None
-        )
-    ]
-    # fmt: on
-
-    create_total_from_values_in_map_column_when_count_column_is_null_rows = [
-        ("1-001", None)
-    ]
-    expected_create_total_from_values_in_map_column_when_count_column_is_null_rows = [
-        ("1-001", None, None)
-    ]
-
-    # fmt: off
-    create_total_from_values_in_map_column_at_multiple_locations_rows = [
-        ("1-001", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}),
-        ("1-002", {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3}),
-    ]
-    expected_create_total_from_values_in_map_column_at_multiple_locations_rows = [
-        ("1-001", {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1}, 1),
-        ("1-002", {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3}, 5),
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_ratios_from_counts_when_all_count_values_above_zero_rows = (
-        expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows
-    )
-    expected_create_ratios_from_counts_when_all_count_values_above_zero_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
-         3,
-         {MainJobRoleLabels.care_worker: 0.333, MainJobRoleLabels.registered_nurse: 0.667}),
-    ]
-    # fmt: on
-
-    # fmt: off
-    create_ratios_from_counts_when_all_count_values_are_null_rows = expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows
-    expected_create_ratios_from_counts_when_all_count_values_are_null_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
-         None,
-         {MainJobRoleLabels.care_worker: None, MainJobRoleLabels.registered_nurse: None},
+    create_total_from_values_in_map_column_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+        ),
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            None,
         ),
     ]
-    # fmt: on
-
-    create_ratios_from_counts_when_count_map_column_is_null_rows = (
-        expected_create_total_from_values_in_map_column_when_count_column_is_null_rows
-    )
-    expected_create_ratios_from_counts_when_count_map_column_is_null_rows = [
-        ("1-001", None, None, None),
-    ]
-
-    # fmt: off
-    create_ratios_from_counts_at_multiple_establishments_rows = (
-        expected_create_total_from_values_in_map_column_at_multiple_locations_rows
-    )
-    expected_create_ratios_from_counts_at_multiple_establishments_rows = [
-        ("1-001",
-         {MainJobRoleLabels.care_worker: 0, MainJobRoleLabels.registered_nurse: 1},
-         1,
-         {MainJobRoleLabels.care_worker: 0.0, MainJobRoleLabels.registered_nurse: 1.0}
+    expected_create_total_from_values_in_map_column_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            3,
         ),
-        ("1-002",
-         {MainJobRoleLabels.care_worker: 2, MainJobRoleLabels.registered_nurse: 3},
-         1,
-         {MainJobRoleLabels.care_worker: 0.4, MainJobRoleLabels.registered_nurse: 0.6}
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            None,
+        ),
+        (
+            "1-003",
+            None,
+            None,
         ),
     ]
-    # fmt: on
+
+    create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+        ),
+    ]
+    expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+            5.0,
+        ),
+    ]
+
+    create_ratios_from_counts_when_counts_are_longs_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_longs_rows
+    )
+    expected_create_ratios_from_counts_when_counts_are_longs_rows = [
+        (
+            "1-001",
+            {MainJobRoleLabels.care_worker: 1, MainJobRoleLabels.registered_nurse: 2},
+            3,
+            {
+                MainJobRoleLabels.care_worker: 0.333,
+                MainJobRoleLabels.registered_nurse: 0.667,
+            },
+        ),
+        (
+            "1-002",
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+            None,
+            {
+                MainJobRoleLabels.care_worker: None,
+                MainJobRoleLabels.registered_nurse: None,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    create_ratios_from_counts_when_counts_are_doubles_rows = (
+        expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows
+    )
+    expected_create_ratios_from_counts_when_counts_are_doubles_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+            },
+            5.0,
+            {
+                MainJobRoleLabels.care_worker: 0.4,
+                MainJobRoleLabels.registered_nurse: 0.6,
+            },
+        ),
+    ]
 
     # fmt: off
     create_estimate_filled_posts_by_job_role_map_column_when_all_job_role_ratios_populated_rows = [
@@ -10321,7 +10336,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
     ]
     expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
-        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1)
     ]
 
     count_registered_manager_names_when_location_has_null_registered_manager_rows = [
@@ -10344,7 +10359,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
@@ -10353,7 +10368,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     unpacked_mapped_column_with_one_record_data = [
