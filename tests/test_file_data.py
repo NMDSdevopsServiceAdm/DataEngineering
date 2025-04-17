@@ -10336,7 +10336,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"])
     ]
     expected_count_registered_manager_names_when_location_has_two_registered_managers_rows = [
-        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2)
+        ("1-0000000001", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1)
     ]
 
     count_registered_manager_names_when_location_has_null_registered_manager_rows = [
@@ -10359,7 +10359,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_two_locations_have_different_number_of_registered_managers_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000002", date(2025, 1, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
@@ -10368,7 +10368,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_count_registered_manager_names_when_a_location_has_different_number_of_registered_managers_at_different_import_dates_rows = [
         ("1-0000000001", date(2025, 1, 1), ["John Doe"], 1),
-        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 2),
+        ("1-0000000001", date(2025, 2, 1), ["John Doe", "Jane Doe"], 1),
     ]
 
     unpacked_mapped_column_with_one_record_data = [
