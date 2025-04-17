@@ -202,7 +202,7 @@
     },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
-      "Next": "Start crawler when success",
+      "Next": "Start validation crawler when success",
       "Branches": [
         {
           "StartAt": "Run merge ind cqc data job",
