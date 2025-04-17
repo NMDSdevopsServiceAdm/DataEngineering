@@ -11,6 +11,16 @@ class FeatureEngineeringValueLabelsServices:
 
     column_name: str = CatValues.services_column_values.column_name
 
+    care_home_labels_dict = {
+        "service_care_home_with_nursing": CatValues.services_column_values.care_home_service_with_nursing,
+        "service_care_home_without_nursing": CatValues.services_column_values.care_home_service_without_nursing,
+        "service_domiciliary": CatValues.services_column_values.domiciliary_care_service,
+        "service_extra_care_housing": CatValues.services_column_values.extra_care_housing_services,
+        "service_shared_lives": CatValues.services_column_values.shared_lives,
+        "service_specialist_college": CatValues.services_column_values.specialist_college_service,
+        "service_supported_living": CatValues.services_column_values.supported_living_service,
+    }
+
     labels_dict = {
         "service_acute_with_beds": CatValues.services_column_values.acute_services_with_overnight_beds,
         "service_acute_without_beds": CatValues.services_column_values.acute_services_without_overnight_beds,

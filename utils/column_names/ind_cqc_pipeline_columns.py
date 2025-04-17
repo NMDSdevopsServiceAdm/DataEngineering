@@ -49,10 +49,13 @@ class IndCqcColumns:
     ascwds_job_group_counts: str = "ascwds_job_group_counts"
     ascwds_job_group_ratios: str = "ascwds_job_group_ratios"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_filtered: str = ascwds_job_role_counts + "_filtered"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
+    ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
     ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
@@ -276,13 +279,7 @@ class IndCqcColumns:
     )
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
-    time_registered_capped_at_four_years_logged: str = (
-        "time_registered_capped_at_four_years_logged"
-    )
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
-    time_registered_capped_at_ten_years_logged: str = (
-        "time_registered_capped_at_ten_years_logged"
-    )
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

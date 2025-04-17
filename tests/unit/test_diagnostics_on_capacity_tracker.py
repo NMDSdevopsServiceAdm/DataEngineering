@@ -88,7 +88,7 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
         self.assertIsInstance(job.standardised_value_cutoff, float)
 
     def test_number_of_days_in_window_is_expected_value(self):
-        self.assertEqual(job.number_of_days_in_window, 185)
+        self.assertEqual(job.number_of_days_in_window, 95)
         self.assertIsInstance(job.number_of_days_in_window, int)
 
 
