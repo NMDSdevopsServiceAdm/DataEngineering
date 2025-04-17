@@ -455,8 +455,11 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
 
     df = df.withColumn(
         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-        F.expr(
-            "transform_keys(map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role, (k,v) -> substring(k , 1, length(k) - 5))"
+        F.transform_keys(
+            F.col(
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ),
+            lambda k, v: F.regexp_replace(k, temp_suffix, ""),
         ),
     )
 
