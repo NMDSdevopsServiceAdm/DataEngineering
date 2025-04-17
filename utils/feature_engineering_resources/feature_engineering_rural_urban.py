@@ -11,7 +11,7 @@ class FeatureEngineeringValueLabelsRuralUrban:
 
     column_name: str = CatValues.current_rui_column_values.column_name
 
-    labels_dict = {
+    care_home_labels_dict = {
         "rui_rural_hamlet": CatValues.current_rui_column_values.rural_hamlet,
         "rui_rural_hamlet_sparse": CatValues.current_rui_column_values.rural_hamlet_sparse,
         "rui_rural_town": CatValues.current_rui_column_values.rural_town,
@@ -22,4 +22,11 @@ class FeatureEngineeringValueLabelsRuralUrban:
         "rui_urban_city_sparse": CatValues.current_rui_column_values.urban_city_sparse,
         "rui_urban_major": CatValues.current_rui_column_values.urban_major,
         "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
+    }
+
+    non_res_labels_dict = {
+        "rui_urban_city": CatValues.current_rui_column_values.urban_city,
+        "rui_urban_major": CatValues.current_rui_column_values.urban_major,
+        "rui_urban_minor": CatValues.current_rui_column_values.urban_minor,
+        "rui_sparse": "Sparse setting",
     }
