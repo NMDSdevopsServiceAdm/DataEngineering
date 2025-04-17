@@ -19,7 +19,7 @@
                   "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
                 }
               },
-              "Next": "Clean ASCWDS worker and SfC Reconciliation"
+              "Next": "Clean ASC-WDS worker and SfC Reconciliation"
             },
             "Clean ASC-WDS worker and SfC Reconciliation": {
               "Type": "Parallel",
