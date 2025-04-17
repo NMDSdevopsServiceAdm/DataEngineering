@@ -1684,6 +1684,17 @@ class ExtractRegisteredManagerNamesSchema:
 
 
 @dataclass
+class PostcodeMatcherSchema:
+    locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class UtilsSchema:
     filter_to_max_value_schema = StructType(
         [

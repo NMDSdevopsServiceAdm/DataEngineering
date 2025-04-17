@@ -3702,6 +3702,27 @@ class ExtractRegisteredManagerNamesData:
 
 
 @dataclass
+class PostcodeMatcherData:
+    locations_where_all_match_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later
+        ("1-002", date(2025, 1, 1), "AA1 2AA"),
+        (
+            "1-003",
+            date(2025, 1, 1),
+            "AA1 3A2",
+        ),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
+    ]
+    locations_with_unmatched_postcode_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "AA1 5XX"),  # never known
+    ]
+
+
+@dataclass
 class UtilsData:
     filter_to_max_value_rows = [
         ("1", date(2024, 1, 1), "20220101"),
