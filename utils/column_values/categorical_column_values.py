@@ -479,7 +479,6 @@ class EstimateFilledPostsSource(ColumnValues):
     imputed_posts_non_res_combined_model: str = (
         IndCQC.imputed_posts_non_res_combined_model
     )
-    imputed_filled_post_model: str = IndCQC.imputed_filled_post_model
     non_res_combined_model: str = IndCQC.non_res_combined_model
     non_res_pir_linear_regression_model: str = (
         IndCQC.non_res_pir_linear_regression_model
