@@ -78,8 +78,9 @@ def calculate_expected_size_of_non_res_ascwds_with_dormancy_ind_cqc_features_dat
     """
     expected_size = cleaned_ind_cqc_df.where(
         (cleaned_ind_cqc_df[IndCQC.care_home] == CareHome.not_care_home)
-        & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
         & (cleaned_ind_cqc_df[IndCQC.imputed_gac_service_types].isNotNull())
+        & (cleaned_ind_cqc_df[IndCQC.imputed_specialisms].isNotNull())
+        & (cleaned_ind_cqc_df[IndCQC.dormancy].isNotNull())
     ).count()
     return expected_size
 

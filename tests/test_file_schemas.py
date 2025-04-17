@@ -5019,9 +5019,9 @@ class ValidateCareHomeIndCqcFeaturesData:
 class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
     cleaned_ind_cqc_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(
                 IndCQC.imputed_gac_service_types,
@@ -5033,6 +5033,13 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
                         ]
                     )
                 ),
+            ),
+            StructField(
+                IndCQC.imputed_specialisms,
+                ArrayType(
+                    StructType([StructField(IndCQC.name, StringType(), True)]), True
+                ),
+                True,
             ),
         ]
     )
@@ -5050,9 +5057,9 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema:
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
     cleaned_ind_cqc_schema = StructType(
         [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
             StructField(
                 IndCQC.imputed_gac_service_types,
                 ArrayType(
@@ -5063,6 +5070,13 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
                         ]
                     )
                 ),
+            ),
+            StructField(
+                IndCQC.imputed_specialisms,
+                ArrayType(
+                    StructType([StructField(IndCQC.name, StringType(), True)]), True
+                ),
+                True,
             ),
         ]
     )
