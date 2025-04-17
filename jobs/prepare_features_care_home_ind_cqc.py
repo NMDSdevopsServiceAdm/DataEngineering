@@ -77,14 +77,14 @@ def main(
     features_df, specialisms_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.specialisms_offered,
-        SpecialismsFeatures.care_home_labels_dict,
+        SpecialismsFeatures.labels_dict,
         is_array_col=True,
     )
 
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011,
-        RuralUrbanFeatures.labels_dict,
+        RuralUrbanFeatures.care_home_labels_dict,
         is_array_col=False,
     )
 

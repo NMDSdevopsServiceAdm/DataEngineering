@@ -184,12 +184,6 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    """
-    TODO
-    This function will soon be updated to the number of months, the tests below reflect that change.
-    However, in order to not break the current pipeline, I've left the function as being 6 monthly.
-    Unhash out these tests once we change the function.
-
     def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
         self,
     ):
@@ -260,8 +254,7 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
         returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
         expected_data = expected_df.collect()
 
-        self.assertEqual(returned_data, expected_data)"
-        """
+        self.assertEqual(returned_data, expected_data)
 
 
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):

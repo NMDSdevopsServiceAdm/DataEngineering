@@ -247,6 +247,9 @@ class IndCqcColumns:
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
+    proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
+        "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
+    )
     proportion_of_time_between_submissions: str = (
         "proportion_of_time_between_submissions"
     )
@@ -268,9 +271,11 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    sum_non_rm_managerial_estimated_filled_posts: str = (
+        "sum_non_rm_managerial_estimated_filled_posts"
+    )
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
