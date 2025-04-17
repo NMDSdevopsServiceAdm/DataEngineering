@@ -427,34 +427,38 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         [job_role + temp_suffix for job_role in non_rm_managers]
     )
 
-    for col, new_col in zip(non_rm_managers, non_rm_managers_temporary):
-        df = df.withColumn(new_col, F.col(col))
+    df = df.select(
+        "*",
+        *[
+            F.col(role).alias(temp)
+            for role, temp in zip(non_rm_managers, non_rm_managers_temporary)
+        ]
+    )
 
     df = df.withColumn(
         IndCQC.sum_non_rm_managerial_estimated_filled_posts,
         sum(F.col(new_col) for new_col in non_rm_managers_temporary),
     )
 
-    for col in non_rm_managers_temporary:
-        numerator = F.col(col)
-        denominator = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
-
-        df = df.withColumn(
-            col,
-            F.when(
-                denominator == 0.0,
-                F.lit(1.0 / len(non_rm_managers_temporary)),
-            )
-            .when(numerator == 0.0, F.lit(0.0))
-            .otherwise(numerator / denominator),
-        )
-
-    df = create_map_column(
-        df,
-        non_rm_managers_temporary,
-        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
-        drop_original_columns=True,
+    total = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
+    key_value_transformation = sum(
+        [
+            [
+                F.lit(col),
+                F.when(total == 0.0, F.lit(1.0 / len(non_rm_managers_temporary)))
+                .when(F.col(col) == 0.0, F.lit(0.0))
+                .otherwise(F.col(col) / total),
+            ]
+            for col in non_rm_managers_temporary
+        ],
+        [],
     )
+
+    df = df.withColumn(
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        F.create_map(*key_value_transformation),
+    )
+    df = df.drop(*non_rm_managers_temporary)
 
     df = df.withColumn(
         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
