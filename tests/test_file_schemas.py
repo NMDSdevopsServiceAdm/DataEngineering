@@ -2717,9 +2717,7 @@ class ModelPrimaryServiceRateOfChange:
     expected_primary_service_rate_of_change_schema = StructType(
         [
             *primary_service_rate_of_change_schema,
-            StructField(
-                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
-            ),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
@@ -2782,19 +2780,6 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    calculate_rolling_rate_of_change_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                RoC_TempCol.column_with_values_interpolated, DoubleType(), True
-            ),
-        ]
-    )
-
     add_previous_value_column_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -2813,7 +2798,7 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    add_rolling_sum_schema = StructType(
+    add_rolling_sum_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
@@ -2826,24 +2811,46 @@ class ModelPrimaryServiceRateOfChange:
             ),
         ]
     )
-    expected_add_rolling_sum_schema = StructType(
+    expected_add_rolling_sum_columns_schema = StructType(
         [
-            *add_rolling_sum_schema,
+            *add_rolling_sum_columns_schema,
             StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
+            StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
     )
 
-    single_period_rate_of_change_schema = StructType(
+    calculate_rate_of_change_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(RoC_TempCol.rolling_current_period_sum, DoubleType(), True),
             StructField(RoC_TempCol.rolling_previous_period_sum, DoubleType(), True),
         ]
     )
-    expected_single_period_rate_of_change_schema = StructType(
+    expected_calculate_rate_of_change_schema = StructType(
         [
-            *single_period_rate_of_change_schema,
-            StructField(RoC_TempCol.single_period_rate_of_change, DoubleType(), True),
+            *calculate_rate_of_change_schema,
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
+class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
+    primary_service_rate_of_change_trendline_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
+        ]
+    )
+    expected_primary_service_rate_of_change_trendline_schema = StructType(
+        [
+            *primary_service_rate_of_change_trendline_schema,
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
         ]
     )
 
@@ -2851,7 +2858,7 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.single_period_rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
             StructField("another_col", DoubleType(), True),
         ]
     )
@@ -2859,18 +2866,18 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.single_period_rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
 
-    cumulative_rate_of_change_schema = StructType(
+    calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(RoC_TempCol.single_period_rate_of_change, DoubleType(), True),
+            StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
     )
-    expected_cumulative_rate_of_change_schema = StructType(
+    expected_calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
@@ -3434,6 +3441,77 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
                 FloatType(),
                 True,
             ),
+        ]
+    )
+    expected_calculate_and_apply_residuals_schema = StructType(
+        [
+            *calculate_and_apply_residuals_schema,
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(NRModel_TempCol.first_overlap_date, DateType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_calculate_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+        ]
+    )
+
+    apply_residuals_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted,
+                FloatType(),
+                True,
+            ),
+            StructField(NRModel_TempCol.residual_at_overlap, FloatType(), True),
+        ]
+    )
+    expected_apply_residuals_schema = StructType(
+        [
+            *apply_residuals_schema,
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    combine_model_predictions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_combine_model_predictions_schema = StructType(
+        [
+            *combine_model_predictions_schema,
+            StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
     expected_calculate_and_apply_residuals_schema = StructType(
@@ -5281,10 +5359,9 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_combined_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
@@ -5308,10 +5385,9 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
+            StructField(IndCQC.non_res_combined_model, FloatType(), True),
             StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
-            StructField(
-                IndCQC.imputed_posts_non_res_with_dormancy_model, FloatType(), True
-            ),
+            StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
