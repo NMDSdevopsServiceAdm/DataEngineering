@@ -10496,6 +10496,42 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    # fmt: off
+    non_rm_managerial_estimate_filled_posts_rows = [
+        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+    ]
+
+    expected_non_rm_managerial_estimate_filled_posts_rows = [
+        ("1-001", 9.0, 3.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+         20.0,
+         {MainJobRoleLabels.senior_management: 0.45,
+          MainJobRoleLabels.middle_management: 0.15,
+          MainJobRoleLabels.first_line_manager: 0.05,
+          MainJobRoleLabels.supervisor: 0.05,
+          MainJobRoleLabels.other_managerial_staff: 0.05,
+          MainJobRoleLabels.deputy_manager: 0.05,
+          MainJobRoleLabels.team_leader: 0.05,
+          MainJobRoleLabels.data_governance_manager: 0.05,
+          MainJobRoleLabels.it_manager: 0.05,
+          MainJobRoleLabels.it_service_desk_manager: 0.05},
+         ),
+        ("1-002", 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+         0.0,
+         {MainJobRoleLabels.senior_management: 0.1,
+          MainJobRoleLabels.middle_management: 0.1,
+          MainJobRoleLabels.first_line_manager: 0.1,
+          MainJobRoleLabels.supervisor: 0.1,
+          MainJobRoleLabels.other_managerial_staff: 0.1,
+          MainJobRoleLabels.deputy_manager: 0.1,
+          MainJobRoleLabels.team_leader: 0.1,
+          MainJobRoleLabels.data_governance_manager: 0.1,
+          MainJobRoleLabels.it_manager: 0.1,
+          MainJobRoleLabels.it_service_desk_manager: 0.1}
+         ),
+    ]
+
+    # fmt: on
     interpolate_job_role_ratios_data = [
         (
             "1000",

@@ -6688,6 +6688,35 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    non_rm_managerial_estimate_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+            StructField(MainJobRoleLabels.middle_management, FloatType(), True),
+            StructField(MainJobRoleLabels.first_line_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.supervisor, FloatType(), True),
+            StructField(MainJobRoleLabels.other_managerial_staff, FloatType(), True),
+            StructField(MainJobRoleLabels.deputy_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.team_leader, FloatType(), True),
+            StructField(MainJobRoleLabels.data_governance_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.it_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.it_service_desk_manager, FloatType(), True),
+        ]
+    )
+    expected_non_rm_managerial_estimate_filled_posts_schema = StructType(
+        [
+            *non_rm_managerial_estimate_filled_posts_schema,
+            StructField(
+                IndCQC.sum_non_rm_managerial_estimated_filled_posts, FloatType(), True
+            ),
+            StructField(
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
     estimate_and_cqc_registered_manager_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
