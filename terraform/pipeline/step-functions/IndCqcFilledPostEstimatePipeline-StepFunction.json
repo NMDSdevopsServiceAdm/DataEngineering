@@ -6,9 +6,9 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Run clean ascwds workplace data job",
+          "StartAt": "Clean ASC-WDS workplace data",
           "States": {
-            "Run clean ascwds workplace data job": {
+            "Clean ASC-WDS workplace data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -19,15 +19,15 @@
                   "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
                 }
               },
-              "Next": "Clean ASCWDS worker and SfC Reconciliation Parallel"
+              "Next": "Clean ASCWDS worker and SfC Reconciliation"
             },
-            "Clean ASCWDS worker and SfC Reconciliation Parallel": {
+            "Clean ASC-WDS worker and SfC Reconciliation": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Run clean ascwds worker data job",
+                  "StartAt": "Clean ASC-WDS worker data",
                   "States": {
-                    "Run clean ascwds worker data job": {
+                    "Clean ASC-WDS worker data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -43,9 +43,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run reconciliation job",
+                  "StartAt": "SfC reconciliation job",
                   "States": {
-                    "Run reconciliation job": {
+                    "SfC reconciliation job": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -62,9 +62,9 @@
                   }
                 }
               ],
-              "Next": "Run ascwds crawler"
+              "Next": "Run ASC-WDS crawler"
             },
-            "Run ascwds crawler": {
+            "Run ASC-WDS crawler": {
               "Type": "Task",
               "End": true,
               "Parameters": {
@@ -75,9 +75,9 @@
           }
         },
         {
-          "StartAt": "Run clean pir data job",
+          "StartAt": "Clean CQC PIR data",
           "States": {
-            "Run clean pir data job": {
+            "Clean CQC PIR data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -93,15 +93,15 @@
           }
         },
         {
-          "StartAt": "Clean ONS and Clean CQC Provider Parallel",
+          "StartAt": "Clean ONS postcode and CQC provider data",
           "States": {
-            "Clean ONS and Clean CQC Provider Parallel": {
+            "Clean ONS postcode and CQC provider data": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "Run clean ons data job",
+                  "StartAt": "Clean ONS postcode data",
                   "States": {
-                    "Run clean ons data job": {
+                    "Clean ONS postcode data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -111,9 +111,9 @@
                           "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
                         }
                       },
-                      "Next": "Run ons crawler"
+                      "Next": "Run ONS crawler"
                     },
-                    "Run ons crawler": {
+                    "Run ONS crawler": {
                       "Type": "Task",
                       "End": true,
                       "Parameters": {
@@ -124,9 +124,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run clean cqc provider data job",
+                  "StartAt": "Clean CQC provider data",
                   "States": {
-                    "Run clean cqc provider data job": {
+                    "Clean CQC provider data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -141,9 +141,9 @@
                   }
                 }
               ],
-              "Next": "Run clean cqc locations data job"
+              "Next": "Clean CQC location data"
             },
-            "Run clean cqc locations data job": {
+            "Clean CQC location data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -155,9 +155,9 @@
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
                 }
               },
-              "Next": "Run cqc crawler"
+              "Next": "Run CQC crawler"
             },
-            "Run cqc crawler": {
+            "Run CQC crawler": {
               "Type": "Task",
               "End": true,
               "Parameters": {
@@ -168,7 +168,7 @@
           }
         }
       ],
-      "Next": "Start silver validation",
+      "Next": "Validate clean ASC-WDS, CQC and ONS data",
       "Catch": [
         {
           "ErrorEquals": [
@@ -179,7 +179,7 @@
         }
       ]
     },
-    "Start silver validation": {
+    "Validate clean ASC-WDS, CQC and ONS data": {
       "Type": "Task",
       "Resource": "arn:aws:states:::states:startExecution.sync:2",
       "Parameters": {
@@ -189,7 +189,7 @@
         }
       },
       "Next": "Silver to Gold Transformation Layer",
-      "Comment": "A state that fully encapsulates taking data from the Bronze layer and performing ETL operations to move it to the Silver layer",
+      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
       "Catch": [
         {
           "ErrorEquals": [
@@ -202,12 +202,12 @@
     },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
-      "Next": "Start validation crawler when success",
+      "Next": "Run validation crawler when success",
       "Branches": [
         {
-          "StartAt": "Run merge ind cqc data job",
+          "StartAt": "Merge CQC, ASC-WDS and ONS data",
           "States": {
-            "Run merge ind cqc data job": {
+            "Merge CQC, ASC-WDS and ONS data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -219,16 +219,16 @@
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
                 }
               },
-              "Next": "Run cleaning job and validate merge job"
+              "Next": "Clean and validate merged data"
             },
-            "Run cleaning job and validate merge job": {
+            "Clean and validate merged data": {
               "Type": "Parallel",
-              "Next": "Run impute job and validate clean job",
+              "Next": "Impute and validate cleaned data",
               "Branches": [
                 {
-                  "StartAt": "Run clean ind cqc data job",
+                  "StartAt": "Clean IND CQC data",
                   "States": {
-                    "Run clean ind cqc data job": {
+                    "Clean IND CQC data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -243,9 +243,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate merged ind cqc data",
+                  "StartAt": "Validate merged data",
                   "States": {
-                    "Run validate merged ind cqc data": {
+                    "Validate merged data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -262,14 +262,14 @@
                 }
               ]
             },
-            "Run impute job and validate clean job": {
+            "Impute and validate cleaned data": {
               "Type": "Parallel",
-              "Next": "Run feature engineering jobs and validate impute job",
+              "Next": "Feature engineering and validate imputed data",
               "Branches": [
                 {
-                  "StartAt": "Run impute ind cqc ascwds and pir job",
+                  "StartAt": "Impute IND CQC data",
                   "States": {
-                    "Run impute ind cqc ascwds and pir job": {
+                    "Impute IND CQC data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -285,9 +285,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate cleaned ind cqc data job",
+                  "StartAt": "Validate cleaned data",
                   "States": {
-                    "Run validate cleaned ind cqc data job": {
+                    "Validate cleaned data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -304,14 +304,14 @@
                 }
               ]
             },
-            "Run feature engineering jobs and validate impute job": {
+            "Feature engineering and validate imputed data": {
               "Type": "Parallel",
-              "Next": "Run estimate ind cqc job and validate feature engineering jobs",
+              "Next": "Estimate filled posts and validate feature engineering data",
               "Branches": [
                 {
-                  "StartAt": "Run care home features job",
+                  "StartAt": "Care home model features",
                   "States": {
-                    "Run care home features job": {
+                    "Care home model features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -326,9 +326,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run non res ascwds features job",
+                  "StartAt": "Non residential model features",
                   "States": {
-                    "Run non res ascwds features job": {
+                    "Non residential model features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -344,9 +344,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run non res pir features job",
+                  "StartAt": "CQC PIR model features",
                   "States": {
-                    "Run non res pir features job": {
+                    "CQC PIR model features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -361,9 +361,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate imputed ind cqc ascwds and pir data job",
+                  "StartAt": "Validate imputed data",
                   "States": {
-                    "Run validate imputed ind cqc ascwds and pir data job": {
+                    "Validate imputed data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -381,14 +381,14 @@
                 }
               ]
             },
-            "Run estimate ind cqc job and validate feature engineering jobs": {
+            "Estimate filled posts and validate feature engineering data": {
               "Type": "Parallel",
-              "Next": "Run estimate ind cqc job role job and validate estimate ind cqc job",
+              "Next": "Estimate filled posts by job role and validate estimated filled posts",
               "Branches": [
                 {
-                  "StartAt": "Run estimate ind cqc filled posts job",
+                  "StartAt": "Estimate filled posts",
                   "States": {
-                    "Run estimate ind cqc filled posts job": {
+                    "Estimate filled posts": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -412,9 +412,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate features care home ind cqc data job",
+                  "StartAt": "Validate care home features",
                   "States": {
-                      "Run validate features care home ind cqc data job": {
+                      "Validate care home features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -430,9 +430,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate features non res ascwds with dormancy ind cqc data job",
+                  "StartAt": "Validate non-res with dormancy features",
                   "States": {
-                      "Run validate features non res ascwds with dormancy ind cqc data job": {
+                      "Validate non-res with dormancy features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -448,9 +448,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate features non res ascwds without dormancy ind cqc data job",
+                  "StartAt": "Validate non-res without dormancy features",
                   "States": {
-                      "Run validate features non res ascwds without dormancy ind cqc data job": {
+                      "Validate non-res without dormancy features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -466,9 +466,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate features non res pir ind cqc data job",
+                  "StartAt": "Validate non-res PIR features",
                   "States": {
-                      "Run validate features non res pir ind cqc data job": {
+                      "Validate non-res PIR features": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -485,14 +485,14 @@
                 }
               ]
             },
-            "Run estimate ind cqc job role job and validate estimate ind cqc job": {
+            "Estimate filled posts by job role and validate estimated filled posts": {
               "Type": "Parallel",
-              "Next": "Run diagnostics job and validate estimate ind cqc job role job",
+              "Next": "Diagnostics and validate estimated filled posts by job role",
               "Branches": [
                 {
-                  "StartAt": "Run estimate ind cqc filled posts by job role job",
+                  "StartAt": "Estimate filled posts by job role",
                   "States": {
-                    "Run estimate ind cqc filled posts by job role job": {
+                    "Estimate filled posts by job role": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -508,9 +508,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate estimated ind cqc filled posts data job",
+                  "StartAt": "Validate estimated filled posts",
                   "States": {
-                      "Run validate estimated ind cqc filled posts data job": {
+                      "Validate estimated filled posts": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -527,9 +527,9 @@
                 }
               ]
             },
-            "Run diagnostics job and validate estimate ind cqc job role job": {
+            "Diagnostics and validate estimated filled posts by job role": {
               "Type": "Parallel",
-              "Next": "Run archive filled posts estimates",
+              "Next": "Archive estimates",
               "Branches": [
                 {
                   "StartAt": "Run diagnostics on known filled posts job",
@@ -551,9 +551,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate estimated ind cqc filled posts by job role data job",
+                  "StartAt": "Validate estimated filled posts by job role",
                   "States": {
-                      "Run validate estimated ind cqc filled posts by job role data job": {
+                      "Validate estimated filled posts by job role": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
@@ -570,7 +570,7 @@
                 }
               ]
             },
-            "Run archive filled posts estimates": {
+            "Archive estimates": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -586,9 +586,9 @@
           }
         },
         {
-          "StartAt": "Trigger coverage pipeline",
+          "StartAt": "Trigger SfC coverage pipeline",
           "States": {
-            "Trigger coverage pipeline": {
+            "Trigger SfC coverage pipeline": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
@@ -613,15 +613,15 @@
         }
       ]
     },
-    "Start validation crawler when success": {
+    "Run validation crawler when success": {
       "Type": "Task",
       "Parameters": {
         "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Start Ind CQC crawler when success"
+      "Next": "Run Independent CQC crawler when success"
     },
-    "Start Ind CQC crawler when success": {
+    "Run Independent CQC crawler when success": {
       "Type": "Task",
       "Parameters": {
         "Name": "${ind_cqc_filled_posts_crawler_name}"
@@ -643,17 +643,17 @@
           "CallbackToken.$": "$$.Task.Token"
         }
       },
-      "Next": "Start validation crawler when failed"
+      "Next": "Run validation crawler when failed"
     },
-    "Start validation crawler when failed": {
+    "Run validation crawler when failed": {
       "Type": "Task",
       "Parameters": {
         "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Start Ind CQC crawler when failed"
+      "Next": "Run Independent CQC crawler when failed"
     },
-    "Start Ind CQC crawler when failed": {
+    "Run Independent CQC crawler when failed": {
       "Type": "Task",
       "Parameters": {
         "Name": "${ind_cqc_filled_posts_crawler_name}"
