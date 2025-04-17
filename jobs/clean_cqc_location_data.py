@@ -313,12 +313,10 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
 
 def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     """
-    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded down).
+    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
 
-    This function adds a new integer column to the given data frame which represents the number of months (rounded down) between the
+    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
     imputed registration date and the cqc location import date.
-
-    One is added the the time_registered column so the first month is indexed as 1.
 
     Args:
         df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
