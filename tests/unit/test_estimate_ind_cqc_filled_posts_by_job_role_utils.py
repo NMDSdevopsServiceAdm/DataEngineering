@@ -10,8 +10,6 @@ from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
 
-import pyspark.sql.functions as F
-
 PATCH_PATH = "utils.estimate_filled_posts_by_job_role_utils.utils"
 
 
