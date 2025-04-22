@@ -10,6 +10,8 @@ from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
 
+PATCH_PATH = "utils.estimate_filled_posts_by_job_role_utils.utils"
+
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
     def setUp(self):
@@ -384,8 +386,8 @@ class TransformJobRoleCountsMapToRatiosMap(
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.create_total_from_values_in_map_column_when_all_count_values_above_zero_rows,
-            Schemas.create_total_from_values_in_map_column_schema,
+            Data.create_ratios_from_counts_when_counts_are_longs_rows,
+            Schemas.create_ratios_from_counts_when_counts_are_longs_schema,
         )
         self.returned_df = job.transform_job_role_count_map_to_ratios_map(
             self.test_df,
@@ -393,8 +395,8 @@ class TransformJobRoleCountsMapToRatiosMap(
             IndCQC.ascwds_job_role_ratios,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_create_ratios_from_counts_when_all_count_values_above_zero_rows,
-            Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
+            Data.expected_create_ratios_from_counts_when_counts_are_longs_rows,
+            Schemas.expected_create_ratios_from_counts_when_counts_are_longs_schema,
         )
 
         self.columns_added_by_function = [
@@ -403,12 +405,8 @@ class TransformJobRoleCountsMapToRatiosMap(
             if column not in self.test_df.columns
         ]
 
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.create_ratios_map_from_count_map_and_total"
-    )
-    @patch(
-        "utils.estimate_filled_posts_by_job_role_utils.utils.calculate_total_sum_of_values_in_a_map_column"
-    )
+    @patch(f"{PATCH_PATH}.create_ratios_map_from_count_map_and_total")
+    @patch(f"{PATCH_PATH}.calculate_total_sum_of_values_in_a_map_column")
     def test_transform_job_role_count_map_to_ratios_map_function(
         self,
         calculate_total_sum_of_values_in_a_map_column: Mock,
@@ -438,8 +436,8 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.create_total_from_values_in_map_column_when_all_count_values_above_zero_rows,
-            Schemas.create_total_from_values_in_map_column_schema,
+            Data.create_total_from_values_in_map_column_when_counts_are_longs_rows,
+            Schemas.create_total_from_values_in_map_column_when_counts_are_longs_schema,
         )
         self.returned_df = job.calculate_total_sum_of_values_in_a_map_column(
             self.test_df,
@@ -447,8 +445,8 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             Data.temp_total_count_of_worker_records,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_create_total_from_values_in_map_column_when_all_count_values_above_zero_rows,
-            Schemas.expected_create_total_from_values_in_map_column_schema,
+            Data.expected_create_total_from_values_in_map_column_when_counts_are_longs_rows,
+            Schemas.expected_create_total_from_values_in_map_column_when_counts_are_longs_schema,
         )
 
         self.added_columns = [
@@ -457,58 +455,35 @@ class CreateTotalFromValuesInMapColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             if column not in self.test_df.columns
         ]
 
-    def test_create_total_from_values_in_map_adds_one_column(
+    def test_create_total_from_values_in_map_adds_one_expected_column(
         self,
     ):
         self.assertEqual(len(self.added_columns), 1)
-
-    def test_create_total_from_values_in_map_gives_new_column_expected_name(
-        self,
-    ):
         self.assertEqual(
             self.added_columns[0],
             Data.temp_total_count_of_worker_records,
         )
 
-    def test_create_total_from_values_in_map_returns_expected_value_when_all_count_values_above_zero(
+    def test_create_total_from_values_in_map_when_all_counts_are_longs_returns_expected_values(
         self,
     ):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
-    def test_create_total_from_values_in_map_returns_null_when_all_count_values_are_null(
+    def test_create_total_from_values_in_map_when_all_counts_are_doubles_returns_expected_values(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.create_total_from_values_in_map_column_when_all_count_values_are_null_rows,
-            Schemas.create_total_from_values_in_map_column_schema,
+            Data.create_total_from_values_in_map_column_when_counts_are_doubles_rows,
+            Schemas.create_total_from_values_in_map_column_when_counts_are_doubles_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_create_total_from_values_in_map_column_when_counts_are_doubles_rows,
+            Schemas.expected_create_total_from_values_in_map_column_when_counts_are_doubles_schema,
         )
         returned_df = job.calculate_total_sum_of_values_in_a_map_column(
             test_df,
             IndCQC.ascwds_job_role_counts,
             Data.temp_total_count_of_worker_records,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_create_total_from_values_in_map_column_when_all_count_values_are_null_rows,
-            Schemas.expected_create_total_from_values_in_map_column_schema,
-        )
-
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_create_total_from_values_in_map_returns_null_when_count_column_is_null(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.create_total_from_values_in_map_column_when_count_column_is_null_rows,
-            Schemas.create_total_from_values_in_map_column_schema,
-        )
-        returned_df = job.calculate_total_sum_of_values_in_a_map_column(
-            test_df,
-            IndCQC.ascwds_job_role_counts,
-            Data.temp_total_count_of_worker_records,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_create_total_from_values_in_map_column_when_count_column_is_null_rows,
-            Schemas.expected_create_total_from_values_in_map_column_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
@@ -518,12 +493,70 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
     def setUp(self) -> None:
         super().setUp()
 
-    def test_create_ratios_from_counts_returns_expected_ratios_when_all_count_values_above_zero(
+        self.test_df = self.spark.createDataFrame(
+            Data.create_ratios_from_counts_when_counts_are_longs_rows,
+            Schemas.create_ratios_from_counts_when_counts_are_longs_schema,
+        )
+        self.returned_df = job.create_ratios_map_from_count_map_and_total(
+            self.test_df,
+            IndCQC.ascwds_job_role_counts,
+            Data.temp_total_count_of_worker_records,
+            IndCQC.ascwds_job_role_ratios,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_ratios_from_counts_when_counts_are_longs_rows,
+            Schemas.expected_create_ratios_from_counts_when_counts_are_longs_schema,
+        )
+
+        self.added_columns = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_create_ratios_from_counts_adds_one_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.added_columns), 1)
+        self.assertEqual(
+            self.added_columns[0],
+            IndCQC.ascwds_job_role_ratios,
+        )
+
+    def test_create_ratios_from_counts_when_counts_are_longs_returns_expected_ratios(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        for row in range(len(expected_data)):
+            returned_ratio_dict: dict = returned_data[row][
+                IndCQC.ascwds_job_role_ratios
+            ]
+            expected_ratio_dict: dict = expected_data[row][
+                IndCQC.ascwds_job_role_ratios
+            ]
+
+            try:
+                self.assertEqual(returned_ratio_dict.keys(), expected_ratio_dict.keys())
+
+                for key in list(expected_ratio_dict.keys()):
+                    self.assertAlmostEqual(
+                        returned_ratio_dict[key],
+                        expected_ratio_dict[key],
+                        places=3,
+                        msg=f"In {row}, dict element {key} does not match",
+                    )
+
+            except:
+                self.assertEqual(returned_ratio_dict, expected_ratio_dict)
+
+    def test_create_ratios_from_counts_when_counts_are_doubles_returns_expected_ratios(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.create_ratios_from_counts_when_all_count_values_above_zero_rows,
-            Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
+            Data.create_ratios_from_counts_when_counts_are_doubles_rows,
+            Schemas.create_ratios_from_counts_when_counts_are_doubles_schema,
         )
         returned_df = job.create_ratios_map_from_count_map_and_total(
             test_df,
@@ -532,101 +565,34 @@ class CreateRatiosMapFromCountMapAndTotal(EstimateIndCQCFilledPostsByJobRoleUtil
             IndCQC.ascwds_job_role_ratios,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_create_ratios_from_counts_when_all_count_values_above_zero_rows,
-            Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
+            Data.expected_create_ratios_from_counts_when_counts_are_doubles_rows,
+            Schemas.expected_create_ratios_from_counts_when_counts_are_doubles_schema,
         )
 
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
 
-        returned_ratio_dict: dict = returned_data[0][IndCQC.ascwds_job_role_ratios]
-        expected_ratio_dict: dict = expected_data[0][IndCQC.ascwds_job_role_ratios]
+        for row in range(len(expected_data)):
+            returned_ratio_dict: dict = returned_data[row][
+                IndCQC.ascwds_job_role_ratios
+            ]
+            expected_ratio_dict: dict = expected_data[row][
+                IndCQC.ascwds_job_role_ratios
+            ]
 
-        for i in list(expected_ratio_dict.keys()):
-            self.assertAlmostEqual(
-                returned_ratio_dict[i],
-                expected_ratio_dict[i],
-                places=3,
-                msg=f"Dict element {i} does not match",
-            )
+            try:
+                self.assertEqual(returned_ratio_dict.keys(), expected_ratio_dict.keys())
 
-    def test_create_ratios_from_counts_returns_nulls_when_all_count_values_are_null(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.create_ratios_from_counts_when_all_count_values_are_null_rows,
-            Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
-        )
-        returned_df = job.create_ratios_map_from_count_map_and_total(
-            test_df,
-            IndCQC.ascwds_job_role_counts,
-            Data.temp_total_count_of_worker_records,
-            IndCQC.ascwds_job_role_ratios,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_create_ratios_from_counts_when_all_count_values_are_null_rows,
-            Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
-        )
+                for key in list(expected_ratio_dict.keys()):
+                    self.assertAlmostEqual(
+                        returned_ratio_dict[key],
+                        expected_ratio_dict[key],
+                        places=3,
+                        msg=f"In {row}, dict element {key} does not match",
+                    )
 
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(
-            returned_data[0][IndCQC.ascwds_job_role_ratios],
-            expected_data[0][IndCQC.ascwds_job_role_ratios],
-        )
-
-    def test_create_ratios_from_counts_returns_null_when_count_map_column_is_null(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.create_ratios_from_counts_when_count_map_column_is_null_rows,
-            Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
-        )
-        returned_df = job.create_ratios_map_from_count_map_and_total(
-            test_df,
-            IndCQC.ascwds_job_role_counts,
-            Data.temp_total_count_of_worker_records,
-            IndCQC.ascwds_job_role_ratios,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_create_ratios_from_counts_when_count_map_column_is_null_rows,
-            Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
-        )
-
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(
-            returned_data[0][IndCQC.ascwds_job_role_ratios],
-            expected_data[0][IndCQC.ascwds_job_role_ratios],
-        )
-
-    def test_create_ratios_from_counts_returns_expected_ratios_given_multiple_establishments(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.create_ratios_from_counts_at_multiple_establishments_rows,
-            Schemas.ascwds_job_role_count_map_to_ratios_map_schema,
-        )
-        returned_df = job.create_ratios_map_from_count_map_and_total(
-            test_df,
-            IndCQC.ascwds_job_role_counts,
-            Data.temp_total_count_of_worker_records,
-            IndCQC.ascwds_job_role_ratios,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_create_ratios_from_counts_at_multiple_establishments_rows,
-            Schemas.expected_ascwds_job_role_count_map_to_ratios_map_schema,
-        )
-
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.sort(IndCQC.location_id).collect()
-
-        self.assertEqual(
-            returned_data[0][IndCQC.ascwds_job_role_ratios],
-            expected_data[0][IndCQC.ascwds_job_role_ratios],
-        )
+            except:
+                self.assertEqual(returned_ratio_dict, expected_ratio_dict)
 
 
 class CreateEstimateFilledPostsByJobRoleMapColumn(
@@ -889,7 +855,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             expected_df.select(
                 IndCQC.location_id,
                 IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_filtered,
                 IndCQC.ascwds_job_role_ratios_interpolated,
             )
             .sort(IndCQC.location_id, IndCQC.unix_time)
@@ -897,7 +863,7 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             return_df.select(
                 IndCQC.location_id,
                 IndCQC.unix_time,
-                IndCQC.ascwds_job_role_ratios,
+                IndCQC.ascwds_job_role_ratios_filtered,
                 IndCQC.ascwds_job_role_ratios_interpolated,
             )
             .sort(IndCQC.location_id, IndCQC.unix_time)
@@ -1242,3 +1208,207 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             IndCQC.location_id, IndCQC.unix_time
         ).collect()
         self.assertEqual(expected_data, returned_data)
+
+
+class ApplyQualityFiltersToAscwdsJobRoleData(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows,
+            Schemas.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
+        )
+
+    @patch(
+        f"{PATCH_PATH}.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one"
+    )
+    def test_apply_quality_filters_to_ascwds_job_role_data_calls_premade_functionality(
+        self,
+        filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock: Mock,
+    ):
+        job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+            self.test_df,
+        )
+        filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock.assert_called_once()
+
+
+class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows,
+            Schemas.filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_rows,
+            Schemas.expected_filter_ascwds_job_role_map_when_dc_or_manregprof_1_or_more_schema,
+        )
+        self.returned_df = job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+            self.test_df
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0], IndCQC.ascwds_job_role_counts_filtered
+        )
+
+    def test_filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_returns_expected_data(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+
+class TransformInterpolatedJobRoleRatiosToCounts(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.transform_interpolated_job_role_ratios_to_counts_rows,
+            Schemas.transform_interpolated_job_role_ratios_to_counts_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_transform_interpolated_job_role_ratios_to_counts_rows,
+            Schemas.expected_transform_interpolated_job_role_ratios_to_counts_schema,
+        )
+        self.returned_df = job.transform_interpolated_job_role_ratios_to_counts(
+            self.test_df
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_transform_interpolated_job_role_ratios_to_counts_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0], IndCQC.ascwds_job_role_counts_interpolated
+        )
+
+    def test_transform_interpolated_job_role_ratios_to_counts_returns_expected_data(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+
+        for row in range(len(expected_data)):
+            expected_dict: dict = expected_data[row][
+                IndCQC.ascwds_job_role_counts_interpolated
+            ]
+            returned_dict: dict = returned_data[row][
+                IndCQC.ascwds_job_role_counts_interpolated
+            ]
+
+            try:
+                self.assertEqual(expected_dict.keys(), returned_dict.keys())
+
+                for key in expected_dict.keys():
+                    self.assertAlmostEqual(
+                        expected_dict[key],
+                        returned_dict[key],
+                        places=3,
+                        msg=f"Dict element {key} does not match",
+                    )
+            except:
+                self.assertEqual(expected_dict, returned_dict)
+
+
+class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.non_rm_managerial_estimate_filled_posts_schema,
+        )
+        self.returned_df = (
+            job.calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+                self.test_df
+            )
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_non_rm_managerial_estimate_filled_posts_rows,
+            Schemas.expected_non_rm_managerial_estimate_filled_posts_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_adds_two_columns(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 2)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.sum_non_rm_managerial_estimated_filled_posts,
+        )
+        self.assertEqual(
+            self.new_columns_added[1],
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        )
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mapped_column_is_not_null_returns_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
+        for iterable in range(len(expected_data)):
+            returned_ratio_dict = returned_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+            expected_ratio_dict = expected_data[iterable][
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+            ]
+
+            self.assertEqual(returned_ratio_dict.keys(), expected_ratio_dict.keys())
+
+            for key in list(expected_ratio_dict.keys()):
+                self.assertAlmostEqual(
+                    returned_ratio_dict[key],
+                    expected_ratio_dict[key],
+                    places=3,
+                    msg=f"In row {iterable}, dict element {key} does not match",
+                )
+
+    def test_calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_non_mapped_columns_returns_expected_values(
+        self,
+    ):
+        expected_df = self.expected_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+        returned_df = self.returned_df.drop(
+            IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+        )
+
+        self.assertEqual(
+            expected_df.sort(IndCQC.location_id).collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )

@@ -2,17 +2,15 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_non_res_pir_ind_cqc_features_data as job
-from tests.test_file_data import (
-    ValidateNonResPirIndCqcFeaturesData as Data,
-)
-from tests.test_file_schemas import (
-    ValidateNonResPirIndCqcFeaturesSchema as Schemas,
-)
+import jobs.validate_features_non_res_pir_ind_cqc_data as job
+from tests.test_file_data import ValidateFeaturesNonResPirIndCqcData as Data
+from tests.test_file_schemas import ValidateFeaturesNonResPirIndCqcSchema as Schemas
 from utils import utils
 
+PATCH_PATH: str = "jobs.validate_features_non_res_pir_ind_cqc_data"
 
-class ValidateNonResPirIndCqcFeaturesDatasetTests(unittest.TestCase):
+
+class ValidateFeaturesNonResPirIndCqcDatasetTests(unittest.TestCase):
     TEST_CLEANED_IND_CQC_SOURCE = "some/directory"
     TEST_NON_RES_PIR_IND_CQC_FEATURES_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
@@ -33,12 +31,12 @@ class ValidateNonResPirIndCqcFeaturesDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateNonResPirIndCqcFeaturesDatasetTests):
+class MainTests(ValidateFeaturesNonResPirIndCqcDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
@@ -60,7 +58,7 @@ class MainTests(ValidateNonResPirIndCqcFeaturesDatasetTests):
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class CalculateExpectedSizeofDataset(ValidateNonResPirIndCqcFeaturesDatasetTests):
+class CalculateExpectedSizeofDataset(ValidateFeaturesNonResPirIndCqcDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 

@@ -13,10 +13,10 @@ def calculate_rolling_sum_of_job_roles(
     df: DataFrame, number_of_days_in_rolling_sum: int, list_of_job_roles: list
 ) -> DataFrame:
     """
-    Adds a rolling sum of job of job role counts mapped column from the job role counts mapped column
+    Adds a map column showing the rolling sum of interpolated job role counts.
 
     Args:
-        df (DataFrame): The input DataFrame containing the 'ascwds_job_role_counts' mapped column
+        df (DataFrame): A dataFrame containing the 'ascwds_job_role_counts_interpolated' map column
         number_of_days_in_rolling_sum (int): The number of days to include in the rolling time period.
         list_of_job_roles (list): A list containing the ASC-WDS job roles.
 
@@ -29,7 +29,7 @@ def calculate_rolling_sum_of_job_roles(
         IndCQC.location_id,
         IndCQC.unix_time,
         IndCQC.primary_service_type,
-        F.explode(IndCQC.ascwds_job_role_counts).alias(
+        F.explode(IndCQC.ascwds_job_role_counts_interpolated).alias(
             IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_counts_exploded
         ),
     )
