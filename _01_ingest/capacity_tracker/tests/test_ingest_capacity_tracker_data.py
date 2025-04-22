@@ -3,10 +3,14 @@ import unittest
 from unittest.mock import patch, Mock
 
 import _01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data as job
-from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
-from tests.test_file_data import CapacityTrackerNonResData as NonResData
-from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
-from tests.test_file_schemas import CapacityTrackerNonResSchema as NonResSchema
+from _01_ingest.unittest_data.data import (
+    CapacityTrackerCareHomeData as CareHomeData,
+    CapacityTrackerNonResData as NonResData,
+)
+from _01_ingest.unittest_data.schemas import (
+    CapacityTrackerCareHomeSchema as CareHomeSchema,
+    CapacityTrackerNonResSchema as NonResSchema,
+)
 from utils import utils
 
 PATCH_PATH = "_01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data"
