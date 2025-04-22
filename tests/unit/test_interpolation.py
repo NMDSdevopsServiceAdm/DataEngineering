@@ -326,7 +326,7 @@ class CalculateInterpolatedValuesTests(ModelInterpolationTests):
             self.test_df,
             IndCqc.previous_non_null_value,
             IndCqc.interpolation_model,
-            max_days_between_submissions=5,
+            max_days_between_submissions=3,
         )
         returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
 
