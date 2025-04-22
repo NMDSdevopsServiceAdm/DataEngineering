@@ -662,6 +662,29 @@ def filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_profe
     return df
 
 
+def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Sets ascwds_job_role_counts_filtered to null when job group ratios outside of boundaries.
+
+    The boundaires are:
+        direct_care ratio value >= 0.001 percentile and <= 0.999 percentile
+        managers ratio value <= 0.999 percentile
+        regulated_professions ratio value <= 0.999 percentile
+        other ratio value <= 0.999 percentile
+
+
+    Args:
+        df (DataFrame): A dataframe with a job role count map column and job group ratio map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    return df
+
+
 def transform_interpolated_job_role_ratios_to_counts(
     df: DataFrame,
 ) -> DataFrame:

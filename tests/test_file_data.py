@@ -11201,6 +11201,211 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
+        (
+            "1-001",
+            {
+                JobGroupLabels.direct_care: 1.0,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-002",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 1.0,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-003",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 1.0,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-004",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-005",
+            {
+                JobGroupLabels.direct_care: 0.1,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-006",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.1,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-007",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.1,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-008",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.1,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-009",
+            {
+                JobGroupLabels.direct_care: 0.2,
+                JobGroupLabels.managers: 0.2,
+                JobGroupLabels.regulated_professions: 0.3,
+                JobGroupLabels.other: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+    ]
+    expected_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
+        (
+            "1-001",
+            {
+                JobGroupLabels.direct_care: 1.0,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-002",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 1.0,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-003",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 1.0,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-004",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 1.0,
+            },
+            None,
+        ),
+        (
+            "1-005",
+            {
+                JobGroupLabels.direct_care: 0.1,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-006",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.1,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-007",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.1,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-008",
+            {
+                JobGroupLabels.direct_care: 0.5,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.1,
+                JobGroupLabels.other: 0.5,
+            },
+            None,
+        ),
+        (
+            "1-009",
+            {
+                JobGroupLabels.direct_care: 0.2,
+                JobGroupLabels.managers: 0.2,
+                JobGroupLabels.regulated_professions: 0.3,
+                JobGroupLabels.other: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+    ]
+
     transform_interpolated_job_role_ratios_to_counts_rows = [
         (
             "1-001",

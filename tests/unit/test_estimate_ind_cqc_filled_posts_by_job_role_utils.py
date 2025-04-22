@@ -1275,6 +1275,42 @@ class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfess
         self.assertEqual(expected_data, returned_data)
 
 
+class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows,
+            Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows,
+            Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
+        )
+        self.returned_df = job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+            self.test_df
+        )
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_row_count(
+        self,
+    ):
+        self.assertEqual(self.expected_df.count(), self.returned_data.count())
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_columns(
+        self,
+    ):
+        self.assertEqual(self.expected_df.columns, self.returned_data.columns)
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_returns_expected_data(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+        self.assertEqual(expected_data, returned_data)
+
+
 class TransformInterpolatedJobRoleRatiosToCounts(
     EstimateIndCQCFilledPostsByJobRoleUtilsTests
 ):
