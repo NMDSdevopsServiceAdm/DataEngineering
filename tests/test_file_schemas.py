@@ -109,40 +109,6 @@ class CalculatePaRatioSchemas:
 
 
 @dataclass
-class IngestASCWDSData:
-    raise_mainjrid_error_when_mainjrid_not_in_df_schema = StructType(
-        [
-            StructField(AWK.establishment_id, StringType(), True),
-            StructField(AWK.location_id, StringType(), True),
-        ]
-    )
-    raise_mainjrid_error_when_mainjrid_in_df_schema = StructType(
-        [
-            *raise_mainjrid_error_when_mainjrid_not_in_df_schema,
-            StructField(AWK.main_job_role_id, StringType(), True),
-        ]
-    )
-
-    fix_nmdssc_dates_schema = StructType(
-        [
-            StructField(AWK.establishment_id, StringType(), True),
-            StructField(AWK.created_date, StringType(), True),
-            StructField(AWK.main_job_role_id, StringType(), True),
-            StructField(AWK.updated_date, StringType(), True),
-        ]
-    )
-
-    fix_nmdssc_dates_with_last_logged_in_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField(AWP.master_update_date, StringType(), True),
-            StructField(AWP.organisation_id, StringType(), True),
-            StructField(AWP.last_logged_in, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ASCWDSWorkerSchemas:
     worker_schema = StructType(
         [
