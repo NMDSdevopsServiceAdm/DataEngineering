@@ -36,9 +36,8 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
-    postcode_truncated_cleaned: str = (
-        NewCqcLocationApiColumns.postal_code + "_truncated_cleaned"
-    )
+    postcode_truncated: str = NewCqcLocationApiColumns.postal_code + "_truncated"
+    postcode_truncated_cleaned: str = postcode_truncated + "_cleaned"
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"

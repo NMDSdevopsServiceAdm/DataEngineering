@@ -214,35 +214,6 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     return df
 
 
-# move to cleaning utils - needs work (col and new col name? drop original?)
-def truncate_postcode(
-    df: DataFrame,
-    postcode_col: str,
-    truncated_col_name: str,
-    drop_col: bool,
-) -> DataFrame:
-    """
-    Removes the last two characters from the postcode.
-
-    Args:
-        df (DataFrame): DataFrame with postcode to truncate.
-        postcode_col (str): The name of the postcode column.
-        truncated_col_name (str): The name of the truncated postcode column.
-        drop_col (bool): Drop the original postcode column if True.
-
-    Returns:
-        DataFrame: Fuzzy-matched DataFrame joined on truncated postcode.
-    """
-    df = df.withColumn(
-        truncated_col_name,
-        F.expr(f"substring({postcode_col}, 1, length({postcode_col}) - 2)"),
-    )
-    if drop_col:
-        df = df.drop(postcode_col)
-
-    return df
-
-
 def raise_error_if_unmatched(df: DataFrame) -> None:
     """
     Raise error if there are any unmatched postcodes left.

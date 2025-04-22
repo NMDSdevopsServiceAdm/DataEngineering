@@ -45,6 +45,7 @@ class OnsCleanedColumns(ONScol):
     current_constituancy: str = (
         "current_" + ONScol.westminster_parliamentary_consitituency
     )
+    postcode_truncated: str = ONScol.postcode + "_truncated"
 
 
 contemporary_geography_columns: list = [

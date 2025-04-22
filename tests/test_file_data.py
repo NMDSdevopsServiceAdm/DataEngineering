@@ -3703,16 +3703,14 @@ class ExtractRegisteredManagerNamesData:
 
 @dataclass
 class PostcodeMatcherData:
+    # fmt: off
     locations_where_all_match_rows = [
         ("1-001", date(2020, 1, 1), "AA1 1aa"),
         ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
-        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later
+        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
         ("1-002", date(2025, 1, 1), "AA1 2AA"),
-        (
-            "1-003",
-            date(2025, 1, 1),
-            "AA1 3A2",
-        ),  # known issue (actually need one from the invalid list here)
+        ("1-002", date(2025, 1, 1), "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "29 5HF"),  # known issue (actually need one from the invalid list here)
         ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
     ]
     locations_with_unmatched_postcode_rows = [
@@ -3720,6 +3718,7 @@ class PostcodeMatcherData:
         ("1-001", date(2025, 1, 1), "AA1 1aa"),
         ("1-005", date(2025, 1, 1), "AA1 5XX"),  # never known
     ]
+    # fmt: on
 
 
 @dataclass
@@ -4079,6 +4078,17 @@ class CleaningUtilsData:
         ("1-002", CareHome.care_home, 24, 6.0),
         ("1-003", CareHome.care_home, 500, 8.0),
         ("1-004", CareHome.not_care_home, None, None),
+    ]
+
+    truncate_postcode_rows = [
+        ("1-001", "A11AA"),
+        ("1-002", "AA11AA"),
+        ("1-003", "AA112AA"),
+    ]
+    expected_truncate_postcode_rows = [
+        ("1-001", "A11AA", "A11"),
+        ("1-002", "AA11AA", "AA11"),
+        ("1-003", "AA112AA", "AA112"),
     ]
 
 

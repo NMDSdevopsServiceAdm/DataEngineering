@@ -326,3 +326,31 @@ def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
     ).transform(number_of_beds_df)
 
     return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
+
+
+def truncate_postcode(
+    df: DataFrame,
+    postcode_col: str,
+    drop_postcode_col: bool,
+) -> DataFrame:
+    """
+    Removes the last two characters from the postcode.
+
+    Args:
+        df (DataFrame): DataFrame with postcode to truncate.
+        postcode_col (str): The name of the postcode column.
+        drop_postcode_col (bool): Drop the original postcode column if True.
+
+    Returns:
+        DataFrame: DataFrame with truncated postcode added.
+    """
+    truncated_col_name = f"{postcode_col}_truncated"
+
+    df = df.withColumn(
+        truncated_col_name,
+        F.expr(f"substring({postcode_col}, 1, length({postcode_col}) - 2)"),
+    )
+    if drop_postcode_col:
+        df = df.drop(postcode_col)
+
+    return df

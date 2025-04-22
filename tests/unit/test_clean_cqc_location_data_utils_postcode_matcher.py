@@ -10,17 +10,17 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
-class ExtractRegisteredManagerNamesTests(unittest.TestCase):
+class PostcodeMatcherTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
 
-class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
+class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
         locations_df = self.spark.createDataFrame(
-            Data.locations_rows,
+            Data.locations_where_all_match_rows,
             Schemas.locations_schema,
         )
 

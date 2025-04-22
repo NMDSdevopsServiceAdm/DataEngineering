@@ -26,21 +26,31 @@ def main(ons_source: str, cleaned_ons_destination: str):
 
     refactored_current_ons_df = prepare_current_ons_data(contemporary_ons_df)
 
-    contemporary_with_current_ons_df = refactored_contemporary_ons_df.join(
+    cleaned_df = refactored_contemporary_ons_df.join(
         refactored_current_ons_df, ONSClean.postcode, "left"
     )
 
-    # TODO - truncate last 2 letters, count splits in each and keep the most common
-    # save as truncated file
+    truncated_df = cUtils.truncate_postcode(
+        cleaned_df,
+        ONSClean.postcode,
+        drop_postcode_col=True,
+    )
+
+    # TODO - count splits in each and keep the most common
 
     utils.write_to_parquet(
-        contemporary_with_current_ons_df,
+        cleaned_df,
         cleaned_ons_destination,
         mode="overwrite",
         partitionKeys=onsPartitionKeys,
     )
 
-    # TODO save truncated file
+    utils.write_to_parquet(
+        truncated_df,
+        truncated_ons_destination,
+        mode="overwrite",
+        partitionKeys=onsPartitionKeys,
+    )
 
 
 def prepare_current_ons_data(df: DataFrame) -> DataFrame:
