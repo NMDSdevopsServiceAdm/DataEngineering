@@ -115,6 +115,7 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO - change this so max days is an arguement
 def interpolate_column_with_values(df: DataFrame) -> DataFrame:
     """
     Interpolate column_with_values and coalesce known column_with_values values with interpolated values.
@@ -130,6 +131,7 @@ def interpolate_column_with_values(df: DataFrame) -> DataFrame:
         TempCol.column_with_values,
         "straight",
         TempCol.column_with_values_interpolated,
+        max_days_between_submissions=370,
     )
     df = df.withColumn(
         TempCol.column_with_values_interpolated,
