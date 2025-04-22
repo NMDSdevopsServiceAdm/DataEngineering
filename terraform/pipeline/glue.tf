@@ -5,7 +5,7 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "_01_ingest/csv_files/jobs"
   script_name     = "csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -22,7 +22,7 @@ module "csv_to_parquet_job" {
 
 module "spss_csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "_01_ingest/csv_files/jobs"
   script_name     = "spss_csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
