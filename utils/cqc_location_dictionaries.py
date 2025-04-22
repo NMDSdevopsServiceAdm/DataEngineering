@@ -70,6 +70,7 @@ class InvalidPostcodes:
         "L30 5DF": "L20 5DF",
         "L33 7QX": "L33 7TX",
         "LA12 OXH": "LA12 0HX",
+        "LD8 2LJ": "LD8 2LN",  # Welsh postcode, replace with nearest English postcode
         "LE5 8ED": "LE4 8ED",
         "LE65 3LP": "LE65 2RW",
         "LE8 OHQ": "LE8 0HQ",
@@ -118,6 +119,7 @@ class InvalidPostcodes:
         "SK3 6NG": "SK2 6NG",
         "SO50 4FD": "SO50 9FD",
         "ST4 4GF": "ST4 7AA",
+        "SY22 6NW": "SY22 6EW",  # Welsh postcode, replace with nearest English postcode
         "SY13 3PA": "SY13 1AA",
         "SY2 9JN": "SY3 9JN",
         "SY6LG": "SY2 6LG",
