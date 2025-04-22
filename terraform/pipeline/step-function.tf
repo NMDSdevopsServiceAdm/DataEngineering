@@ -39,7 +39,6 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name
     trigger_coverage_state_machine_arn                                      = aws_sfn_state_machine.coverage_state_machine.arn
     run_silver_validation_state_machine_arn                                 = aws_sfn_state_machine.silver_validation_state_machine.arn
-    run_gold_validation_state_machine_arn                                   = aws_sfn_state_machine.gold_validation_state_machine.arn
     pipeline_failure_lambda_function_arn                                    = aws_lambda_function.error_notification_lambda.arn
   })
 
@@ -248,37 +247,6 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
     validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy,
-    module.datasets_bucket
-  ]
-}
-
-resource "aws_sfn_state_machine" "gold_validation_state_machine" {
-  name     = "${local.workspace_prefix}-Gold-Validation-Pipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/GoldValidationPipeline-StepFunction.json", {
-    dataset_bucket_uri                                                      = module.datasets_bucket.bucket_uri
-    validate_merged_ind_cqc_data_job_name                                   = module.validate_merged_ind_cqc_data_job.job_name
-    validate_cleaned_ind_cqc_data_job_name                                  = module.validate_cleaned_ind_cqc_data_job.job_name
-    validate_imputed_ind_cqc_ascwds_and_pir_data_job_name                   = module.validate_imputed_ind_cqc_ascwds_and_pir_data_job.job_name
-    validate_features_care_home_ind_cqc_data_job_name                       = module.validate_features_care_home_ind_cqc_data_job.job_name
-    validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job_name    = module.validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job.job_name
-    validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job_name = module.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job.job_name
-    validate_features_non_res_pir_ind_cqc_data_job_name                     = module.validate_features_non_res_pir_ind_cqc_data_job.job_name
-    validate_estimated_ind_cqc_filled_posts_data_job_name                   = module.validate_estimated_ind_cqc_filled_posts_data_job.job_name
-    validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name       = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
-    data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn                                    = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
