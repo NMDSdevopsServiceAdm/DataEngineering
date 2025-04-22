@@ -67,7 +67,6 @@ module "ingest_cqc_pir_data_job" {
 module "clean_cqc_pir_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "jobs"
-  script_dir      = "jobs"
   script_name     = "clean_cqc_pir_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
