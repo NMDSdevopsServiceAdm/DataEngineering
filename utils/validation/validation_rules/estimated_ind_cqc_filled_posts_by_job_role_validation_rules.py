@@ -10,7 +10,6 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 @dataclass
 class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
-    # test commit
     min_value = 0.0
     max_value = 3000
 
@@ -28,9 +27,7 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             IndCqcColumns.unix_time,
             IndCqcColumns.estimate_filled_posts,
             IndCqcColumns.estimate_filled_posts_source,
-            IndCqcColumns.ascwds_job_role_ratios_merged,
             IndCqcColumns.ascwds_job_role_ratios_merged_source,
-            IndCqcColumns.estimate_filled_posts_by_job_role,
             MainJobRoleLabels.activites_worker,
             MainJobRoleLabels.admin_staff,
             MainJobRoleLabels.advocacy,
