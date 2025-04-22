@@ -476,12 +476,10 @@ class EstimateFilledPostsSource(ColumnValues):
     ascwds_pir_merged: str = IndCQC.ascwds_pir_merged
     care_home_model: str = IndCQC.care_home_model
     imputed_posts_care_home_model: str = IndCQC.imputed_posts_care_home_model
-    imputed_posts_non_res_with_dormancy_model: str = (
-        IndCQC.imputed_posts_non_res_with_dormancy_model
+    imputed_posts_non_res_combined_model: str = (
+        IndCQC.imputed_posts_non_res_combined_model
     )
-    imputed_filled_post_model: str = IndCQC.imputed_filled_post_model
-    non_res_with_dormancy_model: str = IndCQC.non_res_with_dormancy_model
-    non_res_without_dormancy_model: str = IndCQC.non_res_without_dormancy_model
+    non_res_combined_model: str = IndCQC.non_res_combined_model
     non_res_pir_linear_regression_model: str = (
         IndCQC.non_res_pir_linear_regression_model
     )
