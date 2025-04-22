@@ -77,7 +77,11 @@ def model_interpolation(
     else:
         raise ValueError("Error: method must be either 'straight' or 'trend'")
 
-    df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
+    df = df.drop(
+        IndCqc.time_between_submissions,
+        IndCqc.proportion_of_time_between_submissions,
+        IndCqc.residual,
+    )
 
     return df
 
@@ -185,16 +189,27 @@ def calculate_proportion_of_time_between_submissions(
         "first",
     )
 
+    unix_time_between_known_submissions = (
+        F.col(IndCqc.previous_submission_time) < F.col(IndCqc.unix_time)
+    ) & (F.col(IndCqc.next_submission_time) > F.col(IndCqc.unix_time))
+
     df = df.withColumn(
-        IndCqc.proportion_of_time_between_submissions,
+        IndCqc.time_between_submissions,
         F.when(
-            (F.col(IndCqc.previous_submission_time) < F.col(IndCqc.unix_time))
-            & (F.col(IndCqc.next_submission_time) > F.col(IndCqc.unix_time)),
-            (F.col(IndCqc.unix_time) - F.col(IndCqc.previous_submission_time))
-            / (
+            unix_time_between_known_submissions,
+            (
                 F.col(IndCqc.next_submission_time)
                 - F.col(IndCqc.previous_submission_time)
             ),
+        ),
+    )
+
+    df = df.withColumn(
+        IndCqc.proportion_of_time_between_submissions,
+        F.when(
+            unix_time_between_known_submissions,
+            (F.col(IndCqc.unix_time) - F.col(IndCqc.previous_submission_time))
+            / F.col(IndCqc.time_between_submissions),
         ),
     ).drop(IndCqc.previous_submission_time, IndCqc.next_submission_time)
 

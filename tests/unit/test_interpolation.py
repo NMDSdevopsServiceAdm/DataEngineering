@@ -249,7 +249,8 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
     ):
         self.assertEqual(self.input_df.count(), self.returned_df.count())
 
-    def test_proportion_of_time_between_submissions_added_as_a_new_column(self):
+    def test_proportion_of_time_between_submissions_returns_the_new_columns(self):
+        self.assertIn(IndCqc.time_between_submissions, self.returned_df.columns)
         self.assertIn(
             IndCqc.proportion_of_time_between_submissions, self.returned_df.columns
         )
