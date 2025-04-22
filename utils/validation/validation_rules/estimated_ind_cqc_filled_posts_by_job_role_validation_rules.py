@@ -10,6 +10,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 
 @dataclass
 class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
+    # test commit
     min_value = 0.0
     max_value = 3000
 
