@@ -2,13 +2,13 @@ import unittest
 
 from unittest.mock import patch, Mock
 
-import _01_ingest.onspd.jobs.ingest_ons_data as job
+import _01_ingest.ons_pd.jobs.ingest_ons_data as job
 
 from utils import utils
 from _01_ingest.unittest_data.data import ONSData as Data
 from _01_ingest.unittest_data.schemas import ONSSchemas as Schemas
 
-PATCH_PATH = "_01_ingest.onspd.jobs.ingest_ons_data"
+PATCH_PATH = "_01_ingest.ons_pd.jobs.ingest_ons_data"
 
 
 class IngestONSDataTests(unittest.TestCase):
