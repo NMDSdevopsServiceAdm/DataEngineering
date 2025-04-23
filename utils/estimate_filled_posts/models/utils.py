@@ -152,6 +152,39 @@ def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
     return df
 
 
+def train_lasso_regression_model(
+    df: DataFrame, label_col: str
+) -> LinearRegressionModel:
+    """
+    Train a linear regression model on the given DataFrame.
+
+    elasticNetParam=1 means that the model will use only L1 regularization (Lasso).
+    Lasso regression is an algorithm that helps to identify the most important features in a
+    dataset, allowing for more effective model building.
+
+    The regulisation parameter (regParam) controls the strength of the regularisation.
+    We set this to a low value (0.001) to allow the model to have a higher degree of freedom
+    to capture more complex relationships in the data.
+
+    Args:
+        df (DataFrame): Training data.
+        label_col (str): Name of the label column.
+
+    Returns:
+        LinearRegressionModel: Trained model.
+    """
+    lasso_regression: int = 1
+    regulisation_parameter: float = 0.001
+
+    lr = LinearRegression(
+        featuresCol=IndCqc.features,
+        labelCol=label_col,
+        elasticNetParam=lasso_regression,
+        regParam=regulisation_parameter,
+    )
+    return lr.fit(df)
+
+
 def get_existing_run_numbers(model_source: str) -> List[int]:
     """
     List existing model run numbers in the specified S3 location.
@@ -233,36 +266,3 @@ def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
     """
     s3_path = get_model_s3_path(model_source, mode="load")
     return LinearRegressionModel.load(s3_path)
-
-
-def train_lasso_regression_model(
-    df: DataFrame, label_col: str
-) -> LinearRegressionModel:
-    """
-    Train a linear regression model on the given DataFrame.
-
-    elasticNetParam=1 means that the model will use only L1 regularization (Lasso).
-    Lasso regression is an algorithm that helps to identify the most important features in a
-    dataset, allowing for more effective model building.
-
-    The regulisation parameter (regParam) controls the strength of the regularisation.
-    We set this to a low value (0.001) to allow the model to have a higher degree of freedom
-    to capture more complex relationships in the data.
-
-    Args:
-        df (DataFrame): Training data.
-        label_col (str): Name of the label column.
-
-    Returns:
-        LinearRegressionModel: Trained model.
-    """
-    lasso_regression: int = 1
-    regulisation_parameter: float = 0.001
-
-    lr = LinearRegression(
-        featuresCol=IndCqc.features,
-        labelCol=label_col,
-        elasticNetParam=lasso_regression,
-        regParam=regulisation_parameter,
-    )
-    return lr.fit(df)

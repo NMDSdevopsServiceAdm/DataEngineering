@@ -266,6 +266,47 @@ class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
             )
 
 
+class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.features_df = self.spark.createDataFrame(
+            [
+                (Vectors.dense([1.0, 2.0]), 5.0),
+                (Vectors.dense([2.0, 1.0]), 4.0),
+            ],
+            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
+        )
+
+    def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
+        self,
+    ):
+        trained_model = job.train_lasso_regression_model(
+            self.features_df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
+        )
+
+        self.assertIsInstance(trained_model, LinearRegressionModel)
+        self.assertIsNotNone(trained_model.coefficients)
+
+    @patch(f"{PATCH_PATH}.LinearRegression")
+    def test_train_lasso_model_called_with_expected_parameters(
+        self, LinearRegressionModel_mock: Mock
+    ):
+        mock_model = MagicMock()
+        mock_lr_instance = MagicMock()
+        mock_lr_instance.fit.return_value = mock_model
+        LinearRegressionModel_mock.return_value = mock_lr_instance
+
+        job.train_lasso_regression_model(self.features_df, label_col=ANY)
+
+        LinearRegressionModel_mock.assert_called_once_with(
+            featuresCol=IndCqc.features,
+            labelCol=ANY,
+            elasticNetParam=1,
+            regParam=0.001,
+        )
+
+
 class GetExistingRunNumbersTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -387,44 +428,3 @@ class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
 
         mock_model_load.assert_called_once_with(f"{self.model_source}run=4/")
         self.assertEqual(result, mock_model)
-
-
-class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.features_df = self.spark.createDataFrame(
-            [
-                (Vectors.dense([1.0, 2.0]), 5.0),
-                (Vectors.dense([2.0, 1.0]), 4.0),
-            ],
-            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
-        )
-
-    def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
-        self,
-    ):
-        trained_model = job.train_lasso_regression_model(
-            self.features_df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
-        )
-
-        self.assertIsInstance(trained_model, LinearRegressionModel)
-        self.assertIsNotNone(trained_model.coefficients)
-
-    @patch(f"{PATCH_PATH}.LinearRegression")
-    def test_train_lasso_model_called_with_expected_parameters(
-        self, LinearRegressionModel_mock: Mock
-    ):
-        mock_model = MagicMock()
-        mock_lr_instance = MagicMock()
-        mock_lr_instance.fit.return_value = mock_model
-        LinearRegressionModel_mock.return_value = mock_lr_instance
-
-        job.train_lasso_regression_model(self.features_df, label_col=ANY)
-
-        LinearRegressionModel_mock.assert_called_once_with(
-            featuresCol=IndCqc.features,
-            labelCol=ANY,
-            elasticNetParam=1,
-            regParam=0.001,
-        )
