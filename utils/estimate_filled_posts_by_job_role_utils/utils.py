@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, Window, functions as F
 from pyspark.sql.types import MapType
 from typing import List
 
@@ -7,6 +7,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     MainJobRoleLabels,
+    PrimaryServiceType,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
@@ -681,6 +682,69 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
     Returns:
         DataFrame: A dataframe with an additional column of filtered job role counts.
     """
+
+    original_column_ordering = df.columns
+
+    temp_job_group = "temp_job_group"
+    temp_job_group_ratio = "temp_job_group_ratio"
+    df_exploded = df.select(
+        IndCQC.primary_service_type,
+        F.explode(IndCQC.ascwds_job_group_ratios).alias(
+            temp_job_group, temp_job_group_ratio
+        ),
+    )
+
+    percentile_boundaries = "percentile_boundaries"
+    lower_percentile = 0.001
+    higher_percentile = 0.999
+    df_exploded = df_exploded.groupBy(IndCQC.primary_service_type, temp_job_group).agg(
+        F.percentile_approx(
+            temp_job_group_ratio, (lower_percentile, higher_percentile)
+        ).alias(percentile_boundaries)
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.primary_service_type)
+        .pivot(temp_job_group)
+        .agg(F.first(F.col(percentile_boundaries)))
+    )
+
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups_sorted, percentile_boundaries
+    )
+
+    df = df.join(df_exploded, on=IndCQC.primary_service_type, how="left")
+
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_filtered,
+        F.when(
+            (
+                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.direct_care]
+                > F.col(percentile_boundaries)[JobGroupLabels.direct_care][0]
+            )
+            & (
+                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.direct_care]
+                < F.col(percentile_boundaries)[JobGroupLabels.direct_care][1]
+            )
+            & (
+                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.managers]
+                < F.col(percentile_boundaries)[JobGroupLabels.managers][1]
+            )
+            & (
+                F.col(IndCQC.ascwds_job_group_ratios)[
+                    JobGroupLabels.regulated_professions
+                ]
+                < F.col(percentile_boundaries)[JobGroupLabels.regulated_professions][1]
+            )
+            & (
+                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.other]
+                < F.col(percentile_boundaries)[JobGroupLabels.other][1]
+            ),
+            F.col(IndCQC.ascwds_job_role_counts_filtered),
+        ).otherwise(None),
+    )
+
+    df = df.select(original_column_ordering)
 
     return df
 

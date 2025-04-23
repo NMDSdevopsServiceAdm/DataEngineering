@@ -11204,11 +11204,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
         (
             "1-001",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 1.0,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11216,11 +11217,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-002",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 1.0,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11228,11 +11230,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-003",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 1.0,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11240,11 +11243,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-004",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 1.0,
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11252,11 +11256,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-005",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.1,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11264,9 +11269,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-006",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.1,
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
                 JobGroupLabels.regulated_professions: 0.5,
                 JobGroupLabels.other: 0.5,
             },
@@ -11276,11 +11282,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-007",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.1,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11288,11 +11295,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-008",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.1,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11300,11 +11308,51 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (
             "1-009",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.2,
-                JobGroupLabels.managers: 0.2,
-                JobGroupLabels.regulated_professions: 0.3,
-                JobGroupLabels.other: 0.3,
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-010",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-011",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-012",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
             },
             {
                 MainJobRoleLabels.care_worker: 1,
@@ -11314,91 +11362,135 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     expected_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
         (
             "1-001",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 1.0,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
             },
             None,
         ),
         (
             "1-002",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 1.0,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
             },
             None,
         ),
         (
             "1-003",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 1.0,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
             },
             None,
         ),
         (
             "1-004",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 1.0,
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
             },
             None,
         ),
         (
             "1-005",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.1,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.5,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
             },
             None,
         ),
         (
             "1-006",
+            PrimaryServiceType.care_home_with_nursing,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.1,
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
                 JobGroupLabels.regulated_professions: 0.5,
                 JobGroupLabels.other: 0.5,
             },
-            None,
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
         ),
         (
             "1-007",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.1,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
             },
             None,
         ),
         (
             "1-008",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.5,
-                JobGroupLabels.managers: 0.5,
-                JobGroupLabels.regulated_professions: 0.1,
-                JobGroupLabels.other: 0.5,
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
             },
             None,
         ),
         (
             "1-009",
+            PrimaryServiceType.care_home_only,
             {
-                JobGroupLabels.direct_care: 0.2,
-                JobGroupLabels.managers: 0.2,
-                JobGroupLabels.regulated_professions: 0.3,
-                JobGroupLabels.other: 0.3,
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            None,
+        ),
+        (
+            "1-010",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            None,
+        ),
+        (
+            "1-011",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            None,
+        ),
+        (
+            "1-012",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
             },
             {
                 MainJobRoleLabels.care_worker: 1,

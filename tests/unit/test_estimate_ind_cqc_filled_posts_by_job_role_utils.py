@@ -1296,18 +1296,19 @@ class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
     def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_row_count(
         self,
     ):
-        self.assertEqual(self.expected_df.count(), self.returned_data.count())
+        self.assertEqual(self.expected_df.count(), self.returned_df.count())
 
     def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_columns(
         self,
     ):
-        self.assertEqual(self.expected_df.columns, self.returned_data.columns)
+        self.assertEqual(self.expected_df.columns, self.returned_df.columns)
 
     def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_returns_expected_data(
         self,
     ):
-        expected_data = self.expected_df.collect()
-        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+
         self.assertEqual(expected_data, returned_data)
 
 

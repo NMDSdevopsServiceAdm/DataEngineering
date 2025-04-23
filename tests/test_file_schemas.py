@@ -6767,6 +6767,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), True),
             StructField(
                 IndCQC.ascwds_job_group_ratios,
                 MapType(StringType(), FloatType()),
