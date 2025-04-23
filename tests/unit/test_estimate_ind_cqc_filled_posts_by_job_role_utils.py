@@ -1224,14 +1224,20 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
     @patch(
         f"{PATCH_PATH}.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one"
     )
+    @patch(
+        f"{PATCH_PATH}.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries"
+    )
     def test_apply_quality_filters_to_ascwds_job_role_data_calls_premade_functionality(
         self,
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock: Mock,
+        filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_mock: Mock,
     ):
-        job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+        job.apply_quality_filters_to_ascwds_job_role_data(
             self.test_df,
         )
+
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock.assert_called_once()
+        filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_mock.assert_called_once()
 
 
 class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(
@@ -1271,6 +1277,43 @@ class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfess
     ):
         expected_data = self.expected_df.collect()
         returned_data = self.returned_df.collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+
+class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows,
+            Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows,
+            Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
+        )
+        self.returned_df = job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+            self.test_df, lower_percentile_limit=0.001, upper_percentile_limit=0.999
+        )
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_row_count(
+        self,
+    ):
+        self.assertEqual(self.expected_df.count(), self.returned_df.count())
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_columns(
+        self,
+    ):
+        self.assertEqual(self.expected_df.columns, self.returned_df.columns)
+
+    def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_returns_expected_data(
+        self,
+    ):
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
 
         self.assertEqual(expected_data, returned_data)
 

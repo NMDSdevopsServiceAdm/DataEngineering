@@ -113,23 +113,6 @@ class CalculatePaRatioData:
 
 
 @dataclass
-class IngestASCWDSData:
-    raise_mainjrid_error_col_not_present_rows = [("123", "1-001")]
-    raise_mainjrid_error_with_known_value_rows = [("123", "1-001", "1")]
-    raise_mainjrid_error_with_unknown_value_rows = [("123", "1-001", "-1")]
-
-    fix_nmdssc_dates_rows = [("100", "07/31/2021", "8", "10/01/2024")]
-    expected_fix_nmdssc_dates_rows = [("100", "31/07/2021", "8", "01/10/2024")]
-
-    fix_nmdssc_dates_with_last_logged_in_rows = [
-        ("100", "07/31/2021", "8", "10/01/2024")
-    ]
-    expected_fix_nmdssc_dates_with_last_logged_in_rows = [
-        ("100", "31/07/2021", "8", "01/10/2024")
-    ]
-
-
-@dataclass
 class ASCWDSWorkerData:
     worker_rows = [
         ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
@@ -770,110 +753,6 @@ class PAFilledPostsByIcbArea:
 
 @dataclass
 class CapacityTrackerCareHomeData:
-    sample_rows = [
-        (
-            "Barnsley Metropolitan Borough Council",
-            "Woodways",
-            "Bespoke Care and Support Ltd",
-            "South Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "North East and Yorkshire",
-            "NHS South Yorkshire ICB",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "1-10192918971",
-            "VNJ4V",
-            "0",
-            "No",
-            "0",
-            "0",
-            "0",
-            "61",
-            "0",
-            "0",
-            "8",
-            "0",
-            "0",
-            "0",
-            "0",
-            "0",
-            "9483",
-            "1623",
-            "432",
-            "444",
-            "0",
-            "45330.3840277778",
-            "45330.3840277778",
-        ),
-        (
-            "Barnsley Metropolitan Borough Council",
-            "Woodlands Lodge Care Home",
-            "Mr Dhanus Dharry Ramdharry, Mrs Sooba Devi Mootyen, Mr Dhanraz Danny Ramdharry",
-            "South Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "North East and Yorkshire",
-            "NHS South Yorkshire ICB",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "1-933054479",
-            "VLEH4",
-            "2",
-            "Yes",
-            "0",
-            "0",
-            "0",
-            "28",
-            "0",
-            "0",
-            "14",
-            "0",
-            "0",
-            "0",
-            "0",
-            "0",
-            "4658",
-            "0",
-            "18",
-            "0",
-            "24",
-            "45330.4958333333",
-            "45330.4958333333",
-        ),
-        (
-            "Barnsley Metropolitan Borough Council",
-            "Water Royd Nursing Home",
-            "Maria Mallaband Limited",
-            "South Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "North East and Yorkshire",
-            "NHS South Yorkshire ICB",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "1-124000082",
-            "VLNVC",
-            "0",
-            "Yes",
-            "11",
-            "3",
-            "0",
-            "46",
-            "5",
-            "0",
-            "14",
-            "0",
-            "0",
-            "0",
-            "0",
-            "0",
-            "9334",
-            "1",
-            "0",
-            "37",
-            "0",
-            "45351.3625",
-            "45351.3625",
-        ),
-    ]
-
-    expected_rows = sample_rows
-
     capacity_tracker_care_home_rows = [
         (
             "loc 1",
@@ -921,123 +800,8 @@ class CapacityTrackerCareHomeData:
 
 @dataclass
 class CapacityTrackerNonResData:
-    sample_rows = [
-        (
-            "Barnsley Metropolitan Borough Council",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "NHS South Yorkshire ICB",
-            "North East and Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "South Yorkshire",
-            "Yorkshire and The Humber",
-            "AJB Care Ltd",
-            "1-1140582998",
-            "VN5A8",
-            "45330.3854166667",
-            "45330.3854166667",
-            "57",
-            "",
-            "",
-            "20",
-            "0",
-            "TRUE",
-            "40",
-            "16",
-            "2",
-            "4",
-            "Yes",
-            "2228",
-            "0",
-            "0",
-            "0",
-            "14",
-            "0",
-            "0",
-            "0",
-        ),
-        (
-            "Barnsley Metropolitan Borough Council",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "NHS South Yorkshire ICB",
-            "North East and Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "South Yorkshire",
-            "Yorkshire and The Humber",
-            "Barnsley Disability Services Limited",
-            "1-1002692043",
-            "VN1N0",
-            "45331.4673611111",
-            "45331.4673611111",
-            "12",
-            "",
-            "",
-            "10",
-            "0",
-            "FALSE",
-            "0",
-            "10",
-            "1",
-            "3",
-            "Yes",
-            "1428",
-            "7",
-            "0",
-            "0",
-            "0",
-            "0",
-            "0",
-            "0",
-        ),
-        (
-            "Barnsley Metropolitan Borough Council",
-            "NHS South Yorkshire ICB - 02P Barnsley",
-            "NHS South Yorkshire ICB",
-            "North East and Yorkshire",
-            "Barnsley Metropolitan Borough Council",
-            "South Yorkshire",
-            "Yorkshire and The Humber",
-            "Barnsley Mencap",
-            "1-119187505",
-            "VN3L9",
-            "45331.4597222222",
-            "45331.4597222222",
-            "102",
-            "",
-            "",
-            "165",
-            "0",
-            "FALSE",
-            "0",
-            "161",
-            "28",
-            "37",
-            "Yes",
-            "18015",
-            "3113",
-            "567",
-            "0",
-            "171",
-            "0",
-            "0",
-            "0",
-        ),
-    ]
-
-    expected_rows = sample_rows
-
     capacity_tracker_non_res_rows = [
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
-    ]
-
-    remove_invalid_characters_from_column_names_rows = [
-        ("loc 1", "some data", "other data", "another data", "more data"),
-    ]
-    expected_columns = [
-        CTNR.cqc_id,
-        "column_with_spaces",
-        "column_without_spaces",
-        "column_with_brackets",
-        "column_with_brackets_and_spaces",
     ]
 
 
@@ -11197,6 +10961,303 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
             {
                 MainJobRoleLabels.social_worker: 1,
+            },
+        ),
+    ]
+
+    filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
+        (
+            "1-001",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-002",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-003",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-004",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-005",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-006",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-007",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-008",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-009",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-010",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-011",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-012",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+    ]
+    expected_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_rows = [
+        (
+            "1-001",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
+            },
+            None,
+        ),
+        (
+            "1-002",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
+            },
+            None,
+        ),
+        (
+            "1-003",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            None,
+        ),
+        (
+            "1-004",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            None,
+        ),
+        (
+            "1-005",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            None,
+        ),
+        (
+            "1-006",
+            PrimaryServiceType.care_home_with_nursing,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
+            },
+        ),
+        (
+            "1-007",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 10.0,
+                JobGroupLabels.managers: 0.9,
+                JobGroupLabels.regulated_professions: 0.9,
+                JobGroupLabels.other: 0.9,
+            },
+            None,
+        ),
+        (
+            "1-008",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.9,
+                JobGroupLabels.managers: 10.0,
+                JobGroupLabels.regulated_professions: 0.8,
+                JobGroupLabels.other: 0.8,
+            },
+            None,
+        ),
+        (
+            "1-009",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.8,
+                JobGroupLabels.managers: 0.8,
+                JobGroupLabels.regulated_professions: 10.0,
+                JobGroupLabels.other: 0.7,
+            },
+            None,
+        ),
+        (
+            "1-010",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.7,
+                JobGroupLabels.managers: 0.7,
+                JobGroupLabels.regulated_professions: 0.7,
+                JobGroupLabels.other: 10.0,
+            },
+            None,
+        ),
+        (
+            "1-011",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.0,
+                JobGroupLabels.managers: 0.6,
+                JobGroupLabels.regulated_professions: 0.6,
+                JobGroupLabels.other: 0.6,
+            },
+            None,
+        ),
+        (
+            "1-012",
+            PrimaryServiceType.care_home_only,
+            {
+                JobGroupLabels.direct_care: 0.6,
+                JobGroupLabels.managers: 0.5,
+                JobGroupLabels.regulated_professions: 0.5,
+                JobGroupLabels.other: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1,
             },
         ),
     ]

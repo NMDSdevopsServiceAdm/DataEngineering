@@ -650,6 +650,9 @@ def apply_quality_filters_to_ascwds_job_role_data(
     """
     This function calls each of the asc-wds job role filtering functions.
 
+    The first filter copies ascwds_job_role_counts into ascwds_job_role_counts_filtered when passed the quality check.
+    The second filter sets values in the ascwds_job_role_counts_filtered column to null if they fail the quality check.
+
     Args:
         df (DataFrame): A dataframe with a job role map column and job group map column.
 
@@ -659,6 +662,12 @@ def apply_quality_filters_to_ascwds_job_role_data(
 
     df = filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
         df
+    )
+
+    df = filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+        df,
+        lower_percentile_limit=0.001,
+        upper_percentile_limit=0.999,
     )
 
     return df
@@ -700,6 +709,97 @@ def filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_profe
             F.col(IndCQC.ascwds_job_role_counts),
         ).otherwise(None),
     )
+
+    return df
+
+
+def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+    df: DataFrame,
+    lower_percentile_limit: float,
+    upper_percentile_limit: float,
+) -> DataFrame:
+    """
+    Sets ascwds_job_role_counts_filtered to null when ascwds_job_group_ratios outside of given boundaries.
+
+    The boundaries are given as percentiles at which the job group ratio value at that percentile becomes the limit.
+
+    The boundaries are:
+        direct_care ratio > lower_percentile_limit and < upper_percentile_limit
+        managers ratio < upper_percentile_limit
+        regulated_professions ratio < upper_percentile_limit
+        other ratio < upper_percentile_limit
+
+    Args:
+        df (DataFrame): A dataframe with a job role count map column and job group ratio map column.
+        lower_percentile_limit (float): The lower percentile limit.
+        upper_percentile_limit (float): The upper percentile limit.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    original_column_ordering = df.columns
+
+    temp_job_group = "temp_job_group"
+    temp_job_group_ratio = "temp_job_group_ratio"
+    df_exploded = df.select(
+        IndCQC.primary_service_type,
+        F.explode(IndCQC.ascwds_job_group_ratios).alias(
+            temp_job_group, temp_job_group_ratio
+        ),
+    )
+
+    percentile_boundaries = "percentile_boundaries"
+    df_exploded = df_exploded.groupBy(IndCQC.primary_service_type, temp_job_group).agg(
+        F.percentile_approx(
+            temp_job_group_ratio,
+            (
+                lower_percentile_limit,
+                upper_percentile_limit,
+            ),
+        ).alias(percentile_boundaries)
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.primary_service_type)
+        .pivot(temp_job_group)
+        .agg(F.first(F.col(percentile_boundaries)))
+    )
+
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups_sorted, percentile_boundaries
+    )
+
+    df = df.join(df_exploded, on=IndCQC.primary_service_type, how="left")
+
+    job_group_ratios_column = F.col(IndCQC.ascwds_job_group_ratios)
+    percentile_boundary_column = F.col(percentile_boundaries)
+    direct_care_ratio = job_group_ratios_column[JobGroupLabels.direct_care]
+    direct_care_lower_limit = percentile_boundary_column[JobGroupLabels.direct_care][0]
+    direct_care_upper_limit = percentile_boundary_column[JobGroupLabels.direct_care][1]
+    managers_ratio = job_group_ratios_column[JobGroupLabels.managers]
+    managers_upper_limit = percentile_boundary_column[JobGroupLabels.managers][1]
+    regulated_professions_ratio = job_group_ratios_column[
+        JobGroupLabels.regulated_professions
+    ]
+    regulated_professions_upper_limit = percentile_boundary_column[
+        JobGroupLabels.regulated_professions
+    ][1]
+    other_ratio = job_group_ratios_column[JobGroupLabels.other]
+    other_upper_limit = percentile_boundary_column[JobGroupLabels.other][1]
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_filtered,
+        F.when(
+            (direct_care_ratio > direct_care_lower_limit)
+            & (direct_care_ratio < direct_care_upper_limit)
+            & (managers_ratio < managers_upper_limit)
+            & (regulated_professions_ratio < regulated_professions_upper_limit)
+            & (other_ratio < other_upper_limit),
+            F.col(IndCQC.ascwds_job_role_counts_filtered),
+        ).otherwise(None),
+    )
+
+    df = df.select(original_column_ordering)
 
     return df
 
