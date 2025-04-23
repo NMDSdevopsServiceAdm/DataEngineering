@@ -185,7 +185,8 @@ def get_next_run_number(model_source: str) -> int:
         int: Next available run number.
     """
     existing_runs = get_existing_run_numbers(model_source)
-    return max(existing_runs) + 1 if existing_runs else 1
+    next_run_number = max(existing_runs) + 1 if existing_runs else 1
+    return next_run_number
 
 
 def get_latest_run_number(model_source: str) -> Optional[int]:
@@ -199,7 +200,8 @@ def get_latest_run_number(model_source: str) -> Optional[int]:
         Optional[int]: Latest run number if found, else None.
     """
     existing_runs = get_existing_run_numbers(model_source)
-    return max(existing_runs) if existing_runs else None
+    latest_run_number = max(existing_runs) if existing_runs else None
+    return latest_run_number
 
 
 def train_lasso_regression_model(
@@ -262,5 +264,7 @@ def load_latest_model(model_source: str) -> LinearRegressionModel:
     latest_run = get_latest_run_number(model_source)
     if latest_run is None:
         raise FileNotFoundError("No model found at the specified s3 source.")
-    model_path = f"{model_source}run_{latest_run}/"
-    return LinearRegressionModel.load(model_path)
+
+    model_path = f"{model_source}run={latest_run}/"
+    trained_model = LinearRegressionModel.load(model_path)
+    return trained_model

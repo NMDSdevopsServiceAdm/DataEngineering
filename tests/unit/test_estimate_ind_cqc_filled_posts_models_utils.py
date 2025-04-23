@@ -1,8 +1,11 @@
 import unittest
 import warnings
+from unittest.mock import MagicMock, Mock, patch
 
 from datetime import date
 from pyspark.sql import functions as F
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.regression import LinearRegressionModel
 
 from utils.estimate_filled_posts.models import utils as job
 from tests.test_file_data import EstimateFilledPostsModelsUtils as Data
@@ -11,10 +14,14 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
+PATCH_PATH: str = "utils.estimate_filled_posts.models.utils"
+
 
 class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
+        self.model_source: str = "s3://pipeline-resources/models/prediction/1.0.0/"
 
 
 class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
@@ -257,3 +264,123 @@ class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
                 expected_data[i],
                 f"Returned row {i} does not match expected",
             )
+
+
+class GetExistingRunNumbersTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    @patch(
+        f"{PATCH_PATH}.utils.split_s3_uri",
+        return_value=("test-bucket", "models/prediction/1.0.0/"),
+    )
+    def test_get_existing_run_numbers_returns_expected_list(
+        self, split_s3_uri_mock: Mock, boto_client_mock: Mock
+    ):
+        mock_s3 = boto_client_mock.return_value
+        mock_s3.list_objects_v2.return_value = {
+            "Contents": [
+                {"Key": "models/prediction/1.0.0/run=1/"},
+                {"Key": "models/prediction/1.0.0/run=2/"},
+                {"Key": "models/prediction/1.0.0/run=3/"},
+            ]
+        }
+
+        returned_list = job.get_existing_run_numbers(self.model_source)
+        expected_list = [1, 2, 3]
+
+        self.assertEqual(returned_list, expected_list)
+
+
+class GetNextRunNumberTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers", return_value=[1, 2, 3])
+    def test_get_next_run_number_returns_expected_value(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        returned_run_number = job.get_next_run_number(self.model_source) == 4
+        self.assertEqual(returned_run_number, 4)
+
+
+class GetLatestRunNumberTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers", return_value=[1, 2, 3])
+    def test_get_latest_run_number_returns_expected_value_when_previous_runs_found(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        returned_run_number = job.get_latest_run_number(self.model_source)
+        self.assertEqual(returned_run_number, 3)
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers", return_value=[])
+    def test_get_latest_run_number_returns_none_when_no_previous_runs_found(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        returned_run_number = job.get_latest_run_number(self.model_source)
+        self.assertIsNone(returned_run_number)
+
+
+class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
+        self,
+    ):
+        df = self.spark.createDataFrame(
+            [
+                (Vectors.dense([1.0, 2.0]), 5.0),
+                (Vectors.dense([2.0, 1.0]), 4.0),
+            ],
+            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
+        )
+
+        model = job.train_lasso_regression_model(
+            df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
+        )
+
+        self.assertIsInstance(model, LinearRegressionModel)
+        self.assertIsNotNone(model.coefficients)
+
+
+class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.LinearRegressionModel.save")
+    def test_save_model_to_s3_called_once_with_expected_s3_path(self, mock_save: Mock):
+        dummy_model = MagicMock(spec=LinearRegressionModel)
+        s3_path = f"{self.model_source}run=1/"
+
+        job.save_model_to_s3(dummy_model, s3_path)
+
+        dummy_model.save.assert_called_once_with(s3_path)
+
+
+class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_latest_run_number", return_value=5)
+    @patch(f"{PATCH_PATH}.LinearRegressionModel.load")
+    def test_load_latest_model_loads_expected_model(
+        self, mock_model_load: Mock, get_latest_run_number_mock: Mock
+    ):
+        job.load_latest_model(self.model_source)
+
+        mock_model_load.assert_called_once_with(f"{self.model_source}run=5/")
+
+    @patch(f"{PATCH_PATH}.get_latest_run_number", return_value=None)
+    def test_load_latest_model_raises_error_when_not_found(
+        self, get_latest_run_number_mock: Mock
+    ):
+        with self.assertRaises(FileNotFoundError) as context:
+            job.load_latest_model(self.model_source)
+
+        self.assertTrue(
+            "No model found at the specified s3 source." in str(context.exception)
+        )
