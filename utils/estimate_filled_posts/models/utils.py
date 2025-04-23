@@ -1,7 +1,13 @@
+import boto3
+import re
+
+from typing import Optional, List
 from pyspark.sql import DataFrame, functions as F
+from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
+from utils import utils
 
 
 def insert_predictions_into_pipeline(
@@ -144,3 +150,117 @@ def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
         ).otherwise(F.col(posts_column)),
     )
     return df
+
+
+def get_existing_run_numbers(model_source: str) -> List[int]:
+    """
+    List existing model run numbers in the specified S3 location.
+
+    Args:
+        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        List[int]: Sorted list of detected run numbers.
+    """
+    bucket, prefix = utils.split_s3_uri(model_source)
+
+    s3 = boto3.client("s3")
+    existing = s3.list_objects_v2(Bucket=bucket, Prefix=prefix).get("Contents", [])
+    run_numbers = []
+    for obj in existing:
+        match = re.search(r"run=(\d+)/$", obj["Key"])
+        if match:
+            run_numbers.append(int(match.group(1)))
+    return sorted(set(run_numbers))
+
+
+def get_next_run_number(model_source: str) -> int:
+    """
+    Get the next model run number for a given versioned prefix.
+
+    Args:
+        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        int: Next available run number.
+    """
+    existing_runs = get_existing_run_numbers(model_source)
+    return max(existing_runs) + 1 if existing_runs else 1
+
+
+def get_latest_run_number(model_source: str) -> Optional[int]:
+    """
+    Get the latest run number for a given model version.
+
+    Args:
+        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        Optional[int]: Latest run number if found, else None.
+    """
+    existing_runs = get_existing_run_numbers(model_source)
+    return max(existing_runs) if existing_runs else None
+
+
+def train_lasso_regression_model(
+    df: DataFrame, label_col: str
+) -> LinearRegressionModel:
+    """
+    Train a linear regression model on the given DataFrame.
+
+    elasticNetParam=1 means that the model will use only L1 regularization (Lasso).
+    Lasso regression is an algorithm that helps to identify the most important features in a
+    dataset, allowing for more effective model building.
+
+    The regulisation parameter (regParam) controls the strength of the regularisation.
+    We set this to a low value (0.001) to allow the model to have a higher degree of freedom
+    to capture more complex relationships in the data.
+
+    Args:
+        df (DataFrame): Training data.
+        label_col (str): Name of the label column.
+
+    Returns:
+        LinearRegressionModel: Trained model.
+    """
+    lasso_regression: int = 1
+    regulisation_parameter: float = 0.001
+
+    lr = LinearRegression(
+        featuresCol=IndCqc.features,
+        labelCol=label_col,
+        elasticNetParam=lasso_regression,
+        regParam=regulisation_parameter,
+    )
+    return lr.fit(df)
+
+
+def save_model_to_s3(model: LinearRegressionModel, s3_destination: str) -> None:
+    """
+    Save a trained LinearRegressionModel to S3.
+
+    Args:
+        model (LinearRegressionModel): The trained model.
+        s3_destination (str): Full S3 path where model should be saved.
+    """
+    model.save(s3_destination)
+
+
+def load_latest_model(model_source: str) -> LinearRegressionModel:
+    """
+    Load the latest LinearRegressionModel from S3.
+
+    Args:
+        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        LinearRegressionModel: Loaded model.
+
+    Raises:
+        FileNotFoundError: If no model is found at the specified s3 source.
+    """
+    latest_run = get_latest_run_number(model_source)
+    if latest_run is None:
+        raise FileNotFoundError("No model found at the specified s3 source.")
+    model_path = f"{model_source}run_{latest_run}/"
+    return LinearRegressionModel.load(model_path)
