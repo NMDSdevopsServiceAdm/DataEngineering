@@ -1412,3 +1412,26 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
             expected_df.sort(IndCQC.location_id).collect(),
             returned_df.sort(IndCQC.location_id).collect(),
         )
+
+
+class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.recalculate_managerial_filled_posts_rows,
+            Schemas.recalculate_managerial_filled_posts_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_recalculate_managerial_filled_posts_rows,
+            Schemas.expected_recalculate_managerial_filled_posts_schema,
+        )
+        self.returned_df = job.recalculate_managerial_filled_posts(self.test_df)
+
+    def test_recalculate_managerial_filled_posts_returned_expected_values(
+        self,
+    ):
+        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.collect()
+
+        self.assertEqual(expected_data, returned_data)
