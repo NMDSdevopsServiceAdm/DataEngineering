@@ -680,7 +680,7 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
     """
     Sets ascwds_job_role_counts_filtered to null when job group ratios outside of boundaries.
 
-    The boundaires are:
+    The boundaries are:
         direct_care ratio value >= 0.001 percentile and <= 0.999 percentile
         managers ratio value <= 0.999 percentile
         regulated_professions ratio value <= 0.999 percentile
