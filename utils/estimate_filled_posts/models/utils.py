@@ -174,34 +174,65 @@ def get_existing_run_numbers(model_source: str) -> List[int]:
     return sorted(set(run_numbers))
 
 
-def get_next_run_number(model_source: str) -> int:
+def get_model_s3_path(model_source: str, mode: str = "load") -> str:
     """
-    Get the next model run number for a given versioned prefix.
+    Compute the S3 path for saving or loading a versioned model.
 
     Args:
-        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+        model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+        mode (str): Either "load" to get latest run, or "save" to compute next run path.
 
     Returns:
-        int: Next available run number.
+        str: Full S3 path including run number (eg. 's3://pipeline-resources/models/prediction/1.0.0/run=3').
+
+    Raises:
+        ValueError: If mode is not "load" or "save".
+        FileNotFoundError: If no existing model is found in load mode.
     """
     existing_runs = get_existing_run_numbers(model_source)
-    next_run_number = max(existing_runs) + 1 if existing_runs else 1
-    return next_run_number
+
+    if mode == "save":
+        next_run = max(existing_runs) + 1 if existing_runs else 1
+        return f"{model_source}run={next_run}/"
+
+    elif mode == "load":
+        if not existing_runs:
+            raise FileNotFoundError(f"No model found in: {model_source}")
+        latest_run = max(existing_runs)
+        return f"{model_source}run={latest_run}/"
+
+    else:
+        raise ValueError("mode must be 'load' or 'save'")
 
 
-def get_latest_run_number(model_source: str) -> Optional[int]:
+def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> str:
     """
-    Get the latest run number for a given model version.
+    Save model to the next available versioned S3 run path.
 
     Args:
-        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
+        model (LinearRegressionModel): The trained linear regression model.
+        model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
 
     Returns:
-        Optional[int]: Latest run number if found, else None.
+        str: S3 path where the model was saved.
     """
-    existing_runs = get_existing_run_numbers(model_source)
-    latest_run_number = max(existing_runs) if existing_runs else None
-    return latest_run_number
+    s3_path = get_model_s3_path(model_source, mode="save")
+    model.save(s3_path)
+    return s3_path
+
+
+def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
+    """
+    Load the most recently saved model from a versioned S3 path.
+
+    Args:
+        model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        LinearRegressionModel: The loaded model.
+    """
+    s3_path = get_model_s3_path(model_source, mode="load")
+    return LinearRegressionModel.load(s3_path)
 
 
 def train_lasso_regression_model(
@@ -235,36 +266,3 @@ def train_lasso_regression_model(
         regParam=regulisation_parameter,
     )
     return lr.fit(df)
-
-
-def save_model_to_s3(model: LinearRegressionModel, s3_destination: str) -> None:
-    """
-    Save a trained LinearRegressionModel to S3.
-
-    Args:
-        model (LinearRegressionModel): The trained model.
-        s3_destination (str): Full S3 path where model should be saved.
-    """
-    model.save(s3_destination)
-
-
-def load_latest_model(model_source: str) -> LinearRegressionModel:
-    """
-    Load the latest LinearRegressionModel from S3.
-
-    Args:
-        model_source (str): S3 path to models (e.g. 's3://pipeline-resources/models/prediction/1.0.0/').
-
-    Returns:
-        LinearRegressionModel: Loaded model.
-
-    Raises:
-        FileNotFoundError: If no model is found at the specified s3 source.
-    """
-    latest_run = get_latest_run_number(model_source)
-    if latest_run is None:
-        raise FileNotFoundError("No model found at the specified s3 source.")
-
-    model_path = f"{model_source}run={latest_run}/"
-    trained_model = LinearRegressionModel.load(model_path)
-    return trained_model
