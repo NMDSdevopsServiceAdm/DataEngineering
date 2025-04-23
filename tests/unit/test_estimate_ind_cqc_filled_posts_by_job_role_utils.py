@@ -1224,14 +1224,23 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
     @patch(
         f"{PATCH_PATH}.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one"
     )
+    @patch(
+        f"{PATCH_PATH}.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries"
+    )
     def test_apply_quality_filters_to_ascwds_job_role_data_calls_premade_functionality(
         self,
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock: Mock,
+        filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_mock: Mock,
     ):
-        job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+        returned_df = job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
             self.test_df,
         )
+        job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+            returned_df
+        )
+
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock.assert_called_once()
+        filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_mock.assert_called_once()
 
 
 class FilterAscwdsByJobRoleBreakdownWhenDirectCareOrManagersPlusRegulatedProfessionsGreaterOrEqualToOne(

@@ -620,6 +620,10 @@ def apply_quality_filters_to_ascwds_job_role_data(
         df
     )
 
+    df = filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+        df
+    )
+
     return df
 
 
