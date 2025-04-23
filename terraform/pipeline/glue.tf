@@ -5,7 +5,7 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/csv_files/jobs"
+  script_dir      = "projects/_01_ingest/csv_files/jobs"
   script_name     = "csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -21,7 +21,7 @@ module "csv_to_parquet_job" {
 
 module "spss_csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/csv_files/jobs"
+  script_dir      = "projects/_01_ingest/csv_files/jobs"
   script_name     = "spss_csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -36,7 +36,7 @@ module "spss_csv_to_parquet_job" {
 
 module "ingest_capacity_tracker_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/capacity_tracker/jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "ingest_capacity_tracker_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -51,7 +51,7 @@ module "ingest_capacity_tracker_data_job" {
 
 module "ingest_cqc_pir_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/cqc_pir/jobs"
+  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
   script_name     = "ingest_cqc_pir_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -81,7 +81,7 @@ module "clean_cqc_pir_data_job" {
 
 module "ingest_ascwds_dataset_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/ascwds/jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "ingest_ascwds_dataset.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -164,7 +164,7 @@ module "clean_ascwds_workplace_job" {
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/ons_pd/jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "ingest_ons_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -253,7 +253,7 @@ module "clean_ind_cqc_filled_posts_job" {
 
 module "bulk_cqc_providers_download_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/cqc_api/jobs"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
   script_name     = "bulk_download_cqc_providers.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -268,7 +268,7 @@ module "bulk_cqc_providers_download_job" {
 
 module "bulk_cqc_locations_download_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/cqc_api/jobs"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
   script_name     = "bulk_download_cqc_locations.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -284,7 +284,7 @@ module "bulk_cqc_locations_download_job" {
 
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/dpr/jobs"
+  script_dir      = "projects/_01_ingest/dpr/jobs"
   script_name     = "ingest_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -299,7 +299,7 @@ module "ingest_dpr_external_data_job" {
 
 module "ingest_dpr_survey_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "_01_ingest/dpr/jobs"
+  script_dir      = "projects/_01_ingest/dpr/jobs"
   script_name     = "ingest_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

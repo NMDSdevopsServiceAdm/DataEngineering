@@ -2,15 +2,21 @@ import unittest
 
 from unittest.mock import patch, Mock
 
-import _01_ingest.ons_pd.jobs.ingest_ons_data as job
-from _01_ingest.unittest_data.data import ONSData as Data
-from _01_ingest.unittest_data.schemas import ONSSchemas as Schemas
+import projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data as job
+from projects._01_ingest.unittest_data.data import (
+    CapacityTrackerCareHomeData as CareHomeData,
+    CapacityTrackerNonResData as NonResData,
+)
+from projects._01_ingest.unittest_data.schemas import (
+    CapacityTrackerCareHomeSchema as CareHomeSchema,
+    CapacityTrackerNonResSchema as NonResSchema,
+)
 from utils import utils
 
-PATCH_PATH = "_01_ingest.ons_pd.jobs.ingest_ons_data"
+PATCH_PATH = "projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data"
 
 
-class IngestONSDataTests(unittest.TestCase):
+class IngestCapacityTrackerDataTests(unittest.TestCase):
     TEST_CSV_SOURCE = "some/directory/path/file.csv"
     TEST_DIRECTORY_SOURCE = "some/directory/path"
     TEST_DESTINATION = "s3://some/"
@@ -18,16 +24,22 @@ class IngestONSDataTests(unittest.TestCase):
 
     def setUp(self):
         self.spark = utils.get_spark()
-        self.test_ons_df = self.spark.createDataFrame(
-            Data.sample_rows, Schemas.sample_schema
+        self.test_carehome_df = self.spark.createDataFrame(
+            CareHomeData.sample_rows, CareHomeSchema.sample_schema
+        )
+        self.test_domcare_df = self.spark.createDataFrame(
+            NonResData.sample_rows, NonResSchema.sample_schema
         )
         self.object_list = [
             "directory/path/some-data-file.csv",
             "directory/path/some-other-other-data-file.csv",
         ]
         self.partial_csv_content = "Some, csv, content"
-        self.expected_ons_df = self.spark.createDataFrame(
-            Data.expected_rows, Schemas.sample_schema
+        self.expected_carehome_df = self.spark.createDataFrame(
+            CareHomeData.expected_rows, CareHomeSchema.sample_schema
+        )
+        self.expected_domcare_df = self.spark.createDataFrame(
+            NonResData.expected_rows, NonResSchema.sample_schema
         )
 
     @patch(f"{PATCH_PATH}.ingest_utils.read_partial_csv_content")
@@ -42,7 +54,7 @@ class IngestONSDataTests(unittest.TestCase):
         read_partial_csv_content_patch: Mock,
     ):
         get_s3_objects_list_patch.return_value = self.object_list
-        read_csv_patch.return_value = self.test_ons_df
+        read_csv_patch.return_value = self.test_carehome_df
         read_partial_csv_content_patch.return_value = self.partial_csv_content
 
         job.main(self.TEST_CSV_SOURCE, self.TEST_DESTINATION)
@@ -52,8 +64,9 @@ class IngestONSDataTests(unittest.TestCase):
         self.assertEqual(read_partial_csv_content_patch.call_count, 1)
         self.assertEqual(
             write_to_parquet_patch.call_args[0][0].collect(),
-            self.expected_ons_df.collect(),
+            self.expected_carehome_df.collect(),
         )
+
         self.assertEqual(
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
@@ -70,7 +83,7 @@ class IngestONSDataTests(unittest.TestCase):
         read_partial_csv_content_patch: Mock,
     ):
         get_s3_objects_list_patch.return_value = self.object_list
-        read_csv_patch.return_value = self.test_ons_df
+        read_csv_patch.return_value = self.test_carehome_df
         read_partial_csv_content_patch.return_value = self.partial_csv_content
 
         job.main(self.TEST_DIRECTORY_SOURCE, self.TEST_DESTINATION)
@@ -81,8 +94,18 @@ class IngestONSDataTests(unittest.TestCase):
         self.assertEqual(write_to_parquet_patch.call_count, 2)
         self.assertEqual(
             write_to_parquet_patch.call_args[0][0].collect(),
-            self.expected_ons_df.collect(),
+            self.expected_carehome_df.collect(),
         )
         self.assertEqual(
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
+
+    def test_remove_invalid_characters_from_column_names(self):
+        test_df = self.spark.createDataFrame(
+            NonResData.remove_invalid_characters_from_column_names_rows,
+            NonResSchema.remove_invalid_characters_from_column_names_schema,
+        )
+        expected_columns = NonResData.expected_columns
+        returned_df = job.remove_invalid_characters_from_column_names(test_df)
+        returned_columns = returned_df.columns
+        self.assertEqual(sorted(returned_columns), sorted(expected_columns))
