@@ -60,6 +60,13 @@ class GeneralUtilsTests(UtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_split_s3_uri(self):
+        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
+        bucket_name, prefix = utils.split_s3_uri(s3_uri)
+
+        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
+        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
+
     def test_get_model_name_returns_model_name(self):
         path_to_model = (
             "s3://sfc-bucket/models/care_home_jobs_prediction/1.0.0/subfolder/"
@@ -169,13 +176,6 @@ class GeneralUtilsTests(UtilsTests):
         ).collect()
         returned_data = returned_df.collect()
         self.assertEqual(expected_data, returned_data)
-
-    def test_split_s3_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
-        bucket_name, prefix = utils.split_s3_uri(s3_uri)
-
-        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
-        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
 
     def test_create_unix_timestamp_variable_from_date_column(self):
         column_schema = StructType(

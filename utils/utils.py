@@ -30,6 +30,20 @@ class SetupSpark(object):
 get_spark = SetupSpark()
 
 
+def split_s3_uri(uri: str) -> Tuple[str, str]:
+    """
+    Splits an S3 URI into bucket name and prefix.
+
+    Args:
+        uri (str): The S3 URI to split.
+
+    Returns:
+        Tuple[str, str]: A tuple containing the bucket name and prefix."""
+    stripped_uri = uri.replace("s3://", "", 1)
+    bucket, key = stripped_uri.split("/", 1)
+    return bucket, key
+
+
 def get_model_name(path_to_model):
     _, prefix = split_s3_uri(path_to_model)
     return prefix.split("/")[1]
@@ -75,20 +89,6 @@ def format_date_fields(df, date_column_identifier="date", raw_date_format=None):
             df = df.withColumn(date_column, F.to_date(date_column, raw_date_format))
 
     return df
-
-
-def split_s3_uri(uri: str) -> Tuple[str, str]:
-    """
-    Splits an S3 URI into bucket name and prefix.
-
-    Args:
-        uri (str): The S3 URI to split.
-
-    Returns:
-        Tuple[str, str]: A tuple containing the bucket name and prefix."""
-    stripped_uri = uri.replace("s3://", "", 1)
-    bucket, key = stripped_uri.split("/", 1)
-    return bucket, key
 
 
 def create_unix_timestamp_variable_from_date_column(
