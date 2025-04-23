@@ -2,15 +2,18 @@ import unittest
 
 from unittest.mock import patch, Mock
 
-import jobs.ingest_capacity_tracker_data as job
-
+import projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data as job
+from projects._01_ingest.unittest_data.data import (
+    CapacityTrackerCareHomeData as CareHomeData,
+    CapacityTrackerNonResData as NonResData,
+)
+from projects._01_ingest.unittest_data.schemas import (
+    CapacityTrackerCareHomeSchema as CareHomeSchema,
+    CapacityTrackerNonResSchema as NonResSchema,
+)
 from utils import utils
 
-from tests.test_file_data import CapacityTrackerCareHomeData as CareHomeData
-from tests.test_file_data import CapacityTrackerNonResData as NonResData
-
-from tests.test_file_schemas import CapacityTrackerCareHomeSchema as CareHomeSchema
-from tests.test_file_schemas import CapacityTrackerNonResSchema as NonResSchema
+PATCH_PATH = "projects._01_ingest.capacity_tracker.jobs.ingest_capacity_tracker_data"
 
 
 class IngestCapacityTrackerDataTests(unittest.TestCase):
@@ -39,10 +42,10 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             NonResData.expected_rows, NonResSchema.sample_schema
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_csv(
         self,
         read_csv_patch: Mock,
@@ -68,10 +71,10 @@ class IngestCapacityTrackerDataTests(unittest.TestCase):
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_directory(
         self,
         read_csv_patch: Mock,
