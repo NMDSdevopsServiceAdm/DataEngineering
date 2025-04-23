@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import MapType
 from typing import List
 
@@ -7,7 +7,6 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     MainJobRoleLabels,
-    PrimaryServiceType,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
@@ -22,6 +21,9 @@ from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
+)
+from utils.scale_variable_limits import (
+    AscwdsWorkerJobGroupRatioPercentileLimits as JobGroupRatioLimits,
 )
 
 
@@ -609,6 +611,9 @@ def apply_quality_filters_to_ascwds_job_role_data(
     """
     This function calls each of the asc-wds job role filtering functions.
 
+    The first filter copies ascwds_job_role_counts into ascwds_job_role_counts_filtered when passed the quality check.
+    The second filter sets values in the ascwds_job_role_counts_filtered column to null if they fail the quality check.
+
     Args:
         df (DataFrame): A dataframe with a job role map column and job group map column.
 
@@ -621,7 +626,9 @@ def apply_quality_filters_to_ascwds_job_role_data(
     )
 
     df = filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
-        df
+        df,
+        0.001,
+        0.999,
     )
 
     return df
@@ -699,11 +706,13 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
     )
 
     percentile_boundaries = "percentile_boundaries"
-    lower_percentile = 0.001
-    higher_percentile = 0.999
     df_exploded = df_exploded.groupBy(IndCQC.primary_service_type, temp_job_group).agg(
         F.percentile_approx(
-            temp_job_group_ratio, (lower_percentile, higher_percentile)
+            temp_job_group_ratio,
+            (
+                JobGroupRatioLimits.lower_percentile_limit,
+                JobGroupRatioLimits.upper_percentile_limit,
+            ),
         ).alias(percentile_boundaries)
     )
 
