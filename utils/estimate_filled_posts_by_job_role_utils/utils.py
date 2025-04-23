@@ -728,31 +728,29 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
 
     df = df.join(df_exploded, on=IndCQC.primary_service_type, how="left")
 
+    job_group_ratios_column = F.col(IndCQC.ascwds_job_group_ratios)
+    percentile_boundary_column = F.col(percentile_boundaries)
+    direct_care_ratio = job_group_ratios_column[JobGroupLabels.direct_care]
+    direct_care_lower_limit = percentile_boundary_column[JobGroupLabels.direct_care][0]
+    direct_care_upper_limit = percentile_boundary_column[JobGroupLabels.direct_care][1]
+    managers_ratio = job_group_ratios_column[JobGroupLabels.managers]
+    managers_upper_limit = percentile_boundary_column[JobGroupLabels.managers][1]
+    regulated_professions_ratio = job_group_ratios_column[
+        JobGroupLabels.regulated_professions
+    ]
+    regulated_professions_upper_limit = percentile_boundary_column[
+        JobGroupLabels.regulated_professions
+    ][1]
+    other_ratio = job_group_ratios_column[JobGroupLabels.other]
+    other_upper_limit = percentile_boundary_column[JobGroupLabels.other][1]
     df = df.withColumn(
         IndCQC.ascwds_job_role_counts_filtered,
         F.when(
-            (
-                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.direct_care]
-                > F.col(percentile_boundaries)[JobGroupLabels.direct_care][0]
-            )
-            & (
-                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.direct_care]
-                < F.col(percentile_boundaries)[JobGroupLabels.direct_care][1]
-            )
-            & (
-                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.managers]
-                < F.col(percentile_boundaries)[JobGroupLabels.managers][1]
-            )
-            & (
-                F.col(IndCQC.ascwds_job_group_ratios)[
-                    JobGroupLabels.regulated_professions
-                ]
-                < F.col(percentile_boundaries)[JobGroupLabels.regulated_professions][1]
-            )
-            & (
-                F.col(IndCQC.ascwds_job_group_ratios)[JobGroupLabels.other]
-                < F.col(percentile_boundaries)[JobGroupLabels.other][1]
-            ),
+            (direct_care_ratio > direct_care_lower_limit)
+            & (direct_care_ratio < direct_care_upper_limit)
+            & (managers_ratio < managers_upper_limit)
+            & (regulated_professions_ratio < regulated_professions_upper_limit)
+            & (other_ratio < other_upper_limit),
             F.col(IndCQC.ascwds_job_role_counts_filtered),
         ).otherwise(None),
     )
