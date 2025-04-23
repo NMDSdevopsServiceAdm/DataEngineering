@@ -1299,7 +1299,7 @@ class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
             Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
         )
         self.returned_df = job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
-            self.test_df
+            self.test_df, 0.001, 0.999
         )
 
     def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_row_count(

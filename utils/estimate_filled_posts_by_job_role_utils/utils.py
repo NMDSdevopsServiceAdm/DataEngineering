@@ -22,9 +22,6 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
 )
-from utils.scale_variable_limits import (
-    AscwdsWorkerJobGroupRatioPercentileLimits as JobGroupRatioLimits,
-)
 
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
@@ -676,19 +673,24 @@ def filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_profe
 
 def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
     df: DataFrame,
+    lower_percentile_limit: float,
+    upper_percentile_limit: float,
 ) -> DataFrame:
     """
-    Sets ascwds_job_role_counts_filtered to null when job group ratios outside of boundaries.
+    Sets ascwds_job_role_counts_filtered to null when ascwds_job_group_ratios outside of given boundaries.
+
+    The boundaries are given as percentiles at which the job group ratio value at that percentile becomes the limit.
 
     The boundaries are:
-        direct_care ratio value >= 0.001 percentile and <= 0.999 percentile
-        managers ratio value <= 0.999 percentile
-        regulated_professions ratio value <= 0.999 percentile
-        other ratio value <= 0.999 percentile
-
+        direct_care ratio > lower_percentile_limit and < upper_percentile_limit
+        managers ratio < upper_percentile_limit
+        regulated_professions ratio < upper_percentile_limit
+        other ratio < upper_percentile_limit
 
     Args:
         df (DataFrame): A dataframe with a job role count map column and job group ratio map column.
+        lower_percentile_limit (float): The lower percentile limit.
+        upper_percentile_limit (float): The upper percentile limit.
 
     Returns:
         DataFrame: A dataframe with an additional column of filtered job role counts.
@@ -710,8 +712,8 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
         F.percentile_approx(
             temp_job_group_ratio,
             (
-                JobGroupRatioLimits.lower_percentile_limit,
-                JobGroupRatioLimits.upper_percentile_limit,
+                lower_percentile_limit,
+                upper_percentile_limit,
             ),
         ).alias(percentile_boundaries)
     )
