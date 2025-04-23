@@ -49,20 +49,6 @@ def get_s3_objects_list(
     return object_keys
 
 
-def split_s3_uri(uri: str) -> Tuple[str, str]:
-    """
-    Splits an S3 URI into bucket name and prefix.
-
-    Args:
-        uri (str): The S3 URI to split.
-
-    Returns:
-        Tuple[str, str]: A tuple containing the bucket name and prefix."""
-    stripped_uri = uri.replace("s3://", "", 1)
-    bucket, key = stripped_uri.split("/", 1)
-    return bucket, key
-
-
 def get_file_directory(filepath: str) -> str:
     """
     Returns the directory portion of a file path.

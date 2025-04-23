@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from _01_ingest.utils.utils import ingest_utils
+from projects._01_ingest.utils.utils import ingest_utils
 from utils import cqc_api as cqc
 from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars

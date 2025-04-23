@@ -14,7 +14,7 @@ from pyspark.sql.types import (
     FloatType,
 )
 
-from _01_ingest.utils.utils import ingest_utils as job
+from projects._01_ingest.utils.utils import ingest_utils as job
 from utils import utils
 
 
@@ -205,18 +205,6 @@ class GetS3ObjectsListTests(IngestUtilsTests):
             object_list, ["version=1.0.0/import_date=20210101/some-data-file.csv"]
         )
         self.assertEqual(len(object_list), 1)
-
-
-class SplitS3UriTests(IngestUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_split_s3_uri(self):
-        s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
-        bucket_name, prefix = job.split_s3_uri(s3_uri)
-
-        self.assertEqual(bucket_name, "sfc-data-engineering-raw")
-        self.assertEqual(prefix, "domain=ASCWDS/dataset=workplace/")
 
 
 class GetFileDirectoryTests(IngestUtilsTests):

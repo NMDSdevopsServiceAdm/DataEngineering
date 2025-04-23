@@ -1,13 +1,13 @@
 import sys
 
-from _01_ingest.utils.utils import ingest_utils
+from projects._01_ingest.utils.utils import ingest_utils
 from utils import utils
 
 
 def main(source, destination):
     if ingest_utils.is_csv(source):
         print("Single file provided to job. Handling single file.")
-        bucket, key = ingest_utils.split_s3_uri(source)
+        bucket, key = utils.split_s3_uri(source)
         print(destination)
         new_destination = ingest_utils.construct_destination_path(destination, key)
         print(new_destination)
@@ -15,7 +15,7 @@ def main(source, destination):
         return
 
     print("Multiple files provided to job. Handling each file...")
-    bucket, prefix = ingest_utils.split_s3_uri(source)
+    bucket, prefix = utils.split_s3_uri(source)
     objects_list = ingest_utils.get_s3_objects_list(bucket, prefix)
 
     print("Objects list:")

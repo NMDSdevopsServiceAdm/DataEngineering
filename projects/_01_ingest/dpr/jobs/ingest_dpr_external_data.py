@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-from _01_ingest.utils.utils import ingest_utils
+from projects._01_ingest.utils.utils import ingest_utils
 from schemas.direct_payment_data_schema import EXTERNAL_DATA
 from utils import utils
 
