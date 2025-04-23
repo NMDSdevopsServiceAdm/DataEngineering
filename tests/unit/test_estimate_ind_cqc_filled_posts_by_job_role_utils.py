@@ -1232,11 +1232,8 @@ class ApplyQualityFiltersToAscwdsJobRoleData(
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock: Mock,
         filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_mock: Mock,
     ):
-        returned_df = job.filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+        job.apply_quality_filters_to_ascwds_job_role_data(
             self.test_df,
-        )
-        job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
-            returned_df
         )
 
         filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one_mock.assert_called_once()
@@ -1299,7 +1296,7 @@ class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
             Schemas.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_schema,
         )
         self.returned_df = job.filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
-            self.test_df, 0.001, 0.999
+            self.test_df, lower_percentile_limit=0.001, upper_percentile_limit=0.999
         )
 
     def test_filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries_does_not_change_row_count(
