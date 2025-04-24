@@ -5088,6 +5088,16 @@ class NonResPirFeaturesData:
 
 
 @dataclass
+class TrainLinearRegressionModelData:
+    # fmt: off
+    feature_rows = [
+        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+    # fmt: on
+
+
+@dataclass
 class EstimateIndCQCFilledPostsData:
     # fmt: off
     cleaned_ind_cqc_rows = [

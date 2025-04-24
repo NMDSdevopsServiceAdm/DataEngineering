@@ -2544,6 +2544,16 @@ class NonResPirFeaturesSchema:
 
 
 @dataclass
+class TrainLinearRegressionModelSchema:
+    feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
+
+@dataclass
 class EstimateIndCQCFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
