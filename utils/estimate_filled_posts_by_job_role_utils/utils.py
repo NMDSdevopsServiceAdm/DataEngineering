@@ -405,9 +405,7 @@ def recalculate_managerial_filled_posts(
     df: DataFrame,
 ) -> DataFrame:
     """
-    A function which is used to recalculate non rm managerial filled posts. We have estimated registered manager counts which we swap out with CQC registered manager counts.
-    As we do this we need to reclculate the managerical filled posts but using the following equation:
-    non-RM managerial role = Maximum of zero or (original prediction for that role + (proportional split for that role * RM post difference))
+    Recalculates non registered manager filled posts based on difference_between_estimate_and_cqc_registered_managers
     Args:
         df (DataFrame): A dataframe which contains location_id, managerial filled posts, proportion of non rm managerial estimated filled posts and the Registered manager difference between estimate and CQC
     Returns:
@@ -423,24 +421,56 @@ def recalculate_managerial_filled_posts(
         ]
     )
 
-    for col in non_rm_managers:
-        df = df.withColumn(
-            col,
-            F.greatest(
+    df_result = create_map_column(
+        df, non_rm_managers, IndCQC.estimated_managerial_filled_posts_temp, True
+    )
+
+    df_result = df_result.withColumn(
+        IndCQC.estimated_managerial_filled_posts_temp,
+        F.transform_values(
+            IndCQC.estimated_managerial_filled_posts_temp,
+            lambda k, v: F.greatest(
                 F.lit(0.0),
-                F.col(col)
+                v
                 + (
                     F.col(
                         IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-                    ).getItem(col)
+                    ).getItem(k)
                     * F.col(
                         IndCQC.difference_between_estimate_and_cqc_registered_managers
                     )
                 ),
             ),
-        )
+        ),
+    )
 
-    return df
+    df_result = unpack_mapped_column(
+        df_result, IndCQC.estimated_managerial_filled_posts_temp
+    )
+
+    df_result = df_result.drop(IndCQC.estimated_managerial_filled_posts_temp)
+
+    return df_result
+
+    # for col in non_rm_managers:
+
+    #     df = df.withColumn(
+    #         col,
+    #         F.greatest(
+    #             F.lit(0.0),
+    #             F.col(col)
+    #             + (
+    #                 F.col(
+    #                     IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+    #                 ).getItem(col)
+    #                 * F.col(
+    #                     IndCQC.difference_between_estimate_and_cqc_registered_managers
+    #                 )
+    #             ),
+    #         ),
+    #     )
+
+    # return df
 
 
 def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(

@@ -1474,7 +1474,9 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
     def test_recalculate_managerial_filled_posts_returned_expected_values(
         self,
     ):
-        expected_data = self.expected_df.collect()
-        returned_data = self.returned_df.collect()
+        expected_cols = sorted([col.name for col in self.expected_df.schema])
+
+        returned_data = self.returned_df.select(expected_cols).collect()
+        expected_data = self.expected_df.select(expected_cols).collect()
 
         self.assertEqual(expected_data, returned_data)
