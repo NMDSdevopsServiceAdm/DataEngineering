@@ -1,8 +1,8 @@
 {
   "Comment": "A description of my state machine",
-  "StartAt": "Prepare data in paralell",
+  "StartAt": "Prepare data in parallel",
   "States": {
-    "Prepare data in paralell": {
+    "Prepare data in parallel": {
       "Type": "Parallel",
       "Next": "Merge DPR data",
       "Branches": [
@@ -77,7 +77,7 @@
           "--postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
           "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2024.01/",
           "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2024.01/"
-        } 
+        }
       },
       "Next": "Run data engineering crawler"
     },
