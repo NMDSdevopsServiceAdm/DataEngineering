@@ -315,7 +315,7 @@ module "ingest_dpr_survey_data_job" {
 module "prepare_dpr_external_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "_01_prepare_dpr_external_data.py"
+  script_name     = "prepare_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -329,7 +329,7 @@ module "prepare_dpr_external_data_job" {
 module "prepare_dpr_survey_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "_01_prepare_dpr_survey_data.py"
+  script_name     = "prepare_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -343,7 +343,7 @@ module "prepare_dpr_survey_data_job" {
 module "merge_dpr_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "_02_merge_dpr_data.py"
+  script_name     = "merge_dpr_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -358,7 +358,7 @@ module "merge_dpr_data_job" {
 module "estimate_direct_payments_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "_03_estimate_direct_payments.py"
+  script_name     = "estimate_direct_payments.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
@@ -373,7 +373,7 @@ module "estimate_direct_payments_job" {
 module "split_pa_filled_posts_into_icb_areas_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_04_direct_payment_recipients/jobs"
-  script_name     = "_04_split_pa_filled_posts_into_icb_areas.py"
+  script_name     = "split_pa_filled_posts_into_icb_areas.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
