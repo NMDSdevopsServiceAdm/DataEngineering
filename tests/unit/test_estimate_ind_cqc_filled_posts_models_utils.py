@@ -402,10 +402,11 @@ class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
         expected_path = f"{self.model_source}run=4/"
         get_model_s3_path_mock.return_value = expected_path
 
-        job.save_model_to_s3(mock_model, self.model_source)
+        returned_path = job.save_model_to_s3(mock_model, self.model_source)
 
         mock_model.save.assert_called_once_with(expected_path)
         get_model_s3_path_mock.assert_called_once_with(self.model_source, mode="save")
+        self.assertEqual(returned_path, expected_path)
 
 
 class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
@@ -425,3 +426,61 @@ class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
 
         mock_model_load.assert_called_once_with(f"{self.model_source}run=4/")
         self.assertEqual(result, mock_model)
+
+
+class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.create_test_and_train_datasets_rows,
+            Schemas.create_test_and_train_datasets_schema,
+        )
+        (
+            self.returned_train_df,
+            self.returned_test_df,
+        ) = job.create_test_and_train_datasets(
+            self.test_df,
+            test_ratio=0.2,
+            seed=42,
+        )
+        self.expected_train_df = self.spark.createDataFrame(
+            Data.expected_create_test_and_train_datasets_train_rows,
+            Schemas.create_test_and_train_datasets_schema,
+        )
+        self.expected_test_df = self.spark.createDataFrame(
+            Data.expected_create_test_and_train_datasets_test_rows,
+            Schemas.create_test_and_train_datasets_schema,
+        )
+
+        self.returned_train_data = self.returned_train_df.sort(
+            IndCqc.location_id
+        ).collect()
+        self.expected_train_data = self.expected_train_df.sort(
+            IndCqc.location_id
+        ).collect()
+        self.returned_test_data = self.returned_test_df.collect()
+        self.expected_test_data = self.expected_test_df.collect()
+
+    def test_create_test_and_train_datasets_returns_expected_columns(self):
+        self.assertEqual(
+            sorted(self.returned_train_df.columns),
+            sorted(self.expected_train_df.columns),
+        )
+
+    def test_create_test_and_train_datasets_returns_original_number_of_rows(self):
+        self.assertEqual(
+            self.returned_train_df.count() + self.returned_test_df.count(),
+            self.test_df.count(),
+        )
+
+    def test_create_test_and_train_datasets_returns_expected_train_data(self):
+        for i in range(len(self.returned_train_data)):
+            self.assertEqual(
+                self.returned_train_data[i],
+                self.expected_train_data[i],
+                f"Returned row {i} does not match expected",
+            )
+
+    def test_create_test_and_train_datasets_returns_expected_test_data(self):
+        self.assertEqual(self.returned_test_data, self.expected_test_data)

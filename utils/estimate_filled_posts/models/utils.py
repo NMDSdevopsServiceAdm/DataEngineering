@@ -1,7 +1,7 @@
 import boto3
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
@@ -239,17 +239,21 @@ def get_model_s3_path(model_source: str, mode: str = "load") -> str:
         raise ValueError("mode must be 'load' or 'save'")
 
 
-def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> None:
+def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> str:
     """
     Save model to the next available versioned S3 run path.
 
     Args:
         model (LinearRegressionModel): The trained linear regression model.
         model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        str: The S3 path where the model was saved.
     """
     s3_path = get_model_s3_path(model_source, mode="save")
     model.save(s3_path)
     print(f"Model saved to: {s3_path}")
+    return s3_path
 
 
 def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
@@ -264,3 +268,20 @@ def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
     """
     s3_path = get_model_s3_path(model_source, mode="load")
     return LinearRegressionModel.load(s3_path)
+
+
+def create_test_and_train_datasets(
+    df: DataFrame, test_ratio: float = 0.2, seed: Optional[int] = None
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Split the DataFrame into training and testing datasets.
+
+    Args:
+        df (DataFrame): The input DataFrame to be split.
+        test_ratio (float): The proportion of the data to include in the test split.
+        seed (Optional[int]): Random seed for reproducibility.
+
+    Returns:
+        Tuple[DataFrame, DataFrame]: A tuple containing the training and testing DataFrames.
+    """
+    return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)

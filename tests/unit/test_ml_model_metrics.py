@@ -3,9 +3,7 @@ from unittest.mock import patch, Mock, ANY
 import warnings
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 import utils.estimate_filled_posts.ml_model_metrics as job
 from tests.test_file_data import MLModelMetrics as Data
 from tests.test_file_schemas import MLModelMetrics as Schemas
@@ -68,31 +66,13 @@ class ModelNameAndVersionFromFilepathTests(TestGenerateMLModelMetrics):
         super().setUp()
 
     def test_returns_correct_model_name_and_version_from_s3_filepath(self):
-        model_source = "s3://pipeline-resources/models/model_prediction/1.0.0/"
-        model_name, model_version = job.get_model_name_and_version_from_s3_filepath(
-            model_source
-        )
+        model_source = "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
+        (
+            model_name,
+            model_version,
+            run_number,
+        ) = job.get_model_name_and_version_from_s3_filepath(model_source)
 
         self.assertEqual(model_name, "model_prediction")
         self.assertEqual(model_version, "1.0.0")
-
-
-class GetPredictionsWithKnownDependentVariableTests(TestGenerateMLModelMetrics):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_returned_data_matches_expected_data(self):
-        input_df = self.spark.createDataFrame(
-            Data.predictions_rows, Schemas.predictions_schema
-        )
-        returned_df = job.get_predictions_with_known_dependent_variable_df(
-            input_df, IndCqc.ascwds_pir_merged
-        )
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_predictions_with_dependent_rows, Schemas.predictions_schema
-        )
-
-        returned_data = returned_df.sort(IndCqc.location_id).collect()
-        expected_data = expected_df.sort(IndCqc.location_id).collect()
-        self.assertEqual(returned_data, expected_data)
+        self.assertEqual(run_number, "run=5")

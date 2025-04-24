@@ -5089,12 +5089,10 @@ class NonResPirFeaturesData:
 
 @dataclass
 class TrainLinearRegressionModelData:
-    # fmt: off
     feature_rows = [
         ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
-    # fmt: on
 
 
 @dataclass
@@ -6335,6 +6333,23 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
+    create_test_and_train_datasets_rows = [
+        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
+        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
+        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
+        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
+        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+    expected_create_test_and_train_datasets_train_rows = [
+        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
+        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
+        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
+        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
+    ]
+    expected_create_test_and_train_datasets_test_rows = [
+        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
@@ -6346,16 +6361,6 @@ class MLModelMetrics:
     r2_metric_rows = [
         ("1-00001", 50.0, 56.89),
         ("1-00002", 10.0, 12.34),
-    ]
-
-    predictions_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00002", None, 46.80),
-        ("1-00003", 10.0, 12.34),
-    ]
-    expected_predictions_with_dependent_rows = [
-        ("1-00001", 50.0, 56.89),
-        ("1-00003", 10.0, 12.34),
     ]
 
 

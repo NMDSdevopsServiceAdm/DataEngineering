@@ -3501,6 +3501,13 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    create_test_and_train_datasets_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
 
 @dataclass
 class MLModelMetrics:
@@ -3517,15 +3524,13 @@ class MLModelMetrics:
         ]
     )
 
-    predictions_schema = StructType(
+    r2_metric_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
-
-    r2_metric_schema = predictions_schema
 
 
 @dataclass
