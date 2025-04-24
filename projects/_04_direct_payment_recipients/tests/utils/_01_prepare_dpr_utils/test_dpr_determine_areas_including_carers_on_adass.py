@@ -11,7 +11,7 @@ from pyspark.sql.types import (
 
 from utils import utils
 import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.determine_areas_including_carers_on_adass as job
-from projects._04_direct_payment_recipients.direct_payments_column_names import (
+from utils.column_names.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
     DirectPaymentColumnValues as Values,
 )
