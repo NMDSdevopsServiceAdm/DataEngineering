@@ -238,20 +238,17 @@ def get_model_s3_path(model_source: str, mode: str = "load") -> str:
         raise ValueError("mode must be 'load' or 'save'")
 
 
-def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> str:
+def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> None:
     """
     Save model to the next available versioned S3 run path.
 
     Args:
         model (LinearRegressionModel): The trained linear regression model.
         model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
-
-    Returns:
-        str: S3 path where the model was saved.
     """
     s3_path = get_model_s3_path(model_source, mode="save")
     model.save(s3_path)
-    return s3_path
+    print(f"Model saved to: {s3_path}")
 
 
 def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:

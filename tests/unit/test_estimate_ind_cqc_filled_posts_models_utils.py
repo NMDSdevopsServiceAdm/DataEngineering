@@ -397,18 +397,15 @@ class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.get_model_s3_path")
-    @patch(f"{PATCH_PATH}.LinearRegressionModel")
-    def test_save_model_to_s3(
-        self, LinearRegressionModel_mock: Mock, get_model_s3_path_mock: Mock
-    ):
+    def test_save_model_to_s3_v2(self, get_model_s3_path_mock: Mock):
         mock_model = MagicMock()
-        get_model_s3_path_mock.return_value = f"{self.model_source}run=4/"
-
-        returned_path = job.save_model_to_s3(mock_model, self.model_source)
         expected_path = f"{self.model_source}run=4/"
+        get_model_s3_path_mock.return_value = expected_path
+
+        job.save_model_to_s3(mock_model, self.model_source)
 
         mock_model.save.assert_called_once_with(expected_path)
-        self.assertEqual(returned_path, expected_path)
+        get_model_s3_path_mock.assert_called_once_with(self.model_source, mode="save")
 
 
 class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
