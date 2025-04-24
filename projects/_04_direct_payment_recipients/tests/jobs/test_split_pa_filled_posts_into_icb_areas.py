@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import ANY, Mock, patch
 
 from utils import utils
-import projects._04_direct_payment_recipients.jobs._04_split_pa_filled_posts_into_icb_areas as job
+import projects._04_direct_payment_recipients.jobs.split_pa_filled_posts_into_icb_areas as job
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data import (
     PAFilledPostsByIcbArea as TestData,
 )
@@ -16,7 +16,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 
-PATCH_PATH: str = "projects._04_direct_payment_recipients.jobs._04_split_pa_filled_posts_into_icb_areas"
+PATCH_PATH: str = (
+    "projects._04_direct_payment_recipients.jobs.split_pa_filled_posts_into_icb_areas"
+)
 
 
 class SplitPAFilledPostsIntoIcbAreas(unittest.TestCase):
