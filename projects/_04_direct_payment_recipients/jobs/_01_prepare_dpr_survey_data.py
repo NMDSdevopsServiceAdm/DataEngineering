@@ -1,24 +1,18 @@
 from pyspark.sql import DataFrame
 
 from utils import utils
-from utils.direct_payments_utils.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
-
-from utils.direct_payments_utils.estimate_direct_payments.calculate_pa_ratio import (
+from projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.calculate_pa_ratio import (
     calculate_pa_ratio,
 )
 
 
-def main(
-    survey_data_source,
-    destination,
-):
-    spark = utils.get_spark()
+def main(survey_data_source, destination):
+    survey_df: DataFrame = utils.read_from_parquet(survey_data_source)
 
-    survey_df: DataFrame = spark.read.parquet(survey_data_source)
-
-    pa_ratio_df = calculate_pa_ratio(survey_df, spark)
+    pa_ratio_df = calculate_pa_ratio(survey_df)
 
     utils.write_to_parquet(
         pa_ratio_df,
