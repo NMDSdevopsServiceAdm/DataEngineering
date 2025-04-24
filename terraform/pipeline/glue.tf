@@ -5,24 +5,23 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 
 module "csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/csv_files/jobs"
   script_name     = "csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
     "--destination" = ""
     "--delimiter"   = ","
-
   }
 }
 
 module "spss_csv_to_parquet_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/csv_files/jobs"
   script_name     = "spss_csv_to_parquet.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -52,7 +51,7 @@ module "ingest_capacity_tracker_data_job" {
 
 module "ingest_cqc_pir_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
   script_name     = "ingest_cqc_pir_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
