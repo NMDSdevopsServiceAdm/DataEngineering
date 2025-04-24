@@ -179,6 +179,7 @@ def train_lasso_regression_model(
     lr = LinearRegression(
         featuresCol=IndCqc.features,
         labelCol=label_col,
+        predictionCol=IndCqc.prediction,
         elasticNetParam=lasso_regression,
         regParam=regulisation_parameter,
     )
