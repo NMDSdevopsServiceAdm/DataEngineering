@@ -452,26 +452,6 @@ def recalculate_managerial_filled_posts(
 
     return df_result
 
-    # for col in non_rm_managers:
-
-    #     df = df.withColumn(
-    #         col,
-    #         F.greatest(
-    #             F.lit(0.0),
-    #             F.col(col)
-    #             + (
-    #                 F.col(
-    #                     IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-    #                 ).getItem(col)
-    #                 * F.col(
-    #                     IndCQC.difference_between_estimate_and_cqc_registered_managers
-    #                 )
-    #             ),
-    #         ),
-    #     )
-
-    # return df
-
 
 def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
     df: DataFrame,
