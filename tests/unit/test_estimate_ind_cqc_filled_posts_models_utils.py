@@ -1,8 +1,11 @@
 import unittest
 import warnings
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 from datetime import date
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F
+from pyspark.ml.linalg import Vectors
+from pyspark.ml.regression import LinearRegressionModel
 
 from utils.estimate_filled_posts.models import utils as job
 from tests.test_file_data import EstimateFilledPostsModelsUtils as Data
@@ -11,10 +14,14 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
+PATCH_PATH: str = "utils.estimate_filled_posts.models.utils"
+
 
 class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
+        self.model_source: str = "s3://pipeline-resources/models/prediction/1.0.0/"
 
 
 class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
@@ -257,3 +264,164 @@ class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
                 expected_data[i],
                 f"Returned row {i} does not match expected",
             )
+
+
+class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.features_df = self.spark.createDataFrame(
+            [
+                (Vectors.dense([1.0, 2.0]), 5.0),
+                (Vectors.dense([2.0, 1.0]), 4.0),
+            ],
+            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
+        )
+
+    def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
+        self,
+    ):
+        trained_model = job.train_lasso_regression_model(
+            self.features_df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
+        )
+
+        self.assertIsInstance(trained_model, LinearRegressionModel)
+        self.assertIsNotNone(trained_model.coefficients)
+
+    @patch(f"{PATCH_PATH}.LinearRegression")
+    def test_train_lasso_model_called_with_expected_parameters(
+        self, LinearRegressionModel_mock: Mock
+    ):
+        mock_model = MagicMock()
+        mock_lr_instance = MagicMock()
+        mock_lr_instance.fit.return_value = mock_model
+        LinearRegressionModel_mock.return_value = mock_lr_instance
+
+        job.train_lasso_regression_model(self.features_df, label_col=ANY)
+
+        LinearRegressionModel_mock.assert_called_once_with(
+            featuresCol=IndCqc.features,
+            labelCol=ANY,
+            elasticNetParam=1,
+            regParam=0.001,
+        )
+
+
+class GetExistingRunNumbersTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.boto3.client")
+    @patch(
+        f"{PATCH_PATH}.utils.split_s3_uri",
+        return_value=("test-bucket", "models/prediction/1.0.0/"),
+    )
+    def test_get_existing_run_numbers_returns_expected_list(
+        self, split_s3_uri_mock: Mock, boto_client_mock: Mock
+    ):
+        mock_s3 = boto_client_mock.return_value
+        mock_s3.list_objects_v2.return_value = {
+            "Contents": [
+                {"Key": "models/prediction/1.0.0/run=1/"},
+                {"Key": "models/prediction/1.0.0/run=2/"},
+                {"Key": "models/prediction/1.0.0/run=3/"},
+            ]
+        }
+
+        returned_list = job.get_existing_run_numbers(self.model_source)
+        expected_list = [1, 2, 3]
+
+        self.assertEqual(returned_list, expected_list)
+
+
+class GetModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers")
+    def test_get_model_s3_path_returns_path_with_max_run_number_when_mode_is_load_and_previous_runs_exist(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        get_existing_run_numbers_mock.return_value = [1, 2, 3]
+
+        returned_path = job.get_model_s3_path(self.model_source, mode="load")
+        expected_path = f"{self.model_source}run=3/"
+
+        self.assertEqual(returned_path, expected_path)
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers")
+    def test_get_model_s3_path_raises_error_when_mode_is_load_and_no_previous_runs_exist(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        get_existing_run_numbers_mock.return_value = []
+
+        with self.assertRaises(FileNotFoundError):
+            job.get_model_s3_path(self.model_source, mode="load")
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers")
+    def test_get_model_s3_path_returns_path_with_next_run_number_when_mode_is_save_and_previous_runs_exist(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        get_existing_run_numbers_mock.return_value = [1, 2]
+
+        returned_path = job.get_model_s3_path(self.model_source, mode="save")
+        expected_path = f"{self.model_source}run=3/"
+
+        self.assertEqual(returned_path, expected_path)
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers")
+    def test_get_model_s3_path_returns_path_with_run_1_when_mode_is_save_and_no_previous_runs_exist(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        get_existing_run_numbers_mock.return_value = []
+
+        returned_path = job.get_model_s3_path(self.model_source, mode="save")
+        expected_path = f"{self.model_source}run=1/"
+
+        self.assertEqual(returned_path, expected_path)
+
+    @patch(f"{PATCH_PATH}.get_existing_run_numbers")
+    def test_get_model_s3_path_raises_value_error_when_mode_is_invalid(
+        self, get_existing_run_numbers_mock: Mock
+    ):
+        get_existing_run_numbers_mock.return_value = []
+
+        with self.assertRaises(ValueError) as context:
+            job.get_model_s3_path(self.model_source, mode="invalid_mode")
+
+        self.assertTrue("mode must be 'load' or 'save'" in str(context.exception))
+
+
+class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_model_s3_path")
+    def test_save_model_to_s3_v2(self, get_model_s3_path_mock: Mock):
+        mock_model = MagicMock()
+        expected_path = f"{self.model_source}run=4/"
+        get_model_s3_path_mock.return_value = expected_path
+
+        job.save_model_to_s3(mock_model, self.model_source)
+
+        mock_model.save.assert_called_once_with(expected_path)
+        get_model_s3_path_mock.assert_called_once_with(self.model_source, mode="save")
+
+
+class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.get_model_s3_path")
+    @patch(f"{PATCH_PATH}.LinearRegressionModel.load")
+    def test_load_latest_model_loads_expected_model(
+        self, mock_model_load: Mock, get_model_s3_path_mock: Mock
+    ):
+        get_model_s3_path_mock.return_value = f"{self.model_source}run=4/"
+        mock_model = MagicMock()
+        mock_model_load.return_value = mock_model
+
+        result = job.load_latest_model_from_s3(self.model_source)
+
+        mock_model_load.assert_called_once_with(f"{self.model_source}run=4/")
+        self.assertEqual(result, mock_model)

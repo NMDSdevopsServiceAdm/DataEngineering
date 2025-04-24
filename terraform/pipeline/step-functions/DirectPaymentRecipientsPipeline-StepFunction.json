@@ -15,8 +15,8 @@
               "Parameters": {
                 "JobName": "${prepare_dpr_survey_job_name}",
                 "Arguments": {
-                  "--survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2024.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2024.01/"
+                  "--survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2025.01/",
+                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.01/"
                 }
               },
               "End": true
@@ -32,8 +32,8 @@
               "Parameters": {
                 "JobName": "${prepare_dpr_external_job_name}",
                 "Arguments": {
-                  "--direct_payments_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2024.01/",
-                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2024.01/"
+                  "--direct_payments_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2025.01/",
+                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.01/"
                 }
               },
               "End": true
@@ -48,9 +48,9 @@
       "Parameters": {
         "JobName": "${merge_dpr_data_job_name}",
         "Arguments": {
-          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2024.01/",
-          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2024.01/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2024.01/"
+          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.01/",
+          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.01/",
+          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.01/"
         }
       },
       "Next": "estimate direct payments"
@@ -61,9 +61,9 @@
       "Parameters": {
         "JobName": "${estimate_direct_payments_job_name}",
         "Arguments": {
-          "--direct_payments_merged_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2024.01/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2024.01/",
-          "--summary_destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2024.01/"
+          "--direct_payments_merged_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.01/",
+          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.01/",
+          "--summary_destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2025.01/"
         }
       },
       "Next": "Split pa estimates into hybrid areas"
@@ -75,9 +75,9 @@
         "JobName": "${split_pa_filled_posts_into_icb_areas_job_name}",
         "Arguments":{
           "--postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2024.01/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2024.01/"
-        } 
+          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.01/",
+          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2025.01/"
+        }
       },
       "Next": "Run data engineering crawler"
     },
