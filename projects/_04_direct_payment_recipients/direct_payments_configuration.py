@@ -6,7 +6,7 @@ from pyspark.sql.types import (
     IntegerType,
     FloatType,
 )
-from utils.column_names.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.tests.utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 

@@ -2,7 +2,7 @@ import unittest
 import warnings
 
 import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.calculate_pa_ratio as job
-from utils.column_names.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.tests.utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data import (

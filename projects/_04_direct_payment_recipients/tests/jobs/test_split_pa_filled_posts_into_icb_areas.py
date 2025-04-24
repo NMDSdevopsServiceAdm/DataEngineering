@@ -9,7 +9,7 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data imp
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas import (
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
-from utils.column_names.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.tests.utils.direct_payments_column_names import (
     DirectPaymentColumnNames as DPColNames,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
