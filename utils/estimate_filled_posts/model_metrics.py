@@ -84,7 +84,6 @@ def generate_metric(
 
 def calculate_residual_between_predicted_and_known_filled_posts(
     predictions_df: DataFrame,
-    dependent_variable: str,
     is_care_home_model: bool = False,
 ) -> DataFrame:
     """
@@ -92,7 +91,6 @@ def calculate_residual_between_predicted_and_known_filled_posts(
 
     Args:
         predictions_df (DataFrame): DataFrame containing predictions.
-        dependent_variable (str): Actual values column.
         is_care_home_model (bool): Whether predictions should be scaled by number of beds.
 
     Returns:
@@ -105,20 +103,19 @@ def calculate_residual_between_predicted_and_known_filled_posts(
 
     predictions_df = predictions_df.withColumn(
         IndCqc.residual,
-        F.col(dependent_variable) - prediction_col,
+        F.col(IndCqc.imputed_filled_post_model) - prediction_col,
     )
     return predictions_df
 
 
 def generate_proportion_of_predictions_within_range(
-    predictions_df: DataFrame, dependent_variable: str, range_cutoff: int
+    predictions_df: DataFrame, range_cutoff: int
 ) -> float:
     """
     Calculates the proportion of residuals within a given range.
 
     Args:
         predictions_df (DataFrame): DataFrame with residuals.
-        dependent_variable (str): The target variable column name.
         range_cutoff (int): The threshold within which residuals are considered accurate.
 
     Returns:
@@ -131,7 +128,7 @@ def generate_proportion_of_predictions_within_range(
     )
 
     in_range_count = predictions_df.agg(F.sum(within_range)).first()[0]
-    total_count = predictions_df.agg(F.count(dependent_variable)).first()[0]
+    total_count = predictions_df.agg(F.count(within_range)).first()[0]
 
     return round(in_range_count / total_count, 4)
 
@@ -159,16 +156,16 @@ def store_model_metrics(
     spark = utils.get_spark()
 
     predictions_df = calculate_residual_between_predicted_and_known_filled_posts(
-        predictions_df, dependent_variable, is_care_home_model
+        predictions_df, is_care_home_model
     )
 
     r2_value = generate_metric(model_evaluator, predictions_df, IndCqc.r2)
     rmse_value = generate_metric(model_evaluator, predictions_df, IndCqc.rmse)
     prediction_within_10_posts = generate_proportion_of_predictions_within_range(
-        predictions_df, dependent_variable, range_cutoff=10
+        predictions_df, range_cutoff=10
     )
     prediction_within_25_posts = generate_proportion_of_predictions_within_range(
-        predictions_df, dependent_variable, range_cutoff=25
+        predictions_df, range_cutoff=25
     )
 
     model_name, model_version, run_number = get_model_name_and_version_from_s3_filepath(
