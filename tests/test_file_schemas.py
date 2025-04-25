@@ -6686,6 +6686,36 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    recalculate_managerial_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(MainJobRoleLabels.data_governance_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.deputy_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.first_line_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.it_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.it_service_desk_manager, FloatType(), True),
+            StructField(MainJobRoleLabels.middle_management, FloatType(), True),
+            StructField(MainJobRoleLabels.other_managerial_staff, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+            StructField(MainJobRoleLabels.supervisor, FloatType(), True),
+            StructField(MainJobRoleLabels.team_leader, FloatType(), True),
+            StructField(
+                IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.difference_between_estimate_and_cqc_registered_managers,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    expected_recalculate_managerial_filled_posts_schema = StructType(
+        [*recalculate_managerial_filled_posts_schema]
+    )
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:

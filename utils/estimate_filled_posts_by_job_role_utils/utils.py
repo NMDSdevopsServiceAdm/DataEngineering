@@ -401,6 +401,58 @@ def create_estimate_filled_posts_by_job_role_map_column(
     return df
 
 
+def recalculate_managerial_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Recalculates non registered manager filled posts based on difference_between_estimate_and_cqc_registered_managers
+    Args:
+        df (DataFrame): A dataframe which contains location_id, managerial filled posts, proportion of non rm managerial estimated filled posts and the Registered manager difference between estimate and CQC
+    Returns:
+        DataFrame: Which include the exaxct same columns but with new values within the non rm managerial filled posts column.
+    """
+
+    non_rm_managers = sorted(
+        [
+            job_role
+            for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+            if job_group == JobGroupLabels.managers
+            and job_role != MainJobRoleLabels.registered_manager
+        ]
+    )
+
+    df_result = create_map_column(
+        df, non_rm_managers, IndCQC.estimated_managerial_filled_posts_temp, True
+    )
+
+    df_result = df_result.withColumn(
+        IndCQC.estimated_managerial_filled_posts_temp,
+        F.transform_values(
+            IndCQC.estimated_managerial_filled_posts_temp,
+            lambda k, v: F.greatest(
+                F.lit(0.0),
+                v
+                + (
+                    F.col(
+                        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                    ).getItem(k)
+                    * F.col(
+                        IndCQC.difference_between_estimate_and_cqc_registered_managers
+                    )
+                ),
+            ),
+        ),
+    )
+
+    df_result = unpack_mapped_column(
+        df_result, IndCQC.estimated_managerial_filled_posts_temp
+    )
+
+    df_result = df_result.drop(IndCQC.estimated_managerial_filled_posts_temp)
+
+    return df_result
+
+
 def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
     df: DataFrame,
 ) -> DataFrame:
