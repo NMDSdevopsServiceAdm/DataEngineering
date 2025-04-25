@@ -22,6 +22,17 @@ def save_model_metrics(
     metrics_destination: str,
     is_care_home_model: bool = False,
 ) -> None:
+    """
+    Saves model metrics by appending the current evaluation to previous metrics.
+
+    Args:
+        trained_model (LinearRegressionModel): Trained linear regression model.
+        test_df (DataFrame): DataFrame to evaluate the model on.
+        dependent_variable (str): The target variable.
+        model_source (str): Path to the trained model.
+        metrics_destination (str): Destination path for metrics parquet file.
+        is_care_home_model (bool): Whether to scale predictions by number of beds.
+    """
     previous_metrics_df = utils.read_from_parquet(metrics_destination)
 
     predictions_df = trained_model.transform(test_df)
@@ -45,15 +56,26 @@ def save_model_metrics(
     utils.write_to_parquet(
         all_metrics_df,
         metrics_destination,
-        mode="append",
+        mode="overwrite",
         partitionKeys=[IndCqc.model_name, IndCqc.model_version, IndCqc.run_number],
     )
 
 
 def generate_metric(
     evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
-):
-    metric_value = F.round(
+) -> float:
+    """
+    Evaluates a single metric from the model predictions.
+
+    Args:
+        evaluator (RegressionEvaluator): RegressionEvaluator object.
+        predictions_df (DataFrame): DataFrame containing predictions.
+        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
+
+    Returns:
+        float: The rounded metric value.
+    """
+    metric_value = round(
         evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
     )
     print(f"Calculating {metric_name} = {metric_value}")
@@ -64,7 +86,18 @@ def calculate_residual_between_predicted_and_known_filled_posts(
     predictions_df: DataFrame,
     dependent_variable: str,
     is_care_home_model: bool = False,
-):
+) -> DataFrame:
+    """
+    Adds a residual column to the predictions DataFrame.
+
+    Args:
+        predictions_df (DataFrame): DataFrame containing predictions.
+        dependent_variable (str): Actual values column.
+        is_care_home_model (bool): Whether predictions should be scaled by number of beds.
+
+    Returns:
+        DataFrame: A DataFrame with residual column.
+    """
     if is_care_home_model:
         prediction_col = F.col(IndCqc.prediction) * F.col(IndCqc.number_of_beds)
     else:
@@ -72,27 +105,35 @@ def calculate_residual_between_predicted_and_known_filled_posts(
 
     predictions_df = predictions_df.withColumn(
         IndCqc.residual,
-        (F.col(dependent_variable) - prediction_col),
+        F.col(dependent_variable) - prediction_col,
     )
     return predictions_df
 
 
 def generate_proportion_of_predictions_within_range(
     predictions_df: DataFrame, dependent_variable: str, range_cutoff: int
-):
+) -> float:
+    """
+    Calculates the proportion of residuals within a given range.
+
+    Args:
+        predictions_df (DataFrame): DataFrame with residuals.
+        dependent_variable (str): The target variable column name.
+        range_cutoff (int): The threshold within which residuals are considered accurate.
+
+    Returns:
+        float: The rounded proportion of predictions within the given range.
+    """
     within_range: str = "within_range"
     predictions_df = predictions_df.withColumn(
         within_range,
-        (F.abs(F.col(IndCqc.residual)) <= range_cutoff).cast(IntegerType),
+        (F.abs(F.col(IndCqc.residual)) <= range_cutoff).cast(IntegerType()),
     )
 
-    percentage_of_predictions_in_range = F.round(
-        predictions_df.agg(F.sum(within_range)).collect()[0][0]
-        / predictions_df.agg(F.count(dependent_variable)).collect()[0][0],
-        4,
-    )
+    in_range_count = predictions_df.agg(F.sum(within_range)).first()[0]
+    total_count = predictions_df.agg(F.count(dependent_variable)).first()[0]
 
-    return percentage_of_predictions_in_range
+    return round(in_range_count / total_count, 4)
 
 
 def store_model_metrics(
@@ -102,24 +143,27 @@ def store_model_metrics(
     model_evaluator: RegressionEvaluator,
     is_care_home_model: bool = False,
 ) -> Tuple[DataFrame, str]:
+    """
+    Generates and stores model evaluation metrics.
+
+    Args:
+        predictions_df (DataFrame): DataFrame with model predictions.
+        dependent_variable (str): Name of the target column.
+        model_source (str): Path to the model.
+        model_evaluator (RegressionEvaluator): Evaluator used for calculating metrics.
+        is_care_home_model (bool): Whether predictions should be scaled by number of beds.
+
+    Returns:
+        Tuple[DataFrame, str]: The metrics DataFrame and name of the model.
+    """
     spark = utils.get_spark()
 
     predictions_df = calculate_residual_between_predicted_and_known_filled_posts(
         predictions_df, dependent_variable, is_care_home_model
     )
 
-    r2_value = generate_metric(
-        model_evaluator,
-        predictions_df,
-        dependent_variable,
-        IndCqc.r2,
-    )
-    rmse_value = generate_metric(
-        model_evaluator,
-        predictions_df,
-        dependent_variable,
-        IndCqc.rmse,
-    )
+    r2_value = generate_metric(model_evaluator, predictions_df, IndCqc.r2)
+    rmse_value = generate_metric(model_evaluator, predictions_df, IndCqc.rmse)
     prediction_within_10_posts = generate_proportion_of_predictions_within_range(
         predictions_df, dependent_variable, range_cutoff=10
     )
@@ -132,7 +176,7 @@ def store_model_metrics(
     )
 
     metrics_schema = StructType(
-        fields=[
+        [
             StructField(IndCqc.model_name, StringType(), True),
             StructField(IndCqc.model_version, StringType(), True),
             StructField(IndCqc.run_number, StringType(), True),
@@ -161,11 +205,18 @@ def store_model_metrics(
     return metrics_df, model_name
 
 
-def get_model_name_and_version_from_s3_filepath(model_source: str):
-    split_filepath = model_source.split("/")
+def get_model_name_and_version_from_s3_filepath(
+    model_source: str,
+) -> Tuple[str, str, str]:
+    """
+    Parses S3 file path to extract model name, version and run number.
 
-    model_name = split_filepath[-3]
-    model_version = split_filepath[-2]
-    run_number = split_filepath[-1]
+    Args:
+        model_source (str): S3 path to the model.
 
-    return model_name, model_version, run_number
+    Returns:
+        Tuple[str, str, str]: The model_name, model_version and run_number.
+    """
+    split_filepath = model_source.strip("/").split("/")
+
+    return split_filepath[-3], split_filepath[-2], split_filepath[-1]
