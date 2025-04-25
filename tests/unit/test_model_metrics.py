@@ -75,7 +75,7 @@ class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetrics
         )
         self.returned_non_res_df = (
             job.calculate_residual_between_predicted_and_known_filled_posts(
-                self.calculate_residual_non_res_df, IndCqc.imputed_filled_post_model
+                self.calculate_residual_non_res_df
             )
         )
         expected_non_res_df = self.spark.createDataFrame(
@@ -106,7 +106,6 @@ class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetrics
         returned_care_home_df = (
             job.calculate_residual_between_predicted_and_known_filled_posts(
                 self.calculate_residual_care_home_df,
-                IndCqc.imputed_filled_posts_per_bed_ratio_model,
                 is_care_home_model=True,
             )
         )
@@ -130,6 +129,19 @@ class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    def test_generate_proportion_of_predictions_within_range_returns_expected_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.generate_proportion_of_predictions_within_range_rows,
+            Schemas.generate_proportion_of_predictions_within_range_schema,
+        )
+        returned_proportion = job.generate_proportion_of_predictions_within_range(
+            test_df, Data.range_cutoff
+        )
+
+        self.assertAlmostEqual(returned_proportion, Data.expected_proportion, places=1)
+
 
 class StoreModelMetricsTests(SaveModelMetricsTests):
     def setUp(self) -> None:
@@ -140,14 +152,14 @@ class ModelNameAndVersionFromFilepathTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    # def test_returns_correct_model_name_and_version_from_s3_filepath(self):
-    #     model_source = "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
-    #     (
-    #         model_name,
-    #         model_version,
-    #         run_number,
-    #     ) = job.get_model_name_and_version_from_s3_filepath(model_source)
+    def test_returns_correct_model_name_and_version_from_s3_filepath(self):
+        model_source = "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
+        (
+            model_name,
+            model_version,
+            run_number,
+        ) = job.get_model_name_and_version_from_s3_filepath(model_source)
 
-    #     self.assertEqual(model_name, "model_prediction")
-    #     self.assertEqual(model_version, "1.0.0")
-    #     self.assertEqual(run_number, "run=5")
+        self.assertEqual(model_name, "model_prediction")
+        self.assertEqual(model_version, "1.0.0")
+        self.assertEqual(run_number, "run=5")

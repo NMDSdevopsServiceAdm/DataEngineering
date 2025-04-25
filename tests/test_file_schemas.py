@@ -3510,25 +3510,35 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
-class MLModelMetrics:
-    ind_cqc_with_predictions_schema = StructType(
+class ModelMetrics:
+    model_metrics_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
+            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
 
-    r2_metric_schema = StructType(
+    calculate_residual_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+    expected_calculate_residual_schema = StructType(
+        [
+            *calculate_residual_schema,
+            StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
+
+    generate_proportion_of_predictions_within_range_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
         ]
     )
 
