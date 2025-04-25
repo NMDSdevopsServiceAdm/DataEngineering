@@ -12,6 +12,9 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 @dataclass
@@ -132,5 +135,16 @@ class CapacityTrackerNonResSchema:
             StructField("column_without_spaces", StringType(), True),
             StructField("column_with_brackets()", StringType(), True),
             StructField("column_with_brackets and spaces()", StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ONSData:
+    sample_schema = StructType(
+        [
+            StructField(ONS.region, StringType(), True),
+            StructField(ONS.icb, StringType(), True),
+            StructField(ONS.longitude, StringType(), True),
         ]
     )

@@ -276,14 +276,6 @@ class ASCWDSWorkplaceSchemas:
 
 @dataclass
 class ONSData:
-    sample_schema = StructType(
-        [
-            StructField(ONS.region, StringType(), True),
-            StructField(ONS.icb, StringType(), True),
-            StructField(ONS.longitude, StringType(), True),
-        ]
-    )
-
     full_schema = StructType(
         [
             StructField(ONS.postcode, StringType(), True),

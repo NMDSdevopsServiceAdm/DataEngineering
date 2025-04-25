@@ -164,7 +164,7 @@ module "clean_ascwds_workplace_job" {
 
 module "ingest_ons_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "ingest_ons_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

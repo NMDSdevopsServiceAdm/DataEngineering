@@ -1,12 +1,12 @@
 import unittest
-
 from unittest.mock import patch, Mock
 
-import jobs.ingest_ons_data as job
-
+import projects._01_ingest.ons_pd.jobs.ingest_ons_data as job
 from utils import utils
-from tests.test_file_data import ONSData as Data
-from tests.test_file_schemas import ONSData as Schemas
+from projects._01_ingest.unittest_data.data import ONSData as Data
+from projects._01_ingest.unittest_data.schemas import ONSData as Schemas
+
+PATCH_PATH = "projects._01_ingest.ons_pd.jobs.ingest_ons_data"
 
 
 class IngestONSDataTests(unittest.TestCase):
@@ -29,10 +29,10 @@ class IngestONSDataTests(unittest.TestCase):
             Data.expected_rows, Schemas.sample_schema
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_csv(
         self,
         read_csv_patch: Mock,
@@ -57,10 +57,10 @@ class IngestONSDataTests(unittest.TestCase):
             write_to_parquet_patch.call_args[0][1], self.TEST_NEW_DESTINATION
         )
 
-    @patch("utils.utils.read_partial_csv_content")
-    @patch("utils.utils.get_s3_objects_list")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_csv")
+    @patch(f"{PATCH_PATH}.utils.read_partial_csv_content")
+    @patch(f"{PATCH_PATH}.utils.get_s3_objects_list")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_csv")
     def test_main_runs_when_source_is_directory(
         self,
         read_csv_patch: Mock,
