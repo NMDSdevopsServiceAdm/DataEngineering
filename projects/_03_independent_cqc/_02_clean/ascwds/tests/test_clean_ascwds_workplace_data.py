@@ -2,10 +2,14 @@ import unittest
 from unittest.mock import patch, Mock
 from pyspark.sql import DataFrame
 
-import jobs.clean_ascwds_workplace_data as job
+import projects._03_independent_cqc._02_clean.ascwds.jobs.clean_ascwds_workplace_data as job
 
-from tests.test_file_data import ASCWDSWorkplaceData as Data
-from tests.test_file_schemas import ASCWDSWorkplaceSchemas as Schemas
+from projects._03_independent_cqc._02_clean.unittest_data.data import (
+    ASCWDSWorkplaceData as Data,
+)
+from projects._03_independent_cqc._02_clean.unittest_data.schemas import (
+    ASCWDSWorkplaceSchemas as Schemas,
+)
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys,
     AscwdsWorkplaceColumns as AWP,
@@ -14,6 +18,10 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils import utils
+
+PATCH_PATH = (
+    "projects._03_independent_cqc._02_clean.ascwds.jobs.clean_ascwds_workplace_data"
+)
 
 
 class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
@@ -40,14 +48,12 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(
-        "jobs.clean_ascwds_workplace_data.select_columns_required_for_reconciliation_df"
-    )
-    @patch("utils.cleaning_utils.set_column_bounds")
-    @patch("utils.cleaning_utils.apply_categorical_labels")
-    @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
+    @patch(f"{PATCH_PATH}.utils.cleaning_utils.set_column_bounds")
+    @patch(f"{PATCH_PATH}.utils.cleaning_utils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
@@ -135,12 +141,10 @@ class CreatePurgedDfsForReconciliationAndDataTests(CleanASCWDSWorkplaceDatasetTe
     def setUp(self):
         super().setUp()
 
-    @patch("jobs.clean_ascwds_workplace_data.create_date_column_for_purging_data")
-    @patch("jobs.clean_ascwds_workplace_data.create_workplace_last_active_date_column")
-    @patch("jobs.clean_ascwds_workplace_data.create_data_last_amended_date_column")
-    @patch(
-        "jobs.clean_ascwds_workplace_data.calculate_maximum_master_update_date_for_organisation"
-    )
+    @patch(f"{PATCH_PATH}.create_date_column_for_purging_data")
+    @patch(f"{PATCH_PATH}.create_workplace_last_active_date_column")
+    @patch(f"{PATCH_PATH}.create_data_last_amended_date_column")
+    @patch(f"{PATCH_PATH}.calculate_maximum_master_update_date_for_organisation")
     def test_create_purged_dfs_for_reconciliation_and_data_runs(
         self,
         calculate_maximum_master_update_date_for_organisation_patch: Mock,
