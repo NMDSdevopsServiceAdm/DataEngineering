@@ -14,6 +14,10 @@ class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+        self.test_df = self.spark.createDataFrame(
+            Data.model_metrics_rows, Schemas.model_metrics_schema
+        )
+
         self.evaluator = RegressionEvaluator(
             predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
         )
@@ -25,11 +29,11 @@ class MainTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    # MODEL_SOURCE = "some/model/version/"
-    # METRICS_DESTINATION = "some/destination"
-    # DEPENDENT_COLUMN_NAME = IndCqc.ascwds_pir_merged
+    model_source: str = "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
+    METRICS_DESTINATION = "some/destination"
+    dependent_variable: str = IndCqc.imputed_filled_post_model
 
-    # partition_keys = [IndCqc.model_name, IndCqc.model_version]
+    partition_keys = [IndCqc.model_name, IndCqc.model_version, IndCqc.run_number]
 
     # @patch("utils.utils.write_to_parquet")
     # def test_main_runs(
@@ -59,11 +63,13 @@ class GenerateMetricTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_generic_metric_returns_float(self):
-        r2 = job.generate_metric(
-            self.evaluator, self.care_home_predictions_df, IndCqc.r2
+        generate_metric_df = self.spark.createDataFrame(
+            Data.generate_metric_rows, Schemas.generate_metric_schema
         )
-        self.assertIsInstance(r2, float)
+        self.r2 = job.generate_metric(self.evaluator, generate_metric_df, IndCqc.r2)
+
+    def test_generic_metric_returns_float(self):
+        self.assertIsInstance(self.r2, float)
 
 
 class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetricsTests):
@@ -141,11 +147,6 @@ class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):
         )
 
         self.assertAlmostEqual(returned_proportion, Data.expected_proportion, places=1)
-
-
-class StoreModelMetricsTests(SaveModelMetricsTests):
-    def setUp(self) -> None:
-        super().setUp()
 
 
 class ModelNameAndVersionFromFilepathTests(SaveModelMetricsTests):

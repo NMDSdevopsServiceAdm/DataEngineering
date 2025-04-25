@@ -43,7 +43,6 @@ def save_model_metrics(
 
     current_metrics_df, model_name = store_model_metrics(
         predictions_df,
-        dependent_variable,
         model_source,
         model_evaluator,
         is_care_home_model,
