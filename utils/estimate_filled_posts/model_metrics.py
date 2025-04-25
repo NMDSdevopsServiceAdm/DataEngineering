@@ -135,7 +135,6 @@ def generate_proportion_of_predictions_within_range(
 
 def store_model_metrics(
     predictions_df: DataFrame,
-    dependent_variable: str,
     model_source: str,
     model_evaluator: RegressionEvaluator,
     is_care_home_model: bool = False,
@@ -145,7 +144,6 @@ def store_model_metrics(
 
     Args:
         predictions_df (DataFrame): DataFrame with model predictions.
-        dependent_variable (str): Name of the target column.
         model_source (str): Path to the model.
         model_evaluator (RegressionEvaluator): Evaluator used for calculating metrics.
         is_care_home_model (bool): Whether predictions should be scaled by number of beds.
