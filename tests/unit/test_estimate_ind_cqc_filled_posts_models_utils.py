@@ -3,7 +3,7 @@ import warnings
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 from datetime import date
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import functions as F
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegressionModel
 
@@ -22,6 +22,9 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.model_source: str = "s3://pipeline-resources/models/prediction/1.0.0/"
+        self.branch_name = "test_branch"
+        self.model_name = "test_model"
+        self.model_version = "1.0.0"
 
 
 class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
@@ -460,3 +463,44 @@ class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
             returned_train_row_count + returned_test_row_count,
             self.test_df.count(),
         )
+
+
+class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_features_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_features_s3_path(
+            self.branch_name, self.model_name
+        )
+        expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name=test_model/"
+
+        self.assertEqual(returned_path, expected_path)
+
+
+class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_s3_path(
+            self.branch_name, self.model_name, self.model_version
+        )
+        expected_path = (
+            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
+        )
+
+        self.assertEqual(returned_path, expected_path)
+
+
+class GenerateModelPredictionsS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_predictions_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_predictions_s3_path(
+            self.branch_name, self.model_name
+        )
+        expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name=test_model/"
+
+        self.assertEqual(returned_path, expected_path)
