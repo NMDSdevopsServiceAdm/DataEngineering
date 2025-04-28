@@ -2,7 +2,7 @@ import sys
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts.models import utils as mUtils
-from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
+from utils.estimate_filled_posts.model_metrics import save_model_metrics
 from utils import utils
 
 
@@ -40,10 +40,12 @@ def main(
     saved_model_path = mUtils.save_model_to_s3(trained_lr_model, model_source)
 
     save_model_metrics(
+        trained_lr_model,
         test_df,
         dependent_variable,
         saved_model_path,
         metrics_destination,
+        is_care_home_model,
     )
 
 
