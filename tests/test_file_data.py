@@ -11480,6 +11480,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0),
+    ]
+
+    expected_recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:
