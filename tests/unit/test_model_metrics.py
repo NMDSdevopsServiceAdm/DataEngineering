@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, Mock, ANY
+from unittest.mock import patch, MagicMock, Mock, ANY
 import warnings
 from pyspark.ml.evaluation import RegressionEvaluator
 
@@ -9,18 +9,12 @@ import utils.estimate_filled_posts.model_metrics as job
 from tests.test_file_data import ModelMetrics as Data
 from tests.test_file_schemas import ModelMetrics as Schemas
 
+PATCH_PATH: str = "utils.estimate_filled_posts.model_metrics"
+
 
 class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-
-        self.test_df = self.spark.createDataFrame(
-            Data.model_metrics_rows, Schemas.model_metrics_schema
-        )
-
-        self.evaluator = RegressionEvaluator(
-            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
-        )
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
@@ -29,44 +23,68 @@ class MainTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    model_source: str = "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
-    METRICS_DESTINATION = "some/destination"
-    dependent_variable: str = IndCqc.imputed_filled_post_model
+        self.mock_model = MagicMock()
+        self.test_df = self.spark.createDataFrame(
+            Data.model_metrics_rows, Schemas.model_metrics_schema
+        )
+        self.metrics_df = self.spark.createDataFrame(
+            Data.expected_combined_metrics_rows,
+            Schemas.expected_combined_metrics_schema,
+        )
+        self.dependent_variable: str = IndCqc.imputed_filled_post_model
+        self.model_source: str = (
+            "s3://pipeline-resources/models/model_prediction/1.0.0/run=5/"
+        )
+        self.metrics_destination = "some/destination"
+        self.partition_keys = [
+            IndCqc.model_name,
+            IndCqc.model_version,
+            IndCqc.run_number,
+        ]
 
-    partition_keys = [IndCqc.model_name, IndCqc.model_version, IndCqc.run_number]
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.combine_current_and_previous_metrics")
+    @patch(f"{PATCH_PATH}.store_model_metrics")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    def test_main_runs(
+        self,
+        read_from_parquet_mock: Mock,
+        store_model_metrics_mock: Mock,
+        combine_current_and_previous_metrics_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        store_model_metrics_mock.return_value = (self.metrics_df, "model_name")
 
-    # @patch("utils.utils.write_to_parquet")
-    # def test_main_runs(
-    #     self,
-    #     write_to_parquet_patch: Mock,
-    # ):
-    #     df_with_predictions = self.spark.createDataFrame(
-    #         Data.ind_cqc_with_predictions_rows, Schemas.ind_cqc_with_predictions_schema
-    #     )
+        job.save_model_metrics(
+            self.mock_model,
+            self.test_df,
+            self.dependent_variable,
+            self.model_source,
+            self.metrics_destination,
+        )
 
-    #     job.save_model_metrics(
-    #         df_with_predictions,
-    #         self.DEPENDENT_COLUMN_NAME,
-    #         self.MODEL_SOURCE,
-    #         self.METRICS_DESTINATION,
-    #     )
-
-    #     write_to_parquet_patch.assert_called_once_with(
-    #         ANY,
-    #         self.METRICS_DESTINATION,
-    #         mode="append",
-    #         partitionKeys=self.partition_keys,
-    #     )
+        read_from_parquet_mock.assert_called_once_with(self.metrics_destination),
+        store_model_metrics_mock.assert_called_once()
+        combine_current_and_previous_metrics_mock.assert_called_once()
+        write_to_parquet_mock.assert_called_once_with(
+            ANY,
+            self.metrics_destination,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
+        )
 
 
 class GenerateMetricTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
+        evaluator = RegressionEvaluator(
+            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
+        )
         generate_metric_df = self.spark.createDataFrame(
             Data.generate_metric_rows, Schemas.generate_metric_schema
         )
-        self.r2 = job.generate_metric(self.evaluator, generate_metric_df, IndCqc.r2)
+        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
 
     def test_generic_metric_returns_float(self):
         self.assertIsInstance(self.r2, float)
@@ -164,3 +182,33 @@ class ModelNameAndVersionFromFilepathTests(SaveModelMetricsTests):
         self.assertEqual(model_name, "model_prediction")
         self.assertEqual(model_version, "1.0.0")
         self.assertEqual(run_number, "run=5")
+
+
+class CombineCurrentAndPreviousMetricsTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        current_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_current_rows, Schemas.combine_metrics_current_schema
+        )
+        previous_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_previous_rows, Schemas.combine_metrics_previous_schema
+        )
+
+        self.returned_df = job.combine_current_and_previous_metrics(
+            current_metrics_df, previous_metrics_df
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combined_metrics_rows,
+            Schemas.expected_combined_metrics_schema,
+        )
+
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_current_and_previous_metrics_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_current_and_previous_metrics_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)

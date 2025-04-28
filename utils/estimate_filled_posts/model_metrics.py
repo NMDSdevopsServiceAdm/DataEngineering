@@ -48,7 +48,9 @@ def save_model_metrics(
         is_care_home_model,
     )
 
-    all_metrics_df = current_metrics_df.unionByName(previous_metrics_df)
+    all_metrics_df = combine_current_and_previous_metrics(
+        current_metrics_df, previous_metrics_df
+    )
 
     print(f"Writing metrics for {model_name} as parquet to {metrics_destination}")
 
@@ -214,3 +216,22 @@ def get_model_name_and_version_from_s3_filepath(
     split_filepath = model_source.strip("/").split("/")
 
     return split_filepath[-3], split_filepath[-2], split_filepath[-1]
+
+
+def combine_current_and_previous_metrics(
+    current_metrics_df: DataFrame, previous_metrics_df: DataFrame
+) -> DataFrame:
+    """
+    Combines the current metrics DataFrame with the previous metrics DataFrame.
+
+    Union by name is used in case we add new metrics in the future.
+    This will ensure that the previous metrics are kept even if the schema changes.
+
+    Args:
+        current_metrics_df (DataFrame): DataFrame containing the current model metrics.
+        previous_metrics_df (DataFrame): DataFrame containing the previous model metrics.
+
+    Returns:
+        DataFrame: A DataFrame containing the combined metrics.
+    """
+    return current_metrics_df.unionByName(previous_metrics_df, allowMissingColumns=True)
