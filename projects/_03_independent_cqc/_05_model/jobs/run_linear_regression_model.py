@@ -37,8 +37,6 @@ def main(
 
     features_df = utils.read_from_parquet(features_source)
 
-    predictions_df = trained_model.transform(features_df)
-
 
 if __name__ == "__main__":
     (
