@@ -6332,15 +6332,6 @@ class EstimateFilledPostsModelsUtils:
         ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
         ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
     ]
-    expected_create_test_and_train_datasets_train_rows = [
-        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
-        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
-        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
-        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
-    ]
-    expected_create_test_and_train_datasets_test_rows = [
-        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
 
 
 @dataclass

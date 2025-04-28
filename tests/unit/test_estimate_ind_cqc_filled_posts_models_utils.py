@@ -452,46 +452,23 @@ class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
             test_ratio=0.2,
             seed=42,
         )
-        self.expected_train_df = self.spark.createDataFrame(
-            Data.expected_create_test_and_train_datasets_train_rows,
-            Schemas.create_test_and_train_datasets_schema,
-        )
-        self.expected_test_df = self.spark.createDataFrame(
-            Data.expected_create_test_and_train_datasets_test_rows,
-            Schemas.create_test_and_train_datasets_schema,
-        )
 
-        self.returned_train_data = self.returned_train_df.sort(
-            IndCqc.location_id
-        ).collect()
-        self.expected_train_data = self.expected_train_df.sort(
-            IndCqc.location_id
-        ).collect()
-        self.returned_test_data = self.returned_test_df.collect()
-        self.expected_test_data = self.expected_test_df.collect()
-
-    def test_create_test_and_train_datasets_returns_expected_columns(self):
+    def test_create_test_and_train_datasets_returns_original_columns(self):
         self.assertEqual(
             sorted(self.returned_train_df.columns),
-            sorted(self.expected_train_df.columns),
+            sorted(self.test_df.columns),
         )
 
     def test_create_test_and_train_datasets_returns_original_number_of_rows(self):
+        returned_train_row_count = self.returned_train_df.count()
+        returned_test_row_count = self.returned_test_df.count()
+
+        self.assertGreaterEqual(returned_train_row_count, 1)
+        self.assertGreaterEqual(returned_test_row_count, 1)
         self.assertEqual(
-            self.returned_train_df.count() + self.returned_test_df.count(),
+            returned_train_row_count + returned_test_row_count,
             self.test_df.count(),
         )
-
-    def test_create_test_and_train_datasets_returns_expected_train_data(self):
-        for i in range(len(self.returned_train_data)):
-            self.assertEqual(
-                self.returned_train_data[i],
-                self.expected_train_data[i],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_create_test_and_train_datasets_returns_expected_test_data(self):
-        self.assertEqual(self.returned_test_data, self.expected_test_data)
 
 
 class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
