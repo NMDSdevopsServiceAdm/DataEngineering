@@ -4,7 +4,7 @@ from utils.estimate_filled_posts.model_metrics import save_model_metrics
 from utils import utils
 
 
-def main(
+def train_linear_regression_model(
     branch_name: str,
     model_name: str,
     model_version: str,

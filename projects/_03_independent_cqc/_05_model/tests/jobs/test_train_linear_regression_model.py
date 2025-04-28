@@ -53,7 +53,7 @@ class Main(unittest.TestCase):
         create_test_and_train_datasets_mock.return_value = (self.test_df, self.test_df)
         save_model_to_s3_mock.return_value = self.model_run_number
 
-        job.main(
+        job.train_linear_regression_model(
             self.branch_name,
             self.care_home_model_name,
             self.model_version,
@@ -98,7 +98,7 @@ class Main(unittest.TestCase):
         create_test_and_train_datasets_mock.return_value = (self.test_df, self.test_df)
         save_model_to_s3_mock.return_value = self.model_run_number
 
-        job.main(
+        job.train_linear_regression_model(
             self.branch_name,
             self.non_res_model_name,
             self.model_version,
