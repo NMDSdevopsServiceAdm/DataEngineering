@@ -284,7 +284,7 @@ module "bulk_cqc_locations_download_job" {
 
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
   script_name     = "ingest_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -299,7 +299,7 @@ module "ingest_dpr_external_data_job" {
 
 module "ingest_dpr_survey_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/direct_payment_recipients/jobs"
   script_name     = "ingest_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -314,7 +314,7 @@ module "ingest_dpr_survey_data_job" {
 
 module "prepare_dpr_external_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_04_direct_payment_recipients/jobs"
   script_name     = "prepare_dpr_external_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -328,7 +328,7 @@ module "prepare_dpr_external_data_job" {
 
 module "prepare_dpr_survey_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_04_direct_payment_recipients/jobs"
   script_name     = "prepare_dpr_survey_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -342,7 +342,7 @@ module "prepare_dpr_survey_data_job" {
 
 module "merge_dpr_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_04_direct_payment_recipients/jobs"
   script_name     = "merge_dpr_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -357,7 +357,7 @@ module "merge_dpr_data_job" {
 
 module "estimate_direct_payments_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_04_direct_payment_recipients/jobs"
   script_name     = "estimate_direct_payments.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -372,7 +372,7 @@ module "estimate_direct_payments_job" {
 
 module "split_pa_filled_posts_into_icb_areas_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_04_direct_payment_recipients/jobs"
   script_name     = "split_pa_filled_posts_into_icb_areas.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
