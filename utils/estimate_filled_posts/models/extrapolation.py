@@ -224,3 +224,39 @@ def combine_extrapolation(df: DataFrame) -> DataFrame:
         ),
     )
     return df
+
+
+def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
+    """
+    Extrapolate job role ratios by copying the first and last known values for each location.
+
+    Logic:
+    - For each location_id:
+      - Copy the first known job role ratios backward to all earlier dates.
+      - Copy the last known job role ratios forward to all later dates.
+    - Assumes interpolation (filling between known points) has already been performed.
+
+    Input:
+        - ascwds_job_role_ratios_filtered (MapType): Map of job role ratios per location and time. May contain nulls.
+
+    Output:
+        - ascwds_job_role_ratios_extrapolated (MapType): Fully populated by extrapolating known values forward and backward.
+    """
+    input_col = IndCqc.ascwds_job_role_ratios_filtered
+    output_col = IndCqc.ascwds_job_role_ratios_extrapolated
+    group_col = IndCqc.location_id
+    time_col = IndCqc.unix_time
+
+    full_window = (
+        Window.partitionBy(group_col)
+        .orderBy(time_col)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+
+    first_val = F.first(input_col, ignorenulls=True).over(full_window)
+
+    extrapolated = F.when(F.col(input_col).isNotNull(), F.col(input_col)).otherwise(
+        first_val
+    )
+
+    return df.withColumn(output_col, extrapolated)
