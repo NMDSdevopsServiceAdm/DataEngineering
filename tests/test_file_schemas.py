@@ -2921,6 +2921,29 @@ class ModelExtrapolation:
         ]
     )
 
+    extrapolate_job_role_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    expected_extrapolate_job_role_ratios_schema = StructType(
+        [
+            *extrapolate_job_role_ratios_schema.fields,
+            StructField(
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
 
 @dataclass
 class ModelInterpolation:

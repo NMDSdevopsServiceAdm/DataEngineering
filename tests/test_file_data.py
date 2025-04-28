@@ -5558,6 +5558,150 @@ class ModelExtrapolation:
         ("1-003", 1677628800, None, None, None, None, None, None),
     ]
 
+    job_role_ratios_extrapolation_rows = [
+        ("1-001", 1000000200, None),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        ("1-001", 1000000400, None),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 3.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 3.0,
+            },
+        ),
+        ("1-002", 1000000200, None),
+        ("1-002", 1000000300, None),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        ("1-002", 1000000500, None),
+    ]
+
+    expected_job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 1.0,
+                MainJobRoleLabels.registered_nurse: 1.0,
+                MainJobRoleLabels.senior_care_worker: 1.0,
+                MainJobRoleLabels.senior_management: 1.0,
+            },
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 3.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 3.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 3.0,
+                MainJobRoleLabels.registered_nurse: 3.0,
+                MainJobRoleLabels.senior_care_worker: 3.0,
+                MainJobRoleLabels.senior_management: 3.0,
+            },
+        ),
+        (
+            "1-002",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1-002",
+            1000000300,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+        (
+            "1-002",
+            1000000500,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 2.0,
+                MainJobRoleLabels.registered_nurse: 2.0,
+                MainJobRoleLabels.senior_care_worker: 2.0,
+                MainJobRoleLabels.senior_management: 2.0,
+            },
+        ),
+    ]
+
 
 @dataclass
 class ModelInterpolation:
