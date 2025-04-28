@@ -3,10 +3,12 @@ def generate_model_metrics_s3_path(
 ) -> str:
     """
     Generate the S3 path for the features dataset.
+
     Args:
         branch_name (str): The name of the branch currently being used.
         model_name (str): The name of the model.
         model_version (str): The version of the model to use (e.g. '1.0.0').
+
     Returns:
         str: The S3 path for the features dataset.
     """
