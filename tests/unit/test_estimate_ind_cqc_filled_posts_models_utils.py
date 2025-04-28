@@ -22,6 +22,9 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.model_source: str = "s3://pipeline-resources/models/model_name/1.0.0/"
+        self.branch_name = "test_branch"
+        self.model_name = "test_model"
+        self.model_version = "1.0.0"
 
 
 class InsertPredictionsIntoPipelineTest(EstimateFilledPostsModelsUtilsTests):
@@ -496,10 +499,7 @@ class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
         super().setUp()
 
     def test_generate_features_s3_path_returns_expected_path(self):
-        branch_name = "test_branch"
-        model_name = "test_model"
-
-        returned_path = job.generate_features_s3_path(branch_name, model_name)
+        returned_path = job.generate_features_s3_path(self.branch_name, self.model_name)
         expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name=test_model/"
 
         self.assertEqual(returned_path, expected_path)
@@ -510,15 +510,24 @@ class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
         super().setUp()
 
     def test_generate_model_s3_path_returns_expected_path(self):
-        branch_name = "test_branch"
-        model_name = "test_model"
-        model_version = "1.0.0"
-
         returned_path = job.generate_model_s3_path(
-            branch_name, model_name, model_version
+            self.branch_name, self.model_name, self.model_version
         )
         expected_path = (
             "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
         )
+
+        self.assertEqual(returned_path, expected_path)
+
+
+class GenerateModelPredictionsS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_predictions_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_predictions_s3_path(
+            self.branch_name, self.model_name
+        )
+        expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name=test_model/"
 
         self.assertEqual(returned_path, expected_path)
