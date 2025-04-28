@@ -3312,6 +3312,13 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    train_lasso_regression_model_schema = StructType(
+        [
+            StructField(IndCQC.features, VectorUDT(), True),
+            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
+        ]
+    )
+
     create_test_and_train_datasets_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

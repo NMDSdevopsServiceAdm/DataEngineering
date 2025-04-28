@@ -274,18 +274,15 @@ class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
         super().setUp()
 
         self.features_df = self.spark.createDataFrame(
-            [
-                (Vectors.dense([1.0, 2.0]), 5.0),
-                (Vectors.dense([2.0, 1.0]), 4.0),
-            ],
-            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
+            Data.train_lasso_regression_model_rows,
+            Schemas.train_lasso_regression_model_schema,
         )
 
     def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
         self,
     ):
         trained_model = job.train_lasso_regression_model(
-            self.features_df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
+            self.features_df, IndCqc.imputed_filled_post_model, self.model_name
         )
 
         self.assertIsInstance(trained_model, LinearRegressionModel)
@@ -300,12 +297,14 @@ class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
         mock_lr_instance.fit.return_value = mock_model
         LinearRegressionModel_mock.return_value = mock_lr_instance
 
-        job.train_lasso_regression_model(self.features_df, label_col=ANY)
+        job.train_lasso_regression_model(
+            self.features_df, IndCqc.imputed_filled_post_model, self.model_name
+        )
 
         LinearRegressionModel_mock.assert_called_once_with(
             featuresCol=IndCqc.features,
-            labelCol=ANY,
-            predictionCol=IndCqc.prediction,
+            labelCol=IndCqc.imputed_filled_post_model,
+            predictionCol=self.model_name,
             elasticNetParam=1,
             regParam=0.001,
         )
