@@ -11,7 +11,7 @@ from pyspark.sql.types import (
 
 from utils import utils
 import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_utils.estimate_service_users_employing_staff as job
-from projects._04_direct_payment_recipients.tests.utils.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 

@@ -13,7 +13,7 @@ from pyspark.sql.types import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from projects._04_direct_payment_recipients.tests.utils.direct_payments_column_names import (
+from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
 
