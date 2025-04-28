@@ -16,7 +16,6 @@ class TestModelNonResWithDormancy(unittest.TestCase):
     NON_RES_WITH_DORMANCY_MODEL = (
         "tests/test_models/non_residential_with_dormancy_prediction/1.0.0/"
     )
-    METRICS_DESTINATION = "metrics_destination"
 
     def setUp(self):
         self.spark = utils.get_spark()
@@ -32,35 +31,28 @@ class TestModelNonResWithDormancy(unittest.TestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
-    @patch(f"{PATCH_PATH}.save_model_metrics")
     @patch(f"{PATCH_PATH}.set_min_value")
     def test_model_non_res_with_dormancy_runs(
         self,
         set_min_value_mock: Mock,
-        save_model_metrics_mock: Mock,
         insert_predictions_into_pipeline_mock: Mock,
     ):
         job.model_non_res_with_dormancy(
             self.non_res_with_dormancy_cleaned_ind_cqc_df,
             self.non_res_with_dormancy_features_df,
             self.NON_RES_WITH_DORMANCY_MODEL,
-            self.METRICS_DESTINATION,
         )
 
         set_min_value_mock.assert_called_once()
-        save_model_metrics_mock.assert_called_once()
         insert_predictions_into_pipeline_mock.assert_called_once()
 
-    @patch(f"{PATCH_PATH}.save_model_metrics")
     def test_model_non_res_with_dormancy_returns_expected_data(
         self,
-        save_model_metrics: Mock,
     ):
         df = job.model_non_res_with_dormancy(
             self.non_res_with_dormancy_cleaned_ind_cqc_df,
             self.non_res_with_dormancy_features_df,
             self.NON_RES_WITH_DORMANCY_MODEL,
-            self.METRICS_DESTINATION,
         )
 
         self.assertEqual(df.count(), 3)
