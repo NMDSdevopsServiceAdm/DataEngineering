@@ -6313,6 +6313,11 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
+    train_lasso_regression_model_rows = [
+        (Vectors.dense([1.0, 2.0]), 5.0),
+        (Vectors.dense([2.0, 1.0]), 4.0),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
