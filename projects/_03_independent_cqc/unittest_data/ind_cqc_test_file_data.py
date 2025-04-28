@@ -6,8 +6,8 @@ from pyspark.ml.linalg import Vectors
 @dataclass
 class TrainLinearRegressionModelData:
     feature_rows = [
-        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
+        ("1-001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-002", Vectors.dense([50.0, 1.0, 1.0])),
     ]
 
 
@@ -60,4 +60,12 @@ class ModelMetrics:
     expected_combined_metrics_rows = [
         ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
         ("model_name", "1.0.0", None, 0.1, None, None, None),
+    ]
+
+
+@dataclass
+class RunLinearRegressionModelData:
+    feature_rows = [
+        ("1-001", 10, Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
     ]

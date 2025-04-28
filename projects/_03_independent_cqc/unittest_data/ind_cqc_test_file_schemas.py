@@ -96,3 +96,14 @@ class ModelMetrics:
         ]
     )
     expected_combined_metrics_schema = combine_metrics_current_schema
+
+
+@dataclass
+class RunLinearRegressionModelSchema:
+    feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
