@@ -238,7 +238,7 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
-    prediction: str = "prediction"
+    prediction: str = "prediction"  # TODO - remove?
     prediction_posts: str = "prediction_posts"
     prediction_within_10_posts: str = "prediction_within_10_posts"
     prediction_within_25_posts: str = "prediction_within_25_posts"
