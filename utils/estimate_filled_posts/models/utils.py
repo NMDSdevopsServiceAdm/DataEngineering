@@ -291,7 +291,7 @@ def create_test_and_train_datasets(
     return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)
 
 
-def generate_features_s3_path(branch_name: str, model_name: str) -> str:
+def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
     """
     Generate the S3 path for the features dataset.
 

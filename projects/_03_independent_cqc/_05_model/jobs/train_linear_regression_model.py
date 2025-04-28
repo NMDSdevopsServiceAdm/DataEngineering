@@ -30,7 +30,7 @@ def main(
     else:
         dependent_variable = IndCQC.imputed_filled_post_model
 
-    features_source = mUtils.generate_features_s3_path(branch_name, model_name)
+    features_source = mUtils.generate_model_features_s3_path(branch_name, model_name)
     model_s3_location = mUtils.generate_model_s3_path(
         branch_name, model_name, model_version
     )

@@ -498,8 +498,10 @@ class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_generate_features_s3_path_returns_expected_path(self):
-        returned_path = job.generate_features_s3_path(self.branch_name, self.model_name)
+    def test_generate_model_features_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_features_s3_path(
+            self.branch_name, self.model_name
+        )
         expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name=test_model/"
 
         self.assertEqual(returned_path, expected_path)

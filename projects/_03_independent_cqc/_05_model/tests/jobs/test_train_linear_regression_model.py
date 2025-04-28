@@ -41,10 +41,10 @@ class Main(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
-    @patch(f"{PATCH_PATH}.mUtils.generate_features_s3_path")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_features_s3_path")
     def test_main_when_care_home(
         self,
-        generate_features_s3_path_mock: Mock,
+        generate_model_features_s3_path_mock: Mock,
         generate_model_s3_path_mock: Mock,
         read_from_parquet_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
@@ -63,7 +63,7 @@ class Main(unittest.TestCase):
             self.model_version,
         )
 
-        generate_features_s3_path_mock.assert_called_once()
+        generate_model_features_s3_path_mock.assert_called_once()
         generate_model_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
@@ -86,10 +86,10 @@ class Main(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
-    @patch(f"{PATCH_PATH}.mUtils.generate_features_s3_path")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_features_s3_path")
     def test_main_when_not_care_home(
         self,
-        generate_features_s3_path_mock: Mock,
+        generate_model_features_s3_path_mock: Mock,
         generate_model_s3_path_mock: Mock,
         read_from_parquet_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
@@ -108,7 +108,7 @@ class Main(unittest.TestCase):
             self.model_version,
         )
 
-        generate_features_s3_path_mock.assert_called_once()
+        generate_model_features_s3_path_mock.assert_called_once()
         generate_model_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
