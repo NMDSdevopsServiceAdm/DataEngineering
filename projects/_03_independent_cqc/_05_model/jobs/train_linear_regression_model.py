@@ -40,6 +40,12 @@ def main(
         features_df, test_ratio=0.2, seed=42
     )
 
+    trained_lr_model = mUtils.train_lasso_regression_model(
+        train_df, dependent_variable, model_name
+    )
+
+    model_run_number = mUtils.save_model_to_s3(trained_lr_model, model_s3_location)
+
 
 if __name__ == "__main__":
     (
