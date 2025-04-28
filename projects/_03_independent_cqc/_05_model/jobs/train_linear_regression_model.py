@@ -1,10 +1,12 @@
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts.models import utils as mUtils
-from utils.estimate_filled_posts.model_metrics import save_model_metrics
+from projects._03_independent_cqc._05_model.utils.model_metrics import (
+    save_model_metrics,
+)
 from utils import utils
 
 
-def train_linear_regression_model(
+def main(
     branch_name: str,
     model_name: str,
     model_version: str,
