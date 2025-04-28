@@ -37,10 +37,6 @@ def save_model_metrics(
 
     predictions_df = trained_model.transform(test_df)
 
-    model_evaluator = RegressionEvaluator(
-        predictionCol=model_name, labelCol=dependent_variable
-    )
-
     predictions_df = calculate_residual_between_predicted_and_known_filled_posts(
         predictions_df, model_name
     )
