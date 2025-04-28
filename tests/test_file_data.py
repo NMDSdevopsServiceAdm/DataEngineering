@@ -6313,6 +6313,14 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
+    create_test_and_train_datasets_rows = [
+        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
+        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
+        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
+        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
+        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+
 
 @dataclass
 class MLModelMetrics:

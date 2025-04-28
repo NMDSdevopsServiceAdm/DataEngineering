@@ -425,3 +425,38 @@ class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
 
         mock_model_load.assert_called_once_with(f"{self.model_source}run=4/")
         self.assertEqual(result, mock_model)
+
+
+class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.create_test_and_train_datasets_rows,
+            Schemas.create_test_and_train_datasets_schema,
+        )
+        (
+            self.returned_train_df,
+            self.returned_test_df,
+        ) = job.create_test_and_train_datasets(
+            self.test_df,
+            test_ratio=0.2,
+            seed=42,
+        )
+
+    def test_create_test_and_train_datasets_returns_original_columns(self):
+        self.assertEqual(
+            sorted(self.returned_train_df.columns),
+            sorted(self.test_df.columns),
+        )
+
+    def test_create_test_and_train_datasets_returns_original_number_of_rows(self):
+        returned_train_row_count = self.returned_train_df.count()
+        returned_test_row_count = self.returned_test_df.count()
+
+        self.assertGreaterEqual(returned_train_row_count, 1)
+        self.assertGreaterEqual(returned_test_row_count, 1)
+        self.assertEqual(
+            returned_train_row_count + returned_test_row_count,
+            self.test_df.count(),
+        )

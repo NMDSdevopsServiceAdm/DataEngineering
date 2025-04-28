@@ -1,7 +1,7 @@
 import boto3
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
@@ -263,3 +263,18 @@ def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
     """
     s3_path = get_model_s3_path(model_source, mode="load")
     return LinearRegressionModel.load(s3_path)
+
+
+def create_test_and_train_datasets(
+    df: DataFrame, test_ratio: float = 0.2, seed: Optional[int] = None
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Split the DataFrame into training and testing datasets.
+    Args:
+        df (DataFrame): The input DataFrame to be split.
+        test_ratio (float): The proportion of the data to include in the test split.
+        seed (Optional[int]): Random seed for reproducibility.
+    Returns:
+        Tuple[DataFrame, DataFrame]: A tuple containing the training and testing DataFrames.
+    """
+    return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)

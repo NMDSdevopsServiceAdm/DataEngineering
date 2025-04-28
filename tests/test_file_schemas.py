@@ -3483,6 +3483,13 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    create_test_and_train_datasets_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
 
 @dataclass
 class MLModelMetrics:
