@@ -5,11 +5,15 @@ from pyspark.ml.evaluation import RegressionEvaluator
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.model_metrics as job
-from tests.test_file_data import ModelMetrics as Data
-from tests.test_file_schemas import ModelMetrics as Schemas
+import projects._03_independent_cqc._05_model.utils.model_metrics as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelMetrics as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ModelMetrics as Schemas,
+)
 
-PATCH_PATH: str = "utils.estimate_filled_posts.model_metrics"
+PATCH_PATH: str = "projects._03_independent_cqc._05_model.utils.model_metrics"
 
 
 class SaveModelMetricsTests(unittest.TestCase):
