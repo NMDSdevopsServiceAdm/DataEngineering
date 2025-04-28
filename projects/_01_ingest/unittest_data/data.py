@@ -245,3 +245,18 @@ class CapacityTrackerNonResData:
         "column_with_brackets",
         "column_with_brackets_and_spaces",
     ]
+
+
+@dataclass
+class ONSData:
+    sample_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+    expected_rows = [
+        ("Yorkshire & Humber", "Leeds", "50.10101"),
+        ("Yorkshire & Humber", "York", "52.10101"),
+        ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]

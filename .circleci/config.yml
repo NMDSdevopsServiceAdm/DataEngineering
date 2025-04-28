@@ -158,9 +158,9 @@ jobs:
           at: .
 
       - run:
-          name: package utils, schemas and environment
+          name: package utils, schemas, projects and environment
           command: |
-            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas environment
+            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment
 
       - run:
           name: Download Deequ jar
