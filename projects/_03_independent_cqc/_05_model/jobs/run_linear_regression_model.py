@@ -1,5 +1,12 @@
+from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+    PartitionKeys as Keys,
+)
 from utils.estimate_filled_posts.models import utils as mUtils
 from utils import utils
+
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
@@ -36,6 +43,26 @@ def main(
     trained_model = mUtils.load_latest_model_from_s3(model_s3_location)
 
     features_df = utils.read_from_parquet(features_source)
+
+    predictions_df = trained_model.transform(features_df)
+
+    if care_home_identifier in model_name:
+        predictions_df = calculate_filled_posts_from_beds_and_ratio(
+            predictions_df, model_name, model_name
+        )
+
+    predictions_df = mUtils.set_min_value(predictions_df, model_name, 1.0)
+
+    predictions_df = predictions_df.select(
+        IndCqc.location_id, IndCqc.cqc_location_import_date, model_name
+    )
+
+    utils.write_to_parquet(
+        predictions_df,
+        predictions_destination,
+        "overwrite",
+        PartitionKeys,
+    )
 
 
 if __name__ == "__main__":
