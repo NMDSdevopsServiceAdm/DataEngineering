@@ -17,5 +17,5 @@ class RunLinearRegressionModelData:
     feature_rows = [
         ("1-001", 10, Vectors.dense([12.0, 0.0, 1.0])),
         ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
-        ("1-003", None),
+        ("1-003", None, None),
     ]

@@ -1,3 +1,4 @@
+from utils.estimate_filled_posts.models import utils as mUtils
 from utils import utils
 
 
@@ -21,6 +22,22 @@ def main(
         model_version (str): The version of the model to load (e.g. '1.0.0').
     """
     print(f"Running model: {model_name} version: {model_version}")
+
+    care_home_identifier: str = "care_home"
+
+    features_source = mUtils.generate_model_features_s3_path(branch_name, model_name)
+    predictions_destination = mUtils.generate_model_predictions_s3_path(
+        branch_name, model_name
+    )
+    model_s3_location = mUtils.generate_model_s3_path(
+        branch_name, model_name, model_version
+    )
+
+    trained_model = mUtils.load_latest_model_from_s3(model_s3_location)
+
+    features_df = utils.read_from_parquet(features_source)
+
+    predictions_df = trained_model.transform(features_df)
 
 
 if __name__ == "__main__":
