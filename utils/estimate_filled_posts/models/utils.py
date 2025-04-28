@@ -270,10 +270,12 @@ def create_test_and_train_datasets(
 ) -> Tuple[DataFrame, DataFrame]:
     """
     Split the DataFrame into training and testing datasets.
+
     Args:
         df (DataFrame): The input DataFrame to be split.
         test_ratio (float): The proportion of the data to include in the test split.
         seed (Optional[int]): Random seed for reproducibility.
+
     Returns:
         Tuple[DataFrame, DataFrame]: A tuple containing the training and testing DataFrames.
     """
