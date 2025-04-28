@@ -263,3 +263,48 @@ def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
     """
     s3_path = get_model_s3_path(model_source, mode="load")
     return LinearRegressionModel.load(s3_path)
+
+
+def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the features dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
+
+
+def generate_model_s3_path(
+    branch_name: str, model_name: str, model_version: str
+) -> str:
+    """
+    Generate the S3 path for the model dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+        model_version (str): The version of the model.
+
+    Returns:
+        str: The S3 path for the model dataset.
+    """
+    return f"s3://sfc-{branch_name}-pipeline-resources/models/{model_name}/{model_version}/"
+
+
+def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the predictions dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"
