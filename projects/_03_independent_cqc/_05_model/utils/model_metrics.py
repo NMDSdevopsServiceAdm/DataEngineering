@@ -3,10 +3,26 @@ from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.types import (
     IntegerType,
+    FloatType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+
+metrics_schema = StructType(
+    [
+        StructField(IndCqc.model_name, StringType(), True),
+        StructField(IndCqc.model_version, StringType(), True),
+        StructField(IndCqc.run_number, StringType(), True),
+        StructField(IndCqc.r2, FloatType(), True),
+        StructField(IndCqc.rmse, FloatType(), True),
+        StructField(IndCqc.prediction_within_10_posts, FloatType(), True),
+        StructField(IndCqc.prediction_within_25_posts, FloatType(), True),
+    ]
+)
 
 
 def save_model_metrics(
@@ -54,6 +70,36 @@ def save_model_metrics(
     )
     prediction_within_25_posts = generate_proportion_of_predictions_within_range(
         predictions_df, range_cutoff=25
+    )
+
+    current_metrics_row = [
+        (
+            model_name,
+            model_version,
+            model_run_number,
+            r2_value,
+            rmse_value,
+            prediction_within_10_posts,
+            prediction_within_25_posts,
+        )
+    ]
+    current_metrics_df = spark.createDataFrame(current_metrics_row, metrics_schema)
+
+    current_metrics_df = current_metrics_df.withColumn(
+        IndCqc.model_run_timestamp, F.current_timestamp()
+    )
+
+    all_metrics_df = combine_current_and_previous_metrics(
+        current_metrics_df, previous_metrics_df
+    )
+
+    print(f"Writing metrics for {model_name} as parquet to {metrics_s3_path}")
+
+    utils.write_to_parquet(
+        all_metrics_df,
+        metrics_s3_path,
+        mode="overwrite",
+        partitionKeys=[IndCqc.model_name, IndCqc.model_version, IndCqc.run_number],
     )
 
 
@@ -146,3 +192,22 @@ def generate_proportion_of_predictions_within_range(
     total_count = predictions_df.agg(F.count(within_range)).first()[0]
 
     return round(in_range_count / total_count, 4)
+
+
+def combine_current_and_previous_metrics(
+    current_metrics_df: DataFrame, previous_metrics_df: DataFrame
+) -> DataFrame:
+    """
+    Combines the current metrics DataFrame with the previous metrics DataFrame.
+
+    Union by name is used in case we add new metrics in the future.
+    This will ensure that the previous metrics are kept even if the schema changes.
+
+    Args:
+        current_metrics_df (DataFrame): DataFrame containing the current model metrics.
+        previous_metrics_df (DataFrame): DataFrame containing the previous model metrics.
+
+    Returns:
+        DataFrame: A DataFrame containing the combined metrics.
+    """
+    return current_metrics_df.unionByName(previous_metrics_df, allowMissingColumns=True)
