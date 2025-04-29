@@ -40,5 +40,6 @@ class RunLinearRegressionModelSchema:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.features, VectorUDT(), True),
         ]
     )
