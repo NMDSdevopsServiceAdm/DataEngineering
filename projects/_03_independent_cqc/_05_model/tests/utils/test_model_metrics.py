@@ -24,10 +24,6 @@ class SaveModelMetricsTests(unittest.TestCase):
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
-        self.metrics_df = self.spark.createDataFrame(
-            Data.expected_combined_metrics_rows,
-            Schemas.expected_combined_metrics_schema,
-        )
         self.dependent_variable: str = IndCqc.imputed_filled_post_model
         self.branch_name: str = "test_branch"
         self.model_name: str = "test_model"
