@@ -462,8 +462,8 @@ class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
         returned_train_row_count = self.returned_train_df.count()
         returned_test_row_count = self.returned_test_df.count()
 
-        self.assertGreaterEqual(returned_train_row_count, 1)
-        self.assertGreaterEqual(returned_test_row_count, 1)
+        self.assertEqual(returned_train_row_count, 4)
+        self.assertEqual(returned_test_row_count, 1)
         self.assertEqual(
             returned_train_row_count + returned_test_row_count,
             self.test_df.count(),
