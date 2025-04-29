@@ -37,6 +37,11 @@ class ModelMetrics:
         ("1-002", 2, 5.0, 6.0, -7.0),
     ]
 
+    generate_metric_rows = [
+        ("1-001", 50.0, 46.8),
+        ("1-002", 10.0, 12.2),
+    ]
+
 
 @dataclass
 class RunLinearRegressionModelData:

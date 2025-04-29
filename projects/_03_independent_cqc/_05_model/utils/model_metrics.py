@@ -37,9 +37,15 @@ def save_model_metrics(
 
     predictions_df = trained_model.transform(test_df)
 
+    model_evaluator = RegressionEvaluator(
+        predictionCol=model_name, labelCol=dependent_variable
+    )
+
     predictions_df = calculate_residual_between_predicted_and_known_filled_posts(
         predictions_df, model_name
     )
+    r2_value = generate_metric(model_evaluator, predictions_df, IndCqc.r2)
+    rmse_value = generate_metric(model_evaluator, predictions_df, IndCqc.rmse)
 
 
 def generate_model_metrics_s3_path(
@@ -68,7 +74,7 @@ def calculate_residual_between_predicted_and_known_filled_posts(
 
     Args:
         predictions_df (DataFrame): DataFrame containing predictions.
-        model_name (str): The name of the column with model predictions
+        model_name (str): The name of the column with model predictions.
 
     Returns:
         DataFrame: A DataFrame with residual column.
@@ -85,3 +91,24 @@ def calculate_residual_between_predicted_and_known_filled_posts(
         F.col(IndCqc.imputed_filled_post_model) - prediction_col,
     )
     return predictions_df
+
+
+def generate_metric(
+    evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
+) -> float:
+    """
+    Evaluates a single metric from the model predictions.
+
+    Args:
+        evaluator (RegressionEvaluator): RegressionEvaluator object.
+        predictions_df (DataFrame): DataFrame containing predictions.
+        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
+
+    Returns:
+        float: The rounded metric value.
+    """
+    metric_value = round(
+        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
+    )
+    print(f"Calculating {metric_name} = {metric_value}")
+    return metric_value

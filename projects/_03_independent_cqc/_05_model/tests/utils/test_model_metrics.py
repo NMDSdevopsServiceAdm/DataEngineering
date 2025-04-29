@@ -19,6 +19,7 @@ PATCH_PATH: str = "projects._03_independent_cqc._05_model.utils.model_metrics"
 class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
+
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
@@ -41,6 +42,7 @@ class MainTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.generate_metric")
     @patch(f"{PATCH_PATH}.calculate_residual_between_predicted_and_known_filled_posts")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.generate_model_metrics_s3_path")
@@ -49,8 +51,10 @@ class MainTests(SaveModelMetricsTests):
         generate_model_metrics_s3_path_mock: Mock,
         read_from_parquet_mock: Mock,
         calculate_residual_between_predicted_and_known_filled_posts_mock: Mock,
+        generate_metric_mock: Mock,
     ):
         generate_model_metrics_s3_path_mock.return_value = self.metrics_path
+        generate_metric_mock.return_value = 0.5
 
         job.save_model_metrics(
             self.mock_model,
@@ -65,6 +69,7 @@ class MainTests(SaveModelMetricsTests):
         generate_model_metrics_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once_with(self.metrics_path),
         calculate_residual_between_predicted_and_known_filled_posts_mock.assert_called_once()
+        self.assertEqual(generate_metric_mock.call_count, 2)
 
 
 class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
@@ -139,3 +144,19 @@ class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetrics
                 expected_data[i][IndCqc.residual],
                 places=1,
             )
+
+
+class GenerateMetricTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        evaluator = RegressionEvaluator(
+            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
+        )
+        generate_metric_df = self.spark.createDataFrame(
+            Data.generate_metric_rows, Schemas.generate_metric_schema
+        )
+        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
+
+    def test_generate_metric_returns_float(self):
+        self.assertIsInstance(self.r2, float)
