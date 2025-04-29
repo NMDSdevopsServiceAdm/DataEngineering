@@ -21,7 +21,7 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
-        self.model_source: str = "s3://pipeline-resources/models/prediction/1.0.0/"
+        self.model_source: str = "s3://pipeline-resources/models/model_name/1.0.0/"
         self.branch_name = "test_branch"
         self.model_name = "test_model"
         self.model_version = "1.0.0"
@@ -274,18 +274,15 @@ class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
         super().setUp()
 
         self.features_df = self.spark.createDataFrame(
-            [
-                (Vectors.dense([1.0, 2.0]), 5.0),
-                (Vectors.dense([2.0, 1.0]), 4.0),
-            ],
-            [IndCqc.features, IndCqc.ascwds_filled_posts_dedup_clean],
+            Data.train_lasso_regression_model_rows,
+            Schemas.train_lasso_regression_model_schema,
         )
 
     def test_train_lasso_regression_model_returns_model_with_non_null_coefficients(
         self,
     ):
         trained_model = job.train_lasso_regression_model(
-            self.features_df, label_col=IndCqc.ascwds_filled_posts_dedup_clean
+            self.features_df, IndCqc.imputed_filled_post_model, self.model_name
         )
 
         self.assertIsInstance(trained_model, LinearRegressionModel)
@@ -300,11 +297,14 @@ class TrainLassoRegressionModelTests(EstimateFilledPostsModelsUtilsTests):
         mock_lr_instance.fit.return_value = mock_model
         LinearRegressionModel_mock.return_value = mock_lr_instance
 
-        job.train_lasso_regression_model(self.features_df, label_col=ANY)
+        job.train_lasso_regression_model(
+            self.features_df, IndCqc.imputed_filled_post_model, self.model_name
+        )
 
         LinearRegressionModel_mock.assert_called_once_with(
             featuresCol=IndCqc.features,
-            labelCol=ANY,
+            labelCol=IndCqc.imputed_filled_post_model,
+            predictionCol=self.model_name,
             elasticNetParam=1,
             regParam=0.001,
         )
@@ -337,60 +337,60 @@ class GetExistingRunNumbersTests(EstimateFilledPostsModelsUtilsTests):
         self.assertEqual(returned_list, expected_list)
 
 
-class GetModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
+class GenerateRunNumberTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
     @patch(f"{PATCH_PATH}.get_existing_run_numbers")
-    def test_get_model_s3_path_returns_path_with_max_run_number_when_mode_is_load_and_previous_runs_exist(
+    def test_generate_run_number_returns_max_run_number_when_mode_is_load_and_previous_runs_exist(
         self, get_existing_run_numbers_mock: Mock
     ):
         get_existing_run_numbers_mock.return_value = [1, 2, 3]
 
-        returned_path = job.get_model_s3_path(self.model_source, mode="load")
-        expected_path = f"{self.model_source}run=3/"
+        returned_number = job.generate_run_number(self.model_source, mode="load")
+        expected_number = 3
 
-        self.assertEqual(returned_path, expected_path)
+        self.assertEqual(returned_number, expected_number)
 
     @patch(f"{PATCH_PATH}.get_existing_run_numbers")
-    def test_get_model_s3_path_raises_error_when_mode_is_load_and_no_previous_runs_exist(
+    def test_generate_run_number_raises_error_when_mode_is_load_and_no_previous_runs_exist(
         self, get_existing_run_numbers_mock: Mock
     ):
         get_existing_run_numbers_mock.return_value = []
 
         with self.assertRaises(FileNotFoundError):
-            job.get_model_s3_path(self.model_source, mode="load")
+            job.generate_run_number(self.model_source, mode="load")
 
     @patch(f"{PATCH_PATH}.get_existing_run_numbers")
-    def test_get_model_s3_path_returns_path_with_next_run_number_when_mode_is_save_and_previous_runs_exist(
+    def test_generate_run_number_next_run_number_when_mode_is_save_and_previous_runs_exist(
         self, get_existing_run_numbers_mock: Mock
     ):
         get_existing_run_numbers_mock.return_value = [1, 2]
 
-        returned_path = job.get_model_s3_path(self.model_source, mode="save")
-        expected_path = f"{self.model_source}run=3/"
+        returned_number = job.generate_run_number(self.model_source, mode="save")
+        expected_number = 3
 
-        self.assertEqual(returned_path, expected_path)
+        self.assertEqual(returned_number, expected_number)
 
     @patch(f"{PATCH_PATH}.get_existing_run_numbers")
-    def test_get_model_s3_path_returns_path_with_run_1_when_mode_is_save_and_no_previous_runs_exist(
+    def test_generate_run_number_returns_run_1_when_mode_is_save_and_no_previous_runs_exist(
         self, get_existing_run_numbers_mock: Mock
     ):
         get_existing_run_numbers_mock.return_value = []
 
-        returned_path = job.get_model_s3_path(self.model_source, mode="save")
-        expected_path = f"{self.model_source}run=1/"
+        returned_number = job.generate_run_number(self.model_source, mode="save")
+        expected_number = 1
 
-        self.assertEqual(returned_path, expected_path)
+        self.assertEqual(returned_number, expected_number)
 
     @patch(f"{PATCH_PATH}.get_existing_run_numbers")
-    def test_get_model_s3_path_raises_value_error_when_mode_is_invalid(
+    def test_generate_run_number_raises_value_error_when_mode_is_invalid(
         self, get_existing_run_numbers_mock: Mock
     ):
         get_existing_run_numbers_mock.return_value = []
 
         with self.assertRaises(ValueError) as context:
-            job.get_model_s3_path(self.model_source, mode="invalid_mode")
+            job.generate_run_number(self.model_source, mode="invalid_mode")
 
         self.assertTrue("mode must be 'load' or 'save'" in str(context.exception))
 
@@ -399,34 +399,39 @@ class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.get_model_s3_path")
-    def test_save_model_to_s3_v2(self, get_model_s3_path_mock: Mock):
-        mock_model = MagicMock()
-        expected_path = f"{self.model_source}run=4/"
-        get_model_s3_path_mock.return_value = expected_path
+        self.mock_model = MagicMock()
+        self.run_number: int = 4
+        self.model_s3_location = f"{self.model_source}run={self.run_number}/"
 
-        job.save_model_to_s3(mock_model, self.model_source)
+    @patch(f"{PATCH_PATH}.generate_run_number")
+    def test_save_model_to_s3_has_correct_calls(self, generate_run_number_mock: Mock):
+        generate_run_number_mock.return_value = self.run_number
 
-        mock_model.save.assert_called_once_with(expected_path)
-        get_model_s3_path_mock.assert_called_once_with(self.model_source, mode="save")
+        job.save_model_to_s3(self.mock_model, self.model_source)
+
+        generate_run_number_mock.assert_called_once_with(self.model_source, mode="save")
+        self.mock_model.save.assert_called_once_with(self.model_s3_location)
 
 
 class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.get_model_s3_path")
+    @patch(f"{PATCH_PATH}.generate_run_number")
     @patch(f"{PATCH_PATH}.LinearRegressionModel.load")
     def test_load_latest_model_loads_expected_model(
-        self, mock_model_load: Mock, get_model_s3_path_mock: Mock
+        self, mock_model_load: Mock, generate_run_number_mock: Mock
     ):
-        get_model_s3_path_mock.return_value = f"{self.model_source}run=4/"
+        generate_run_number_mock.return_value = 4
         mock_model = MagicMock()
         mock_model_load.return_value = mock_model
+        expected_load_path = (
+            f"{self.model_source}run={generate_run_number_mock.return_value}/"
+        )
 
         result = job.load_latest_model_from_s3(self.model_source)
 
-        mock_model_load.assert_called_once_with(f"{self.model_source}run=4/")
+        mock_model_load.assert_called_once_with(expected_load_path)
         self.assertEqual(result, mock_model)
 
 
