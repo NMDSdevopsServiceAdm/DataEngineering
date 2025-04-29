@@ -1457,6 +1457,42 @@ class CalculateSumAndProportionSplitOfNonRmManagerialEstimatePosts(
         )
 
 
+class RecalculateTotalFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.recalculate_total_filled_posts_rows,
+            Schemas.recalculate_total_filled_posts_schema,
+        )
+        self.returned_df = job.recalculate_total_filled_posts(
+            self.test_df, Data.list_of_job_roles_for_tests
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_recalculate_total_filled_posts_rows,
+            Schemas.expected_recalculate_total_filled_posts_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_recalculate_total_filled_posts_returned_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(expected_data, returned_data)
+
+    def test_recalculate_total_filled_posts_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+
+
 class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
