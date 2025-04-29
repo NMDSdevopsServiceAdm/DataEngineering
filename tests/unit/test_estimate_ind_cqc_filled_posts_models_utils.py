@@ -4,7 +4,6 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 
 from datetime import date
 from pyspark.sql import functions as F
-from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegressionModel
 
 from utils.estimate_filled_posts.models import utils as job
