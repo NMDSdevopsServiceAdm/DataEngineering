@@ -8,6 +8,7 @@ class TrainLinearRegressionModelData:
     feature_rows = [
         ("1-001", Vectors.dense([12.0, 0.0, 1.0])),
         ("1-002", Vectors.dense([50.0, 1.0, 1.0])),
+        ("1-003", None),
     ]
 
 
@@ -68,4 +69,5 @@ class RunLinearRegressionModelData:
     feature_rows = [
         ("1-001", 10, Vectors.dense([12.0, 0.0, 1.0])),
         ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
+        ("1-003", None),
     ]
