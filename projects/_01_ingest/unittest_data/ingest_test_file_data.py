@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import date
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
@@ -259,4 +260,44 @@ class ONSData:
         ("Yorkshire & Humber", "Leeds", "50.10101"),
         ("Yorkshire & Humber", "York", "52.10101"),
         ("Yorkshire & Humber", "Hull", "53.10101"),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_rows = [
+        ("estab_1", "20240101"),
+        ("estab_2", "20240101"),
+        ("estab_1", "20240109"),
+        ("estab_2", "20240109"),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkerRawData:
+    raw_ascwds_worker_rows = [
+        ("estab_1", "20240101", "worker_1", "8"),
+        ("estab_2", "20240101", "worker_2", "8"),
+        ("estab_1", "20240109", "worker_3", "8"),
+        ("estab_2", "20240109", "worker_4", "8"),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkplaceCleanedData:
+    cleaned_ascwds_workplace_rows = [
+        ("estab_1", date(2024, 1, 1), "org_id", "location_id", 10, 10),
+        ("estab_2", date(2024, 1, 1), "org_id", "location_id", 10, 10),
+        ("estab_1", date(2024, 1, 9), "org_id", "location_id", 10, 10),
+        ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
+    ]
+
+
+@dataclass
+class ValidateASCWDSWorkerCleanedData:
+    cleaned_ascwds_worker_rows = [
+        ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
+        ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
+        ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
     ]
