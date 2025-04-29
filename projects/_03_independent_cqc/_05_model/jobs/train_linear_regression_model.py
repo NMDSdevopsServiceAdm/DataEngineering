@@ -36,6 +36,10 @@ def main(
 
     features_df = utils.select_rows_with_non_null_value(dependent_variable)
 
+    train_df, test_df = mUtils.create_test_and_train_datasets(
+        features_df, test_ratio=0.2, seed=42
+    )
+
 
 if __name__ == "__main__":
     (

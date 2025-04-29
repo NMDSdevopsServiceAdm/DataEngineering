@@ -30,6 +30,7 @@ class Main(unittest.TestCase):
 
         warnings.simplefilter("ignore", ResourceWarning)
 
+    @patch(f"{PATCH_PATH}.mUtils.create_test_and_train_datasets")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
@@ -40,8 +41,10 @@ class Main(unittest.TestCase):
         generate_model_s3_path_mock: Mock,
         read_from_parquet_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
+        create_test_and_train_datasets_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
+        create_test_and_train_datasets_mock.return_value = (self.test_df, self.test_df)
 
         job.main(
             self.branch_name,
@@ -53,7 +56,9 @@ class Main(unittest.TestCase):
         generate_model_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
+        create_test_and_train_datasets_mock.assert_called_once()
 
+    @patch(f"{PATCH_PATH}.mUtils.create_test_and_train_datasets")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
@@ -64,8 +69,10 @@ class Main(unittest.TestCase):
         generate_model_s3_path_mock: Mock,
         read_from_parquet_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
+        create_test_and_train_datasets_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
+        create_test_and_train_datasets_mock.return_value = (self.test_df, self.test_df)
 
         job.main(
             self.branch_name,
@@ -77,3 +84,4 @@ class Main(unittest.TestCase):
         generate_model_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
+        create_test_and_train_datasets_mock.assert_called_once()
