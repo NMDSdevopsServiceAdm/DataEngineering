@@ -35,6 +35,12 @@ def save_model_metrics(
 
     previous_metrics_df = utils.read_from_parquet(metrics_s3_path)
 
+    predictions_df = trained_model.transform(test_df)
+
+    predictions_df = calculate_residual_between_predicted_and_known_filled_posts(
+        predictions_df, model_name
+    )
+
 
 def generate_model_metrics_s3_path(
     branch_name: str, model_name: str, model_version: str
@@ -51,3 +57,31 @@ def generate_model_metrics_s3_path(
         str: The S3 path for the features dataset.
     """
     return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
+
+
+def calculate_residual_between_predicted_and_known_filled_posts(
+    predictions_df: DataFrame,
+    model_name: str,
+) -> DataFrame:
+    """
+    Adds a residual column to the predictions DataFrame.
+
+    Args:
+        predictions_df (DataFrame): DataFrame containing predictions.
+        model_name (str): The name of the column with model predictions
+
+    Returns:
+        DataFrame: A DataFrame with residual column.
+    """
+    care_home_identifier: str = "care_home"
+
+    if care_home_identifier in model_name:
+        prediction_col = F.col(model_name) * F.col(IndCqc.number_of_beds)
+    else:
+        prediction_col = F.col(model_name)
+
+    predictions_df = predictions_df.withColumn(
+        IndCqc.residual,
+        F.col(IndCqc.imputed_filled_post_model) - prediction_col,
+    )
+    return predictions_df
