@@ -1,3 +1,40 @@
+resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
+  name     = "${local.workspace_prefix}-Clean-And-Validate-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/CleanAndValidate-StepFunction.json", {
+    dataset_bucket_name                                              = module.datasets_bucket.bucket_name
+    dataset_bucket_uri                                               = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                                    = module.pipeline_resources.bucket_uri
+    clean_ascwds_workplace_job_name                                  = module.clean_ascwds_workplace_job.job_name
+    clean_ascwds_worker_job_name                                     = module.clean_ascwds_worker_job.job_name
+    clean_cqc_pir_data_job_name                                      = module.clean_cqc_pir_data_job.job_name
+    clean_cqc_provider_data_job_name                                 = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name                                 = module.clean_cqc_location_data_job.job_name
+    clean_ons_data_job_name                                          = module.clean_ons_data_job.job_name
+    reconciliation_job_name                                          = module.reconciliation_job.job_name
+    ascwds_crawler_name                                              = module.ascwds_crawler.crawler_name
+    cqc_crawler_name                                                 = module.cqc_crawler.crawler_name
+    ons_crawler_name                                                 = module.ons_crawler.crawler_name
+    data_validation_reports_crawler_name                             = module.data_validation_reports_crawler.crawler_name
+    trigger_coverage_state_machine_arn                               = aws_sfn_state_machine.coverage_state_machine.arn
+    trigger_ind_cqc_filled_post_estimates_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
+    run_silver_validation_state_machine_arn                          = aws_sfn_state_machine.silver_validation_state_machine.arn
+    pipeline_failure_lambda_function_arn                             = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_machine" {
   name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -6,13 +43,6 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     dataset_bucket_name                                                     = module.datasets_bucket.bucket_name
     dataset_bucket_uri                                                      = module.datasets_bucket.bucket_uri
     pipeline_resources_bucket_uri                                           = module.pipeline_resources.bucket_uri
-    clean_ascwds_workplace_job_name                                         = module.clean_ascwds_workplace_job.job_name
-    clean_ascwds_worker_job_name                                            = module.clean_ascwds_worker_job.job_name
-    clean_cqc_pir_data_job_name                                             = module.clean_cqc_pir_data_job.job_name
-    clean_cqc_provider_data_job_name                                        = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                                        = module.clean_cqc_location_data_job.job_name
-    clean_ons_data_job_name                                                 = module.clean_ons_data_job.job_name
-    reconciliation_job_name                                                 = module.reconciliation_job.job_name
     merge_ind_cqc_data_job_name                                             = module.merge_ind_cqc_data_job.job_name
     validate_merged_ind_cqc_data_job_name                                   = module.validate_merged_ind_cqc_data_job.job_name
     clean_ind_cqc_filled_posts_job_name                                     = module.clean_ind_cqc_filled_posts_job.job_name
@@ -32,13 +62,8 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name       = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
     diagnostics_on_known_filled_posts_job_name                              = module.diagnostics_on_known_filled_posts_job.job_name
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
-    ascwds_crawler_name                                                     = module.ascwds_crawler.crawler_name
-    cqc_crawler_name                                                        = module.cqc_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name                                       = module.ind_cqc_filled_posts_crawler.crawler_name
-    ons_crawler_name                                                        = module.ons_crawler.crawler_name
     data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name
-    trigger_coverage_state_machine_arn                                      = aws_sfn_state_machine.coverage_state_machine.arn
-    run_silver_validation_state_machine_arn                                 = aws_sfn_state_machine.silver_validation_state_machine.arn
     pipeline_failure_lambda_function_arn                                    = aws_lambda_function.error_notification_lambda.arn
   })
 
