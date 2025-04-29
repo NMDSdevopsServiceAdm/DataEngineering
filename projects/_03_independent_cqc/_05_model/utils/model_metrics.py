@@ -1,6 +1,9 @@
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import (
+    IntegerType,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -46,6 +49,12 @@ def save_model_metrics(
     )
     r2_value = generate_metric(model_evaluator, predictions_df, IndCqc.r2)
     rmse_value = generate_metric(model_evaluator, predictions_df, IndCqc.rmse)
+    prediction_within_10_posts = generate_proportion_of_predictions_within_range(
+        predictions_df, range_cutoff=10
+    )
+    prediction_within_25_posts = generate_proportion_of_predictions_within_range(
+        predictions_df, range_cutoff=25
+    )
 
 
 def generate_model_metrics_s3_path(
@@ -63,27 +72,6 @@ def generate_model_metrics_s3_path(
         str: The S3 path for the features dataset.
     """
     return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
-
-
-def generate_metric(
-    evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
-) -> float:
-    """
-    Evaluates a single metric from the model predictions.
-
-    Args:
-        evaluator (RegressionEvaluator): RegressionEvaluator object.
-        predictions_df (DataFrame): DataFrame containing predictions.
-        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
-
-    Returns:
-        float: The rounded metric value.
-    """
-    metric_value = round(
-        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
-    )
-    print(f"Calculating {metric_name} = {metric_value}")
-    return metric_value
 
 
 def calculate_residual_between_predicted_and_known_filled_posts(
@@ -112,3 +100,49 @@ def calculate_residual_between_predicted_and_known_filled_posts(
         F.col(IndCqc.imputed_filled_post_model) - prediction_col,
     )
     return predictions_df
+
+
+def generate_metric(
+    evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
+) -> float:
+    """
+    Evaluates a single metric from the model predictions.
+
+    Args:
+        evaluator (RegressionEvaluator): RegressionEvaluator object.
+        predictions_df (DataFrame): DataFrame containing predictions.
+        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
+
+    Returns:
+        float: The rounded metric value.
+    """
+    metric_value = round(
+        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
+    )
+    print(f"Calculating {metric_name} = {metric_value}")
+    return metric_value
+
+
+def generate_proportion_of_predictions_within_range(
+    predictions_df: DataFrame, range_cutoff: int
+) -> float:
+    """
+    Calculates the proportion of residuals within a given range.
+
+    Args:
+        predictions_df (DataFrame): DataFrame with residuals.
+        range_cutoff (int): The threshold within which residuals are considered accurate.
+
+    Returns:
+        float: The rounded proportion of predictions within the given range.
+    """
+    within_range: str = "within_range"
+    predictions_df = predictions_df.withColumn(
+        within_range,
+        (F.abs(F.col(IndCqc.residual)) <= range_cutoff).cast(IntegerType()),
+    )
+
+    in_range_count = predictions_df.agg(F.sum(within_range)).first()[0]
+    total_count = predictions_df.agg(F.count(within_range)).first()[0]
+
+    return round(in_range_count / total_count, 4)
