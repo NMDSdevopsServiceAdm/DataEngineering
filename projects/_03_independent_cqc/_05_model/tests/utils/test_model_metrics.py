@@ -22,7 +22,6 @@ class SaveModelMetricsTests(unittest.TestCase):
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
-
         self.branch_name: str = "test_branch"
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"

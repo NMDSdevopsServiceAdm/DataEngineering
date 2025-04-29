@@ -27,6 +27,13 @@ def save_model_metrics(
         model_version (str): The version of the model to use (e.g. '1.0.0').
         model_run_number (int): The run number of the model.
     """
+    spark = utils.get_spark()
+
+    metrics_s3_path = generate_model_metrics_s3_path(
+        branch_name, model_name, model_version
+    )
+
+    previous_metrics_df = utils.read_from_parquet(metrics_s3_path)
 
 
 def generate_model_metrics_s3_path(
