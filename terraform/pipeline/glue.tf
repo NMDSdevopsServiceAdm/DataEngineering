@@ -879,7 +879,7 @@ module "train_care_home_linear_regression_model_job" {
   }
 }
 
-module "train_care_home_linear_regression_model_job" {
+module "train_non_res_with_dormancy_linear_regression_model_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
   script_name       = "train_linear_regression_model.py"
@@ -889,12 +889,12 @@ module "train_care_home_linear_regression_model_job" {
 
   job_parameters = {
     "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = "care_home_model"
-    "--model_version" = "6.1.0"
+    "--model_name"    = "non_res_with_dormancy_model"
+    "--model_version" = "4.1.0"
   }
 }
 
-module "train_care_home_linear_regression_model_job" {
+module "train_non_res_without_dormancy_linear_regression_model_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
   script_name       = "train_linear_regression_model.py"
@@ -904,8 +904,23 @@ module "train_care_home_linear_regression_model_job" {
 
   job_parameters = {
     "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = "care_home_model"
-    "--model_version" = "6.1.0"
+    "--model_name"    = "non_res_without_dormancy_model"
+    "--model_version" = "4.1.0"
+  }
+}
+
+module "train_non_res_pir_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "train_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "non_res_pir_linear_regression_model"
+    "--model_version" = "2.0.1"
   }
 }
 
@@ -924,7 +939,7 @@ module "run_care_home_linear_regression_model_job" {
   }
 }
 
-module "run_care_home_linear_regression_model_job" {
+module "run_non_res_with_dormancy_linear_regression_model_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
   script_name       = "run_linear_regression_model.py"
@@ -934,12 +949,12 @@ module "run_care_home_linear_regression_model_job" {
 
   job_parameters = {
     "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = "care_home_model"
-    "--model_version" = "6.1.0"
+    "--model_name"    = "non_res_with_dormancy_model"
+    "--model_version" = "4.1.0"
   }
 }
 
-module "run_care_home_linear_regression_model_job" {
+module "run_non_res_without_dormancy_linear_regression_model_job" {
   source            = "../modules/glue-job"
   script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
   script_name       = "run_linear_regression_model.py"
@@ -949,8 +964,23 @@ module "run_care_home_linear_regression_model_job" {
 
   job_parameters = {
     "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = "care_home_model"
-    "--model_version" = "6.1.0"
+    "--model_name"    = "non_res_without_dormancy_model"
+    "--model_version" = "4.1.0"
+  }
+}
+
+module "run_non_res_pir_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "run_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "non_res_pir_linear_regression_model"
+    "--model_version" = "2.0.1"
   }
 }
 
