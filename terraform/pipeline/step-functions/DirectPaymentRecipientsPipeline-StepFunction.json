@@ -1,8 +1,8 @@
 {
   "Comment": "A description of my state machine",
-  "StartAt": "Prepare data in paralell",
+  "StartAt": "Prepare data in parallel",
   "States": {
-    "Prepare data in paralell": {
+    "Prepare data in parallel": {
       "Type": "Parallel",
       "Next": "Merge DPR data",
       "Branches": [
