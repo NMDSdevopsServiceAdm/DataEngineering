@@ -90,22 +90,6 @@ class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
         self.assertEqual(returned_path, expected_path)
 
 
-class GenerateMetricTests(SaveModelMetricsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        evaluator = RegressionEvaluator(
-            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
-        )
-        generate_metric_df = self.spark.createDataFrame(
-            Data.generate_metric_rows, Schemas.generate_metric_schema
-        )
-        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
-
-    def test_generic_metric_returns_float(self):
-        self.assertIsInstance(self.r2, float)
-
-
 class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -165,3 +149,19 @@ class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetrics
                 expected_data[i][IndCqc.residual],
                 places=1,
             )
+
+
+class GenerateMetricTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        evaluator = RegressionEvaluator(
+            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
+        )
+        generate_metric_df = self.spark.createDataFrame(
+            Data.generate_metric_rows, Schemas.generate_metric_schema
+        )
+        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
+
+    def test_generic_metric_returns_float(self):
+        self.assertIsInstance(self.r2, float)

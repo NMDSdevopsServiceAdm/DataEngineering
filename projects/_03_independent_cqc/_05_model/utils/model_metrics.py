@@ -65,27 +65,6 @@ def generate_model_metrics_s3_path(
     return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
 
 
-def generate_metric(
-    evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
-) -> float:
-    """
-    Evaluates a single metric from the model predictions.
-
-    Args:
-        evaluator (RegressionEvaluator): RegressionEvaluator object.
-        predictions_df (DataFrame): DataFrame containing predictions.
-        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
-
-    Returns:
-        float: The rounded metric value.
-    """
-    metric_value = round(
-        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
-    )
-    print(f"Calculating {metric_name} = {metric_value}")
-    return metric_value
-
-
 def calculate_residual_between_predicted_and_known_filled_posts(
     predictions_df: DataFrame,
     model_name: str,
@@ -112,3 +91,24 @@ def calculate_residual_between_predicted_and_known_filled_posts(
         F.col(IndCqc.imputed_filled_post_model) - prediction_col,
     )
     return predictions_df
+
+
+def generate_metric(
+    evaluator: RegressionEvaluator, predictions_df: DataFrame, metric_name: str
+) -> float:
+    """
+    Evaluates a single metric from the model predictions.
+
+    Args:
+        evaluator (RegressionEvaluator): RegressionEvaluator object.
+        predictions_df (DataFrame): DataFrame containing predictions.
+        metric_name (str): Metric to evaluate ('r2', 'rmse', etc.).
+
+    Returns:
+        float: The rounded metric value.
+    """
+    metric_value = round(
+        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
+    )
+    print(f"Calculating {metric_name} = {metric_value}")
+    return metric_value
