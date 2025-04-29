@@ -33,14 +33,6 @@ class ModelMetrics:
         ]
     )
 
-    generate_metric_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
     calculate_residual_non_res_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
@@ -67,6 +59,14 @@ class ModelMetrics:
         [
             *calculate_residual_care_home_schema,
             StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
+
+    generate_metric_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
+            StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
 

@@ -29,7 +29,6 @@ class Main(unittest.TestCase):
     care_home_model_name = "test_care_home_model"
     non_res_model_name = "test_non_res_model"
     model_version = "1.0.0"
-    model_run_number = 3
     prediction_destination = "some/prediction/destination"
 
     def setUp(self):
