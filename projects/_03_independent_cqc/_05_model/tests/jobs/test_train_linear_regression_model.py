@@ -17,6 +17,11 @@ PATCH_PATH: str = (
 
 
 class Main(unittest.TestCase):
+    branch_name = "test_branch"
+    care_home_model_name = "test_care_home_model"
+    non_res_model_name = "test_non_res_model"
+    model_version = "1.0.0"
+
     def setUp(self):
         self.spark = utils.get_spark()
         self.test_df = self.spark.createDataFrame(
@@ -24,3 +29,51 @@ class Main(unittest.TestCase):
         )
 
         warnings.simplefilter("ignore", ResourceWarning)
+
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_features_s3_path")
+    def test_main_when_care_home(
+        self,
+        generate_model_features_s3_path_mock: Mock,
+        generate_model_s3_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+        select_rows_with_non_null_value_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(
+            self.branch_name,
+            self.care_home_model_name,
+            self.model_version,
+        )
+
+        generate_model_features_s3_path_mock.assert_called_once()
+        generate_model_s3_path_mock.assert_called_once()
+        read_from_parquet_mock.assert_called_once()
+        select_rows_with_non_null_value_mock.assert_called_once()
+
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_s3_path")
+    @patch(f"{PATCH_PATH}.mUtils.generate_model_features_s3_path")
+    def test_main_when_not_care_home(
+        self,
+        generate_model_features_s3_path_mock: Mock,
+        generate_model_s3_path_mock: Mock,
+        read_from_parquet_mock: Mock,
+        select_rows_with_non_null_value_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.test_df
+
+        job.main(
+            self.branch_name,
+            self.non_res_model_name,
+            self.model_version,
+        )
+
+        generate_model_features_s3_path_mock.assert_called_once()
+        generate_model_s3_path_mock.assert_called_once()
+        read_from_parquet_mock.assert_called_once()
+        select_rows_with_non_null_value_mock.assert_called_once()
