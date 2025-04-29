@@ -19,14 +19,8 @@ PATCH_PATH: str = "projects._03_independent_cqc._05_model.utils.model_metrics"
 class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-
-        self.mock_model = MagicMock()
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
-        )
-        self.metrics_df = self.spark.createDataFrame(
-            Data.expected_combined_metrics_rows,
-            Schemas.expected_combined_metrics_schema,
         )
         self.dependent_variable: str = IndCqc.imputed_filled_post_model
         self.branch_name: str = "test_branch"
@@ -180,7 +174,7 @@ class GenerateMetricTests(SaveModelMetricsTests):
         )
         self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
 
-    def test_generic_metric_returns_float(self):
+    def test_generate_metric_returns_float(self):
         self.assertIsInstance(self.r2, float)
 
 
