@@ -68,7 +68,7 @@ def calculate_residual_between_predicted_and_known_filled_posts(
 
     Args:
         predictions_df (DataFrame): DataFrame containing predictions.
-        model_name (str): The name of the model to train.
+        model_name (str): The name of the column with model predictions
 
     Returns:
         DataFrame: A DataFrame with residual column.
