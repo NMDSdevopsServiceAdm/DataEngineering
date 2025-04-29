@@ -164,7 +164,7 @@ class GenerateMetricTests(SaveModelMetricsTests):
         )
         self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
 
-    def test_generic_metric_returns_float(self):
+    def test_generate_metric_returns_float(self):
         self.assertIsInstance(self.r2, float)
 
 
