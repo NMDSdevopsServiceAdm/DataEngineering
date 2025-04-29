@@ -3312,6 +3312,13 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
+    train_lasso_regression_model_schema = StructType(
+        [
+            StructField(IndCQC.features, VectorUDT(), True),
+            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class MLModelMetrics:
@@ -6535,6 +6542,23 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     expected_recalculate_managerial_filled_posts_schema = StructType(
         [*recalculate_managerial_filled_posts_schema]
+    )
+
+    recalculate_total_filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(MainJobRoleLabels.care_worker, FloatType(), False),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), False),
+            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), False),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), False),
+        ]
+    )
+
+    expected_recalculate_total_filled_posts_schema = StructType(
+        [
+            *recalculate_total_filled_posts_schema,
+            StructField(IndCQC.filled_posts, FloatType(), False),
+        ]
     )
 
 

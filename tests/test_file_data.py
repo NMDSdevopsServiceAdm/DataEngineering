@@ -6088,6 +6088,11 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
+    train_lasso_regression_model_rows = [
+        (Vectors.dense([1.0, 2.0]), 5.0),
+        (Vectors.dense([2.0, 1.0]), 4.0),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
@@ -11253,6 +11258,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
             -0.5,
         ),
+    ]
+
+    recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0),
+    ]
+
+    expected_recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
     ]
 
 
