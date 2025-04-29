@@ -864,6 +864,96 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
   }
 }
 
+module "train_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "train_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
+module "train_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "train_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
+module "train_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "train_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
+module "run_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "run_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
+module "run_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "run_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
+module "run_care_home_linear_regression_model_job" {
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_03_independent_cqc/_05_model/jobs"
+  script_name       = "run_linear_regression_model.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+
+  job_parameters = {
+    "--branch_name"   = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"    = "care_home_model"
+    "--model_version" = "6.1.0"
+  }
+}
+
 module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
   script_dir        = "jobs"
