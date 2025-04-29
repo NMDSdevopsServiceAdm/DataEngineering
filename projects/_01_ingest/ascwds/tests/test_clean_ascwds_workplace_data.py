@@ -2,12 +2,12 @@ import unittest
 from unittest.mock import patch, Mock
 from pyspark.sql import DataFrame
 
-import projects._03_independent_cqc._02_clean.ascwds.jobs.clean_ascwds_workplace_data as job
+import projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data as job
 
-from projects._03_independent_cqc._02_clean.unittest_data.data import (
+from projects._01_ingest.unittest_data.data import (
     ASCWDSWorkplaceData as Data,
 )
-from projects._03_independent_cqc._02_clean.unittest_data.schemas import (
+from projects._01_ingest.unittest_data.schemas import (
     ASCWDSWorkplaceSchemas as Schemas,
 )
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
@@ -19,9 +19,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils import utils
 
-PATCH_PATH = (
-    "projects._03_independent_cqc._02_clean.ascwds.jobs.clean_ascwds_workplace_data"
-)
+PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 
 
 class CleanASCWDSWorkplaceDatasetTests(unittest.TestCase):
