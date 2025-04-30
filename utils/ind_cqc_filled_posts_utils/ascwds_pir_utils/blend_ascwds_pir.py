@@ -20,9 +20,42 @@ class ThresholdValues:
     months_in_two_years: int = 24
 
 
-def blend_pir_and_ascwds_when_ascwds_out_of_date(
+def convert_pir_from_people_directly_employed_to_filled_posts(
     df: DataFrame, linear_regression_model_source: str
 ) -> DataFrame:
+    """
+    Uses a linear regression model to convert PIR values from 'people directly employed' to estimated 'filled posts'.
+
+    Args:
+        df (DataFrame): A dataframe with the column people directly employed deduplicated.
+        linear_regression_model_source (str): The location of the linear regression model in s3.
+
+    Returns:
+        DataFrame: The input dataframe with an additional column containing the estimated PIR filled posts model predictions.
+    """
+
+    non_res_df = utils.select_rows_with_value(
+        df, IndCQC.care_home, CareHome.not_care_home
+    )
+    features_df = utils.select_rows_with_non_null_value(
+        non_res_df, IndCQC.pir_people_directly_employed_dedup
+    )
+    vectorised_features_df = vectorise_dataframe(
+        features_df, [IndCQC.pir_people_directly_employed_dedup]
+    )
+    lr_trained_model = LinearRegressionModel.load(linear_regression_model_source)
+
+    predictions = lr_trained_model.transform(vectorised_features_df)
+
+    df = insert_predictions_into_pipeline(
+        df,
+        predictions,
+        IndCQC.pir_filled_posts_model,
+    )
+    return df
+
+
+def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
     """
     Merges people directly employed and ascwds filled posts cleaned when ascwds
     hasn't been updated recently and people directly employed has.
@@ -31,15 +64,11 @@ def blend_pir_and_ascwds_when_ascwds_out_of_date(
 
     Args:
         df (DataFrame): A dataframe with cleaned ascwds data and deduplicated pir data.
-        linear_regression_model_source (str): The location of the linear regression model in s3.
 
     Returns:
         DataFrame: A dataframe with people directly employed filled posts merged into ascwds values for estimatation.
     """
     df = create_repeated_ascwds_clean_column(df)
-    df = create_pir_people_directly_employed_dedup_modelled_column(
-        df, linear_regression_model_source
-    )
     df = create_last_submission_columns(df)
     df = merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(df)
     df = drop_temporary_columns(df)
@@ -66,43 +95,6 @@ def create_repeated_ascwds_clean_column(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean_repeated,
         F.last(IndCQC.ascwds_filled_posts_dedup_clean, ignorenulls=True).over(w),
-    )
-    return df
-
-
-def create_pir_people_directly_employed_dedup_modelled_column(
-    df: DataFrame, linear_regression_model_source: str
-) -> DataFrame:
-    """
-    Creates a column containing people directly employed deduplicated values converted to filled posts using the non-res pir model.
-
-    This column is needed to compare to ascwds filled posts cleaned to see where they diverge.
-
-    Args:
-        df (DataFrame): A dataframe with the column people directly employed deduplicated.
-        linear_regression_model_source (str): The location of the linear regression model in s3.
-
-    Returns:
-        DataFrame: A dataframe with an extra column containing people directly employed deduplicated values converted to filled posts.
-    """
-
-    non_res_df = utils.select_rows_with_value(
-        df, IndCQC.care_home, CareHome.not_care_home
-    )
-    features_df = utils.select_rows_with_non_null_value(
-        non_res_df, IndCQC.pir_people_directly_employed_dedup
-    )
-    vectorised_features_df = vectorise_dataframe(
-        df=features_df,
-        list_for_vectorisation=[IndCQC.pir_people_directly_employed_dedup],
-    )
-    lr_trained_model = LinearRegressionModel.load(linear_regression_model_source)
-
-    predictions = lr_trained_model.transform(vectorised_features_df)
-    df = insert_predictions_into_pipeline(
-        df,
-        predictions,
-        IndCQC.pir_people_directly_employed_filled_posts,
     )
     return df
 
@@ -163,43 +155,41 @@ def merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
     Returns:
         DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
     """
-    df = df.withColumn(
-        IndCQC.ascwds_pir_merged,
-        df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
+    # Is this needed?
+    # df = df.withColumn(
+    #     IndCQC.ascwds_pir_merged,
+    #     df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
+    # )
+
+    time_between_last_pir_and_ascwds_submissions = F.months_between(
+        F.col(IndCQC.last_pir_submission),
+        F.col(IndCQC.last_ascwds_submission),
     )
+    absolute_difference_between_pir_and_ascwds = F.abs(
+        F.col(IndCQC.pir_filled_posts_model)
+        - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    )
+    average_of_pir_and_ascwds = (
+        F.col(IndCQC.pir_filled_posts_model)
+        + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
+    ) / 2
 
     df = df.withColumn(
         IndCQC.ascwds_pir_merged,
         F.when(
             (
-                F.months_between(
-                    F.col(IndCQC.last_pir_submission),
-                    F.col(IndCQC.last_ascwds_submission),
-                )
+                time_between_last_pir_and_ascwds_submissions
                 > ThresholdValues.months_in_two_years
             )
             & (
-                F.abs(
-                    F.col(IndCQC.pir_people_directly_employed_filled_posts)
-                    - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-                )
+                absolute_difference_between_pir_and_ascwds
                 > ThresholdValues.max_absolute_difference
             )
             & (
-                F.abs(
-                    F.col(IndCQC.pir_people_directly_employed_filled_posts)
-                    - F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-                )
-                / (
-                    (
-                        F.col(IndCQC.pir_people_directly_employed_filled_posts)
-                        + F.col(IndCQC.ascwds_filled_posts_dedup_clean_repeated)
-                    )
-                    / 2
-                )
+                (absolute_difference_between_pir_and_ascwds / average_of_pir_and_ascwds)
                 > ThresholdValues.max_percentage_difference
             ),
-            F.col(IndCQC.pir_people_directly_employed_filled_posts),
+            F.col(IndCQC.pir_filled_posts_model),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
     return df
