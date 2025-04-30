@@ -10,6 +10,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from utils import utils
 
+PATCH_PATH: str = "projects._03_independent_cqc._03_impute.jobs.validate_imputed_ind_cqc_ascwds_and_pir_data"
+
 
 class ValidateImputedIndCqcAscwdsAndPirsetTests(unittest.TestCase):
     TEST_CLEANED_SOURCE = "some/directory"
@@ -36,8 +38,8 @@ class MainTests(ValidateImputedIndCqcAscwdsAndPirsetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
