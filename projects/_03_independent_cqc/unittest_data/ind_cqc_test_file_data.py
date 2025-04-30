@@ -52,6 +52,17 @@ class ModelMetrics:
     range_cutoff: float = 10.0
     expected_proportion: float = 0.6
 
+    combine_metrics_current_rows = [
+        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
+    ]
+    combine_metrics_previous_rows = [
+        ("model_name", "1.0.0", 0.1),
+    ]
+    expected_combined_metrics_rows = [
+        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
+        ("model_name", "1.0.0", None, 0.1, None, None, None),
+    ]
+
 
 @dataclass
 class RunLinearRegressionModelData:
