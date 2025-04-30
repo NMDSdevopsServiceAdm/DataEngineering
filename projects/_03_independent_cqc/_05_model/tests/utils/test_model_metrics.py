@@ -20,6 +20,7 @@ class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+        self.mock_model = MagicMock()
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
@@ -28,11 +29,7 @@ class SaveModelMetricsTests(unittest.TestCase):
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"
         self.model_run_number: int = 3
-        self.partition_keys = [
-            IndCqc.model_name,
-            IndCqc.model_version,
-            IndCqc.run_number,
-        ]
+        self.partition_keys = [IndCqc.model_version]
         self.metrics_path: str = "some/path"
 
         warnings.filterwarnings("ignore", category=ResourceWarning)

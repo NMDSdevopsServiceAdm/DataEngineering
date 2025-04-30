@@ -99,7 +99,7 @@ def save_model_metrics(
         all_metrics_df,
         metrics_s3_path,
         mode="overwrite",
-        partitionKeys=[IndCqc.model_name, IndCqc.model_version, IndCqc.run_number],
+        partitionKeys=[IndCqc.model_version],
     )
 
 
