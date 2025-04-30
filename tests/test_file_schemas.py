@@ -6409,19 +6409,19 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    recalculate_managerial_filled_posts_non_rm_col_list = [
+        "managerial_role_1",
+        "managerial_role_2",
+        "managerial_role_3",
+        "managerial_role_4",
+    ]
     recalculate_managerial_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(MainJobRoleLabels.data_governance_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.deputy_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.first_line_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.it_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.it_service_desk_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.middle_management, FloatType(), True),
-            StructField(MainJobRoleLabels.other_managerial_staff, FloatType(), True),
-            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
-            StructField(MainJobRoleLabels.supervisor, FloatType(), True),
-            StructField(MainJobRoleLabels.team_leader, FloatType(), True),
+            StructField("managerial_role_1", FloatType(), True),
+            StructField("managerial_role_2", FloatType(), True),
+            StructField("managerial_role_3", FloatType(), True),
+            StructField("managerial_role_4", FloatType(), True),
             StructField(
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
                 MapType(StringType(), FloatType()),
@@ -6433,10 +6433,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 True,
             ),
         ]
-    )
-
-    expected_recalculate_managerial_filled_posts_schema = StructType(
-        [*recalculate_managerial_filled_posts_schema]
     )
 
     recalculate_total_filled_posts_schema = StructType(
