@@ -86,14 +86,6 @@ def main(
         care_home=True,
     )
 
-    df = model_imputation_with_extrapolation_and_interpolation(
-        df,
-        IndCQC.pir_people_directly_employed_dedup,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_non_res_pir_people_directly_employed,
-        care_home=False,
-    )
-
     df = model_calculate_rolling_average(
         df,
         IndCQC.imputed_filled_post_model,

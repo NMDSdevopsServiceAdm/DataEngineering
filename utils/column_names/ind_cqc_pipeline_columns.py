@@ -167,9 +167,6 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
-    imputed_non_res_pir_people_directly_employed: str = (
-        "imputed_non_res_pir_people_directly_employed"
-    )
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
