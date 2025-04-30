@@ -37,7 +37,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch("jobs.impute_ind_cqc_ascwds_and_pir.model_calculate_rolling_average")
     @patch("jobs.impute_ind_cqc_ascwds_and_pir.clean_number_of_beds_banded")
     @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
+        "jobs.impute_ind_cqc_ascwds_and_pir.merge_ascwds_and_pir_filled_post_submissions"
     )
     @patch(
         "jobs.impute_ind_cqc_ascwds_and_pir.combine_care_home_ratios_and_non_res_posts"
@@ -47,7 +47,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self,
         read_from_parquet_patch: Mock,
         combine_care_home_ratios_and_non_res_posts_mock: Mock,
-        blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
+        merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         clean_number_of_beds_banded_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
         write_to_parquet_patch: Mock,
@@ -62,7 +62,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
         read_from_parquet_patch.assert_called_once()
         combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
-        blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
+        merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         clean_number_of_beds_banded_mock.assert_called_once()
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         write_to_parquet_patch.assert_called_once_with(

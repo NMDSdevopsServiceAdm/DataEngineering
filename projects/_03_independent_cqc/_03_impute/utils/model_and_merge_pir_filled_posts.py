@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window, functions as F
-from pyspark.sql.types import FloatType
-
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -15,12 +13,12 @@ from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 @dataclass
 class ThresholdValues:
-    max_percentage_difference: float = 0.5
     max_absolute_difference: int = 100
+    max_percentage_difference: float = 0.5
     months_in_two_years: int = 24
 
 
-def convert_pir_from_people_directly_employed_to_filled_posts(
+def model_pir_filled_posts(
     df: DataFrame, linear_regression_model_source: str
 ) -> DataFrame:
     """
@@ -55,22 +53,28 @@ def convert_pir_from_people_directly_employed_to_filled_posts(
     return df
 
 
-def blend_pir_and_ascwds_when_ascwds_out_of_date(df: DataFrame) -> DataFrame:
+def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
     """
-    Merges people directly employed and ascwds filled posts cleaned when ascwds
-    hasn't been updated recently and people directly employed has.
+    Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
 
-    This function handles the individual steps for this process.
+    The ASCWDS dataset is the preferred source for workforce filled post figures.
+    However, if a workplace has not submitted ASCWDS data for a prolonged period of time and the corresponding PIR
+    submission differs significantly (both in absolute and percentage terms) then the PIR figure is used instead.
+    This ensures that downstream imputation uses the most reliable and recent data.
+
+    If the PIR and ASCWDS values are within acceptable difference thresholds, the older ASCWDS value is retained.
+    This avoids introducing noise when the PIR and ASCWDS values are effectively aligned.
 
     Args:
-        df (DataFrame): A dataframe with cleaned ascwds data and deduplicated pir data.
+        df (DataFrame): Input PySpark DataFrame containing filled posts from ASCWDS and PIR and their respective submission dates.
 
     Returns:
-        DataFrame: A dataframe with people directly employed filled posts merged into ascwds values for estimatation.
+        DataFrame: A DataFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
+                   depending on submission recency and similarity thresholds.
     """
     df = create_repeated_ascwds_clean_column(df)
     df = create_last_submission_columns(df)
-    df = merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(df)
+    df = create_ascwds_pir_merged_column(df)
     df = drop_temporary_columns(df)
     return df
 
@@ -129,7 +133,7 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     df = get_selected_value(
         df,
         w,
-        IndCQC.pir_people_directly_employed_dedup,
+        IndCQC.pir_filled_posts_model,
         IndCQC.cqc_location_import_date,
         IndCQC.last_pir_submission,
         "last",
@@ -138,29 +142,23 @@ def create_last_submission_columns(df: DataFrame) -> DataFrame:
     return df
 
 
-def merge_pir_people_directly_employed_modelled_into_ascwds_clean_column(
-    df: DataFrame,
-) -> DataFrame:
+def create_ascwds_pir_merged_column(df: DataFrame) -> DataFrame:
     """
-    Merges filled posts estimate from people directly employed into ascwds clean
-    data when ascwds hasn't been updated and the two data sources have very different values.
+    Merges ASCWDS and PIR filled post estimates based on recently and similarity thresholds and stores in a new column.
 
-    Analysis of the datasets has shown that when the two dataset diverge and there is no recent ascwds data,
-    then the PIR value is more likely to align with other data sources, so in this case, we should take that
-    value into account rather than predicting no change from the ascwds data.
+    The ASCWDS dataset is the preferred source for workforce filled post figures.
+    However, if a workplace has not submitted ASCWDS data for a prolonged period of time and the corresponding PIR
+    submission differs significantly (both in absolute and percentage terms) then the PIR figure is used instead.
+
+    If the PIR and ASCWDS values are within acceptable difference thresholds, the older ASCWDS value is retained.
 
     Args:
-        df (DataFrame): A dataframe with ascwds filled posts cleaned and people directly employed converted into a filled posts estimate.
+        df (DataFrame): Input PySpark DataFrame containing filled posts from ASCWDS and PIR and their respective submission dates.
 
     Returns:
-        DataFrame: A dataframe with the people directly employed estimates merged into the ascwds cleaned column.
+        DataFrame: A DataFrame with an additional column `ascwds_pir_merged` that contains either the ASCWDS or PIR filled posts value,
+                   depending on submission recency and similarity thresholds.
     """
-    # Is this needed?
-    # df = df.withColumn(
-    #     IndCQC.ascwds_pir_merged,
-    #     df[IndCQC.ascwds_filled_posts_dedup_clean].cast(FloatType()),
-    # )
-
     time_between_last_pir_and_ascwds_submissions = F.months_between(
         F.col(IndCQC.last_pir_submission),
         F.col(IndCQC.last_ascwds_submission),
@@ -209,6 +207,5 @@ def drop_temporary_columns(df: DataFrame) -> DataFrame:
         IndCQC.last_ascwds_submission,
         IndCQC.last_pir_submission,
         IndCQC.ascwds_filled_posts_dedup_clean_repeated,
-        IndCQC.pir_people_directly_employed_filled_posts,
     )
     return df
