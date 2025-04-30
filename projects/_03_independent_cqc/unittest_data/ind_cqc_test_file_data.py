@@ -3,7 +3,23 @@ from datetime import date
 
 from pyspark.ml.linalg import Vectors
 
-from utils.column_values.categorical_column_values import CareHome
+from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
+
+
+@dataclass
+class ImputeIndCqcAscwdsAndPirData:
+    cleaned_ind_cqc_rows = [
+        (
+            "1-001",
+            date(2025, 1, 1),
+            9,
+            CareHome.care_home,
+            PrimaryServiceType.care_home_with_nursing,
+            25.0,
+            2.5,
+            10.0,
+        ),
+    ]
 
 
 @dataclass
