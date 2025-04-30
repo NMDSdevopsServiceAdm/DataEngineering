@@ -42,6 +42,16 @@ class ModelMetrics:
         ("1-002", 10.0, 12.2),
     ]
 
+    generate_proportion_of_predictions_within_range_rows = [
+        ("1-001", -15.0),
+        ("1-002", -10.0),
+        ("1-003", 0.0),
+        ("1-004", 10.0),
+        ("1-005", 15.0),
+    ]
+    range_cutoff: float = 10.0
+    expected_proportion: float = 0.6
+
 
 @dataclass
 class RunLinearRegressionModelData:

@@ -70,6 +70,13 @@ class ModelMetrics:
         ]
     )
 
+    generate_proportion_of_predictions_within_range_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class RunLinearRegressionModelSchema:

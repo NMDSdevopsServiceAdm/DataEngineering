@@ -42,6 +42,7 @@ class MainTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.generate_proportion_of_predictions_within_range")
     @patch(f"{PATCH_PATH}.generate_metric")
     @patch(f"{PATCH_PATH}.calculate_residual_between_predicted_and_known_filled_posts")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -52,9 +53,11 @@ class MainTests(SaveModelMetricsTests):
         read_from_parquet_mock: Mock,
         calculate_residual_between_predicted_and_known_filled_posts_mock: Mock,
         generate_metric_mock: Mock,
+        generate_proportion_of_predictions_within_range_mock: Mock,
     ):
         generate_model_metrics_s3_path_mock.return_value = self.metrics_path
         generate_metric_mock.return_value = 0.5
+        generate_proportion_of_predictions_within_range_mock.return_value = 0.5
 
         job.save_model_metrics(
             self.mock_model,
@@ -70,6 +73,9 @@ class MainTests(SaveModelMetricsTests):
         read_from_parquet_mock.assert_called_once_with(self.metrics_path),
         calculate_residual_between_predicted_and_known_filled_posts_mock.assert_called_once()
         self.assertEqual(generate_metric_mock.call_count, 2)
+        self.assertEqual(
+            generate_proportion_of_predictions_within_range_mock.call_count, 2
+        )
 
 
 class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
@@ -160,3 +166,21 @@ class GenerateMetricTests(SaveModelMetricsTests):
 
     def test_generate_metric_returns_float(self):
         self.assertIsInstance(self.r2, float)
+
+
+class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_proportion_of_predictions_within_range_returns_expected_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.generate_proportion_of_predictions_within_range_rows,
+            Schemas.generate_proportion_of_predictions_within_range_schema,
+        )
+        returned_proportion = job.generate_proportion_of_predictions_within_range(
+            test_df, Data.range_cutoff
+        )
+
+        self.assertAlmostEqual(returned_proportion, Data.expected_proportion, places=1)

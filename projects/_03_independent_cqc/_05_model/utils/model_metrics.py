@@ -1,6 +1,9 @@
 from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, functions as F
+from pyspark.sql.types import (
+    IntegerType,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
@@ -46,6 +49,12 @@ def save_model_metrics(
     )
     r2_value = generate_metric(model_evaluator, predictions_df, IndCqc.r2)
     rmse_value = generate_metric(model_evaluator, predictions_df, IndCqc.rmse)
+    prediction_within_10_posts = generate_proportion_of_predictions_within_range(
+        predictions_df, range_cutoff=10
+    )
+    prediction_within_25_posts = generate_proportion_of_predictions_within_range(
+        predictions_df, range_cutoff=25
+    )
 
 
 def generate_model_metrics_s3_path(
@@ -112,3 +121,28 @@ def generate_metric(
     )
     print(f"Calculating {metric_name} = {metric_value}")
     return metric_value
+
+
+def generate_proportion_of_predictions_within_range(
+    predictions_df: DataFrame, range_cutoff: int
+) -> float:
+    """
+    Calculates the proportion of residuals within a given range.
+
+    Args:
+        predictions_df (DataFrame): DataFrame with residuals.
+        range_cutoff (int): The threshold within which residuals are considered accurate.
+
+    Returns:
+        float: The rounded proportion of predictions within the given range.
+    """
+    within_range: str = "within_range"
+    predictions_df = predictions_df.withColumn(
+        within_range,
+        (F.abs(F.col(IndCqc.residual)) <= range_cutoff).cast(IntegerType()),
+    )
+
+    in_range_count = predictions_df.agg(F.sum(within_range)).first()[0]
+    total_count = predictions_df.agg(F.count(within_range)).first()[0]
+
+    return round(in_range_count / total_count, 4)
