@@ -595,8 +595,8 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     """
     df = df.withColumn(
         IndCQC.difference_between_estimate_and_cqc_registered_managers,
-        F.col(IndCQC.registered_manager_count)
-        - F.col(MainJobRoleLabels.registered_manager),
+        F.col(MainJobRoleLabels.registered_manager)
+        - F.col(IndCQC.registered_manager_count),
     )
 
     return df
@@ -842,3 +842,23 @@ def transform_interpolated_job_role_ratios_to_counts(
     )
 
     return df
+
+
+def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> DataFrame:
+    """
+    Created a filled_posts column which represents the total number of filled posts per location_id based on job role breakdown.
+
+    Args:
+        df (DataFrame): A dataframe with individual job role breakdown.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
+
+    Returns:
+        DataFrame: A dataframe with a filled_posts column which is the sum of every individual job role per location_id.
+
+    """
+
+    df_result = df.withColumn(
+        IndCQC.filled_posts, sum([F.col(job_role) for job_role in list_of_job_roles])
+    )
+
+    return df_result

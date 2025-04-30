@@ -3,9 +3,6 @@ from datetime import date
 
 from pyspark.ml.linalg import Vectors
 
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResColumns as CTNR,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
@@ -48,68 +45,6 @@ from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
-
-@dataclass
-class CalculatePaRatioData:
-    calculate_pa_ratio_rows = [
-        (2021, 1.0),
-        (2021, 2.0),
-        (2021, 2.0),
-        (2021, 1.0),
-        (2021, 1.0),
-    ]
-
-    exclude_outliers_rows = [
-        (2021, 10.0),
-        (2021, 20.0),
-        (2021, 0.0),
-        (2021, 9.0),
-        (2021, 1.0),
-        (2021, -1.0),
-    ]
-
-    calculate_average_ratio_rows = [
-        (2021, 1.0),
-        (2021, 2.0),
-        (2020, 1.0),
-        (2020, 1.0),
-        (2019, 2.0),
-        (2019, 2.0),
-    ]
-
-    add_historic_rows = [
-        (2011, None),
-        (2012, None),
-        (2013, None),
-        (2014, 1.0),
-        (2015, None),
-        (2016, None),
-        (2017, 1.0),
-        (2018, None),
-        (2019, 1.0),
-        (2020, 1.0),
-        (2021, 1.0),
-        (2022, 1.6),
-        (2023, 2.2),
-    ]
-
-    apply_rolling_average_rows = [
-        (2019, 1.0),
-        (2020, 1.0),
-        (2021, 1.0),
-        (2022, 1.6),
-        (2023, 2.2),
-    ]
-
-    reduce_year_by_one_rows = [
-        (2024, "some data"),
-        (2023, "other data"),
-    ]
-    expected_reduce_year_by_one_rows = [
-        (2023, "some data"),
-        (2022, "other data"),
-    ]
 
 
 @dataclass
@@ -215,254 +150,6 @@ class ASCWDSWorkerData:
     ]
     expected_remove_workers_with_not_known_job_role_rows = [
         ("1001", date(2024, 3, 1), "8"),
-    ]
-
-
-@dataclass
-class ASCWDSWorkplaceData:
-    workplace_rows = [
-        (
-            "1-000000001",
-            "101",
-            14,
-            16,
-            "20200101",
-            "1",
-            date(2021, 2, 1),
-            0,
-            "201",
-            "01/02/2021",
-            "A101",
-        ),
-        (
-            "1-000000002",
-            "102",
-            76,
-            65,
-            "20200101",
-            "1",
-            date(2021, 4, 1),
-            1,
-            None,
-            "01/02/2021",
-            "A102",
-        ),
-        (
-            "1-000000003",
-            "103",
-            34,
-            34,
-            "20200101",
-            "2",
-            date(2021, 3, 1),
-            0,
-            "203",
-            "01/02/2021",
-            "A103",
-        ),
-        (
-            "1-000000004",
-            "104",
-            234,
-            265,
-            "20190101",
-            "2",
-            date(2021, 4, 1),
-            0,
-            None,
-            "01/02/2021",
-            "A104",
-        ),
-        (
-            "1-000000005",
-            "105",
-            62,
-            65,
-            "20190101",
-            "3",
-            date(2021, 10, 1),
-            0,
-            None,
-            "01/02/2021",
-            "A105",
-        ),
-        (
-            "1-000000006",
-            "106",
-            77,
-            77,
-            "20190101",
-            "3",
-            date(2020, 3, 1),
-            1,
-            None,
-            "01/02/2021",
-            "A106",
-        ),
-        (
-            "1-000000007",
-            "107",
-            51,
-            42,
-            "20190101",
-            " 3",
-            date(2021, 5, 1),
-            0,
-            None,
-            "01/05/2021",
-            "A107",
-        ),
-        (
-            "1-000000008",
-            "108",
-            36,
-            34,
-            "20190101",
-            "4",
-            date(2021, 7, 1),
-            0,
-            None,
-            "01/05/2021",
-            "A108",
-        ),
-        (
-            "1-000000009",
-            "109",
-            34,
-            32,
-            "20190101",
-            "5",
-            date(2021, 12, 1),
-            0,
-            None,
-            "01/05/2021",
-            "A109",
-        ),
-        (
-            "1-0000000010",
-            "110",
-            14,
-            20,
-            "20190101",
-            "6",
-            date(2021, 3, 1),
-            0,
-            None,
-            "01/05/2021",
-            "A1010",
-        ),
-    ]
-
-    filter_test_account_when_orgid_present_rows = [
-        ("1-001", "310"),
-        ("1-002", "2452"),
-        ("1-003", "308"),
-        ("1-004", "1234"),
-        ("1-005", "31138"),
-    ]
-    expected_filter_test_account_when_orgid_present_rows = [
-        ("1-004", "1234"),
-    ]
-
-    filter_test_account_when_orgid_not_present_rows = [
-        ("1-001", "20250101"),
-        ("1-002", "20250101"),
-        ("1-003", "20250101"),
-        ("1-004", "20250101"),
-        ("1-005", "20250101"),
-    ]
-
-    remove_white_space_from_nmdsid_rows = [
-        ("1-001", "A123  "),
-        ("1-002", "A1234 "),
-        ("1-003", "A12345"),
-    ]
-    expected_remove_white_space_from_nmdsid_rows = [
-        ("1-001", "A123"),
-        ("1-002", "A1234"),
-        ("1-003", "A12345"),
-    ]
-
-    small_location_rows = [
-        ("loc-1", "2020-01-01", "1"),
-        ("loc-2", "2020-01-01", "2"),
-        ("loc-3", "2020-01-01", "3"),
-        ("loc-4", "2021-01-01", "4"),
-        (None, "2021-01-01", "5"),
-        (None, "2021-01-01", "6"),
-    ]
-
-    location_rows_with_duplicates = [
-        *small_location_rows,
-        ("loc-3", "2020-01-01", "7"),
-        ("loc-4", "2021-01-01", "8"),
-    ]
-
-    location_rows_with_different_import_dates = [
-        *small_location_rows,
-        ("loc-3", "2021-01-01", "3"),
-        ("loc-4", "2022-01-01", "4"),
-    ]
-
-    expected_filtered_location_rows = [
-        ("loc-1", "2020-01-01", "1"),
-        ("loc-2", "2020-01-01", "2"),
-        (None, "2021-01-01", "5"),
-        (None, "2021-01-01", "6"),
-    ]
-
-    mupddate_for_org_rows = [
-        ("1", date(2024, 3, 1), "1", date(2024, 1, 10)),
-        ("1", date(2024, 3, 1), "2", date(2024, 1, 20)),
-        ("1", date(2024, 4, 1), "3", date(2024, 3, 10)),
-        ("1", date(2024, 4, 1), "4", date(2024, 3, 15)),
-        ("2", date(2024, 4, 1), "5", date(2024, 2, 15)),
-        ("2", date(2024, 4, 1), "6", date(2024, 3, 10)),
-    ]
-    expected_mupddate_for_org_rows = [
-        ("1", date(2024, 3, 1), "1", date(2024, 1, 10), date(2024, 1, 20)),
-        ("1", date(2024, 3, 1), "2", date(2024, 1, 20), date(2024, 1, 20)),
-        ("1", date(2024, 4, 1), "3", date(2024, 3, 10), date(2024, 3, 15)),
-        ("1", date(2024, 4, 1), "4", date(2024, 3, 15), date(2024, 3, 15)),
-        ("2", date(2024, 4, 1), "5", date(2024, 2, 15), date(2024, 3, 10)),
-        ("2", date(2024, 4, 1), "6", date(2024, 3, 10), date(2024, 3, 10)),
-    ]
-
-    add_purge_data_col_rows = [
-        ("1", "Yes", date(2024, 2, 2), date(2024, 2, 2)),
-        ("2", "Yes", date(2024, 2, 2), date(2024, 3, 3)),
-        ("3", "No", date(2024, 2, 2), date(2024, 2, 2)),
-        ("4", "No", date(2024, 2, 2), date(2024, 3, 3)),
-    ]
-    expected_add_purge_data_col_rows = [
-        ("1", "Yes", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
-        ("2", "Yes", date(2024, 2, 2), date(2024, 3, 3), date(2024, 3, 3)),
-        ("3", "No", date(2024, 2, 2), date(2024, 2, 2), date(2024, 2, 2)),
-        ("4", "No", date(2024, 2, 2), date(2024, 3, 3), date(2024, 2, 2)),
-    ]
-
-    add_workplace_last_active_date_col_rows = [
-        ("1", date(2024, 3, 3), date(2024, 2, 2)),
-        ("2", date(2024, 4, 4), date(2024, 5, 5)),
-    ]
-    expected_add_workplace_last_active_date_col_rows = [
-        ("1", date(2024, 3, 3), date(2024, 2, 2), date(2024, 3, 3)),
-        ("2", date(2024, 4, 4), date(2024, 5, 5), date(2024, 5, 5)),
-    ]
-
-    date_col_for_purging_rows = [
-        ("1", date(2024, 3, 3)),
-        ("2", date(2024, 4, 4)),
-    ]
-    expected_date_col_for_purging_rows = [
-        ("1", date(2024, 3, 3), date(2022, 3, 3)),
-        ("2", date(2024, 4, 4), date(2022, 4, 4)),
-    ]
-
-    workplace_last_active_rows = [
-        ("1", date(2024, 4, 4), date(2024, 5, 5)),
-        ("2", date(2024, 4, 4), date(2024, 4, 4)),
-        ("3", date(2024, 4, 4), date(2024, 3, 3)),
     ]
 
 
@@ -577,166 +264,6 @@ class ONSData:
         ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
     ]
     # fmt: on
-
-
-@dataclass
-class PAFilledPostsByIcbArea:
-    # fmt: off
-    sample_ons_contemporary_with_duplicates_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
-    ]
-
-    sample_ons_contemporary_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1"),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2"),
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3"),
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3"),
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3"),
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1"),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1"),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1"),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2"),
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3"),
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3"),
-    ]
-
-    expected_postcode_count_per_la_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1",3),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2",4),
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3",4),
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3",4),
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3",4),
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1",3),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2",3),
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3",3),
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3",3),
-    ]
-
-    expected_postcode_count_per_la_icb_rows = [
-        ("AB10AA", date(2024,1,1), "cssr1", "icb1", 3),
-        ("AB10AB", date(2024,1,1), "cssr1", "icb1", 3),
-        ("AB10AC", date(2024,1,1), "cssr1", "icb1", 3),
-        ("AB10AA", date(2024,1,1), "cssr2", "icb2", 1),
-        ("AB10AB", date(2024,1,1), "cssr2", "icb3", 3),
-        ("AB10AC", date(2024,1,1), "cssr2", "icb3", 3),
-        ("AB10AD", date(2024,1,1), "cssr2", "icb3", 3),
-        ("AB10AA", date(2023,1,1), "cssr1", "icb1", 3),
-        ("AB10AB", date(2023,1,1), "cssr1", "icb1", 3),
-        ("AB10AC", date(2023,1,1), "cssr1", "icb1", 3),
-        ("AB10AA", date(2023,1,1), "cssr2", "icb2", 1),
-        ("AB10AB", date(2023,1,1), "cssr2", "icb3", 2),
-        ("AB10AC", date(2023,1,1), "cssr2", "icb3", 2),
-    ]
-
-    sample_rows_with_la_and_hybrid_area_postcode_counts = [
-        (date(2024,1,1), 3, 3),
-        (date(2024,1,1), 4, 1),
-        (date(2024,1,1), 4, 3),
-        (date(2023,1,1), 3, 3),
-        (date(2023,1,1), 3, 1),
-        (date(2023,1,1), 3, 2),
-    ]
-
-    expected_ratio_between_hybrid_area_and_la_area_postcodes_rows = [
-        (date(2024,1,1), 3, 3, 1.00000),
-        (date(2024,1,1), 4, 1, 0.25000),
-        (date(2024,1,1), 4, 3, 0.75000),
-        (date(2023,1,1), 3, 3, 1.00000),
-        (date(2023,1,1), 3, 1, 0.33333),
-        (date(2023,1,1), 3, 2, 0.66666),
-    ]
-
-    full_rows_with_la_and_hybrid_area_postcode_counts = [
-        ("AB10AA", date(2023,5,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AB", date(2023,5,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AA", date(2023,5,1), "cssr2", "icb2", 4, 1, 0.25000),
-        ("AB10AB", date(2023,5,1), "cssr2", "icb3", 4, 3, 0.75000),
-        ("AB10AA", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AB", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
-        ("AB10AC", date(2022,5,1), "cssr1", "icb1", 3, 3, 1.00000),
-    ]
-
-    expected_deduplicated_import_date_hybrid_and_la_and_ratio_rows = [
-        (date(2023,5,1), "cssr1", "icb1", 1.00000),
-        (date(2023,5,1), "cssr2", "icb2", 0.25000),
-        (date(2023,5,1), "cssr2", "icb3", 0.75000),
-        (date(2022,5,1), "cssr1", "icb1", 1.00000),
-    ]
-    # fmt: on
-
-    sample_pa_filled_posts_rows = [
-        ("Leeds", 100.2, 2023, "2023"),
-        ("Bradford", 200.3, 2023, "2023"),
-        ("Hull", 300.3, 2022, "2023"),
-    ]
-
-    expected_create_date_column_from_year_in_pa_estimates_rows = [
-        ("Leeds", 100.2, 2023, "2023", date(2024, 3, 31)),
-        ("Bradford", 200.3, 2023, "2023", date(2024, 3, 31)),
-        ("Hull", 300.3, 2022, "2023", date(2023, 3, 31)),
-    ]
-
-    sample_postcode_proportions_before_joining_pa_filled_posts_rows = [
-        (date(2023, 5, 1), "Leeds", "icb1", 1.00000),
-        (date(2023, 5, 1), "Bradford", "icb2", 0.25000),
-        (date(2023, 5, 1), "Bradford", "icb3", 0.75000),
-        (date(2022, 5, 1), "Leeds", "icb1", 1.00000),
-        (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000),
-    ]
-
-    sample_pa_filled_posts_prepared_for_joining_to_postcode_proportions_rows = [
-        ("Leeds", 100.2, "2023", date(2024, 3, 31)),
-        ("Bradford", 200.3, "2023", date(2024, 3, 31)),
-        ("Leeds", 300.3, "2022", date(2023, 3, 31)),
-        ("Barking and Dagenham", 300.3, "2022", date(2023, 3, 31)),
-    ]
-
-    # fmt: off
-    expected_postcode_proportions_after_joining_pa_filled_posts_rows = [
-        (date(2023,5,1), "Leeds", "icb1", 1.00000, 100.2, "2023"),
-        (date(2023,5,1), "Bradford", "icb2", 0.25000, 200.3, "2023"),
-        (date(2023,5,1), "Bradford", "icb3", 0.75000, 200.3, "2023"),
-        (date(2022,5,1), "Leeds", "icb1", 1.00000, 300.3, "2022"),
-        (date(2022, 5, 1), "Barking & Dagenham", "icb4", 1.00000, None, None),
-    ]
-
-    sample_proportions_and_pa_filled_posts_rows = [
-        (0.25000, 100.2),
-        (None, 200.3),
-        (0.75000, None),
-        (None, None),
-    ]
-
-    expected_pa_filled_posts_after_applying_proportions_rows = [
-        (0.25000, 25.05000),
-        (None, None),
-        (0.75000, None),
-        (None, None),
-    ]
-    # fmt: on
-
-    sample_la_name_rows = [
-        ("Bath & N E Somerset",),
-        ("Southend",),
-        ("Bedford",),
-        (None,),
-    ]
-
-    expected_la_names_with_correct_spelling_rows = [
-        ("Bath and North East Somerset",),
-        ("Southend on Sea",),
-        ("Bedford",),
-        (None,),
-    ]
 
 
 @dataclass
@@ -6567,6 +6094,19 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
+    create_test_and_train_datasets_rows = [
+        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
+        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
+        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
+        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
+        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+
+    train_lasso_regression_model_rows = [
+        (Vectors.dense([1.0, 2.0]), 5.0),
+        (Vectors.dense([2.0, 1.0]), 4.0),
+    ]
+
 
 @dataclass
 class MLModelMetrics:
@@ -10910,16 +10450,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
 
     estimate_and_cqc_registered_manager_rows = [
-        ("1-001", 1, 0.0),
-        ("1-002", 1, 10.0),
-        ("1-003", 1, None),
-        ("1-004", None, 10.0),
+        ("1-001", 0.0, 1),
+        ("1-002", 10.0, 1),
+        ("1-003", None, 1),
+        ("1-004", 10.0, None),
     ]
     expected_estimate_and_cqc_registered_manager_rows = [
-        ("1-001", 1, 0.0, 1.0),
-        ("1-002", 1, 10.0, -9.0),
-        ("1-003", 1, None, None),
-        ("1-004", None, 10.0, None),
+        ("1-001", 0.0, 1, -1.0),
+        ("1-002", 10.0, 1, 9.0),
+        ("1-003", None, 1, None),
+        ("1-004", 10.0, None, None),
     ]
 
     sum_job_group_counts_from_job_role_count_map_rows = [
@@ -11732,6 +11272,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             },
             -0.5,
         ),
+    ]
+
+    recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0),
+    ]
+
+    expected_recalculate_total_filled_posts_rows = [
+        ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
+        ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
     ]
 
 
