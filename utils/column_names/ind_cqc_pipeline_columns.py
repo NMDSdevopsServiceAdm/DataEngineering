@@ -167,6 +167,7 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
+    imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
@@ -202,8 +203,6 @@ class IndCqcColumns:
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
-    non_res_combined_model: str = "non_res_combined_model"
-    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"

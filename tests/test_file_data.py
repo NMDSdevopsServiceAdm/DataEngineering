@@ -4835,19 +4835,6 @@ class CareHomeFeaturesData:
             "20230101",
         ),
     ]
-    # fmt: on
-
-
-@dataclass
-class NonResPirFeaturesData:
-    # fmt: off
-    feature_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 5.0, 10, 10.0, "2024", "01", "01", "20240101"),
-        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 5.0, None, 10.25, "2024", "02", "01", "20240201"),
-        ("1-002", date(2024, 3, 1), CareHome.not_care_home, 5.0, None, None, "2024", "03", "01", "20240301"),
-        ("1-003", date(2024, 4, 1), CareHome.care_home, 5.0, 10, 10.0, "2024", "04", "01", "20240401"),
-    ]
-    # fmt: on
 
 
 @dataclass
@@ -5907,45 +5894,6 @@ class ModelNonResWithAndWithoutDormancyCombinedRows:
         ("1-002", 11.0, None, 11.0),
         ("1-003", None, 16.0, 16.0),
         ("1-004", None, None, None),
-    ]
-
-
-@dataclass
-class ModelNonResPirLinearRegressionRows:
-    non_res_pir_cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-        ("1-001", date(2024, 2, 1), CareHome.not_care_home, 10.25),
-        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
-        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
-    ]
-    non_res_pir_features_rows = [
-        (
-            "1-001",
-            date(2024, 1, 1),
-            CareHome.not_care_home,
-            10.0,
-            Vectors.dense([10.0]),
-        ),
-        (
-            "1-001",
-            date(2024, 2, 1),
-            CareHome.not_care_home,
-            10.25,
-            Vectors.dense([10.25]),
-        ),
-    ]
-
-    non_res_location_with_pir_row = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-    ]
-    expected_non_res_location_with_pir_row = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0, 10.64385),
-    ]
-    non_res_location_without_pir_row = [
-        ("1-002", date(2024, 3, 1), CareHome.not_care_home, None),
-    ]
-    care_home_location_row = [
-        ("1-003", date(2024, 4, 1), CareHome.care_home, 15.0),
     ]
 
 
@@ -7757,32 +7705,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ValidateImputedIndCqcAscwdsAndPir:
-    # fmt: off
-    cleaned_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1),),
-        ("1-000000002", date(2024, 1, 1),),
-        ("1-000000001", date(2024, 2, 1),),
-        ("1-000000002", date(2024, 2, 1),),
-    ]
-
-    imputed_ind_cqc_ascwds_and_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5, "source", 5.0, 5.0, 5),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            date(2024, 1, 1),
-        ),
-    ]
-
-
-@dataclass
 class ValidateCareHomeIndCqcFeaturesData:
     # fmt: off
     cleaned_ind_cqc_rows = [
@@ -7866,32 +7788,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
         ("1-005", date(2025, 1, 2), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - date after 1/1/2025
     ]
     # fmt: on
-
-
-@dataclass
-class ValidateFeaturesNonResPirIndCqcData:
-    cleaned_ind_cqc_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-        ("1-002", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-        ("1-001", date(2024, 1, 9), CareHome.not_care_home, 10.0),
-        ("1-002", date(2024, 1, 9), CareHome.not_care_home, 10.0),
-    ]
-
-    non_res_pir_ind_cqc_features_rows = [
-        ("1-001", date(2024, 1, 1)),
-        ("1-002", date(2024, 1, 1)),
-        ("1-001", date(2024, 1, 9)),
-        ("1-002", date(2024, 1, 9)),
-    ]
-
-    calculate_expected_size_rows = [
-        ("1-001", date(2024, 1, 1), CareHome.care_home, 10.0),
-        ("1-002", date(2024, 1, 1), CareHome.care_home, None),
-        ("1-003", date(2024, 1, 1), CareHome.not_care_home, 10.0),
-        ("1-004", date(2024, 1, 1), CareHome.not_care_home, None),
-        ("1-005", date(2024, 1, 1), None, 10.0),
-        ("1-006", date(2024, 1, 1), None, None),
-    ]
 
 
 @dataclass

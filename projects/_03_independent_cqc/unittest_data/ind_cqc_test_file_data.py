@@ -3,7 +3,12 @@ from datetime import date
 
 from pyspark.ml.linalg import Vectors
 
-from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
+from utils.column_values.categorical_column_values import (
+    CareHome,
+    PrimaryServiceType,
+    RegistrationStatus,
+    Sector,
+)
 
 
 @dataclass
@@ -176,6 +181,32 @@ class ModelAndMergePirData:
         ("loc 2", date(2023, 1, 1), date(2020, 1, 1), date(2023, 1, 1), 5.0, 10.0, None, None),
     ]
     # fmt: on
+
+
+@dataclass
+class ValidateImputedIndCqcAscwdsAndPir:
+    # fmt: off
+    cleaned_ind_cqc_rows = [
+        ("1-000000001", date(2024, 1, 1),),
+        ("1-000000002", date(2024, 1, 1),),
+        ("1-000000001", date(2024, 2, 1),),
+        ("1-000000002", date(2024, 2, 1),),
+    ]
+
+    imputed_ind_cqc_ascwds_and_pir_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, 5, "source", 5.0, 5),
+        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, 5, "source", 5.0, 5),
+        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "prov_1", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, 5, "source", 5.0, 5),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        (
+            "1-000000001",
+            date(2024, 1, 1),
+        ),
+    ]
 
 
 @dataclass

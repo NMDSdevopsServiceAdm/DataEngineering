@@ -1,14 +1,13 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_imputed_ind_cqc_ascwds_and_pir_data as job
-
-from tests.test_file_data import ValidateImputedIndCqcAscwdsAndPir as Data
-from tests.test_file_schemas import (
+import projects._03_independent_cqc._03_impute.jobs.validate_imputed_ind_cqc_ascwds_and_pir_data as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ValidateImputedIndCqcAscwdsAndPir as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateImputedIndCqcAscwdsAndPir as Schemas,
 )
-
 from utils import utils
 
 
