@@ -302,7 +302,7 @@ def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
     Returns:
         str: The S3 path for the features dataset.
     """
-    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
+    return f"s3://{branch_name}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
 
 
 def generate_model_s3_path(
@@ -319,7 +319,9 @@ def generate_model_s3_path(
     Returns:
         str: The S3 path for the model dataset.
     """
-    return f"s3://sfc-{branch_name}-pipeline-resources/models/{model_name}/{model_version}/"
+    # what if someone names a branch with datasets in?!
+    branch_name_resources: str = branch_name.replace("-datasets", "-pipeline-resources")
+    return f"s3://sfc-{branch_name_resources}-pipeline-resources/models/{model_name}/{model_version}/"
 
 
 def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str:
@@ -333,4 +335,4 @@ def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str
     Returns:
         str: The S3 path for the predictions dataset.
     """
-    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"
+    return f"s3://{branch_name}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"

@@ -25,7 +25,7 @@ PATCH_PATH: str = (
 
 
 class Main(unittest.TestCase):
-    branch_name = "test_branch"
+    branch_name = "sfc-test_branch-datasets"
     care_home_model_name = "test_care_home_model"
     non_res_model_name = "test_non_res_model"
     model_version = "1.0.0"

@@ -25,7 +25,7 @@ class SaveModelMetricsTests(unittest.TestCase):
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
         self.dependent_variable: str = IndCqc.imputed_filled_post_model
-        self.branch_name: str = "test_branch"
+        self.branch_name: str = "sfc-test_branch-datasets"
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"
         self.model_run_number: int = 3
