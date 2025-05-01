@@ -895,7 +895,7 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   script_name       = "estimate_ind_cqc_filled_posts_by_job_role.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 8
+  number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
 
