@@ -5085,260 +5085,6 @@ class ModelExtrapolation:
         ("1-003", 1677628800, None, None, None, None, None, None),
     ]
 
-    job_role_ratios_extrapolation_rows = [
-        ("1-001", 1000000200, None),
-        (
-            "1-001",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        ("1-001", 1000000400, None),
-        (
-            "1-001",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.7,
-                MainJobRoleLabels.registered_nurse: 0.3,
-            },
-        ),
-        ("1-002", 1000000200, None),
-        ("1-002", 1000000300, None),
-        (
-            "1-002",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        ("1-002", 1000000500, None),
-        (
-            "1-003",
-            1000000200,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-003",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-003",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
-            },
-        ),
-        (
-            "1-003",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        ("1-004", 1000000200, None),
-        (
-            "1-004",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-        ),
-        ("1-004", 1000000400, None),
-        ("1-004", 1000000500, None),
-        ("1-005", 1000000200, None),
-        ("1-005", 1000000300, None),
-        ("1-005", 1000000400, None),
-        ("1-005", 1000000500, None),
-    ]
-
-    expected_job_role_ratios_extrapolation_rows = [
-        (
-            "1-001",
-            1000000200,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-001",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-001",
-            1000000400,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-001",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.7,
-                MainJobRoleLabels.registered_nurse: 0.3,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.7,
-                MainJobRoleLabels.registered_nurse: 0.3,
-            },
-        ),
-        (
-            "1-002",
-            1000000200,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-002",
-            1000000300,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-002",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-002",
-            1000000500,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-003",
-            1000000200,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-003",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-003",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
-            },
-        ),
-        (
-            "1-003",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-004",
-            1000000200,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-        ),
-        (
-            "1-004",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-        ),
-        (
-            "1-004",
-            1000000400,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-        ),
-        (
-            "1-004",
-            1000000500,
-            None,
-            {
-                MainJobRoleLabels.care_worker: 0.8,
-                MainJobRoleLabels.registered_nurse: 0.2,
-            },
-        ),
-        ("1-005", 1000000200, None, None),
-        ("1-005", 1000000300, None, None),
-        ("1-005", 1000000400, None, None),
-        ("1-005", 1000000500, None, None),
-    ]
-
 
 @dataclass
 class ModelInterpolation:
@@ -11110,6 +10856,260 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
             None,
         ),
+    ]
+
+    job_role_ratios_extrapolation_rows = [
+        ("1-001", 1000000200, None),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        ("1-001", 1000000400, None),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        ("1-002", 1000000200, None),
+        ("1-002", 1000000300, None),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        ("1-002", 1000000500, None),
+        (
+            "1-003",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        (
+            "1-003",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-003",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.55,
+                MainJobRoleLabels.registered_nurse: 0.45,
+            },
+        ),
+        (
+            "1-003",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        ("1-004", 1000000200, None),
+        (
+            "1-004",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-004", 1000000400, None),
+        ("1-004", 1000000500, None),
+        ("1-005", 1000000200, None),
+        ("1-005", 1000000300, None),
+        ("1-005", 1000000400, None),
+        ("1-005", 1000000500, None),
+    ]
+
+    expected_job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-002",
+            1000000300,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-002",
+            1000000500,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-003",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        ),
+        (
+            "1-003",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-003",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.55,
+                MainJobRoleLabels.registered_nurse: 0.45,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.55,
+                MainJobRoleLabels.registered_nurse: 0.45,
+            },
+        ),
+        (
+            "1-003",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.6,
+                MainJobRoleLabels.registered_nurse: 0.4,
+            },
+        ),
+        (
+            "1-004",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-004",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-004",
+            1000000400,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-004",
+            1000000500,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.8,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-005", 1000000200, None, None),
+        ("1-005", 1000000300, None, None),
+        ("1-005", 1000000400, None, None),
+        ("1-005", 1000000500, None, None),
     ]
 
     recalculate_managerial_filled_posts_rows = [
