@@ -1,10 +1,9 @@
 import unittest
 import warnings
-from unittest.mock import ANY, MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from datetime import date
 from pyspark.sql import functions as F
-from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegressionModel
 
 from utils.estimate_filled_posts.models import utils as job
@@ -22,7 +21,8 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.model_source: str = "s3://pipeline-resources/models/model_name/1.0.0/"
-        self.branch_name: str = "s3://sfc-test_branch-datasets"
+        self.branch_datasets_name: str = "s3://sfc-test_branch-datasets"
+        self.branch_resources_name: str = "s3://sfc-test_branch-pipeline-resources"
         self.model_name = "test_model"
         self.model_version = "1.0.0"
 
@@ -476,7 +476,7 @@ class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
 
     def test_generate_model_features_s3_path_returns_expected_path(self):
         returned_path = job.generate_model_features_s3_path(
-            self.branch_name, self.model_name
+            self.branch_datasets_name, self.model_name
         )
         expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name=test_model/"
 
@@ -489,7 +489,7 @@ class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
 
     def test_generate_model_s3_path_returns_expected_path(self):
         returned_path = job.generate_model_s3_path(
-            self.branch_name, self.model_name, self.model_version
+            self.branch_resources_name, self.model_name, self.model_version
         )
         expected_path = (
             "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
@@ -504,7 +504,7 @@ class GenerateModelPredictionsS3PathTests(EstimateFilledPostsModelsUtilsTests):
 
     def test_generate_model_predictions_s3_path_returns_expected_path(self):
         returned_path = job.generate_model_predictions_s3_path(
-            self.branch_name, self.model_name
+            self.branch_datasets_name, self.model_name
         )
         expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name=test_model/"
 
