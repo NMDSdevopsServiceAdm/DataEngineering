@@ -3,7 +3,6 @@ from typing import Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
-from utils.estimate_filled_posts.models.utils import set_min_value
 
 
 def model_extrapolation(
@@ -108,7 +107,8 @@ def extrapolation_forwards(
     """
     Calculates the forward extrapolation and adds it as a new column 'extrapolation_forwards'.
 
-    Calculates the forward extrapolation based on the last known non-null value and the rate of change of the selected model value, and adds it as a new column 'extrapolation_forwards'.
+    Calculates the forward extrapolation based on the difference between the modelled value at
+    the time of the last known non-null value and the modelled value at that point in time.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
@@ -139,21 +139,9 @@ def extrapolation_forwards(
     df = df.withColumn(
         IndCqc.extrapolation_forwards,
         F.col(IndCqc.previous_non_null_value)
-        * F.col(model_to_extrapolate_from)
-        / F.col(IndCqc.previous_model_value),
-    )
-    df = df.withColumn(
-        "extrapolation_forwards_nominal",
-        F.col(IndCqc.previous_non_null_value)
         + F.col(model_to_extrapolate_from)
         - F.col(IndCqc.previous_model_value),
     )
-    df = df.withColumn(
-        "extrapolation_forwards_avg",
-        (F.col(IndCqc.extrapolation_forwards) + F.col("extrapolation_forwards_nominal"))
-        / 2,
-    )
-
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
     return df
@@ -168,7 +156,8 @@ def extrapolation_backwards(
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
-    Calculates the backward extrapolation based on the first non null value and the first modelled value, and adds it as a new column 'extrapolation_backwards'.
+    Calculates the backward extrapolation based on the difference between the modelled value at
+    the time of the first known non-null value and the modelled value at that point in time.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -202,27 +191,8 @@ def extrapolation_backwards(
         F.when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.first_non_null_value)
-            * (F.col(model_to_extrapolate_from) / F.col(IndCqc.first_model_value)),
-        ),
-    )
-    df = df.withColumn(
-        "extrapolation_backwards_nominal",
-        F.when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            F.col(IndCqc.first_non_null_value)
             + F.col(model_to_extrapolate_from)
             - F.col(IndCqc.first_model_value),
-        ),
-    )
-    df = df.withColumn(
-        "extrapolation_backwards_avg",
-        F.when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            (
-                F.col(IndCqc.extrapolation_backwards)
-                + F.col("extrapolation_backwards_nominal")
-            )
-            / 2,
         ),
     )
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
@@ -255,26 +225,4 @@ def combine_extrapolation(df: DataFrame) -> DataFrame:
             F.col(IndCqc.extrapolation_backwards),
         ),
     )
-    df = df.withColumn(
-        "extrapolation_model_nominal",
-        F.when(
-            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
-            F.col("extrapolation_forwards_nominal"),
-        ).when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            F.col("extrapolation_backwards_nominal"),
-        ),
-    )
-    df = df.withColumn(
-        "extrapolation_model_avg",
-        F.when(
-            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
-            F.col("extrapolation_forwards_avg"),
-        ).when(
-            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
-            F.col("extrapolation_backwards_avg"),
-        ),
-    )
-    df = set_min_value(df, "extrapolation_model_nominal", 1.0)
-    df = set_min_value(df, "extrapolation_model_avg", 1.0)
     return df

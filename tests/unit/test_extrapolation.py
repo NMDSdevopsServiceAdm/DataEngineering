@@ -12,6 +12,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from tests.test_file_data import ModelExtrapolation as Data
 from tests.test_file_schemas import ModelExtrapolation as Schemas
 
+PATCH_PATH = "import utils.estimate_filled_posts.models.extrapolation"
+
 
 class ModelExtrapolationTests(unittest.TestCase):
     def setUp(self):
@@ -84,7 +86,7 @@ class CalculateFirstAndLastSubmissionDatesTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_calculate_first_and_final_submission_dates_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -164,7 +166,7 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_extrapolation_forwards_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -205,8 +207,8 @@ class ExtrapolationForwardsTests(ModelExtrapolationTests):
     def test_extrapolation_forwards_added_as_a_new_column(self):
         self.assertIn(IndCqc.extrapolation_forwards, self.returned_df.columns)
 
-    # def test_returned_extrapolation_forwards_values_match_expected(self):
-    #     self.assertEqual(self.returned_data, self.expected_data)
+    def test_returned_extrapolation_forwards_values_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
 class ExtrapolationBackwardsTests(ModelExtrapolationTests):
@@ -244,7 +246,7 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.extrapolation.get_selected_value")
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_extrapolation_backwards_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -285,35 +287,37 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
     def test_extrapolation_backwards_added_as_a_new_column(self):
         self.assertIn(IndCqc.extrapolation_backwards, self.returned_df.columns)
 
-    # def test_returned_extrapolation_backwards_values_match_expected(self):
-    #     self.assertEqual(self.returned_data, self.expected_data)
+    def test_returned_extrapolation_backwards_values_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)
 
 
-# class CombineExtrapolationTests(ModelExtrapolationTests):
-#     def setUp(self):
-#         super().setUp()
+class CombineExtrapolationTests(ModelExtrapolationTests):
+    def setUp(self):
+        super().setUp()
 
-#         test_combine_extrapolation_df = self.spark.createDataFrame(
-#             Data.combine_extrapolation_rows,
-#             Schemas.combine_extrapolation_schema,
-#         )
-#         self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
-#         self.expected_df = self.spark.createDataFrame(
-#             Data.expected_combine_extrapolation_rows,
-#             Schemas.expected_combine_extrapolation_schema,
-#         )
-#         self.returned_data = self.returned_df.sort(
-#             IndCqc.location_id, IndCqc.unix_time
-#         ).collect()
-#         self.expected_data = self.expected_df.collect()
+        test_combine_extrapolation_df = self.spark.createDataFrame(
+            Data.combine_extrapolation_rows,
+            Schemas.combine_extrapolation_schema,
+        )
+        self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_extrapolation_rows,
+            Schemas.expected_combine_extrapolation_schema,
+        )
+        self.returned_data = self.returned_df.sort(
+            IndCqc.location_id, IndCqc.unix_time
+        ).collect()
+        self.expected_data = self.expected_df.collect()
 
-# def test_combine_extrapolation_returns_expected_columns(self):
-#     self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
-# def test_combine_extrapolation_returns_expected_values(self):
-#     for i in range(len(self.returned_data)):
-#         self.assertEqual(
-#             self.returned_data[i][IndCqc.extrapolation_model],
-#             self.expected_data[i][IndCqc.extrapolation_model],
-#             f"Returned value in row {i} does not match expected",
-#         )
+def test_combine_extrapolation_returns_expected_columns(self):
+    self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+
+
+def test_combine_extrapolation_returns_expected_values(self):
+    for i in range(len(self.returned_data)):
+        self.assertEqual(
+            self.returned_data[i][IndCqc.extrapolation_model],
+            self.expected_data[i][IndCqc.extrapolation_model],
+            f"Returned value in row {i} does not match expected",
+        )
