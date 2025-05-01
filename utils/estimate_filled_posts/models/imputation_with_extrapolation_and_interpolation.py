@@ -59,7 +59,7 @@ def model_imputation_with_extrapolation_and_interpolation(
     combined_df = combined_df.drop(
         IndCqc.extrapolation_backwards,
         IndCqc.extrapolation_forwards,
-        IndCqc.extrapolation_model,
+        # IndCqc.extrapolation_model,
         IndCqc.interpolation_model,
         IndCqc.has_non_null_value,
     )
@@ -154,6 +154,22 @@ def model_imputation(
         F.coalesce(
             F.col(column_with_null_values),
             F.col(IndCqc.extrapolation_model),
+            F.col(IndCqc.interpolation_model),
+        ),
+    )
+    df = df.withColumn(
+        imputation_model_column_name + "_nominal",
+        F.coalesce(
+            F.col(column_with_null_values),
+            F.col("extrapolation_model_nominal"),
+            F.col(IndCqc.interpolation_model),
+        ),
+    )
+    df = df.withColumn(
+        imputation_model_column_name + "_avg",
+        F.coalesce(
+            F.col(column_with_null_values),
+            F.col("extrapolation_model_avg"),
             F.col(IndCqc.interpolation_model),
         ),
     )
