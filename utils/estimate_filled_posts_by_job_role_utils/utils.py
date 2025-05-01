@@ -437,22 +437,23 @@ def recalculate_managerial_filled_posts(
     Returns:
         DataFrame: A new DataFrame with updated estimates for non-RM managerial roles.
     """
-    for role in non_rm_managers:
-        df = df.withColumn(
-            role,
-            F.greatest(
-                F.lit(0.0),
-                F.col(role)
-                + (
-                    F.col(
-                        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-                    ).getItem(role)
-                    * F.col(
-                        IndCQC.difference_between_estimate_and_cqc_registered_managers
-                    )
-                ),
+    updated_columns = {
+        role: F.greatest(
+            F.lit(0.0),
+            F.col(role)
+            + (
+                F.col(
+                    IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                ).getItem(role)
+                * F.col(IndCQC.difference_between_estimate_and_cqc_registered_managers)
             ),
-        )
+        ).alias(role)
+        for role in non_rm_managers
+    }
+
+    final_columns = [updated_columns.get(col, F.col(col)) for col in df.columns]
+
+    df = df.select(*final_columns)
 
     return df
 
