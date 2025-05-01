@@ -309,15 +309,13 @@ class CombineExtrapolationTests(ModelExtrapolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
+    def test_combine_extrapolation_returns_expected_columns(self):
+        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
-def test_combine_extrapolation_returns_expected_columns(self):
-    self.assertTrue(self.returned_df.columns, self.expected_df.columns)
-
-
-def test_combine_extrapolation_returns_expected_values(self):
-    for i in range(len(self.returned_data)):
-        self.assertEqual(
-            self.returned_data[i][IndCqc.extrapolation_model],
-            self.expected_data[i][IndCqc.extrapolation_model],
-            f"Returned value in row {i} does not match expected",
-        )
+    def test_combine_extrapolation_returns_expected_values(self):
+        for i in range(len(self.returned_data)):
+            self.assertEqual(
+                self.returned_data[i][IndCqc.extrapolation_model],
+                self.expected_data[i][IndCqc.extrapolation_model],
+                f"Returned value in row {i} does not match expected",
+            )

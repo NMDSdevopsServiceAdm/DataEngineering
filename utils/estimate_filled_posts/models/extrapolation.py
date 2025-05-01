@@ -142,6 +142,7 @@ def extrapolation_forwards(
         + F.col(model_to_extrapolate_from)
         - F.col(IndCqc.previous_model_value),
     )
+
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
     return df

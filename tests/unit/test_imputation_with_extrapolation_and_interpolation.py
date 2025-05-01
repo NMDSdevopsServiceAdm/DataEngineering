@@ -12,6 +12,10 @@ from tests.test_file_schemas import (
     ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
 )
 
+PATCH_PATH = (
+    "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation"
+)
+
 
 class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
     def setUp(self):
@@ -41,12 +45,8 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             care_home=False,
         )
 
-    @patch(
-        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_interpolation"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_extrapolation"
-    )
+    @patch(f"{PATCH_PATH}.model_interpolation")
+    @patch(f"{PATCH_PATH}.model_extrapolation")
     def test_model_imputation_with_extrapolation_and_interpolation_runs(
         self,
         model_extrapolation_mock: Mock,
@@ -223,27 +223,27 @@ class IdentifyLocationsWithANonNullSubmissionTests(
         self.assertEqual(returned_data, expected_data)
 
 
-# class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
-#     def setUp(self) -> None:
-#         super().setUp()
+class ModelImputationTests(ModelImputationWithExtrapolationAndInterpolationTests):
+    def setUp(self) -> None:
+        super().setUp()
 
-#     def test_imputation_model_returns_correct_values(self):
-#         imputation_model: str = "imputation_model"
-#         test_df = self.spark.createDataFrame(
-#             Data.imputation_model_rows, Schemas.imputation_model_schema
-#         )
-#         returned_df = job.model_imputation(
-#             test_df, self.null_value_column, imputation_model
-#         )
-#         expected_df = self.spark.createDataFrame(
-#             Data.expected_imputation_model_rows,
-#             Schemas.expected_imputation_model_schema,
-#         )
-#         returned_data = returned_df.sort(IndCqc.location_id).collect()
-#         expected_data = expected_df.collect()
-#         for i in range(len(returned_data)):
-#             self.assertEqual(
-#                 returned_data[i][imputation_model],
-#                 expected_data[i][imputation_model],
-#                 f"Returned row {i} does not match expected",
-#             )
+    def test_imputation_model_returns_correct_values(self):
+        imputation_model: str = "imputation_model"
+        test_df = self.spark.createDataFrame(
+            Data.imputation_model_rows, Schemas.imputation_model_schema
+        )
+        returned_df = job.model_imputation(
+            test_df, self.null_value_column, imputation_model
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_imputation_model_rows,
+            Schemas.expected_imputation_model_schema,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id).collect()
+        expected_data = expected_df.collect()
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][imputation_model],
+                expected_data[i][imputation_model],
+                f"Returned row {i} does not match expected",
+            )
