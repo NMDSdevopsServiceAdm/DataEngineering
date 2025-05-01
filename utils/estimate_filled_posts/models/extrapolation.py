@@ -3,6 +3,7 @@ from typing import Tuple
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from utils.estimate_filled_posts.models.utils import set_min_value
 
 
 def model_extrapolation(
@@ -141,6 +142,17 @@ def extrapolation_forwards(
         * F.col(model_to_extrapolate_from)
         / F.col(IndCqc.previous_model_value),
     )
+    df = df.withColumn(
+        "extrapolation_forwards_nominal",
+        F.col(IndCqc.previous_non_null_value)
+        + F.col(model_to_extrapolate_from)
+        - F.col(IndCqc.previous_model_value),
+    )
+    df = df.withColumn(
+        "extrapolation_forwards_avg",
+        (F.col(IndCqc.extrapolation_forwards) + F.col("extrapolation_forwards_nominal"))
+        / 2,
+    )
 
     df = df.drop(IndCqc.previous_non_null_value, IndCqc.previous_model_value)
 
@@ -193,6 +205,23 @@ def extrapolation_backwards(
             * (F.col(model_to_extrapolate_from) / F.col(IndCqc.first_model_value)),
         ),
     )
+    df = df.withColumn(
+        IndCqc.extrapolation_forwards,
+        F.col(IndCqc.previous_non_null_value)
+        * F.col(model_to_extrapolate_from)
+        / F.col(IndCqc.previous_model_value),
+    )
+    df = df.withColumn(
+        "extrapolation_backwards_nominal",
+        F.col(IndCqc.first_non_null_value)
+        + F.col(model_to_extrapolate_from)
+        - F.col(IndCqc.first_model_value),
+    )
+    df = df.withColumn(
+        "extrapolation_backwards_avg",
+        (F.col(IndCqc.extrapolation_forwards) + F.col("extrapolation_forwards_nominal"))
+        / 2,
+    )
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
 
     return df
@@ -221,6 +250,26 @@ def combine_extrapolation(df: DataFrame) -> DataFrame:
         ).when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.extrapolation_backwards),
+        ),
+    )
+    df = df.withColumn(
+        "extrapolation_model_nominal",
+        F.when(
+            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
+            set_min_value(df, "extrapolation_forwards_nominal", 1.0),
+        ).when(
+            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+            set_min_value(df, "extrapolation_backwards_nominal", 1.0),
+        ),
+    )
+    df = df.withColumn(
+        "extrapolation_model_avg",
+        F.when(
+            F.col(IndCqc.unix_time) > F.col(IndCqc.final_submission_time),
+            set_min_value(df, "extrapolation_forwards_avg", 1.0),
+        ).when(
+            F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
+            set_min_value(df, "extrapolation_backwards_avg", 1.0),
         ),
     )
     return df
