@@ -117,7 +117,7 @@ def generate_model_metrics_s3_path(
     Returns:
         str: The S3 path for the features dataset.
     """
-    return f"{branch_name}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
 
 
 def calculate_residual_between_predicted_and_known_filled_posts(
