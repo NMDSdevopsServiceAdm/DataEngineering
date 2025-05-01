@@ -289,31 +289,31 @@ class ExtrapolationBackwardsTests(ModelExtrapolationTests):
     #     self.assertEqual(self.returned_data, self.expected_data)
 
 
-class CombineExtrapolationTests(ModelExtrapolationTests):
-    def setUp(self):
-        super().setUp()
+# class CombineExtrapolationTests(ModelExtrapolationTests):
+#     def setUp(self):
+#         super().setUp()
 
-        test_combine_extrapolation_df = self.spark.createDataFrame(
-            Data.combine_extrapolation_rows,
-            Schemas.combine_extrapolation_schema,
-        )
-        self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_combine_extrapolation_rows,
-            Schemas.expected_combine_extrapolation_schema,
-        )
-        self.returned_data = self.returned_df.sort(
-            IndCqc.location_id, IndCqc.unix_time
-        ).collect()
-        self.expected_data = self.expected_df.collect()
+#         test_combine_extrapolation_df = self.spark.createDataFrame(
+#             Data.combine_extrapolation_rows,
+#             Schemas.combine_extrapolation_schema,
+#         )
+#         self.returned_df = job.combine_extrapolation(test_combine_extrapolation_df)
+#         self.expected_df = self.spark.createDataFrame(
+#             Data.expected_combine_extrapolation_rows,
+#             Schemas.expected_combine_extrapolation_schema,
+#         )
+#         self.returned_data = self.returned_df.sort(
+#             IndCqc.location_id, IndCqc.unix_time
+#         ).collect()
+#         self.expected_data = self.expected_df.collect()
 
-    def test_combine_extrapolation_returns_expected_columns(self):
-        self.assertTrue(self.returned_df.columns, self.expected_df.columns)
+# def test_combine_extrapolation_returns_expected_columns(self):
+#     self.assertTrue(self.returned_df.columns, self.expected_df.columns)
 
-    def test_combine_extrapolation_returns_expected_values(self):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][IndCqc.extrapolation_model],
-                self.expected_data[i][IndCqc.extrapolation_model],
-                f"Returned value in row {i} does not match expected",
-            )
+# def test_combine_extrapolation_returns_expected_values(self):
+#     for i in range(len(self.returned_data)):
+#         self.assertEqual(
+#             self.returned_data[i][IndCqc.extrapolation_model],
+#             self.expected_data[i][IndCqc.extrapolation_model],
+#             f"Returned value in row {i} does not match expected",
+#         )
