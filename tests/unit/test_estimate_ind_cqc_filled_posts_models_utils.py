@@ -4,6 +4,7 @@ from unittest.mock import ANY, MagicMock, Mock, patch
 
 from datetime import date
 from pyspark.sql import functions as F
+from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegressionModel
 
 from utils.estimate_filled_posts.models import utils as job
@@ -432,3 +433,79 @@ class LoadLatestModelTests(EstimateFilledPostsModelsUtilsTests):
 
         mock_model_load.assert_called_once_with(expected_load_path)
         self.assertEqual(result, mock_model)
+
+
+class CreateTestAndTrainDatasetsTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.create_test_and_train_datasets_rows,
+            Schemas.create_test_and_train_datasets_schema,
+        )
+        (
+            self.returned_train_df,
+            self.returned_test_df,
+        ) = job.create_test_and_train_datasets(
+            self.test_df,
+            test_ratio=0.2,
+            seed=42,
+        )
+
+    def test_create_test_and_train_datasets_returns_original_columns(self):
+        self.assertEqual(
+            sorted(self.returned_train_df.columns),
+            sorted(self.test_df.columns),
+        )
+
+    def test_create_test_and_train_datasets_returns_original_number_of_rows(self):
+        returned_train_row_count = self.returned_train_df.count()
+        returned_test_row_count = self.returned_test_df.count()
+
+        self.assertEqual(returned_train_row_count, 4)
+        self.assertEqual(returned_test_row_count, 1)
+        self.assertEqual(
+            returned_train_row_count + returned_test_row_count,
+            self.test_df.count(),
+        )
+
+
+class GenerateFeaturesS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_features_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_features_s3_path(
+            self.branch_name, self.model_name
+        )
+        expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name=test_model/"
+
+        self.assertEqual(returned_path, expected_path)
+
+
+class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_s3_path(
+            self.branch_name, self.model_name, self.model_version
+        )
+        expected_path = (
+            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
+        )
+
+        self.assertEqual(returned_path, expected_path)
+
+
+class GenerateModelPredictionsS3PathTests(EstimateFilledPostsModelsUtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_model_predictions_s3_path_returns_expected_path(self):
+        returned_path = job.generate_model_predictions_s3_path(
+            self.branch_name, self.model_name
+        )
+        expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name=test_model/"
+
+        self.assertEqual(returned_path, expected_path)

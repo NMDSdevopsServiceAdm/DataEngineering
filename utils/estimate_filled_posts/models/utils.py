@@ -1,7 +1,7 @@
 import boto3
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
@@ -272,3 +272,65 @@ def load_latest_model_from_s3(model_s3_location: str) -> LinearRegressionModel:
     s3_path = f"{model_s3_location}run={run_number}/"
     print(f"Loading model from: {s3_path}")
     return LinearRegressionModel.load(s3_path)
+
+
+def create_test_and_train_datasets(
+    df: DataFrame, test_ratio: float = 0.2, seed: Optional[int] = None
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Split the DataFrame into training and testing datasets.
+
+    Args:
+        df (DataFrame): The input DataFrame to be split.
+        test_ratio (float): The proportion of the data to include in the test split.
+        seed (Optional[int]): Random seed for reproducibility.
+
+    Returns:
+        Tuple[DataFrame, DataFrame]: A tuple containing the training and testing DataFrames.
+    """
+    return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)
+
+
+def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the features dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
+
+
+def generate_model_s3_path(
+    branch_name: str, model_name: str, model_version: str
+) -> str:
+    """
+    Generate the S3 path for the model dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+        model_version (str): The version of the model.
+
+    Returns:
+        str: The S3 path for the model dataset.
+    """
+    return f"s3://sfc-{branch_name}-pipeline-resources/models/{model_name}/{model_version}/"
+
+
+def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the predictions dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"
