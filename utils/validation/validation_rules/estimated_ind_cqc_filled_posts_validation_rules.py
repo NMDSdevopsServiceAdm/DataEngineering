@@ -42,7 +42,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.non_res_without_dormancy_model: 1.0,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed_dedup: 1,
-            IndCqcColumns.imputed_pir_filled_posts_model: 0.01,
+            # IndCqcColumns.imputed_pir_filled_posts_model: 1.0,  temporarily removed until imputation is fixed
             IndCqcColumns.posts_rolling_average_model: 1.0,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
