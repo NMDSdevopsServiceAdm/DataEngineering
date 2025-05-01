@@ -90,7 +90,7 @@ class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_generate_model_s3_path_returns_expected_path(self):
+    def test_generate_model_metrics_s3_path_returns_expected_path(self):
         returned_path = job.generate_model_metrics_s3_path(
             self.branch_name, self.model_name, self.model_version
         )
