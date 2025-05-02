@@ -873,9 +873,9 @@ module "train_linear_regression_model_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--s3_datasets_uri"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = ""
-    "--model_version" = ""
+    "--s3_datasets_uri" = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"      = ""
+    "--model_version"   = ""
   }
 }
 
@@ -888,9 +888,9 @@ module "run_linear_regression_model_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--s3_datasets_uri"   = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"    = ""
-    "--model_version" = ""
+    "--s3_datasets_uri" = "${module.datasets_bucket.bucket_uri}"
+    "--model_name"      = ""
+    "--model_version"   = ""
   }
 }
 
