@@ -19,7 +19,7 @@ PATCH_PATH: str = "projects._03_independent_cqc._05_model.utils.model_metrics"
 class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
-
+        self.mock_model = MagicMock()
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
