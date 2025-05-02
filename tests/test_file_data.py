@@ -10858,8 +10858,13 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    # fmt: off
     job_role_ratios_extrapolation_rows = [
-        ("1-001", 1000000200, None),
+        (
+            "1-001",
+            1000000200,
+            None
+        ),
         (
             "1-001",
             1000000300,
@@ -10868,7 +10873,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.registered_nurse: 0.5,
             },
         ),
-        ("1-001", 1000000400, None),
+        (
+            "1-001",
+            1000000400,
+            None
+        ),
         (
             "1-001",
             1000000500,
@@ -10877,8 +10886,16 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.registered_nurse: 0.3,
             },
         ),
-        ("1-002", 1000000200, None),
-        ("1-002", 1000000300, None),
+        (
+            "1-002",
+            1000000200,
+            None
+        ),
+        (
+            "1-002",
+            1000000300,
+            None
+        ),
         (
             "1-002",
             1000000400,
@@ -10887,7 +10904,11 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
                 MainJobRoleLabels.registered_nurse: 0.4,
             },
         ),
-        ("1-002", 1000000500, None),
+        (
+            "1-002",
+            1000000500,
+            None
+        ),
         (
             "1-003",
             1000000200,
@@ -11057,6 +11078,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-004", 1000000400, None, None),
         ("1-004", 1000000500, None, None),
     ]
+    # fmt: on
 
     recalculate_managerial_filled_posts_rows = [
         (
