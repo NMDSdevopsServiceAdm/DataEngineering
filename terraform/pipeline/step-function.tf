@@ -84,15 +84,15 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/BulkDownloadCQCAPIPipeline-StepFunction.json", {
-    dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
-    bulk_cqc_locations_download_job_name       = module.bulk_cqc_locations_download_job.job_name
-    bulk_cqc_providers_download_job_name       = module.bulk_cqc_providers_download_job.job_name
-    flatten_cqc_ratings_job_name               = module.flatten_cqc_ratings_job.job_name
-    cqc_crawler_name                           = module.cqc_crawler.crawler_name
-    sfc_crawler_name                           = module.sfc_crawler.crawler_name
-    run_bronze_validation_state_machine_arn    = aws_sfn_state_machine.bronze_validation_state_machine.arn
-    trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
-    pipeline_failure_lambda_function_arn       = aws_lambda_function.error_notification_lambda.arn
+    dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
+    bulk_cqc_locations_download_job_name         = module.bulk_cqc_locations_download_job.job_name
+    bulk_cqc_providers_download_job_name         = module.bulk_cqc_providers_download_job.job_name
+    flatten_cqc_ratings_job_name                 = module.flatten_cqc_ratings_job.job_name
+    cqc_crawler_name                             = module.cqc_crawler.crawler_name
+    sfc_crawler_name                             = module.sfc_crawler.crawler_name
+    run_bronze_validation_state_machine_arn      = aws_sfn_state_machine.bronze_validation_state_machine.arn
+    trigger_clean_and_validate_state_machine_arn = aws_sfn_state_machine.clean_and_validate_state_machine.arn
+    pipeline_failure_lambda_function_arn         = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
