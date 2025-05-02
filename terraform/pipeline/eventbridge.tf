@@ -73,7 +73,7 @@ resource "aws_iam_role" "start_state_machines" {
     }
   ]
 }
-EOF 
+EOF
 }
 
 resource "aws_iam_role_policy_attachment" "start_state_machines" {

@@ -67,17 +67,10 @@ def main(
         new_col_name=IndCQC.activity_count_capped,
     )
 
-    features_df, specialisms_list = expand_encode_and_extract_features(
-        features_df,
-        IndCQC.specialisms_offered,
-        SpecialismsFeatures.labels_dict,
-        is_array_col=True,
-    )
-
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
-        ServicesFeatures.labels_dict,
+        ServicesFeatures.care_home_labels_dict,
         is_array_col=True,
     )
 
@@ -91,7 +84,7 @@ def main(
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011,
-        RuralUrbanFeatures.labels_dict,
+        RuralUrbanFeatures.care_home_labels_dict,
         is_array_col=False,
     )
 
@@ -104,13 +97,16 @@ def main(
 
     feature_list: List[str] = sorted(
         [
-            IndCQC.service_count,
+            IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
             IndCQC.number_of_beds,
-            IndCQC.ascwds_rate_of_change_trendline_model,
+            IndCQC.banded_bed_ratio_rolling_average_model,
+            IndCQC.service_count_capped,
         ]
-        + service_list
         + region_list
         + rui_indicators_list
+        + service_list
+        + specialisms_list
     )
 
     vectorised_features_df = vectorise_dataframe(features_df, feature_list)

@@ -148,8 +148,8 @@ def main(
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
         IndCQC.ascwds_pir_merged,
-        IndCQC.non_res_with_dormancy_model,
-        IndCQC.imputed_posts_non_res_with_dormancy_model,
+        IndCQC.non_res_combined_model,
+        IndCQC.imputed_posts_non_res_combined_model,
         care_home=False,
     )
 
@@ -161,11 +161,9 @@ def main(
             IndCQC.ascwds_pir_merged,
             IndCQC.imputed_posts_care_home_model,
             IndCQC.care_home_model,
-            IndCQC.imputed_filled_post_model,
-            IndCQC.imputed_posts_non_res_with_dormancy_model,
+            IndCQC.imputed_posts_non_res_combined_model,
             IndCQC.non_res_pir_linear_regression_model,
-            IndCQC.non_res_with_dormancy_model,
-            IndCQC.non_res_without_dormancy_model,
+            IndCQC.non_res_combined_model,
             IndCQC.posts_rolling_average_model,
         ],
         IndCQC.estimate_filled_posts,

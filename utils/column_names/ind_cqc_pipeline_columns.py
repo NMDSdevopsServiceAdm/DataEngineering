@@ -49,9 +49,12 @@ class IndCqcColumns:
     ascwds_job_group_counts: str = "ascwds_job_group_counts"
     ascwds_job_group_ratios: str = "ascwds_job_group_ratios"
     ascwds_job_role_counts: str = "ascwds_job_role_counts"
+    ascwds_job_role_counts_filtered: str = ascwds_job_role_counts + "_filtered"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
+    ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
@@ -132,6 +135,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimated_managerial_filled_posts_temp: str = (
+        "estimated_managerial_filled_posts_temp"
+    )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
@@ -142,6 +148,7 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
+    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
@@ -159,9 +166,7 @@ class IndCqcColumns:
         "imputed_non_res_pir_people_directly_employed"
     )
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
-    imputed_posts_non_res_with_dormancy_model: str = (
-        "imputed_posts_non_res_with_dormancy_model"
-    )
+    imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
     imputed_filled_posts_per_bed_ratio_model: str = (
         "imputed_filled_posts_per_bed_ratio_model"
@@ -233,12 +238,17 @@ class IndCqcColumns:
     posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_within_10_posts: str = "prediction_within_10_posts"
+    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
+    proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
+        "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
+    )
     proportion_of_time_between_submissions: str = (
         "proportion_of_time_between_submissions"
     )
@@ -257,21 +267,19 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rmse: str = "rmse"
+    run_number: str = "run_number"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
-    specialism_count: str = "specialism_count"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    sum_non_rm_managerial_estimated_filled_posts: str = (
+        "sum_non_rm_managerial_estimated_filled_posts"
+    )
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
-    time_registered_capped_at_four_years_logged: str = (
-        "time_registered_capped_at_four_years_logged"
-    )
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
-    time_registered_capped_at_ten_years_logged: str = (
-        "time_registered_capped_at_ten_years_logged"
-    )
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

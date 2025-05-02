@@ -1,8 +1,11 @@
-from pyspark.ml.regression import GBTRegressionModel
+from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.estimate_filled_posts.models.utils import insert_predictions_into_pipeline
+from utils.estimate_filled_posts.models.utils import (
+    insert_predictions_into_pipeline,
+    set_min_value,
+)
 from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
 
 
@@ -19,6 +22,8 @@ def model_non_res_without_dormancy(
     predictions model on non residential without dormancy features data.
     It then saves the model metrics and adds the predictions into the main dataset.
 
+    Predictions are capped at a minimum of one.
+
     Args:
         locations_df (DataFrame): A dataframe containing cleaned independent CQC data.
         features_df (DataFrame): A dataframe containing model features for the non res without dormancy model. This should only contain rows where the primary service type is non-residential.
@@ -28,12 +33,14 @@ def model_non_res_without_dormancy(
     Returns:
         DataFrame: A dataframe with non residential without dormancy model estimates added.
     """
-    gbt_trained_model = GBTRegressionModel.load(model_source)
+    trained_model = LinearRegressionModel.load(model_source)
 
-    non_res_without_dormancy_predictions = gbt_trained_model.transform(features_df)
+    predictions_df = trained_model.transform(features_df)
+
+    predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
 
     save_model_metrics(
-        non_res_without_dormancy_predictions,
+        predictions_df,
         IndCqc.ascwds_pir_merged,
         model_source,
         metrics_destination,
@@ -41,7 +48,7 @@ def model_non_res_without_dormancy(
 
     locations_df = insert_predictions_into_pipeline(
         locations_df,
-        non_res_without_dormancy_predictions,
+        predictions_df,
         IndCqc.non_res_without_dormancy_model,
     )
 

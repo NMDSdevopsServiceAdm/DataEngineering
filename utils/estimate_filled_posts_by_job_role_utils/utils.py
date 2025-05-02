@@ -1,10 +1,11 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import LongType
+from pyspark.sql.types import MapType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
+    JobGroupLabels,
     MainJobRoleLabels,
 )
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
@@ -13,6 +14,15 @@ from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup,
 )
+
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
+from utils.column_values.categorical_column_values import (
+    JobGroupLabels,
+    MainJobRoleLabels,
+)
+
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 list_of_job_groups_sorted = sorted(
@@ -174,7 +184,7 @@ def transform_job_role_count_map_to_ratios_map(
 
     Args:
         df (DataFrame): A dataframe containing a job role count map at workplace level.
-        count_map_column_name (str): A map column of type any:long.
+        count_map_column_name (str): A map column of type string:number.
         ratio_map_column_name (str): The name to give to the ratio map column.
 
     Returns:
@@ -204,22 +214,23 @@ def calculate_total_sum_of_values_in_a_map_column(
     total_sum_column_name: str,
 ) -> DataFrame:
     """
-    Adds a column which contains the total of values from a given map column of type any:long.
+    Adds a column which contains the total of values from a given map column of type string:number.
 
     Args:
         df (DataFrame): A dataframe containing a count map.
-        map_column_name (str): A map column of type any:long.
+        map_column_name (str): A map column of type string:number.
         total_sum_column_name (str): The name to give to the total column being added.
 
     Returns:
         DataFrame: The estimated filled post by job role DataFrame with a column for total of map values added.
     """
 
+    map_type: MapType = df.schema[map_column_name].dataType
     df = df.withColumn(
         total_sum_column_name,
         F.aggregate(
             F.map_values(F.col(map_column_name)),
-            F.lit(0).cast(LongType()),
+            F.lit(0).cast(map_type.valueType),
             lambda a, b: a + b,
         ),
     )
@@ -266,31 +277,32 @@ def create_ratios_map_from_count_map_and_total(
 
 def count_registered_manager_names(df: DataFrame) -> DataFrame:
     """
-    Adds a column with a count of elements within list of registered manager names.
+    Updates the 'registered_manager_count' column with a binary indicator of whether
+    a location has at least one registered manager name in the 'registered_manager_names' column.
 
-    This function uses the size method to count elements in list of strings. This method
-    returns the count, including null elements within a list, when list partially populated.
-    It returns 0 when list is empty. It returns -1 when row is null.
-    Therefore, after the counting, this function recodes values of -1 to 0.
+    This MVP logic sets the count to:
+      - 1 if the 'registered_manager_names' array is non-empty (i.e., has >= 1 name).
+      - 0 if 'registered_manager_names' is None or an empty list.
+
+    This approach aligns with historical Excel structures where each location
+    was effectively recorded with at most one registered manager.
 
     Args:
-        df (DataFrame): A dataframe containing list of registered manager names.
+        df (DataFrame): A Spark DataFrame containing the column 'registered_manager_names'
+            (ArrayType(StringType())). Each row represents a location's registered manager name data.
 
     Returns:
-        DataFrame: A dataframe with count of elements in list of registered manager names.
+        DataFrame: A Spark DataFrame with an additional or updated 'registered_manager_count' column
+            set to 1 if there is at least one name, or 0 otherwise.
     """
-
-    df = df.withColumn(
-        IndCQC.registered_manager_count, F.size(F.col(IndCQC.registered_manager_names))
-    )
-
     df = df.withColumn(
         IndCQC.registered_manager_count,
-        F.when(F.col(IndCQC.registered_manager_count) == -1, F.lit(0)).otherwise(
-            F.col(IndCQC.registered_manager_count)
-        ),
+        F.when(
+            (F.col(IndCQC.registered_manager_names).isNull())
+            | (F.size(F.col(IndCQC.registered_manager_names)) == 0),
+            F.lit(0),
+        ).otherwise(F.lit(1)),
     )
-
     return df
 
 
@@ -345,6 +357,119 @@ def create_estimate_filled_posts_by_job_role_map_column(
             ),
         ),
     )
+
+    return df
+
+
+def recalculate_managerial_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Recalculates non registered manager filled posts based on difference_between_estimate_and_cqc_registered_managers
+    Args:
+        df (DataFrame): A dataframe which contains location_id, managerial filled posts, proportion of non rm managerial estimated filled posts and the Registered manager difference between estimate and CQC
+    Returns:
+        DataFrame: Which include the exaxct same columns but with new values within the non rm managerial filled posts column.
+    """
+
+    non_rm_managers = sorted(
+        [
+            job_role
+            for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+            if job_group == JobGroupLabels.managers
+            and job_role != MainJobRoleLabels.registered_manager
+        ]
+    )
+
+    df_result = create_map_column(
+        df, non_rm_managers, IndCQC.estimated_managerial_filled_posts_temp, True
+    )
+
+    df_result = df_result.withColumn(
+        IndCQC.estimated_managerial_filled_posts_temp,
+        F.transform_values(
+            IndCQC.estimated_managerial_filled_posts_temp,
+            lambda k, v: F.greatest(
+                F.lit(0.0),
+                v
+                + (
+                    F.col(
+                        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                    ).getItem(k)
+                    * F.col(
+                        IndCQC.difference_between_estimate_and_cqc_registered_managers
+                    )
+                ),
+            ),
+        ),
+    )
+
+    df_result = unpack_mapped_column(
+        df_result, IndCQC.estimated_managerial_filled_posts_temp
+    )
+
+    df_result = df_result.drop(IndCQC.estimated_managerial_filled_posts_temp)
+
+    return df_result
+
+
+def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    A function to caclulate both the total number of estimated non rm managerial filled posts, and also to calculate the proportion of non rm managerial
+    estimated filled posts per location.
+
+    Args:
+        df (DataFrame): A dataframe which contains estimates of filled posts per job role.
+    Returns:
+        DataFrame: A dataframe with an additional column for the sum of non registered manager estimated filled posts
+        and a map column of non registered manager estimated post proportions split per role.
+    """
+
+    non_rm_managers = sorted(
+        [
+            job_role
+            for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+            if job_group == JobGroupLabels.managers
+            and job_role != MainJobRoleLabels.registered_manager
+        ]
+    )
+
+    temp_suffix: str = "_temp"
+    non_rm_managers_temporary = sorted(
+        [job_role + temp_suffix for job_role in non_rm_managers]
+    )
+
+    df = df.select(
+        "*",
+        *[
+            F.col(role).alias(temp)
+            for role, temp in zip(non_rm_managers, non_rm_managers_temporary)
+        ]
+    )
+
+    df = df.withColumn(
+        IndCQC.sum_non_rm_managerial_estimated_filled_posts,
+        sum(F.col(new_col) for new_col in non_rm_managers_temporary),
+    )
+
+    total = F.col(IndCQC.sum_non_rm_managerial_estimated_filled_posts)
+    proportions = [
+        F.when(total == 0.0, F.lit(1.0 / len(non_rm_managers_temporary)))
+        .when(F.col(col) == 0.0, F.lit(0.0))
+        .otherwise(F.col(col) / total)
+        for col in non_rm_managers_temporary
+    ]
+
+    df = df.withColumn(
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        F.map_from_arrays(
+            F.array(*[F.lit(k) for k in non_rm_managers]), F.array(*proportions)
+        ),
+    )
+
+    df = df.drop(*non_rm_managers_temporary)
 
     return df
 
@@ -430,8 +555,8 @@ def calculate_difference_between_estimate_and_cqc_registered_managers(
     """
     df = df.withColumn(
         IndCQC.difference_between_estimate_and_cqc_registered_managers,
-        F.col(IndCQC.registered_manager_count)
-        - F.col(MainJobRoleLabels.registered_manager),
+        F.col(MainJobRoleLabels.registered_manager)
+        - F.col(IndCQC.registered_manager_count),
     )
 
     return df
@@ -487,3 +612,213 @@ def calculate_job_group_sum_from_job_role_map_column(
     df = df.join(df_exploded, on=[IndCQC.location_id, IndCQC.unix_time], how="left")
 
     return df
+
+
+def apply_quality_filters_to_ascwds_job_role_data(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    This function calls each of the asc-wds job role filtering functions.
+
+    The first filter copies ascwds_job_role_counts into ascwds_job_role_counts_filtered when passed the quality check.
+    The second filter sets values in the ascwds_job_role_counts_filtered column to null if they fail the quality check.
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column and job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    df = filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+        df
+    )
+
+    df = filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+        df,
+        lower_percentile_limit=0.001,
+        upper_percentile_limit=0.999,
+    )
+
+    return df
+
+
+def filter_ascwds_job_role_map_when_direct_care_or_managers_plus_regulated_professions_greater_or_equal_to_one(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Copies ascwds_job_role_counts into new column ascwds_job_role_counts_filtered when criteria is met.
+
+    The criteria is:
+        worker_records_bounded must be >= 1 AND
+        (Job groups direct_care must be >= 1 OR managers + regulated_professions must be >= 1)
+
+    Args:
+        df (DataFrame): A dataframe with a job role map column and job group map column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_filtered,
+        F.when(
+            (F.col(IndCQC.worker_records_bounded) >= 1)
+            & (
+                (F.col(IndCQC.ascwds_job_group_counts)[JobGroupLabels.direct_care] >= 1)
+                | (
+                    (
+                        F.col(IndCQC.ascwds_job_group_counts)[JobGroupLabels.managers]
+                        + F.col(IndCQC.ascwds_job_group_counts)[
+                            JobGroupLabels.regulated_professions
+                        ]
+                    )
+                    >= 1
+                )
+            ),
+            F.col(IndCQC.ascwds_job_role_counts),
+        ).otherwise(None),
+    )
+
+    return df
+
+
+def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_boundaries(
+    df: DataFrame,
+    lower_percentile_limit: float,
+    upper_percentile_limit: float,
+) -> DataFrame:
+    """
+    Sets ascwds_job_role_counts_filtered to null when ascwds_job_group_ratios outside of given boundaries.
+
+    The boundaries are given as percentiles at which the job group ratio value at that percentile becomes the limit.
+
+    The boundaries are:
+        direct_care ratio > lower_percentile_limit and < upper_percentile_limit
+        managers ratio < upper_percentile_limit
+        regulated_professions ratio < upper_percentile_limit
+        other ratio < upper_percentile_limit
+
+    Args:
+        df (DataFrame): A dataframe with a job role count map column and job group ratio map column.
+        lower_percentile_limit (float): The lower percentile limit.
+        upper_percentile_limit (float): The upper percentile limit.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of filtered job role counts.
+    """
+
+    original_column_ordering = df.columns
+
+    temp_job_group = "temp_job_group"
+    temp_job_group_ratio = "temp_job_group_ratio"
+    df_exploded = df.select(
+        IndCQC.primary_service_type,
+        F.explode(IndCQC.ascwds_job_group_ratios).alias(
+            temp_job_group, temp_job_group_ratio
+        ),
+    )
+
+    percentile_boundaries = "percentile_boundaries"
+    df_exploded = df_exploded.groupBy(IndCQC.primary_service_type, temp_job_group).agg(
+        F.percentile_approx(
+            temp_job_group_ratio,
+            (
+                lower_percentile_limit,
+                upper_percentile_limit,
+            ),
+        ).alias(percentile_boundaries)
+    )
+
+    df_exploded = (
+        df_exploded.groupBy(IndCQC.primary_service_type)
+        .pivot(temp_job_group)
+        .agg(F.first(F.col(percentile_boundaries)))
+    )
+
+    df_exploded = create_map_column(
+        df_exploded, list_of_job_groups_sorted, percentile_boundaries
+    )
+
+    df = df.join(df_exploded, on=IndCQC.primary_service_type, how="left")
+
+    job_group_ratios_column = F.col(IndCQC.ascwds_job_group_ratios)
+    percentile_boundary_column = F.col(percentile_boundaries)
+    direct_care_ratio = job_group_ratios_column[JobGroupLabels.direct_care]
+    direct_care_lower_limit = percentile_boundary_column[JobGroupLabels.direct_care][0]
+    direct_care_upper_limit = percentile_boundary_column[JobGroupLabels.direct_care][1]
+    managers_ratio = job_group_ratios_column[JobGroupLabels.managers]
+    managers_upper_limit = percentile_boundary_column[JobGroupLabels.managers][1]
+    regulated_professions_ratio = job_group_ratios_column[
+        JobGroupLabels.regulated_professions
+    ]
+    regulated_professions_upper_limit = percentile_boundary_column[
+        JobGroupLabels.regulated_professions
+    ][1]
+    other_ratio = job_group_ratios_column[JobGroupLabels.other]
+    other_upper_limit = percentile_boundary_column[JobGroupLabels.other][1]
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_filtered,
+        F.when(
+            (direct_care_ratio > direct_care_lower_limit)
+            & (direct_care_ratio < direct_care_upper_limit)
+            & (managers_ratio < managers_upper_limit)
+            & (regulated_professions_ratio < regulated_professions_upper_limit)
+            & (other_ratio < other_upper_limit),
+            F.col(IndCQC.ascwds_job_role_counts_filtered),
+        ).otherwise(None),
+    )
+
+    df = df.select(original_column_ordering)
+
+    return df
+
+
+def transform_interpolated_job_role_ratios_to_counts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Multiplies values in ascwds_job_ratios_interpolated dict by estimated filled posts.
+
+    This function transforms the values in ascwds_job_ratios_interpolated dict by multiplying
+    each value by estimated filled posts. The results are copied into a new dict column.
+
+    Args:
+        df (DataFrame): A dataframe with an interpolated job role ratios column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column of interpolated job role counts.
+    """
+
+    df = df.withColumn(
+        IndCQC.ascwds_job_role_counts_interpolated,
+        F.map_from_arrays(
+            F.map_keys(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+            F.transform(
+                F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                lambda v: v * F.col(IndCQC.estimate_filled_posts),
+            ),
+        ),
+    )
+
+    return df
+
+
+def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> DataFrame:
+    """
+    Created a filled_posts column which represents the total number of filled posts per location_id based on job role breakdown.
+
+    Args:
+        df (DataFrame): A dataframe with individual job role breakdown.
+        list_of_job_roles (list): A list containing the ASC-WDS job roles.
+
+    Returns:
+        DataFrame: A dataframe with a filled_posts column which is the sum of every individual job role per location_id.
+
+    """
+
+    df_result = df.withColumn(
+        IndCQC.filled_posts, sum([F.col(job_role) for job_role in list_of_job_roles])
+    )
+
+    return df_result
