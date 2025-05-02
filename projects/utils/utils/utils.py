@@ -20,7 +20,7 @@ def calculate(
         df (DataFrame): Input DataFrame.
         new_col (str): Name of the new column to be created.
         col_1 (str): Name of the first operand column.
-        method (str): Calculation to perform: "plus", "minus", "multiplied by" or "divided by".
+        method (str): Calculation to perform: "plus", "minus", "multiplied by", "divided by" or average.
         col_2 (str): Name of the second operand column.
         when_clause (Optional[Column]): Optional Boolean condition for applying the calculation.
 
@@ -41,6 +41,8 @@ def calculate(
         calculation = c1 * c2
     elif method == "divided by":
         calculation = c1 / c2
+    elif method == "average":
+        calculation = (c1 + c2) / 2
     else:
         raise ValueError(f"Invalid method: {method}")
 

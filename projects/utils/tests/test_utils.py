@@ -72,6 +72,17 @@ class CalculateTests(UtilsTests):
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
+    def test_calculate_average(self):
+        returned_df = utils.calculate(
+            self.test_df, self.new_col, self.col_1, "average", self.col_2
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_average_rows, Schemas.expected_calculate_schema
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
     def test_calculate_with_invalid_method(self):
         with self.assertRaises(ValueError) as context:
             utils.calculate(
