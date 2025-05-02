@@ -82,7 +82,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         model_pir_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
-            model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
+            model_imputation_with_extrapolation_and_interpolation_mock.call_count, 2
         )
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         clean_number_of_beds_banded_mock.assert_called_once()
