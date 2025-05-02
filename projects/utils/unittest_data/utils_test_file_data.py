@@ -41,7 +41,7 @@ expected_calculate_average_rows = [
     ("1-005", None, None, None),
 ]
 expected_calculate_absolute_difference_rows = [
-    ("1-001", 10.0, 2.5, 6.25),
+    ("1-001", 10.0, 2.5, 7.5),
     ("1-002", 2.0, 4.0, 2.0),
     ("1-003", None, 2.5, None),
     ("1-004", 10.0, None, None),
