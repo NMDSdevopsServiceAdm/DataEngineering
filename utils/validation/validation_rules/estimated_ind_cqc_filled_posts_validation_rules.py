@@ -36,29 +36,28 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.ascwds_filled_posts: 1.0,
             IndCqcColumns.ascwds_pir_merged: 1.0,
             IndCqcColumns.care_home_model: 1.0,
-            IndCqcColumns.estimate_filled_posts: 1.0,
-            IndCqcColumns.imputed_posts_care_home_model: 1.0,
             # IndCqcColumns.imputed_posts_non_res_combined_model: 1.0, # temporarily removed until imputation is fixed
-            IndCqcColumns.non_res_combined_model: 1.0,
+            IndCqcColumns.estimate_filled_posts: 1.0,
             IndCqcColumns.non_res_with_dormancy_model: 1.0,
             IndCqcColumns.non_res_without_dormancy_model: 1.0,
-            IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
             IndCqcColumns.number_of_beds: 1,
+            IndCqcColumns.pir_people_directly_employed_dedup: 1,
+            IndCqcColumns.non_res_pir_linear_regression_model: 0.01,
             IndCqcColumns.posts_rolling_average_model: 1.0,
             IndCqcColumns.unix_time: 1262304000,  # 1st Jan 2010 in unix time
         },
         RuleName.max_values: {
             IndCqcColumns.ascwds_filled_posts: 3000.0,
             IndCqcColumns.ascwds_pir_merged: 3000.0,
-            IndCqcColumns.care_home_model: 3000.0,
-            IndCqcColumns.estimate_filled_posts: 3000.0,
             IndCqcColumns.imputed_posts_care_home_model: 3000.0,
             # IndCqcColumns.imputed_posts_non_res_combined_model: 3000.0, # temporarily removed until imputation is fixed
-            IndCqcColumns.non_res_combined_model: 3000.0,
+            IndCqcColumns.care_home_model: 3000.0,
+            # IndCqcColumns.estimate_filled_posts: 3000.0, # temporarily removed until imputation is fixed
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
-            IndCqcColumns.non_res_pir_linear_regression_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
+            # IndCqcColumns.pir_people_directly_employed_dedup: 3000, # temporarily removed until imputation is fixed
+            IndCqcColumns.non_res_pir_linear_regression_model: 3000.0,
             IndCqcColumns.posts_rolling_average_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time
         },
