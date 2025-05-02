@@ -201,7 +201,7 @@
       },
       "Trigger pipelines": {
         "Type": "Parallel",
-        "Next": "Run validation crawler when success",
+        "Next": "Success",
         "Branches": [
           {
             "StartAt": "Trigger SfC coverage pipeline",
@@ -237,14 +237,6 @@
           }
         ]
       },
-      "Run validation crawler when success": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${data_validation_reports_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success"
-      },
       "Publish error notification": {
         "Type": "Task",
         "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
@@ -259,14 +251,6 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
-        "Next": "Run validation crawler when failed"
-      },
-      "Run validation crawler when failed": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${data_validation_reports_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {

@@ -16,7 +16,6 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
     ascwds_crawler_name                                              = module.ascwds_crawler.crawler_name
     cqc_crawler_name                                                 = module.cqc_crawler.crawler_name
     ons_crawler_name                                                 = module.ons_crawler.crawler_name
-    data_validation_reports_crawler_name                             = module.data_validation_reports_crawler.crawler_name
     trigger_coverage_state_machine_arn                               = aws_sfn_state_machine.coverage_state_machine.arn
     trigger_ind_cqc_filled_post_estimates_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     run_silver_validation_state_machine_arn                          = aws_sfn_state_machine.silver_validation_state_machine.arn
