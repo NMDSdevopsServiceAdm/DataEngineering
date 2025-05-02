@@ -145,7 +145,7 @@ module "clean_capacity_tracker_non_res_job" {
 
 module "clean_ascwds_workplace_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/ascwds/jobs"
   script_name       = "clean_ascwds_workplace_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"

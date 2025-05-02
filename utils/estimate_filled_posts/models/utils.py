@@ -1,7 +1,7 @@
 import boto3
 import re
 
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
@@ -153,7 +153,7 @@ def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
 
 
 def train_lasso_regression_model(
-    df: DataFrame, label_col: str
+    df: DataFrame, label_col: str, model_name: str
 ) -> LinearRegressionModel:
     """
     Train a linear regression model on the given DataFrame.
@@ -169,6 +169,7 @@ def train_lasso_regression_model(
     Args:
         df (DataFrame): Training data.
         label_col (str): Name of the label column.
+        model_name (str): The name of the model.
 
     Returns:
         LinearRegressionModel: Trained model.
@@ -179,6 +180,7 @@ def train_lasso_regression_model(
     lr = LinearRegression(
         featuresCol=IndCqc.features,
         labelCol=label_col,
+        predictionCol=model_name,
         elasticNetParam=lasso_regression,
         regParam=regulisation_parameter,
     )
@@ -207,7 +209,7 @@ def get_existing_run_numbers(model_source: str) -> List[int]:
     return sorted(set(run_numbers))
 
 
-def get_model_s3_path(model_source: str, mode: str = "load") -> str:
+def generate_run_number(model_source: str, mode: str = "load") -> int:
     """
     Compute the S3 path for saving or loading a versioned model.
 
@@ -216,7 +218,7 @@ def get_model_s3_path(model_source: str, mode: str = "load") -> str:
         mode (str): Either "load" to get latest run, or "save" to compute next run path.
 
     Returns:
-        str: Full S3 path including run number (eg. 's3://pipeline-resources/models/prediction/1.0.0/run=3').
+        int: The relevant run number.
 
     Raises:
         ValueError: If mode is not "load" or "save".
@@ -225,41 +227,110 @@ def get_model_s3_path(model_source: str, mode: str = "load") -> str:
     existing_runs = get_existing_run_numbers(model_source)
 
     if mode == "save":
-        next_run = max(existing_runs) + 1 if existing_runs else 1
-        return f"{model_source}run={next_run}/"
+        run_number = max(existing_runs) + 1 if existing_runs else 1
 
     elif mode == "load":
         if not existing_runs:
             raise FileNotFoundError(f"No model found in: {model_source}")
-        latest_run = max(existing_runs)
-        return f"{model_source}run={latest_run}/"
+        run_number = max(existing_runs)
 
     else:
         raise ValueError("mode must be 'load' or 'save'")
 
+    return run_number
 
-def save_model_to_s3(model: LinearRegressionModel, model_source: str) -> None:
+
+def save_model_to_s3(model: LinearRegressionModel, model_s3_location: str) -> int:
     """
     Save model to the next available versioned S3 run path.
 
     Args:
         model (LinearRegressionModel): The trained linear regression model.
-        model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+        model_s3_location (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+
+    Returns:
+        int: The run number of the newly saved model.
     """
-    s3_path = get_model_s3_path(model_source, mode="save")
+    run_number = generate_run_number(model_s3_location, mode="save")
+    s3_path = f"{model_s3_location}run={run_number}/"
     model.save(s3_path)
     print(f"Model saved to: {s3_path}")
+    return run_number
 
 
-def load_latest_model_from_s3(model_source: str) -> LinearRegressionModel:
+def load_latest_model_from_s3(model_s3_location: str) -> LinearRegressionModel:
     """
     Load the most recently saved model from a versioned S3 path.
 
     Args:
-        model_source (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
+        model_s3_location (str): Base S3 path (eg. 's3://pipeline-resources/models/prediction/1.0.0/').
 
     Returns:
         LinearRegressionModel: The loaded model.
     """
-    s3_path = get_model_s3_path(model_source, mode="load")
+    run_number = generate_run_number(model_s3_location, mode="load")
+    s3_path = f"{model_s3_location}run={run_number}/"
+    print(f"Loading model from: {s3_path}")
     return LinearRegressionModel.load(s3_path)
+
+
+def create_test_and_train_datasets(
+    df: DataFrame, test_ratio: float = 0.2, seed: Optional[int] = None
+) -> Tuple[DataFrame, DataFrame]:
+    """
+    Split the DataFrame into training and testing datasets.
+
+    Args:
+        df (DataFrame): The input DataFrame to be split.
+        test_ratio (float): The proportion of the data to include in the test split.
+        seed (Optional[int]): Random seed for reproducibility.
+
+    Returns:
+        Tuple[DataFrame, DataFrame]: A tuple containing the training and testing DataFrames.
+    """
+    return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)
+
+
+def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the features dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
+
+
+def generate_model_s3_path(
+    branch_name: str, model_name: str, model_version: str
+) -> str:
+    """
+    Generate the S3 path for the model dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+        model_version (str): The version of the model.
+
+    Returns:
+        str: The S3 path for the model dataset.
+    """
+    return f"s3://sfc-{branch_name}-pipeline-resources/models/{model_name}/{model_version}/"
+
+
+def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str:
+    """
+    Generate the S3 path for the features dataset.
+
+    Args:
+        branch_name (str): The name of the branch currently being used.
+        model_name (str): The name of the model.
+
+    Returns:
+        str: The S3 path for the predictions dataset.
+    """
+    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"
