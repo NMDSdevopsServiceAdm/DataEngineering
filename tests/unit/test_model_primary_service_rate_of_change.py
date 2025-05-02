@@ -8,6 +8,8 @@ import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
+PATCH_PATH = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
+
 
 class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
     def setUp(self):
@@ -259,9 +261,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.get_selected_value"
-    )
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_functions_called_in_add_previous_value_column_function(
         self,
         get_selected_value: Mock,

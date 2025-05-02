@@ -9,6 +9,8 @@ from tests.test_file_schemas import ImputeIndCqcAscwdsAndPirSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
+PATCH_PATH = "jobs.impute_ind_cqc_ascwds_and_pir"
+
 
 class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
@@ -33,23 +35,18 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.impute_ind_cqc_ascwds_and_pir.model_calculate_rolling_average")
-    @patch("jobs.impute_ind_cqc_ascwds_and_pir.clean_number_of_beds_banded")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.model_imputation_with_extrapolation_and_interpolation"
+        f"{PATCH_PATH}.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values"
     )
-    @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.blend_pir_and_ascwds_when_ascwds_out_of_date"
-    )
-    @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.model_primary_service_rate_of_change_trendline"
-    )
-    @patch(
-        "jobs.impute_ind_cqc_ascwds_and_pir.combine_care_home_ratios_and_non_res_posts"
-    )
-    @patch("utils.utils.create_unix_timestamp_variable_from_date_column")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.clean_number_of_beds_banded")
+    @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.blend_pir_and_ascwds_when_ascwds_out_of_date")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
+    @patch(f"{PATCH_PATH}.combine_care_home_ratios_and_non_res_posts")
+    @patch(f"{PATCH_PATH}.utils.create_unix_timestamp_variable_from_date_column")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
@@ -58,8 +55,9 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         model_primary_service_rate_of_change_trendline_mock: Mock,
         blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
-        clean_number_of_beds_banded_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
+        clean_number_of_beds_banded_mock: Mock,
+        convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.return_value = self.test_cleaned_ind_cqc_df
@@ -78,8 +76,9 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
         )
-        clean_number_of_beds_banded_mock.assert_called_once()
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
+        clean_number_of_beds_banded_mock.assert_called_once()
+        convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.ESTIMATES_DESTINATION,
