@@ -21,7 +21,6 @@ def calculate_rolling_sum_of_job_roles(
 
     Returns:
         DataFrame: The DataFrame with the new rolling sum of job role counts mapped column
-
     """
 
     df_rolling_sum = df.select(
@@ -79,7 +78,6 @@ def add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_
 
     Returns:
         DataFrame: The DataFrame with the new rolling sum column added.
-
     """
     rolling_sum_window = (
         Window.partitionBy(
