@@ -1,10 +1,11 @@
-from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.estimate_filled_posts.models.extrapolation import (
     define_window_specs,
     calculate_first_and_final_submission_dates,
 )
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
@@ -33,32 +34,47 @@ def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
     job_role_ratios_with_nulls = IndCqc.ascwds_job_role_ratios_filtered
     time_col = IndCqc.unix_time
 
-    first_known_value = F.first(
-        F.col(job_role_ratios_with_nulls), ignorenulls=True
-    ).over(window_spec_all_rows)
-    last_known_value = F.last(F.col(job_role_ratios_with_nulls), ignorenulls=True).over(
-        window_spec_all_rows
+    temp_first_known_value = "first_known_value"
+    temp_last_known_value = "temp_last_known_value"
+    df = get_selected_value(
+        df,
+        window_spec_all_rows,
+        job_role_ratios_with_nulls,
+        job_role_ratios_with_nulls,
+        temp_first_known_value,
+        "first",
     )
+    df = get_selected_value(
+        df,
+        window_spec_all_rows,
+        job_role_ratios_with_nulls,
+        job_role_ratios_with_nulls,
+        temp_last_known_value,
+        "last",
+    )
+
     df = df.withColumn(
         IndCqc.ascwds_job_role_ratios_extrapolated,
         F.when(
             F.col(job_role_ratios_with_nulls).isNotNull(),
             F.col(job_role_ratios_with_nulls),
         )
-        .when(F.col(time_col) <= F.col(IndCqc.first_submission_time), first_known_value)
-        .when(F.col(time_col) >= F.col(IndCqc.final_submission_time), last_known_value),
+        .when(
+            F.col(time_col) <= F.col(IndCqc.first_submission_time),
+            F.col(temp_first_known_value),
+        )
+        .when(
+            F.col(time_col) >= F.col(IndCqc.final_submission_time),
+            F.col(temp_last_known_value),
+        ),
     )
 
-    """
-    input_col = IndCqc.ascwds_job_role_ratios_filtered
-    output_col = IndCqc.ascwds_job_role_ratios_extrapolated
-    group_col = IndCqc.location_id
-
-
-    base_window = Window.partitionBy(group_col).orderBy(time_col)
-    full_window = base_window.rowsBetween(
-        Window.unboundedPreceding, Window.unboundedFollowing
-    )
-    """
+    columns_to_drop = [
+        IndCqc.first_submission_time,
+        IndCqc.final_submission_time,
+        temp_first_known_value,
+        temp_last_known_value,
+    ]
+    df = df.drop(*columns_to_drop)
 
     return df
