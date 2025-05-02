@@ -25,7 +25,7 @@ PATCH_PATH: str = (
 
 
 class Main(unittest.TestCase):
-    branch_name = "sfc-test_branch-datasets"
+    s3_datasets_uri = "s3://sfc-branch-name-datasets"
     care_home_model_name = "test_care_home_model"
     non_res_model_name = "test_non_res_model"
     model_version = "1.0.0"
@@ -64,7 +64,7 @@ class Main(unittest.TestCase):
         )
 
         job.main(
-            self.branch_name,
+            self.s3_datasets_uri,
             self.care_home_model_name,
             self.model_version,
         )
@@ -108,7 +108,7 @@ class Main(unittest.TestCase):
         )
 
         job.main(
-            self.branch_name,
+            self.s3_datasets_uri,
             self.non_res_model_name,
             self.model_version,
         )

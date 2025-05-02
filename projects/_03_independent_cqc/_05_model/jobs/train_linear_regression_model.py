@@ -7,7 +7,7 @@ from utils import utils
 
 
 def main(
-    branch_name: str,
+    s3_datasets_uri: str,
     model_name: str,
     model_version: str,
 ) -> None:
@@ -17,7 +17,7 @@ def main(
     A new version of the model will be saved including the metrics to measure ongoing performance.
 
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model to train.
         model_version (str): The version of the model to use (e.g. '1.0.0').
     """
@@ -30,9 +30,11 @@ def main(
     else:
         dependent_variable = IndCQC.imputed_filled_post_model
 
-    features_source = mUtils.generate_model_features_s3_path(branch_name, model_name)
+    features_source = mUtils.generate_model_features_s3_path(
+        s3_datasets_uri, model_name
+    )
     model_s3_location = mUtils.generate_model_s3_path(
-        branch_name, model_name, model_version
+        s3_datasets_uri, model_name, model_version
     )
 
     features_df = utils.read_from_parquet(features_source)
@@ -53,7 +55,7 @@ def main(
         trained_lr_model,
         test_df,
         dependent_variable,
-        branch_name,
+        s3_datasets_uri,
         model_name,
         model_version,
         model_run_number,
@@ -62,13 +64,13 @@ def main(
 
 if __name__ == "__main__":
     (
-        branch_name,
+        s3_datasets_uri,
         model_name,
         model_version,
     ) = utils.collect_arguments(
         (
-            "--branch_name",
-            "The name of the branch currently being used",
+            "--s3_datasets_uri",
+            "The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets)",
         ),
         (
             "--model_name",
@@ -80,7 +82,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        branch_name,
+        s3_datasets_uri,
         model_name,
         model_version,
     )

@@ -18,7 +18,7 @@ PATCH_PATH: str = (
 
 
 class Main(unittest.TestCase):
-    branch_name = "sfc-test_branch-datasets"
+    s3_datasets_uri = "s3://sfc-branch-name-datasets"
     care_home_model_name = "test_care_home_model"
     non_res_model_name = "test_non_res_model"
     model_version = "1.0.0"
@@ -58,7 +58,7 @@ class Main(unittest.TestCase):
         save_model_to_s3_mock.return_value = self.model_run_number
 
         job.main(
-            self.branch_name,
+            self.s3_datasets_uri,
             self.care_home_model_name,
             self.model_version,
         )
@@ -73,7 +73,7 @@ class Main(unittest.TestCase):
             ANY,
             ANY,
             self.dependent_variable_when_care_home,
-            self.branch_name,
+            self.s3_datasets_uri,
             self.care_home_model_name,
             self.model_version,
             save_model_to_s3_mock.return_value,
@@ -103,7 +103,7 @@ class Main(unittest.TestCase):
         save_model_to_s3_mock.return_value = self.model_run_number
 
         job.train_linear_regression_model(
-            self.branch_name,
+            self.s3_datasets_uri,
             self.non_res_model_name,
             self.model_version,
         )
@@ -118,7 +118,7 @@ class Main(unittest.TestCase):
             ANY,
             ANY,
             self.dependent_variable_when_not_care_home,
-            self.branch_name,
+            self.s3_datasets_uri,
             self.non_res_model_name,
             self.model_version,
             save_model_to_s3_mock.return_value,

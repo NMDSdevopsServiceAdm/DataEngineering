@@ -25,7 +25,7 @@ class SaveModelMetricsTests(unittest.TestCase):
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
         self.dependent_variable: str = IndCqc.imputed_filled_post_model
-        self.branch_name: str = "sfc-test_branch-datasets"
+        self.s3_datasets_uri = "s3://sfc-branch-name-datasets"
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"
         self.model_run_number: int = 3
@@ -64,7 +64,7 @@ class MainTests(SaveModelMetricsTests):
             self.mock_model,
             self.test_df,
             self.dependent_variable,
-            self.branch_name,
+            self.s3_datasets_uri,
             self.model_name,
             self.model_version,
             self.model_run_number,
@@ -92,7 +92,7 @@ class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
 
     def test_generate_model_metrics_s3_path_returns_expected_path(self):
         returned_path = job.generate_model_metrics_s3_path(
-            self.branch_name, self.model_name, self.model_version
+            self.s3_datasets_uri, self.model_name, self.model_version
         )
         expected_path = "s3://sfc-test_branch-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name=test_model/model_version=1.0.0/"
 
