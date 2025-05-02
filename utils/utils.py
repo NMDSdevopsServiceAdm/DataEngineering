@@ -2,7 +2,7 @@ import os
 import re
 import csv
 import argparse
-from typing import List, Any, Generator, Optional
+from typing import List, Any, Generator
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.utils import AnalysisException
