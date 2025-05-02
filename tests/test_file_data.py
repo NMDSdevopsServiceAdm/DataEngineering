@@ -10869,27 +10869,38 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             "1-001",
             1000000300,
             {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
             },
         ),
         (
             "1-001",
             1000000400,
-            None
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            }
         ),
         (
             "1-001",
             1000000500,
             {
-                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.care_worker: 0.3,
                 MainJobRoleLabels.registered_nurse: 0.3,
             },
         ),
         (
+            "1-001",
+            1000000600,
+            None,
+        ),
+        (
             "1-002",
             1000000200,
-            None
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            }
         ),
         (
             "1-002",
@@ -10900,51 +10911,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             "1-002",
             1000000400,
             {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
             },
         ),
-        (
-            "1-002",
-            1000000500,
-            None
-        ),
-        (
-            "1-003",
-            1000000200,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-003",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-003",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
-            },
-        ),
-        (
-            "1-003",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        ("1-004", 1000000200, None),
-        ("1-004", 1000000300, None),
-        ("1-004", 1000000400, None),
-        ("1-004", 1000000500, None),
+        ("1-003", 1000000200, None),
+        ("1-003", 1000000300, None),
+        ("1-003", 1000000400, None),
+        ("1-003", 1000000500, None),
     ]
     expected_job_role_ratios_extrapolation_rows = [
         (
@@ -10952,131 +10926,89 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             1000000200,
             None,
             {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
             },
         ),
         (
             "1-001",
             1000000300,
             {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
             },
             {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
             },
         ),
         (
             "1-001",
             1000000400,
-            None,
-            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
         ),
         (
             "1-001",
             1000000500,
             {
-                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.care_worker: 0.3,
                 MainJobRoleLabels.registered_nurse: 0.3,
             },
             {
-                MainJobRoleLabels.care_worker: 0.7,
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-001",
+            1000000600,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
                 MainJobRoleLabels.registered_nurse: 0.3,
             },
         ),
         (
             "1-002",
             1000000200,
-            None,
             {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
             },
         ),
         (
             "1-002",
             1000000300,
             None,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-002",
-            1000000400,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-002",
-            1000000500,
             None,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
         ),
         (
-            "1-003",
-            1000000200,
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.5,
-                MainJobRoleLabels.registered_nurse: 0.5,
-            },
-        ),
-        (
-            "1-003",
-            1000000300,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        (
-            "1-003",
+            "1-002",
             1000000400,
             {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
             },
             {
-                MainJobRoleLabels.care_worker: 0.55,
-                MainJobRoleLabels.registered_nurse: 0.45,
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
             },
         ),
-        (
-            "1-003",
-            1000000500,
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-            {
-                MainJobRoleLabels.care_worker: 0.6,
-                MainJobRoleLabels.registered_nurse: 0.4,
-            },
-        ),
-        ("1-004", 1000000300, None, None),
-        ("1-004", 1000000200, None, None),
-        ("1-004", 1000000400, None, None),
-        ("1-004", 1000000500, None, None),
+        ("1-003", 1000000200, None, None),
+        ("1-003", 1000000300, None, None),
+        ("1-003", 1000000400, None, None),
+        ("1-003", 1000000500, None, None),
     ]
     # fmt: on
 
