@@ -235,15 +235,6 @@
               }
             }
           }
-        ],
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "Publish error notification",
-            "ResultPath": "$.error"
-          }
         ]
       },
       "Run validation crawler when success": {
