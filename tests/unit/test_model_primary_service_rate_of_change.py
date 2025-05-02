@@ -22,7 +22,6 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         super().setUp()
 
         number_of_days: int = 3
-
         self.test_df = self.spark.createDataFrame(
             Data.primary_service_rate_of_change_rows,
             Schemas.primary_service_rate_of_change_schema,
