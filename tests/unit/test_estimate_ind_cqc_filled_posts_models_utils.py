@@ -21,7 +21,7 @@ class EstimateFilledPostsModelsUtilsTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         self.model_source: str = "s3://pipeline-resources/models/model_name/1.0.0/"
-        self.s3_datasets_uri = "s3://sfc-branch-name-datasets"
+        self.s3_datasets_uri = "s3://sfc-test_branch-datasets"
         self.model_name = "test_model"
         self.model_version = "1.0.0"
 
