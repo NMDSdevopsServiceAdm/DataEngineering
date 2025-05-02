@@ -354,24 +354,28 @@ def sum_job_role_count_split_by_service(
     return df_result
 
 
-def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
+def unpack_mapped_column(
+    df: DataFrame, column_to_unpack: str, new_columns_suffix: str = None
+) -> DataFrame:
     """
     Unpacks a MapType column in a DataFrame into separate columns (sorted alphabetically), with keys as column names and values as row values.
 
     Args:
         df (DataFrame): A PySpark DataFrame containing a MapType column.
-        column_name (str): The name of the MapType column to unpack.
+        column_to_unpack (str): The name of the MapType column to unpack.
+        new_columns_suffix (str): A suffix to append to each new column name. Set to None by default.
 
     Returns:
         DataFrame: A DataFrame with the map column expanded into multiple columns, sorted alphabetically by key.
     """
 
-    df_keys = df.select(F.explode(F.map_keys(F.col(column_name)))).distinct()
+    df_keys = df.select(F.explode(F.map_keys(F.col(column_to_unpack)))).distinct()
 
     list_keys = sorted([row[0] for row in df_keys.collect()])
 
     column_of_keys = [
-        F.col(column_name).getItem(key).alias(str(key)) for key in list_keys
+        F.col(column_to_unpack).getItem(key).alias(str(key + new_columns_suffix))
+        for key in list_keys
     ]
 
     result_df = df.select("*", *column_of_keys)
@@ -437,6 +441,13 @@ def recalculate_managerial_filled_posts(
     Returns:
         DataFrame: A new DataFrame with updated estimates for non-RM managerial roles.
     """
+    temp_column_suffix = "_proportion"
+    df = unpack_mapped_column(
+        df,
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        temp_column_suffix,
+    )
+
     for role in non_rm_managers:
         df = df.withColumn(
             role,
@@ -444,15 +455,21 @@ def recalculate_managerial_filled_posts(
                 F.lit(0.0),
                 F.col(role)
                 + (
-                    F.col(
-                        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-                    ).getItem(role)
+                    F.col(role + temp_column_suffix)
                     * F.col(
                         IndCQC.difference_between_estimate_and_cqc_registered_managers
                     )
                 ),
             ),
         )
+
+    columns_to_repack = [role + temp_column_suffix for role in non_rm_managers]
+    df = create_map_column(
+        df,
+        columns_to_repack,
+        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
+        drop_original_columns=True,
+    )
 
     return df
 

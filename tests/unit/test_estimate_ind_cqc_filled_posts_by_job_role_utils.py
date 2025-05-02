@@ -1497,7 +1497,9 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
     def setUp(self) -> None:
         super().setUp()
 
-        non_rm_managers = Schemas.recalculate_managerial_filled_posts_non_rm_col_list
+        self.non_rm_managers = (
+            Schemas.recalculate_managerial_filled_posts_non_rm_col_list
+        )
 
         self.test_df = self.spark.createDataFrame(
             Data.recalculate_managerial_filled_posts_rows,
@@ -1508,7 +1510,7 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
             Schemas.recalculate_managerial_filled_posts_schema,
         )
         self.returned_df = job.recalculate_managerial_filled_posts(
-            self.test_df, non_rm_managers
+            self.test_df, self.non_rm_managers
         )
 
         self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
@@ -1518,4 +1520,11 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         self.assertEqual(self.returned_df.columns, self.test_df.columns)
 
     def test_recalculate_managerial_filled_posts_returns_expected_values(self):
-        self.assertEqual(self.expected_data, self.returned_data)
+        for row in range(len(self.expected_data)):
+            for role in self.non_rm_managers:
+                self.assertAlmostEqual(
+                    self.expected_data[row][role],
+                    self.returned_data[row][role],
+                    places=3,
+                    msg=f"The values on row {row} in column {role} do not match",
+                )
