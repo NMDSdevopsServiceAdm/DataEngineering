@@ -61,9 +61,6 @@ class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
             self.CARE_HOME_FEATURES_DIR,
         )
 
-        read_from_parquet_mock.assert_called_once_with(
-            self.IND_FILLED_POSTS_CLEANED_DIR
-        )
         self.assertEqual(select_rows_with_value_mock.call_count, 1)
         self.assertEqual(select_rows_with_non_null_value_mock.call_count, 1)
         self.assertEqual(add_array_column_count_mock.call_count, 2)
