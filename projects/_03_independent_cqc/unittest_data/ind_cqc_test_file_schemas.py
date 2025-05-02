@@ -226,6 +226,33 @@ class ModelMetrics:
         ]
     )
 
+    generate_proportion_of_predictions_within_range_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.residual, FloatType(), True),
+        ]
+    )
+
+    combine_metrics_current_schema = StructType(
+        [
+            StructField(IndCQC.model_name, StringType(), True),
+            StructField(IndCQC.model_version, StringType(), True),
+            StructField(IndCQC.run_number, StringType(), True),
+            StructField(IndCQC.r2, FloatType(), True),
+            StructField(IndCQC.rmse, FloatType(), True),
+            StructField(IndCQC.prediction_within_10_posts, FloatType(), True),
+            StructField(IndCQC.prediction_within_25_posts, FloatType(), True),
+        ]
+    )
+    combine_metrics_previous_schema = StructType(
+        [
+            StructField(IndCQC.model_name, StringType(), True),
+            StructField(IndCQC.model_version, StringType(), True),
+            StructField(IndCQC.r2, FloatType(), True),
+        ]
+    )
+    expected_combined_metrics_schema = combine_metrics_current_schema
+
 
 @dataclass
 class RunLinearRegressionModelSchema:
