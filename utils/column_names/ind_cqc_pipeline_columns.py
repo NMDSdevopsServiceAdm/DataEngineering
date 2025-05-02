@@ -140,6 +140,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimated_managerial_filled_posts_temp: str = (
+        "estimated_managerial_filled_posts_temp"
+    )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
@@ -150,6 +153,7 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
+    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
@@ -239,6 +243,8 @@ class IndCqcColumns:
     posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_within_10_posts: str = "prediction_within_10_posts"
+    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -266,6 +272,8 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rmse: str = "rmse"
+    run_number: str = "run_number"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered

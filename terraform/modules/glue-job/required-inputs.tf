@@ -1,3 +1,8 @@
+variable "script_dir" {
+  description = "Name of the directory to the folder where the scipt is saved"
+  type        = string
+}
+
 variable "script_name" {
   description = "Name of the python script to run"
   type        = string
