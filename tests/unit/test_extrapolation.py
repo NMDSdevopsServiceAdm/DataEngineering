@@ -12,7 +12,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from tests.test_file_data import ModelExtrapolation as Data
 from tests.test_file_schemas import ModelExtrapolation as Schemas
 
-PATCH_PATH = "import utils.estimate_filled_posts.models.extrapolation"
+PATCH_PATH = "utils.estimate_filled_posts.models.extrapolation"
 
 
 class ModelExtrapolationTests(unittest.TestCase):
