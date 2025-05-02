@@ -355,7 +355,7 @@ def sum_job_role_count_split_by_service(
 
 
 def unpack_mapped_column(
-    df: DataFrame, column_to_unpack: str, new_columns_suffix: str = None
+    df: DataFrame, column_to_unpack: str, new_columns_suffix: str = ""
 ) -> DataFrame:
     """
     Unpacks a MapType column in a DataFrame into separate columns (sorted alphabetically), with keys as column names and values as row values.
@@ -363,7 +363,7 @@ def unpack_mapped_column(
     Args:
         df (DataFrame): A PySpark DataFrame containing a MapType column.
         column_to_unpack (str): The name of the MapType column to unpack.
-        new_columns_suffix (str): A suffix to append to each new column name. Set to None by default.
+        new_columns_suffix (str): A suffix to append to each new column name. Set to "" as default.
 
     Returns:
         DataFrame: A DataFrame with the map column expanded into multiple columns, sorted alphabetically by key.
