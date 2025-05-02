@@ -22,8 +22,9 @@ from utils.estimate_filled_posts.models.utils import (
     combine_care_home_ratios_and_non_res_posts,
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_pir_utils.blend_ascwds_pir import (
-    blend_pir_and_ascwds_when_ascwds_out_of_date,
+from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts import (
+    model_pir_filled_posts,
+    merge_ascwds_and_pir_filled_post_submissions,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -64,9 +65,9 @@ def main(
         IndCQC.ascwds_rate_of_change_trendline_model,
     )
 
-    df = blend_pir_and_ascwds_when_ascwds_out_of_date(
-        df, linear_regression_model_source
-    )
+    df = model_pir_filled_posts(df, linear_regression_model_source)
+
+    df = merge_ascwds_and_pir_filled_post_submissions(df)
 
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
@@ -82,14 +83,6 @@ def main(
         IndCQC.ascwds_rate_of_change_trendline_model,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         care_home=True,
-    )
-
-    df = model_imputation_with_extrapolation_and_interpolation(
-        df,
-        IndCQC.pir_people_directly_employed_dedup,
-        IndCQC.ascwds_rate_of_change_trendline_model,
-        IndCQC.imputed_non_res_pir_people_directly_employed,
-        care_home=False,
     )
 
     df = model_calculate_rolling_average(

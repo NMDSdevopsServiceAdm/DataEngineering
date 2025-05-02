@@ -2233,26 +2233,6 @@ class CareHomeFeaturesSchema:
 
 
 @dataclass
-class NonResPirFeaturesSchema:
-    features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-            StructField(
-                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
-            ),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class EstimateIndCQCFilledPostsSchemas:
     cleaned_ind_cqc_schema = StructType(
         [
@@ -2274,24 +2254,6 @@ class EstimateIndCQCFilledPostsSchemas:
             ),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
             StructField(IndCQC.registration_status, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ImputeIndCqcAscwdsAndPirSchemas:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts, FloatType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, FloatType(), True),
         ]
     )
 
@@ -3177,37 +3139,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         [
             *combine_model_predictions_schema,
             StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-
-@dataclass
-class ModelNonResPirLinearRegressionSchemas:
-    non_res_pir_cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
-            ),
-        ]
-    )
-    non_res_pir_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
-            ),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-    expected_non_res_pir_prediction_schema = StructType(
-        [
-            *non_res_pir_cleaned_ind_cqc_schema,
-            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
         ]
     )
 
@@ -4618,58 +4549,6 @@ class ValidateCleanedIndCqcData:
 
 
 @dataclass
-class ValidateImputedIndCqcAscwdsAndPir:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-    imputed_ind_cqc_ascwds_and_pir_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.provider_name, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-        ]
-    )
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
 class ValidateCareHomeIndCqcFeaturesData:
     cleaned_ind_cqc_schema = StructType(
         [
@@ -4767,28 +4646,6 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
         ]
     )
     non_res_ascwds_ind_cqc_features_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ValidateFeaturesNonResPirIndCqcSchema:
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(
-                IndCQC.imputed_non_res_pir_people_directly_employed, FloatType(), True
-            ),
-        ]
-    )
-    non_res_pir_ind_cqc_features_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
@@ -4968,7 +4825,7 @@ class DiagnosticsOnKnownFilledPostsSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_combined_model, FloatType(), True),
-            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
+            StructField(IndCQC.imputed_pir_filled_posts_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(Keys.year, StringType(), True),
@@ -4994,7 +4851,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_combined_model, FloatType(), True),
-            StructField(IndCQC.non_res_pir_linear_regression_model, FloatType(), True),
+            StructField(IndCQC.imputed_pir_filled_posts_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
@@ -5882,113 +5739,6 @@ class ReconciliationUtilsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(CQCL.name, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class BlendAscwdsPirData:
-    blend_pir_and_ascwds_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
-        ]
-    )
-
-    create_repeated_ascwds_clean_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
-        ]
-    )
-    expected_create_repeated_ascwds_clean_column_schema = StructType(
-        [
-            *create_repeated_ascwds_clean_column_schema,
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
-            ),
-        ]
-    )
-    create_pir_people_directly_employed_dedup_modelled_column_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-        ]
-    )
-    expected_create_pir_people_directly_employed_dedup_modelled_column_schema = (
-        StructType(
-            [
-                *create_pir_people_directly_employed_dedup_modelled_column_schema,
-                StructField(
-                    IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
-                ),
-            ]
-        )
-    )
-    create_last_submission_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, IntegerType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-        ]
-    )
-    expected_create_last_submission_columns_schema = StructType(
-        [
-            *create_last_submission_columns_schema,
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-        ]
-    )
-    blend_modelled_pir_ands_ascwds_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
-            ),
-            StructField(
-                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
-            ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-        ]
-    )
-    expected_blend_modelled_pir_ands_ascwds_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
-            ),
-            StructField(
-                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
-            ),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
-        ]
-    )
-
-    drop_temporary_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.last_ascwds_submission, DateType(), True),
-            StructField(IndCQC.last_pir_submission, DateType(), True),
-            StructField(
-                IndCQC.ascwds_filled_posts_dedup_clean_repeated, IntegerType(), True
-            ),
-            StructField(
-                IndCQC.pir_people_directly_employed_filled_posts, FloatType(), True
-            ),
         ]
     )
 

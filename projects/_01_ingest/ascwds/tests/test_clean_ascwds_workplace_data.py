@@ -47,8 +47,8 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
-    @patch(f"{PATCH_PATH}.utils.cleaning_utils.set_column_bounds")
-    @patch(f"{PATCH_PATH}.utils.cleaning_utils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
+    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")

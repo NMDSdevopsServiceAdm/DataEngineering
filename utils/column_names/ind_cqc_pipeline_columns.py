@@ -167,9 +167,7 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
-    imputed_non_res_pir_people_directly_employed: str = (
-        "imputed_non_res_pir_people_directly_employed"
-    )
+    imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
@@ -206,8 +204,6 @@ class IndCqcColumns:
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
     non_res_combined_model: str = "non_res_combined_model"
-    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
-    non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
@@ -232,12 +228,10 @@ class IndCqcColumns:
     person_given_name: str = CQCLClean.person_given_name
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
+    pir_filled_posts_model: str = "pir_filled_posts_model"
     pir_people_directly_employed: str = CQCPIRClean.pir_people_directly_employed
     pir_people_directly_employed_dedup: str = (
         CQCPIRClean.pir_people_directly_employed + "_deduplicated"
-    )
-    pir_people_directly_employed_filled_posts: str = (
-        pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"

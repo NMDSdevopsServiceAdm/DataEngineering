@@ -2,14 +2,19 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-
-import jobs.impute_ind_cqc_ascwds_and_pir as job
-from tests.test_file_data import ImputeIndCqcAscwdsAndPirData as Data
-from tests.test_file_schemas import ImputeIndCqcAscwdsAndPirSchemas as Schemas
+import projects._03_independent_cqc._03_impute.jobs.impute_ind_cqc_ascwds_and_pir as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ImputeIndCqcAscwdsAndPirData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ImputeIndCqcAscwdsAndPirSchemas as Schemas,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PATCH_PATH = "jobs.impute_ind_cqc_ascwds_and_pir"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._03_impute.jobs.impute_ind_cqc_ascwds_and_pir"
+)
 
 
 class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
@@ -42,7 +47,8 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.clean_number_of_beds_banded")
     @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
-    @patch(f"{PATCH_PATH}.blend_pir_and_ascwds_when_ascwds_out_of_date")
+    @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
+    @patch(f"{PATCH_PATH}.model_pir_filled_posts")
     @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.combine_care_home_ratios_and_non_res_posts")
     @patch(f"{PATCH_PATH}.utils.create_unix_timestamp_variable_from_date_column")
@@ -53,7 +59,8 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         create_unix_timestamp_variable_from_date_column_mock: Mock,
         combine_care_home_ratios_and_non_res_posts_mock: Mock,
         model_primary_service_rate_of_change_trendline_mock: Mock,
-        blend_pir_and_ascwds_when_ascwds_out_of_date_mock: Mock,
+        model_pir_filled_posts_mock: Mock,
+        merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
         clean_number_of_beds_banded_mock: Mock,
@@ -72,7 +79,8 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
         combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
         model_primary_service_rate_of_change_trendline_mock.assert_called_once()
-        blend_pir_and_ascwds_when_ascwds_out_of_date_mock.assert_called_once()
+        model_pir_filled_posts_mock.assert_called_once()
+        merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 3
         )
