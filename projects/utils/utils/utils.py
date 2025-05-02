@@ -43,6 +43,8 @@ def calculate(
         calculation = c1 / c2
     elif method == "average":
         calculation = (c1 + c2) / 2
+    elif method == "absolute difference":
+        calculation = F.abs(c1 - c2)
     else:
         raise ValueError(f"Invalid method: {method}")
 
