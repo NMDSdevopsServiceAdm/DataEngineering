@@ -36,7 +36,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.non_res_combined_model,
-    IndCQC.non_res_pir_linear_regression_model,
+    IndCQC.imputed_pir_filled_posts_model,
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
