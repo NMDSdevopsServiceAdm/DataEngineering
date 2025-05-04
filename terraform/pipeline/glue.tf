@@ -871,8 +871,10 @@ module "train_linear_regression_model_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
+    # "--s3_datasets_uri" = "${local.workspace_prefix}"
     "--s3_datasets_uri" = "${module.datasets_bucket.bucket_uri}"
     "--model_name"      = ""
     "--model_version"   = ""
@@ -886,6 +888,7 @@ module "run_linear_regression_model_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--s3_datasets_uri" = "${module.datasets_bucket.bucket_uri}"
