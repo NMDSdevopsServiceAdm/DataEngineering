@@ -36,7 +36,7 @@ jdk-8u....-windows-x64.exe
 4. This will open a screen where you need to add credentials into the fields:
 
 Field | To be filled with
---- | --- 
+--- | ---
 Server | athena.eu-west-2.amazonaws.com
 Port | 443
 S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
@@ -57,7 +57,7 @@ Secret Access Key | Your specific AWS secret key from the AWS credentials page. 
 2. In 'system variables', select 'new' and add the following:
 
 Variable name | Value
---- | --- 
+--- | ---
 HADOOP_HOME | C:\hadoop-3.2.2
 JAVA_HOME | C:\jdk
 
@@ -86,7 +86,7 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
 
 2. Under 'user variables', select `path` and then select `edit`
 
-3. Add the below path variables replacing "_your_name_" for your windows user name. 
+3. Add the below path variables replacing "_your_name_" for your windows user name.
 ```
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
@@ -107,19 +107,15 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
 ### Python install:
-1. If a version of Python which is not 3.9 is already installed on your computer then you will need to uninstall it
+1. If a version of Python which is not 3.12 is already installed on your computer then you will need to uninstall it
 
-2. Go to https://www.python.org/downloads/
+2. Go to https://www.python.org/downloads/release/python-3120/
 
-3. Select Ctrl+F and search for `3.9.6`
+3. Scroll down and select `Windows installer (64-bit)`
 
-4. Click on the `Download` button
+4. In your download folder, click on `python-3.12.0-amd64` and install Python manually (in order to change the file location to the location below)
 
-5. Scroll down and select `Windows installer (64-bit)`
-
-6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
-
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming`
+5. When asked for a location, choose `C:\Users\_your_name_\AppData\Local\Programs`
 
 
 ### Hadoop Install:
@@ -169,15 +165,15 @@ https://github.com/cdarlint/winutils
 
 3. If you having an error on above command, try `pip install pyenv-win --target %USERPROFILE%\\.pyenv --no-user --upgrade`
 
-4. Run `pyenv install 3.9.6` to install the supported version
+4. Run `pyenv install 3.12.0` to install the supported version
 
-5. Run `pyenv global 3.9.6` to set a Python version as the global version
+5. Run `pyenv global 3.12.0` to set a Python version as the global version
 
 6. Check which Python version you are using and its path using `pyenv version`
-Output: `3.9.6 (set by C:\Users\.....\.pyenv\pyenv-win\version)`
+Output: `3.12.0 (set by C:\Users\.....\.pyenv\pyenv-win\version)`
 
 7. Check that Python is working using `python -c "import sys; print(sys.executable)"`
-Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.9.6\python.exe`
+Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.12.0\python.exe`
 
 8. Leave command prompt open for the next install
 
@@ -186,7 +182,7 @@ Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.9.6\python.exe`
 <i>Note: The following pipenv instructions are from https://www.pythontutorial.net/python-basics/install-pipenv-windows/</i>
 
 1. Before installing the pipenv tool, you need to have Python and pip installed on your computer. You can check these by entering
-`python -V` - which should return 'Python 3.9.6'
+`python -V` - which should return 'Python 3.12.0'
 `pip -V` - which should return 'pip xx.x from c:\users\.....'
 
 2. Paste `pip install pipenv` and click Enter
@@ -246,7 +242,7 @@ Python
 
 4. Point the python extension to the virtual environment by typing `Ctrl+Shift+P` to open the Command Palette
 
-5. Search for `Python: Select Interpreter` and select: `Python 3.9.6 ('DataEngineering-...')`
+5. Search for `Python: Select Interpreter` and select: `Python 3.12.0 ('DataEngineering-...')`
 
 6. You should now be able to see the Data Engineering project in VS code.
 
@@ -277,7 +273,7 @@ Python
 
 ```
 <br>
-    
+
 10. Right click on the folder again, add a file named `settings.json` and paste in the code below:
 <i>Note: Replace `_your_name_` and `_your_code_` in the filepath with your personal options:</i>
 ```
