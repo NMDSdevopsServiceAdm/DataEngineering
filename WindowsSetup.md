@@ -126,17 +126,6 @@ https://hadoop.apache.org/release/3.3.2.html
 
 3. Right click the extracted `hadoop-3.3.2.tar`, select 7-Zip, Extract files and extract to `C:\` using 7zip.
 
-4. The file will error towards the end of unzipping, this is expected. Press close when this happens
-
-6. On the webpage below, click Code > Download ZIP
-https://github.com/cdarlint/winutils
-
-7. In your Downloads folder, right click on `winutils-master`, select 7-Zip and Extract Here
-
-8. Copy and paste all files from `Downloads\winutils-master\hadoop-3.3.2\bin` into `C:\hadoop-3.3.2\bin`
-
-9. Press 'replace' if any files have the same names. Hadoop is now installed.
-
 
 ### Git install:
 <i>Note: The following pyenv instructions are from https://github.com/git-guides/install-git</i>
