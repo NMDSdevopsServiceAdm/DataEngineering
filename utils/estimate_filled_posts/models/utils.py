@@ -253,8 +253,11 @@ def save_model_to_s3(model: LinearRegressionModel, model_s3_location: str) -> in
     """
     run_number = generate_run_number(model_s3_location, mode="save")
     s3_path = f"{model_s3_location}run={run_number}"
+    s3_path = s3_path.replace("s3", "s3a")
+
+    print(f"Saving model to: {s3_path}")
     model.save(s3_path)
-    print(f"Model saved to: {s3_path}")
+
     return run_number
 
 
