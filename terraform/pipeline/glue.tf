@@ -843,8 +843,8 @@ module "train_linear_regression_model_job" {
 
   job_parameters = {
     "--s3_datasets_uri" = "${module.datasets_bucket.bucket_uri}"
-    "--model_name"      = ""
-    "--model_version"   = ""
+    "--model_name"      = "care_home_model"
+    "--model_version"   = "6.1.0"
   }
 }
 
