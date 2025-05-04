@@ -252,7 +252,7 @@ def save_model_to_s3(model: LinearRegressionModel, model_s3_location: str) -> in
         int: The run number of the newly saved model.
     """
     run_number = generate_run_number(model_s3_location, mode="save")
-    s3_path = f"{model_s3_location}run={run_number}/"
+    s3_path = f"{model_s3_location}run={run_number}"
     model.save(s3_path)
     print(f"Model saved to: {s3_path}")
     return run_number
@@ -322,7 +322,7 @@ def generate_model_s3_path(
         str: The S3 path for the model dataset.
     """
     s3_pipeline_resources: str = s3_datasets_uri[:-8] + "pipeline-resources"
-    return f"{s3_pipeline_resources}/models/{model_name}/{model_version}"
+    return f"{s3_pipeline_resources}/models/{model_name}/{model_version}/"
 
 
 def generate_model_predictions_s3_path(s3_datasets_uri: str, model_name: str) -> str:

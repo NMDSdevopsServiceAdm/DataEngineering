@@ -400,7 +400,7 @@ class SaveModelToS3Tests(EstimateFilledPostsModelsUtilsTests):
 
         self.mock_model = MagicMock()
         self.run_number: int = 4
-        self.model_s3_location = f"{self.model_source}run={self.run_number}/"
+        self.model_s3_location = f"{self.model_source}run={self.run_number}"
 
     @patch(f"{PATCH_PATH}.generate_run_number")
     def test_save_model_to_s3_has_correct_calls(self, generate_run_number_mock: Mock):
@@ -491,7 +491,7 @@ class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
             self.s3_datasets_uri, self.model_name, self.model_version
         )
         expected_path = (
-            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0"
+            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
         )
 
         self.assertEqual(returned_path, expected_path)
