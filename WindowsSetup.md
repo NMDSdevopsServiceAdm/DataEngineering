@@ -58,14 +58,14 @@ Secret Access Key | Your specific AWS secret key from the AWS credentials page. 
 
 Variable name | Value
 --- | ---
-HADOOP_HOME | C:\hadoop-3.2.2
+HADOOP_HOME | C:\hadoop-3.3.2
 JAVA_HOME | C:\jdk
 
 
 3. Select the 'Path' from 'system variables', press edit and add the below path variables, replacing "_your_name_" for your windows user name:
 ```
 C:\Program Files (x86)\Common Files\Oracle\Java\javapath
-C:\hadoop-3.2.2\bin
+C:\hadoop-3.3.2\bin
 C:\'Program Files (x86)'\'Common Files'\Oracle\Java\javapath
 C:\'Program Files (x86)'\'Common Files'\Java\'Java Update'
 C:\Program Files (x86)\Common Files\Oracle\Java\javapath
@@ -119,12 +119,12 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
 ### Hadoop Install:
-1. Download Hadoop Version 3.2.2 (tar.gz)
-https://hadoop.apache.org/release/3.2.2.html
+1. Download Hadoop Version 3.3.2 (tar.gz)
+https://hadoop.apache.org/release/3.3.2.html
 
-2. In your Downloads folder, right click on `hadoop-3.2.2.tar.gz`, select 7-Zip and Extract Here
+2. In your Downloads folder, right click on `hadoop-3.3.2.tar.gz`, select 7-Zip and Extract Here
 
-3. Right click the extracted `hadoop-3.2.2.tar`, select 7-Zip, Extract files and extract to `C:\` using 7zip.
+3. Right click the extracted `hadoop-3.3.2.tar`, select 7-Zip, Extract files and extract to `C:\` using 7zip.
 
 4. The file will error towards the end of unzipping, this is expected. Press close when this happens
 
@@ -133,7 +133,7 @@ https://github.com/cdarlint/winutils
 
 7. In your Downloads folder, right click on `winutils-master`, select 7-Zip and Extract Here
 
-8. Copy and paste all files from `Downloads\winutils-master\hadoop-3.2.2\bin` into `C:\hadoop-3.2.2\bin`
+8. Copy and paste all files from `Downloads\winutils-master\hadoop-3.3.2\bin` into `C:\hadoop-3.3.2\bin`
 
 9. Press 'replace' if any files have the same names. Hadoop is now installed.
 
