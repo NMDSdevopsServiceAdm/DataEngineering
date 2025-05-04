@@ -491,7 +491,7 @@ class GenerateModelS3PathTests(EstimateFilledPostsModelsUtilsTests):
             self.s3_datasets_uri, self.model_name, self.model_version
         )
         expected_path = (
-            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0/"
+            "s3://sfc-test_branch-pipeline-resources/models/test_model/1.0.0"
         )
 
         self.assertEqual(returned_path, expected_path)

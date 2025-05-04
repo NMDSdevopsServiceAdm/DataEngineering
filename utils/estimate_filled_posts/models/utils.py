@@ -322,7 +322,7 @@ def generate_model_s3_path(
         str: The S3 path for the model dataset.
     """
     s3_pipeline_resources: str = s3_datasets_uri[:-8] + "pipeline-resources"
-    return f"{s3_pipeline_resources}/models/{model_name}/{model_version}/"
+    return f"{s3_pipeline_resources}/models/{model_name}/{model_version}"
 
 
 def generate_model_predictions_s3_path(s3_datasets_uri: str, model_name: str) -> str:
