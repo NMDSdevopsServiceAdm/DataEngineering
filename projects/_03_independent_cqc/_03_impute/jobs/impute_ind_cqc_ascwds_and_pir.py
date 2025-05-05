@@ -64,6 +64,7 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.number_of_days_in_window,
         IndCQC.ascwds_rate_of_change_trendline_model,
+        max_days_between_submissions=370,
     )
 
     df = model_pir_filled_posts(df, linear_regression_model_source)
