@@ -102,6 +102,11 @@ class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
     def test_number_of_days_in_window_value(self):
         self.assertEqual(job.NumericalValues.number_of_days_in_window, 95)
 
+    def test_max_number_of_days_to_interpolate_between_value(self):
+        self.assertEqual(
+            job.NumericalValues.max_number_of_days_to_interpolate_between, 370
+        )
+
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
