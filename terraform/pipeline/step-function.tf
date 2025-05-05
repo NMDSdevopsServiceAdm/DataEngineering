@@ -203,6 +203,32 @@ resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
+  name     = "${local.workspace_prefix}-IngestAndCleanONSPostcodeDirectory"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/IngestAndCleanONSPostcodeDirectory-StepFunction.json", {
+    ingest_ons_data_job_name                          = module.ingest_ons_data_job.job_name
+    validate_postcode_directory_raw_data_job_name     = module.validate_postcode_directory_raw_data_job.job_name
+    clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
+    validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
+    ons_crawler_name                                  = module.ons_crawler.crawler_name
+    data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
+    dataset_bucket_name                               = module.datasets_bucket.bucket_name
+    pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
 resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
   name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
