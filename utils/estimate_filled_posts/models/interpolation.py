@@ -244,7 +244,7 @@ def calculate_interpolated_values(
     """
     if max_days_between_submissions is not None:
         max_time = convert_days_to_unix_time(max_days_between_submissions)
-        condition_is_true = F.col(IndCqc.time_between_submissions) <= max_time
+        condition_is_true = F.col(IndCqc.time_between_submissions) <= F.lit(max_time)
     else:
         condition_is_true = F.lit(True)
 
