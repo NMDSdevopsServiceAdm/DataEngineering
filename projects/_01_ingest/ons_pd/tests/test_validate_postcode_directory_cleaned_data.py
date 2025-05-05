@@ -3,11 +3,15 @@ import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.validate_postcode_directory_cleaned_data as job
-
-from tests.test_file_data import ValidatePostcodeDirectoryCleanedData as Data
-from tests.test_file_schemas import ValidatePostcodeDirectoryCleanedData as Schemas
-
+from projects._01_ingest.unittest_data.data import (
+    ValidatePostcodeDirectoryCleanedData as Data,
+)
+from projects._01_ingest.unittest_data.schemas import (
+    ValidatePostcodeDirectoryCleanedData as Schemas,
+)
 from utils import utils
+
+PATCH_PATH = "projects._01_ingest.ons_pd.jobs.validate_postcode_directory_cleaned_data"
 
 
 class ValidatePostcodeDirectoryCleanedDatasetTests(unittest.TestCase):
@@ -35,8 +39,8 @@ class MainTests(ValidatePostcodeDirectoryCleanedDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
