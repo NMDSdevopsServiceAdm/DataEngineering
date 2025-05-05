@@ -140,6 +140,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimated_managerial_filled_posts_temp: str = (
+        "estimated_managerial_filled_posts_temp"
+    )
     estimate_filled_posts_source: str = "estimate_filled_posts_source"
     estimate_filled_posts_by_job_role: str = "estimate_filled_posts_by_job_role"
     estimate_source: str = "estimate_source"
@@ -150,6 +153,7 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
+    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
@@ -163,9 +167,7 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
-    imputed_non_res_pir_people_directly_employed: str = (
-        "imputed_non_res_pir_people_directly_employed"
-    )
+    imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
@@ -202,8 +204,6 @@ class IndCqcColumns:
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
     non_res_combined_model: str = "non_res_combined_model"
-    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
-    non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
@@ -228,17 +228,17 @@ class IndCqcColumns:
     person_given_name: str = CQCLClean.person_given_name
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
+    pir_filled_posts_model: str = "pir_filled_posts_model"
     pir_people_directly_employed: str = CQCPIRClean.pir_people_directly_employed
     pir_people_directly_employed_dedup: str = (
         CQCPIRClean.pir_people_directly_employed + "_deduplicated"
-    )
-    pir_people_directly_employed_filled_posts: str = (
-        pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_within_10_posts: str = "prediction_within_10_posts"
+    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -266,6 +266,8 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
+    rmse: str = "rmse"
+    run_number: str = "run_number"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered

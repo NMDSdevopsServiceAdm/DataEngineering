@@ -2,7 +2,6 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-
 import jobs.estimate_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
 from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
@@ -26,10 +25,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     NON_RES_WITHOUT_DORMANCY_MODEL = (
         "tests/test_models/non_residential_without_dormancy_prediction/1.0.0/"
     )
-    NON_RES_PIR_LINEAR_REGRESSION_FEATURES = "non res pir linear regression features"
-    NON_RES_PIR_LINEAR_REGRESSION_MODEL = (
-        "tests/test_models/non_res_pir_linear_regression_prediction/1.0.0/"
-    )
     ESTIMATES_DESTINATION = "estimates destination"
     METRICS_DESTINATION = "metrics destination"
     partition_keys = [
@@ -52,7 +47,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     @patch(
         "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
     )
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_pir_linear_regression")
     @patch(
         "jobs.estimate_ind_cqc_filled_posts.combine_non_res_with_and_without_dormancy_models"
     )
@@ -67,7 +61,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_non_res_with_dormancy_patch: Mock,
         model_non_res_without_dormancy_patch: Mock,
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
-        model_non_res_pir_linear_regression_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
         write_to_parquet_patch: Mock,
@@ -77,7 +70,6 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.CARE_HOMES_FEATURES,
             self.NON_RES_WITH_DORMANCY_FEATURES,
             self.NON_RES_WITHOUT_DORMANCY_FEATURES,
-            self.NON_RES_PIR_LINEAR_REGRESSION_FEATURES,
         ]
 
         job.main(
@@ -88,22 +80,19 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             self.NON_RES_WITH_DORMANCY_MODEL,
             self.NON_RES_WITHOUT_DORMANCY_FEATURES,
             self.NON_RES_WITHOUT_DORMANCY_MODEL,
-            self.NON_RES_PIR_LINEAR_REGRESSION_FEATURES,
-            self.NON_RES_PIR_LINEAR_REGRESSION_MODEL,
             self.ESTIMATES_DESTINATION,
             self.METRICS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 5)
+        self.assertEqual(read_from_parquet_patch.call_count, 4)
         self.assertEqual(model_care_homes_patch.call_count, 1)
         self.assertEqual(model_non_res_with_dormancy_patch.call_count, 1)
         self.assertEqual(model_non_res_without_dormancy_patch.call_count, 1)
         self.assertEqual(
             combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
         )
-        self.assertEqual(model_non_res_pir_linear_regression_patch.call_count, 1)
         self.assertEqual(
-            model_imputation_with_extrapolation_and_interpolation.call_count, 2
+            model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
