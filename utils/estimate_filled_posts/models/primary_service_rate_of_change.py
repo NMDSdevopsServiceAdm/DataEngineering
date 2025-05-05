@@ -135,7 +135,7 @@ def interpolate_column_with_values(
         TempCol.column_with_values,
         "straight",
         TempCol.column_with_values_interpolated,
-        max_days_between_submissions,
+        max_days_between_submissions=max_days_between_submissions,
     )
     df = df.withColumn(
         TempCol.column_with_values_interpolated,
