@@ -194,14 +194,14 @@ def calculate_proportion_of_time_between_submissions(
         "first",
     )
 
-    unix_time_between_known_submissions = (
+    current_unix_time_is_between_known_submissions = (
         F.col(IndCqc.previous_submission_time) < F.col(IndCqc.unix_time)
     ) & (F.col(IndCqc.next_submission_time) > F.col(IndCqc.unix_time))
 
     df = df.withColumn(
         IndCqc.time_between_submissions,
         F.when(
-            unix_time_between_known_submissions,
+            current_unix_time_is_between_known_submissions,
             (
                 F.col(IndCqc.next_submission_time)
                 - F.col(IndCqc.previous_submission_time)
@@ -212,7 +212,7 @@ def calculate_proportion_of_time_between_submissions(
     df = df.withColumn(
         IndCqc.proportion_of_time_between_submissions,
         F.when(
-            unix_time_between_known_submissions,
+            current_unix_time_is_between_known_submissions,
             (F.col(IndCqc.unix_time) - F.col(IndCqc.previous_submission_time))
             / F.col(IndCqc.time_between_submissions),
         ),
