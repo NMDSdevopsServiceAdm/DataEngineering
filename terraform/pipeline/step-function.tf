@@ -267,7 +267,6 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
     validate_locations_api_cleaned_data_job_name      = module.validate_locations_api_cleaned_data_job.job_name
     validate_providers_api_cleaned_data_job_name      = module.validate_providers_api_cleaned_data_job.job_name
     validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
-    validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
   })
