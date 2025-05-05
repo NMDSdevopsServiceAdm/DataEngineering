@@ -33,10 +33,8 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 @dataclass
 class NumericalValues:
-    number_of_days_in_window = 95  # Note: using 95 as a proxy for 3 months
-    max_number_of_days_to_interpolate_between = (
-        370  # Note: using 95 as a proxy for 3 months
-    )
+    number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
+    max_number_of_days_to_interpolate_between: int = 370  # proxy for 1 year
 
 
 def main(
