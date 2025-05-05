@@ -2,7 +2,7 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_postcode_directory_cleaned_data as job
+import projects._01_ingest.ons_pd.jobs.validate_postcode_directory_cleaned_data as job
 
 from tests.test_file_data import ValidatePostcodeDirectoryCleanedData as Data
 from tests.test_file_schemas import ValidatePostcodeDirectoryCleanedData as Schemas

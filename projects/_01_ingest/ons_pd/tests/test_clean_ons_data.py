@@ -6,16 +6,15 @@ from datetime import date
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-import jobs.clean_ons_data as job
-
-from tests.test_file_data import ONSData as Data
-from tests.test_file_schemas import ONSData as Schema
-from utils.column_names.raw_data_files.ons_columns import (
-    ONSPartitionKeys as Keys,
-)
+import projects._01_ingest.ons_pd.jobs.clean_ons_data as job
+from projects._01_ingest.unittest_data.data import CleanONSData as Data
+from projects._01_ingest.unittest_data.schemas import CleanONSData as Schema
+from utils.column_names.raw_data_files.ons_columns import ONSPartitionKeys as Keys
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+
+PATCH_PATH = "projects._01_ingest.ons_pd.jobs.clean_ons_data"
 
 
 class CleanONSDatasetTests(unittest.TestCase):
@@ -39,8 +38,8 @@ class MainTests(CleanONSDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
         read_from_parquet_patch.return_value = self.test_ons_parquet
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
