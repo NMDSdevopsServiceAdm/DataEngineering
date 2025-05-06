@@ -3629,7 +3629,7 @@ class IndCQCDataUtils:
 
     list_of_map_columns_to_be_merged = [
         IndCQC.ascwds_job_role_ratios,
-        IndCQC.ascwds_job_role_ratios_by_primary_service,
+        IndCQC.ascwds_job_role_rolling_ratio,
     ]
 
     # fmt: off
@@ -3664,7 +3664,7 @@ class IndCQCDataUtils:
          None,
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_ratios_by_primary_service)
+         IndCQC.ascwds_job_role_rolling_ratio)
     ]
     # fmt: on
 
@@ -7367,30 +7367,6 @@ class ValidatePIRCleanedData:
 
 
 @dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    # fmt: off
-    cleaned_ascwds_workplace_rows = [
-        ("estab_1", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_1", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateASCWDSWorkerCleanedData:
-    # fmt: off
-    cleaned_ascwds_worker_rows = [
-        ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
-        ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
@@ -7557,26 +7533,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
             "1-000000001",
             date(2024, 1, 1),
         ),
-    ]
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_rows = [
-        ("estab_1", "20240101"),
-        ("estab_2", "20240101"),
-        ("estab_1", "20240109"),
-        ("estab_2", "20240109"),
-    ]
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_rows = [
-        ("estab_1", "20240101", "worker_1", "8"),
-        ("estab_2", "20240101", "worker_2", "8"),
-        ("estab_1", "20240109", "worker_3", "8"),
-        ("estab_2", "20240109", "worker_4", "8"),
     ]
 
 

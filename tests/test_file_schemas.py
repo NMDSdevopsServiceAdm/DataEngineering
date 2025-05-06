@@ -1757,7 +1757,7 @@ class IndCQCDataUtils:
                 IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
             ),
             StructField(
-                IndCQC.ascwds_job_role_ratios_by_primary_service,
+                IndCQC.ascwds_job_role_rolling_ratio,
                 MapType(StringType(), DoubleType()),
                 True,
             ),
@@ -4273,33 +4273,6 @@ class ValidatePIRCleanedData:
 
 
 @dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    cleaned_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
-            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerCleanedData:
-    cleaned_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidateCleanedIndCqcData:
     merged_ind_cqc_schema = StructType(
         [
@@ -4519,28 +4492,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -5794,7 +5745,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *sum_job_role_split_by_service_schema,
             StructField(
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
                 MapType(StringType(), IntegerType()),
                 True,
             ),
@@ -6097,7 +6048,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
     expected_add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema = StructType(
         [
             *add_rolling_sum_partitioned_by_primary_service_type_and_main_job_role_clean_labelled_schema,
-            StructField(IndCQC.ascwds_job_role_counts_rolling_sum, FloatType(), True),
+            StructField(IndCQC.ascwds_job_role_rolling_sum, FloatType(), True),
         ]
     )
 
@@ -6124,7 +6075,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
                 True,
             ),
             StructField(
-                IndCQC.ascwds_job_role_counts_rolling_sum,
+                IndCQC.ascwds_job_role_rolling_sum,
                 MapType(StringType(), FloatType()),
                 True,
             ),

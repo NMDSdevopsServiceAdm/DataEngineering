@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pyspark.sql.types import StringType, StructField, StructType, DateType
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
@@ -15,6 +15,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
+)
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
@@ -380,3 +383,52 @@ class ValidatePostcodeDirectoryCleanedData:
     )
 
     calculate_expected_size_schema = raw_postcode_directory_schema
+
+
+@dataclass
+class ValidateASCWDSWorkplaceRawData:
+    raw_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWP.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateASCWDSWorkerRawData:
+    raw_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_id, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateASCWDSWorkplaceCleanedData:
+    cleaned_ascwds_workplace_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.organisation_id, StringType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
+            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateASCWDSWorkerCleanedData:
+    cleaned_ascwds_worker_schema = StructType(
+        [
+            StructField(AWKClean.establishment_id, StringType(), True),
+            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
+            StructField(AWKClean.worker_id, StringType(), True),
+            StructField(AWKClean.main_job_role_clean, StringType(), True),
+            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )

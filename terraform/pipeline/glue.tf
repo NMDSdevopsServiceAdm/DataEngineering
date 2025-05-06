@@ -522,7 +522,7 @@ module "validate_pir_cleaned_data_job" {
 
 module "validate_ascwds_workplace_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_workplace_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -537,7 +537,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
 
 module "validate_ascwds_worker_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_worker_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -715,7 +715,7 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
 
 module "validate_ascwds_workplace_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_workplace_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -730,7 +730,7 @@ module "validate_ascwds_workplace_raw_data_job" {
 
 module "validate_ascwds_worker_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_worker_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
