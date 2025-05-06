@@ -6,11 +6,11 @@ from pyspark.sql import Window, WindowSpec
 
 import utils.estimate_filled_posts.models.interpolation as job
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from tests.test_file_data import ModelInterpolation as Data
 from tests.test_file_schemas import ModelInterpolation as Schemas
+
+PATCH_PATH: str = "utils.estimate_filled_posts.models.interpolation"
 
 
 class ModelInterpolationTests(unittest.TestCase):
@@ -211,7 +211,7 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch("utils.estimate_filled_posts.models.interpolation.get_selected_value")
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_calculate_proportion_of_time_between_submissions_calls_correct_functions(
         self,
         get_selected_value_mock: Mock,
@@ -249,7 +249,8 @@ class CalculateProportionOfTimeBetweenSubmissionsTests(ModelInterpolationTests):
     ):
         self.assertEqual(self.input_df.count(), self.returned_df.count())
 
-    def test_proportion_of_time_between_submissions_added_as_a_new_column(self):
+    def test_proportion_of_time_between_submissions_returns_the_new_columns(self):
+        self.assertIn(IndCqc.time_between_submissions, self.returned_df.columns)
         self.assertIn(
             IndCqc.proportion_of_time_between_submissions, self.returned_df.columns
         )
@@ -264,27 +265,74 @@ class CalculateInterpolatedValuesTests(ModelInterpolationTests):
     def setUp(self):
         super().setUp()
 
-    def test_calculate_interpolated_values_returns_expected_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.calculate_interpolated_values_rows,
             Schemas.calculate_interpolated_values_schema,
         )
+        expected_when_within_max_days_df = self.spark.createDataFrame(
+            Data.expected_calculate_interpolated_values_when_within_max_days_rows,
+            Schemas.expected_calculate_interpolated_values_schema,
+        )
+        expected_when_outside_max_days_df = self.spark.createDataFrame(
+            Data.expected_calculate_interpolated_values_when_outside_of_max_days_rows,
+            Schemas.expected_calculate_interpolated_values_schema,
+        )
+        self.expected_data_when_within_max_days = (
+            expected_when_within_max_days_df.collect()
+        )
+        self.expected_data_when_outside_max_days = (
+            expected_when_outside_max_days_df.collect()
+        )
+
+    def test_calculate_interpolated_values_returns_expected_values_when_max_days_not_provided(
+        self,
+    ):
         returned_df = job.calculate_interpolated_values(
-            test_df,
+            self.test_df,
             IndCqc.previous_non_null_value,
             IndCqc.interpolation_model,
         )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_interpolated_values_rows,
-            Schemas.expected_calculate_interpolated_values_schema,
-        )
         returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
-        expected_data = expected_df.collect()
+
         for i in range(len(returned_data)):
             self.assertEqual(
                 returned_data[i][IndCqc.interpolation_model],
-                expected_data[i][IndCqc.interpolation_model],
+                self.expected_data_when_within_max_days[i][IndCqc.interpolation_model],
+                f"Returned value in row {i} does not match expected",
+            )
+
+    def test_calculate_interpolated_values_returns_expected_values_when_within_max_days(
+        self,
+    ):
+        returned_df = job.calculate_interpolated_values(
+            self.test_df,
+            IndCqc.previous_non_null_value,
+            IndCqc.interpolation_model,
+            max_days_between_submissions=4,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.interpolation_model],
+                self.expected_data_when_within_max_days[i][IndCqc.interpolation_model],
+                f"Returned value in row {i} does not match expected",
+            )
+
+    def test_calculate_interpolated_values_returns_expected_values_when_outside_max_days(
+        self,
+    ):
+        returned_df = job.calculate_interpolated_values(
+            self.test_df,
+            IndCqc.previous_non_null_value,
+            IndCqc.interpolation_model,
+            max_days_between_submissions=3,
+        )
+        returned_data = returned_df.sort(IndCqc.location_id, IndCqc.unix_time).collect()
+
+        for i in range(len(returned_data)):
+            self.assertEqual(
+                returned_data[i][IndCqc.interpolation_model],
+                self.expected_data_when_outside_max_days[i][IndCqc.interpolation_model],
                 f"Returned value in row {i} does not match expected",
             )

@@ -2640,6 +2640,7 @@ class ModelInterpolation:
     expected_time_between_submissions_schema = StructType(
         [
             *time_between_submissions_schema,
+            StructField(IndCQC.time_between_submissions, IntegerType(), True),
             StructField(
                 IndCQC.proportion_of_time_between_submissions, DoubleType(), True
             ),
@@ -2660,6 +2661,7 @@ class ModelInterpolation:
             StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
             StructField(IndCQC.previous_non_null_value, DoubleType(), True),
             StructField(IndCQC.residual, DoubleType(), True),
+            StructField(IndCQC.time_between_submissions, IntegerType(), True),
             StructField(
                 IndCQC.proportion_of_time_between_submissions, DoubleType(), True
             ),

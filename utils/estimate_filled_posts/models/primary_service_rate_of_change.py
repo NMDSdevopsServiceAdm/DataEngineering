@@ -1,12 +1,12 @@
 from dataclasses import fields
 
 from pyspark.sql import DataFrame, functions as F, Window
+from typing import Optional
 
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     PrimaryServiceRateOfChangeColumns as TempCol,
 )
-from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
@@ -17,6 +17,7 @@ def model_primary_service_rate_of_change(
     column_with_values: str,
     number_of_days: int,
     rolling_rate_of_change_model_column_name: str,
+    max_days_between_submissions: Optional[int] = None,
 ) -> DataFrame:
     """
     Calculates the rolling average and rate of change split by primary service type of specified columns over a given window of days.
@@ -31,6 +32,7 @@ def model_primary_service_rate_of_change(
         column_with_values (str): Column name containing the values.
         number_of_days (int): The number of days to include in the rolling average time period (where three days refers to the current day plus the previous two).
         rolling_rate_of_change_model_column_name (str): The name of the new column to store the rolling rate of change model values.
+        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
 
     Returns:
         DataFrame: The input DataFrame with the new column containing the rolling average and rolling rate of change modelled outputs.
@@ -40,7 +42,7 @@ def model_primary_service_rate_of_change(
     df = df.withColumn(TempCol.column_with_values, F.col(column_with_values))
 
     df = clean_column_with_values(df)
-    df = interpolate_column_with_values(df)
+    df = interpolate_column_with_values(df, max_days_between_submissions)
 
     df = calculate_rolling_rate_of_change(
         df, number_of_days_for_window, rolling_rate_of_change_model_column_name
@@ -115,12 +117,15 @@ def calculate_submission_count(df: DataFrame) -> DataFrame:
     return df
 
 
-def interpolate_column_with_values(df: DataFrame) -> DataFrame:
+def interpolate_column_with_values(
+    df: DataFrame, max_days_between_submissions: Optional[int] = None
+) -> DataFrame:
     """
     Interpolate column_with_values and coalesce known column_with_values values with interpolated values.
 
     Args:
         df (DataFrame): The input DataFrame.
+        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
 
     Returns:
         DataFrame: The input DataFrame with submission count.
@@ -130,6 +135,7 @@ def interpolate_column_with_values(df: DataFrame) -> DataFrame:
         TempCol.column_with_values,
         "straight",
         TempCol.column_with_values_interpolated,
+        max_days_between_submissions=max_days_between_submissions,
     )
     df = df.withColumn(
         TempCol.column_with_values_interpolated,

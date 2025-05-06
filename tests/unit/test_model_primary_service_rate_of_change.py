@@ -8,6 +8,8 @@ import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
+PATCH_PATH: str = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
+
 
 class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
     def setUp(self):
@@ -250,28 +252,18 @@ class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
             Schemas.calculate_rolling_rate_of_change_schema,
         )
 
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_previous_value_column"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_rolling_sum"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_single_period_rate_of_change"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.deduplicate_dataframe"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_cumulative_rate_of_change"
-    )
+    @patch(f"{PATCH_PATH}.calculate_cumulative_rate_of_change")
+    @patch(f"{PATCH_PATH}.deduplicate_dataframe")
+    @patch(f"{PATCH_PATH}.calculate_single_period_rate_of_change")
+    @patch(f"{PATCH_PATH}.add_rolling_sum")
+    @patch(f"{PATCH_PATH}.add_previous_value_column")
     def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
         self,
-        calculate_cumulative_rate_of_change: Mock,
-        deduplicate_dataframe: Mock,
-        calculate_single_period_rate_of_change: Mock,
-        add_rolling_sum: Mock,
         add_previous_value_column: Mock,
+        add_rolling_sum: Mock,
+        calculate_single_period_rate_of_change: Mock,
+        deduplicate_dataframe: Mock,
+        calculate_cumulative_rate_of_change: Mock,
     ):
         job.calculate_rolling_rate_of_change(
             self.calculate_roc_df,
@@ -316,9 +308,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.get_selected_value"
-    )
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_functions_called_in_add_previous_value_column_function(
         self,
         get_selected_value: Mock,
