@@ -62,7 +62,7 @@ class IndCqcColumns:
     ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
-    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -266,6 +266,7 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     sum_non_rm_managerial_estimated_filled_posts: str = (
@@ -294,7 +295,6 @@ class PrimaryServiceRateOfChangeColumns:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
 
 
