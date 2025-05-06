@@ -169,7 +169,7 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
@@ -185,7 +185,7 @@ module "clean_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
