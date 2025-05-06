@@ -36,7 +36,8 @@ def model_primary_service_rate_of_change(
         column_with_values (str): Column name containing the values.
         number_of_days (int): Rolling window size in days (e.g., 3 includes the current day and the previous two).
         rate_of_change_column_name (str): Name of the column to store the rate of change values.
-        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
+        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation.
+                                                      If None, interpolation is applied to all rows.
 
     Returns:
         DataFrame: The input DataFrame with an additional column containing the rate of change values.
