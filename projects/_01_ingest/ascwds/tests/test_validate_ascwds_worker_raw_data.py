@@ -1,23 +1,24 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_ascwds_worker_cleaned_data as job
-
-from tests.test_file_data import ValidateASCWDSWorkerCleanedData as Data
-from tests.test_file_schemas import ValidateASCWDSWorkerCleanedData as Schemas
-
+import projects._01_ingest.ascwds.jobs.validate_ascwds_worker_raw_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateASCWDSWorkerRawData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidateASCWDSWorkerRawData as Schemas,
+)
 from utils import utils
 
 
-class ValidateASCWDSWorkerCleanedDatasetTests(unittest.TestCase):
-    TEST_ASCWDS_WORKER_CLEANED_SOURCE = "some/other/directory"
+class ValidateASCWDSWorkerRawDatasetTests(unittest.TestCase):
+    TEST_ASCWDS_WORKER_RAW_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_cleaned_ascwds_worker_df = self.spark.createDataFrame(
-            Data.cleaned_ascwds_worker_rows, Schemas.cleaned_ascwds_worker_schema
+        self.test_raw_ascwds_worker_df = self.spark.createDataFrame(
+            Data.raw_ascwds_worker_rows, Schemas.raw_ascwds_worker_schema
         )
 
     def tearDown(self) -> None:
@@ -25,7 +26,7 @@ class ValidateASCWDSWorkerCleanedDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateASCWDSWorkerCleanedDatasetTests):
+class MainTests(ValidateASCWDSWorkerRawDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -37,11 +38,11 @@ class MainTests(ValidateASCWDSWorkerCleanedDatasetTests):
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_cleaned_ascwds_worker_df,
+            self.test_raw_ascwds_worker_df,
         ]
 
         job.main(
-            self.TEST_ASCWDS_WORKER_CLEANED_SOURCE,
+            self.TEST_ASCWDS_WORKER_RAW_SOURCE,
             self.TEST_DESTINATION,
         )
 

@@ -4359,33 +4359,6 @@ class ValidatePIRCleanedData:
 
 
 @dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    cleaned_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.organisation_id, StringType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
-            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerCleanedData:
-    cleaned_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
         [
@@ -4629,28 +4602,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas:
         ]
     )
     calculate_expected_size_schema = cleaned_ind_cqc_schema
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_schema = StructType(
-        [
-            StructField(AWP.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_schema = StructType(
-        [
-            StructField(AWKClean.establishment_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
 
 
 @dataclass
