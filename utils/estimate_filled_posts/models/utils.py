@@ -252,9 +252,12 @@ def save_model_to_s3(model: LinearRegressionModel, model_s3_location: str) -> in
         int: The run number of the newly saved model.
     """
     run_number = generate_run_number(model_s3_location, mode="save")
-    s3_path = f"{model_s3_location}run={run_number}/"
+    s3_path = f"{model_s3_location}run={run_number}"
+    s3_path = s3_path.replace("s3", "s3a")
+
+    print(f"Saving model to: {s3_path}")
     model.save(s3_path)
-    print(f"Model saved to: {s3_path}")
+
     return run_number
 
 
@@ -291,46 +294,49 @@ def create_test_and_train_datasets(
     return df.randomSplit([1 - test_ratio, test_ratio], seed=seed)
 
 
-def generate_model_features_s3_path(branch_name: str, model_name: str) -> str:
+def generate_model_features_s3_path(s3_datasets_uri: str, model_name: str) -> str:
     """
     Generate the S3 path for the features dataset.
 
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model.
 
     Returns:
         str: The S3 path for the features dataset.
     """
-    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
+    return f"{s3_datasets_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_features/model_name={model_name}/"
 
 
 def generate_model_s3_path(
-    branch_name: str, model_name: str, model_version: str
+    s3_datasets_uri: str, model_name: str, model_version: str
 ) -> str:
     """
     Generate the S3 path for the model dataset.
 
+    The S3 URI is edited to reflect that the models are saved in the pipeline resources buckets, not the datasets bucket.
+
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model.
         model_version (str): The version of the model.
 
     Returns:
         str: The S3 path for the model dataset.
     """
-    return f"s3://sfc-{branch_name}-pipeline-resources/models/{model_name}/{model_version}/"
+    s3_pipeline_resources: str = s3_datasets_uri[:-8] + "pipeline-resources"
+    return f"{s3_pipeline_resources}/models/{model_name}/{model_version}/"
 
 
-def generate_model_predictions_s3_path(branch_name: str, model_name: str) -> str:
+def generate_model_predictions_s3_path(s3_datasets_uri: str, model_name: str) -> str:
     """
     Generate the S3 path for the features dataset.
 
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model.
 
     Returns:
         str: The S3 path for the predictions dataset.
     """
-    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"
+    return f"{s3_datasets_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_predictions/model_name={model_name}/"

@@ -10,7 +10,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 def main(
-    branch_name: str,
+    s3_datasets_uri: str,
     model_name: str,
     model_version: str,
 ) -> None:
@@ -24,7 +24,7 @@ def main(
     The predictions are then saved as parquet files.
 
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model to run.
         model_version (str): The version of the model to load (e.g. '1.0.0').
     """
@@ -32,12 +32,14 @@ def main(
 
     care_home_identifier: str = "care_home"
 
-    features_source = mUtils.generate_model_features_s3_path(branch_name, model_name)
+    features_source = mUtils.generate_model_features_s3_path(
+        s3_datasets_uri, model_name
+    )
     predictions_destination = mUtils.generate_model_predictions_s3_path(
-        branch_name, model_name
+        s3_datasets_uri, model_name
     )
     model_s3_location = mUtils.generate_model_s3_path(
-        branch_name, model_name, model_version
+        s3_datasets_uri, model_name, model_version
     )
 
     trained_model = mUtils.load_latest_model_from_s3(model_s3_location)
@@ -67,13 +69,13 @@ def main(
 
 if __name__ == "__main__":
     (
-        branch_name,
+        s3_datasets_uri,
         model_name,
         model_version,
     ) = utils.collect_arguments(
         (
-            "--branch_name",
-            "The name of the branch currently being used",
+            "--s3_datasets_uri",
+            "The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets)",
         ),
         (
             "--model_name",
@@ -85,7 +87,7 @@ if __name__ == "__main__":
         ),
     )
     main(
-        branch_name,
+        s3_datasets_uri,
         model_name,
         model_version,
     )
