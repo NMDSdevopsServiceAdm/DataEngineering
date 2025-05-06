@@ -157,8 +157,8 @@ def extrapolation_backwards(
     """
     Calculates the backward extrapolation and adds it as a new column 'extrapolation_backwards'.
 
-    Calculates the backward extrapolation based on the difference between the modelled value at
-    the time of the first known non-null value and the modelled value at that point in time.
+    Calculates the backward extrapolation based on the rate of change of the modelled value between the modelled
+    value at the time of the first known non-null value and the modelled value at that point in time.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -192,8 +192,7 @@ def extrapolation_backwards(
         F.when(
             F.col(IndCqc.unix_time) < F.col(IndCqc.first_submission_time),
             F.col(IndCqc.first_non_null_value)
-            + F.col(model_to_extrapolate_from)
-            - F.col(IndCqc.first_model_value),
+            * (F.col(model_to_extrapolate_from) / F.col(IndCqc.first_model_value)),
         ),
     )
     df = df.drop(IndCqc.first_non_null_value, IndCqc.first_model_value)
