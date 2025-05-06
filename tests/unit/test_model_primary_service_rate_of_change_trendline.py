@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 import warnings
 
 from utils import utils
@@ -7,6 +8,10 @@ import utils.estimate_filled_posts.models.primary_service_rate_of_change_trendli
 from tests.test_file_data import ModelPrimaryServiceRateOfChangeTrendlineData as Data
 from tests.test_file_schemas import (
     ModelPrimaryServiceRateOfChangeTrendlineSchemas as Schemas,
+)
+
+PATCH_PATH = (
+    "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline"
 )
 
 
@@ -41,6 +46,32 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
             IndCqc.location_id, IndCqc.unix_time
         ).collect()
         self.expected_data = self.expected_df.collect()
+
+    @patch(f"{PATCH_PATH}.calculate_rate_of_change_trendline")
+    @patch(f"{PATCH_PATH}.deduplicate_dataframe")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change")
+    def test_main_calls_functions(
+        self,
+        model_primary_service_rate_of_change_mock: Mock,
+        deduplicate_dataframe_mock: Mock,
+        calculate_rate_of_change_trendline_mock: Mock,
+    ):
+        roc_returned_df = self.spark.createDataFrame(
+            Data.calculate_rate_of_change_trendline_mock_rows,
+            Schemas.calculate_rate_of_change_trendline_mock_schema,
+        )
+        calculate_rate_of_change_trendline_mock.return_value = roc_returned_df
+
+        job.model_primary_service_rate_of_change_trendline(
+            self.test_df,
+            IndCqc.combined_ratio_and_filled_posts,
+            self.number_of_days,
+            IndCqc.ascwds_rate_of_change_trendline_model,
+        )
+
+        model_primary_service_rate_of_change_mock.assert_called_once()
+        deduplicate_dataframe_mock.assert_called_once()
+        calculate_rate_of_change_trendline_mock.assert_called_once()
 
     def test_row_count_unchanged_after_running_full_job(self):
         self.assertEqual(self.test_df.count(), self.returned_df.count())

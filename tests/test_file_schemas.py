@@ -2409,6 +2409,15 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
             ),
         ]
     )
+    calculate_rate_of_change_trendline_mock_schema = StructType(
+        [
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
+            ),
+        ]
+    )
 
     deduplicate_dataframe_schema = StructType(
         [
