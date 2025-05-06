@@ -12,7 +12,7 @@ from tests.test_file_schemas import (
     ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
 )
 
-PATCH_PATH = (
+PATCH_PATH: str = (
     "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation"
 )
 

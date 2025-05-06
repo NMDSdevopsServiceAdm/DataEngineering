@@ -53,18 +53,13 @@ class IndCqcColumns:
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
     ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
-    ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
-    ascwds_job_role_counts_by_primary_service: str = (
-        "ascwds_job_role_counts_by_primary_service"
-    )
-    ascwds_job_role_ratios_by_primary_service: str = (
-        "ascwds_job_role_ratios_by_primary_service"
-    )
+    ascwds_job_role_rolling_ratio: str = "ascwds_job_role_rolling_ratio"
+    ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
     ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
@@ -276,6 +271,7 @@ class IndCqcColumns:
     sum_non_rm_managerial_estimated_filled_posts: str = (
         "sum_non_rm_managerial_estimated_filled_posts"
     )
+    time_between_submissions: str = "time_between_submissions"
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"

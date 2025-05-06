@@ -3642,7 +3642,7 @@ class IndCQCDataUtils:
 
     list_of_map_columns_to_be_merged = [
         IndCQC.ascwds_job_role_ratios,
-        IndCQC.ascwds_job_role_ratios_by_primary_service,
+        IndCQC.ascwds_job_role_rolling_ratio,
     ]
 
     # fmt: off
@@ -3677,7 +3677,7 @@ class IndCQCDataUtils:
          None,
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
          {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
-         IndCQC.ascwds_job_role_ratios_by_primary_service)
+         IndCQC.ascwds_job_role_rolling_ratio)
     ]
     # fmt: on
 
@@ -5115,33 +5115,41 @@ class ModelInterpolation:
         ("1-001", date(2023, 8, 1), 1000000800, None),
     ]
     expected_time_between_submissions_rows = [
-        ("1-001", date(2024, 2, 1), 1000000200, None, None),
-        ("1-001", date(2024, 3, 1), 1000000300, 5.0, None),
-        ("1-001", date(2024, 4, 1), 1000000400, None, 0.25),
-        ("1-001", date(2024, 5, 1), 1000000500, None, 0.5),
-        ("1-001", date(2024, 6, 1), 1000000600, None, 0.75),
-        ("1-001", date(2024, 7, 1), 1000000700, 15.0, None),
-        ("1-001", date(2023, 8, 1), 1000000800, None, None),
+        ("1-001", date(2024, 2, 1), 1000000200, None, None, None),
+        ("1-001", date(2024, 3, 1), 1000000300, 5.0, None, None),
+        ("1-001", date(2024, 4, 1), 1000000400, None, 400, 0.25),
+        ("1-001", date(2024, 5, 1), 1000000500, None, 400, 0.5),
+        ("1-001", date(2024, 6, 1), 1000000600, None, 400, 0.75),
+        ("1-001", date(2024, 7, 1), 1000000700, 15.0, None, None),
+        ("1-001", date(2023, 8, 1), 1000000800, None, None, None),
     ]
     time_between_submissions_mock_rows = [
         ("1-001", date(2024, 2, 1), 12345, None, 12345, 12345),
     ]
 
     calculate_interpolated_values_rows = [
-        ("1-001", 100001, 20.0, None, None, None),
-        ("1-001", 100002, None, 20.0, 10.0, 0.25),
-        ("1-001", 100003, None, 20.0, 10.0, 0.5),
-        ("1-001", 100004, None, 20.0, 10.0, 0.75),
-        ("1-001", 100005, 30.0, 20.0, 10.0, None),
-        ("1-001", 100006, None, None, None, None),
+        ("1-001", 172800, 20.0, None, None, None, None),
+        ("1-001", 259200, None, 20.0, 10.0, 345600, 0.25),
+        ("1-001", 345600, None, 20.0, 10.0, 345600, 0.5),
+        ("1-001", 432000, None, 20.0, 10.0, 345600, 0.75),
+        ("1-001", 518400, 30.0, 20.0, 10.0, None, None),
+        ("1-001", 604800, None, None, None, None, None),
     ]
-    expected_calculate_interpolated_values_rows = [
-        ("1-001", 100001, 20.0, None, None, None, None),
-        ("1-001", 100002, None, 20.0, 10.0, 0.25, 22.5),
-        ("1-001", 100003, None, 20.0, 10.0, 0.5, 25.0),
-        ("1-001", 100004, None, 20.0, 10.0, 0.75, 27.5),
-        ("1-001", 100005, 30.0, 20.0, 10.0, None, None),
-        ("1-001", 100006, None, None, None, None, None),
+    expected_calculate_interpolated_values_when_within_max_days_rows = [
+        ("1-001", 172800, 20.0, None, None, None, None, None),
+        ("1-001", 259200, None, 20.0, 10.0, 345600, 0.25, 22.5),
+        ("1-001", 345600, None, 20.0, 10.0, 345600, 0.5, 25.0),
+        ("1-001", 432000, None, 20.0, 10.0, 345600, 0.75, 27.5),
+        ("1-001", 518400, 30.0, 20.0, 10.0, None, None, None),
+        ("1-001", 604800, None, None, None, None, None, None),
+    ]
+    expected_calculate_interpolated_values_when_outside_of_max_days_rows = [
+        ("1-001", 172800, 20.0, None, None, None, None, None),
+        ("1-001", 259200, None, 20.0, 10.0, 345600, 0.25, None),
+        ("1-001", 345600, None, 20.0, 10.0, 345600, 0.5, None),
+        ("1-001", 432000, None, 20.0, 10.0, 345600, 0.75, None),
+        ("1-001", 518400, 30.0, 20.0, 10.0, None, None, None),
+        ("1-001", 604800, None, None, None, None, None, None),
     ]
 
 
@@ -7380,30 +7388,6 @@ class ValidatePIRCleanedData:
 
 
 @dataclass
-class ValidateASCWDSWorkplaceCleanedData:
-    # fmt: off
-    cleaned_ascwds_workplace_rows = [
-        ("estab_1", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 1), "org_id", "location_id", 10, 10),
-        ("estab_1", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-        ("estab_2", date(2024, 1, 9), "org_id", "location_id", 10, 10),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidateASCWDSWorkerCleanedData:
-    # fmt: off
-    cleaned_ascwds_worker_rows = [
-        ("estab_1", date(2024, 1, 1), "worker_1", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
-        ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
-        ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class ValidatePostcodeDirectoryCleanedData:
     # fmt: off
     raw_postcode_directory_rows = [
@@ -7591,26 +7575,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
             "1-000000001",
             date(2024, 1, 1),
         ),
-    ]
-
-
-@dataclass
-class ValidateASCWDSWorkplaceRawData:
-    raw_ascwds_workplace_rows = [
-        ("estab_1", "20240101"),
-        ("estab_2", "20240101"),
-        ("estab_1", "20240109"),
-        ("estab_2", "20240109"),
-    ]
-
-
-@dataclass
-class ValidateASCWDSWorkerRawData:
-    raw_ascwds_worker_rows = [
-        ("estab_1", "20240101", "worker_1", "8"),
-        ("estab_2", "20240101", "worker_2", "8"),
-        ("estab_1", "20240109", "worker_3", "8"),
-        ("estab_2", "20240109", "worker_4", "8"),
     ]
 
 
