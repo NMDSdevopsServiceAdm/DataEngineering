@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -26,7 +26,6 @@ from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_po
     model_pir_filled_posts,
     merge_ascwds_and_pir_filled_post_submissions,
 )
-
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -60,7 +59,7 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
     )
 
-    df = model_primary_service_rate_of_change(
+    df = model_primary_service_rate_of_change_trendline(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.number_of_days_in_window,

@@ -49,7 +49,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
     @patch(f"{PATCH_PATH}.model_pir_filled_posts")
-    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.combine_care_home_ratios_and_non_res_posts")
     @patch(f"{PATCH_PATH}.utils.create_unix_timestamp_variable_from_date_column")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -58,7 +58,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         read_from_parquet_patch: Mock,
         create_unix_timestamp_variable_from_date_column_mock: Mock,
         combine_care_home_ratios_and_non_res_posts_mock: Mock,
-        model_primary_service_rate_of_change_mock: Mock,
+        model_primary_service_rate_of_change_trendline_mock: Mock,
         model_pir_filled_posts_mock: Mock,
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
@@ -78,7 +78,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
         combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
-        model_primary_service_rate_of_change_mock.assert_called_once()
+        model_primary_service_rate_of_change_trendline_mock.assert_called_once()
         model_pir_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
