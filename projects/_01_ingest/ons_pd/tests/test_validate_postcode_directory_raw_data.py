@@ -3,10 +3,10 @@ import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.validate_postcode_directory_raw_data as job
-from projects._01_ingest.unittest_data.data import (
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ValidatePostcodeDirectoryRawData as Data,
 )
-from projects._01_ingest.unittest_data.schemas import (
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidatePostcodeDirectoryRawData as Schemas,
 )
 from utils import utils

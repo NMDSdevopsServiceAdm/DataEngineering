@@ -7,8 +7,10 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 
 import projects._01_ingest.ons_pd.jobs.clean_ons_data as job
-from projects._01_ingest.unittest_data.data import CleanONSData as Data
-from projects._01_ingest.unittest_data.schemas import CleanONSData as Schema
+from projects._01_ingest.unittest_data.ingest_test_file_data import CleanONSData as Data
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CleanONSData as Schema,
+)
 from utils.column_names.raw_data_files.ons_columns import ONSPartitionKeys as Keys
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
