@@ -24,9 +24,7 @@ class OnsCleanedColumns(ONScol):
     )
     contemporary_lsoa21: str = "contemporary_" + ONScol.lower_super_output_area_2021
     contemporary_msoa21: str = "contemporary_" + ONScol.middle_super_output_area_2021
-    parliamentary_constituency: str = (
-        "contemporary_" + ONScol.parliamentary_constituency
-    )
+    contemporary_constituency: str = "contemporary_" + ONScol.parliamentary_constituency
     current_ons_import_date: str = "current_ons_import_date"
     current_cssr: str = "current_" + ONScol.cssr
     current_region: str = "current_" + ONScol.region

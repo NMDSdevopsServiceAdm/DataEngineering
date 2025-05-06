@@ -327,7 +327,7 @@ class CleanONSData:
             StructField(ONSClean.contemporary_rural_urban_ind_11, StringType(), True),
             StructField(ONSClean.contemporary_lsoa21, StringType(), True),
             StructField(ONSClean.contemporary_msoa21, StringType(), True),
-            StructField(ONSClean.parliamentary_constituency, StringType(), True),
+            StructField(ONSClean.contemporary_constituency, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
