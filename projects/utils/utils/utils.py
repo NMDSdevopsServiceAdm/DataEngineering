@@ -3,7 +3,7 @@ from typing import Optional
 from pyspark.sql import DataFrame, Column, functions as F
 
 
-def calculate(
+def calculate_new_column(
     df: DataFrame,
     new_col: str,
     col_1: str,
@@ -20,7 +20,7 @@ def calculate(
         df (DataFrame): Input DataFrame.
         new_col (str): Name of the new column to be created.
         col_1 (str): Name of the first operand column.
-        method (str): Calculation to perform: "plus", "minus", "multiplied by", "divided by" or average.
+        method (str): Calculation to perform: "plus", "minus", "multiplied by", "divided by, "average" or "absolute difference".
         col_2 (str): Name of the second operand column.
         when_clause (Optional[Column]): Optional Boolean condition for applying the calculation.
 

@@ -29,7 +29,7 @@ class CalculateTests(UtilsTests):
         self.col_2: str = "column_2"
 
     def test_calculate_plus(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "plus", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -40,7 +40,7 @@ class CalculateTests(UtilsTests):
         self.assertEqual(returned_data, expected_data)
 
     def test_calculate_minus(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "minus", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -51,7 +51,7 @@ class CalculateTests(UtilsTests):
         self.assertEqual(returned_data, expected_data)
 
     def test_calculate_multiplication(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "multiplied by", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -62,7 +62,7 @@ class CalculateTests(UtilsTests):
         self.assertEqual(returned_data, expected_data)
 
     def test_calculate_division(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "divided by", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -73,7 +73,7 @@ class CalculateTests(UtilsTests):
         self.assertEqual(returned_data, expected_data)
 
     def test_calculate_average(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "average", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -84,7 +84,7 @@ class CalculateTests(UtilsTests):
         self.assertEqual(returned_data, expected_data)
 
     def test_calculate_absolute_difference(self):
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             self.test_df, self.new_col, self.col_1, "absolute difference", self.col_2
         )
         expected_df = self.spark.createDataFrame(
@@ -97,7 +97,7 @@ class CalculateTests(UtilsTests):
 
     def test_calculate_with_invalid_method(self):
         with self.assertRaises(ValueError) as context:
-            utils.calculate(
+            utils.calculate_new_column(
                 self.test_df, self.new_col, self.col_1, "other method", self.col_2
             )
         self.assertTrue("Invalid method: other method" in str(context.exception))
@@ -108,7 +108,7 @@ class CalculateTests(UtilsTests):
         )
 
         condition = F.col(self.col_1) < 15.0
-        returned_df = utils.calculate(
+        returned_df = utils.calculate_new_column(
             test_with_when_df, self.new_col, self.col_1, "plus", self.col_2, condition
         )
         expected_df = self.spark.createDataFrame(
