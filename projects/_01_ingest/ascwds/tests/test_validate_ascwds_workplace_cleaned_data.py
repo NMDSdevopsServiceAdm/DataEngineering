@@ -1,23 +1,24 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_ascwds_workplace_raw_data as job
-
-from tests.test_file_data import ValidateASCWDSWorkplaceRawData as Data
-from tests.test_file_schemas import ValidateASCWDSWorkplaceRawData as Schemas
-
+import projects._01_ingest.ascwds.jobs.validate_ascwds_workplace_cleaned_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateASCWDSWorkplaceCleanedData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidateASCWDSWorkplaceCleanedData as Schemas,
+)
 from utils import utils
 
 
-class ValidateASCWDSWorkplaceRawDatasetTests(unittest.TestCase):
-    TEST_ASCWDS_WORKPLACE_RAW_SOURCE = "some/other/directory"
+class ValidateASCWDSWorkplaceCleanedDatasetTests(unittest.TestCase):
+    TEST_ASCWDS_WORKPLACE_CLEANED_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_raw_ascwds_workplace_df = self.spark.createDataFrame(
-            Data.raw_ascwds_workplace_rows, Schemas.raw_ascwds_workplace_schema
+        self.test_cleaned_ascwds_workplace_df = self.spark.createDataFrame(
+            Data.cleaned_ascwds_workplace_rows, Schemas.cleaned_ascwds_workplace_schema
         )
 
     def tearDown(self) -> None:
@@ -25,7 +26,7 @@ class ValidateASCWDSWorkplaceRawDatasetTests(unittest.TestCase):
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateASCWDSWorkplaceRawDatasetTests):
+class MainTests(ValidateASCWDSWorkplaceCleanedDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
@@ -37,11 +38,11 @@ class MainTests(ValidateASCWDSWorkplaceRawDatasetTests):
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
-            self.test_raw_ascwds_workplace_df,
+            self.test_cleaned_ascwds_workplace_df,
         ]
 
         job.main(
-            self.TEST_ASCWDS_WORKPLACE_RAW_SOURCE,
+            self.TEST_ASCWDS_WORKPLACE_CLEANED_SOURCE,
             self.TEST_DESTINATION,
         )
 

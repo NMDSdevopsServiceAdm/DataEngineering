@@ -2,8 +2,12 @@ import unittest
 from unittest.mock import call, patch, Mock
 
 import projects._01_ingest.ascwds.jobs.ingest_ascwds_dataset as job
-from projects._01_ingest.unittest_data.data import IngestASCWDSData as Data
-from projects._01_ingest.unittest_data.schemas import IngestASCWDSData as Schemas
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    IngestASCWDSData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    IngestASCWDSData as Schemas,
+)
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
