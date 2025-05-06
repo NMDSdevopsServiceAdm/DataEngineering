@@ -54,8 +54,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.FPutils.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.calculate_rolling_sum_of_job_roles")
     @patch(f"{PATCH_PATH}.JRutils.transform_interpolated_job_role_ratios_to_counts")
-    @patch(f"{PATCH_PATH}.model_job_role_ratio_interpolation")
+    @patch(f"{PATCH_PATH}.combine_interpolated_and_extrapolated_job_role_ratios")
     @patch(f"{PATCH_PATH}.extrapolate_job_role_ratios")
+    @patch(f"{PATCH_PATH}.model_job_role_ratio_interpolation")
     @patch(f"{PATCH_PATH}.JRutils.apply_quality_filters_to_ascwds_job_role_data")
     @patch(f"{PATCH_PATH}.JRutils.calculate_job_group_sum_from_job_role_map_column")
     @patch(f"{PATCH_PATH}.JRutils.transform_job_role_count_map_to_ratios_map")
@@ -76,6 +77,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         apply_quality_filters_to_ascwds_job_role_data_mock: Mock,
         model_job_role_ratio_interpolation_mock: Mock,
         extrapolate_job_role_ratios_mock: Mock,
+        combine_interpolated_and_extrapolated_job_role_ratios_mock: Mock,
         transform_interpolated_job_role_ratios_to_counts_mock: Mock,
         calculate_rolling_sum_of_job_roles_mock: Mock,
         merge_columns_in_order_mock: Mock,
@@ -117,6 +119,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         apply_quality_filters_to_ascwds_job_role_data_mock.assert_called_once()
         model_job_role_ratio_interpolation_mock.assert_called_once()
         extrapolate_job_role_ratios_mock.assert_called_once()
+        combine_interpolated_and_extrapolated_job_role_ratios_mock.assert_called_once()
         transform_interpolated_job_role_ratios_to_counts_mock.assert_called_once()
         calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
