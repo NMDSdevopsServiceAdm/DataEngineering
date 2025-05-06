@@ -59,7 +59,7 @@ contemporary_geography_columns: list = [
     OnsCleanedColumns.contemporary_rural_urban_ind_11,
     OnsCleanedColumns.contemporary_lsoa21,
     OnsCleanedColumns.contemporary_msoa21,
-    OnsCleanedColumns.parliamentary_constituency,
+    OnsCleanedColumns.contemporary_constituency,
 ]
 
 current_geography_columns: list = [

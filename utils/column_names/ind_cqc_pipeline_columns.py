@@ -83,7 +83,7 @@ class IndCqcColumns:
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
-    parliamentary_constituency: str = ONSClean.parliamentary_constituency
+    contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
     contemporary_icb_region: str = ONSClean.contemporary_icb_region
