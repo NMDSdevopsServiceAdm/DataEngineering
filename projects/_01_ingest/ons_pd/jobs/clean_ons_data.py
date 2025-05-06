@@ -87,7 +87,7 @@ def prepare_contemporary_ons_data(df: DataFrame) -> DataFrame:
         df[ONSClean.lower_super_output_area_2021].alias(ONSClean.contemporary_lsoa21),
         df[ONSClean.middle_super_output_area_2021].alias(ONSClean.contemporary_msoa21),
         df[ONSClean.parliamentary_constituency].alias(
-            ONSClean.parliamentary_constituency
+            ONSClean.contemporary_constituency
         ),
         df[Keys.year],
         df[Keys.month],
