@@ -3,6 +3,7 @@ from typing import Optional, Tuple, List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from utils.utils import convert_days_to_unix_time
 
 
 def model_interpolation(
@@ -11,6 +12,7 @@ def model_interpolation(
     method: str,
     new_column_name: Optional[str] = IndCqc.interpolation_model,
     partition_columns: Optional[List[str]] = [IndCqc.location_id],
+    max_days_between_submissions: Optional[int] = None,
 ) -> DataFrame:
     """
     Perform interpolation on a column with null values and adds as a new column called 'interpolation_model'.
@@ -25,6 +27,7 @@ def model_interpolation(
         method (str): The choice of method. Must be either 'straight' or 'trend'
         new_column_name (Optional[str]): The name of the new column. Default is 'interpolation_model'
         partition_columns (Optional[List[str]]): A list of partition columns ordered by unix time, which the default being 'location_id' if left blank.
+        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
 
     Returns:
         DataFrame: The DataFrame with the interpolated values in the 'interpolation_model' column.
@@ -32,7 +35,6 @@ def model_interpolation(
     Raises:
         ValueError: If chosen method does not match 'straight' or 'trend'.
     """
-
     (
         window_spec_backwards,
         window_spec_forwards,
@@ -70,14 +72,21 @@ def model_interpolation(
             window_spec_forwards,
         )
         df = calculate_interpolated_values(
-            df, IndCqc.previous_non_null_value, new_column_name
+            df,
+            IndCqc.previous_non_null_value,
+            new_column_name,
+            max_days_between_submissions,
         )
         df = df.drop(IndCqc.previous_non_null_value)
 
     else:
         raise ValueError("Error: method must be either 'straight' or 'trend'")
 
-    df = df.drop(IndCqc.proportion_of_time_between_submissions, IndCqc.residual)
+    df = df.drop(
+        IndCqc.time_between_submissions,
+        IndCqc.proportion_of_time_between_submissions,
+        IndCqc.residual,
+    )
 
     return df
 
@@ -185,16 +194,27 @@ def calculate_proportion_of_time_between_submissions(
         "first",
     )
 
+    current_unix_time_is_between_known_submissions = (
+        F.col(IndCqc.previous_submission_time) < F.col(IndCqc.unix_time)
+    ) & (F.col(IndCqc.next_submission_time) > F.col(IndCqc.unix_time))
+
     df = df.withColumn(
-        IndCqc.proportion_of_time_between_submissions,
+        IndCqc.time_between_submissions,
         F.when(
-            (F.col(IndCqc.previous_submission_time) < F.col(IndCqc.unix_time))
-            & (F.col(IndCqc.next_submission_time) > F.col(IndCqc.unix_time)),
-            (F.col(IndCqc.unix_time) - F.col(IndCqc.previous_submission_time))
-            / (
+            current_unix_time_is_between_known_submissions,
+            (
                 F.col(IndCqc.next_submission_time)
                 - F.col(IndCqc.previous_submission_time)
             ),
+        ),
+    )
+
+    df = df.withColumn(
+        IndCqc.proportion_of_time_between_submissions,
+        F.when(
+            current_unix_time_is_between_known_submissions,
+            (F.col(IndCqc.unix_time) - F.col(IndCqc.previous_submission_time))
+            / F.col(IndCqc.time_between_submissions),
         ),
     ).drop(IndCqc.previous_submission_time, IndCqc.next_submission_time)
 
@@ -202,10 +222,13 @@ def calculate_proportion_of_time_between_submissions(
 
 
 def calculate_interpolated_values(
-    df: DataFrame, column_to_interpolate_from: str, new_column_name: str
+    df: DataFrame,
+    column_to_interpolate_from: str,
+    new_column_name: str,
+    max_days_between_submissions: Optional[int] = None,
 ) -> DataFrame:
     """
-    Calculate interpolated values for a new column in a DataFrame.
+    Calculate interpolated values for a new column in a DataFrame, optionally constrained by a max time between submissions.
 
     This function takes a DataFrame and interpolates values from an existing column to create a new column.
     The interpolation is based on the residual and the proportion of time between submissions.
@@ -214,13 +237,26 @@ def calculate_interpolated_values(
         df (DataFrame): The input DataFrame containing the data.
         column_to_interpolate_from (str): The name of the column from which to interpolate values.
         new_column_name (str): The name of the new column to be created with interpolated values.
+        max_days_between_submissions (Optional[int]): Maximum allowed days between submissions to apply interpolation. If None, interpolation is applied to all rows.
 
     Returns:
         DataFrame: A new DataFrame with the interpolated values added as a new column.
     """
+    if max_days_between_submissions is not None:
+        max_time = convert_days_to_unix_time(max_days_between_submissions)
+        condition_is_true = F.col(IndCqc.time_between_submissions) <= F.lit(max_time)
+    else:
+        condition_is_true = F.lit(True)
+
+    interpolated_value = F.col(column_to_interpolate_from) + (
+        F.col(IndCqc.residual) * F.col(IndCqc.proportion_of_time_between_submissions)
+    )
+
     df = df.withColumn(
         new_column_name,
-        F.col(column_to_interpolate_from)
-        + F.col(IndCqc.residual) * F.col(IndCqc.proportion_of_time_between_submissions),
+        F.when(
+            condition_is_true,
+            interpolated_value,
+        ).otherwise(F.lit(None)),
     )
     return df

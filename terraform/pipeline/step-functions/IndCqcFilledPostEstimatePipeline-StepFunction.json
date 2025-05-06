@@ -1,205 +1,7 @@
 {
-  "Comment": "A state machine indicating the transformation steps from Bronze -> Silver -> Gold data layers, as divided by the stages",
-  "StartAt": "Bronze to Silver Transformation Layer",
+  "Comment": "A state machine indicating the transformation steps from Silver -> Gold data layers for the Independent CQC filled posts pipeline",
+  "StartAt": "Silver to Gold Transformation Layer",
   "States": {
-    "Bronze to Silver Transformation Layer": {
-      "Type": "Parallel",
-      "Branches": [
-        {
-          "StartAt": "Clean ASC-WDS workplace data",
-          "States": {
-            "Clean ASC-WDS workplace data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_ascwds_workplace_job_name}",
-                "Arguments": {
-                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-                }
-              },
-              "Next": "Clean ASC-WDS worker and SfC Reconciliation"
-            },
-            "Clean ASC-WDS worker and SfC Reconciliation": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Clean ASC-WDS worker data",
-                  "States": {
-                    "Clean ASC-WDS worker data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_ascwds_worker_job_name}",
-                        "Arguments": {
-                          "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                          "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                          "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "SfC reconciliation job",
-                  "States": {
-                    "SfC reconciliation job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${reconciliation_job_name}",
-                        "Arguments": {
-                          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
-                          "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
-                          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
-                          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                }
-              ],
-              "Next": "Run ASC-WDS crawler"
-            },
-            "Run ASC-WDS crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${ascwds_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-            }
-          }
-        },
-        {
-          "StartAt": "Clean CQC PIR data",
-          "States": {
-            "Clean CQC PIR data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_cqc_pir_data_job_name}",
-                "Arguments": {
-                  "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                  "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
-                }
-              },
-              "ResultPath": null,
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Clean ONS postcode and CQC provider data",
-          "States": {
-            "Clean ONS postcode and CQC provider data": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Clean ONS postcode data",
-                  "States": {
-                    "Clean ONS postcode data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_ons_data_job_name}",
-                        "Arguments": {
-                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-                        }
-                      },
-                      "Next": "Run ONS crawler"
-                    },
-                    "Run ONS crawler": {
-                      "Type": "Task",
-                      "End": true,
-                      "Parameters": {
-                        "Name": "${ons_crawler_name}"
-                      },
-                      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-                    }
-                  }
-                },
-                {
-                  "StartAt": "Clean CQC provider data",
-                  "States": {
-                    "Clean CQC provider data": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${clean_cqc_provider_data_job_name}",
-                        "Arguments": {
-                          "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
-                          "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                }
-              ],
-              "Next": "Clean CQC location data"
-            },
-            "Clean CQC location data": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_cqc_location_data_job_name}",
-                "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1",
-                  "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
-                }
-              },
-              "Next": "Run CQC crawler"
-            },
-            "Run CQC crawler": {
-              "Type": "Task",
-              "End": true,
-              "Parameters": {
-                "Name": "${cqc_crawler_name}"
-              },
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler"
-            }
-          }
-        }
-      ],
-      "Next": "Validate clean ASC-WDS, CQC and ONS data",
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "Publish error notification",
-          "ResultPath": "$.error"
-        }
-      ]
-    },
-    "Validate clean ASC-WDS, CQC and ONS data": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
-      "Parameters": {
-        "StateMachineArn": "${run_silver_validation_state_machine_arn}",
-        "Input": {
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-        }
-      },
-      "Next": "Silver to Gold Transformation Layer",
-      "Comment": "A state that fully encapsulates taking data from the Silver layer and performing ETL operations to move it to the Gold layer",
-      "Catch": [
-        {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "Publish error notification",
-          "ResultPath": "$.error"
-        }
-      ]
-    },
     "Silver to Gold Transformation Layer": {
       "Type": "Parallel",
       "Next": "Run validation crawler when success",
@@ -379,11 +181,11 @@
                         "Arguments": {
                           "--imputed_ind_cqc_data_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/",
                           "--care_home_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/",
-                          "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/6.0.0/",
+                          "--care_home_model_source": "${pipeline_resources_bucket_uri}/models/care_home_filled_posts_prediction/6.1.0/",
                           "--non_res_with_dormancy_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_with_dormancy/",
-                          "--non_res_with_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_with_dormancy_prediction/4.0.0/",
+                          "--non_res_with_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_with_dormancy_prediction/4.1.0/",
                           "--non_res_without_dormancy_features_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/",
-                          "--non_res_without_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_without_dormancy_prediction/4.0.0/",
+                          "--non_res_without_dormancy_model_source": "${pipeline_resources_bucket_uri}/models/non_residential_without_dormancy_prediction/4.1.0/",
                           "--estimated_ind_cqc_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
                           "--ml_model_metrics_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_ml_model_metrics/"
                         }
@@ -542,22 +344,6 @@
                   "--estimate_ind_cqc_filled_posts_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
                   "--monthly_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_monthly_filled_posts/",
                   "--annual_filled_posts_archive_destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=archived_annual_filled_posts/"
-                }
-              },
-              "End": true
-            }
-          }
-        },
-        {
-          "StartAt": "Trigger SfC coverage pipeline",
-          "States": {
-            "Trigger SfC coverage pipeline": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution",
-              "Parameters": {
-                "StateMachineArn": "${trigger_coverage_state_machine_arn}",
-                "Input": {
-                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
               },
               "End": true

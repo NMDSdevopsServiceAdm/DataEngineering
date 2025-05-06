@@ -8,7 +8,7 @@ import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
-PATCH_PATH = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
+PATCH_PATH: str = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
 
 
 class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):

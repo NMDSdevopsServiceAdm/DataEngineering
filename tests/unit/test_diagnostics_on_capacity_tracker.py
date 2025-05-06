@@ -87,6 +87,10 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
         self.assertEqual(job.number_of_days_in_window, 95)
         self.assertIsInstance(job.number_of_days_in_window, int)
 
+    def test_max_number_of_days_to_interpolate_between_is_expected_value(self):
+        self.assertEqual(job.max_number_of_days_to_interpolate_between, 370)
+        self.assertIsInstance(job.max_number_of_days_to_interpolate_between, int)
+
 
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:

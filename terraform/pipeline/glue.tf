@@ -520,7 +520,7 @@ module "validate_pir_cleaned_data_job" {
 
 module "validate_ascwds_workplace_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_workplace_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -535,7 +535,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
 
 module "validate_ascwds_worker_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_worker_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -713,7 +713,7 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
 
 module "validate_ascwds_workplace_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_workplace_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -728,7 +728,7 @@ module "validate_ascwds_workplace_raw_data_job" {
 
 module "validate_ascwds_worker_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ascwds/jobs"
   script_name     = "validate_ascwds_worker_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -845,11 +845,11 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--imputed_ind_cqc_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
     "--care_home_features_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
-    "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.0.0/"
+    "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.1.0/"
     "--non_res_with_dormancy_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_with_dormancy/"
-    "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/4.0.0/"
+    "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/4.1.0/"
     "--non_res_without_dormancy_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
-    "--non_res_without_dormancy_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/4.0.0/"
+    "--non_res_without_dormancy_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/4.1.0/"
     "--estimated_ind_cqc_destination"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
     "--ml_model_metrics_destination"             = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_ml_model_metrics/"
   }
