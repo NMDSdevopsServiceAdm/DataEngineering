@@ -28,7 +28,7 @@
                 {
                   "StartAt": "Clean ONS data",
                   "States": {
-                    "Clean IND CQC data": {
+                    "Clean ONS data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
