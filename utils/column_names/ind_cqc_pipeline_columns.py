@@ -58,6 +58,9 @@ class IndCqcColumns:
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
+    ascwds_job_role_ratios_interpolated_and_extrapolated: str = (
+        "ascwds_job_role_ratios_interpolated_and_extrapolated"
+    )
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
     ascwds_job_role_rolling_ratio: str = "ascwds_job_role_rolling_ratio"
     ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"

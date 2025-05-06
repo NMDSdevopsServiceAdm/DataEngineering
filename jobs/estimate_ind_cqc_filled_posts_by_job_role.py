@@ -149,6 +149,12 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.combine_interpolated_and_extrapolated_job_role_ratios(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_interpolated_job_role_ratios_to_counts(
             estimated_ind_cqc_filled_posts_by_job_role_df,
         )

@@ -10835,6 +10835,108 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
     ]
 
+    combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+        ),
+    ]
+    expected_combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:

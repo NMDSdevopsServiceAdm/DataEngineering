@@ -1566,3 +1566,44 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         expected_data = self.expected_df.select(expected_cols).collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class CombineInterpolatedAndExtrapolatedJobRoleRatios(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.combine_interpolated_and_extrapolated_job_role_ratios_rows,
+            Schemas.combine_interpolated_and_extrapolated_job_role_ratios_schema,
+        )
+        self.returned_df = job.combine_interpolated_and_extrapolated_job_role_ratios(
+            self.test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_interpolated_and_extrapolated_job_role_ratios_rows,
+            Schemas.expected_combine_interpolated_and_extrapolated_job_role_ratios_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_combine_interpolated_and_extrapolated_job_role_ratios_returned_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(expected_data, returned_data)
+
+    def test_combine_interpolated_and_extrapolated_job_role_ratios_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.ascwds_job_role_ratios_interpolated_and_extrapolated,
+        )
