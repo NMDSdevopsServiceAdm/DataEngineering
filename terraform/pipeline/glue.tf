@@ -169,6 +169,7 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
@@ -179,11 +180,12 @@ module "ingest_ons_data_job" {
 
 module "clean_ons_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "clean_ons_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
@@ -550,7 +552,7 @@ module "validate_ascwds_worker_cleaned_data_job" {
 
 module "validate_postcode_directory_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "validate_postcode_directory_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -788,7 +790,7 @@ module "validate_pir_raw_data_job" {
 
 module "validate_postcode_directory_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "validate_postcode_directory_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
