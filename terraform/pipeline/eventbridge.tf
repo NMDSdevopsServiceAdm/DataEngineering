@@ -151,7 +151,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
 
 resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
   rule      = aws_cloudwatch_event_rule.ons_pd_csv_added.name
-  target_id = "${local.workspace_prefix}-StartIngestAndCleanONSPostcodeDirectoryStateMachine"
+  target_id = "${local.workspace_prefix}-StartIngestAndCleanONSStateMachine"
   arn       = aws_sfn_state_machine.ingest_ons_pd_state_machine.arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
