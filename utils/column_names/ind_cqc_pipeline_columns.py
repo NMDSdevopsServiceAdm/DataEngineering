@@ -53,19 +53,14 @@ class IndCqcColumns:
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
     ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
-    ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
     ascwds_job_role_ratios_extrapolated: str = "ascwds_job_role_ratios_extrapolated"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
-    ascwds_job_role_counts_by_primary_service: str = (
-        "ascwds_job_role_counts_by_primary_service"
-    )
-    ascwds_job_role_ratios_by_primary_service: str = (
-        "ascwds_job_role_ratios_by_primary_service"
-    )
+    ascwds_job_role_rolling_ratio: str = "ascwds_job_role_rolling_ratio"
+    ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
     ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
@@ -168,9 +163,7 @@ class IndCqcColumns:
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
-    imputed_non_res_pir_people_directly_employed: str = (
-        "imputed_non_res_pir_people_directly_employed"
-    )
+    imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
     imputed_posts_non_res_combined_model: str = "imputed_posts_non_res_combined_model"
     imputed_filled_post_model: str = "imputed_filled_post_model"
@@ -207,8 +200,6 @@ class IndCqcColumns:
     next_value: str = "next_value"
     next_value_unix_time: str = "next_value_unix_time"
     non_res_combined_model: str = "non_res_combined_model"
-    non_res_pir_linear_regression_model: str = "non_res_pir_linear_regression_model"
-    non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
@@ -233,17 +224,17 @@ class IndCqcColumns:
     person_given_name: str = CQCLClean.person_given_name
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
+    pir_filled_posts_model: str = "pir_filled_posts_model"
     pir_people_directly_employed: str = CQCPIRClean.pir_people_directly_employed
     pir_people_directly_employed_dedup: str = (
         CQCPIRClean.pir_people_directly_employed + "_deduplicated"
-    )
-    pir_people_directly_employed_filled_posts: str = (
-        pir_people_directly_employed + "_filled_posts"
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
+    prediction_within_10_posts: str = "prediction_within_10_posts"
+    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"

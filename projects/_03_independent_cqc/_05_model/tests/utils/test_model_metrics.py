@@ -20,6 +20,7 @@ class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+        self.mock_model = MagicMock()
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
@@ -28,11 +29,7 @@ class SaveModelMetricsTests(unittest.TestCase):
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"
         self.model_run_number: int = 3
-        self.partition_keys = [
-            IndCqc.model_name,
-            IndCqc.model_version,
-            IndCqc.run_number,
-        ]
+        self.partition_keys = [IndCqc.model_version]
         self.metrics_path: str = "some/path"
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -42,6 +39,8 @@ class MainTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.combine_current_and_previous_metrics")
     @patch(f"{PATCH_PATH}.generate_proportion_of_predictions_within_range")
     @patch(f"{PATCH_PATH}.generate_metric")
     @patch(f"{PATCH_PATH}.calculate_residual_between_predicted_and_known_filled_posts")
@@ -54,6 +53,8 @@ class MainTests(SaveModelMetricsTests):
         calculate_residual_between_predicted_and_known_filled_posts_mock: Mock,
         generate_metric_mock: Mock,
         generate_proportion_of_predictions_within_range_mock: Mock,
+        combine_current_and_previous_metrics_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
         generate_model_metrics_s3_path_mock.return_value = self.metrics_path
         generate_metric_mock.return_value = 0.5
@@ -75,6 +76,13 @@ class MainTests(SaveModelMetricsTests):
         self.assertEqual(generate_metric_mock.call_count, 2)
         self.assertEqual(
             generate_proportion_of_predictions_within_range_mock.call_count, 2
+        )
+        combine_current_and_previous_metrics_mock.assert_called_once()
+        write_to_parquet_mock.assert_called_once_with(
+            ANY,
+            self.metrics_path,
+            mode="overwrite",
+            partitionKeys=self.partition_keys,
         )
 
 
@@ -184,3 +192,33 @@ class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):
         )
 
         self.assertAlmostEqual(returned_proportion, Data.expected_proportion, places=1)
+
+
+class CombineCurrentAndPreviousMetricsTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        current_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_current_rows, Schemas.combine_metrics_current_schema
+        )
+        previous_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_previous_rows, Schemas.combine_metrics_previous_schema
+        )
+
+        self.returned_df = job.combine_current_and_previous_metrics(
+            current_metrics_df, previous_metrics_df
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combined_metrics_rows,
+            Schemas.expected_combined_metrics_schema,
+        )
+
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_current_and_previous_metrics_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_combine_current_and_previous_metrics_returns_expected_data(self):
+        self.assertEqual(self.returned_data, self.expected_data)
