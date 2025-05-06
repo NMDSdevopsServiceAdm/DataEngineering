@@ -204,10 +204,10 @@ resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
-  name     = "${local.workspace_prefix}-IngestAndCleanONSPostcodeDirectory"
+  name     = "${local.workspace_prefix}-IngestAndCleanONS"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/IngestAndCleanONSPostcodeDirectory-StepFunction.json", {
+  definition = templatefile("step-functions/IngestAndCleanONS-StepFunction.json", {
     ingest_ons_data_job_name                          = module.ingest_ons_data_job.job_name
     validate_postcode_directory_raw_data_job_name     = module.validate_postcode_directory_raw_data_job.job_name
     clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
