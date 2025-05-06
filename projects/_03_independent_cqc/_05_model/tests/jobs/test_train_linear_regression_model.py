@@ -67,6 +67,7 @@ class Main(unittest.TestCase):
         generate_model_s3_path_mock.assert_called_once()
         read_from_parquet_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
+        create_test_and_train_datasets_mock.assert_called_once()
         train_lasso_regression_model_mock.assert_called_once()
         save_model_to_s3_mock.assert_called_once()
         save_model_metrics_mock.assert_called_once_with(

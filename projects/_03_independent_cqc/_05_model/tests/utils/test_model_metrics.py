@@ -20,6 +20,7 @@ class SaveModelMetricsTests(unittest.TestCase):
     def setUp(self):
         self.spark = utils.get_spark()
 
+        self.mock_model = MagicMock()
         self.test_df = self.spark.createDataFrame(
             Data.model_metrics_rows, Schemas.model_metrics_schema
         )
@@ -32,11 +33,7 @@ class SaveModelMetricsTests(unittest.TestCase):
         self.model_name: str = "test_model"
         self.model_version: str = "1.0.0"
         self.model_run_number: int = 3
-        self.partition_keys = [
-            IndCqc.model_name,
-            IndCqc.model_version,
-            IndCqc.run_number,
-        ]
+        self.partition_keys = [IndCqc.model_version]
         self.metrics_path: str = "some/path"
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
@@ -106,22 +103,6 @@ class GenerateModelMetricsS3PathTests(SaveModelMetricsTests):
         self.assertEqual(returned_path, expected_path)
 
 
-class GenerateMetricTests(SaveModelMetricsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        evaluator = RegressionEvaluator(
-            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
-        )
-        generate_metric_df = self.spark.createDataFrame(
-            Data.generate_metric_rows, Schemas.generate_metric_schema
-        )
-        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
-
-    def test_generate_metric_returns_float(self):
-        self.assertIsInstance(self.r2, float)
-
-
 class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetricsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -181,6 +162,70 @@ class CalculateResidualBetweenPredictedAndKnownFilledPostsTests(SaveModelMetrics
                 expected_data[i][IndCqc.residual],
                 places=1,
             )
+
+
+class GenerateMetricTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        evaluator = RegressionEvaluator(
+            predictionCol=IndCqc.prediction, labelCol=IndCqc.imputed_filled_post_model
+        )
+        generate_metric_df = self.spark.createDataFrame(
+            Data.generate_metric_rows, Schemas.generate_metric_schema
+        )
+        self.r2 = job.generate_metric(evaluator, generate_metric_df, IndCqc.r2)
+
+    def test_generate_metric_returns_float(self):
+        self.assertIsInstance(self.r2, float)
+
+
+class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_generate_proportion_of_predictions_within_range_returns_expected_value(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.generate_proportion_of_predictions_within_range_rows,
+            Schemas.generate_proportion_of_predictions_within_range_schema,
+        )
+        returned_proportion = job.generate_proportion_of_predictions_within_range(
+            test_df, Data.range_cutoff
+        )
+
+        self.assertAlmostEqual(returned_proportion, Data.expected_proportion, places=1)
+
+
+class CombineCurrentAndPreviousMetricsTests(SaveModelMetricsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        current_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_current_rows, Schemas.combine_metrics_current_schema
+        )
+        previous_metrics_df = self.spark.createDataFrame(
+            Data.combine_metrics_previous_rows, Schemas.combine_metrics_previous_schema
+        )
+
+        self.returned_df = job.combine_current_and_previous_metrics(
+            current_metrics_df, previous_metrics_df
+        )
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combined_metrics_rows,
+            Schemas.expected_combined_metrics_schema,
+        )
+
+        self.returned_data = self.returned_df.collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_combine_current_and_previous_metrics_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_generate_metric_returns_float(self):
+        self.assertIsInstance(self.r2, float)
 
 
 class GenerateProportionOfPredictionsWithinRangeTests(SaveModelMetricsTests):

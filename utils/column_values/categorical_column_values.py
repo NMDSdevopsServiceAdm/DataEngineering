@@ -480,9 +480,7 @@ class EstimateFilledPostsSource(ColumnValues):
         IndCQC.imputed_posts_non_res_combined_model
     )
     non_res_combined_model: str = IndCQC.non_res_combined_model
-    non_res_pir_linear_regression_model: str = (
-        IndCQC.non_res_pir_linear_regression_model
-    )
+    imputed_pir_filled_posts_model: str = IndCQC.imputed_pir_filled_posts_model
     posts_rolling_average_model: str = IndCQC.posts_rolling_average_model
 
 
