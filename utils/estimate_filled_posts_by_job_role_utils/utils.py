@@ -836,7 +836,7 @@ def combine_interpolated_and_extrapolated_job_role_ratios(df: DataFrame) -> Data
     """
 
     df = df.withColumn(
-        IndCQC.ascwds_job_role_ratios_interpolated_and_extrapolated,
+        IndCQC.imputed_ascwds_job_role_ratios,
         F.coalesce(
             IndCQC.ascwds_job_role_ratios_filtered,
             IndCQC.ascwds_job_role_ratios_interpolated,

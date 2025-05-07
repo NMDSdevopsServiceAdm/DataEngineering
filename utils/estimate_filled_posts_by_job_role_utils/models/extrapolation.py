@@ -16,7 +16,6 @@ def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
     - For each location_id:
       - Copy the first known job role ratios backward to all earlier dates.
       - Copy the last known job role ratios forward to all later dates.
-      - Do nothing in between first and last known points, assume interpolation has already been performed.
 
     Args:
         df (DataFrame): A dataframe with job role ratios.
@@ -34,14 +33,12 @@ def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
     job_role_ratios_with_nulls = IndCqc.ascwds_job_role_ratios_filtered
     time_col = IndCqc.unix_time
 
-    temp_first_known_value = "first_known_value"
-    temp_last_known_value = "temp_last_known_value"
     df = get_selected_value(
         df,
         window_spec_all_rows,
         job_role_ratios_with_nulls,
         job_role_ratios_with_nulls,
-        temp_first_known_value,
+        IndCqc.first_non_null_value,
         "first",
     )
     df = get_selected_value(
@@ -49,7 +46,7 @@ def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
         window_spec_all_rows,
         job_role_ratios_with_nulls,
         job_role_ratios_with_nulls,
-        temp_last_known_value,
+        IndCqc.previous_non_null_value,
         "last",
     )
 
@@ -60,20 +57,20 @@ def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
             F.col(job_role_ratios_with_nulls),
         )
         .when(
-            F.col(time_col) <= F.col(IndCqc.first_submission_time),
-            F.col(temp_first_known_value),
+            F.col(time_col) < F.col(IndCqc.first_submission_time),
+            F.col(IndCqc.first_non_null_value),
         )
         .when(
-            F.col(time_col) >= F.col(IndCqc.final_submission_time),
-            F.col(temp_last_known_value),
+            F.col(time_col) > F.col(IndCqc.final_submission_time),
+            F.col(IndCqc.previous_non_null_value),
         ),
     )
 
     columns_to_drop = [
         IndCqc.first_submission_time,
         IndCqc.final_submission_time,
-        temp_first_known_value,
-        temp_last_known_value,
+        IndCqc.first_non_null_value,
+        IndCqc.previous_non_null_value,
     ]
     df = df.drop(*columns_to_drop)
 

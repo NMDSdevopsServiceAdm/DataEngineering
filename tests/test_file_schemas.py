@@ -6203,7 +6203,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *combine_interpolated_and_extrapolated_job_role_ratios_schema,
             StructField(
-                IndCQC.ascwds_job_role_ratios_interpolated_and_extrapolated,
+                IndCQC.imputed_ascwds_job_role_ratios,
                 MapType(StringType(), FloatType()),
                 True,
             ),

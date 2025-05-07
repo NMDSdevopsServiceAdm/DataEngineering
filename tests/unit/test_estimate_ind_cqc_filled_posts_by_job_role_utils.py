@@ -1605,5 +1605,5 @@ class CombineInterpolatedAndExtrapolatedJobRoleRatios(
         self.assertEqual(len(self.new_columns_added), 1)
         self.assertEqual(
             self.new_columns_added[0],
-            IndCQC.ascwds_job_role_ratios_interpolated_and_extrapolated,
+            IndCQC.imputed_ascwds_job_role_ratios,
         )
