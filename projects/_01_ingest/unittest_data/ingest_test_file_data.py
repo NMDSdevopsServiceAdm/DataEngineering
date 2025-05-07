@@ -549,3 +549,32 @@ class ValidateASCWDSWorkerCleanedData:
         ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
         ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
     ]
+
+
+@dataclass
+class PostcodeMatcherData:
+    # fmt: off
+    locations_where_all_match_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
+        ("1-002", date(2025, 1, 1), "AA1 2AA"),
+        ("1-002", date(2025, 1, 1), "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "29 5HF"),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
+    ]
+    locations_with_unmatched_postcode_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "AA2 5XX"),  # never known
+    ]
+    # fmt: on
+
+    postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2020, 1, 1), "CSSR 3"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2025, 1, 1), "CSSR 3"),
+    ]

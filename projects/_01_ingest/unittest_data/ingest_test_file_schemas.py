@@ -12,6 +12,9 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
 )
@@ -20,6 +23,12 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -314,5 +323,23 @@ class ValidateASCWDSWorkerCleanedData:
             StructField(AWKClean.worker_id, StringType(), True),
             StructField(AWKClean.main_job_role_clean, StringType(), True),
             StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class PostcodeMatcherSchema:
+    locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+        ]
+    )
+    postcodes_schema = StructType(
+        [
+            StructField(ONS.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONS.cssr, StringType(), True),
         ]
     )
