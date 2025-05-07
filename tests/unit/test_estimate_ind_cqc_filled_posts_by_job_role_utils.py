@@ -5,6 +5,9 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.estimate_filled_posts_by_job_role_utils import utils as job
 from utils.estimate_filled_posts_by_job_role_utils.models import interpolation as interp
+from utils.estimate_filled_posts_by_job_role_utils.models import (
+    extrapolation as extrapolate,
+)
 from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
 from tests.test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
@@ -871,6 +874,53 @@ class InterpolateJobRoleRatio(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         )
 
 
+class JobRoleRatiosExtrapolationTests(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
+    def setUp(self):
+        super().setUp()
+        self.input_df = self.spark.createDataFrame(
+            Data.job_role_ratios_extrapolation_rows,
+            Schemas.extrapolate_job_role_ratios_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_job_role_ratios_extrapolation_rows,
+            Schemas.expected_extrapolate_job_role_ratios_schema,
+        )
+        self.returned_df = extrapolate.extrapolate_job_role_ratios(self.input_df)
+
+        self.returned_data = (
+            self.returned_df.select(
+                IndCQC.location_id,
+                IndCQC.unix_time,
+                IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+            )
+            .sort(IndCQC.location_id, IndCQC.unix_time)
+            .collect()
+        )
+
+        self.expected_data = (
+            self.expected_df.select(
+                IndCQC.location_id,
+                IndCQC.unix_time,
+                IndCQC.ascwds_job_role_ratios_filtered,
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+            )
+            .sort(IndCQC.location_id, IndCQC.unix_time)
+            .collect()
+        )
+
+    def test_ratios_extrapolation_returns_same_row_count(self):
+        self.assertEqual(self.input_df.count(), self.returned_df.count())
+
+    def test_ratios_extrapolation_returns_expected_column(self):
+        self.assertIn(
+            IndCQC.ascwds_job_role_ratios_extrapolated, self.returned_df.columns
+        )
+
+    def test_ratios_extrapolation_values_match_expected(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+
 class PivotJobRoleColumn(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -1516,3 +1566,44 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         expected_data = self.expected_df.select(expected_cols).collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class CombineInterpolatedAndExtrapolatedJobRoleRatios(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.combine_interpolated_and_extrapolated_job_role_ratios_rows,
+            Schemas.combine_interpolated_and_extrapolated_job_role_ratios_schema,
+        )
+        self.returned_df = job.combine_interpolated_and_extrapolated_job_role_ratios(
+            self.test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_interpolated_and_extrapolated_job_role_ratios_rows,
+            Schemas.expected_combine_interpolated_and_extrapolated_job_role_ratios_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_combine_interpolated_and_extrapolated_job_role_ratios_returned_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(expected_data, returned_data)
+
+    def test_combine_interpolated_and_extrapolated_job_role_ratios_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.imputed_ascwds_job_role_ratios,
+        )

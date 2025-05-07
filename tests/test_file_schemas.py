@@ -5987,6 +5987,28 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    extrapolate_job_role_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_extrapolate_job_role_ratios_schema = StructType(
+        [
+            *extrapolate_job_role_ratios_schema.fields,
+            StructField(
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
     pivot_job_role_column_schema = StructType(
         [
             StructField(IndCQC.unix_time, IntegerType(), False),
@@ -6243,6 +6265,37 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         [
             *recalculate_total_filled_posts_schema,
             StructField(IndCQC.filled_posts, FloatType(), False),
+        ]
+    )
+
+    combine_interpolated_and_extrapolated_job_role_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_combine_interpolated_and_extrapolated_job_role_ratios_schema = StructType(
+        [
+            *combine_interpolated_and_extrapolated_job_role_ratios_schema,
+            StructField(
+                IndCQC.imputed_ascwds_job_role_ratios,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
         ]
     )
 
