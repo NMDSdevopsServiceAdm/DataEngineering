@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import MapType
+from pyspark.sql.types import MapType, FloatType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -816,7 +816,8 @@ def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataF
     """
 
     df = df.withColumn(
-        MainJobRoleLabels.registered_manager, F.col(IndCQC.registered_manager_count)
+        MainJobRoleLabels.registered_manager,
+        F.col(IndCQC.registered_manager_count).cast(FloatType()),
     )
 
     return df

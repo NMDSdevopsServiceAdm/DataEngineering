@@ -11004,7 +11004,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_overwrite_registered_manager_estimate_with_cqc_count_rows = [
         (1.0, 1),
-        (10.0, 0),
+        (0.0, 0),
     ]
 
 
