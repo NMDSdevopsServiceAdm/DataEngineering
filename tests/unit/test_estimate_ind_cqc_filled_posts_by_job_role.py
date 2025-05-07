@@ -40,6 +40,9 @@ class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(
+        f"{PATCH_PATH}.JRutils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
+    )
     @patch(f"{PATCH_PATH}.JRutils.recalculate_total_filled_posts")
     @patch(f"{PATCH_PATH}.JRutils.overwrite_registered_manager_estimate_with_cqc_count")
     # @patch(f"{PATCH_PATH}.JRutils.recalculate_managerial_filled_posts")
@@ -92,6 +95,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         # recalculate_managerial_filled_posts_mock: Mock,
         overwrite_registered_manager_estimate_with_cqc_count_mock: Mock,
         recalculate_total_filled_posts_mock: Mock,
+        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -135,6 +139,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         # recalculate_managerial_filled_posts_mock.assert_called_once()
         overwrite_registered_manager_estimate_with_cqc_count_mock.assert_called_once()
         recalculate_total_filled_posts_mock.assert_called_once()
+        calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
