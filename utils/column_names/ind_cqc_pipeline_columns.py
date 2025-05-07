@@ -111,7 +111,7 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_import_date: str = CTNRClean.capacity_tracker_import_date
-    ct_care_workers_employed: str = "ct_" + CTNRClean.cqc_care_workers_employed
+    ct_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
     current_ccg: str = ONSClean.current_ccg
     current_constituancy: str = ONSClean.current_constituancy
     current_cssr: str = ONSClean.current_cssr
