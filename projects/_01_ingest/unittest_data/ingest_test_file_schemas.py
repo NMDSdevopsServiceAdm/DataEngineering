@@ -304,9 +304,7 @@ class CleanONSData:
             StructField(ONS.rural_urban_indicator_2011, StringType(), True),
             StructField(ONS.lower_super_output_area_2021, StringType(), True),
             StructField(ONS.middle_super_output_area_2021, StringType(), True),
-            StructField(
-                ONS.westminster_parliamentary_consitituency, StringType(), True
-            ),
+            StructField(ONS.parliamentary_constituency, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -332,11 +330,7 @@ class CleanONSData:
             StructField(ONSClean.contemporary_rural_urban_ind_11, StringType(), True),
             StructField(ONSClean.contemporary_lsoa21, StringType(), True),
             StructField(ONSClean.contemporary_msoa21, StringType(), True),
-            StructField(
-                ONSClean.contemporary_constituancy,
-                StringType(),
-                True,
-            ),
+            StructField(ONSClean.contemporary_constituency, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -362,11 +356,7 @@ class CleanONSData:
             StructField(ONSClean.current_rural_urban_ind_11, StringType(), True),
             StructField(ONSClean.current_lsoa21, StringType(), True),
             StructField(ONSClean.current_msoa21, StringType(), True),
-            StructField(
-                ONSClean.current_constituancy,
-                StringType(),
-                True,
-            ),
+            StructField(ONSClean.current_constituency, StringType(), True),
         ]
     )
 

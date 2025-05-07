@@ -4955,22 +4955,24 @@ class ModelImputationWithExtrapolationAndInterpolationData:
     imputation_model_rows = [
         ("1-001", None, None, None),
         ("1-002", None, None, 30.0),
-        ("1-003", None, 20.0, None),
-        ("1-004", None, 20.0, 30.0),
-        ("1-005", 10.0, None, None),
-        ("1-006", 10.0, None, 30.0),
-        ("1-007", 10.0, 20.0, None),
-        ("1-008", 10.0, 20.0, 30.0),
+        ("1-003", None, None, -2.0),
+        ("1-004", None, -2.0, None),
+        ("1-005", None, -2.0, 30.0),
+        ("1-006", 10.0, None, None),
+        ("1-007", 10.0, None, 30.0),
+        ("1-008", 10.0, -2.0, None),
+        ("1-009", 10.0, -2.0, 30.0),
     ]
     expected_imputation_model_rows = [
         ("1-001", None, None, None, None),
         ("1-002", None, None, 30.0, 30.0),
-        ("1-003", None, 20.0, None, 20.0),
-        ("1-004", None, 20.0, 30.0, 20.0),
-        ("1-005", 10.0, None, None, 10.0),
-        ("1-006", 10.0, None, 30.0, 10.0),
-        ("1-007", 10.0, 20.0, None, 10.0),
-        ("1-008", 10.0, 20.0, 30.0, 10.0),
+        ("1-003", None, None, -2.0, 1.0),
+        ("1-004", None, -2.0, None, 1.0),
+        ("1-005", None, -2.0, 30.0, 1.0),
+        ("1-006", 10.0, None, None, 10.0),
+        ("1-007", 10.0, None, 30.0, 10.0),
+        ("1-008", 10.0, -2.0, None, 10.0),
+        ("1-009", 10.0, -2.0, 30.0, 10.0),
     ]
 
 
@@ -5016,8 +5018,12 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 10.0),
         ("1-002", 1675209600, 10.0, 20.0),
         ("1-002", 1677628800, None, 30.0),
-        ("1-003", 1677628800, None, 20.0),
+        ("1-002", 1677629000, None, 100.0),
+        ("1-003", 1672531200, 20.0, 100.0),
+        ("1-003", 1675209600, None, 20.0),
+        ("1-004", 1677628800, None, 20.0),
     ]
+    # fmt: off
     expected_extrapolation_forwards_rows = [
         ("1-001", 1672531200, 15.0, 10.0, None),
         ("1-001", 1675209600, None, 20.0, 30.0),
@@ -5025,8 +5031,12 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 10.0, None),
         ("1-002", 1675209600, 10.0, 20.0, None),
         ("1-002", 1677628800, None, 30.0, 15.0),
-        ("1-003", 1677628800, None, 20.0, None),
+        ("1-002", 1677629000, None, 100.0, 40.0),  # capped at upper cutoff
+        ("1-003", 1672531200, 20.0, 100.0, None),
+        ("1-003", 1675209600, None, 20.0, 5.0),  # capped at lower cutoff
+        ("1-004", 1677628800, None, 20.0, None),
     ]
+    # fmt: on
     extrapolation_forwards_mock_rows = [
         ("1-001", 12345, 15.0, 10.0, 15.0, 10.0),
     ]
@@ -5038,8 +5048,13 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0),
-        ("1-003", 1677628800, None, None, None, 20.0),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0),
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-005", 1677628800, None, None, None, 20.0),
     ]
+    # fmt: off
     expected_extrapolation_backwards_rows = [
         ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
         ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
@@ -5047,8 +5062,13 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 5.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
-        ("1-003", 1677628800, None, None, None, 20.0, None),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0, 80.0),  # capped at upper cutoff
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-005", 1677628800, None, None, None, 20.0, None),
     ]
+    # fmt: on
     extrapolation_backwards_mock_rows = [
         ("1-001", 12345, 15.0, 12345, 12345, 10.0, 15.0, 10.0),
     ]
@@ -10506,6 +10526,160 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    # fmt: off
+    job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            }
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-001",
+            1000000600,
+            None,
+        ),
+        (
+            "1-002",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            }
+        ),
+        (
+            "1-002",
+            1000000300,
+            None
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-003", 1000000200, None),
+        ("1-003", 1000000300, None),
+        ("1-003", 1000000400, None),
+        ("1-003", 1000000500, None),
+    ]
+    expected_job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-001",
+            1000000600,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-002",
+            1000000300,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-003", 1000000200, None, None),
+        ("1-003", 1000000300, None, None),
+        ("1-003", 1000000400, None, None),
+        ("1-003", 1000000500, None, None),
+    ]
+    # fmt: on
+
     recalculate_managerial_filled_posts_rows = [
         (
             "1-001",
@@ -10672,10 +10846,120 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-001", 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0),
     ]
-
     expected_recalculate_total_filled_posts_rows = [
         ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
+    ]
+
+    combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+        ),
+    ]
+    expected_combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (10.0, 1),
+        (10.0, 0),
+    ]
+    expected_overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (1.0, 1),
+        (0.0, 0),
     ]
 
 

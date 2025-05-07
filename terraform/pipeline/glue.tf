@@ -225,12 +225,14 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 }
 
 module "clean_ind_cqc_filled_posts_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "clean_ind_cqc_filled_posts.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "clean_ind_cqc_filled_posts.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
@@ -567,13 +569,15 @@ module "validate_postcode_directory_cleaned_data_job" {
 }
 
 module "validate_merged_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "validate_merged_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "validate_merged_ind_cqc_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
@@ -823,7 +827,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
   script_name       = "impute_ind_cqc_ascwds_and_pir.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 4
+  number_of_workers = 6
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
 
@@ -910,13 +914,15 @@ module "diagnostics_on_capacity_tracker_job" {
 }
 
 module "validate_cleaned_capacity_tracker_care_home_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "validate_cleaned_capacity_tracker_care_home_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "validate_cleaned_capacity_tracker_care_home_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"

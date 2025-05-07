@@ -2477,7 +2477,7 @@ class ModelExtrapolation:
     expected_extrapolation_forwards_schema = StructType(
         [
             *extrapolation_forwards_schema,
-            StructField(IndCQC.extrapolation_backwards, FloatType(), True),
+            StructField(IndCQC.extrapolation_forwards, FloatType(), True),
         ]
     )
     extrapolation_forwards_mock_schema = StructType(
@@ -5772,7 +5772,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-
     expected_create_estimate_filled_posts_by_job_role_map_column_schema = StructType(
         [
             *create_estimate_filled_posts_by_job_role_map_column_schema,
@@ -5809,7 +5808,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-
     expected_count_registered_manager_names_schema = StructType(
         [
             *count_registered_manager_names_schema,
@@ -5829,7 +5827,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(IndCQC.primary_service_type, StringType(), True),
         ]
     )
-
     expected_sum_job_role_split_by_service_schema = StructType(
         [
             *sum_job_role_split_by_service_schema,
@@ -5852,12 +5849,33 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-
     expected_interpolate_job_role_ratios_schema = StructType(
         [
             *interpolate_job_role_ratios_schema,
             StructField(
                 IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+
+    extrapolate_job_role_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_extrapolate_job_role_ratios_schema = StructType(
+        [
+            *extrapolate_job_role_ratios_schema.fields,
+            StructField(
+                IndCQC.ascwds_job_role_ratios_extrapolated,
                 MapType(StringType(), FloatType()),
                 True,
             ),
@@ -5902,7 +5920,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-
     expected_convert_map_with_all_null_values_to_null_schema = StructType(
         [
             *convert_map_with_all_null_values_to_null_schema,
@@ -6101,7 +6118,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             ),
         ]
     )
-
     expected_recalculate_managerial_filled_posts_schema = StructType(
         [*recalculate_managerial_filled_posts_schema]
     )
@@ -6115,11 +6131,50 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             StructField(MainJobRoleLabels.senior_management, FloatType(), False),
         ]
     )
-
     expected_recalculate_total_filled_posts_schema = StructType(
         [
             *recalculate_total_filled_posts_schema,
-            StructField(IndCQC.filled_posts, FloatType(), False),
+            StructField(
+                IndCQC.estimate_filled_posts_from_all_job_roles, FloatType(), False
+            ),
+        ]
+    )
+
+    overwrite_registered_manager_estimate_with_cqc_count_schema = StructType(
+        [
+            StructField(MainJobRoleLabels.registered_manager, FloatType(), False),
+            StructField(IndCQC.registered_manager_count, IntegerType(), False),
+        ]
+    )
+
+    combine_interpolated_and_extrapolated_job_role_ratios_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_filtered,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_interpolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+            StructField(
+                IndCQC.ascwds_job_role_ratios_extrapolated,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
+        ]
+    )
+    expected_combine_interpolated_and_extrapolated_job_role_ratios_schema = StructType(
+        [
+            *combine_interpolated_and_extrapolated_job_role_ratios_schema,
+            StructField(
+                IndCQC.imputed_ascwds_job_role_ratios,
+                MapType(StringType(), FloatType()),
+                True,
+            ),
         ]
     )
 
