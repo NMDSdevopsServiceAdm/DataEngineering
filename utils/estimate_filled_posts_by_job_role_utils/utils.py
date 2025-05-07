@@ -816,11 +816,7 @@ def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataF
     """
 
     df = df.withColumn(
-        MainJobRoleLabels.registered_manager,
-        F.when(
-            F.col(IndCQC.registered_manager_count) > 0,
-            F.col(IndCQC.registered_manager_count),
-        ).otherwise(F.col(MainJobRoleLabels.registered_manager)),
+        MainJobRoleLabels.registered_manager, F.col(IndCQC.registered_manager_count)
     )
 
     return df
