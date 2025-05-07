@@ -54,6 +54,7 @@ class IndCqcColumns:
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
     ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_extrapolated: str = "ascwds_job_role_ratios_extrapolated"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
@@ -83,7 +84,7 @@ class IndCqcColumns:
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
-    contemporary_constituancy: str = ONSClean.contemporary_constituancy
+    contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
     contemporary_icb_region: str = ONSClean.contemporary_icb_region
@@ -107,7 +108,7 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     current_ccg: str = ONSClean.current_ccg
-    current_constituancy: str = ONSClean.current_constituancy
+    current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
     current_icb: str = ONSClean.current_icb
     current_icb_region: str = ONSClean.current_icb_region
@@ -163,6 +164,7 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
+    imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"

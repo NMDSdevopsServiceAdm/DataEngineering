@@ -845,3 +845,26 @@ def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> Da
     )
 
     return df_result
+
+
+def combine_interpolated_and_extrapolated_job_role_ratios(df: DataFrame) -> DataFrame:
+    """
+    Coalesce the filtered, interpolated and extrapolated asc-wds job role ratio columns into one new column.
+
+    Args:
+        df (DataFrame): A dataframe with filtered, interpolated and extrapolated asc-wds job role ratio columns.
+
+    Returns:
+        DataFrame: A dataframe with a new column called ascwds_job_role_ratios_interpolated_and_extrapolated.
+    """
+
+    df = df.withColumn(
+        IndCQC.imputed_ascwds_job_role_ratios,
+        F.coalesce(
+            IndCQC.ascwds_job_role_ratios_filtered,
+            IndCQC.ascwds_job_role_ratios_interpolated,
+            IndCQC.ascwds_job_role_ratios_extrapolated,
+        ),
+    )
+
+    return df
