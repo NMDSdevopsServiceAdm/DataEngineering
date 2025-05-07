@@ -4,9 +4,7 @@ from pyspark.sql import DataFrame
 from utils import utils
 import utils.cleaning_utils as cUtils
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -63,9 +61,7 @@ def prepare_current_ons_data(df: DataFrame) -> DataFrame:
         ),
         df[ONSClean.lower_super_output_area_2021].alias(ONSClean.current_lsoa21),
         df[ONSClean.middle_super_output_area_2021].alias(ONSClean.current_msoa21),
-        df[ONSClean.westminster_parliamentary_consitituency].alias(
-            ONSClean.current_constituancy
-        ),
+        df[ONSClean.parliamentary_constituency].alias(ONSClean.current_constituency),
     )
 
     return current_ons_df
@@ -91,8 +87,8 @@ def prepare_contemporary_ons_data(df: DataFrame) -> DataFrame:
         ),
         df[ONSClean.lower_super_output_area_2021].alias(ONSClean.contemporary_lsoa21),
         df[ONSClean.middle_super_output_area_2021].alias(ONSClean.contemporary_msoa21),
-        df[ONSClean.westminster_parliamentary_consitituency].alias(
-            ONSClean.contemporary_constituancy
+        df[ONSClean.parliamentary_constituency].alias(
+            ONSClean.contemporary_constituency
         ),
         df[Keys.year],
         df[Keys.month],

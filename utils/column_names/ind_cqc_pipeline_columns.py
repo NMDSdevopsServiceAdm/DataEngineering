@@ -84,7 +84,7 @@ class IndCqcColumns:
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
-    contemporary_constituancy: str = ONSClean.contemporary_constituancy
+    contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
     contemporary_icb_region: str = ONSClean.contemporary_icb_region
@@ -108,7 +108,7 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     current_ccg: str = ONSClean.current_ccg
-    current_constituancy: str = ONSClean.current_constituancy
+    current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
     current_icb: str = ONSClean.current_icb
     current_icb_region: str = ONSClean.current_icb_region
