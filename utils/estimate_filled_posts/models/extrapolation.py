@@ -122,7 +122,7 @@ def extrapolation_forwards(
     using the rate of change of a modelled value. The extrapolation is based on the ratio between
     the modelled value at a given timestamp and the modelled value at the last known non-null timestamp.
 
-    To prevent extreme extrapolations due to model noise, the rate of change is capped.
+    To prevent extreme extrapolations due to model noise, the rate of change is capped at the high and low end.
 
     Args:
         df (DataFrame): A dataframe with a column to extrapolate forwards.
@@ -185,7 +185,7 @@ def extrapolation_backwards(
     using the rate of change of a modelled value. The extrapolation is based on the ratio between
     the modelled value at a given timestamp and the modelled value at the first known non-null timestamp.
 
-    To prevent extreme extrapolations due to model noise, the rate of change is capped.
+    To prevent extreme extrapolations due to model noise, the rate of change is capped at the high and low end.
 
     Args:
         df (DataFrame): The input DataFrame.
