@@ -72,6 +72,7 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             IndCqcColumns.cqc_location_import_date,
         ],
         RuleName.min_values: {
+            IndCqcColumns.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: -1.0,
             MainJobRoleLabels.activites_worker: min_value,
             MainJobRoleLabels.admin_staff: min_value,
             MainJobRoleLabels.advocacy: min_value,
@@ -112,6 +113,7 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             MainJobRoleLabels.technician: min_value,
         },
         RuleName.max_values: {
+            IndCqcColumns.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: 1.0,
             MainJobRoleLabels.activites_worker: max_value,
             MainJobRoleLabels.admin_staff: max_value,
             MainJobRoleLabels.advocacy: max_value,
