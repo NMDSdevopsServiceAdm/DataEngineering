@@ -2,12 +2,8 @@ import unittest
 from unittest.mock import patch, Mock
 
 import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_data import (
-    DiagnosticsOnCapacityTrackerData as Data,
-)
-from tests.test_file_schemas import (
-    DiagnosticsOnCapacityTrackerSchemas as Schemas,
-)
+from tests.test_file_data import DiagnosticsOnCapacityTrackerData as Data
+from tests.test_file_schemas import DiagnosticsOnCapacityTrackerSchemas as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -90,6 +86,10 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
     def test_number_of_days_in_window_is_expected_value(self):
         self.assertEqual(job.number_of_days_in_window, 95)
         self.assertIsInstance(job.number_of_days_in_window, int)
+
+    def test_max_number_of_days_to_interpolate_between_is_expected_value(self):
+        self.assertEqual(job.max_number_of_days_to_interpolate_between, 370)
+        self.assertIsInstance(job.max_number_of_days_to_interpolate_between, int)
 
 
 class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):

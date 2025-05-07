@@ -8,6 +8,8 @@ import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
+PATCH_PATH: str = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
+
 
 class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):
     def setUp(self):
@@ -22,15 +24,15 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         super().setUp()
 
         number_of_days: int = 3
-        self.estimates_df = self.spark.createDataFrame(
+        self.test_df = self.spark.createDataFrame(
             Data.primary_service_rate_of_change_rows,
             Schemas.primary_service_rate_of_change_schema,
         )
         self.returned_df = job.model_primary_service_rate_of_change(
-            self.estimates_df,
+            self.test_df,
             IndCqc.combined_ratio_and_filled_posts,
             number_of_days,
-            IndCqc.ascwds_rate_of_change_trendline_model,
+            IndCqc.single_period_rate_of_change,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_primary_service_rate_of_change_rows,
@@ -42,9 +44,9 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
         self.expected_data = self.expected_df.collect()
 
     def test_row_count_unchanged_after_running_full_job(self):
-        self.assertEqual(self.estimates_df.count(), self.returned_df.count())
+        self.assertEqual(self.test_df.count(), self.returned_df.count())
 
-    def test_model_primary_service_rate_of_change_returns_expected_columns(
+    def test_primary_service_rate_of_change_returns_expected_columns(
         self,
     ):
         self.assertEqual(
@@ -52,19 +54,19 @@ class MainTests(ModelPrimaryServiceRateOfChangeTests):
             sorted(self.expected_df.columns),
         )
 
-    def test_returned_rolling_rate_of_change_model_values_match_expected(
+    def test_returned_rate_of_change_model_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
-                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.returned_data[i][IndCqc.single_period_rate_of_change],
+                self.expected_data[i][IndCqc.single_period_rate_of_change],
                 3,
                 f"Returned row {i} does not match expected",
             )
 
 
-class CleanColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
+class CleanColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -207,7 +209,7 @@ class CalculateSubmissionCountTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class InterpolateColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
+class InterpolateColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -240,63 +242,6 @@ class InterpolateColumnToAverageTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class CalculateRollingRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        self.number_of_days: int = 2
-        self.calculate_roc_df = self.spark.createDataFrame(
-            Data.calculate_rolling_rate_of_change_rows,
-            Schemas.calculate_rolling_rate_of_change_schema,
-        )
-
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_previous_value_column"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.add_rolling_sum"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_single_period_rate_of_change"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.deduplicate_dataframe"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.calculate_cumulative_rate_of_change"
-    )
-    def test_all_functions_called_in_calculate_rolling_rate_of_change_function(
-        self,
-        calculate_cumulative_rate_of_change: Mock,
-        deduplicate_dataframe: Mock,
-        calculate_single_period_rate_of_change: Mock,
-        add_rolling_sum: Mock,
-        add_previous_value_column: Mock,
-    ):
-        job.calculate_rolling_rate_of_change(
-            self.calculate_roc_df,
-            self.number_of_days,
-            IndCqc.ascwds_rate_of_change_trendline_model,
-        )
-
-        self.assertEqual(add_previous_value_column.call_count, 1)
-        self.assertEqual(add_rolling_sum.call_count, 2)
-        self.assertEqual(calculate_single_period_rate_of_change.call_count, 1)
-        self.assertEqual(deduplicate_dataframe.call_count, 1)
-        self.assertEqual(calculate_cumulative_rate_of_change.call_count, 1)
-
-    def test_rate_of_change_model_column_name_in_returned_column_list(self):
-        returned_df = job.calculate_rolling_rate_of_change(
-            self.calculate_roc_df,
-            self.number_of_days,
-            IndCqc.ascwds_rate_of_change_trendline_model,
-        )
-
-        self.assertTrue(
-            IndCqc.ascwds_rate_of_change_trendline_model in returned_df.columns
-        )
-
-
 class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
@@ -316,9 +261,7 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
         ).collect()
         self.expected_data = self.expected_df.collect()
 
-    @patch(
-        "utils.estimate_filled_posts.models.primary_service_rate_of_change.get_selected_value"
-    )
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_functions_called_in_add_previous_value_column_function(
         self,
         get_selected_value: Mock,
@@ -346,25 +289,20 @@ class AddPreviousValueColumnTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
+class AddRollingSumColumnsTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
         number_of_days: int = 2
 
         test_df = self.spark.createDataFrame(
-            Data.add_rolling_sum_rows,
-            Schemas.add_rolling_sum_schema,
+            Data.add_rolling_sum_columns_rows,
+            Schemas.add_rolling_sum_columns_schema,
         )
-        self.returned_df = job.add_rolling_sum(
-            test_df,
-            number_of_days,
-            job.TempCol.column_with_values_interpolated,
-            job.TempCol.rolling_current_period_sum,
-        )
+        self.returned_df = job.add_rolling_sum_columns(test_df, number_of_days)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_add_rolling_sum_rows,
-            Schemas.expected_add_rolling_sum_schema,
+            Data.expected_add_rolling_sum_columns_rows,
+            Schemas.expected_add_rolling_sum_columns_schema,
         )
 
         self.returned_data = self.returned_df.sort(
@@ -375,7 +313,7 @@ class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_rolling_sum_values_match_expected(
+    def test_returned_rolling_current_period_sum_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
@@ -386,19 +324,32 @@ class AddRollingSumTests(ModelPrimaryServiceRateOfChangeTests):
                 f"Returned row {i} does not match expected",
             )
 
+    def test_returned_rolling_previous_period_sum_values_match_expected(
+        self,
+    ):
+        for i in range(len(self.returned_data)):
+            self.assertAlmostEqual(
+                self.returned_data[i][job.TempCol.rolling_previous_period_sum],
+                self.expected_data[i][job.TempCol.rolling_previous_period_sum],
+                2,
+                f"Returned row {i} does not match expected",
+            )
 
-class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
+
+class CalculateRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()
 
         test_df = self.spark.createDataFrame(
-            Data.single_period_rate_of_change_rows,
-            Schemas.single_period_rate_of_change_schema,
+            Data.calculate_rate_of_change_rows,
+            Schemas.calculate_rate_of_change_schema,
         )
-        self.returned_df = job.calculate_single_period_rate_of_change(test_df)
+        self.returned_df = job.calculate_rate_of_change(
+            test_df, IndCqc.single_period_rate_of_change
+        )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_single_period_rate_of_change_rows,
-            Schemas.expected_single_period_rate_of_change_schema,
+            Data.expected_calculate_rate_of_change_rows,
+            Schemas.expected_calculate_rate_of_change_schema,
         )
 
         self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
@@ -407,75 +358,13 @@ class CalculateSinglePeriodRateOfChangeTests(ModelPrimaryServiceRateOfChangeTest
     def test_returned_column_names_match_expected(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
-    def test_returned_single_period_rate_of_change_values_match_expected(
+    def test_returned_rate_of_change_values_match_expected(
         self,
     ):
         for i in range(len(self.returned_data)):
             self.assertAlmostEqual(
-                self.returned_data[i][job.TempCol.single_period_rate_of_change],
-                self.expected_data[i][job.TempCol.single_period_rate_of_change],
-                2,
-                f"Returned row {i} does not match expected",
-            )
-
-
-class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.deduplicate_dataframe_rows,
-            Schemas.deduplicate_dataframe_schema,
-        )
-        self.returned_df = job.deduplicate_dataframe(test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_deduplicate_dataframe_rows,
-            Schemas.expected_deduplicate_dataframe_schema,
-        )
-
-        self.returned_data = self.returned_df.sort(
-            IndCqc.primary_service_type, IndCqc.unix_time
-        ).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_returned_column_names_match_expected(self):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-    def test_returned_deduplicated_dataframe_rows_match_expected(self):
-        self.assertEqual(self.returned_data, self.expected_data)
-
-
-class CalculateCumulativeRateOfChangeTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.cumulative_rate_of_change_rows,
-            Schemas.cumulative_rate_of_change_schema,
-        )
-        self.returned_df = job.calculate_cumulative_rate_of_change(
-            test_df, IndCqc.ascwds_rate_of_change_trendline_model
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_cumulative_rate_of_change_rows,
-            Schemas.expected_cumulative_rate_of_change_schema,
-        )
-
-        self.returned_data = self.returned_df.sort(
-            IndCqc.primary_service_type, IndCqc.unix_time
-        ).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_returned_column_names_match_expected(self):
-        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
-
-    def test_cumulative_rate_of_change_returns_correct_values_in_rolling_rate_of_change_model_column(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertAlmostEqual(
-                self.returned_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
-                self.expected_data[i][IndCqc.ascwds_rate_of_change_trendline_model],
+                self.returned_data[i][IndCqc.single_period_rate_of_change],
+                self.expected_data[i][IndCqc.single_period_rate_of_change],
                 2,
                 f"Returned row {i} does not match expected",
             )

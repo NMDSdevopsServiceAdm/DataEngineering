@@ -12,6 +12,10 @@ from tests.test_file_schemas import (
     ModelImputationWithExtrapolationAndInterpolationSchemas as Schemas,
 )
 
+PATCH_PATH: str = (
+    "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation"
+)
+
 
 class ModelImputationWithExtrapolationAndInterpolationTests(unittest.TestCase):
     def setUp(self):
@@ -41,12 +45,8 @@ class MainTests(ModelImputationWithExtrapolationAndInterpolationTests):
             care_home=False,
         )
 
-    @patch(
-        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_interpolation"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation.model_extrapolation"
-    )
+    @patch(f"{PATCH_PATH}.model_interpolation")
+    @patch(f"{PATCH_PATH}.model_extrapolation")
     def test_model_imputation_with_extrapolation_and_interpolation_runs(
         self,
         model_extrapolation_mock: Mock,

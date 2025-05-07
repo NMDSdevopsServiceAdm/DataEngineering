@@ -211,9 +211,6 @@ class FeatureEngineeringCategoricalValues:
     care_home_column_non_care_home_values = CareHome(
         IndCQC.care_home, value_to_remove=CareHome.care_home
     )
-    dormancy_column_without_dormancy_values = Dormancy(
-        IndCQC.dormancy, contains_null_values=True
-    )
 
 
 @dataclass

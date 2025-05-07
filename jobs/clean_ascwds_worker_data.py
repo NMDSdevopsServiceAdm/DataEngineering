@@ -219,4 +219,4 @@ if __name__ == "__main__":
     )
     main(worker_source, cleaned_workplace_source, cleaned_worker_destination)
 
-    print("Spark job 'ingest_ascwds_dataset' complete")
+    print("Spark job 'clean_ascwds_worker_dataset' complete")

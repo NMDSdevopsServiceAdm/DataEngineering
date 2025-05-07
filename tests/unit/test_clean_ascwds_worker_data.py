@@ -5,8 +5,14 @@ from pyspark.sql.dataframe import DataFrame
 
 import jobs.clean_ascwds_worker_data as job
 from utils.utils import get_spark
-from tests.test_file_data import ASCWDSWorkerData, ASCWDSWorkplaceData
-from tests.test_file_schemas import ASCWDSWorkerSchemas, ASCWDSWorkplaceSchemas
+from tests.test_file_data import ASCWDSWorkerData
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ASCWDSWorkplaceData,
+)
+from tests.test_file_schemas import ASCWDSWorkerSchemas
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ASCWDSWorkplaceSchemas,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
