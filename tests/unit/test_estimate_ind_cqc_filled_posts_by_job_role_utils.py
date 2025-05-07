@@ -1491,6 +1491,9 @@ class RecalculateTotalFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
         self,
     ):
         self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0], IndCQC.estimate_filled_posts_from_all_job_roles
+        )
 
 
 class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):

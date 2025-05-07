@@ -818,7 +818,8 @@ def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> Da
     """
 
     df_result = df.withColumn(
-        IndCQC.filled_posts, sum([F.col(job_role) for job_role in list_of_job_roles])
+        IndCQC.estimate_filled_posts_from_all_job_roles,
+        sum([F.col(job_role) for job_role in list_of_job_roles]),
     )
 
     return df_result

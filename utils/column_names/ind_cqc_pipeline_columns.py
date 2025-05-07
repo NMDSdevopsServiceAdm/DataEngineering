@@ -135,6 +135,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_from_all_job_roles: str = (
+        "estimate_filled_posts_from_all_job_roles"
+    )
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
@@ -148,7 +151,6 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
-    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
