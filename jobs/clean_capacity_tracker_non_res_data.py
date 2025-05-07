@@ -1,5 +1,7 @@
 import sys
 
+from pyspark.sql import functions as F
+
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.capacity_tracker_columns import (
@@ -50,7 +52,7 @@ def main(
         upper_limit=MAX_BOUND,
     )
     capacity_tracker_non_res_df = capacity_tracker_non_res_df.withColumn(
-        CTNRClean.care_home, CareHome.not_care_home
+        CTNRClean.care_home, F.lit(CareHome.not_care_home)
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
