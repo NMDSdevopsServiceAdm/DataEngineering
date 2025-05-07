@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import utils.cqc_location_utils.postcode_matcher as job
+import projects._01_ingest.cqc_api.utils.postcode_matcher as job
 from tests.test_file_data import PostcodeMatcherData as Data
 from tests.test_file_schemas import PostcodeMatcherSchema as Schemas
 from utils import utils
