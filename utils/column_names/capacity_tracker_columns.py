@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns,
+)
+
 
 @dataclass
 class CapacityTrackerCareHomeColumns:
@@ -126,3 +130,5 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
         + "_rate_of_change_trendline"
     )
     unix_timestamp: str = "unix_timestamp"
+
+    care_home: str = NewCqcLocationApiColumns.care_home

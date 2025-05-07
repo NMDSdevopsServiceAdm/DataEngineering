@@ -1,6 +1,7 @@
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from typing import Optional
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -16,8 +17,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_values.categorical_column_values import Sector
 
@@ -76,11 +78,19 @@ cleaned_cqc_pir_columns_to_import = [
     CQCPIRClean.pir_people_directly_employed,
 ]
 
+cleaned_ct_non_res_columns_to_import = [
+    CTNRClean.cqc_id,
+    CTNRClean.capacity_tracker_import_date,
+    CTNRClean.care_home,
+    CTNRClean.cqc_care_workers_employed,
+]
+
 
 def main(
     cleaned_cqc_location_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ascwds_workplace_source: str,
+    cleaned_non_res_ct_source: str,
     destination: str,
 ):
     spark = utils.get_spark()
@@ -100,15 +110,35 @@ def main(
         cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
 
-    ind_cqc_location_df = filter_df_to_independent_sector_only(cqc_location_df)
+    ct_non_res_df = utils.read_from_parquet(
+        cleaned_non_res_ct_source, selected_columns=cleaned_ct_non_res_columns_to_import
+    )
 
-    ind_cqc_location_df = join_pir_data_into_merged_df(ind_cqc_location_df, cqc_pir_df)
+    ind_cqc_location_df = utils.select_rows_with_value(
+        cqc_location_df, CQCLClean.cqc_sector, Sector.independent
+    )
 
-    ind_cqc_location_df = join_ascwds_data_into_merged_df(
+    ind_cqc_location_df = join_data_into_cqc_df(
+        ind_cqc_location_df,
+        cqc_pir_df,
+        CQCPIRClean.location_id,
+        CQCPIRClean.cqc_pir_import_date,
+        CQCPIRClean.care_home,
+    )
+
+    ind_cqc_location_df = join_data_into_cqc_df(
         ind_cqc_location_df,
         ascwds_workplace_df,
-        CQCLClean.cqc_location_import_date,
+        AWPClean.location_id,
         AWPClean.ascwds_workplace_import_date,
+    )
+
+    ind_cqc_location_df = join_data_into_cqc_df(
+        ind_cqc_location_df,
+        ct_non_res_df,
+        CTNRClean.cqc_id,
+        CTNRClean.capacity_tracker_import_date,
+        CTNRClean.care_home,
     )
 
     utils.write_to_parquet(
@@ -119,55 +149,52 @@ def main(
     )
 
 
-def filter_df_to_independent_sector_only(df: DataFrame) -> DataFrame:
-    return df.where(F.col(CQCLClean.cqc_sector) == Sector.independent)
+def join_data_into_cqc_df(
+    cqc_df: DataFrame,
+    join_df: DataFrame,
+    join_location_id_col: str,
+    join_import_date_col: str,
+    join_care_home_col: Optional[str] = None,
+) -> DataFrame:
+    """
+    Function to join a data file into the CQC locations data set.
 
+    Some data needs to be matched on the care home column as well as location ID and import date, so
+    there is an option to specify that. Other data doesn't require that match, so this option defaults
+    to None (not required for matching).
 
-def join_pir_data_into_merged_df(ind_df: DataFrame, pir_df: DataFrame):
-    ind_df_with_pir_import_date = cUtils.add_aligned_date_column(
-        ind_df,
-        pir_df,
+    Args:
+        cqc_df (DataFrame): The CQC location DataFrame.
+        join_df (DataFrame): The DataFrame to join in.
+        join_location_id_col (str): The name of the location ID column in the DataFrame to join in.
+        join_import_date_col (str): The name of the import date column in the DataFrame to join in.
+        join_care_home_col (Optional[str]): The name of the care home column if required for the join.
+
+    Returns:
+        DataFrame: Original CQC locations DataFrame with the second DataFrame joined in.
+    """
+    cqc_df_with_join_import_date = cUtils.add_aligned_date_column(
+        cqc_df,
+        join_df,
         CQCLClean.cqc_location_import_date,
-        CQCPIRClean.cqc_pir_import_date,
+        join_import_date_col,
     )
 
-    formatted_pir_df = pir_df.withColumnRenamed(
-        CQCPIRClean.location_id, CQCLClean.location_id
-    ).withColumnRenamed(CQCPIRClean.care_home, CQCLClean.care_home)
+    formatted_pir_df = join_df.withColumnRenamed(
+        join_location_id_col, CQCLClean.location_id
+    )
 
-    ind_df_with_pir_data = ind_df_with_pir_import_date.join(
+    cols_to_join_on = [join_import_date_col, CQCLClean.location_id]
+    if join_care_home_col:
+        cols_to_join_on = cols_to_join_on + [join_care_home_col]
+
+    cqc_df_with_join_data = cqc_df_with_join_import_date.join(
         formatted_pir_df,
-        [CQCPIRClean.cqc_pir_import_date, CQCLClean.location_id, CQCLClean.care_home],
+        cols_to_join_on,
         "left",
     )
 
-    return ind_df_with_pir_data
-
-
-def join_ascwds_data_into_merged_df(
-    ind_cqc_df: DataFrame,
-    ascwds_workplace_df: DataFrame,
-    ind_cqc_import_date_column: str,
-    ascwds_workplace_import_date_column: str,
-) -> DataFrame:
-    ind_cqc_df_with_ascwds_workplace_import_date = cUtils.add_aligned_date_column(
-        ind_cqc_df,
-        ascwds_workplace_df,
-        ind_cqc_import_date_column,
-        ascwds_workplace_import_date_column,
-    )
-
-    formatted_ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(
-        AWPClean.location_id, CQCLClean.location_id
-    )
-
-    ind_cqc_with_ascwds_df = ind_cqc_df_with_ascwds_workplace_import_date.join(
-        formatted_ascwds_workplace_df,
-        [CQCLClean.location_id, AWPClean.ascwds_workplace_import_date],
-        how="left",
-    )
-
-    return ind_cqc_with_ascwds_df
+    return cqc_df_with_join_data
 
 
 if __name__ == "__main__":
@@ -178,6 +205,7 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
+        cleaned_non_res_ct_source,
         destination,
     ) = utils.collect_arguments(
         (
@@ -193,6 +221,10 @@ if __name__ == "__main__":
             "Source s3 directory for parquet ASCWDS workplace cleaned dataset",
         ),
         (
+            "--cleaned_non_res_ct_source",
+            "Source s3 directory for parquet capacity tracker cleaned dataset",
+        ),
+        (
             "--destination",
             "Destination s3 directory for parquet",
         ),
@@ -201,6 +233,7 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
+        cleaned_non_res_ct_source,
         destination,
     )
 

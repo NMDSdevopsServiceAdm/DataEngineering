@@ -7,6 +7,7 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 CAPACITY_TRACKER_NON_RES_COLUMNS = [
     CTNR.cqc_id,
@@ -47,6 +48,9 @@ def main(
         columns_to_bound,
         lower_limit=MIN_BOUND,
         upper_limit=MAX_BOUND,
+    )
+    capacity_tracker_non_res_df = capacity_tracker_non_res_df.withColumn(
+        CTNRClean.care_home, CareHome.not_care_home
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_non_res_destination}")
