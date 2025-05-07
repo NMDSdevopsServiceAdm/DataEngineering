@@ -213,6 +213,12 @@ def main(
     # )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.overwrite_registered_manager_estimate_with_cqc_count(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.recalculate_total_filled_posts(
             estimated_ind_cqc_filled_posts_by_job_role_df,
             JRutils.list_of_job_roles_sorted,

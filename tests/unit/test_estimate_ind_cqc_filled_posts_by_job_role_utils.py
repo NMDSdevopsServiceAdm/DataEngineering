@@ -1519,3 +1519,30 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
         expected_data = self.expected_df.select(expected_cols).collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class OverwriteRegisteredManagerEstimateWithCqcCount(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.overwrite_registered_manager_estimate_with_cqc_count_rows,
+            Schemas.overwrite_registered_manager_estimate_with_cqc_count_schema,
+        )
+        self.returned_df = job.overwrite_registered_manager_estimate_with_cqc_count(
+            test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_overwrite_registered_manager_estimate_with_cqc_count_rows,
+            Schemas.overwrite_registered_manager_estimate_with_cqc_count_schema,
+        )
+
+    def test_overwrite_registered_manager_estimate_with_cqc_count_returned_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(expected_data, returned_data)

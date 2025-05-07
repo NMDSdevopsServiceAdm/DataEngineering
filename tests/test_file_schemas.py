@@ -6241,6 +6241,13 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    overwrite_registered_manager_estimate_with_cqc_count_schema = StructType(
+        [
+            StructField(MainJobRoleLabels.registered_manager, FloatType(), False),
+            StructField(IndCQC.registered_manager_count, IntegerType(), False),
+        ]
+    )
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:

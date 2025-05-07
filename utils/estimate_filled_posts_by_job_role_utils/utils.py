@@ -804,6 +804,28 @@ def transform_interpolated_job_role_ratios_to_counts(
     return df
 
 
+def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataFrame:
+    """
+    This function overwrites our estimate of registered managers with the count from cqc data.
+
+    Args:
+        df (DataFrame): A dataframe with registered manager estimates from asc-wds and counts from cqc data.
+
+    Returns:
+        DataFrame: A dataframe with registered manager estimates overwritten by cqc counts.
+    """
+
+    df = df.withColumn(
+        MainJobRoleLabels.registered_manager,
+        F.when(
+            F.col(IndCQC.registered_manager_count) > 0,
+            F.col(IndCQC.registered_manager_count),
+        ).otherwise(F.col(MainJobRoleLabels.registered_manager)),
+    )
+
+    return df
+
+
 def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> DataFrame:
     """
     Created a filled_posts column which represents the total number of filled posts per location_id based on job role breakdown.

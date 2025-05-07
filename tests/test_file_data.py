@@ -10717,10 +10717,18 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-001", 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0),
     ]
-
     expected_recalculate_total_filled_posts_rows = [
         ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
+    ]
+
+    overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (10.0, 1),
+        (10.0, 0),
+    ]
+    expected_overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (1.0, 1),
+        (10.0, 0),
     ]
 
 
