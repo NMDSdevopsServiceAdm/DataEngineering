@@ -2563,7 +2563,7 @@ class ModelExtrapolation:
     expected_extrapolation_forwards_schema = StructType(
         [
             *extrapolation_forwards_schema,
-            StructField(IndCQC.extrapolation_backwards, FloatType(), True),
+            StructField(IndCQC.extrapolation_forwards, FloatType(), True),
         ]
     )
     extrapolation_forwards_mock_schema = StructType(
