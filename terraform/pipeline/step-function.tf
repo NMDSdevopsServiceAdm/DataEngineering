@@ -210,8 +210,12 @@ resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCqcPir-StepFunction.json", {
     ingest_cqc_pir_job_name              = module.ingest_cqc_pir_data_job.job_name
+    validate_pir_raw_data_job_name       = module.validate_pir_raw_data_job.job_name
+    clean_cqc_pir_data_job_name          = module.clean_cqc_pir_data_job.job_name
+    validate_pir_cleaned_data_job_name   = module.validate_pir_cleaned_data_job.job_name
     cqc_crawler_name                     = module.cqc_crawler.crawler_name
-    dataset_bucket_name                  = module.datasets_bucket.bucket_name
+    data_validation_reports_crawler_name = module.data_validation_reports_crawler.crawler_name
+    dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
     run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
   })
@@ -237,7 +241,6 @@ resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
     validate_ascwds_workplace_raw_data_job_name   = module.validate_ascwds_workplace_raw_data_job.job_name
     validate_locations_api_raw_data_job_name      = module.validate_locations_api_raw_data_job.job_name
     validate_providers_api_raw_data_job_name      = module.validate_providers_api_raw_data_job.job_name
-    validate_pir_raw_data_job_name                = module.validate_pir_raw_data_job.job_name
     validate_postcode_directory_raw_data_job_name = module.validate_postcode_directory_raw_data_job.job_name
     data_validation_reports_crawler_name          = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn          = aws_lambda_function.error_notification_lambda.arn
@@ -265,7 +268,6 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
     validate_ascwds_workplace_cleaned_data_job_name   = module.validate_ascwds_workplace_cleaned_data_job.job_name
     validate_locations_api_cleaned_data_job_name      = module.validate_locations_api_cleaned_data_job.job_name
     validate_providers_api_cleaned_data_job_name      = module.validate_providers_api_cleaned_data_job.job_name
-    validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
     validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
