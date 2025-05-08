@@ -1550,25 +1550,28 @@ class RecalculateManagerialFilledPosts(EstimateIndCQCFilledPostsByJobRoleUtilsTe
     def setUp(self) -> None:
         super().setUp()
 
+        non_rm_managers = Schemas.recalculate_managerial_filled_posts_non_rm_col_list
+
         self.test_df = self.spark.createDataFrame(
             Data.recalculate_managerial_filled_posts_rows,
             Schemas.recalculate_managerial_filled_posts_schema,
         )
-        self.expected_df = self.spark.createDataFrame(
+        expected_df = self.spark.createDataFrame(
             Data.expected_recalculate_managerial_filled_posts_rows,
-            Schemas.expected_recalculate_managerial_filled_posts_schema,
+            Schemas.recalculate_managerial_filled_posts_schema,
         )
-        self.returned_df = job.recalculate_managerial_filled_posts(self.test_df)
+        self.returned_df = job.recalculate_managerial_filled_posts(
+            self.test_df, non_rm_managers
+        )
 
-    def test_recalculate_managerial_filled_posts_returned_expected_values(
-        self,
-    ):
-        expected_cols = sorted([col.name for col in self.expected_df.schema])
+        self.returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        self.expected_data = expected_df.collect()
 
-        returned_data = self.returned_df.select(expected_cols).collect()
-        expected_data = self.expected_df.select(expected_cols).collect()
+    def test_recalculate_managerial_filled_posts_returns_original_columns(self):
+        self.assertEqual(self.returned_df.columns, self.test_df.columns)
 
-        self.assertEqual(expected_data, returned_data)
+    def test_recalculate_managerial_filled_posts_returns_expected_values(self):
+        self.assertEqual(self.expected_data, self.returned_data)
 
 
 class CombineInterpolatedAndExtrapolatedJobRoleRatios(
