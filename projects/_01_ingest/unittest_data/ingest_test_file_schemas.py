@@ -397,6 +397,16 @@ class CleanPeopleDirectlyEmployedSchema:
         ]
     )
 
+    null_large_single_submission_locations_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
 
 @dataclass
 class ValidatePIRRawData:
