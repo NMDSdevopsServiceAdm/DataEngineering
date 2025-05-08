@@ -343,3 +343,23 @@ class PostcodeMatcherSchema:
             StructField(ONS.cssr, StringType(), True),
         ]
     )
+
+    clean_postcode_column_schema = StructType(
+        [
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.cssr, StringType(), True),
+        ]
+    )
+    expected_clean_postcode_column_when_col_not_dropped_schema = StructType(
+        [
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.cssr, StringType(), True),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+        ]
+    )
+    expected_clean_postcode_column_when_col_is_dropped_schema = StructType(
+        [
+            StructField(CQCLClean.cssr, StringType(), True),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+        ]
+    )

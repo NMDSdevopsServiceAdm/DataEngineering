@@ -578,3 +578,14 @@ class PostcodeMatcherData:
         ("AA12AA", date(2025, 1, 1), "CSSR 2"),
         ("AA13AA", date(2025, 1, 1), "CSSR 3"),
     ]
+
+    clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1"),
+        ("AA1 2AA", "ccsr 1"),
+        ("aA1 3aA", "ccsr 1"),
+    ]
+    expected_clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1", "AA11AA"),
+        ("AA1 2AA", "ccsr 1", "AA12AA"),
+        ("aA1 3aA", "ccsr 1", "AA13AA"),
+    ]
