@@ -107,13 +107,13 @@
                     }
                   }
                 ],
-                "Next": "Trigger Ind CQC Pipeline"
+                "Next": "Trigger Clean and Validate Pipeline"
               },
-              "Trigger Ind CQC Pipeline": {
+              "Trigger Clean and Validate Pipeline": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::states:startExecution",
                 "Parameters": {
-                  "StateMachineArn": "${trigger_ind_cqc_pipeline_state_machine_arn}",
+                  "StateMachineArn": "${trigger_clean_and_validate_state_machine_arn}",
                   "Input": {
                     "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                   }

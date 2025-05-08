@@ -15,6 +15,9 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 
 
 @dataclass
@@ -54,6 +57,7 @@ class IndCqcColumns:
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
     ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_extrapolated: str = "ascwds_job_role_ratios_extrapolated"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
@@ -62,7 +66,7 @@ class IndCqcColumns:
     ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
-    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -106,6 +110,8 @@ class IndCqcColumns:
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    ct_import_date: str = CTNRClean.capacity_tracker_import_date
+    ct_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
     current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
@@ -135,6 +141,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_from_all_job_roles: str = (
+        "estimate_filled_posts_from_all_job_roles"
+    )
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
@@ -148,7 +157,6 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
-    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
@@ -161,6 +169,7 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
+    imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
@@ -266,11 +275,13 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
     sum_non_rm_managerial_estimated_filled_posts: str = (
         "sum_non_rm_managerial_estimated_filled_posts"
     )
+    time_between_submissions: str = "time_between_submissions"
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
@@ -293,7 +304,6 @@ class PrimaryServiceRateOfChangeColumns:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
 
 

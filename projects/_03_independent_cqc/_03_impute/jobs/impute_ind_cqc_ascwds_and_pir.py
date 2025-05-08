@@ -8,8 +8,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -27,13 +27,13 @@ from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_po
     merge_ascwds_and_pir_filled_post_submissions,
 )
 
-
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 
 @dataclass
 class NumericalValues:
-    number_of_days_in_window = 95  # Note: using 95 as a proxy for 3 months
+    number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
+    max_number_of_days_to_interpolate_between: int = 370  # proxy for 1 year
 
 
 def main(
@@ -59,11 +59,12 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
     )
 
-    df = model_primary_service_rate_of_change(
+    df = model_primary_service_rate_of_change_trendline(
         df,
         IndCQC.combined_ratio_and_filled_posts,
         NumericalValues.number_of_days_in_window,
         IndCQC.ascwds_rate_of_change_trendline_model,
+        max_days_between_submissions=NumericalValues.max_number_of_days_to_interpolate_between,
     )
 
     df = model_pir_filled_posts(df, linear_regression_model_source)
