@@ -72,7 +72,7 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             IndCqcColumns.cqc_location_import_date,
         ],
         RuleName.min_values: {
-            # IndCqcColumns.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: 0.0, #TODO unhash this validation once recalculate_managerial_filled_posts is called in estimated_ind_cqc_filled_posts_by_job_role.
+            IndCqcColumns.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: 0.0,
             MainJobRoleLabels.activites_worker: min_value,
             MainJobRoleLabels.admin_staff: min_value,
             MainJobRoleLabels.advocacy: min_value,
