@@ -655,6 +655,16 @@ class CleanCQCPIRData:
 
 
 @dataclass
+class CleanPeopleDirectlyEmployedData:
+    clean_people_directly_employed_outliers_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2024, 1, 1), 10),
+        ("1-0002", date(2025, 1, 1), 100),
+        ("1-0002", date(2025, 1, 1), 1000),
+    ]
+
+
+@dataclass
 class ValidatePIRRawData:
     raw_cqc_pir_rows = [
         ("1-000000001", "20240101", 10),

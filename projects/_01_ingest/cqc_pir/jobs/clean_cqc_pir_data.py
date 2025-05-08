@@ -4,7 +4,7 @@ from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
-from _01_ingest.cqc_pir.utils.clean_people_directly_employed_outliers import (
+from projects._01_ingest.cqc_pir.utils.clean_people_directly_employed_outliers import (
     clean_people_directly_employed_outliers,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
