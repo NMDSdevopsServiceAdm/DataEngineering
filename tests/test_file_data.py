@@ -3342,55 +3342,28 @@ class CleaningUtilsData:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_rows = [
-        ("1-000000001", "Y", date(2024, 1, 1), 10),
-        ("1-000000002", "N", date(2024, 1, 1), 20),
-        ("1-000000003", "Y", date(2024, 1, 1), 30),
-        ("1-000000001", "Y", date(2024, 2, 1), 1),
-        ("1-000000002", "N", date(2024, 2, 1), 4),
-    ]
-
-    # fmt: off
     clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None),
     ]
-    # fmt: on
 
-    # fmt: off
-    clean_ascwds_workplace_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "1", 1,),
-        (date(2024, 1, 1), "1-000000003", "3", 2,),
-        (date(2024, 1, 5), "1-000000001", "1", 3,),
-        (date(2024, 1, 9), "1-000000001", "1", 4,),
-        (date(2024, 1, 9), "1-000000003", "3", 5,),
-        (date(2024, 3, 1), "1-000000003", "4", 6,),
+    data_to_merge_without_care_home_col_rows = [
+        (date(2024, 1, 1), "1-000000001", "1", 1),
+        (date(2024, 1, 1), "1-000000003", "3", 2),
+        (date(2024, 1, 5), "1-000000001", "1", 3),
+        (date(2024, 1, 9), "1-000000001", "1", 4),
+        (date(2024, 1, 9), "1-000000003", "3", 5),
+        (date(2024, 3, 1), "1-000000003", "4", 6),
     ]
-    # fmt: on
-
     # fmt: off
-    expected_merged_cqc_and_pir = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_cqc_and_ascwds_merged_rows = [
+    expected_merged_without_care_home_col_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
@@ -3403,14 +3376,24 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
-    # fmt: off
-    cqc_sector_rows = [
-        ("loc-1", "Local Authority",),
-        ("loc-2", None,),
-        ("loc-3", "Independent",),
+    data_to_merge_with_care_home_col_rows = [
+        ("1-000000001", "Y", date(2024, 1, 1), 10),
+        ("1-000000002", "N", date(2024, 1, 1), 20),
+        ("1-000000003", "Y", date(2024, 1, 1), 30),
+        ("1-000000001", "Y", date(2024, 2, 1), 1),
+        ("1-000000002", "N", date(2024, 2, 1), 4),
     ]
-    expected_cqc_sector_rows = [
-        ("loc-3", "Independent",),
+    # fmt: off
+    expected_merged_with_care_home_col_rows = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
     ]
     # fmt: on
 
