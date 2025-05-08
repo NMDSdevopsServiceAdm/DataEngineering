@@ -7325,18 +7325,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePIRCleanedData:
-    # fmt: off
-    cleaned_cqc_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), 10, "Y"),
-        ("1-000000002", date(2024, 1, 1), 10, "Y"),
-        ("1-000000001", date(2024, 1, 9), 10, "Y"),
-        ("1-000000002", date(2024, 1, 9), 10, "Y"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class ValidatePostcodeDirectoryCleanedData:
     # fmt: off
     raw_postcode_directory_rows = [
@@ -7546,18 +7534,6 @@ class ValidateProvidersAPIRawData:
         ("1-000000001", "20240201", "name"),
         ("1-000000002", "20240201", "name"),
     ]
-
-
-@dataclass
-class ValidatePIRRawData:
-    # fmt: off
-    raw_cqc_pir_rows = [
-        ("1-000000001", "20240101", 10),
-        ("1-000000002", "20240101", 10),
-        ("1-000000001", "20240109", 10),
-        ("1-000000002", "20240109", 10),
-    ]
-    # fmt: on
 
 
 @dataclass

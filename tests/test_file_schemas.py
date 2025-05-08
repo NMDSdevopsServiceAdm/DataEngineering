@@ -4355,18 +4355,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePIRCleanedData:
-    cleaned_cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_people_directly_employed, StringType(), True),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
         [
@@ -4632,17 +4620,6 @@ class ValidateProvidersAPIRawData:
             StructField(CQCPClean.provider_id, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField(CQCPClean.name, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidatePIRRawData:
-    raw_cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCPIR.pir_people_directly_employed, StringType(), True),
         ]
     )
 
