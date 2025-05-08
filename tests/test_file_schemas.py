@@ -1269,6 +1269,15 @@ class ExtractRegisteredManagerNamesSchema:
 
 @dataclass
 class UtilsSchema:
+    cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
+        ]
+    )
+
     filter_to_max_value_schema = StructType(
         [
             StructField("id", StringType(), True),

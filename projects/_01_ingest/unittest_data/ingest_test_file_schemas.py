@@ -369,7 +369,7 @@ class CleanCQCPIRSchema:
 
     remove_unused_pir_types_schema = add_care_home_column_schema
 
-    clean_subset_for_grouping_by = StructType(
+    filter_latest_submission_date_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.care_home, StringType(), True),

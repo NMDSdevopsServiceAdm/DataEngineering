@@ -120,11 +120,11 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
     def test_filter_latest_submission_date_returns_single_row_per_submission_date(self):
         test_df = self.spark.createDataFrame(
             Data.subset_for_latest_submission_date_before_filter,
-            Schemas.clean_subset_for_grouping_by,
+            Schemas.filter_latest_submission_date_schema,
         )
         expected_df = self.spark.createDataFrame(
             Data.subset_for_latest_submission_date_after_filter_deduplication,
-            Schemas.clean_subset_for_grouping_by,
+            Schemas.filter_latest_submission_date_schema,
         )
 
         test_df = job.filter_latest_submission_date(test_df)
