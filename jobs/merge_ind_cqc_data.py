@@ -180,16 +180,14 @@ def join_data_into_cqc_df(
         join_import_date_col,
     )
 
-    formatted_pir_df = join_df.withColumnRenamed(
-        join_location_id_col, CQCLClean.location_id
-    )
+    join_df = join_df.withColumnRenamed(join_location_id_col, CQCLClean.location_id)
 
     cols_to_join_on = [join_import_date_col, CQCLClean.location_id]
     if join_care_home_col:
         cols_to_join_on = cols_to_join_on + [join_care_home_col]
 
     cqc_df_with_join_data = cqc_df_with_join_import_date.join(
-        formatted_pir_df,
+        join_df,
         cols_to_join_on,
         "left",
     )
