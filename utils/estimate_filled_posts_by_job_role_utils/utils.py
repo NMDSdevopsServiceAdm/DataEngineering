@@ -817,7 +817,7 @@ def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataF
 
     df = df.withColumn(
         MainJobRoleLabels.registered_manager,
-        F.round(F.col(IndCQC.registered_manager_count).cast(FloatType()), 4),
+        F.col(IndCQC.registered_manager_count).cast(FloatType()),
     )
 
     return df
