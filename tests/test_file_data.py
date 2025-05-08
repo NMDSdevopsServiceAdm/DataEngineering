@@ -4610,6 +4610,29 @@ class EstimateIndCQCFilledPostsData:
     ]
     # fmt: on
 
+    # fmt: off
+    null_large_initial_model_estimations_rows = [
+        ("1-001", date(2024, 1, 1), RelatedLocation.has_related_location, 1, CareHome.not_care_home, 500.0),
+        ("1-002", date(2024, 1, 1), RelatedLocation.no_related_location, 1, CareHome.not_care_home, 500.0),
+        ("1-002", date(2024, 2, 1), RelatedLocation.no_related_location, 2, CareHome.not_care_home, 50.0),
+        ("1-003", date(2024, 1, 1), RelatedLocation.no_related_location, 3, CareHome.not_care_home, 50.0),
+        ("1-003", date(2024, 2, 1), RelatedLocation.no_related_location, 4, CareHome.not_care_home, 500.0),
+        ("1-004", date(2024, 1, 1), RelatedLocation.no_related_location, 3, CareHome.not_care_home, None),
+        ("1-004", date(2024, 2, 1), RelatedLocation.no_related_location, 4, CareHome.not_care_home, 500.0),
+        ("1-005", date(2024, 1, 1), RelatedLocation.no_related_location, 1, CareHome.care_home, 500.0),
+    ]
+    expected_null_large_initial_model_estimations_rows = [
+        ("1-001", date(2024, 1, 1), RelatedLocation.has_related_location, 1, CareHome.not_care_home, 500.0, 500.0),
+        ("1-002", date(2024, 1, 1), RelatedLocation.no_related_location, 1, CareHome.not_care_home, 500.0, None),
+        ("1-002", date(2024, 2, 1), RelatedLocation.no_related_location, 2, CareHome.not_care_home, 50.0, None),
+        ("1-003", date(2024, 1, 1), RelatedLocation.no_related_location, 3, CareHome.not_care_home, 50.0, 50.0),
+        ("1-003", date(2024, 2, 1), RelatedLocation.no_related_location, 4, CareHome.not_care_home, 500.0, 500.0),
+        ("1-004", date(2024, 1, 1), RelatedLocation.no_related_location, 3, CareHome.not_care_home, None, None),
+        ("1-004", date(2024, 2, 1), RelatedLocation.no_related_location, 4, CareHome.not_care_home, 500.0, 500.0),
+        ("1-005", date(2024, 1, 1), RelatedLocation.no_related_location, 1, CareHome.care_home, 500.0, 500.0),
+    ]
+    # fmt: on
+
 
 @dataclass
 class ModelPrimaryServiceRateOfChange:

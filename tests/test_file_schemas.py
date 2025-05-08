@@ -2247,6 +2247,23 @@ class EstimateIndCQCFilledPostsSchemas:
         ]
     )
 
+    null_large_initial_model_estimations_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.related_location, StringType(), True),
+            StructField(IndCQC.time_registered, IntegerType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(IndCQC.ascwds_pir_merged, DoubleType(), True),
+        ]
+    )
+    expected_null_large_initial_model_estimations_schema = StructType(
+        [
+            *null_large_initial_model_estimations_schema,
+            StructField("cleaned", DoubleType(), True),
+        ]
+    )
+
 
 @dataclass
 class ModelPrimaryServiceRateOfChange:
