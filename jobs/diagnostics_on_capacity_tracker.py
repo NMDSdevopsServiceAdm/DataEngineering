@@ -17,8 +17,8 @@ from utils.diagnostics_utils import diagnostics_utils as dUtils
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change import (
-    model_primary_service_rate_of_change,
+from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+    model_primary_service_rate_of_change_trendline,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
@@ -36,7 +36,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.non_res_with_dormancy_model,
     IndCQC.non_res_without_dormancy_model,
     IndCQC.non_res_combined_model,
-    IndCQC.non_res_pir_linear_regression_model,
+    IndCQC.imputed_pir_filled_posts_model,
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
@@ -53,6 +53,7 @@ absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
 number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
+max_number_of_days_to_interpolate_between: int = 370  # proxy for 1 year
 
 
 def main(
@@ -137,11 +138,12 @@ def run_diagnostics_for_care_homes(
     care_home_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_care_home_df, care_home=True
     )
-    care_home_diagnostics_df = model_primary_service_rate_of_change(
+    care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
         care_home_diagnostics_df,
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_window,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
+        max_days_between_submissions=370,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
@@ -201,11 +203,12 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = join_capacity_tracker_data(
         filled_posts_df, ct_non_res_df, care_home=False
     )
-    non_res_diagnostics_df = model_primary_service_rate_of_change(
+    non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
         non_res_diagnostics_df,
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_window,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
+        max_days_between_submissions=370,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,

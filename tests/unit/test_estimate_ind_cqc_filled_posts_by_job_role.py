@@ -41,7 +41,8 @@ class NumericalValuesTests(EstimateIndCQCFilledPostsByJobRoleTests):
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.JRutils.recalculate_total_filled_posts")
-    @patch(f"{PATCH_PATH}.JRutils.recalculate_managerial_filled_posts")
+    @patch(f"{PATCH_PATH}.JRutils.overwrite_registered_manager_estimate_with_cqc_count")
+    # @patch(f"{PATCH_PATH}.JRutils.recalculate_managerial_filled_posts")
     @patch(
         f"{PATCH_PATH}.JRutils.calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts"
     )
@@ -54,6 +55,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.FPutils.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.calculate_rolling_sum_of_job_roles")
     @patch(f"{PATCH_PATH}.JRutils.transform_interpolated_job_role_ratios_to_counts")
+    @patch(
+        f"{PATCH_PATH}.JRutils.combine_interpolated_and_extrapolated_job_role_ratios"
+    )
+    @patch(f"{PATCH_PATH}.extrapolate_job_role_ratios")
     @patch(f"{PATCH_PATH}.model_job_role_ratio_interpolation")
     @patch(f"{PATCH_PATH}.JRutils.apply_quality_filters_to_ascwds_job_role_data")
     @patch(f"{PATCH_PATH}.JRutils.calculate_job_group_sum_from_job_role_map_column")
@@ -74,6 +79,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         calculate_job_group_sum_from_job_role_map_column_mock: Mock,
         apply_quality_filters_to_ascwds_job_role_data_mock: Mock,
         model_job_role_ratio_interpolation_mock: Mock,
+        extrapolate_job_role_ratios_mock: Mock,
+        combine_interpolated_and_extrapolated_job_role_ratios_mock: Mock,
         transform_interpolated_job_role_ratios_to_counts_mock: Mock,
         calculate_rolling_sum_of_job_roles_mock: Mock,
         merge_columns_in_order_mock: Mock,
@@ -82,7 +89,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         count_registered_manager_names_mock: Mock,
         calculate_difference_between_estimate_and_cqc_registered_managers_mock: Mock,
         calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock: Mock,
-        recalculate_managerial_filled_posts_mock: Mock,
+        # recalculate_managerial_filled_posts_mock: Mock,
+        overwrite_registered_manager_estimate_with_cqc_count_mock: Mock,
         recalculate_total_filled_posts_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -114,6 +122,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         )
         apply_quality_filters_to_ascwds_job_role_data_mock.assert_called_once()
         model_job_role_ratio_interpolation_mock.assert_called_once()
+        extrapolate_job_role_ratios_mock.assert_called_once()
+        combine_interpolated_and_extrapolated_job_role_ratios_mock.assert_called_once()
         transform_interpolated_job_role_ratios_to_counts_mock.assert_called_once()
         calculate_rolling_sum_of_job_roles_mock.assert_called_once()
         merge_columns_in_order_mock.assert_called_once()
@@ -122,7 +132,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         count_registered_manager_names_mock.assert_called_once()
         calculate_difference_between_estimate_and_cqc_registered_managers_mock.assert_called_once()
         calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts_mock.assert_called_once()
-        recalculate_managerial_filled_posts_mock.assert_called_once()
+        # recalculate_managerial_filled_posts_mock.assert_called_once()
+        overwrite_registered_manager_estimate_with_cqc_count_mock.assert_called_once()
         recalculate_total_filled_posts_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(
             ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys

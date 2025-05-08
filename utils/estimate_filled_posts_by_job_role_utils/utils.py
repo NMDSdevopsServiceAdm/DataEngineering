@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import MapType
+from pyspark.sql.types import MapType, FloatType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -312,46 +312,6 @@ def count_registered_manager_names(df: DataFrame) -> DataFrame:
         ).otherwise(F.lit(1)),
     )
     return df
-
-
-def sum_job_role_count_split_by_service(
-    df: DataFrame, list_of_job_roles: list
-) -> DataFrame:
-    """
-    Takes the mapped column of job counts from the dataframes and does a sum for each
-    job role for each partition of service type. This is done through a combination of
-    explode, group by and left join
-
-    Args:
-        df (DataFrame): A dataframe containing the estimated CQC filled posts data with job role counts.
-        list_of_job_roles (list): A list containing the ASC-WDS job role.
-
-    Returns:
-        DataFrame: A dataframe with unique establishmentid and import date.
-    """
-    df_explode = df.select(
-        IndCQC.primary_service_type, F.explode(IndCQC.ascwds_job_role_counts)
-    )
-
-    df_explode_grouped = (
-        df_explode.groupBy(IndCQC.primary_service_type)
-        .pivot("key", list_of_job_roles)
-        .sum("value")
-    )
-
-    df_explode_grouped_with_map_column = create_map_column(
-        df_explode_grouped,
-        list_of_job_roles,
-        IndCQC.ascwds_job_role_counts_by_primary_service,
-    )
-
-    df_result = df.join(
-        df_explode_grouped_with_map_column,
-        IndCQC.primary_service_type,
-        "left",
-    )
-
-    return df_result
 
 
 def unpack_mapped_column(df: DataFrame, column_name: str) -> DataFrame:
@@ -849,6 +809,25 @@ def transform_interpolated_job_role_ratios_to_counts(
     return df
 
 
+def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataFrame:
+    """
+    This function overwrites our estimate of registered managers with the count from cqc data.
+
+    Args:
+        df (DataFrame): A dataframe with registered manager estimates from asc-wds and counts from cqc data.
+
+    Returns:
+        DataFrame: A dataframe with registered manager estimates overwritten by cqc counts.
+    """
+
+    df = df.withColumn(
+        MainJobRoleLabels.registered_manager,
+        F.col(IndCQC.registered_manager_count).cast(FloatType()),
+    )
+
+    return df
+
+
 def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> DataFrame:
     """
     Created a filled_posts column which represents the total number of filled posts per location_id based on job role breakdown.
@@ -863,7 +842,31 @@ def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> Da
     """
 
     df_result = df.withColumn(
-        IndCQC.filled_posts, sum([F.col(job_role) for job_role in list_of_job_roles])
+        IndCQC.estimate_filled_posts_from_all_job_roles,
+        sum([F.col(job_role) for job_role in list_of_job_roles]),
     )
 
     return df_result
+
+
+def combine_interpolated_and_extrapolated_job_role_ratios(df: DataFrame) -> DataFrame:
+    """
+    Coalesce the filtered, interpolated and extrapolated asc-wds job role ratio columns into one new column.
+
+    Args:
+        df (DataFrame): A dataframe with filtered, interpolated and extrapolated asc-wds job role ratio columns.
+
+    Returns:
+        DataFrame: A dataframe with a new column called ascwds_job_role_ratios_interpolated_and_extrapolated.
+    """
+
+    df = df.withColumn(
+        IndCQC.imputed_ascwds_job_role_ratios,
+        F.coalesce(
+            IndCQC.ascwds_job_role_ratios_filtered,
+            IndCQC.ascwds_job_role_ratios_interpolated,
+            IndCQC.ascwds_job_role_ratios_extrapolated,
+        ),
+    )
+
+    return df
