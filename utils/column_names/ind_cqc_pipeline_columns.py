@@ -233,9 +233,11 @@ class IndCqcColumns:
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
     pir_filled_posts_model: str = "pir_filled_posts_model"
-    pir_people_directly_employed: str = CQCPIRClean.pir_people_directly_employed
+    pir_people_directly_employed_cleaned: str = (
+        CQCPIRClean.pir_people_directly_employed_cleaned
+    )
     pir_people_directly_employed_dedup: str = (
-        CQCPIRClean.pir_people_directly_employed + "_deduplicated"
+        CQCPIRClean.pir_people_directly_employed_cleaned + "_deduplicated"
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
