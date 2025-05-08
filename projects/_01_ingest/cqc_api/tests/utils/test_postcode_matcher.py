@@ -95,3 +95,24 @@ class CleanPostcodeColumnTests(PostcodeMatcherTests):
         self.assertEqual(
             returned_when_col_dropped_df.columns, expected_when_col_dropped_df.columns
         )
+
+
+class JoinPostcodeDataTests(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        # locations_df = self.spark.createDataFrame(
+        #     Data.join_postcode_data_locations_rows, Schemas.
+        # )
+        # postcode_df = self.spark.createDataFrame(
+        #     Data.join_postcode_data_postcodes_rows, Schemas.
+        # )
+        # returned_matched_df, returned_unmatched_df = job.join_postcode_data(
+        #     locations_df, postcode_df, CQCLClean.postcode_cleaned
+        # )
+        # returned_matched_df = self.spark.createDataFrame(
+        #     Data.expected_join_postcode_data_matched_rows, Schemas.
+        # )
+        # returned_unmatched_df = self.spark.createDataFrame(
+        #     Data.expected_join_postcode_data_unmatched_rows, Schemas.
+        # )

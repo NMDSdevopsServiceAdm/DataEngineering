@@ -589,3 +589,24 @@ class PostcodeMatcherData:
         ("AA1 2AA", "ccsr 1", "AA12AA"),
         ("aA1 3aA", "ccsr 1", "AA13AA"),
     ]
+
+    join_postcode_data_locations_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA"),
+        ("1-001", date(2025, 1, 1), "AA11AA"),
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
+        ("1-002", date(2025, 1, 1), "AA12AA"),
+    ]
+    join_postcode_data_postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+    ]
+    expected_join_postcode_data_matched_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-002", date(2025, 1, 1), "AA12AA", "CSSR 2"),
+    ]
+    expected_join_postcode_data_unmatched_rows = [
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
+    ]
