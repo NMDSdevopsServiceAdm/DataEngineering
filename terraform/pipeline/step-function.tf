@@ -238,7 +238,6 @@ resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
     validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
     ons_crawler_name                                  = module.ons_crawler.crawler_name
     data_validation_reports_crawler_name              = module.data_validation_reports_crawler.crawler_name
-    dataset_bucket_name                               = module.datasets_bucket.bucket_name
     dataset_bucket_uri                                = module.datasets_bucket.bucket_uri
     pipeline_failure_lambda_function_arn              = aws_lambda_function.error_notification_lambda.arn
   })
