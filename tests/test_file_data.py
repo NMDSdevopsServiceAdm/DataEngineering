@@ -2876,15 +2876,6 @@ class ExtractRegisteredManagerNamesData:
 
 @dataclass
 class UtilsData:
-    cqc_pir_rows = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-    ]
-
     filter_to_max_value_rows = [
         ("1", date(2024, 1, 1), "20220101"),
         ("2", date(2024, 1, 1), "20230101"),
@@ -6942,7 +6933,7 @@ class ValidationUtils:
     min_values_multiple_columns_rule = {
         RuleName.min_values: {
             IndCQC.number_of_beds: 1,
-            IndCQC.pir_people_directly_employed: 0,
+            IndCQC.pir_people_directly_employed_cleaned: 0,
         }
     }
     min_values_below_minimum_rows = [
@@ -6991,7 +6982,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(pir_people_directly_employed,None,None))",
+            "MinimumConstraint(Minimum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),
@@ -7005,7 +6996,7 @@ class ValidationUtils:
     max_values_multiple_columns_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
-            IndCQC.pir_people_directly_employed: 20,
+            IndCQC.pir_people_directly_employed_cleaned: 20,
         }
     }
     max_values_below_maximum_rows = [
@@ -7054,7 +7045,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(pir_people_directly_employed,None,None))",
+            "MaximumConstraint(Maximum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),

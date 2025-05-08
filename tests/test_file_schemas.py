@@ -1269,15 +1269,6 @@ class ExtractRegisteredManagerNamesSchema:
 
 @dataclass
 class UtilsSchema:
-    cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
-        ]
-    )
-
     filter_to_max_value_schema = StructType(
         [
             StructField("id", StringType(), True),
@@ -1563,13 +1554,17 @@ class MergeIndCQCData:
             StructField(CQCPIRClean.location_id, StringType(), False),
             StructField(CQCPIRClean.care_home, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
         ]
     )
     expected_merged_with_care_home_col_schema = StructType(
         [
             *clean_cqc_location_for_merge_schema,
-            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
@@ -1819,7 +1814,9 @@ class CleanIndCQCData:
             StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(AWPClean.total_staff_bounded, IntegerType(), True),
             StructField(AWPClean.worker_records_bounded, IntegerType(), True),
             StructField(CQCLClean.primary_service_type, StringType(), True),
@@ -3213,7 +3210,9 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
@@ -4060,7 +4059,9 @@ class ValidationUtils:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
         ]
     )
 
@@ -4422,7 +4423,9 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
@@ -4461,7 +4464,9 @@ class ValidateCareHomeIndCqcFeaturesData:
             StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.features, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
@@ -4566,7 +4571,9 @@ class ValidateEstimatedIndCqcFilledPostsData:
             StructField(IndCQC.current_ons_import_date, DateType(), True),
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.pir_people_directly_employed, IntegerType(), True),
+            StructField(
+                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
