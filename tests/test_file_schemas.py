@@ -1269,6 +1269,15 @@ class ExtractRegisteredManagerNamesSchema:
 
 @dataclass
 class UtilsSchema:
+    cqc_pir_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
+        ]
+    )
+
     filter_to_max_value_schema = StructType(
         [
             StructField("id", StringType(), True),
@@ -1500,77 +1509,6 @@ class CQCProviderSchema:
             StructField(CQCP.constituency, StringType(), True),
             StructField(CQCP.local_authority, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class CQCPIRSchema:
-    sample_schema = StructType(
-        fields=[
-            StructField(CQCPIR.location_id, StringType(), False),
-            StructField(CQCPIR.location_name, StringType(), False),
-            StructField(CQCPIR.pir_type, StringType(), False),
-            StructField(CQCPIR.pir_submission_date, StringType(), False),
-            StructField(
-                CQCPIR.pir_people_directly_employed,
-                IntegerType(),
-                True,
-            ),
-            StructField(
-                CQCPIR.staff_leavers,
-                IntegerType(),
-                True,
-            ),
-            StructField(CQCPIR.staff_vacancies, IntegerType(), True),
-            StructField(
-                CQCPIR.shared_lives_leavers,
-                IntegerType(),
-                True,
-            ),
-            StructField(CQCPIR.shared_lives_vacancies, IntegerType(), True),
-            StructField(CQCPIR.primary_inspection_category, StringType(), False),
-            StructField(CQCPIR.region, StringType(), False),
-            StructField(CQCPIR.local_authority, StringType(), False),
-            StructField(CQCPIR.number_of_beds, IntegerType(), False),
-            StructField(CQCPIR.domiciliary_care, StringType(), True),
-            StructField(CQCPIR.location_status, StringType(), False),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    add_care_home_column_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(CQCPIR.pir_type, StringType(), True),
-        ]
-    )
-
-    expected_care_home_column_schema = StructType(
-        [
-            *add_care_home_column_schema,
-            StructField(CQCPIRClean.care_home, StringType(), True),
-        ]
-    )
-
-    remove_rows_missing_pir_people_directly_employed_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
-        ]
-    )
-
-    remove_unused_pir_types_schema = add_care_home_column_schema
-
-
-@dataclass
-class CQCPIRCleanSchema:
-    clean_subset_for_grouping_by = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_submission_date_as_date, DateType(), True),
         ]
     )
 
@@ -4417,18 +4355,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePIRCleanedData:
-    cleaned_cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_people_directly_employed, StringType(), True),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidatePostcodeDirectoryCleanedData:
     raw_postcode_directory_schema = StructType(
         [
@@ -4699,17 +4625,6 @@ class ValidateProvidersAPIRawData:
 
 
 @dataclass
-class ValidatePIRRawData:
-    raw_cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCPIR.pir_people_directly_employed, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidatePostcodeDirectoryRawData:
     raw_postcode_directory_schema = StructType(
         [
@@ -4729,17 +4644,6 @@ class RawDataAdjustments:
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
             StructField(AWK.establishment_id, StringType(), True),
-            StructField("other_column", StringType(), True),
-        ]
-    )
-
-    pir_data_schema = StructType(
-        [
-            StructField(CQCPIR.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCPIR.pir_type, StringType(), True),
-            StructField(CQCPIR.pir_submission_date, StringType(), True),
-            StructField(CQCPIR.domiciliary_care, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )
