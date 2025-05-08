@@ -43,10 +43,10 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     to a data input error.
 
     Args:
-        df (DataFrame): The input DataFrame.
+        df (DataFrame): The input DataFrame containing pir_people_directly_employed_cleaned.
 
     Returns:
-        DataFrame: The input DataFrame with submission count.
+        DataFrame: The input DataFrame with large, single submission values removed.
     """
     w = Window.partitionBy(PIRCleanCols.location_id)
 
