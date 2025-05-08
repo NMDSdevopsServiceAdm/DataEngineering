@@ -197,6 +197,7 @@ def run_diagnostics_for_non_residential(
     Returns:
         DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
     """
+    ct_non_res_df = ct_non_res_df.drop(CTNRClean.care_home)
     filled_posts_df = utils.select_rows_with_value(
         filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
     )
