@@ -1589,15 +1589,6 @@ class FilterCleanedValuesSchema:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), False),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
-        ]
-    )
-
     clean_cqc_location_for_merge_schema = StructType(
         [
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
@@ -1608,7 +1599,7 @@ class MergeIndCQCData:
         ]
     )
 
-    clean_ascwds_workplace_for_merge_schema = StructType(
+    data_to_merge_without_care_home_col_schema = StructType(
         [
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
             StructField(AWPClean.location_id, StringType(), True),
@@ -1616,16 +1607,7 @@ class MergeIndCQCData:
             StructField(AWPClean.total_staff, IntegerType(), True),
         ]
     )
-
-    expected_cqc_and_pir_merged_schema = StructType(
-        [
-            *clean_cqc_location_for_merge_schema,
-            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-        ]
-    )
-
-    expected_cqc_and_ascwds_merged_schema = StructType(
+    expected_merged_without_care_home_col_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
@@ -1638,10 +1620,19 @@ class MergeIndCQCData:
         ]
     )
 
-    cqc_sector_schema = StructType(
+    data_to_merge_with_care_home_col_schema = StructType(
         [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCPIRClean.location_id, StringType(), False),
+            StructField(CQCPIRClean.care_home, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
+        ]
+    )
+    expected_merged_with_care_home_col_schema = StructType(
+        [
+            *clean_cqc_location_for_merge_schema,
+            StructField(CQCPIRClean.pir_people_directly_employed, IntegerType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
 
@@ -6206,19 +6197,19 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    recalculate_managerial_filled_posts_non_rm_col_list = [
+        "managerial_role_1",
+        "managerial_role_2",
+        "managerial_role_3",
+        "managerial_role_4",
+    ]
     recalculate_managerial_filled_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(MainJobRoleLabels.data_governance_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.deputy_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.first_line_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.it_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.it_service_desk_manager, FloatType(), True),
-            StructField(MainJobRoleLabels.middle_management, FloatType(), True),
-            StructField(MainJobRoleLabels.other_managerial_staff, FloatType(), True),
-            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
-            StructField(MainJobRoleLabels.supervisor, FloatType(), True),
-            StructField(MainJobRoleLabels.team_leader, FloatType(), True),
+            StructField("managerial_role_1", FloatType(), True),
+            StructField("managerial_role_2", FloatType(), True),
+            StructField("managerial_role_3", FloatType(), True),
+            StructField("managerial_role_4", FloatType(), True),
             StructField(
                 IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role,
                 MapType(StringType(), FloatType()),
@@ -6230,9 +6221,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 True,
             ),
         ]
-    )
-    expected_recalculate_managerial_filled_posts_schema = StructType(
-        [*recalculate_managerial_filled_posts_schema]
     )
 
     recalculate_total_filled_posts_schema = StructType(
