@@ -11014,8 +11014,8 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     ]
     expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
         (10.0, 10.0, 0.0),
-        (10.0, 9.0, 1.0),
-        (9.0, 10.0, -1.0),
+        (10.0, 9.0, -1.0),
+        (9.0, 10.0, 1.0),
     ]
 
 
