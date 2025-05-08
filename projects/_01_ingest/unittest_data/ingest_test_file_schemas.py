@@ -385,7 +385,15 @@ class CleanPeopleDirectlyEmployedSchema:
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(CQCPIR.pir_people_directly_employed, StringType(), True),
+            StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
+        ]
+    )
+    expected_clean_people_directly_employed_outliers_schema = StructType(
+        [
+            *clean_people_directly_employed_outliers_schema,
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
         ]
     )
 

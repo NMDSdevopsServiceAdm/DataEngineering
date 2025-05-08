@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -21,9 +21,9 @@ def clean_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     """
     print("Cleaning pir_people_directly_employed...")
 
-    df = df.withColumnRenamed(
-        PIRCols.pir_people_directly_employed,
+    df = df.withColumn(
         PIRCleanCols.pir_people_directly_employed_cleaned,
+        F.col(PIRCols.pir_people_directly_employed),
     )
 
     # TODO only include locations with 100+ posts if they have 2 submission (so we can validate them against each other)

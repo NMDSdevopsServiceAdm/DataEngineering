@@ -31,11 +31,15 @@ class MainTests(CleanPeopleDirectlyEmployedTests):
             Schemas.clean_people_directly_employed_outliers_schema,
         )
         self.returned_df = job.clean_people_directly_employed_outliers(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            [], Schemas.expected_clean_people_directly_employed_outliers_schema
+        )
 
     def test_main_adds_cleaned_column(self):
         self.assertIn(
             PIRCleanCols.pir_people_directly_employed_cleaned, self.returned_df.columns
         )
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_main_returns_original_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
