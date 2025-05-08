@@ -55,8 +55,8 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
-            self.test_data_without_care_home_col,
             self.test_data_with_care_home_col,
+            self.test_data_without_care_home_col,
             self.test_data_with_care_home_col,
         ]
 
