@@ -161,23 +161,76 @@ def main(
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
     )
-
     # filter 1 - 100+ at first period - none related only
-    # filter 1 - 150+ at first period - none related only
+    max_size: float = 100.0
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_pir_merged,
+        max_size,
+        IndCQC.ascwds_pir_merged + "_cleaned_100",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_posts_non_res_combined_model,
+        max_size,
+        IndCQC.imputed_posts_non_res_combined_model + "_cleaned_100",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_pir_filled_posts_model,
+        max_size,
+        IndCQC.imputed_pir_filled_posts_model + "_cleaned_100",
+    )
 
     estimate_filled_posts_df = merge_columns_in_order(
         estimate_filled_posts_df,
         [
-            IndCQC.ascwds_pir_merged,
+            IndCQC.ascwds_pir_merged + "_cleaned_100",
             IndCQC.imputed_posts_care_home_model,
             IndCQC.care_home_model,
-            IndCQC.imputed_posts_non_res_combined_model,
-            IndCQC.imputed_pir_filled_posts_model,
+            IndCQC.imputed_posts_non_res_combined_model + "_cleaned_100",
+            IndCQC.imputed_pir_filled_posts_model + "_cleaned_100",
             IndCQC.non_res_combined_model,
             IndCQC.posts_rolling_average_model,
         ],
-        IndCQC.estimate_filled_posts,
-        IndCQC.estimate_filled_posts_source,
+        IndCQC.estimate_filled_posts + "_cleaned_100",
+        IndCQC.estimate_filled_posts_source + "_cleaned_100",
+    )
+
+    # filter 2 - 150+ at first period - none related only
+    max_size: float = 150.0
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_pir_merged,
+        max_size,
+        IndCQC.ascwds_pir_merged + "_cleaned_150",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_posts_non_res_combined_model,
+        max_size,
+        IndCQC.imputed_posts_non_res_combined_model + "_cleaned_150",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_pir_filled_posts_model,
+        max_size,
+        IndCQC.imputed_pir_filled_posts_model + "_cleaned_150",
+    )
+
+    estimate_filled_posts_df = merge_columns_in_order(
+        estimate_filled_posts_df,
+        [
+            IndCQC.ascwds_pir_merged + "_cleaned_150",
+            IndCQC.imputed_posts_care_home_model,
+            IndCQC.care_home_model,
+            IndCQC.imputed_posts_non_res_combined_model + "_cleaned_150",
+            IndCQC.imputed_pir_filled_posts_model + "_cleaned_150",
+            IndCQC.non_res_combined_model,
+            IndCQC.posts_rolling_average_model,
+        ],
+        IndCQC.estimate_filled_posts + "_cleaned_150",
+        IndCQC.estimate_filled_posts_source + "_cleaned_150",
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
