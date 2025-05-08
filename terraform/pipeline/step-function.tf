@@ -8,7 +8,6 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
     pipeline_resources_bucket_uri                                    = module.pipeline_resources.bucket_uri
     clean_ascwds_workplace_job_name                                  = module.clean_ascwds_workplace_job.job_name
     clean_ascwds_worker_job_name                                     = module.clean_ascwds_worker_job.job_name
-    clean_cqc_pir_data_job_name                                      = module.clean_cqc_pir_data_job.job_name
     clean_cqc_provider_data_job_name                                 = module.clean_cqc_provider_data_job.job_name
     clean_cqc_location_data_job_name                                 = module.clean_cqc_location_data_job.job_name
     clean_ons_data_job_name                                          = module.clean_ons_data_job.job_name
