@@ -875,6 +875,9 @@ def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts
 
     IndCQC.estimate_filled_posts is before the breaking down the estimate into job roles.
     IndCQC.estimate_filled_posts_from_all_job_roles is the sum of estimates by job role.
+    These are not expected to be equal as we overwrite our estimate of registered managers with the count from cqc data.
+    E.g. if we estimate there are no mangers of any kind at a location, then we add the count from cqc, the sum of all job roles will be
+    that much higher than the original overall estimate of filled posts at that location.
 
     Args:
         df (DataFrame): A dataframe with IndCQC.estimate_filled_posts and IndCQC.estimate_filled_posts_from_all_job_roles columns.
@@ -885,8 +888,8 @@ def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts
 
     df = df.withColumn(
         IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles,
-        F.col(IndCQC.estimate_filled_posts)
-        - F.col(IndCQC.estimate_filled_posts_from_all_job_roles),
+        F.col(IndCQC.estimate_filled_posts_from_all_job_roles)
+        - F.col(IndCQC.estimate_filled_posts),
     )
 
     return df
