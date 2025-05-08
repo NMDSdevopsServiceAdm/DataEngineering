@@ -240,8 +240,7 @@ def main(
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.overwrite_registered_manager_estimate_with_cqc_count(
-            estimated_ind_cqc_filled_posts_by_job_role_df,
-            JRutils.list_of_non_rm_managers,
+            estimated_ind_cqc_filled_posts_by_job_role_df
         )
     )
 
