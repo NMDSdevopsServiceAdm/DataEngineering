@@ -4,6 +4,9 @@ from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
+from _01_ingest.cqc_pir.utils.clean_people_directly_employed_outliers import (
+    clean_people_directly_employed_outliers,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -35,9 +38,7 @@ def main(cqc_pir_source: str, cleaned_cqc_pir_destination: str):
 
     cqc_pir_df = filter_latest_submission_date(cqc_pir_df)
 
-    cqc_pir_df = cqc_pir_df.withColumnRenamed(
-        PIRCols.pir_people_directly_employed, PIRCleanCols.pir_people_directly_employed
-    )
+    cqc_pir_df = clean_people_directly_employed_outliers(cqc_pir_df)
 
     utils.write_to_parquet(
         cqc_pir_df,
