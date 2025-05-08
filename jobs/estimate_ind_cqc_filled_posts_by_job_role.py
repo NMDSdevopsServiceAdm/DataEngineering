@@ -95,6 +95,9 @@ def main(
         aggregated_job_roles_per_establishment_df,
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
+
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
         estimated_ind_cqc_filled_posts_by_job_role_df
     )
@@ -141,6 +144,9 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles_sorted
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
+
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_interpolated_job_role_ratios_to_counts(
             estimated_ind_cqc_filled_posts_by_job_role_df,
@@ -160,6 +166,9 @@ def main(
             IndCQC.ascwds_job_role_ratios_by_primary_service,
         )
     )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
 
     estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
         estimated_ind_cqc_filled_posts_by_job_role_df,
@@ -200,6 +209,9 @@ def main(
             estimated_ind_cqc_filled_posts_by_job_role_df
         )
     )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.recalculate_managerial_filled_posts(
