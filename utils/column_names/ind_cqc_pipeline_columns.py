@@ -15,6 +15,9 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 
 
 @dataclass
@@ -107,6 +110,8 @@ class IndCqcColumns:
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    ct_import_date: str = CTNRClean.capacity_tracker_import_date
+    ct_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
     current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
@@ -129,6 +134,9 @@ class IndCqcColumns:
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
+    difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: (
+        str
+    ) = "difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"

@@ -1,28 +1,29 @@
 import unittest
-
 from unittest.mock import ANY, Mock, patch
 
 import jobs.merge_ind_cqc_data as job
-
 from tests.test_file_data import MergeIndCQCData as Data
 from tests.test_file_schemas import MergeIndCQCData as Schemas
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
+
+PATCH_PATH: str = "jobs.merge_ind_cqc_data"
 
 
 class MergeIndCQCDatasetTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
     TEST_CQC_PIR_SOURCE = "some/other/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
+    TEST_CT_NON_RES_SOURCE = "yet/another/directory"
     TEST_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -32,48 +33,44 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             Data.clean_cqc_location_for_merge_rows,
             Schemas.clean_cqc_location_for_merge_schema,
         )
-        self.test_clean_cqc_pir_df = self.spark.createDataFrame(
-            Data.clean_cqc_pir_rows, Schemas.clean_cqc_pir_schema
+        self.test_data_with_care_home_col = self.spark.createDataFrame(
+            Data.data_to_merge_with_care_home_col_rows,
+            Schemas.data_to_merge_with_care_home_col_schema,
         )
-        self.test_clean_ascwds_workplace_df = self.spark.createDataFrame(
-            Data.clean_ascwds_workplace_for_merge_rows,
-            Schemas.clean_ascwds_workplace_for_merge_schema,
+        self.test_data_without_care_home_col = self.spark.createDataFrame(
+            Data.data_to_merge_without_care_home_col_rows,
+            Schemas.data_to_merge_without_care_home_col_schema,
         )
 
-    @patch("jobs.merge_ind_cqc_data.join_ascwds_data_into_merged_df")
-    @patch(
-        "jobs.merge_ind_cqc_data.filter_df_to_independent_sector_only",
-        wraps=job.filter_df_to_independent_sector_only,
-    )
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.join_data_into_cqc_df")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        select_rows_with_value_mock: Mock,
+        join_data_into_cqc_df_mock: Mock,
         write_to_parquet_patch: Mock,
-        filter_df_to_independent_sector_only: Mock,
-        join_ascwds_data_into_merged_df: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
-            self.test_clean_ascwds_workplace_df,
-            self.test_clean_cqc_pir_df,
+            self.test_data_with_care_home_col,
+            self.test_data_without_care_home_col,
+            self.test_data_with_care_home_col,
         ]
 
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
             self.TEST_CQC_PIR_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
+            self.TEST_CT_NON_RES_SOURCE,
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
-
-        filter_df_to_independent_sector_only.assert_called_once_with(
-            self.test_clean_cqc_location_df
-        )
-        join_ascwds_data_into_merged_df.assert_called_once()
-
+        self.assertEqual(read_from_parquet_patch.call_count, 4)
+        select_rows_with_value_mock.assert_called_once()
+        self.assertEqual(join_data_into_cqc_df_mock.call_count, 3)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
@@ -81,63 +78,48 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             partitionKeys=self.partition_keys,
         )
 
-    def test_filter_df_to_independent_sector_only_keeps_independent_locations(
+    def test_join_data_into_cqc_df_returns_expected_data_when_care_home_column_not_required(
         self,
     ):
-        test_df = self.spark.createDataFrame(
-            Data.cqc_sector_rows, Schemas.cqc_sector_schema
-        )
-
-        returned_ind_cqc_df = job.filter_df_to_independent_sector_only(test_df)
-        returned_ind_cqc_data = returned_ind_cqc_df.collect()
-
-        expected_ind_cqc_data = self.spark.createDataFrame(
-            Data.expected_cqc_sector_rows, Schemas.cqc_sector_schema
-        ).collect()
-
-        self.assertEqual(returned_ind_cqc_data, expected_ind_cqc_data)
-
-    def test_join_ascwds_data_into_merged_df(self):
-        returned_df = job.join_ascwds_data_into_merged_df(
+        returned_df = job.join_data_into_cqc_df(
             self.test_clean_cqc_location_df,
-            self.test_clean_ascwds_workplace_df,
-            CQCLClean.cqc_location_import_date,
+            self.test_data_without_care_home_col,
+            AWPClean.location_id,
             AWPClean.ascwds_workplace_import_date,
         )
 
         expected_merged_df = self.spark.createDataFrame(
-            Data.expected_cqc_and_ascwds_merged_rows,
-            Schemas.expected_cqc_and_ascwds_merged_schema,
+            Data.expected_merged_without_care_home_col_rows,
+            Schemas.expected_merged_without_care_home_col_schema,
         )
 
         returned_data = returned_df.sort(
             CQCLClean.cqc_location_import_date, CQCLClean.location_id
         ).collect()
-        expected_data = expected_merged_df.sort(
-            CQCLClean.cqc_location_import_date, CQCLClean.location_id
-        ).collect()
+        expected_data = expected_merged_df.select(returned_df.columns).collect()
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_join_pir_data_into_merged_df(self):
-        returned_df = job.join_pir_data_into_merged_df(
+    def test_join_data_into_cqc_df_returns_expected_data_when_care_home_column_is_required(
+        self,
+    ):
+        returned_df = job.join_data_into_cqc_df(
             self.test_clean_cqc_location_df,
-            self.test_clean_cqc_pir_df,
+            self.test_data_with_care_home_col,
+            CQCPIRClean.location_id,
+            CQCPIRClean.cqc_pir_import_date,
+            CQCPIRClean.care_home,
         )
 
         expected_merged_df = self.spark.createDataFrame(
-            Data.expected_merged_cqc_and_pir,
-            Schemas.expected_cqc_and_pir_merged_schema,
+            Data.expected_merged_with_care_home_col_rows,
+            Schemas.expected_merged_with_care_home_col_schema,
         )
 
         returned_data = returned_df.sort(
             CQCLClean.cqc_location_import_date, CQCLClean.location_id
         ).collect()
-        expected_data = (
-            expected_merged_df.select(returned_df.columns)
-            .sort(CQCLClean.cqc_location_import_date, CQCLClean.location_id)
-            .collect()
-        )
+        expected_data = expected_merged_df.select(returned_df.columns).collect()
 
         self.assertEqual(returned_data, expected_data)
 
