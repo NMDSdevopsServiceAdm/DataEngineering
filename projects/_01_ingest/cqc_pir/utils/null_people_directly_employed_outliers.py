@@ -5,7 +5,7 @@ from pyspark.sql import DataFrame, Window, functions as F
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
-    CleanPeopleDirectlyEmployedTemporaryColumns as TempCol,
+    NullPeopleDirectlyEmployedTemporaryColumns as TempCol,
 )
 from projects.utils.utils.utils import calculate_new_column
 
@@ -14,7 +14,7 @@ PROPORTION_OF_DATA_TO_REMOVE: float = (
 )
 
 
-def clean_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
+def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     """
     Creates a clean version of the'pir_people_directly_employed' column.
 

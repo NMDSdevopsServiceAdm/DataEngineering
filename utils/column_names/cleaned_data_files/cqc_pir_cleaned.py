@@ -17,7 +17,7 @@ class CqcPIRCleanedColumns(CqcPirColumns):
 
 
 @dataclass
-class CleanPeopleDirectlyEmployedTemporaryColumns:
+class NullPeopleDirectlyEmployedTemporaryColumns:
     """The names of the temporary columns created during the clean people_directly_employed outliers process."""
 
     submission_count: str = "submission_count"
