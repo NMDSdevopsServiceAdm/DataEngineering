@@ -182,6 +182,27 @@ class ModelAndMergePirData:
     ]
     # fmt: on
 
+    include_pir_if_never_submitted_ascwds_rows = [
+        ("1-001", date(2024, 1, 1), 10.0, None),
+        ("1-001", date(2024, 2, 1), 20.0, 50.0),
+        ("1-002", date(2024, 1, 1), 30.0, None),
+        ("1-002", date(2024, 2, 1), None, 60.0),
+        ("1-003", date(2024, 1, 1), None, 70.0),
+        ("1-003", date(2024, 2, 1), 40.0, None),
+        ("1-004", date(2024, 1, 1), None, None),
+        ("1-004", date(2024, 2, 1), None, 80.0),
+    ]
+    expected_include_pir_if_never_submitted_ascwds_rows = [
+        ("1-001", date(2024, 1, 1), 10.0, None),
+        ("1-001", date(2024, 2, 1), 20.0, 50.0),
+        ("1-002", date(2024, 1, 1), 30.0, None),
+        ("1-002", date(2024, 2, 1), None, 60.0),
+        ("1-003", date(2024, 1, 1), None, 70.0),
+        ("1-003", date(2024, 2, 1), 40.0, None),
+        ("1-004", date(2024, 1, 1), None, None),
+        ("1-004", date(2024, 2, 1), 80.0, 80.0),
+    ]
+
 
 @dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
