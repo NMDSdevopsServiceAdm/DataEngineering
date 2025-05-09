@@ -6097,21 +6097,21 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
-    transform_interpolated_job_role_ratios_to_counts_schema = StructType(
+    transform_imputed_job_role_ratios_to_counts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(
-                IndCQC.ascwds_job_role_ratios_interpolated,
+                IndCQC.imputed_ascwds_job_role_ratios,
                 MapType(StringType(), FloatType()),
             ),
         ]
     )
-    expected_transform_interpolated_job_role_ratios_to_counts_schema = StructType(
+    expected_transform_imputed_job_role_ratios_to_counts_schema = StructType(
         [
-            *transform_interpolated_job_role_ratios_to_counts_schema,
+            *transform_imputed_job_role_ratios_to_counts_schema,
             StructField(
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 MapType(StringType(), FloatType()),
             ),
         ]
@@ -6242,7 +6242,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 MapType(StringType(), FloatType()),
                 True,
             ),
@@ -6254,7 +6254,7 @@ class EstimateJobRolesPrimaryServiceRollingSumSchemas:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 MapType(StringType(), FloatType()),
                 True,
             ),
