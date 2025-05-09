@@ -261,13 +261,13 @@ resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/BronzeValidationPipeline-StepFunction.json", {
-    dataset_bucket_uri                            = module.datasets_bucket.bucket_uri
-    validate_ascwds_worker_raw_data_job_name      = module.validate_ascwds_worker_raw_data_job.job_name
-    validate_ascwds_workplace_raw_data_job_name   = module.validate_ascwds_workplace_raw_data_job.job_name
-    validate_locations_api_raw_data_job_name      = module.validate_locations_api_raw_data_job.job_name
-    validate_providers_api_raw_data_job_name      = module.validate_providers_api_raw_data_job.job_name
-    data_validation_reports_crawler_name          = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn          = aws_lambda_function.error_notification_lambda.arn
+    dataset_bucket_uri                          = module.datasets_bucket.bucket_uri
+    validate_ascwds_worker_raw_data_job_name    = module.validate_ascwds_worker_raw_data_job.job_name
+    validate_ascwds_workplace_raw_data_job_name = module.validate_ascwds_workplace_raw_data_job.job_name
+    validate_locations_api_raw_data_job_name    = module.validate_locations_api_raw_data_job.job_name
+    validate_providers_api_raw_data_job_name    = module.validate_providers_api_raw_data_job.job_name
+    data_validation_reports_crawler_name        = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn        = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
