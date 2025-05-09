@@ -75,23 +75,6 @@
             }
           },
           {
-            "StartAt": "Run validate pir raw job",
-            "States": {
-                "Run validate pir raw job": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${validate_pir_raw_data_job_name }",
-                  "Arguments": {
-                    "--raw_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_raw/"
-                  }
-                },
-                "End": true
-              }
-            }
-          },
-          {
             "StartAt": "Run validate postcode directory raw job",
             "States": {
                 "Run validate postcode directory raw job": {

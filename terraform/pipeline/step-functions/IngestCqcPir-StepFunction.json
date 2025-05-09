@@ -1,61 +1,144 @@
 {
-    "Comment": "A step function to ingest CQC PIR data and run the CQC crawler",
-    "StartAt": "Ingest CQC PIR",
-    "States": {
-        "Ingest CQC PIR": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::glue:startJobRun.sync",
-            "Parameters": {
+  "Comment": "A step function to ingest, clean and validate CQC PIR data",
+  "StartAt": "CQC PIR pipeline",
+  "States": {
+    "CQC PIR pipeline": {
+      "Type": "Parallel",
+      "Next": "Run validation crawler when success",
+      "Branches": [
+        {
+          "StartAt": "Ingest CQC PIR",
+          "States": {
+            "Ingest CQC PIR": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
                 "JobName": "${ingest_cqc_pir_job_name}",
                 "Arguments": {
-                    "--source.$": "$.jobs.ingest_cqc_pir_data.source",
-                    "--destination": "s3://${dataset_bucket_name}/domain=CQC/dataset=pir/"
+                  "--source.$": "$.jobs.ingest_cqc_pir_data.source",
+                  "--destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir/"
                 }
+              },
+              "Next": "Clean and validate ingested CQC data"
             },
-            "Catch": [
+            "Clean and validate ingested CQC data": {
+              "Type": "Parallel",
+              "Next": "Validate cleaned CQC PIR data",
+              "Branches": [
                 {
-                    "ErrorEquals": [
-                        "States.ALL"
-                    ],
-                    "Next": "Publish error notification",
-                    "ResultPath": "$.error"
+                  "StartAt": "Clean CQC PIR data",
+                  "States": {
+                    "Clean CQC PIR data": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${clean_cqc_pir_data_job_name}",
+                        "Arguments": {
+                          "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
+                          "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Run validate CQC PIR ingest job",
+                  "States": {
+                      "Run validate CQC PIR ingest job": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                      "Parameters": {
+                        "JobName": "${validate_pir_raw_data_job_name}",
+                        "Arguments": {
+                          "--raw_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_raw/"
+                        }
+                      },
+                      "End": true
+                    }
+                  }
                 }
-            ],
-            "Next": "Run CQC crawler"
-        },
-        "Publish error notification": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-            "Parameters": {
-                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-                "Payload": {
-                "Error.$": "$.error.Cause",
-                "ExecutionId.$": "$$.Execution.Id",
-                "StateMachineName.$": "$$.StateMachine.Name",
-                "StateMachineId.$": "$$.StateMachine.Id",
-                "ExecutionStartTime.$": "$$.Execution.StartTime",
-                "CallbackToken.$": "$$.Task.Token"
+              ]
+            },
+            "Validate cleaned CQC PIR data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_pir_cleaned_data_job_name}",
+                "Arguments": {
+                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_cleaned/"
                 }
-            },
-            "Next": "Fail"
-        },
-        "Run CQC crawler": {
-            "Type": "Task",
-            "Resource": "arn:aws:states:::states:startExecution.sync:2",
-            "Parameters": {
-              "StateMachineArn": "${run_crawler_state_machine_arn}",
-              "Input": {
-                "crawler_name": "${cqc_crawler_name}",
-                "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-              }
-            },
-            "Next": "Success"
-        },
-        "Success": {
-            "Type": "Succeed"
-        },
-        "Fail": {
-            "Type": "Fail"
+              },
+              "End": true
+            }
+          }
         }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Run validation crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run CQC crawler when success"
+    },
+    "Run CQC crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${cqc_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Success"
+    },
+    "Publish error notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Run validation crawler when failed"
+    },
+    "Run validation crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run CQC crawler when failed"
+    },
+    "Run CQC crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${cqc_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
     }
+  }
 }
