@@ -6199,6 +6199,25 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema = StructType(
+        [
+            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
+            StructField(
+                IndCQC.estimate_filled_posts_from_all_job_roles, FloatType(), False
+            ),
+        ]
+    )
+    expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema = StructType(
+        [
+            *calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema,
+            StructField(
+                IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles,
+                FloatType(),
+                False,
+            ),
+        ]
+    )
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:

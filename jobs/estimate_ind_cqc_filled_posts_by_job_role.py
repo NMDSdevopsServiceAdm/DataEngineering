@@ -251,6 +251,10 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+        estimated_ind_cqc_filled_posts_by_job_role_df,
+    )
+
     utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,

@@ -1640,3 +1640,30 @@ class OverwriteRegisteredManagerEstimateWithCqcCount(
         expected_data = self.expected_df.collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class CalculateDifferenceBetweenEstimateFilledPostsAndEstimateFilledPostsFromAllJobRoles(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows,
+            Schemas.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema,
+        )
+        self.returned_df = job.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+            test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows,
+            Schemas.expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_schema,
+        )
+
+    def test_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_returned_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(expected_data, returned_data)
