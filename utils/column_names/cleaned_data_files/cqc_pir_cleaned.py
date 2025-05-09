@@ -14,3 +14,20 @@ class CqcPIRCleanedColumns(CqcPirColumns):
     pir_people_directly_employed_cleaned: str = "pir_people_directly_employed_cleaned"
 
     care_home: str = NewCqcLocationApiColumns.care_home
+
+
+@dataclass
+class CleanPeopleDirectlyEmployedTemporaryColumns:
+    """The names of the temporary columns created during the clean people_directly_employed outliers process."""
+
+    submission_count: str = "submission_count"
+    max_people_employed: str = "max_people_employed"
+    min_people_employed: str = "min_people_employed"
+    mean_people_employed: str = "mean_people_employed"
+    dispersion_ratio: str = "dispersion_ratio"
+    median_people_employed: str = "median_people_employed"
+    median_absolute_deviation_value: str = "median_absolute_deviation_value"
+    absolute_deviation: str = "absolute_deviation"
+    dispersion_outlier_flag: str = "dispersion_outlier_flag"
+    median_absolute_deviation_flag: str = "median_absolute_deviation_flag"
+    outlier_flag: str = "outlier_flag"

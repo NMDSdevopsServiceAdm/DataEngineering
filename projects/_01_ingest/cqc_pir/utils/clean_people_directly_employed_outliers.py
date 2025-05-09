@@ -1,9 +1,13 @@
+from dataclasses import fields
+
 from pyspark.sql import DataFrame, Window, functions as F
 
 from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as PIRCols
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
+    CleanPeopleDirectlyEmployedTemporaryColumns as TempCol,
 )
+from projects.utils.utils.utils import calculate_new_column
 
 PROPORTION_OF_DATA_TO_REMOVE: float = (
     0.01  # filter out the highest 1% of extreme values
@@ -32,7 +36,7 @@ def clean_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
 
     df = null_large_single_submission_locations(df)
 
-    # TODO remove locations with large differences (top 1% of (max-min)/avg?)
+    df = null_outliers(df, proportion_of_data_to_filter=PROPORTION_OF_DATA_TO_REMOVE)
 
     return df
 
@@ -55,28 +59,26 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(PIRCleanCols.location_id)
 
     two_submissions: int = 2
-    submission_count: str = "submission_count"
-    max_people_employed: str = "max_value"
     large_location_identifier: int = 100
 
     df = df.withColumn(
-        submission_count,
+        TempCol.submission_count,
         F.count(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
     )
     df = df.withColumn(
-        max_people_employed,
+        TempCol.max_people_employed,
         F.max(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
     )
 
     df = df.withColumn(
         PIRCleanCols.pir_people_directly_employed_cleaned,
         F.when(
-            (F.col(max_people_employed) >= large_location_identifier)
-            & (F.col(submission_count) < two_submissions),
+            (F.col(TempCol.max_people_employed) >= large_location_identifier)
+            & (F.col(TempCol.submission_count) < two_submissions),
             F.lit(None),
         ).otherwise(F.col(PIRCleanCols.pir_people_directly_employed_cleaned)),
     )
-    df = df.drop(max_people_employed, submission_count)
+    df = df.drop(TempCol.max_people_employed, TempCol.submission_count)
 
     return df
 
@@ -84,7 +86,7 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
 # TODO - add tests
 def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFrame:
     """
-    Complete pipeline to flag outliers and clean staff values.
+    Outliers detection pipeline to flag outliers and clean directly employed staff values.
 
     Args:
         df (DataFrame): Raw input with 'location_id' and 'staff'.
@@ -93,10 +95,16 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
     Returns:
         DataFrame: DataFrame with 'staff_cleaned' and removal flags.
     """
-    df_disp = compute_dispersion_stats(df)
-    df_mad = compute_mad_stats(df)
-    df_flags = flag_outliers(df_disp, df_mad, proportion_of_data_to_filter)
-    return apply_removal_flag(df, df_flags)
+    df_dispersion = compute_dispersion_stats(df)
+    df_mad = compute_median_absolute_deviation_stats(df)
+
+    df_flags = flag_outliers(df_dispersion, df_mad, proportion_of_data_to_filter)
+    cleaned_df = apply_removal_flag(df, df_flags)
+
+    columns_to_drop = [field.name for field in fields(TempCol())]
+    cleaned_df = cleaned_df.drop(*columns_to_drop)
+
+    return cleaned_df
 
 
 # TODO - add tests
@@ -105,30 +113,35 @@ def compute_dispersion_stats(df: DataFrame) -> DataFrame:
     Computes the dispersion ratio for each workplace.
 
     The dispersion ratio is defined as:
-        (max(staff) - min(staff)) / mean(staff)
+        (max(submission) - min(submission)) / mean(submission)
 
     Args:
-        df (DataFrame): Input DataFrame with columns 'location_id' and 'staff'.
+        df (DataFrame): Input DataFrame with columns 'location_id' and 'pir_people_directly_employed_cleaned'.
 
     Returns:
-        DataFrame: Contains 'location_id', 'max_staff', 'min_staff', 'mean_staff', and 'dispersion_ratio'.
+        DataFrame: Contains 'location_id' and the dispersion_ratio.
     """
-    df_agg = df.groupBy("location_id").agg(
-        F.max("staff").alias("max_staff"),
-        F.min("staff").alias("min_staff"),
-        F.mean("staff").alias("mean_staff"),
+    df_agg = df.groupBy(PIRCleanCols.location_id).agg(
+        F.max(PIRCleanCols.pir_people_directly_employed_cleaned).alias(
+            TempCol.max_people_employed
+        ),
+        F.min(PIRCleanCols.pir_people_directly_employed_cleaned).alias(
+            TempCol.min_people_employed
+        ),
+        F.mean(PIRCleanCols.pir_people_directly_employed_cleaned).alias(
+            TempCol.mean_people_employed
+        ),
     )
-
     df_agg = df_agg.withColumn(
-        "dispersion_ratio",
-        (F.col("max_staff") - F.col("min_staff")) / F.col("mean_staff"),
+        TempCol.dispersion_ratio,
+        (F.col(TempCol.max_people_employed) - F.col(TempCol.min_people_employed))
+        / F.col(TempCol.mean_people_employed),
     )
-
     return df_agg
 
 
 # TODO - add tests
-def compute_mad_stats(df: DataFrame) -> DataFrame:
+def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
     """
     Computes the Median Absolute Deviation (MAD) per workplace.
 
@@ -141,19 +154,33 @@ def compute_mad_stats(df: DataFrame) -> DataFrame:
         df (DataFrame): Input DataFrame with columns 'location_id' and 'staff'.
 
     Returns:
-        DataFrame: Contains distinct 'location_id' and 'mad_value'.
+        DataFrame: Contains distinct 'location_id' and 'median_absolute_deviation_value'.
     """
-    w = Window.partitionBy("location_id")
+    w = Window.partitionBy(PIRCleanCols.location_id)
+    median: float = 0.5
 
-    df = df.withColumn("staff_median", F.expr("percentile_approx(staff, 0.5)").over(w))
+    df = df.withColumn(
+        TempCol.median_people_employed,
+        F.expr(
+            f"percentile_approx({PIRCleanCols.pir_people_directly_employed_cleaned}, {median})"
+        ).over(w),
+    )
+    df = calculate_new_column(
+        df,
+        TempCol.absolute_deviation,
+        PIRCleanCols.pir_people_directly_employed_cleaned,
+        "absolute difference",
+        TempCol.median_people_employed,
+    )
+    df = df.withColumn(
+        TempCol.median_absolute_deviation_value,
+        F.expr(f"percentile_approx({TempCol.absolute_deviation}, {median})").over(w),
+    )
+    mad_df = df.select(
+        PIRCleanCols.location_id, TempCol.median_absolute_deviation_value
+    ).distinct()
 
-    df = df.withColumn("abs_dev", F.abs(F.col("staff") - F.col("staff_median")))
-
-    df = df.withColumn("mad_value", F.expr("percentile_approx(abs_dev, 0.5)").over(w))
-
-    df_mad = df.select("location_id", "mad_value").distinct()
-
-    return df_mad
+    return mad_df
 
 
 # TODO - add tests
@@ -166,48 +193,62 @@ def flag_outliers(
     Args:
         df_dispersion (DataFrame): DataFrame with 'location_id' and 'dispersion_ratio'.
         df_mad (DataFrame): DataFrame with 'location_id' and 'mad_value'.
-        cutoff (float): Percentile threshold.
+        cutoff (float): Percentile threshold for outlier removal.
 
     Returns:
         DataFrame: Contains 'location_id', 'dispersion_flag', and 'mad_flag'.
     """
-    df_joined = df_dispersion.join(df_mad, on="location_id")
+    df_joined = df_dispersion.join(df_mad, on=PIRCleanCols.location_id)
 
-    disp_threshold = df_joined.approxQuantile("dispersion_ratio", [cutoff], 0.01)[0]
-    mad_threshold = df_joined.approxQuantile("mad_value", [cutoff], 0.01)[0]
+    disp_threshold = df_joined.approxQuantile(TempCol.dispersion_ratio, [cutoff], 0.01)[
+        0
+    ]
+    mad_threshold = df_joined.approxQuantile(
+        TempCol.median_absolute_deviation_value, [cutoff], 0.01
+    )[0]
 
     df_joined = df_joined.withColumn(
-        "dispersion_flag", F.col("dispersion_ratio") > disp_threshold
+        TempCol.dispersion_outlier_flag,
+        F.col(TempCol.dispersion_ratio) > disp_threshold,
     )
-
-    df_joined = df_joined.withColumn("mad_flag", F.col("mad_value") > mad_threshold)
-
-    return df_joined.select("location_id", "dispersion_flag", "mad_flag")
+    df_joined = df_joined.withColumn(
+        TempCol.median_absolute_deviation_flag,
+        F.col(TempCol.median_absolute_deviation_value) > mad_threshold,
+    )
+    df_joined = df_joined.select(
+        PIRCleanCols.location_id,
+        TempCol.dispersion_outlier_flag,
+        TempCol.median_absolute_deviation_flag,
+    )
+    return df_joined
 
 
 # TODO - add tests
-def apply_removal_flag(df_raw: DataFrame, df_flags: DataFrame) -> DataFrame:
+def apply_removal_flag(
+    df_to_clean: DataFrame, df_with_outlier_flags: DataFrame
+) -> DataFrame:
     """
-    Applies removal flags to the raw staff data and returns a cleaned column.
-
-    If either MAD or dispersion flag is set to True for a workplace,
-    its staff values are nullified.
+    Null all workplace values in pir_people_directly_employed_cleaned if either outlier flag are to True.
 
     Args:
-        df_raw (DataFrame): Raw DataFrame with 'location_id' and 'staff'.
-        df_flags (DataFrame): DataFrame with 'location_id', 'dispersion_flag', and 'mad_flag'.
+        df_to_clean (DataFrame): Original DataFrame with 'location_id' and 'pir_people_directly_employed_cleaned'.
+        df_with_outlier_flags (DataFrame): DataFrame with 'location_id' and the outlier flags.
 
     Returns:
         DataFrame: Original DataFrame with 'remove_flag' and 'staff_cleaned' columns.
     """
-    df_merged = df_raw.join(df_flags, on="location_id", how="left")
-
-    df_merged = df_merged.withColumn(
-        "remove_flag", F.col("dispersion_flag") | F.col("mad_flag")
+    df_merged = df_to_clean.join(
+        df_with_outlier_flags, on=PIRCleanCols.location_id, how="left"
     )
-
     df_merged = df_merged.withColumn(
-        "staff_cleaned", F.when(F.col("remove_flag"), None).otherwise(F.col("staff"))
+        TempCol.outlier_flag,
+        F.col(TempCol.dispersion_outlier_flag)
+        | F.col(TempCol.median_absolute_deviation_flag),
     )
-
+    df_merged = df_merged.withColumn(
+        PIRCleanCols.pir_people_directly_employed_cleaned,
+        F.when(F.col(TempCol.outlier_flag), None).otherwise(
+            F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
+        ),
+    )
     return df_merged
