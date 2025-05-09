@@ -261,7 +261,6 @@ def main(
         "overwrite",
         PartitionKeys,
     )
-    # test push
 
 
 if __name__ == "__main__":
