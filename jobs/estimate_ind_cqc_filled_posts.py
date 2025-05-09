@@ -1,12 +1,13 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window, functions as F
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+from utils.column_values.categorical_column_values import CareHome, RelatedLocation
 from utils.estimate_filled_posts.models.care_homes import model_care_homes
 from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
@@ -162,6 +163,77 @@ def main(
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
     )
+    # filter 1 - 100+ at first period - none related only
+    max_size: float = 100.0
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_pir_merged,
+        max_size,
+        IndCQC.ascwds_pir_merged + "_cleaned_100",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_posts_non_res_combined_model,
+        max_size,
+        IndCQC.imputed_posts_non_res_combined_model + "_cleaned_100",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_pir_filled_posts_model,
+        max_size,
+        IndCQC.imputed_pir_filled_posts_model + "_cleaned_100",
+    )
+
+    estimate_filled_posts_df = merge_columns_in_order(
+        estimate_filled_posts_df,
+        [
+            IndCQC.ascwds_pir_merged + "_cleaned_100",
+            IndCQC.imputed_posts_care_home_model,
+            IndCQC.care_home_model,
+            IndCQC.imputed_posts_non_res_combined_model + "_cleaned_100",
+            IndCQC.imputed_pir_filled_posts_model + "_cleaned_100",
+            IndCQC.non_res_combined_model,
+            IndCQC.posts_rolling_average_model,
+        ],
+        IndCQC.estimate_filled_posts + "_cleaned_100",
+        IndCQC.estimate_filled_posts_source + "_cleaned_100",
+    )
+
+    # filter 2 - 150+ at first period - none related only
+    max_size: float = 150.0
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.ascwds_pir_merged,
+        max_size,
+        IndCQC.ascwds_pir_merged + "_cleaned_150",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_posts_non_res_combined_model,
+        max_size,
+        IndCQC.imputed_posts_non_res_combined_model + "_cleaned_150",
+    )
+    estimate_filled_posts_df = null_large_initial_model_estimations(
+        estimate_filled_posts_df,
+        IndCQC.imputed_pir_filled_posts_model,
+        max_size,
+        IndCQC.imputed_pir_filled_posts_model + "_cleaned_150",
+    )
+
+    estimate_filled_posts_df = merge_columns_in_order(
+        estimate_filled_posts_df,
+        [
+            IndCQC.ascwds_pir_merged + "_cleaned_150",
+            IndCQC.imputed_posts_care_home_model,
+            IndCQC.care_home_model,
+            IndCQC.imputed_posts_non_res_combined_model + "_cleaned_150",
+            IndCQC.imputed_pir_filled_posts_model + "_cleaned_150",
+            IndCQC.non_res_combined_model,
+            IndCQC.posts_rolling_average_model,
+        ],
+        IndCQC.estimate_filled_posts + "_cleaned_150",
+        IndCQC.estimate_filled_posts_source + "_cleaned_150",
+    )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
 
@@ -173,6 +245,43 @@ def main(
     )
 
     print("Completed estimate independent CQC filled posts")
+
+
+def null_large_initial_model_estimations(
+    df: DataFrame,
+    model_column: str,
+    max_size: float,
+    new_column: str,
+) -> DataFrame:
+    w = Window.partitionBy(IndCQC.location_id)
+    flag_estimates_to_null: str = "flag_estimates_to_null"
+    null_flag: int = 1
+
+    large_newly_registered_non_res_location_identifier = (
+        (F.col(IndCQC.related_location) == "N")
+        & (F.col(IndCQC.time_registered) <= 3)
+        & (F.col(IndCQC.care_home) == CareHome.not_care_home)
+        & (F.col(model_column) > max_size)
+    )
+
+    df = df.withColumn(
+        flag_estimates_to_null,
+        F.max(
+            F.when(
+                large_newly_registered_non_res_location_identifier,
+                F.lit(null_flag),
+            ).otherwise(F.lit(None))
+        ).over(w),
+    )
+
+    df = df.withColumn(
+        new_column,
+        F.when(F.col(flag_estimates_to_null) == null_flag, F.lit(None)).otherwise(
+            F.col(model_column)
+        ),
+    ).drop(flag_estimates_to_null)
+
+    return df
 
 
 if __name__ == "__main__":
