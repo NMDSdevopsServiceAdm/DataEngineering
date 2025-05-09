@@ -658,9 +658,30 @@ class CleanCQCPIRData:
 class CleanPeopleDirectlyEmployedData:
     clean_people_directly_employed_outliers_rows = [
         ("1-0001", date(2024, 1, 1), 1),
-        ("1-0001", date(2024, 1, 1), 10),
-        ("1-0002", date(2025, 1, 1), 100),
+        ("1-0001", date(2025, 1, 1), 10),
+        ("1-0002", date(2024, 1, 1), 100),
         ("1-0002", date(2025, 1, 1), 1000),
+    ]
+
+    null_large_single_submission_locations_rows = [
+        ("1-0001", date(2024, 1, 1), None),
+        ("1-0001", date(2025, 1, 1), 99),
+        ("1-0002", date(2024, 1, 1), None),
+        ("1-0002", date(2025, 1, 1), 100),
+        ("1-0003", date(2024, 1, 1), 99),
+        ("1-0003", date(2025, 1, 1), 100),
+        ("1-0004", date(2024, 1, 1), 500),
+        ("1-0004", date(2025, 1, 1), 600),
+    ]
+    expected_null_large_single_submission_locations_rows = [
+        ("1-0001", date(2024, 1, 1), None),
+        ("1-0001", date(2025, 1, 1), 99),
+        ("1-0002", date(2024, 1, 1), None),
+        ("1-0002", date(2025, 1, 1), None),
+        ("1-0003", date(2024, 1, 1), 99),
+        ("1-0003", date(2025, 1, 1), 100),
+        ("1-0004", date(2024, 1, 1), 500),
+        ("1-0004", date(2025, 1, 1), 600),
     ]
 
 
