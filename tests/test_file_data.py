@@ -308,112 +308,6 @@ class CapacityTrackerNonResData:
 
 
 @dataclass
-class CQCpirData:
-    sample_rows_full = [
-        (
-            "1-1000000001",
-            "Location 1",
-            "Community",
-            "2024-01-01",
-            1,
-            0,
-            0,
-            None,
-            None,
-            "Community based adult social care services",
-            "ASC North",
-            "Wakefield",
-            0,
-            "Y",
-            "Active",
-            "20230201",
-        ),
-        (
-            "1-1000000002",
-            "Location 2",
-            "Residential",
-            "2024-01-01",
-            86,
-            8,
-            3,
-            None,
-            None,
-            "Residential social care",
-            "ASC London",
-            "Islington",
-            53,
-            None,
-            "Active",
-            "20230201",
-        ),
-        (
-            "1-1000000003",
-            "Location 3",
-            "Residential",
-            "2024-01-01",
-            37,
-            5,
-            5,
-            None,
-            None,
-            "Residential social care",
-            "ASC Central",
-            "Nottingham",
-            50,
-            None,
-            "Active",
-            "20230201",
-        ),
-    ]
-
-    add_care_home_column_rows = [
-        ("loc 1", "Residential"),
-        ("loc 2", "Shared Lives"),
-        ("loc 3", None),
-        ("loc 4", "Community"),
-    ]
-    expected_care_home_column_rows = [
-        ("loc 1", "Residential", "Y"),
-        ("loc 2", "Shared Lives", None),
-        ("loc 3", None, None),
-        ("loc 4", "Community", "N"),
-    ]
-    remove_unused_pir_types_rows = add_care_home_column_rows
-    expected_remove_unused_pir_types_rows = [
-        ("loc 1", "Residential"),
-        ("loc 4", "Community"),
-    ]
-
-    remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-        ("loc_1", 0),
-        ("loc_1", None),
-    ]
-
-    expected_remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-    ]
-
-
-@dataclass
-class CQCPirCleanedData:
-    subset_for_latest_submission_date_before_filter = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-    ]
-    subset_for_latest_submission_date_after_filter_deduplication = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-    ]
-
-
-@dataclass
 class CQCLocationsData:
     sample_rows = [
         (
@@ -2969,6 +2863,15 @@ class ExtractRegisteredManagerNamesData:
 
 @dataclass
 class UtilsData:
+    cqc_pir_rows = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+    ]
+
     filter_to_max_value_rows = [
         ("1", date(2024, 1, 1), "20220101"),
         ("2", date(2024, 1, 1), "20230101"),
@@ -7026,7 +6929,7 @@ class ValidationUtils:
     min_values_multiple_columns_rule = {
         RuleName.min_values: {
             IndCQC.number_of_beds: 1,
-            IndCQC.pir_people_directly_employed: 0,
+            IndCQC.pir_people_directly_employed_cleaned: 0,
         }
     }
     min_values_below_minimum_rows = [
@@ -7075,7 +6978,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(pir_people_directly_employed,None,None))",
+            "MinimumConstraint(Minimum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),
@@ -7089,7 +6992,7 @@ class ValidationUtils:
     max_values_multiple_columns_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
-            IndCQC.pir_people_directly_employed: 20,
+            IndCQC.pir_people_directly_employed_cleaned: 20,
         }
     }
     max_values_below_maximum_rows = [
@@ -7138,7 +7041,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(pir_people_directly_employed,None,None))",
+            "MaximumConstraint(Maximum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),
@@ -7401,18 +7304,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePIRCleanedData:
-    # fmt: off
-    cleaned_cqc_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), 10, "Y"),
-        ("1-000000002", date(2024, 1, 1), 10, "Y"),
-        ("1-000000001", date(2024, 1, 9), 10, "Y"),
-        ("1-000000002", date(2024, 1, 9), 10, "Y"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
@@ -7605,18 +7496,6 @@ class ValidateProvidersAPIRawData:
 
 
 @dataclass
-class ValidatePIRRawData:
-    # fmt: off
-    raw_cqc_pir_rows = [
-        ("1-000000001", "20240101", 10),
-        ("1-000000002", "20240101", 10),
-        ("1-000000001", "20240109", 10),
-        ("1-000000002", "20240109", 10),
-    ]
-    # fmt: on
-
-
-@dataclass
 class RawDataAdjustments:
     expected_worker_data = [
         ("worker_1", "20240101", "estab_1", "other"),
@@ -7638,55 +7517,6 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
-
-    expected_pir_data = [
-        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "0", "other"),
-        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20230601", "Residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20230601", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20230601", "Residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20240101", "Residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-May-23", None, "other"),
-        ("1-1199876096", "20230601", "Residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-May-23", None, "other"),
-        ("loc_1", "20230601", "Non-residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20230601", "Residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20230601", "Non-residential", "24-May-23", None, "other"),
-        ("loc_1", "20230601", "Residential", "24-May-23", None, "other"),
-        ("loc_1", "20240101", "Residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20240101", "Residential", "24-May-23", None, "other"),
-        ("loc_1", "20240101", "Non-residential", "24-May-23", None, "other"),
-    ]
-    pir_data_with_single_row_to_remove = [
-        *expected_pir_data,
-        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
-    ]
-    pir_data_with_multiple_rows_to_remove = [
-        *expected_pir_data,
-        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
-        (
-            "1-1199876096",
-            "20230601",
-            "Residential",
-            "24-May-23",
-            None,
-            "something else",
-        ),
-    ]
-
-    pir_data_without_rows_to_remove = expected_pir_data
 
     locations_data_with_multiple_rows_to_remove = [
         ("loc_1", "other"),
@@ -10668,52 +10498,28 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (
             "1-001",
             0.0,
-            0.0,
-            0.0,
+            1.0,
+            4.0,
             5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            10.0,
-            15.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.0,
-                MainJobRoleLabels.deputy_manager: 0.0,
-                MainJobRoleLabels.first_line_manager: 0.0,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.2,
-                MainJobRoleLabels.team_leader: 0.3,
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
             },
-            0.5,
+            1.0,
         ),
         (
             "1-002",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
             0.0,
         ),
@@ -10723,78 +10529,55 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
-            -0.5,
+            -1.0,
+        ),
+        (
+            "1-004",
+            0.0,
+            1.0,
+            4.0,
+            5.0,
+            {
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
+            },
+            -1.0,
         ),
     ]
-
     expected_recalculate_managerial_filled_posts_rows = [
         (
             "1-001",
             0.0,
-            0.0,
-            0.0,
-            5.05,
-            5.05,
-            5.05,
-            5.05,
-            5.05,
-            10.1,
-            15.15,
+            1.1,
+            4.4,
+            5.5,
             {
-                MainJobRoleLabels.data_governance_manager: 0.0,
-                MainJobRoleLabels.deputy_manager: 0.0,
-                MainJobRoleLabels.first_line_manager: 0.0,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.2,
-                MainJobRoleLabels.team_leader: 0.3,
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
             },
-            0.5,
+            1.0,
         ),
         (
             "1-002",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
             0.0,
         ),
@@ -10804,25 +10587,27 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
-            -0.5,
+            -1.0,
+        ),
+        (
+            "1-004",
+            0.0,
+            0.9,
+            3.6,
+            4.5,
+            {
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
+            },
+            -1.0,
         ),
     ]
 
@@ -10944,6 +10729,17 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
     expected_overwrite_registered_manager_estimate_with_cqc_count_rows = [
         (1.0, 1),
         (0.0, 0),
+    ]
+
+    calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
+        (10.0, 10.0),
+        (10.0, 9.0),
+        (9.0, 10.0),
+    ]
+    expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
+        (10.0, 10.0, 0.0),
+        (10.0, 9.0, -1.0),
+        (9.0, 10.0, 1.0),
     ]
 
 

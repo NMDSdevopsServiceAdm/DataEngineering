@@ -41,7 +41,7 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 1,
-            IndCqcColumns.pir_people_directly_employed: 1,
+            IndCqcColumns.pir_people_directly_employed_cleaned: 1,
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,
             IndCqcColumns.filled_posts_per_bed_ratio: 0.0,
@@ -53,7 +53,7 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
         },
         RuleName.max_values: {
             IndCqcColumns.number_of_beds: 500,
-            IndCqcColumns.pir_people_directly_employed: 10000,
+            IndCqcColumns.pir_people_directly_employed_cleaned: 1500,
             IndCqcColumns.total_staff_bounded: 3000,
             IndCqcColumns.worker_records_bounded: 3000,
             IndCqcColumns.filled_posts_per_bed_ratio: 20.0,

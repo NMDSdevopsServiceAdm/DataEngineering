@@ -75,24 +75,6 @@
             }
           },
           {
-            "StartAt": "Clean CQC PIR data",
-            "States": {
-              "Clean CQC PIR data": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${clean_cqc_pir_data_job_name}",
-                  "Arguments": {
-                    "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                    "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
-                  }
-                },
-                "ResultPath": null,
-                "End": true
-              }
-            }
-          },
-          {
             "StartAt": "Clean ONS postcode and CQC provider data",
             "States": {
               "Clean ONS postcode and CQC provider data": {
