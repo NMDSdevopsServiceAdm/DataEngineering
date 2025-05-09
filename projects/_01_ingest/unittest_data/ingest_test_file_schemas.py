@@ -380,6 +380,25 @@ class CleanCQCPIRSchema:
 
 
 @dataclass
+class CleanPeopleDirectlyEmployedSchema:
+    clean_people_directly_employed_outliers_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
+        ]
+    )
+    expected_clean_people_directly_employed_outliers_schema = StructType(
+        [
+            *clean_people_directly_employed_outliers_schema,
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
+
+@dataclass
 class ValidatePIRRawData:
     raw_cqc_pir_schema = StructType(
         [
