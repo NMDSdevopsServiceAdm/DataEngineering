@@ -1,13 +1,16 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_pir_raw_data as job
-
-from tests.test_file_data import ValidatePIRRawData as Data
-from tests.test_file_schemas import ValidatePIRRawData as Schemas
-
+import projects._01_ingest.cqc_pir.jobs.validate_pir_raw_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidatePIRRawData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidatePIRRawData as Schemas,
+)
 from utils import utils
+
+PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.validate_pir_raw_data"
 
 
 class ValidatePIRRawDatasetTests(unittest.TestCase):
@@ -29,8 +32,8 @@ class MainTests(ValidatePIRRawDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,

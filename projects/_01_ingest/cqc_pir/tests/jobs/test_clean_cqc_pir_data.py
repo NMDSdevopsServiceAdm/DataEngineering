@@ -1,17 +1,20 @@
 import unittest
-from unittest.mock import patch, ANY
+from unittest.mock import patch, ANY, Mock
+
 from utils import utils, cleaning_utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from tests.test_file_schemas import (
-    CQCPIRSchema as Schemas,
-    CQCPIRCleanSchema as CleanSchemas,
+import projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CleanCQCPIRData as Data,
 )
-from tests.test_file_data import CQCPirCleanedData as CleanedData, CQCpirData as Data
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CleanCQCPIRSchema as Schemas,
+)
 
-import jobs.clean_cqc_pir_data as job
+PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data"
 
 
 class CleanCQCpirDatasetTests(unittest.TestCase):
@@ -36,31 +39,34 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
             Schemas.expected_care_home_column_schema,
         )
 
-    @patch("jobs.clean_cqc_pir_data.remove_rows_without_pir_people_directly_employed")
-    @patch("jobs.clean_cqc_pir_data.filter_latest_submission_date")
-    @patch("jobs.clean_cqc_pir_data.add_care_home_column")
-    @patch("utils.cleaning_utils.column_to_date")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_people_directly_employed_outliers")
+    @patch(f"{PATCH_PATH}.filter_latest_submission_date")
+    @patch(f"{PATCH_PATH}.add_care_home_column")
+    @patch(f"{PATCH_PATH}.remove_unused_pir_types")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
+    @patch(f"{PATCH_PATH}.remove_rows_without_pir_people_directly_employed")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
-        read_from_parquet_patch,
-        write_to_parquet_patch,
-        column_to_date_patch,
-        add_care_home_column,
-        filter_latest_submission_date_patch,
-        remove_rows_without_pir_people_directly_employed_patch,
+        read_from_parquet_patch: Mock,
+        remove_rows_without_pir_people_directly_employed_patch: Mock,
+        column_to_date_patch: Mock,
+        remove_unused_pir_types_patch: Mock,
+        add_care_home_column_patch: Mock,
+        filter_latest_submission_date_patch: Mock,
+        clean_people_directly_employed_outliers_patch: Mock,
+        write_to_parquet_patch: Mock,
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
 
         read_from_parquet_patch.assert_called_once_with(self.TEST_SOURCE)
+        remove_rows_without_pir_people_directly_employed_patch.assert_called_once()
         self.assertTrue(column_to_date_patch.call_count, 2)
-        remove_rows_without_pir_people_directly_employed_patch.assert_called_once_with(
-            ANY
-        )
-        add_care_home_column.assert_called_once_with(ANY)
-        filter_latest_submission_date_patch.assert_called_once_with(ANY)
-
+        remove_unused_pir_types_patch.assert_called_once()
+        add_care_home_column_patch.assert_called_once()
+        filter_latest_submission_date_patch.assert_called_once()
+        clean_people_directly_employed_outliers_patch.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
@@ -116,12 +122,12 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
 
     def test_filter_latest_submission_date_returns_single_row_per_submission_date(self):
         test_df = self.spark.createDataFrame(
-            CleanedData.subset_for_latest_submission_date_before_filter,
-            CleanSchemas.clean_subset_for_grouping_by,
+            Data.subset_for_latest_submission_date_before_filter,
+            Schemas.filter_latest_submission_date_schema,
         )
         expected_df = self.spark.createDataFrame(
-            CleanedData.subset_for_latest_submission_date_after_filter_deduplication,
-            CleanSchemas.clean_subset_for_grouping_by,
+            Data.subset_for_latest_submission_date_after_filter_deduplication,
+            Schemas.filter_latest_submission_date_schema,
         )
 
         test_df = job.filter_latest_submission_date(test_df)

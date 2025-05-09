@@ -56,7 +56,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.non_res_with_dormancy_model: 3000.0,
             IndCqcColumns.non_res_without_dormancy_model: 3000.0,
             IndCqcColumns.number_of_beds: 500,
-            # IndCqcColumns.pir_people_directly_employed_dedup: 3000, # temporarily removed until imputation is fixed
+            IndCqcColumns.pir_people_directly_employed_dedup: 3000,
             IndCqcColumns.imputed_pir_filled_posts_model: 3000.0,
             IndCqcColumns.posts_rolling_average_model: 3000.0,
             IndCqcColumns.unix_time: int(time.time()),  # current unix time

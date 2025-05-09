@@ -1,5 +1,5 @@
 from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import MapType
+from pyspark.sql.types import MapType, FloatType
 from typing import List
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -27,6 +27,14 @@ from utils.column_values.categorical_column_values import (
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 list_of_job_groups_sorted = sorted(
     list(set(AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.values()))
+)
+list_of_non_rm_managers = sorted(
+    [
+        job_role
+        for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
+        if job_group == JobGroupLabels.managers
+        and job_role != MainJobRoleLabels.registered_manager
+    ]
 )
 
 
@@ -362,55 +370,52 @@ def create_estimate_filled_posts_by_job_role_map_column(
 
 
 def recalculate_managerial_filled_posts(
-    df: DataFrame,
+    df: DataFrame, non_rm_managers: List
 ) -> DataFrame:
     """
-    Recalculates non registered manager filled posts based on difference_between_estimate_and_cqc_registered_managers
+    Adjusts estimated filled posts for non-Registered Manager (non-RM) managerial roles.
+
+    Adjusts estimated filled posts for non-Registered Manager (non-RM) managerial roles based on
+    the discrepancy between previously estimated and known Registered Manager values.
+
+    In a prior step, the difference between estimated and actual Registered Managers was calculated
+    ('difference_between_estimate_and_cqc_registered_managers'). This function proportionally
+    redistributes that difference across all non-RM managerial roles, using the existing estimated
+    proportions in 'proportion_of_non_rm_managerial_estimated_filled_posts_by_role'.
+
+    This ensures the total number of estimated managerial filled posts remains consistent after
+    correcting for RM discrepancies, except where doing so would push a job role's count below zero,
+    in which case it is set at a minimim of 0.
+
     Args:
-        df (DataFrame): A dataframe which contains location_id, managerial filled posts, proportion of non rm managerial estimated filled posts and the Registered manager difference between estimate and CQC
+        df (DataFrame): A Spark DataFrame containing:
+            - Initial estimates for each non-RM managerial role
+            - 'IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role' (Map of role proportions)
+            - 'IndCQC.difference_between_estimate_and_cqc_registered_managers' (Float)
+        non_rm_managers (List): A list of column names representing non-RM managerial roles to adjust.
+
     Returns:
-        DataFrame: Which include the exaxct same columns but with new values within the non rm managerial filled posts column.
+        DataFrame: A new DataFrame with updated estimates for non-RM managerial roles.
     """
-
-    non_rm_managers = sorted(
-        [
-            job_role
-            for job_role, job_group in AscwdsWorkerValueLabelsJobGroup.job_role_to_job_group_dict.items()
-            if job_group == JobGroupLabels.managers
-            and job_role != MainJobRoleLabels.registered_manager
-        ]
-    )
-
-    df_result = create_map_column(
-        df, non_rm_managers, IndCQC.estimated_managerial_filled_posts_temp, True
-    )
-
-    df_result = df_result.withColumn(
-        IndCQC.estimated_managerial_filled_posts_temp,
-        F.transform_values(
-            IndCQC.estimated_managerial_filled_posts_temp,
-            lambda k, v: F.greatest(
-                F.lit(0.0),
-                v
-                + (
-                    F.col(
-                        IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
-                    ).getItem(k)
-                    * F.col(
-                        IndCQC.difference_between_estimate_and_cqc_registered_managers
-                    )
-                ),
+    updated_columns = {
+        role: F.greatest(
+            F.lit(0.0),
+            F.col(role)
+            + (
+                F.col(
+                    IndCQC.proportion_of_non_rm_managerial_estimated_filled_posts_by_role
+                ).getItem(role)
+                * F.col(IndCQC.difference_between_estimate_and_cqc_registered_managers)
             ),
-        ),
-    )
+        ).alias(role)
+        for role in non_rm_managers
+    }
 
-    df_result = unpack_mapped_column(
-        df_result, IndCQC.estimated_managerial_filled_posts_temp
-    )
+    final_columns = [updated_columns.get(col, F.col(col)) for col in df.columns]
 
-    df_result = df_result.drop(IndCQC.estimated_managerial_filled_posts_temp)
+    df = df.select(*final_columns)
 
-    return df_result
+    return df
 
 
 def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
@@ -804,6 +809,25 @@ def transform_interpolated_job_role_ratios_to_counts(
     return df
 
 
+def overwrite_registered_manager_estimate_with_cqc_count(df: DataFrame) -> DataFrame:
+    """
+    This function overwrites our estimate of registered managers with the count from cqc data.
+
+    Args:
+        df (DataFrame): A dataframe with registered manager estimates from asc-wds and counts from cqc data.
+
+    Returns:
+        DataFrame: A dataframe with registered manager estimates overwritten by cqc counts.
+    """
+
+    df = df.withColumn(
+        MainJobRoleLabels.registered_manager,
+        F.col(IndCQC.registered_manager_count).cast(FloatType()),
+    )
+
+    return df
+
+
 def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> DataFrame:
     """
     Created a filled_posts column which represents the total number of filled posts per location_id based on job role breakdown.
@@ -818,7 +842,64 @@ def recalculate_total_filled_posts(df: DataFrame, list_of_job_roles: list) -> Da
     """
 
     df_result = df.withColumn(
-        IndCQC.filled_posts, sum([F.col(job_role) for job_role in list_of_job_roles])
+        IndCQC.estimate_filled_posts_from_all_job_roles,
+        sum([F.col(job_role) for job_role in list_of_job_roles]),
     )
 
     return df_result
+
+
+def combine_interpolated_and_extrapolated_job_role_ratios(df: DataFrame) -> DataFrame:
+    """
+    Coalesce the filtered, interpolated and extrapolated asc-wds job role ratio columns into one new column.
+
+    Args:
+        df (DataFrame): A dataframe with filtered, interpolated and extrapolated asc-wds job role ratio columns.
+
+    Returns:
+        DataFrame: A dataframe with a new column called ascwds_job_role_ratios_interpolated_and_extrapolated.
+    """
+
+    df = df.withColumn(
+        IndCQC.imputed_ascwds_job_role_ratios,
+        F.coalesce(
+            IndCQC.ascwds_job_role_ratios_filtered,
+            IndCQC.ascwds_job_role_ratios_interpolated,
+            IndCQC.ascwds_job_role_ratios_extrapolated,
+        ),
+    )
+
+    return df
+
+
+def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Calculates the difference between IndCQC.estimate_filled_posts and IndCQC.estimate_filled_posts_from_all_job_roles.
+
+    IndCQC.estimate_filled_posts is before the breaking down the estimate into job roles.
+    IndCQC.estimate_filled_posts_from_all_job_roles is the sum of estimates by job role.
+    These are not expected to be equal as we overwrite our estimate of registered managers with the count from cqc data.
+    E.g. if we estimate there are no mangers of any kind at a location, then we add the count from cqc, the sum of all job roles will be
+    that much higher than the original overall estimate of filled posts at that location.
+
+    Args:
+        df (DataFrame): A dataframe with IndCQC.estimate_filled_posts and IndCQC.estimate_filled_posts_from_all_job_roles columns.
+
+    Returns:
+        DataFrame: A dataframe with a new column IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles.
+    """
+
+    df = df.withColumn(
+        IndCQC.difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles,
+        F.round(
+            (
+                F.col(IndCQC.estimate_filled_posts_from_all_job_roles)
+                - F.col(IndCQC.estimate_filled_posts)
+            ),
+            4,
+        ),
+    )
+
+    return df

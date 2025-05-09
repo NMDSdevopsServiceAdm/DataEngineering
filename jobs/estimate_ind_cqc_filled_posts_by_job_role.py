@@ -13,6 +13,9 @@ from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
 from utils.estimate_filled_posts_by_job_role_utils.models.interpolation import (
     model_job_role_ratio_interpolation,
 )
+from utils.estimate_filled_posts_by_job_role_utils.models.extrapolation import (
+    extrapolate_job_role_ratios,
+)
 from utils.ind_cqc_filled_posts_utils import utils as FPutils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -95,6 +98,9 @@ def main(
         aggregated_job_roles_per_establishment_df,
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
+
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.remove_ascwds_job_role_count_when_estimate_filled_posts_source_not_ascwds(
         estimated_ind_cqc_filled_posts_by_job_role_df
     )
@@ -141,6 +147,19 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_df, JRutils.list_of_job_roles_sorted
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = extrapolate_job_role_ratios(
+        estimated_ind_cqc_filled_posts_by_job_role_df
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.combine_interpolated_and_extrapolated_job_role_ratios(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.transform_interpolated_job_role_ratios_to_counts(
             estimated_ind_cqc_filled_posts_by_job_role_df,
@@ -165,6 +184,9 @@ def main(
             IndCQC.ascwds_job_role_rolling_sum
         )
     )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
 
     estimated_ind_cqc_filled_posts_by_job_role_df = FPutils.merge_columns_in_order(
         estimated_ind_cqc_filled_posts_by_job_role_df,
@@ -206,17 +228,31 @@ def main(
         )
     )
 
-    # estimated_ind_cqc_filled_posts_by_job_role_df = (
-    #     JRutils.recalculate_managerial_filled_posts(
-    #         estimated_ind_cqc_filled_posts_by_job_role_df
-    #     )
-    # )
+    estimated_ind_cqc_filled_posts_by_job_role_df.cache()
+    estimated_ind_cqc_filled_posts_by_job_role_df.count()
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.recalculate_managerial_filled_posts(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            JRutils.list_of_non_rm_managers,
+        )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.overwrite_registered_manager_estimate_with_cqc_count(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
 
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.recalculate_total_filled_posts(
             estimated_ind_cqc_filled_posts_by_job_role_df,
             JRutils.list_of_job_roles_sorted,
         )
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
+        estimated_ind_cqc_filled_posts_by_job_role_df,
     )
 
     utils.write_to_parquet(
