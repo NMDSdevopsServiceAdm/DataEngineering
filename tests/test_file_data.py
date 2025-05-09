@@ -10271,7 +10271,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    transform_interpolated_job_role_ratios_to_counts_rows = [
+    transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,
@@ -10298,7 +10298,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
-    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+    expected_transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,

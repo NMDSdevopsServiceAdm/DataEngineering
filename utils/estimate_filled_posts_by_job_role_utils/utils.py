@@ -779,28 +779,28 @@ def filter_ascwds_job_role_count_map_when_job_group_ratios_outside_percentile_bo
     return df
 
 
-def transform_interpolated_job_role_ratios_to_counts(
+def transform_imputed_job_role_ratios_to_counts(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Multiplies values in ascwds_job_ratios_interpolated dict by estimated filled posts.
+    Multiplies values in imputed_ascwds_job_role_ratios dict by estimated filled posts.
 
-    This function transforms the values in ascwds_job_ratios_interpolated dict by multiplying
+    This function transforms the values in imputed_ascwds_job_role_ratios dict by multiplying
     each value by estimated filled posts. The results are copied into a new dict column.
 
     Args:
-        df (DataFrame): A dataframe with an interpolated job role ratios column.
+        df (DataFrame): A dataframe with an imputed job role ratios column.
 
     Returns:
-        DataFrame: A dataframe with an additional column of interpolated job role counts.
+        DataFrame: A dataframe with an additional column of imputed job role counts.
     """
 
     df = df.withColumn(
-        IndCQC.ascwds_job_role_counts_interpolated,
+        IndCQC.imputed_ascwds_job_role_counts,
         F.map_from_arrays(
-            F.map_keys(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+            F.map_keys(F.col(IndCQC.imputed_ascwds_job_role_ratios)),
             F.transform(
-                F.map_values(F.col(IndCQC.ascwds_job_role_ratios_interpolated)),
+                F.map_values(F.col(IndCQC.imputed_ascwds_job_role_ratios)),
                 lambda v: v * F.col(IndCQC.estimate_filled_posts),
             ),
         ),
