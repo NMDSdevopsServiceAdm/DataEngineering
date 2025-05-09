@@ -81,6 +81,7 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     return df
 
 
+# TODO - add tests
 def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFrame:
     """
     Complete pipeline to flag outliers and clean staff values.
@@ -98,6 +99,7 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
     return apply_removal_flag(df, df_flags)
 
 
+# TODO - add tests
 def compute_dispersion_stats(df: DataFrame) -> DataFrame:
     """
     Computes the dispersion ratio for each workplace.
@@ -125,6 +127,7 @@ def compute_dispersion_stats(df: DataFrame) -> DataFrame:
     return df_agg
 
 
+# TODO - add tests
 def compute_mad_stats(df: DataFrame) -> DataFrame:
     """
     Computes the Median Absolute Deviation (MAD) per workplace.
@@ -153,6 +156,7 @@ def compute_mad_stats(df: DataFrame) -> DataFrame:
     return df_mad
 
 
+# TODO - add tests
 def flag_outliers(
     df_dispersion: DataFrame, df_mad: DataFrame, cutoff: float
 ) -> DataFrame:
@@ -181,6 +185,7 @@ def flag_outliers(
     return df_joined.select("location_id", "dispersion_flag", "mad_flag")
 
 
+# TODO - add tests
 def apply_removal_flag(df_raw: DataFrame, df_flags: DataFrame) -> DataFrame:
     """
     Applies removal flags to the raw staff data and returns a cleaned column.
