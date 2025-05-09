@@ -134,6 +134,9 @@ class IndCqcColumns:
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
+    difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: (
+        str
+    ) = "difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
