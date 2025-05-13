@@ -1734,6 +1734,22 @@ class IndCQCDataUtils:
         ]
     )
 
+    flag_dormancy_has_changed_over_time_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+    expected_flag_dormancy_has_changed_over_time_schema = StructType(
+        [
+            *flag_dormancy_has_changed_over_time_schema,
+            StructField(
+                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
+            ),
+        ]
+    )
+
 
 @dataclass
 class CleanIndCQCData:

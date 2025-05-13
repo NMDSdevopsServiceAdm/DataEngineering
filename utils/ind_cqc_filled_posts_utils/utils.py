@@ -205,3 +205,43 @@ def get_selected_value(
     )
 
     return df
+
+
+def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
+    """ "
+    Adds a column to flag locations where the known dormancy has changed over time.
+
+    If the known dormancy status has changed from string to string at any time then all rows for that location
+    get bool value of True. Any other circumstance gets bool value of False.
+
+    Args:
+        df (DataFrame): A dataframe with column for dormancy
+
+    Returns:
+        DataFrame: A dataframe with an addtional bool column to show if dormancy status has changed or not.
+    """
+
+    df_count_distinct_dormancy = df.groupBy(IndCQC.location_id).agg(
+        F.count_distinct(IndCQC.dormancy).alias(
+            IndCQC.flag_dormancy_has_changed_over_time
+        )
+    )
+
+    df_count_distinct_dormancy = df_count_distinct_dormancy.withColumn(
+        IndCQC.flag_dormancy_has_changed_over_time,
+        F.when(F.col(IndCQC.flag_dormancy_has_changed_over_time) > 1, True).otherwise(
+            False
+        ),
+    )
+
+    df = df.join(df_count_distinct_dormancy, on=IndCQC.location_id, how="left")
+
+    df = df.withColumn(
+        IndCQC.flag_dormancy_has_changed_over_time,
+        F.when(
+            F.col(IndCQC.dormancy).isNull(),
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.flag_dormancy_has_changed_over_time)),
+    )
+
+    return df

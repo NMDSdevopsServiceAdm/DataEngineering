@@ -3637,6 +3637,33 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
+    flag_dormancy_has_changed_over_time_rows = [
+        ("loc 1", 1, "Y"),
+        ("loc 1", 2, "N"),
+        ("loc 2", 1, None),
+        ("loc 2", 2, "Y"),
+        ("loc 2", 3, "N"),
+        ("loc 3", 1, None),
+        ("loc 3", 2, "Y"),
+        ("loc 4", 1, "Y"),
+        ("loc 4", 2, "Y"),
+        ("loc 5", 1, None),
+        ("loc 5", 2, None),
+    ]
+    expected_flag_dormancy_has_changed_over_time_rows = [
+        ("loc 1", 1, "Y", True),
+        ("loc 1", 2, "N", True),
+        ("loc 2", 1, None, None),
+        ("loc 2", 2, "Y", True),
+        ("loc 2", 3, "N", True),
+        ("loc 3", 1, None, None),
+        ("loc 3", 2, "Y", False),
+        ("loc 4", 1, "Y", False),
+        ("loc 4", 2, "Y", False),
+        ("loc 5", 1, None, None),
+        ("loc 5", 2, None, None),
+    ]
+
 
 @dataclass
 class CleanIndCQCData:

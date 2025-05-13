@@ -322,3 +322,41 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
             "Exception does not contain the correct error message",
         )
+
+
+class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
+    def setUp(self):
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.flag_dormancy_has_changed_over_time_rows,
+            Schemas.flag_dormancy_has_changed_over_time_schema,
+        )
+        self.returned_df = job.flag_dormancy_has_changed_over_time(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_flag_dormancy_has_changed_over_time_rows,
+            Schemas.expected_flag_dormancy_has_changed_over_time_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_flag_dormancy_has_changed_over_time_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+        self.assertEqual(
+            self.columns_added_by_function[0],
+            IndCQC.flag_dormancy_has_changed_over_time,
+        )
+
+    def test_flag_dormancy_has_changed_over_time_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
