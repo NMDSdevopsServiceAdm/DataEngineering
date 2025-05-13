@@ -356,7 +356,11 @@ class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
     def test_flag_dormancy_has_changed_over_time_returns_expected_values(
         self,
     ):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.sort(
+            [IndCQC.location_id, IndCQC.unix_time]
+        ).collect()
+        expected_data = self.expected_df.sort(
+            [IndCQC.location_id, IndCQC.unix_time]
+        ).collect()
 
         self.assertEqual(returned_data, expected_data)
