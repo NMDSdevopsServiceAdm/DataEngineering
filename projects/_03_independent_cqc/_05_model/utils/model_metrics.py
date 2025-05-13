@@ -29,7 +29,7 @@ def save_model_metrics(
     trained_model: LinearRegressionModel,
     test_df: DataFrame,
     dependent_variable: str,
-    branch_name: str,
+    s3_datasets_uri: str,
     model_name: str,
     model_version: str,
     model_run_number: int,
@@ -41,7 +41,7 @@ def save_model_metrics(
         trained_model (LinearRegressionModel): Trained linear regression model.
         test_df (DataFrame): DataFrame to evaluate the model on.
         dependent_variable (str): The target variable.
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model to train.
         model_version (str): The version of the model to use (e.g. '1.0.0').
         model_run_number (int): The run number of the model.
@@ -49,7 +49,7 @@ def save_model_metrics(
     spark = utils.get_spark()
 
     metrics_s3_path = generate_model_metrics_s3_path(
-        branch_name, model_name, model_version
+        s3_datasets_uri, model_name, model_version
     )
 
     previous_metrics_df = utils.read_from_parquet(metrics_s3_path)
@@ -104,20 +104,20 @@ def save_model_metrics(
 
 
 def generate_model_metrics_s3_path(
-    branch_name: str, model_name: str, model_version: str
+    s3_datasets_uri: str, model_name: str, model_version: str
 ) -> str:
     """
     Generate the S3 path for the features dataset.
 
     Args:
-        branch_name (str): The name of the branch currently being used.
+        s3_datasets_uri (str): The S3 URI of the datasets bucket (e.g. s3://sfc-branch-name-datasets).
         model_name (str): The name of the model.
         model_version (str): The version of the model to use (e.g. '1.0.0').
 
     Returns:
         str: The S3 path for the features dataset.
     """
-    return f"s3://sfc-{branch_name}-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
+    return f"{s3_datasets_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_model_metrics/model_name={model_name}/model_version={model_version}/"
 
 
 def calculate_residual_between_predicted_and_known_filled_posts(
