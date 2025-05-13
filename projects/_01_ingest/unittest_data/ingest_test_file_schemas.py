@@ -1,6 +1,14 @@
 from dataclasses import dataclass
 
-from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import (
+    BooleanType,
+    DateType,
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
@@ -26,6 +34,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
+    NullPeopleDirectlyEmployedTemporaryColumns as NullPIRTemp,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -496,17 +505,17 @@ class CleanCQCPIRSchema:
 
 
 @dataclass
-class CleanPeopleDirectlyEmployedSchema:
-    clean_people_directly_employed_outliers_schema = StructType(
+class NullPeopleDirectlyEmployedSchema:
+    null_people_directly_employed_outliers_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
             StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
         ]
     )
-    expected_clean_people_directly_employed_outliers_schema = StructType(
+    expected_null_people_directly_employed_outliers_schema = StructType(
         [
-            *clean_people_directly_employed_outliers_schema,
+            *null_people_directly_employed_outliers_schema,
             StructField(
                 CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
             ),
@@ -519,6 +528,60 @@ class CleanPeopleDirectlyEmployedSchema:
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
             StructField(
                 CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
+    null_outliers_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
+    compute_dispersion_stats_schema = null_outliers_schema
+    expected_compute_dispersion_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
+        ]
+    )
+
+    compute_dispersion_stats_schema = null_outliers_schema
+    expected_compute_dispersion_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
+        ]
+    )
+
+    compute_median_absolute_deviation_stats_schema = null_outliers_schema
+    expected_compute_median_absolute_deviation_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
+        ]
+    )
+
+    flag_outliers_dispersion_schema = expected_compute_dispersion_stats_schema
+    flag_outliers_median_absolute_deviation_schema = (
+        expected_compute_median_absolute_deviation_stats_schema
+    )
+    flag_outliers_expected_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
+            StructField(
+                NullPIRTemp.median_absolute_deviation_flag, BooleanType(), True
             ),
         ]
     )
