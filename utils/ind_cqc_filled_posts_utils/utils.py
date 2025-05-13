@@ -211,8 +211,8 @@ def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
     """
     Adds a column to flag locations where the known dormancy has changed over time.
 
-    If the known dormancy status has changed from string to string at any time then all rows for that location
-    get bool value of True. Any other circumstance gets bool value of False.
+    If the known dormancy string has changed at any time then all rows for that location
+    get bool value of True. If dormancy is null, then flag is also null.
 
     Args:
         df (DataFrame): A dataframe with column for dormancy
