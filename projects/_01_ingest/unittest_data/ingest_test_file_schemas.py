@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from pyspark.sql.types import (
+    BooleanType,
     DateType,
     FloatType,
     IntegerType,
@@ -452,6 +453,20 @@ class NullPeopleDirectlyEmployedSchema:
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
+        ]
+    )
+
+    flag_outliers_dispersion_schema = expected_compute_dispersion_stats_schema
+    flag_outliers_median_absolute_deviation_schema = (
+        expected_compute_median_absolute_deviation_stats_schema
+    )
+    flag_outliers_expected_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
+            StructField(
+                NullPIRTemp.median_absolute_deviation_flag, BooleanType(), True
+            ),
         ]
     )
 

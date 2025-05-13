@@ -143,7 +143,7 @@ class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
                 )
 
 
-class ComputeMedianAbsoluteDeviationStats(NullPeopleDirectlyEmployedTests):
+class ComputeMedianAbsoluteDeviationStatsTests(NullPeopleDirectlyEmployedTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -172,3 +172,35 @@ class ComputeMedianAbsoluteDeviationStats(NullPeopleDirectlyEmployedTests):
                 expected_data[row][NullPIRTemp.median_absolute_deviation_value],
                 places=3,
             )
+
+
+class FlagOutliers(NullPeopleDirectlyEmployedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_dispersion_df = self.spark.createDataFrame(
+            Data.flag_outliers_dispersion_rows, Schemas.flag_outliers_dispersion_schema
+        )
+        test_median_absolute_deviation_df = self.spark.createDataFrame(
+            Data.flag_outliers_median_absolute_deviation_rows,
+            Schemas.flag_outliers_median_absolute_deviation_schema,
+        )
+        self.returned_df = job.flag_outliers(
+            test_dispersion_df,
+            test_median_absolute_deviation_df,
+            Data.flag_outliers_proportion_of_data_to_remove,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.flag_outliers_expected_rows, Schemas.flag_outliers_expected_schema
+        )
+
+    def test_flag_outliers_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_flag_outliers_returns_expected_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)

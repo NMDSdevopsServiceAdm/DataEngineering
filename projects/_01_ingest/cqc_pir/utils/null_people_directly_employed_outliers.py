@@ -183,7 +183,7 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
     return mad_df
 
 
-# TODO - add tests
+# TODO - improve the test data.
 def flag_outliers(
     df_dispersion: DataFrame, df_mad: DataFrame, cutoff: float
 ) -> DataFrame:
@@ -215,6 +215,7 @@ def flag_outliers(
         TempCol.median_absolute_deviation_flag,
         F.col(TempCol.median_absolute_deviation_value) > mad_threshold,
     )
+
     df_joined = df_joined.select(
         PIRCleanCols.location_id,
         TempCol.dispersion_outlier_flag,
