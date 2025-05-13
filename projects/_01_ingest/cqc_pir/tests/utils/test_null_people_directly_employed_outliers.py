@@ -11,6 +11,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
+    NullPeopleDirectlyEmployedTemporaryColumns as NullPIRTemp,
 )
 
 PATCH_PATH: str = (
@@ -111,3 +112,63 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
         compute_median_absolute_deviation_stats_mock.assert_called_once()
         flag_outliers_mock.assert_called_once()
         apply_removal_flag_mock.assert_called_once()
+
+
+class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.compute_dispersion_stats_rows, Schemas.compute_dispersion_stats_schema
+        )
+        self.returned_df = job.compute_dispersion_stats(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_compute_dispersion_stats_rows,
+            Schemas.expected_compute_dispersion_stats_schema,
+        )
+
+    def test_compute_dispersion_stats_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_compute_dispersion_stats_returns_expected_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        for row in range(len(expected_data)):
+            for col in self.expected_df.columns:
+                self.assertAlmostEqual(
+                    returned_data[row][col], expected_data[row][col], places=3
+                )
+
+
+class ComputeMedianAbsoluteDeviationStats(NullPeopleDirectlyEmployedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.compute_median_absolute_deviation_stats_rows,
+            Schemas.compute_median_absolute_deviation_stats_schema,
+        )
+        self.returned_df = job.compute_median_absolute_deviation_stats(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_compute_median_absolute_deviation_stats_rows,
+            Schemas.expected_compute_median_absolute_deviation_stats_schema,
+        )
+
+    def test_compute_median_absolute_deviation_stats_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_compute_median_absolute_deviation_stats_returns_expected_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        for row in range(len(expected_data)):
+            self.assertAlmostEqual(
+                returned_data[row][NullPIRTemp.median_absolute_deviation_value],
+                expected_data[row][NullPIRTemp.median_absolute_deviation_value],
+                places=3,
+            )

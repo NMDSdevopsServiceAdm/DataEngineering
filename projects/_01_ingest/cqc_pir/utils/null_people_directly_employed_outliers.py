@@ -161,8 +161,8 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(
         TempCol.median_people_employed,
-        F.expr(
-            f"percentile_approx({PIRCleanCols.pir_people_directly_employed_cleaned}, {median})"
+        F.percentile_approx(
+            PIRCleanCols.pir_people_directly_employed_cleaned, median
         ).over(w),
     )
     df = calculate_new_column(
@@ -174,7 +174,7 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
     )
     df = df.withColumn(
         TempCol.median_absolute_deviation_value,
-        F.expr(f"percentile_approx({TempCol.absolute_deviation}, {median})").over(w),
+        F.percentile_approx(TempCol.absolute_deviation, median).over(w),
     )
     mad_df = df.select(
         PIRCleanCols.location_id, TempCol.median_absolute_deviation_value

@@ -695,6 +695,35 @@ class NullPeopleDirectlyEmployedData:
         ("1-0004", date(2025, 1, 1), 200),
     ]
 
+    compute_dispersion_stats_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2025, 1, 1), 2),
+        ("1-0002", date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 1, 1), None),
+        ("1-0003", date(2024, 1, 1), None),
+        ("1-0003", date(2025, 1, 1), None),
+    ]
+    expected_compute_dispersion_stats_rows = [
+        ("1-0001", 2.0, 1.0, 1.5, 0.667),
+        ("1-0002", 1.0, 1.0, 1.0, 0.0),
+        ("1-0003", None, None, None, None),
+    ]
+
+    compute_median_absolute_deviation_stats_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2025, 1, 1), 2),
+        ("1-0001", date(2026, 1, 1), 3),
+        ("1-0002", date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 1, 1), None),
+        ("1-0003", date(2024, 1, 1), None),
+        ("1-0003", date(2025, 1, 1), None),
+    ]
+    expected_compute_median_absolute_deviation_stats_rows = [
+        ("1-0001", 1.0),
+        ("1-0002", 0.0),
+        ("1-0003", None),
+    ]
+
 
 @dataclass
 class ValidatePIRRawData:

@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 
-from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
+from pyspark.sql.types import (
+    DateType,
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
@@ -26,6 +33,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
+    NullPeopleDirectlyEmployedTemporaryColumns as NullPIRTemp,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
@@ -414,6 +422,36 @@ class NullPeopleDirectlyEmployedSchema:
             StructField(
                 CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
             ),
+        ]
+    )
+
+    compute_dispersion_stats_schema = null_outliers_schema
+    expected_compute_dispersion_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
+        ]
+    )
+
+    compute_dispersion_stats_schema = null_outliers_schema
+    expected_compute_dispersion_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
+        ]
+    )
+
+    compute_median_absolute_deviation_stats_schema = null_outliers_schema
+    expected_compute_median_absolute_deviation_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
         ]
     )
 
