@@ -297,7 +297,9 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
     Coalesces the models in the order provided into a single column called 'prediction'.
 
-    The 'non_res_with_dormancy_model' values are used when they are not null.
+    If the dormancy status of a location has changed from string to another string, then the
+    'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
+    Otherwise, the 'non_res_with_dormancy_model' values are used when they are not null.
     If they are null, the 'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
     If both are null, the prediction will be null.
 
