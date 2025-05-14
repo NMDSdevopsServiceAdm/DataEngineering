@@ -1737,7 +1737,7 @@ class IndCQCDataUtils:
     flag_dormancy_has_changed_over_time_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
         ]
     )

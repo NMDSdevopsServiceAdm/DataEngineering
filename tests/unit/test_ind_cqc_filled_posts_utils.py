@@ -357,10 +357,10 @@ class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
         self,
     ):
         returned_data = self.returned_df.sort(
-            [IndCQC.location_id, IndCQC.unix_time]
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
         ).collect()
         expected_data = self.expected_df.sort(
-            [IndCQC.location_id, IndCQC.unix_time]
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
         ).collect()
 
         self.assertEqual(returned_data, expected_data)
