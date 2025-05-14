@@ -3664,6 +3664,31 @@ class IndCQCDataUtils:
         ("loc 5", 2, None, None),
     ]
 
+    flag_location_has_ascwds_value_rows = [
+        ("loc 1", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 1", 2, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 2", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 2", 2, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 3", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 3", 2, None),
+        ("loc 4", 1, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 4", 2, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 5", 1, None),
+        ("loc 5", 2, None),
+    ]
+    expected_flag_location_has_ascwds_value_rows = [
+        ("loc 1", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 1", 2, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 2", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 2", 2, EstimateFilledPostsSource.non_res_combined_model, True),
+        ("loc 3", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 3", 2, None, True),
+        ("loc 4", 1, EstimateFilledPostsSource.non_res_combined_model, False),
+        ("loc 4", 2, EstimateFilledPostsSource.non_res_combined_model, False),
+        ("loc 5", 1, None, False),
+        ("loc 5", 2, None, False),
+    ]
+
 
 @dataclass
 class CleanIndCQCData:

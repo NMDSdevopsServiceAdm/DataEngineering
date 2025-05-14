@@ -170,6 +170,7 @@ class IndCqcColumns:
     first_rolling_average: str = "first_rolling_average"
     first_submission_time: str = "first_submission_time"
     flag_dormancy_has_changed_over_time: str = "flag_dormancy_has_changed_over_time"
+    flag_location_has_ascwds_value: str = "flag_location_has_ascwds_value"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"

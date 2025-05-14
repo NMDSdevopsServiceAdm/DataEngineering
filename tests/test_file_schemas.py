@@ -1750,6 +1750,20 @@ class IndCQCDataUtils:
         ]
     )
 
+    flag_location_has_ascwds_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+    expected_flag_location_has_ascwds_value_schema = StructType(
+        [
+            *flag_location_has_ascwds_value_schema,
+            StructField(IndCQC.flag_location_has_ascwds_value, BooleanType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleanIndCQCData:

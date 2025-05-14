@@ -2,6 +2,7 @@ from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import EstimateFilledPostsSource
 
 
 def add_source_description_to_source_column(
@@ -243,5 +244,52 @@ def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
             F.lit(None),
         ).otherwise(F.col(IndCQC.flag_dormancy_has_changed_over_time)),
     )
+
+    return df
+
+
+def flag_location_has_ascwds_value(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to flag locations where their estimated filled posts source is ascwds_pir_merged at any time.
+
+    If a location has their estimated filled posts source as ascwds_pir_merged at any point in time, then
+    all rows for that location get a value of true. The estimated filled posts source cannot be null, so this
+    column also cannot be null.
+
+    Args:
+        df (DataFrame): A dataframe with column for dormancy
+
+    Returns:
+        DataFrame: A dataframe with an addtional bool column to show if dormancy status has changed or not.
+    """
+
+    columns_to_select = [IndCQC.location_id, IndCQC.estimate_filled_posts_source]
+    df_deduplicated_estimate_source = df.select(*columns_to_select).dropDuplicates()
+
+    df_deduplicated_estimate_source = df_deduplicated_estimate_source.withColumn(
+        IndCQC.flag_location_has_ascwds_value,
+        F.when(
+            F.col(IndCQC.estimate_filled_posts_source)
+            == EstimateFilledPostsSource.ascwds_pir_merged,
+            1,
+        ).otherwise(0),
+    )
+
+    df_deduplicated_estimate_source = df_deduplicated_estimate_source.groupBy(
+        IndCQC.location_id
+    ).agg(
+        F.max(F.col(IndCQC.flag_location_has_ascwds_value)).alias(
+            IndCQC.flag_location_has_ascwds_value
+        )
+    )
+
+    df_deduplicated_estimate_source = df_deduplicated_estimate_source.withColumn(
+        IndCQC.flag_location_has_ascwds_value,
+        F.when(F.col(IndCQC.flag_location_has_ascwds_value) == 1, True).otherwise(
+            False
+        ),
+    )
+
+    df = df.join(df_deduplicated_estimate_source, on=IndCQC.location_id, how="left")
 
     return df
