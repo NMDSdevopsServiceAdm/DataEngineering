@@ -310,8 +310,10 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         IndCqc.prediction,
         F.when(
-            IndCqc.flag_dormancy_has_changed_over_time == True,
-            TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
+            F.col(IndCqc.flag_dormancy_has_changed_over_time) == True,
+            F.col(
+                TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied
+            ),
         ).otherwise(
             F.coalesce(
                 IndCqc.non_res_with_dormancy_model,
