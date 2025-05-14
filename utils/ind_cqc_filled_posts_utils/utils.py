@@ -223,7 +223,7 @@ def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
     """
 
     df_count_distinct_dormancy = df.groupBy(IndCQC.location_id).agg(
-        F.count_distinct(IndCQC.dormancy).alias(
+        F.countDistinct(IndCQC.dormancy).alias(
             IndCQC.flag_dormancy_has_changed_over_time
         )
     )
