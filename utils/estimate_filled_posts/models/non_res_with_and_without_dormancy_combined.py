@@ -10,7 +10,10 @@ from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from utils.ind_cqc_filled_posts_utils.utils import (
+    get_selected_value,
+    flag_dormancy_has_changed_over_time,
+)
 
 
 def combine_non_res_with_and_without_dormancy_models(
@@ -29,6 +32,7 @@ def combine_non_res_with_and_without_dormancy_models(
     locations_reduced_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
+        IndCqc.dormancy,
         IndCqc.care_home,
         IndCqc.related_location,
         IndCqc.time_registered,
@@ -45,6 +49,8 @@ def combine_non_res_with_and_without_dormancy_models(
     combined_models_df = calculate_and_apply_model_ratios(combined_models_df)
 
     combined_models_df = calculate_and_apply_residuals(combined_models_df)
+
+    combined_models_df = flag_dormancy_has_changed_over_time(combined_models_df)
 
     combined_models_df = combine_model_predictions(combined_models_df)
 
@@ -303,9 +309,14 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
     df = df.withColumn(
         IndCqc.prediction,
-        F.coalesce(
-            IndCqc.non_res_with_dormancy_model,
+        F.when(
+            IndCqc.flag_dormancy_has_changed_over_time == True,
             TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
+        ).otherwise(
+            F.coalesce(
+                IndCqc.non_res_with_dormancy_model,
+                TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
+            )
         ),
     )
 
