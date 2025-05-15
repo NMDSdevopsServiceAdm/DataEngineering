@@ -304,13 +304,11 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with combined model predictions.
     """
-    df = (
-        df.withColumn(
-            IndCqc.prediction,
-            F.coalesce(
-                IndCqc.non_res_with_dormancy_model,
-                TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
-            ),
+    df = df.withColumn(
+        IndCqc.prediction,
+        F.coalesce(
+            IndCqc.non_res_with_dormancy_model,
+            TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
         ),
     )
 
