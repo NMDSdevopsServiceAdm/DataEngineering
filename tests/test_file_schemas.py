@@ -2950,9 +2950,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
     combine_model_predictions_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
-            ),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
             StructField(
                 NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,

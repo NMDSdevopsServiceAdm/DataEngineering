@@ -12,7 +12,6 @@ from utils.estimate_filled_posts.models.utils import (
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     get_selected_value,
-    flag_dormancy_has_changed_over_time,
 )
 
 
@@ -38,7 +37,6 @@ def combine_non_res_with_and_without_dormancy_models(
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
-        IndCqc.flag_dormancy_has_changed_over_time,
     )
 
     non_res_locations_df = utils.select_rows_with_value(
@@ -296,9 +294,7 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     """
     Coalesces the models in the order provided into a single column called 'prediction'.
 
-    If the dormancy status of a location has changed from string to another string, then the
-    'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
-    Otherwise, the 'non_res_with_dormancy_model' values are used when they are not null.
+    The 'non_res_with_dormancy_model' values are used when they are not null.
     If they are null, the 'non_res_without_dormancy_model_adjusted_and_residual_applied' are used.
     If both are null, the prediction will be null.
 
@@ -308,18 +304,13 @@ def combine_model_predictions(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with combined model predictions.
     """
-    df = df.withColumn(
-        IndCqc.prediction,
-        F.when(
-            F.col(IndCqc.flag_dormancy_has_changed_over_time) == True,
-            F.col(
-                TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied
-            ),
-        ).otherwise(
+    df = (
+        df.withColumn(
+            IndCqc.prediction,
             F.coalesce(
                 IndCqc.non_res_with_dormancy_model,
                 TempColumns.non_res_without_dormancy_model_adjusted_and_residual_applied,
-            )
+            ),
         ),
     )
 
