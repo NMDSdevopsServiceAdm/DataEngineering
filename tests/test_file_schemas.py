@@ -2776,6 +2776,9 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
+            ),
         ]
     )
 
