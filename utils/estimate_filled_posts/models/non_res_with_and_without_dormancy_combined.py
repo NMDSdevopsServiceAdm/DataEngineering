@@ -38,6 +38,7 @@ def combine_non_res_with_and_without_dormancy_models(
         IndCqc.time_registered,
         IndCqc.non_res_without_dormancy_model,
         IndCqc.non_res_with_dormancy_model,
+        IndCqc.flag_dormancy_has_changed_over_time,
     )
 
     non_res_locations_df = utils.select_rows_with_value(
