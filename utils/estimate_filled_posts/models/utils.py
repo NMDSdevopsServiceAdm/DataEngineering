@@ -33,7 +33,6 @@ def insert_predictions_into_pipeline(
     predictions_df = predictions_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
-        IndCqc.flag_dormancy_has_changed_over_time,
         IndCqc.prediction,
     ).withColumnRenamed(IndCqc.prediction, model_column_name)
 

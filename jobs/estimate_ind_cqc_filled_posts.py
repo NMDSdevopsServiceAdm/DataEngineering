@@ -20,7 +20,10 @@ from utils.estimate_filled_posts.models.non_res_without_dormancy import (
 from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
 )
-from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
+from utils.ind_cqc_filled_posts_utils.utils import (
+    merge_columns_in_order,
+    flag_dormancy_has_changed_over_time,
+)
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -118,6 +121,10 @@ def main(
         non_res_without_dormancy_features_df,
         non_res_without_dormancy_model_source,
         ml_model_metrics_destination,
+    )
+
+    estimate_filled_posts_df = flag_dormancy_has_changed_over_time(
+        estimate_filled_posts_df
     )
 
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
