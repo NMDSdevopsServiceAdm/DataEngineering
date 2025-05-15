@@ -31,7 +31,10 @@ def insert_predictions_into_pipeline(
         DataFrame: A dataframe with model predictions added.
     """
     predictions_df = predictions_df.select(
-        IndCqc.location_id, IndCqc.cqc_location_import_date, IndCqc.prediction
+        IndCqc.location_id,
+        IndCqc.cqc_location_import_date,
+        IndCqc.flag_dormancy_has_changed_over_time,
+        IndCqc.prediction,
     ).withColumnRenamed(IndCqc.prediction, model_column_name)
 
     locations_with_predictions = locations_df.join(
