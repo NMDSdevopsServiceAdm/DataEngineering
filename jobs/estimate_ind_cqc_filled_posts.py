@@ -22,7 +22,7 @@ from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combin
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     merge_columns_in_order,
-    flag_dormancy_has_changed_over_time,
+    get_period_when_dormancy_changed,
 )
 
 ind_cqc_columns = [
@@ -123,10 +123,6 @@ def main(
         ml_model_metrics_destination,
     )
 
-    estimate_filled_posts_df = flag_dormancy_has_changed_over_time(
-        estimate_filled_posts_df
-    )
-
     estimate_filled_posts_df = combine_non_res_with_and_without_dormancy_models(
         estimate_filled_posts_df
     )
@@ -168,6 +164,11 @@ def main(
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
+    )
+
+    expected_change_per_day = 0.05 / 31556926  # 5% per year / unix time in a year.
+    estimate_filled_posts_df = get_period_when_dormancy_changed(
+        estimate_filled_posts_df, expected_change_per_day
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
