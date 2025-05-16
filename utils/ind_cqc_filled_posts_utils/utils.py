@@ -248,6 +248,129 @@ def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
     return df
 
 
+def get_period_when_dormancy_changed(
+    df: DataFrame, expected_change_per_day: float
+) -> DataFrame:
+    """
+    Adds a column with the cqc_location_import_date copied at the row before dormancy changed.
+
+    Args:
+        df (DataFrame): A dataframe with a dormancy column.
+        expected_change_per_day (float): The expected percentage change in overall filled posts per day.
+
+    Returns:
+        DataFrame: A dataframe with an additional date column populated on selected rows only.
+    """
+
+    original_columns_list = df.columns
+
+    w_full = Window.partitionBy(IndCQC.location_id).orderBy(
+        IndCQC.cqc_location_import_date
+    )
+    w_for_filling_down = (
+        Window.partitionBy(IndCQC.location_id)
+        .orderBy(IndCQC.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+    )
+
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full),
+    )
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.when(
+            F.col(IndCQC.dormancy) == F.col(IndCQC.previous_dormancy_value), F.lit(None)
+        ).otherwise(F.col(IndCQC.previous_dormancy_value)),
+    )
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.last(F.col(IndCQC.previous_dormancy_value), ignorenulls=True).over(
+            w_for_filling_down
+        ),
+    )
+
+    df = df.withColumn(
+        IndCQC.period_when_dormancy_changed,
+        F.when(
+            F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full)
+            == F.col(IndCQC.previous_dormancy_value),
+            F.lag(F.col(IndCQC.cqc_location_import_date), offset=1).over(w_full),
+        ).otherwise(F.lit(None)),
+    )
+    df = df.withColumn(
+        IndCQC.period_when_dormancy_changed,
+        F.first(F.col(IndCQC.period_when_dormancy_changed), ignorenulls=True).over(
+            w_for_filling_down
+        ),
+    )
+
+    df_lookup_filled_posts_value = (
+        df.select(
+            [
+                IndCQC.location_id,
+                IndCQC.cqc_location_import_date,
+                IndCQC.estimate_filled_posts,
+            ]
+        )
+        .withColumnRenamed(
+            IndCQC.cqc_location_import_date, IndCQC.period_when_dormancy_changed
+        )
+        .withColumnRenamed(
+            IndCQC.estimate_filled_posts,
+            IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
+        )
+    )
+    df = df.join(
+        df_lookup_filled_posts_value,
+        on=([IndCQC.location_id, IndCQC.period_when_dormancy_changed]),
+        how="left",
+    )
+
+    df = df.withColumn(
+        IndCQC.number_of_days_since_dormancy_change,
+        (
+            (
+                F.unix_timestamp(F.col(IndCQC.cqc_location_import_date))
+                - F.unix_timestamp(F.col(IndCQC.period_when_dormancy_changed))
+            )
+            / 86400
+        ),
+    )
+
+    adjustment_ratio = (
+        F.col(IndCQC.number_of_days_since_dormancy_change) * expected_change_per_day
+    )
+
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+        F.when(
+            (F.col(IndCQC.previous_dormancy_value) == "Y")
+            & (F.col(IndCQC.dormancy) == "N"),
+            F.col(IndCQC.estimate_filled_posts_at_period_when_dormancy_changed)
+            * (1 + adjustment_ratio),
+        )
+        .when(
+            (F.col(IndCQC.previous_dormancy_value) == "N")
+            & (F.col(IndCQC.dormancy) == "Y"),
+            F.col(IndCQC.estimate_filled_posts_at_period_when_dormancy_changed)
+            * (1 - adjustment_ratio),
+        )
+        .otherwise(F.col(IndCQC.estimate_filled_posts)),
+    )
+
+    df = df.select(
+        *original_columns_list,
+        IndCQC.previous_dormancy_value,
+        IndCQC.period_when_dormancy_changed,
+        IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
+        IndCQC.number_of_days_since_dormancy_change,
+        IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+    ).sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
+
+    return df
+
+
 def flag_location_has_ascwds_value(df: DataFrame) -> DataFrame:
     """
     Adds a column to flag locations where their estimated filled posts source is ascwds_pir_merged at any time.

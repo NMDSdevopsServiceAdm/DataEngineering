@@ -366,6 +366,68 @@ class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
         self.assertEqual(returned_data, expected_data)
 
 
+class GetPeriodWhenDormancyChanged(TestIndCqcFilledPostUtils):
+    def setUp(self):
+        super().setUp()
+
+        test_expected_change_per_day = 0.1
+
+        self.test_df = self.spark.createDataFrame(
+            Data.get_period_when_dormancy_changed_rows,
+            Schemas.get_period_when_dormancy_changed_schema,
+        )
+        self.returned_df = job.get_period_when_dormancy_changed(
+            self.test_df, test_expected_change_per_day
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_get_period_when_dormancy_changed_rows,
+            Schemas.expected_get_period_when_dormancy_changed_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_get_period_when_dormancy_changed_adds_2_expected_columns(
+        self,
+    ):
+        self.assertEqual(len(self.columns_added_by_function), 5)
+        self.assertEqual(
+            self.columns_added_by_function[0],
+            IndCQC.previous_dormancy_value,
+        )
+        self.assertEqual(
+            self.columns_added_by_function[1],
+            IndCQC.period_when_dormancy_changed,
+        )
+        self.assertEqual(
+            self.columns_added_by_function[2],
+            IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
+        )
+        self.assertEqual(
+            self.columns_added_by_function[3],
+            IndCQC.number_of_days_since_dormancy_change,
+        )
+        self.assertEqual(
+            self.columns_added_by_function[4],
+            IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+        )
+
+    def test_get_period_when_dormancy_changed_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        ).collect()
+        expected_data = self.expected_df.sort(
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        ).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class FlagLocationHasAscwdsValue(TestIndCqcFilledPostUtils):
     def setUp(self):
         super().setUp()

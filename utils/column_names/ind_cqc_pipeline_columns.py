@@ -136,6 +136,7 @@ class IndCqcColumns:
     difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: (
         str
     ) = "difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
+    number_of_days_since_dormancy_change: str = "number_of_days_since_dormancy_change"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -143,6 +144,12 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_adjusted_for_dormancy_change: str = (
+        "estimate_filled_posts_adjusted_for_dormancy_change"
+    )
+    estimate_filled_posts_at_period_when_dormancy_changed: str = (
+        "estimate_filled_posts_at_period_when_dormancy_changed"
+    )
     estimate_filled_posts_from_all_job_roles: str = (
         "estimate_filled_posts_from_all_job_roles"
     )
@@ -233,6 +240,7 @@ class IndCqcColumns:
         "percentage_of_standardised_residuals_within_limit"
     )
     percentage_residual: str = "percentage_residual"
+    period_when_dormancy_changed: str = "period_when_dormancy_changed"
     person_family_name: str = CQCLClean.person_family_name
     person_given_name: str = CQCLClean.person_given_name
     person_roles: str = CQCLClean.person_roles
@@ -252,6 +260,7 @@ class IndCqcColumns:
     prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
+    previous_dormancy_value: str = "previous_dormancy_value"
     previous_submission_time: str = "previous_submission_time"
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
