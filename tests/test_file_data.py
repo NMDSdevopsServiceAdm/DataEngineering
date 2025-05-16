@@ -3637,6 +3637,105 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
+    flag_dormancy_has_changed_over_time_rows = [
+        ("loc 1", date(2025, 1, 1), "Y"),
+        ("loc 1", date(2025, 2, 1), "N"),
+        ("loc 2", date(2025, 1, 1), None),
+        ("loc 2", date(2025, 2, 1), "Y"),
+        ("loc 2", date(2025, 3, 1), "N"),
+        ("loc 3", date(2025, 1, 1), None),
+        ("loc 3", date(2025, 2, 1), "Y"),
+        ("loc 4", date(2025, 1, 1), "Y"),
+        ("loc 4", date(2025, 2, 1), "Y"),
+        ("loc 5", date(2025, 1, 1), None),
+        ("loc 5", date(2025, 2, 1), None),
+    ]
+    expected_flag_dormancy_has_changed_over_time_rows = [
+        ("loc 1", date(2025, 1, 1), "Y", True),
+        ("loc 1", date(2025, 2, 1), "N", True),
+        ("loc 2", date(2025, 1, 1), None, None),
+        ("loc 2", date(2025, 2, 1), "Y", True),
+        ("loc 2", date(2025, 3, 1), "N", True),
+        ("loc 3", date(2025, 1, 1), None, None),
+        ("loc 3", date(2025, 2, 1), "Y", False),
+        ("loc 4", date(2025, 1, 1), "Y", False),
+        ("loc 4", date(2025, 2, 1), "Y", False),
+        ("loc 5", date(2025, 1, 1), None, None),
+        ("loc 5", date(2025, 2, 1), None, None),
+    ]
+
+    # fmt: off
+    get_period_when_dormancy_changed_rows = [
+        ("loc 1", date(2025, 1, 1), "Y", 10.0),
+        ("loc 1", date(2025, 1, 2), "Y", 10.0),
+        ("loc 1", date(2025, 1, 3), "N", 100.0),
+        ("loc 2", date(2025, 1, 1), "N", 100.0),
+        ("loc 2", date(2025, 1, 2), "N", 100.0),
+        ("loc 2", date(2025, 1, 3), "Y", 10.0),
+        ("loc 3", date(2025, 1, 1), "Y", 1.0),
+        ("loc 3", date(2025, 1, 2), "Y", 10.0),
+        ("loc 3", date(2025, 1, 3), "N", 100.0),
+        ("loc 3", date(2025, 1, 4), "N", 1000.0),
+        ("loc 3", date(2025, 1, 5), "Y", 10.0),
+        ("loc 3", date(2025, 1, 6), "Y", 1.0),
+        ("loc 4", date(2025, 1, 1), "Y", 10.0),
+        ("loc 4", date(2025, 1, 2), "Y", 10.0),
+        ("loc 5", date(2025, 1, 1), None, 10.0),
+        ("loc 5", date(2025, 1, 2), None, 10.0),
+        ("loc 6", date(2025, 1, 1), None, 10.0),
+        ("loc 6", date(2025, 1, 2), "Y", 10.0),
+        ("loc 7", date(2025, 1, 1), "Y", 10.0),
+        ("loc 7", date(2025, 1, 2), None, 10.0),
+    ]
+    expected_get_period_when_dormancy_changed_rows = [
+        ("loc 1", date(2025, 1, 1), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 1", date(2025, 1, 2), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 1", date(2025, 1, 3), "N", 100.0, "Y", date(2025, 1, 2), 10.0, 1.0, 11.0),
+        ("loc 2", date(2025, 1, 1), "N", 100.0, None, None, None, None, 100.0),
+        ("loc 2", date(2025, 1, 2), "N", 100.0, None, None, None, None, 100.0),
+        ("loc 2", date(2025, 1, 3), "Y", 10.0, "N", date(2025, 1, 2), 100.0, 1.0, 90.0),
+        ("loc 3", date(2025, 1, 1), "Y", 1.0, None, None, None, None, 1.0),
+        ("loc 3", date(2025, 1, 2), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 3", date(2025, 1, 3), "N", 100.0, "Y", date(2025, 1, 2), 10.0, 1.0, 11.0),
+        ("loc 3", date(2025, 1, 4), "N", 1000.0, "Y", date(2025, 1, 2), 10.0, 2.0, 12.0),
+        ("loc 3", date(2025, 1, 5), "Y", 10.0, "N", date(2025, 1, 2), 10.0, 3.0, 7.0),
+        ("loc 3", date(2025, 1, 6), "Y", 1.0, "N", date(2025, 1, 2), 10.0, 4.0, 6.0),
+        ("loc 4", date(2025, 1, 1), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 4", date(2025, 1, 2), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 5", date(2025, 1, 1), None, 10.0, None, None, None, None, 10.0),
+        ("loc 5", date(2025, 1, 2), None, 10.0, None, None, None, None, 10.0),
+        ("loc 6", date(2025, 1, 1), None, 10.0, None, None, None, None, 10.0),
+        ("loc 6", date(2025, 1, 2), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 7", date(2025, 1, 1), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 7", date(2025, 1, 2), None, 10.0, None, None, None, None, 10.0),
+    ]
+    # fmt: on
+
+    flag_location_has_ascwds_value_rows = [
+        ("loc 1", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 1", 2, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 2", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 2", 2, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 3", 1, EstimateFilledPostsSource.ascwds_pir_merged),
+        ("loc 3", 2, None),
+        ("loc 4", 1, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 4", 2, EstimateFilledPostsSource.non_res_combined_model),
+        ("loc 5", 1, None),
+        ("loc 5", 2, None),
+    ]
+    expected_flag_location_has_ascwds_value_rows = [
+        ("loc 1", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 1", 2, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 2", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 2", 2, EstimateFilledPostsSource.non_res_combined_model, True),
+        ("loc 3", 1, EstimateFilledPostsSource.ascwds_pir_merged, True),
+        ("loc 3", 2, None, True),
+        ("loc 4", 1, EstimateFilledPostsSource.non_res_combined_model, False),
+        ("loc 4", 2, EstimateFilledPostsSource.non_res_combined_model, False),
+        ("loc 5", 1, None, False),
+        ("loc 5", 2, None, False),
+    ]
+
 
 @dataclass
 class CleanIndCQCData:
@@ -5409,33 +5508,35 @@ class ModelNonResWithoutDormancy:
 
 @dataclass
 class ModelNonResWithAndWithoutDormancyCombinedRows:
+    # fmt: off
     estimated_posts_rows = [
-        ("1-001", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None),
-        ("1-001", date(2022, 2, 1), CareHome.not_care_home, "Y", 2, 3.0, None),
-        ("1-001", date(2023, 3, 1), CareHome.not_care_home, "Y", 3, 4.0, 5.0),
-        ("1-001", date(2024, 4, 1), CareHome.not_care_home, "Y", 4, 5.0, 5.5),
-        ("1-001", date(2025, 5, 1), CareHome.not_care_home, "Y", 5, 6.0, 6.0),
-        ("1-001", date(2025, 6, 1), CareHome.not_care_home, "Y", 6, 7.0, 6.5),
-        ("1-002", date(2021, 1, 1), CareHome.not_care_home, "Y", 3, 8.0, None),
-        ("1-002", date(2022, 2, 1), CareHome.not_care_home, "Y", 4, 8.0, None),
-        ("1-002", date(2023, 3, 1), CareHome.not_care_home, "Y", 5, 8.0, 4.0),
-        ("1-002", date(2024, 4, 1), CareHome.not_care_home, "Y", 6, 8.0, 4.5),
-        ("1-002", date(2025, 5, 1), CareHome.not_care_home, "Y", 7, 8.0, 5.0),
-        ("1-002", date(2025, 6, 1), CareHome.not_care_home, "Y", 8, 8.0, 5.5),
-        ("1-003", date(2021, 1, 1), CareHome.not_care_home, "N", 1, 2.0, None),
-        ("1-003", date(2022, 2, 1), CareHome.not_care_home, "N", 2, 2.0, None),
-        ("1-003", date(2021, 3, 1), CareHome.not_care_home, "N", 3, 4.0, None),
-        ("1-003", date(2022, 4, 1), CareHome.not_care_home, "N", 4, 4.0, None),
-        ("1-003", date(2023, 5, 1), CareHome.not_care_home, "N", 5, 6.0, 8.0),
-        ("1-003", date(2024, 6, 1), CareHome.not_care_home, "N", 6, 6.0, 9.0),
-        ("1-004", date(2024, 4, 1), CareHome.care_home, "Y", 1, None, None),
-        ("1-005", date(2024, 5, 1), CareHome.not_care_home, "Y", 1, 4.0, 2.0),
-        ("1-005", date(2024, 6, 1), CareHome.not_care_home, "Y", 2, 5.0, 2.5),
-        ("1-006", date(2024, 5, 1), CareHome.not_care_home, "N", 1, 3.0, 2.5),
-        ("1-006", date(2024, 6, 1), CareHome.not_care_home, "N", 2, 3.0, 3.0),
-        ("1-006", date(2024, 7, 1), CareHome.not_care_home, "N", 3, 3.0, 3.0),
-        ("1-006", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0),
+        ("1-001", "Y", date(2021, 1, 1), CareHome.not_care_home, "Y", 1, 1.0, None, False),
+        ("1-001", "Y", date(2022, 2, 1), CareHome.not_care_home, "Y", 2, 3.0, None, False),
+        ("1-001", "Y", date(2023, 3, 1), CareHome.not_care_home, "Y", 3, 4.0, 5.0, False),
+        ("1-001", "Y", date(2024, 4, 1), CareHome.not_care_home, "Y", 4, 5.0, 5.5, False),
+        ("1-001", "Y", date(2025, 5, 1), CareHome.not_care_home, "Y", 5, 6.0, 6.0, False),
+        ("1-001", "Y", date(2025, 6, 1), CareHome.not_care_home, "Y", 6, 7.0, 6.5, False),
+        ("1-002", "Y", date(2021, 1, 1), CareHome.not_care_home, "Y", 3, 8.0, None, False),
+        ("1-002", "Y", date(2022, 2, 1), CareHome.not_care_home, "Y", 4, 8.0, None, False),
+        ("1-002", "Y", date(2023, 3, 1), CareHome.not_care_home, "Y", 5, 8.0, 4.0, False),
+        ("1-002", "Y", date(2024, 4, 1), CareHome.not_care_home, "Y", 6, 8.0, 4.5, False),
+        ("1-002", "Y", date(2025, 5, 1), CareHome.not_care_home, "Y", 7, 8.0, 5.0, False),
+        ("1-002", "Y", date(2025, 6, 1), CareHome.not_care_home, "Y", 8, 8.0, 5.5, False),
+        ("1-003", "Y", date(2021, 1, 1), CareHome.not_care_home, "N", 1, 2.0, None, False),
+        ("1-003", "Y", date(2022, 2, 1), CareHome.not_care_home, "N", 2, 2.0, None, False),
+        ("1-003", "Y", date(2021, 3, 1), CareHome.not_care_home, "N", 3, 4.0, None, False),
+        ("1-003", "Y", date(2022, 4, 1), CareHome.not_care_home, "N", 4, 4.0, None, False),
+        ("1-003", "Y", date(2023, 5, 1), CareHome.not_care_home, "N", 5, 6.0, 8.0, False),
+        ("1-003", "Y", date(2024, 6, 1), CareHome.not_care_home, "N", 6, 6.0, 9.0, False),
+        ("1-004", "Y", date(2024, 4, 1), CareHome.care_home, "Y", 1, None, None, False),
+        ("1-005", "Y", date(2024, 5, 1), CareHome.not_care_home, "Y", 1, 4.0, 2.0, False),
+        ("1-005", "Y", date(2024, 6, 1), CareHome.not_care_home, "Y", 2, 5.0, 2.5, False),
+        ("1-006", "Y", date(2024, 5, 1), CareHome.not_care_home, "N", 1, 3.0, 2.5, False),
+        ("1-006", "Y", date(2024, 6, 1), CareHome.not_care_home, "N", 2, 3.0, 3.0, False),
+        ("1-006", "Y", date(2024, 7, 1), CareHome.not_care_home, "N", 3, 3.0, 3.0, False),
+        ("1-006", "Y", date(2024, 8, 1), CareHome.not_care_home, "N", 4, 3.0, 3.0, False),
     ]
+    # fmt: on
 
     group_time_registered_to_six_month_bands_rows = [
         ("1-001", 6),

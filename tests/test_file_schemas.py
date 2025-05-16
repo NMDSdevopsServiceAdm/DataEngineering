@@ -1734,6 +1734,67 @@ class IndCQCDataUtils:
         ]
     )
 
+    flag_dormancy_has_changed_over_time_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+    expected_flag_dormancy_has_changed_over_time_schema = StructType(
+        [
+            *flag_dormancy_has_changed_over_time_schema,
+            StructField(
+                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
+            ),
+        ]
+    )
+
+    get_period_when_dormancy_changed_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
+        ]
+    )
+    expected_get_period_when_dormancy_changed_schema = StructType(
+        [
+            *get_period_when_dormancy_changed_schema,
+            StructField(IndCQC.previous_dormancy_value, StringType(), True),
+            StructField(IndCQC.period_when_dormancy_changed, DateType(), True),
+            StructField(
+                IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.number_of_days_since_dormancy_change,
+                FloatType(),
+                True,
+            ),
+            StructField(
+                IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    flag_location_has_ascwds_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.unix_time, IntegerType(), False),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
+        ]
+    )
+    expected_flag_location_has_ascwds_value_schema = StructType(
+        [
+            *flag_location_has_ascwds_value_schema,
+            StructField(IndCQC.flag_location_has_ascwds_value, BooleanType(), True),
+        ]
+    )
+
 
 @dataclass
 class CleanIndCQCData:
@@ -2739,12 +2800,16 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
     estimated_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
+            ),
         ]
     )
 
@@ -2981,24 +3046,6 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
                 FloatType(),
                 True,
             ),
-        ]
-    )
-
-    combine_model_predictions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-            StructField(
-                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-    expected_combine_model_predictions_schema = StructType(
-        [
-            *combine_model_predictions_schema,
-            StructField(IndCQC.prediction, FloatType(), True),
         ]
     )
 
