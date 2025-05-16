@@ -166,7 +166,9 @@ def main(
         IndCQC.estimate_filled_posts_source,
     )
 
-    expected_change_per_day = 0.05 / 31556926  # 5% per year / unix time in a year.
+    expected_change_per_day = (
+        0.05 / 31556926
+    ) * 86400  # (5% per year / unix time in a year) * 1 day in unix time.
     estimate_filled_posts_df = get_period_when_dormancy_changed(
         estimate_filled_posts_df, expected_change_per_day
     )
