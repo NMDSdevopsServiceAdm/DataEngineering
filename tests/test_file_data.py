@@ -3684,6 +3684,8 @@ class IndCQCDataUtils:
         ("loc 5", date(2025, 1, 2), None, 10.0),
         ("loc 6", date(2025, 1, 1), None, 10.0),
         ("loc 6", date(2025, 1, 2), "Y", 10.0),
+        ("loc 7", date(2025, 1, 1), "Y", 10.0),
+        ("loc 7", date(2025, 1, 2), None, 10.0),
     ]
     expected_get_period_when_dormancy_changed_rows = [
         ("loc 1", date(2025, 1, 1), "Y", 10.0, None, None, None, None, 10.0),
@@ -3704,6 +3706,8 @@ class IndCQCDataUtils:
         ("loc 5", date(2025, 1, 2), None, 10.0, None, None, None, None, 10.0),
         ("loc 6", date(2025, 1, 1), None, 10.0, None, None, None, None, 10.0),
         ("loc 6", date(2025, 1, 2), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 7", date(2025, 1, 1), "Y", 10.0, None, None, None, None, 10.0),
+        ("loc 7", date(2025, 1, 2), None, 10.0, None, None, None, None, 10.0),
     ]
     # fmt: on
 

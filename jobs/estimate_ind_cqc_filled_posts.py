@@ -22,7 +22,7 @@ from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combin
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
     merge_columns_in_order,
-    get_period_when_dormancy_changed,
+    apply_adjustments_when_dormancy_changes,
 )
 
 ind_cqc_columns = [
@@ -169,7 +169,7 @@ def main(
     expected_change_per_day = (
         0.05 / 31556926
     ) * 86400  # (5% per year / unix time in a year) * 1 day in unix time.
-    estimate_filled_posts_df = get_period_when_dormancy_changed(
+    estimate_filled_posts_df = apply_adjustments_when_dormancy_changes(
         estimate_filled_posts_df, expected_change_per_day
     )
 

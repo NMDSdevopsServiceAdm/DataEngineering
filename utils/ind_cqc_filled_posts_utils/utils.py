@@ -248,7 +248,7 @@ def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
     return df
 
 
-def get_period_when_dormancy_changed(
+def apply_adjustments_when_dormancy_changes(
     df: DataFrame, expected_change_per_day: float
 ) -> DataFrame:
     """
@@ -264,79 +264,10 @@ def get_period_when_dormancy_changed(
 
     original_columns_list = df.columns
 
-    w_full = Window.partitionBy(IndCQC.location_id).orderBy(
-        IndCQC.cqc_location_import_date
-    )
-    w_for_filling_down = (
-        Window.partitionBy(IndCQC.location_id)
-        .orderBy(IndCQC.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
-    )
-
-    df = df.withColumn(
-        IndCQC.previous_dormancy_value,
-        F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full),
-    )
-    df = df.withColumn(
-        IndCQC.previous_dormancy_value,
-        F.when(
-            F.col(IndCQC.dormancy) == F.col(IndCQC.previous_dormancy_value), F.lit(None)
-        ).otherwise(F.col(IndCQC.previous_dormancy_value)),
-    )
-    df = df.withColumn(
-        IndCQC.previous_dormancy_value,
-        F.last(F.col(IndCQC.previous_dormancy_value), ignorenulls=True).over(
-            w_for_filling_down
-        ),
-    )
-
-    df = df.withColumn(
-        IndCQC.period_when_dormancy_changed,
-        F.when(
-            F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full)
-            == F.col(IndCQC.previous_dormancy_value),
-            F.lag(F.col(IndCQC.cqc_location_import_date), offset=1).over(w_full),
-        ).otherwise(F.lit(None)),
-    )
-    df = df.withColumn(
-        IndCQC.period_when_dormancy_changed,
-        F.first(F.col(IndCQC.period_when_dormancy_changed), ignorenulls=True).over(
-            w_for_filling_down
-        ),
-    )
-
-    df_lookup_filled_posts_value = (
-        df.select(
-            [
-                IndCQC.location_id,
-                IndCQC.cqc_location_import_date,
-                IndCQC.estimate_filled_posts,
-            ]
-        )
-        .withColumnRenamed(
-            IndCQC.cqc_location_import_date, IndCQC.period_when_dormancy_changed
-        )
-        .withColumnRenamed(
-            IndCQC.estimate_filled_posts,
-            IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
-        )
-    )
-    df = df.join(
-        df_lookup_filled_posts_value,
-        on=([IndCQC.location_id, IndCQC.period_when_dormancy_changed]),
-        how="left",
-    )
-
-    df = df.withColumn(
-        IndCQC.number_of_days_since_dormancy_change,
-        (
-            (
-                F.unix_timestamp(F.col(IndCQC.cqc_location_import_date))
-                - F.unix_timestamp(F.col(IndCQC.period_when_dormancy_changed))
-            )
-            / 86400
-        ),
-    )
+    df = add_column_with_previous_dormancy_status(df)
+    df = add_column_with_period_when_dormancy_changed(df)
+    df = add_column_with_filled_posts_at_date_when_dormancy_changed(df)
+    df = add_column_with_days_since_dormancy_changed(df)
 
     adjustment_ratio = (
         F.col(IndCQC.number_of_days_since_dormancy_change) * expected_change_per_day
@@ -367,6 +298,160 @@ def get_period_when_dormancy_changed(
         IndCQC.number_of_days_since_dormancy_change,
         IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
     ).sort([IndCQC.location_id, IndCQC.cqc_location_import_date])
+
+    return df
+
+
+def add_column_with_previous_dormancy_status(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the previous dormancy status.
+
+    This column repeats the locations previous dormancy status from the point at which dormancy changed.
+    If dormancy changes from null to value or value to null, then this column shows null.
+    Otherwise it shows the previous dormancy status repeated until another change occurs.
+
+    Args:
+        df (DataFrame): A dataframe with a dormancy column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing previous dormancy status.
+    """
+
+    w_full = Window.partitionBy(IndCQC.location_id).orderBy(
+        IndCQC.cqc_location_import_date
+    )
+    w_for_filling_down = (
+        Window.partitionBy(IndCQC.location_id)
+        .orderBy(IndCQC.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+    )
+
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full),
+    )
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.when(
+            (F.col(IndCQC.dormancy) == F.col(IndCQC.previous_dormancy_value))
+            | (F.col(IndCQC.dormancy).isNull()),
+            F.lit(None),
+        ).otherwise(F.col(IndCQC.previous_dormancy_value)),
+    )
+    df = df.withColumn(
+        IndCQC.previous_dormancy_value,
+        F.last(F.col(IndCQC.previous_dormancy_value), ignorenulls=True).over(
+            w_for_filling_down
+        ),
+    )
+
+    return df
+
+
+def add_column_with_period_when_dormancy_changed(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the cqc_location_import_date when dormancy first changed.
+
+    This column repeats the date previous to the date when dormancy changed.
+    For example, if dormancy was "Y" on 01/01/2025 and "N" on 02/01/2025, then this column
+    shows 01/01/2025 repeatedly.
+
+    Changing the function to use F.last instead of F.first will cause it to repeat the prior date
+    each time dormancy changes.
+
+    Args:
+        df (DataFrame): A dataframe with a previous dormancy status column and cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing the date when dormancy first changed.
+    """
+
+    w_full = Window.partitionBy(IndCQC.location_id).orderBy(
+        IndCQC.cqc_location_import_date
+    )
+    w_for_filling_down = (
+        Window.partitionBy(IndCQC.location_id)
+        .orderBy(IndCQC.cqc_location_import_date)
+        .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+    )
+
+    df = df.withColumn(
+        IndCQC.period_when_dormancy_changed,
+        F.when(
+            F.lag(F.col(IndCQC.dormancy), offset=1).over(w_full)
+            == F.col(IndCQC.previous_dormancy_value),
+            F.lag(F.col(IndCQC.cqc_location_import_date), offset=1).over(w_full),
+        ).otherwise(F.lit(None)),
+    )
+    df = df.withColumn(
+        IndCQC.period_when_dormancy_changed,
+        F.first(F.col(IndCQC.period_when_dormancy_changed), ignorenulls=True).over(
+            w_for_filling_down
+        ),
+    )
+
+    return df
+
+
+def add_column_with_filled_posts_at_date_when_dormancy_changed(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Adds a column to show the estimated filled posts value at the date in period_when_dormancy_changed.
+
+    Args:
+        df (DataFrame): A dataframe with period_when_dormancy_changed column.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing estimated filled posts value at the date in period_when_dormancy_changed.
+    """
+
+    df_lookup_filled_posts_value = (
+        df.select(
+            [
+                IndCQC.location_id,
+                IndCQC.cqc_location_import_date,
+                IndCQC.estimate_filled_posts,
+            ]
+        )
+        .withColumnRenamed(
+            IndCQC.cqc_location_import_date, IndCQC.period_when_dormancy_changed
+        )
+        .withColumnRenamed(
+            IndCQC.estimate_filled_posts,
+            IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
+        )
+    )
+    df = df.join(
+        df_lookup_filled_posts_value,
+        on=([IndCQC.location_id, IndCQC.period_when_dormancy_changed]),
+        how="left",
+    )
+
+    return df
+
+
+def add_column_with_days_since_dormancy_changed(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the number of days between cqc_location_import_date and period_when_dormancy_changed.
+
+    Args:
+        df (DataFrame): A dataframe with cqc_location_import_date and period_when_dormancy_changed.
+
+    Returns:
+        DataFrame: A dataframe with an additional column showing days between dates.
+    """
+
+    df = df.withColumn(
+        IndCQC.number_of_days_since_dormancy_change,
+        (
+            (
+                F.unix_timestamp(F.col(IndCQC.cqc_location_import_date))
+                - F.unix_timestamp(F.col(IndCQC.period_when_dormancy_changed))
+            )
+            / 86400
+        ),
+    )
 
     return df
 

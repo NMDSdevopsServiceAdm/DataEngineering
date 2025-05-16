@@ -376,7 +376,7 @@ class GetPeriodWhenDormancyChanged(TestIndCqcFilledPostUtils):
             Data.get_period_when_dormancy_changed_rows,
             Schemas.get_period_when_dormancy_changed_schema,
         )
-        self.returned_df = job.get_period_when_dormancy_changed(
+        self.returned_df = job.apply_adjustments_when_dormancy_changes(
             self.test_df, test_expected_change_per_day
         )
         self.expected_df = self.spark.createDataFrame(
