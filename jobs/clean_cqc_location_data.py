@@ -112,6 +112,12 @@ def main(
     )
     cqc_location_df = calculate_time_registered_for(cqc_location_df)
 
+    cqc_location_df = add_column_for_earliest_import_date_per_dormancy_value(
+        cqc_location_df
+    )
+
+    cqc_location_df = calculate_months_since_not_dormant(cqc_location_df)
+
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
