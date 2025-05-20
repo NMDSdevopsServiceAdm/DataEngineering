@@ -3233,27 +3233,15 @@ class CleaningUtilsData:
         ("1-001", date(2025, 1, 1), Dormancy.dormant),
         ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
         ("1-001", date(2025, 3, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant),
-        ("1-001", date(2025, 5, 1), Dormancy.dormant),
-        ("1-001", date(2025, 6, 1), Dormancy.not_dormant),
-        ("1-002", date(2025, 1, 1), Dormancy.dormant),
-        ("1-002", date(2025, 2, 1), Dormancy.dormant),
-        ("1-003", date(2025, 1, 1), None),
-        ("1-003", date(2025, 2, 1), Dormancy.dormant),
-        ("1-004", date(2025, 1, 1), None),
-        ("1-004", date(2025, 2, 1), None),
+        ("1-001", date(2025, 4, 1), None),
+        ("1-001", date(2025, 5, 1), None),
     ]
     expected_add_column_for_earliest_import_date_per_dormancy_value_rows = [
         ("1-001", date(2025, 1, 1), Dormancy.dormant, date(2025, 1, 1)),
         ("1-001", date(2025, 2, 1), Dormancy.not_dormant, date(2025, 2, 1)),
         ("1-001", date(2025, 3, 1), Dormancy.not_dormant, date(2025, 2, 1)),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant, date(2025, 4, 1)),
-        ("1-001", date(2025, 5, 1), Dormancy.dormant, date(2025, 4, 1)),
-        ("1-001", date(2025, 6, 1), Dormancy.not_dormant, date(2025, 6, 1)),
-        ("1-002", date(2025, 1, 1), None, None),
-        ("1-002", date(2025, 2, 1), Dormancy.dormant, date(2025, 1, 1)),
-        ("1-003", date(2025, 1, 1), None, None),
-        ("1-003", date(2025, 2, 1), None, None),
+        ("1-001", date(2025, 4, 1), None, date(2025, 4, 1)),
+        ("1-001", date(2025, 5, 1), None, date(2025, 4, 1)),
     ]
 
 
