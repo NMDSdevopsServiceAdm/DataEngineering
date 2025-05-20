@@ -798,11 +798,52 @@ def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> Dat
         DataFrame: A dataframe with additional earliest_import_date_per_dormancy_value column.
     """
 
-    w = Window.partitionBy(CQCLClean.location_id, CQCLClean.dormancy)
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+
+    temp_previous_dormancy_column = "temp_previous_dormancy_column"
+    df = df.withColumn(
+        temp_previous_dormancy_column,
+        F.lag(F.col(CQCLClean.dormancy), offset=1).over(w),
+    )
+
+    temp_dormancy_change_flag_column = "temp_dormancy_change_flag_column"
+    df = df.withColumn(
+        temp_dormancy_change_flag_column,
+        F.when(
+            (
+                F.col(CQCLClean.dormancy).isNull()
+                & F.col(temp_previous_dormancy_column).isNotNull()
+            )
+            | (
+                F.col(CQCLClean.dormancy).isNotNull()
+                & F.col(temp_previous_dormancy_column).isNull()
+            )
+            | (F.col(CQCLClean.dormancy) != F.col(temp_previous_dormancy_column)),
+            1,
+        ).otherwise(0),
+    ).fillna(1, subset=temp_dormancy_change_flag_column)
+
+    temp_streak_id_column = "temp_streak_id_column"
+    df = df.withColumn(
+        temp_streak_id_column,
+        F.sum(F.col(temp_dormancy_change_flag_column)).over(
+            w.rowsBetween(Window.unboundedPreceding, 0)
+        ),
+    )
+
+    w_streak = Window.partitionBy(CQCLClean.location_id, temp_streak_id_column)
 
     df = df.withColumn(
         CQCLClean.earliest_import_date_per_dormancy_value,
-        F.min(CQCLClean.cqc_location_import_date).over(w),
+        F.min(CQCLClean.cqc_location_import_date).over(w_streak),
+    )
+
+    df = df.drop(
+        temp_previous_dormancy_column,
+        temp_dormancy_change_flag_column,
+        temp_streak_id_column,
     )
 
     return df
