@@ -206,6 +206,10 @@ class IndCqcColumns:
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
+    months_since_not_dormant: str = CQCLClean.months_since_not_dormant
+    months_since_not_dormant_capped_at_10_years: str = (
+        CQCLClean.months_since_not_dormant + "_capped_at_10_years"
+    )
     name: str = CQCLClean.name
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
