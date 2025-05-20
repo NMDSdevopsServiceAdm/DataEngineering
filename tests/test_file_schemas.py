@@ -1386,6 +1386,22 @@ class CleaningUtilsSchemas:
         ]
     )
 
+    add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+        ]
+    )
+    expected_add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+        [
+            *add_column_for_earliest_import_date_per_dormancy_value_schema,
+            StructField(
+                IndCQC.earliest_import_date_per_dormancy_value, DateType(), True
+            ),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
