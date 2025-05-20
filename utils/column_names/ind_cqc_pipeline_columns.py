@@ -141,9 +141,6 @@ class IndCqcColumns:
     distribution_kurtosis: str = "distribution_kurtosis"
     distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
-    earliest_import_date_per_dormancy_value: str = (
-        "earliest_import_date_per_dormancy_value"
-    )
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_from_all_job_roles: str = (

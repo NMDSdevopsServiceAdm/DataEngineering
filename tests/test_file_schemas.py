@@ -976,6 +976,22 @@ class CQCLocationsSchema:
         ]
     )
 
+    add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.dormancy, StringType(), True),
+        ]
+    )
+    expected_add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+        [
+            *add_column_for_earliest_import_date_per_dormancy_value_schema,
+            StructField(
+                CQCLClean.earliest_import_date_per_dormancy_value, DateType(), False
+            ),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:
@@ -1383,22 +1399,6 @@ class CleaningUtilsSchemas:
         [
             *create_banded_bed_count_column_schema,
             StructField(IndCQC.number_of_beds_banded, FloatType(), True),
-        ]
-    )
-
-    add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-        ]
-    )
-    expected_add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
-        [
-            *add_column_for_earliest_import_date_per_dormancy_value_schema,
-            StructField(
-                IndCQC.earliest_import_date_per_dormancy_value, DateType(), True
-            ),
         ]
     )
 

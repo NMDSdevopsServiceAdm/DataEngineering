@@ -326,24 +326,3 @@ def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
     ).transform(number_of_beds_df)
 
     return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
-
-
-def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> DataFrame:
-    """
-    Adds a column that repeats the earliest cqc_location_import_date across rows where dormancy column is the same per location.
-
-    Args:
-        df (DataFrame): A dataframe with cqc_location_import_date and dormancy columns.
-
-    Returns:
-        DataFrame: A dataframe with additional earliest_import_date_per_dormancy_value column.
-    """
-
-    w = Window.partitionBy(IndCQC.location_id, IndCQC.dormancy)
-
-    df = df.withColumn(
-        IndCQC.earliest_import_date_per_dormancy_value,
-        F.min(IndCQC.cqc_location_import_date).over(w),
-    )
-
-    return df

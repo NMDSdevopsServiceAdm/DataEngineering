@@ -780,6 +780,27 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         return cleaned_locations_df
 
 
+def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> DataFrame:
+    """
+    Adds a column that repeats the earliest cqc_location_import_date across rows where dormancy column is the same per location.
+
+    Args:
+        df (DataFrame): A dataframe with cqc_location_import_date and dormancy columns.
+
+    Returns:
+        DataFrame: A dataframe with additional earliest_import_date_per_dormancy_value column.
+    """
+
+    w = Window.partitionBy(CQCLClean.location_id, CQCLClean.dormancy)
+
+    df = df.withColumn(
+        CQCLClean.earliest_import_date_per_dormancy_value,
+        F.min(CQCLClean.cqc_location_import_date).over(w),
+    )
+
+    return df
+
+
 if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")
     print(f"Job parameters: {sys.argv}")
