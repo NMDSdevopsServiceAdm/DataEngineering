@@ -167,6 +167,13 @@ def main(
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
 
+    with_dormancy_features_df = cap_integer_at_max_value(
+        with_dormancy_features_df,
+        IndCQC.months_since_not_dormant,
+        max_value=120,
+        new_col_name=IndCQC.months_since_not_dormant_capped_at_10_years,
+    )
+
     with_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
@@ -174,6 +181,7 @@ def main(
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_ten_years,
+            IndCQC.months_since_not_dormant_capped_at_10_years,
         ]
         + dormancy_key
         + related_location
