@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
+    Dormancy,
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
@@ -796,6 +797,37 @@ def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> Dat
     df = df.withColumn(
         CQCLClean.earliest_import_date_per_dormancy_value,
         F.min(CQCLClean.cqc_location_import_date).over(w),
+    )
+
+    return df
+
+
+def calculate_months_since_not_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show number of months since location became non-dormant.
+
+    When a locations dormancy is null then this shows the number of consecutive months while dormancy is null.
+    When a ocation is dormant then this shows 1 for all periods while location is dormant.
+    When a location is not dormant then this shows the consecutive number of months while not dormant.
+
+    Args:
+        df (DataFrame): A dataframe with dormancy column and earliest_import_date_per_dormancy_value.
+
+    Returns:
+        DataFrame: A dataframe with additional months_since_not_dormant column.
+    """
+
+    df = df.withColumn(
+        CQCLClean.months_since_not_dormant,
+        F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+            F.floor(
+                F.months_between(
+                    F.col(CQCLClean.cqc_location_import_date),
+                    F.col(CQCLClean.earliest_import_date_per_dormancy_value),
+                )
+            )
+            + 1
+        ),
     )
 
     return df

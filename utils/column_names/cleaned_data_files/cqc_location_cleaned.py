@@ -36,6 +36,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     imputed_specialisms: str = "imputed_" + NewCqcLocationApiColumns.specialisms
+    months_since_not_dormant: str = "months_since_not_dormant"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     primary_service_type: str = "primary_service_type"

@@ -992,6 +992,16 @@ class CQCLocationsSchema:
         ]
     )
 
+    calculate_months_since_not_dormant_schema = (
+        expected_add_column_for_earliest_import_date_per_dormancy_value_schema
+    )
+    expected_calculate_months_since_not_dormant_schema = StructType(
+        [
+            *calculate_months_since_not_dormant_schema,
+            StructField(CQCLClean.months_since_not_dormant, IntegerType(), False),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:

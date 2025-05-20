@@ -2499,18 +2499,38 @@ class CQCLocationsData:
     ]
 
     add_column_for_earliest_import_date_per_dormancy_value_rows = [
-        ("1-001", date(2025, 1, 1), Dormancy.dormant),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 3, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 4, 1), None),
-        ("1-001", date(2025, 5, 1), None),
+        ("1-001", date(2025, 1, 1), None),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant),
     ]
     expected_add_column_for_earliest_import_date_per_dormancy_value_rows = [
-        ("1-001", date(2025, 1, 1), Dormancy.dormant, date(2025, 1, 1)),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, date(2025, 2, 1)),
-        ("1-001", date(2025, 3, 1), Dormancy.not_dormant, date(2025, 2, 1)),
-        ("1-001", date(2025, 4, 1), None, date(2025, 4, 1)),
-        ("1-001", date(2025, 5, 1), None, date(2025, 4, 1)),
+        ("1-001", date(2025, 1, 1), None, date(2025, 1, 1)),
+        ("1-001", date(2025, 2, 1), None, date(2025, 1, 1)),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, date(2025, 3, 1)),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, date(2025, 3, 1)),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, date(2025, 5, 1)),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant, date(2025, 5, 1)),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant, date(2025, 7, 1)),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant, date(2025, 7, 1)),
+    ]
+
+    calculate_months_since_not_dormant_rows = (
+        expected_add_column_for_earliest_import_date_per_dormancy_value_rows
+    )
+    expected_calculate_months_since_not_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None, date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None, date(2025, 1, 1), 2),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, date(2025, 3, 1), 1),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, date(2025, 3, 1), 1),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, date(2025, 5, 1), 1),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant, date(2025, 5, 1), 2),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant, date(2025, 7, 1), 1),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant, date(2025, 7, 1), 1),
     ]
 
 
