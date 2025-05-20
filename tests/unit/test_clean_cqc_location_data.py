@@ -20,6 +20,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
 
+PATCH_PATH: str = "jobs.clean_cqc_location_data"
+
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
@@ -48,13 +50,11 @@ class MainTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(
-        "jobs.clean_cqc_location_data.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset"
-    )
-    @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
-    @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date", wraps=cUtils.column_to_date)
+    @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
