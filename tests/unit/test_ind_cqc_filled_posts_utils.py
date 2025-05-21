@@ -324,6 +324,50 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
         )
 
 
+class CopyAndFillFilledPostsWhenBecomingNotDormant(TestIndCqcFilledPostUtils):
+    def setUp(self):
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.copy_and_fill_filled_posts_when_becoming_not_dormant_rows,
+            Schemas.copy_and_fill_filled_posts_when_becoming_not_dormant_schema,
+        )
+        self.returned_df = job.copy_and_fill_filled_posts_when_becoming_not_dormant(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_copy_and_fill_filled_posts_when_becoming_not_dormant_rows,
+            Schemas.expected_copy_and_fill_filled_posts_when_becoming_not_dormant_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_copy_and_fill_filled_posts_when_becoming_not_dormant_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+        self.assertEqual(
+            self.columns_added_by_function[0],
+            IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+        )
+
+    def test_copy_and_fill_filled_posts_when_becoming_not_dormant_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        ).collect()
+        expected_data = self.expected_df.sort(
+            [IndCQC.location_id, IndCQC.cqc_location_import_date]
+        ).collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
 class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
     def setUp(self):
         super().setUp()

@@ -1734,6 +1734,26 @@ class IndCQCDataUtils:
         ]
     )
 
+    copy_and_fill_filled_posts_when_becoming_not_dormant_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
+        ]
+    )
+    expected_copy_and_fill_filled_posts_when_becoming_not_dormant_schema = StructType(
+        [
+            *copy_and_fill_filled_posts_when_becoming_not_dormant_schema,
+            StructField(
+                IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
     flag_dormancy_has_changed_over_time_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

@@ -150,6 +150,9 @@ class IndCqcColumns:
     estimate_filled_posts_at_period_when_dormancy_changed: str = (
         "estimate_filled_posts_at_period_when_dormancy_changed"
     )
+    estimated_filled_posts_at_point_of_becoming_non_dormant: str = (
+        "estimated_filled_posts_at_point_of_becoming_non_dormant"
+    )
     estimate_filled_posts_from_all_job_roles: str = (
         "estimate_filled_posts_from_all_job_roles"
     )

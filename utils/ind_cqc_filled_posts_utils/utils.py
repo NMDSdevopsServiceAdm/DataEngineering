@@ -2,7 +2,11 @@ from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.column_values.categorical_column_values import EstimateFilledPostsSource
+from utils.column_values.categorical_column_values import (
+    Dormancy,
+    EstimateFilledPostsSource,
+    PrimaryServiceType,
+)
 
 
 def add_source_description_to_source_column(
@@ -203,6 +207,46 @@ def get_selected_value(
             F.when(F.col(column_with_null_values).isNotNull(), F.col(column_with_data)),
             ignorenulls=True,
         ).over(window_spec),
+    )
+
+    return df
+
+
+def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataFrame:
+    """
+    Copy estimate_filled_posts into new column when non-residential location becomes non-dorment.
+
+    At the point dormancy changes from 'Y' to 'N', copy the estimate_filled_posts value from the
+    'Y' period into a new column at that 'N' period row. Then copy that value into the previous period
+    (where dormancy was 'Y').
+
+    Args:
+        df (DataFrame): A dataframe with estimate_filled_posts and dormancy
+
+    Returns:
+        DataFrame: A dataframe with a new column estimated_filled_posts_at_point_of_becoming_non_dormant.
+    """
+
+    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+
+    new_column = IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant
+    df = df.withColumn(
+        new_column,
+        F.when(
+            (F.col(IndCQC.primary_service_type) == PrimaryServiceType.non_residential)
+            & (F.lag(F.col(IndCQC.dormancy)).over(w) == Dormancy.dormant)
+            & (F.col(IndCQC.dormancy) == Dormancy.not_dormant),
+            F.lag(F.col(IndCQC.estimate_filled_posts)).over(w),
+        ).otherwise(None),
+    )
+
+    df = df.withColumn(
+        new_column,
+        F.when(
+            (F.lead(F.col(new_column)).over(w).isNotNull())
+            & (F.col(new_column).isNull()),
+            F.lead(F.col(new_column)).over(w),
+        ).otherwise(F.col(new_column)),
     )
 
     return df
