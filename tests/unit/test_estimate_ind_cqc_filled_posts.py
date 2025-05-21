@@ -10,6 +10,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
+PATCH_PATH = "jobs.estimate_ind_cqc_filled_posts"
+
 
 class EstimateIndCQCFilledPostsTests(unittest.TestCase):
     CLEANED_IND_CQC_TEST_DATA = "some/cleaned/data"
@@ -42,18 +44,18 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.estimate_ind_cqc_filled_posts.merge_columns_in_order")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(
-        "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
+        f"{PATCH_PATH}.FPutils.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts"
     )
-    @patch(
-        "jobs.estimate_ind_cqc_filled_posts.combine_non_res_with_and_without_dormancy_models"
-    )
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.FPutils.copy_and_fill_filled_posts_when_becoming_not_dormant")
+    @patch(f"{PATCH_PATH}.FPutils.merge_columns_in_order")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
+    @patch(f"{PATCH_PATH}.model_non_res_without_dormancy")
+    @patch(f"{PATCH_PATH}.model_non_res_with_dormancy")
+    @patch(f"{PATCH_PATH}.model_care_homes")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
@@ -63,6 +65,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
+        copy_and_fill_filled_posts_when_becoming_not_dormant_mock: Mock,
+        combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -92,9 +96,11 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             combine_non_res_with_and_without_dormancy_models_patch.call_count, 1
         )
         self.assertEqual(
-            model_imputation_with_extrapolation_and_interpolation.call_count, 3
+            model_imputation_with_extrapolation_and_interpolation.call_count, 4
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
+        copy_and_fill_filled_posts_when_becoming_not_dormant_mock.assert_called_once()
+        combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
