@@ -230,23 +230,26 @@ def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataF
     w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
 
     new_column = IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant
-    df = df.withColumn(
-        new_column,
-        F.when(
-            (F.col(IndCQC.primary_service_type) == PrimaryServiceType.non_residential)
-            & (F.lag(F.col(IndCQC.dormancy)).over(w) == Dormancy.dormant)
-            & (F.col(IndCQC.dormancy) == Dormancy.not_dormant),
-            F.lag(F.col(IndCQC.estimate_filled_posts)).over(w),
-        ).otherwise(None),
-    )
+    prev_dormancy = F.lag(IndCQC.dormancy).over(w)
+    current_dormancy = F.col(IndCQC.dormancy)
+    prev_filled_posts = F.lag(IndCQC.estimate_filled_posts).over(w)
+    next_estimated_posts = F.lead(new_column).over(w)
 
     df = df.withColumn(
         new_column,
         F.when(
-            (F.lead(F.col(new_column)).over(w).isNotNull())
-            & (F.col(new_column).isNull()),
-            F.lead(F.col(new_column)).over(w),
-        ).otherwise(F.col(new_column)),
+            (F.col(IndCQC.primary_service_type) == PrimaryServiceType.non_residential)
+            & (prev_dormancy == Dormancy.dormant)
+            & (current_dormancy == Dormancy.not_dormant),
+            prev_filled_posts,
+        ),
+    )
+
+    df = df.withColumn(
+        new_column,
+        F.when(next_estimated_posts.isNotNull(), next_estimated_posts).otherwise(
+            F.col(new_column)
+        ),
     )
 
     return df
