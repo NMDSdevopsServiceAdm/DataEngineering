@@ -20,10 +20,7 @@ from utils.estimate_filled_posts.models.non_res_without_dormancy import (
 from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
 )
-from utils.ind_cqc_filled_posts_utils.utils import (
-    merge_columns_in_order,
-    apply_adjustments_when_dormancy_changes,
-)
+from utils.ind_cqc_filled_posts_utils import utils as FPutils
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -151,7 +148,7 @@ def main(
         care_home=False,
     )
 
-    estimate_filled_posts_df = merge_columns_in_order(
+    estimate_filled_posts_df = FPutils.merge_columns_in_order(
         estimate_filled_posts_df,
         [
             IndCQC.ascwds_pir_merged,
@@ -166,11 +163,20 @@ def main(
         IndCQC.estimate_filled_posts_source,
     )
 
-    expected_change_per_day = (
-        0.05 / 31556926
-    ) * 86400  # (5% per year / unix time in a year) * 1 day in unix time.
-    estimate_filled_posts_df = apply_adjustments_when_dormancy_changes(
-        estimate_filled_posts_df, expected_change_per_day
+    estimate_filled_posts_df = (
+        FPutils.copy_and_fill_filled_posts_when_becoming_not_dormant(
+            estimate_filled_posts_df
+        )
+    )
+    estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
+        estimate_filled_posts_df,
+        IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+        IndCQC.estimate_filled_posts,
+        IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant,
+        care_home=False,
+    )
+    estimate_filled_posts_df = FPutils.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+        estimate_filled_posts_df
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")

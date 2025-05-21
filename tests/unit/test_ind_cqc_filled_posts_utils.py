@@ -368,6 +368,47 @@ class CopyAndFillFilledPostsWhenBecomingNotDormant(TestIndCqcFilledPostUtils):
         self.assertEqual(returned_data, expected_data)
 
 
+class CombinePostsAtPointOfBecomingNonDormantAndEstimateFilledPosts(
+    TestIndCqcFilledPostUtils
+):
+    def setUp(self):
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows,
+            Schemas.combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_schema,
+        )
+        self.returned_df = job.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows,
+            Schemas.expected_combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+        self.assertEqual(
+            self.columns_added_by_function[0],
+            IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+        )
+
+    def test_combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
 class FlagDormancyHasChangedOverTime(TestIndCqcFilledPostUtils):
     def setUp(self):
         super().setUp()

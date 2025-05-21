@@ -252,6 +252,32 @@ def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataF
     return df
 
 
+def combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Coalesce the columns estimated_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
+
+    Args:
+        df (DataFrame): A dataframe with estimated_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
+
+    Returns:
+        DataFrame: A dataframe with new column estimate_filled_posts_adjusted_for_dormancy_change.
+    """
+
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+        F.coalesce(
+            F.col(
+                IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant
+            ),
+            F.col(IndCQC.estimate_filled_posts),
+        ),
+    )
+
+    return df
+
+
 def flag_dormancy_has_changed_over_time(df: DataFrame) -> DataFrame:
     """
     Adds a column to flag locations where the known dormancy has changed over time.

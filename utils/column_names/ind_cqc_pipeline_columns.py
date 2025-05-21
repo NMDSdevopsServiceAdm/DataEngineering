@@ -185,6 +185,9 @@ class IndCqcColumns:
     has_non_null_value: str = "has_non_null_value"
     imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
     imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
+    imputed_estimated_filled_posts_at_point_of_becoming_non_dormant: str = (
+        "imputed_estimated_filled_posts_at_point_of_becoming_non_dormant"
+    )
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"

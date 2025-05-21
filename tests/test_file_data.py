@@ -3684,6 +3684,15 @@ class IndCQCDataUtils:
     ]
     # fmt: on
 
+    combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows = [
+        (1.0, 2.0),
+        (None, 2.0),
+    ]
+    expected_combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows = [
+        (1.0, 2.0, 1.0),
+        (None, 2.0, 2.0),
+    ]
+
     flag_dormancy_has_changed_over_time_rows = [
         ("loc 1", date(2025, 1, 1), "Y"),
         ("loc 1", date(2025, 2, 1), "N"),
