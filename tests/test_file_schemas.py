@@ -1734,6 +1734,37 @@ class IndCQCDataUtils:
         ]
     )
 
+    copy_and_fill_filled_posts_when_becoming_not_dormant_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.dormancy, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
+        ]
+    )
+    expected_copy_and_fill_filled_posts_when_becoming_not_dormant_schema = StructType(
+        [
+            *copy_and_fill_filled_posts_when_becoming_not_dormant_schema,
+            StructField(
+                IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
+    overwrite_estimate_filled_posts_with_imputed_schema = StructType(
+        [
+            StructField(
+                IndCQC.imputed_estimate_filled_posts_at_point_of_becoming_non_dormant,
+                FloatType(),
+                True,
+            ),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
+        ]
+    )
+
 
 @dataclass
 class CleanIndCQCData:

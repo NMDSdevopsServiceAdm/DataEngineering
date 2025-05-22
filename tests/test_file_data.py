@@ -3637,6 +3637,62 @@ class IndCQCDataUtils:
         ("loc 1", 3, None, 25.0, 50.0),
     ]
 
+    # fmt: off
+    copy_and_fill_filled_posts_when_becoming_not_dormant_rows = [
+        ("1-001", date(2025, 1, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-001", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 11.0),
+        ("1-001", date(2025, 3, 1), PrimaryServiceType.non_residential, "N", 100.0),
+        ("1-001", date(2025, 4, 1), PrimaryServiceType.non_residential, "N", 100.0),
+        ("1-001", date(2025, 5, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-001", date(2025, 6, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-002", date(2025, 1, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-002", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-003", date(2025, 1, 1), PrimaryServiceType.non_residential, "N", 10.0),
+        ("1-003", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-004", date(2025, 1, 1), PrimaryServiceType.non_residential, "N", 10.0),
+        ("1-004", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-005", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-005", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 10.0),
+        ("1-006", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-006", date(2025, 2, 1), PrimaryServiceType.non_residential, "N", 10.0),
+        ("1-007", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-007", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0),
+        ("1-008", date(2025, 1, 1), PrimaryServiceType.care_home_only, "Y", 10.0),
+        ("1-008", date(2025, 2, 1), PrimaryServiceType.care_home_only, "N", 10.0),
+    ]
+    expected_copy_and_fill_filled_posts_when_becoming_not_dormant_rows = [
+        ("1-001", date(2025, 1, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-001", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 11.0, 11.0),
+        ("1-001", date(2025, 3, 1), PrimaryServiceType.non_residential, "N", 100.0, 11.0),
+        ("1-001", date(2025, 4, 1), PrimaryServiceType.non_residential, "N", 100.0, None),
+        ("1-001", date(2025, 5, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-001", date(2025, 6, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-002", date(2025, 1, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-002", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-003", date(2025, 1, 1), PrimaryServiceType.non_residential, "N", 10.0, None),
+        ("1-003", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-004", date(2025, 1, 1), PrimaryServiceType.non_residential, "N", 10.0, None),
+        ("1-004", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-005", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-005", date(2025, 2, 1), PrimaryServiceType.non_residential, "Y", 10.0, None),
+        ("1-006", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-006", date(2025, 2, 1), PrimaryServiceType.non_residential, "N", 10.0, None),
+        ("1-007", date(2025, 1, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-007", date(2025, 2, 1), PrimaryServiceType.non_residential, None, 10.0, None),
+        ("1-008", date(2025, 1, 1), PrimaryServiceType.care_home_only, "Y", 10.0, None),
+        ("1-008", date(2025, 2, 1), PrimaryServiceType.care_home_only, "N", 10.0, None),
+    ]
+    # fmt: on
+
+    overwrite_estimate_filled_posts_with_imputed_rows = [
+        (1.0, 2.0),
+        (None, 2.0),
+    ]
+    expected_overwrite_estimate_filled_posts_with_imputed_rows = [
+        (1.0, 1.0),
+        (None, 2.0),
+    ]
+
 
 @dataclass
 class CleanIndCQCData:

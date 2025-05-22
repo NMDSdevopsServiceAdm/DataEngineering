@@ -2,6 +2,10 @@ from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_values.categorical_column_values import (
+    Dormancy,
+    PrimaryServiceType,
+)
 
 
 def add_source_description_to_source_column(
@@ -202,6 +206,75 @@ def get_selected_value(
             F.when(F.col(column_with_null_values).isNotNull(), F.col(column_with_data)),
             ignorenulls=True,
         ).over(window_spec),
+    )
+
+    return df
+
+
+def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataFrame:
+    """
+    Copy estimate_filled_posts into new column when non-residential location becomes non-dorment.
+
+    At the point dormancy changes from 'Y' to 'N', copy the estimate_filled_posts value from the
+    'Y' period into a new column at that 'N' period row. Then copy that value into the previous period
+    (where dormancy was 'Y').
+
+    Args:
+        df (DataFrame): A dataframe with estimate_filled_posts and dormancy
+
+    Returns:
+        DataFrame: A dataframe with a new column estimated_filled_posts_at_point_of_becoming_non_dormant.
+    """
+
+    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+
+    new_column = IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant
+    prev_dormancy = F.lag(IndCQC.dormancy).over(w)
+    current_dormancy = F.col(IndCQC.dormancy)
+    prev_filled_posts = F.lag(IndCQC.estimate_filled_posts).over(w)
+    next_estimated_posts = F.lead(new_column).over(w)
+
+    df = df.withColumn(
+        new_column,
+        F.when(
+            (F.col(IndCQC.primary_service_type) == PrimaryServiceType.non_residential)
+            & (prev_dormancy == Dormancy.dormant)
+            & (current_dormancy == Dormancy.not_dormant),
+            prev_filled_posts,
+        ),
+    )
+
+    df = df.withColumn(
+        new_column,
+        F.when(next_estimated_posts.isNotNull(), next_estimated_posts).otherwise(
+            F.col(new_column)
+        ),
+    )
+
+    return df
+
+
+def overwrite_estimate_filled_posts_with_imputed_estimate_filled_posts_at_point_of_becoming_non_dormant(
+    df: DataFrame,
+) -> DataFrame:
+    """
+    Overwrite the estimate_filled_posts column with estimate_filled_posts_at_point_of_becoming_non_dormant.
+
+    Args:
+        df (DataFrame): A dataframe with estimate_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
+
+    Returns:
+        DataFrame: A dataframe with estimate_filled_posts overwritten by estimate_filled_posts_at_point_of_becoming_non_dormant.
+    """
+
+    df = df.withColumn(
+        IndCQC.estimate_filled_posts,
+        F.coalesce(
+            F.col(
+                IndCQC.imputed_estimate_filled_posts_at_point_of_becoming_non_dormant
+            ),
+            F.col(IndCQC.estimate_filled_posts),
+        ),
     )
 
     return df
