@@ -119,7 +119,7 @@ class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.compute_dispersion_stats_rows, Schemas.compute_dispersion_stats_schema
+            Data.null_outliers_rows, Schemas.null_outliers_schema
         )
         self.returned_df = job.compute_dispersion_stats(self.test_df)
         self.expected_df = self.spark.createDataFrame(
@@ -148,8 +148,8 @@ class ComputeMedianAbsoluteDeviationStatsTests(NullPeopleDirectlyEmployedTests):
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.compute_median_absolute_deviation_stats_rows,
-            Schemas.compute_median_absolute_deviation_stats_schema,
+            Data.null_outliers_rows,
+            Schemas.null_outliers_schema,
         )
         self.returned_df = job.compute_median_absolute_deviation_stats(self.test_df)
         self.expected_df = self.spark.createDataFrame(
@@ -179,19 +179,20 @@ class FlagOutliers(NullPeopleDirectlyEmployedTests):
         super().setUp()
 
         test_dispersion_df = self.spark.createDataFrame(
-            Data.flag_outliers_dispersion_rows, Schemas.flag_outliers_dispersion_schema
+            Data.expected_compute_dispersion_stats_rows,
+            Schemas.expected_compute_dispersion_stats_schema,
         )
         test_median_absolute_deviation_df = self.spark.createDataFrame(
-            Data.flag_outliers_median_absolute_deviation_rows,
-            Schemas.flag_outliers_median_absolute_deviation_schema,
+            Data.expected_compute_median_absolute_deviation_stats_rows,
+            Schemas.expected_compute_median_absolute_deviation_stats_schema,
         )
         self.returned_df = job.flag_outliers(
             test_dispersion_df,
             test_median_absolute_deviation_df,
-            Data.flag_outliers_percentile_threshold,
+            Data.test_flag_outliers_percentile_threshold,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.flag_outliers_expected_rows, Schemas.flag_outliers_expected_schema
+            Data.expected_flag_outliers_rows, Schemas.expected_flag_outliers_schema
         )
 
     def test_flag_outliers_returns_expected_columns(

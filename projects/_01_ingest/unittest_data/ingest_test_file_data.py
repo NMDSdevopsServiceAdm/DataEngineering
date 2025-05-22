@@ -695,44 +695,26 @@ class NullPeopleDirectlyEmployedData:
         ("1-0004", date(2025, 1, 1), 200),
     ]
 
-    compute_dispersion_stats_rows = [
-        ("1-0001", date(2024, 1, 1), 1),
-        ("1-0001", date(2025, 1, 1), 2),
-        ("1-0002", date(2024, 1, 1), 1),
-        ("1-0002", date(2025, 1, 1), None),
-        ("1-0003", date(2024, 1, 1), None),
-        ("1-0003", date(2025, 1, 1), None),
-    ]
     expected_compute_dispersion_stats_rows = [
-        ("1-0001", 2.0, 1.0, 1.5, 0.667),
-        ("1-0002", 1.0, 1.0, 1.0, 0.0),
-        ("1-0003", None, None, None, None),
+        ("1-0001", 9, 5, 7.0, 0.571),
+        ("1-0002", 505, 500, 502.5, 0.010),
+        ("1-0003", 100, 1, 50.5, 1.960),
+        ("1-0004", 200, 40, 120.0, 1.333),
     ]
 
-    compute_median_absolute_deviation_stats_rows = [
-        ("1-0001", date(2024, 1, 1), 1),
-        ("1-0001", date(2025, 1, 1), 2),
-        ("1-0001", date(2026, 1, 1), 3),
-        ("1-0002", date(2024, 1, 1), 1),
-        ("1-0002", date(2025, 1, 1), None),
-        ("1-0003", date(2024, 1, 1), None),
-        ("1-0003", date(2025, 1, 1), None),
-    ]
     expected_compute_median_absolute_deviation_stats_rows = [
-        ("1-0001", 1.0),
-        ("1-0002", 0.0),
-        ("1-0003", None),
+        ("1-0001", 2.0),
+        ("1-0002", 2.5),
+        ("1-0003", 49.5),
+        ("1-0004", 80.0),
     ]
 
-    flag_outliers_percentile_threshold = 0.01
-    flag_outliers_dispersion_rows = expected_compute_dispersion_stats_rows
-    flag_outliers_median_absolute_deviation_rows = (
-        expected_compute_median_absolute_deviation_stats_rows
-    )
-    flag_outliers_expected_rows = [
-        ("1-0001", True, True),
+    test_flag_outliers_percentile_threshold = 0.5
+    expected_flag_outliers_rows = [
+        ("1-0001", False, False),
         ("1-0002", False, False),
-        ("1-0003", None, None),
+        ("1-0003", True, True),
+        ("1-0004", True, True),
     ]
 
 

@@ -425,42 +425,22 @@ class NullPeopleDirectlyEmployedSchema:
             ),
         ]
     )
-
-    compute_dispersion_stats_schema = null_outliers_schema
     expected_compute_dispersion_stats_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
-            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.max_people_employed, IntegerType(), True),
+            StructField(NullPIRTemp.min_people_employed, IntegerType(), True),
             StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
             StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
         ]
     )
-
-    compute_dispersion_stats_schema = null_outliers_schema
-    expected_compute_dispersion_stats_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(NullPIRTemp.max_people_employed, FloatType(), True),
-            StructField(NullPIRTemp.min_people_employed, FloatType(), True),
-            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
-            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
-        ]
-    )
-
-    compute_median_absolute_deviation_stats_schema = null_outliers_schema
     expected_compute_median_absolute_deviation_stats_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
         ]
     )
-
-    flag_outliers_dispersion_schema = expected_compute_dispersion_stats_schema
-    flag_outliers_median_absolute_deviation_schema = (
-        expected_compute_median_absolute_deviation_stats_schema
-    )
-    flag_outliers_expected_schema = StructType(
+    expected_flag_outliers_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
