@@ -1765,67 +1765,6 @@ class IndCQCDataUtils:
         ]
     )
 
-    flag_dormancy_has_changed_over_time_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-        ]
-    )
-    expected_flag_dormancy_has_changed_over_time_schema = StructType(
-        [
-            *flag_dormancy_has_changed_over_time_schema,
-            StructField(
-                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
-            ),
-        ]
-    )
-
-    get_period_when_dormancy_changed_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), False),
-        ]
-    )
-    expected_get_period_when_dormancy_changed_schema = StructType(
-        [
-            *get_period_when_dormancy_changed_schema,
-            StructField(IndCQC.previous_dormancy_value, StringType(), True),
-            StructField(IndCQC.period_when_dormancy_changed, DateType(), True),
-            StructField(
-                IndCQC.estimate_filled_posts_at_period_when_dormancy_changed,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.number_of_days_since_dormancy_change,
-                FloatType(),
-                True,
-            ),
-            StructField(
-                IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
-                FloatType(),
-                True,
-            ),
-        ]
-    )
-
-    flag_location_has_ascwds_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-    expected_flag_location_has_ascwds_value_schema = StructType(
-        [
-            *flag_location_has_ascwds_value_schema,
-            StructField(IndCQC.flag_location_has_ascwds_value, BooleanType(), True),
-        ]
-    )
-
 
 @dataclass
 class CleanIndCQCData:
