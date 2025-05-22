@@ -170,12 +170,12 @@ def main(
     )
     estimate_filled_posts_df = model_imputation_with_extrapolation_and_interpolation(
         estimate_filled_posts_df,
-        IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+        IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant,
         IndCQC.estimate_filled_posts,
-        IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant,
+        IndCQC.imputed_estimate_filled_posts_at_point_of_becoming_non_dormant,
         care_home=False,
     )
-    estimate_filled_posts_df = FPutils.overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
+    estimate_filled_posts_df = FPutils.overwrite_estimate_filled_posts_with_imputed_estimate_filled_posts_at_point_of_becoming_non_dormant(
         estimate_filled_posts_df
     )
 

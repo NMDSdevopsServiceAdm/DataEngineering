@@ -254,17 +254,17 @@ def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataF
     return df
 
 
-def overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
+def overwrite_estimate_filled_posts_with_imputed_estimate_filled_posts_at_point_of_becoming_non_dormant(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Overwrite the estimate_filled_posts column with estimated_filled_posts_at_point_of_becoming_non_dormant.
+    Overwrite the estimate_filled_posts column with estimate_filled_posts_at_point_of_becoming_non_dormant.
 
     Args:
-        df (DataFrame): A dataframe with estimated_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
+        df (DataFrame): A dataframe with estimate_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
 
     Returns:
-        DataFrame: A dataframe with estimate_filled_posts overwritten by estimated_filled_posts_at_point_of_becoming_non_dormant.
+        DataFrame: A dataframe with estimate_filled_posts overwritten by estimate_filled_posts_at_point_of_becoming_non_dormant.
     """
 
     df = df.withColumn(
