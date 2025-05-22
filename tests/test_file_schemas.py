@@ -1747,7 +1747,7 @@ class IndCQCDataUtils:
         [
             *copy_and_fill_filled_posts_when_becoming_not_dormant_schema,
             StructField(
-                IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+                IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant,
                 FloatType(),
                 True,
             ),
@@ -1757,7 +1757,7 @@ class IndCQCDataUtils:
     overwrite_estimate_filled_posts_with_imputed_schema = StructType(
         [
             StructField(
-                IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant,
+                IndCQC.imputed_estimate_filled_posts_at_point_of_becoming_non_dormant,
                 FloatType(),
                 True,
             ),
