@@ -270,4 +270,5 @@ def apply_removal_flag(
             F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
         ),
     )
+
     return df_merged

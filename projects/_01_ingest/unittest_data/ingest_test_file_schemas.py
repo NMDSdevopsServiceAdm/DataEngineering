@@ -449,6 +449,16 @@ class NullPeopleDirectlyEmployedSchema:
             ),
         ]
     )
+    expected_apply_removal_flag_schema = StructType(
+        [
+            *null_outliers_schema,
+            StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
+            StructField(
+                NullPIRTemp.median_absolute_deviation_flag, BooleanType(), True
+            ),
+            StructField(NullPIRTemp.outlier_flag, BooleanType(), True),
+        ]
+    )
 
 
 @dataclass

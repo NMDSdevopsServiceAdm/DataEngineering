@@ -717,6 +717,17 @@ class NullPeopleDirectlyEmployedData:
         ("1-0004", True, True),
     ]
 
+    expected_apply_removal_flag_rows = [
+        ("1-0001", date(2024, 1, 1), 5, False, False, False),
+        ("1-0001", date(2025, 1, 1), 9, False, False, False),
+        ("1-0002", date(2024, 1, 1), 500, False, False, False),
+        ("1-0002", date(2025, 1, 1), 505, False, False, False),
+        ("1-0003", date(2024, 1, 1), None, True, True, True),
+        ("1-0003", date(2025, 1, 1), None, True, True, True),
+        ("1-0004", date(2024, 1, 1), None, True, True, True),
+        ("1-0004", date(2025, 1, 1), None, True, True, True),
+    ]
+
 
 @dataclass
 class ValidatePIRRawData:

@@ -205,3 +205,36 @@ class FlagOutliers(NullPeopleDirectlyEmployedTests):
         expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class ApplyRemovalFlag(NullPeopleDirectlyEmployedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_to_clean_df = self.spark.createDataFrame(
+            Data.null_outliers_rows,
+            Schemas.null_outliers_schema,
+        )
+        test_with_outlier_df = self.spark.createDataFrame(
+            Data.expected_flag_outliers_rows,
+            Schemas.expected_flag_outliers_schema,
+        )
+        self.returned_df = job.apply_removal_flag(
+            test_to_clean_df,
+            test_with_outlier_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_apply_removal_flag_rows,
+            Schemas.expected_apply_removal_flag_schema,
+        )
+
+    def test_apply_removal_flag_returns_expected_columns(
+        self,
+    ):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_apply_removal_flag_returns_expected_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
