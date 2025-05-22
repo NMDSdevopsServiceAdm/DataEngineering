@@ -724,7 +724,7 @@ class NullPeopleDirectlyEmployedData:
         ("1-0003", None),
     ]
 
-    flag_outliers_proportion_of_data_to_remove = 0.01
+    flag_outliers_percentile_threshold = 0.01
     flag_outliers_dispersion_rows = expected_compute_dispersion_stats_rows
     flag_outliers_median_absolute_deviation_rows = (
         expected_compute_median_absolute_deviation_stats_rows

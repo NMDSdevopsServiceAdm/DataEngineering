@@ -188,7 +188,7 @@ class FlagOutliers(NullPeopleDirectlyEmployedTests):
         self.returned_df = job.flag_outliers(
             test_dispersion_df,
             test_median_absolute_deviation_df,
-            Data.flag_outliers_proportion_of_data_to_remove,
+            Data.flag_outliers_percentile_threshold,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.flag_outliers_expected_rows, Schemas.flag_outliers_expected_schema
