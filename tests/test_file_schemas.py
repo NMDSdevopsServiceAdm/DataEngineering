@@ -2770,16 +2770,12 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
     estimated_posts_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.related_location, StringType(), True),
             StructField(IndCQC.time_registered, IntegerType(), True),
             StructField(IndCQC.non_res_without_dormancy_model, FloatType(), True),
             StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-            StructField(
-                IndCQC.flag_dormancy_has_changed_over_time, BooleanType(), True
-            ),
         ]
     )
 
