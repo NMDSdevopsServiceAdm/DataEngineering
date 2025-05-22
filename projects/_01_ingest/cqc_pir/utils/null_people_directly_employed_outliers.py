@@ -137,6 +137,7 @@ def compute_dispersion_stats(df: DataFrame) -> DataFrame:
         (F.col(TempCol.max_people_employed) - F.col(TempCol.min_people_employed))
         / F.col(TempCol.mean_people_employed),
     )
+
     return df_agg
 
 
@@ -159,11 +160,27 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
     w = Window.partitionBy(PIRCleanCols.location_id)
     median: float = 0.5
 
+    value_count = F.count(
+        F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
+    ).over(w)
+    sum_pir_people_directly_employed = F.sum(
+        F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
+    ).over(w)
     df = df.withColumn(
         TempCol.median_people_employed,
-        F.percentile_approx(
-            PIRCleanCols.pir_people_directly_employed_cleaned, median
-        ).over(w),
+        F.when(value_count == 0, F.lit(None))
+        .when(
+            value_count == 1, F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
+        )
+        .when(
+            value_count == 2,
+            sum_pir_people_directly_employed / value_count,
+        )
+        .otherwise(
+            F.percentile_approx(
+                PIRCleanCols.pir_people_directly_employed_cleaned, median
+            ).over(w)
+        ),
     )
     df = calculate_new_column(
         df,
@@ -176,6 +193,7 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
         TempCol.median_absolute_deviation_value,
         F.percentile_approx(TempCol.absolute_deviation, median).over(w),
     )
+
     mad_df = df.select(
         PIRCleanCols.location_id, TempCol.median_absolute_deviation_value
     ).distinct()
