@@ -255,21 +255,21 @@ def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataF
     return df
 
 
-def combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+def overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
     df: DataFrame,
 ) -> DataFrame:
     """
-    Coalesce the columns estimated_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
+    Overwrite the estimate_filled_posts column with estimated_filled_posts_at_point_of_becoming_non_dormant.
 
     Args:
         df (DataFrame): A dataframe with estimated_filled_posts_at_point_of_becoming_non_dormant and estimate_filled_posts.
 
     Returns:
-        DataFrame: A dataframe with new column estimate_filled_posts_adjusted_for_dormancy_change.
+        DataFrame: A dataframe with estimate_filled_posts overwritten by estimated_filled_posts_at_point_of_becoming_non_dormant.
     """
 
     df = df.withColumn(
-        IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
+        IndCQC.estimate_filled_posts,
         F.coalesce(
             F.col(
                 IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant

@@ -46,7 +46,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(
-        f"{PATCH_PATH}.FPutils.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts"
+        f"{PATCH_PATH}.FPutils.overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant"
     )
     @patch(f"{PATCH_PATH}.FPutils.copy_and_fill_filled_posts_when_becoming_not_dormant")
     @patch(f"{PATCH_PATH}.FPutils.merge_columns_in_order")
@@ -66,7 +66,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
         copy_and_fill_filled_posts_when_becoming_not_dormant_mock: Mock,
-        combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts: Mock,
+        overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -100,7 +100,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
         copy_and_fill_filled_posts_when_becoming_not_dormant_mock.assert_called_once()
-        combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts.assert_called_once()
+        overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,

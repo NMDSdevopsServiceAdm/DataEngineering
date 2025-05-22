@@ -175,7 +175,7 @@ def main(
         IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant,
         care_home=False,
     )
-    estimate_filled_posts_df = FPutils.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+    estimate_filled_posts_df = FPutils.overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
         estimate_filled_posts_df
     )
 

@@ -368,22 +368,22 @@ class CopyAndFillFilledPostsWhenBecomingNotDormant(TestIndCqcFilledPostUtils):
         self.assertEqual(returned_data, expected_data)
 
 
-class CombinePostsAtPointOfBecomingNonDormantAndEstimateFilledPosts(
+class OverwriteEstimateFilledPostsWithImputedEstimatedFilledPostsAtPointOfBecomingNonDormant(
     TestIndCqcFilledPostUtils
 ):
     def setUp(self):
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows,
-            Schemas.combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_schema,
+            Data.overwrite_estimate_filled_posts_with_imputed_rows,
+            Schemas.overwrite_estimate_filled_posts_with_imputed_schema,
         )
-        self.returned_df = job.combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts(
+        self.returned_df = job.overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
             self.test_df
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_rows,
-            Schemas.expected_combine_posts_at_point_of_becoming_dormant_and_estimate_filled_posts_schema,
+            Data.expected_overwrite_estimate_filled_posts_with_imputed_rows,
+            Schemas.overwrite_estimate_filled_posts_with_imputed_schema,
         )
 
         self.columns_added_by_function = [
@@ -392,16 +392,7 @@ class CombinePostsAtPointOfBecomingNonDormantAndEstimateFilledPosts(
             if column not in self.test_df.columns
         ]
 
-    def test_combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts_adds_1_expected_column(
-        self,
-    ):
-        self.assertEqual(len(self.columns_added_by_function), 1)
-        self.assertEqual(
-            self.columns_added_by_function[0],
-            IndCQC.estimate_filled_posts_adjusted_for_dormancy_change,
-        )
-
-    def test_combine_posts_at_point_of_becoming_non_dormant_and_estimate_filled_posts_returns_expected_values(
+    def test_overwrite_estimate_filled_posts_with_imputed_returns_expected_values(
         self,
     ):
         returned_data = self.returned_df.collect()
