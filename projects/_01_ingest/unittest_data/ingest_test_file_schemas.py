@@ -12,6 +12,9 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_names.raw_data_files.cqc_pir_columns import (
     CqcPirColumns as CQCPIR,
 )
@@ -23,6 +26,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
@@ -543,5 +549,43 @@ class ValidatePIRCleanedData:
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
             StructField(CQCPIRClean.pir_people_directly_employed, StringType(), True),
             StructField(CQCPIRClean.care_home, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class PostcodeMatcherSchema:
+    locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
+        ]
+    )
+    postcodes_schema = StructType(
+        [
+            StructField(ONS.postcode, StringType(), True),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
+            StructField(ONS.cssr, StringType(), True),
+        ]
+    )
+
+    clean_postcode_column_schema = StructType(
+        [
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.cssr, StringType(), True),
+        ]
+    )
+    expected_clean_postcode_column_when_col_not_dropped_schema = StructType(
+        [
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.cssr, StringType(), True),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+        ]
+    )
+    expected_clean_postcode_column_when_col_is_dropped_schema = StructType(
+        [
+            StructField(CQCLClean.cssr, StringType(), True),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
         ]
     )
