@@ -352,7 +352,7 @@ class CopyAndFillFilledPostsWhenBecomingNotDormant(TestIndCqcFilledPostUtils):
         self.assertEqual(len(self.columns_added_by_function), 1)
         self.assertEqual(
             self.columns_added_by_function[0],
-            IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant,
+            IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant,
         )
 
     def test_copy_and_fill_filled_posts_when_becoming_not_dormant_returns_expected_values(
