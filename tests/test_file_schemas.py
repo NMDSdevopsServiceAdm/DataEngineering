@@ -3015,6 +3015,24 @@ class ModelNonResWithAndWithoutDormancyCombinedSchemas:
         ]
     )
 
+    combine_model_predictions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
+            StructField(
+                NRModel_TempCol.non_res_without_dormancy_model_adjusted_and_residual_applied,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+    expected_combine_model_predictions_schema = StructType(
+        [
+            *combine_model_predictions_schema,
+            StructField(IndCQC.prediction, FloatType(), True),
+        ]
+    )
+
 
 @dataclass
 class EstimateFilledPostsModelsUtils:
