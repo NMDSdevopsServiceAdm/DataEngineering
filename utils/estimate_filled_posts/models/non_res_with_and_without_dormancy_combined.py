@@ -10,9 +10,7 @@ from utils.estimate_filled_posts.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
-from utils.ind_cqc_filled_posts_utils.utils import (
-    get_selected_value,
-)
+from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 
 def combine_non_res_with_and_without_dormancy_models(
@@ -31,7 +29,6 @@ def combine_non_res_with_and_without_dormancy_models(
     locations_reduced_df = locations_df.select(
         IndCqc.location_id,
         IndCqc.cqc_location_import_date,
-        IndCqc.dormancy,
         IndCqc.care_home,
         IndCqc.related_location,
         IndCqc.time_registered,

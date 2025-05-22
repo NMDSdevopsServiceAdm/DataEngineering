@@ -228,7 +228,7 @@ def copy_and_fill_filled_posts_when_becoming_not_dormant(df: DataFrame) -> DataF
 
     w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
 
-    new_column = IndCQC.estimated_filled_posts_at_point_of_becoming_non_dormant
+    new_column = IndCQC.estimate_filled_posts_at_point_of_becoming_non_dormant
     prev_dormancy = F.lag(IndCQC.dormancy).over(w)
     current_dormancy = F.col(IndCQC.dormancy)
     prev_filled_posts = F.lag(IndCQC.estimate_filled_posts).over(w)
@@ -271,7 +271,7 @@ def overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point
         IndCQC.estimate_filled_posts,
         F.coalesce(
             F.col(
-                IndCQC.imputed_estimated_filled_posts_at_point_of_becoming_non_dormant
+                IndCQC.imputed_estimate_filled_posts_at_point_of_becoming_non_dormant
             ),
             F.col(IndCQC.estimate_filled_posts),
         ),
