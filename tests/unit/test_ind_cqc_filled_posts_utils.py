@@ -378,7 +378,7 @@ class OverwriteEstimateFilledPostsWithImputedEstimatedFilledPostsAtPointOfBecomi
             Data.overwrite_estimate_filled_posts_with_imputed_rows,
             Schemas.overwrite_estimate_filled_posts_with_imputed_schema,
         )
-        self.returned_df = job.overwrite_estimate_filled_posts_with_imputed_estimated_filled_posts_at_point_of_becoming_non_dormant(
+        self.returned_df = job.overwrite_estimate_filled_posts_with_imputed_estimate_filled_posts_at_point_of_becoming_non_dormant(
             self.test_df
         )
         self.expected_df = self.spark.createDataFrame(
