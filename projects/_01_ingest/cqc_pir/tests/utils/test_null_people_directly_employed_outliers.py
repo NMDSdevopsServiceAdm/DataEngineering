@@ -133,8 +133,8 @@ class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_compute_dispersion_stats_returns_expected_values(self):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.sort(PIRCleanCols.location_id).collect()
+        expected_data = self.expected_df.sort(PIRCleanCols.location_id).collect()
 
         for row in range(len(expected_data)):
             for col in self.expected_df.columns:
