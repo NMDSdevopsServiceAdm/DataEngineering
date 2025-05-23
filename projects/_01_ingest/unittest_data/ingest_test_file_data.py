@@ -699,8 +699,8 @@ class CleanCQCPIRData:
 
 
 @dataclass
-class CleanPeopleDirectlyEmployedData:
-    clean_people_directly_employed_outliers_rows = [
+class NullPeopleDirectlyEmployedData:
+    null_people_directly_employed_outliers_rows = [
         ("1-0001", date(2024, 1, 1), 1),
         ("1-0001", date(2025, 1, 1), 10),
         ("1-0002", date(2024, 1, 1), 100),
@@ -726,6 +726,76 @@ class CleanPeopleDirectlyEmployedData:
         ("1-0003", date(2025, 1, 1), 100),
         ("1-0004", date(2024, 1, 1), 500),
         ("1-0004", date(2025, 1, 1), 600),
+    ]
+
+    null_outliers_rows = [
+        ("1-0001", date(2024, 1, 1), 5),
+        ("1-0001", date(2025, 1, 1), 9),
+        ("1-0002", date(2024, 1, 1), 500),
+        ("1-0002", date(2025, 1, 1), 505),
+        ("1-0003", date(2024, 1, 1), 1),
+        ("1-0003", date(2025, 1, 1), 100),
+        ("1-0004", date(2024, 1, 1), 40),
+        ("1-0004", date(2025, 1, 1), 200),
+    ]
+    expected_null_outliers_rows = [
+        ("1-0001", date(2024, 1, 1), 5),
+        ("1-0001", date(2025, 1, 1), 9),
+        ("1-0002", date(2024, 1, 1), 500),
+        ("1-0002", date(2025, 1, 1), 505),
+        ("1-0003", date(2024, 1, 1), None),
+        ("1-0003", date(2025, 1, 1), None),
+        ("1-0004", date(2024, 1, 1), None),
+        ("1-0004", date(2025, 1, 1), None),
+    ]
+
+    expected_compute_dispersion_stats_rows = [
+        ("1-0001", 9, 5, 7.0, 0.571),
+        ("1-0002", 505, 500, 502.5, 0.010),
+        ("1-0003", 100, 1, 50.5, 1.960),
+        ("1-0004", 200, 40, 120.0, 1.333),
+    ]
+
+    expected_compute_median_absolute_deviation_stats_rows = [
+        ("1-0001", 2.0),
+        ("1-0002", 2.5),
+        ("1-0003", 49.5),
+        ("1-0004", 80.0),
+    ]
+
+    test_flag_outliers_percentile_threshold = 0.5
+    expected_flag_outliers_rows = [
+        ("1-0001", False, False),
+        ("1-0002", False, False),
+        ("1-0003", True, True),
+        ("1-0004", True, True),
+    ]
+
+    apply_removal_flag_to_clean_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2025, 1, 1), 1),
+        ("1-0002", date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 1, 1), 1),
+        ("1-0003", date(2024, 1, 1), 1),
+        ("1-0003", date(2025, 1, 1), 1),
+        ("1-0004", date(2024, 1, 1), 1),
+        ("1-0004", date(2025, 1, 1), 1),
+    ]
+    apply_removal_flag_with_outlier_flags_rows = [
+        ("1-0001", True, False),
+        ("1-0002", False, True),
+        ("1-0003", True, True),
+        ("1-0004", False, False),
+    ]
+    expected_apply_removal_flag_rows = [
+        ("1-0001", date(2024, 1, 1), None, True, False, True),
+        ("1-0001", date(2025, 1, 1), None, True, False, True),
+        ("1-0002", date(2024, 1, 1), None, False, True, True),
+        ("1-0002", date(2025, 1, 1), None, False, True, True),
+        ("1-0003", date(2024, 1, 1), None, True, True, True),
+        ("1-0003", date(2025, 1, 1), None, True, True, True),
+        ("1-0004", date(2024, 1, 1), 1, False, False, False),
+        ("1-0004", date(2025, 1, 1), 1, False, False, False),
     ]
 
 
