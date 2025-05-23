@@ -15,10 +15,10 @@
               "Parameters": {
                 "JobName": "${merge_ind_cqc_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api_cleaned/",
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
                   "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                  "--cleaned_ascwds_workplace_source": "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace_cleaned/",
-                  "--cleaned_non_res_ct_source": "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+                  "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                  "--cleaned_non_res_ct_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
                   "--destination": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
                 }
               },
@@ -54,7 +54,7 @@
                       "Parameters": {
                         "JobName": "${validate_merged_ind_cqc_data_job_name}",
                         "Arguments": {
-                          "--cleaned_cqc_location_source": "s3://sfc-main-datasets/domain=CQC/dataset=locations_api_cleaned/",
+                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
                           "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_merged_data/"
                         }
