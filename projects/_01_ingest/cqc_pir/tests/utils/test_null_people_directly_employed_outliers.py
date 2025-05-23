@@ -94,6 +94,9 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
             Data.null_outliers_rows,
             Schemas.null_outliers_schema,
         )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_null_outliers_rows, Schemas.null_outliers_schema
+        )
 
     @patch(f"{PATCH_PATH}.apply_removal_flag")
     @patch(f"{PATCH_PATH}.flag_outliers")
@@ -106,12 +109,21 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
         flag_outliers_mock: Mock,
         apply_removal_flag_mock: Mock,
     ):
-        job.null_outliers(self.test_df, self.data_to_filter)
+        returned_df = job.null_outliers(self.test_df, self.data_to_filter)
 
         compute_dispersion_stats_mock.assert_called_once()
         compute_median_absolute_deviation_stats_mock.assert_called_once()
         flag_outliers_mock.assert_called_once()
         apply_removal_flag_mock.assert_called_once()
+
+    def test_null_outliers_returns_expected_values(
+        self,
+    ):
+        returned_df = job.null_outliers(self.test_df, self.data_to_filter)
+        returned_data = returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):

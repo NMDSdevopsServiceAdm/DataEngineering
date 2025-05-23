@@ -694,6 +694,16 @@ class NullPeopleDirectlyEmployedData:
         ("1-0004", date(2024, 1, 1), 40),
         ("1-0004", date(2025, 1, 1), 200),
     ]
+    expected_null_outliers_rows = [
+        ("1-0001", date(2024, 1, 1), 5),
+        ("1-0001", date(2025, 1, 1), 9),
+        ("1-0002", date(2024, 1, 1), 500),
+        ("1-0002", date(2025, 1, 1), 505),
+        ("1-0003", date(2024, 1, 1), None),
+        ("1-0003", date(2025, 1, 1), None),
+        ("1-0004", date(2024, 1, 1), None),
+        ("1-0004", date(2025, 1, 1), None),
+    ]
 
     expected_compute_dispersion_stats_rows = [
         ("1-0001", 9, 5, 7.0, 0.571),
