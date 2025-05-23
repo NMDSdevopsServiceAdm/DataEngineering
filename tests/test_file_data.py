@@ -2498,6 +2498,47 @@ class CQCLocationsData:
         ),
     ]
 
+    add_column_for_earliest_import_date_per_dormancy_value_rows = [
+        ("1-001", date(2025, 1, 1), None),
+        ("1-001", date(2025, 2, 1), None),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant),
+        ("1-001", date(2025, 9, 1), None),
+        ("1-001", date(2025, 10, 1), None),
+    ]
+    expected_add_column_for_earliest_import_date_per_dormancy_value_rows = [
+        ("1-001", date(2025, 1, 1), None, date(2025, 1, 1)),
+        ("1-001", date(2025, 2, 1), None, date(2025, 1, 1)),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, date(2025, 3, 1)),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, date(2025, 3, 1)),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, date(2025, 5, 1)),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant, date(2025, 5, 1)),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant, date(2025, 7, 1)),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant, date(2025, 7, 1)),
+        ("1-001", date(2025, 9, 1), None, date(2025, 9, 1)),
+        ("1-001", date(2025, 10, 1), None, date(2025, 9, 1)),
+    ]
+
+    calculate_months_since_not_dormant_rows = (
+        expected_add_column_for_earliest_import_date_per_dormancy_value_rows
+    )
+    expected_calculate_months_since_not_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None, date(2025, 1, 1), 1),
+        ("1-001", date(2025, 2, 1), None, date(2025, 1, 1), 2),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, date(2025, 3, 1), 1),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, date(2025, 3, 1), 1),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, date(2025, 5, 1), 1),
+        ("1-001", date(2025, 6, 1), Dormancy.not_dormant, date(2025, 5, 1), 2),
+        ("1-001", date(2025, 7, 1), Dormancy.dormant, date(2025, 7, 1), 1),
+        ("1-001", date(2025, 8, 1), Dormancy.dormant, date(2025, 7, 1), 1),
+        ("1-001", date(2025, 9, 1), None, date(2025, 9, 1), 1),
+        ("1-001", date(2025, 10, 1), None, date(2025, 9, 1), 2),
+    ]
+
 
 @dataclass
 class ExtractRegisteredManagerNamesData:
@@ -4391,13 +4432,13 @@ class WinsorizeCareHomeFilledPostsPerBedRatioOutliersData:
 class NonResAscwdsFeaturesData(object):
     # fmt: off
     rows = [
-        ("1-00001", date(2022, 2, 1), date(2019, 1, 1), 35, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 17.5, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
-        ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], None, PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
-        ("1-00007", date(2022, 2, 1), date(2019, 2, 1), 36, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00001", date(2022, 2, 1), date(2019, 1, 1), 35, 1, Region.south_east, Dormancy.dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 17.5, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.has_related_location, '2022', '02', '01', '20220201'),
+        ("1-00002", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.south_east, Dormancy.not_dormant, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, 67.0, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00003", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.south_west, Dormancy.dormant, [Services.urgent_care_services, Services.supported_living_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00004", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, None, [Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.rural_hamlet, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00005", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia, Specialisms.mental_health], PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00006", date(2022, 2, 1), date(2019, 2, 1), 36, 10, Region.north_east, Dormancy.not_dormant, [Services.specialist_college_service, Services.domiciliary_care_service], [{IndCQC.name:"name", IndCQC.code: "code"}], None, PrimaryServiceType.non_residential, None, 20.0, 20.0, CareHome.not_care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
+        ("1-00007", date(2022, 2, 1), date(2019, 2, 1), 36, 1, Region.north_west, Dormancy.dormant, [Services.supported_living_service, Services.care_home_service_with_nursing], [{IndCQC.name:"name", IndCQC.code: "code"}], [Specialisms.dementia], PrimaryServiceType.care_home_with_nursing, None, 20.0, 20.0, CareHome.care_home, RUI.urban_city, RelatedLocation.no_related_location, '2022', '02', '01', '20220201'),
     ]
     # fmt: on
 

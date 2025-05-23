@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
+    Dormancy,
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
@@ -110,6 +111,12 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
     cqc_location_df = calculate_time_registered_for(cqc_location_df)
+
+    cqc_location_df = add_column_for_earliest_import_date_per_dormancy_value(
+        cqc_location_df
+    )
+
+    cqc_location_df = calculate_months_since_not_dormant(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
@@ -778,6 +785,99 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             "All postcodes were found in the ONS postcode file, returning original dataframe"
         )
         return cleaned_locations_df
+
+
+def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> DataFrame:
+    """
+    Adds a column that repeats the earliest cqc_location_import_date across rows where dormancy column is the same per location.
+
+    Args:
+        df (DataFrame): A dataframe with cqc_location_import_date and dormancy columns.
+
+    Returns:
+        DataFrame: A dataframe with additional earliest_import_date_per_dormancy_value column.
+    """
+
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+
+    temp_previous_dormancy_column = "temp_previous_dormancy_column"
+    df = df.withColumn(
+        temp_previous_dormancy_column,
+        F.lag(F.col(CQCLClean.dormancy), offset=1).over(w),
+    )
+
+    temp_dormancy_change_flag_column = "temp_dormancy_change_flag_column"
+    df = df.withColumn(
+        temp_dormancy_change_flag_column,
+        F.when(
+            (
+                F.col(CQCLClean.dormancy).isNull()
+                & F.col(temp_previous_dormancy_column).isNotNull()
+            )
+            | (
+                F.col(CQCLClean.dormancy).isNotNull()
+                & F.col(temp_previous_dormancy_column).isNull()
+            )
+            | (F.col(CQCLClean.dormancy) != F.col(temp_previous_dormancy_column)),
+            1,
+        ).otherwise(0),
+    ).fillna(1, subset=temp_dormancy_change_flag_column)
+
+    temp_streak_id_column = "temp_streak_id_column"
+    df = df.withColumn(
+        temp_streak_id_column,
+        F.sum(F.col(temp_dormancy_change_flag_column)).over(
+            w.rowsBetween(Window.unboundedPreceding, 0)
+        ),
+    )
+
+    w_streak = Window.partitionBy(CQCLClean.location_id, temp_streak_id_column)
+
+    df = df.withColumn(
+        CQCLClean.earliest_import_date_per_dormancy_value,
+        F.min(CQCLClean.cqc_location_import_date).over(w_streak),
+    )
+
+    df = df.drop(
+        temp_previous_dormancy_column,
+        temp_dormancy_change_flag_column,
+        temp_streak_id_column,
+    )
+
+    return df
+
+
+def calculate_months_since_not_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show number of months since location became non-dormant.
+
+    When a locations dormancy is null then this shows the number of consecutive months while dormancy is null.
+    When a ocation is dormant then this shows 1 for all periods while location is dormant.
+    When a location is not dormant then this shows the consecutive number of months while not dormant.
+
+    Args:
+        df (DataFrame): A dataframe with dormancy column and earliest_import_date_per_dormancy_value.
+
+    Returns:
+        DataFrame: A dataframe with additional months_since_not_dormant column.
+    """
+
+    df = df.withColumn(
+        CQCLClean.months_since_not_dormant,
+        F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+            F.floor(
+                F.months_between(
+                    F.col(CQCLClean.cqc_location_import_date),
+                    F.col(CQCLClean.earliest_import_date_per_dormancy_value),
+                )
+            )
+            + 1
+        ),
+    )
+
+    return df
 
 
 if __name__ == "__main__":
