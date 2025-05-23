@@ -212,12 +212,12 @@ class ApplyRemovalFlag(NullPeopleDirectlyEmployedTests):
         super().setUp()
 
         test_to_clean_df = self.spark.createDataFrame(
-            Data.null_outliers_rows,
-            Schemas.null_outliers_schema,
+            Data.apply_removal_flag_to_clean_rows,
+            Schemas.apply_removal_flag_to_clean_schema,
         )
         test_with_outlier_df = self.spark.createDataFrame(
-            Data.expected_flag_outliers_rows,
-            Schemas.expected_flag_outliers_schema,
+            Data.apply_removal_flag_with_outlier_flags_rows,
+            Schemas.apply_removal_flag_with_outlier_flags_schema,
         )
         self.returned_df = job.apply_removal_flag(
             test_to_clean_df,

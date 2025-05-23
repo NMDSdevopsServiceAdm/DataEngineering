@@ -717,15 +717,31 @@ class NullPeopleDirectlyEmployedData:
         ("1-0004", True, True),
     ]
 
+    apply_removal_flag_to_clean_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2025, 1, 1), 1),
+        ("1-0002", date(2024, 1, 1), 1),
+        ("1-0002", date(2025, 1, 1), 1),
+        ("1-0003", date(2024, 1, 1), 1),
+        ("1-0003", date(2025, 1, 1), 1),
+        ("1-0004", date(2024, 1, 1), 1),
+        ("1-0004", date(2025, 1, 1), 1),
+    ]
+    apply_removal_flag_with_outlier_flags_rows = [
+        ("1-0001", True, False),
+        ("1-0002", False, True),
+        ("1-0003", True, True),
+        ("1-0004", False, False),
+    ]
     expected_apply_removal_flag_rows = [
-        ("1-0001", date(2024, 1, 1), 5, False, False, False),
-        ("1-0001", date(2025, 1, 1), 9, False, False, False),
-        ("1-0002", date(2024, 1, 1), 500, False, False, False),
-        ("1-0002", date(2025, 1, 1), 505, False, False, False),
+        ("1-0001", date(2024, 1, 1), None, True, False, True),
+        ("1-0001", date(2025, 1, 1), None, True, False, True),
+        ("1-0002", date(2024, 1, 1), None, False, True, True),
+        ("1-0002", date(2025, 1, 1), None, False, True, True),
         ("1-0003", date(2024, 1, 1), None, True, True, True),
         ("1-0003", date(2025, 1, 1), None, True, True, True),
-        ("1-0004", date(2024, 1, 1), None, True, True, True),
-        ("1-0004", date(2025, 1, 1), None, True, True, True),
+        ("1-0004", date(2024, 1, 1), 1, False, False, False),
+        ("1-0004", date(2025, 1, 1), 1, False, False, False),
     ]
 
 

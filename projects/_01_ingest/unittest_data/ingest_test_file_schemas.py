@@ -425,6 +425,7 @@ class NullPeopleDirectlyEmployedSchema:
             ),
         ]
     )
+
     expected_compute_dispersion_stats_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
@@ -434,12 +435,14 @@ class NullPeopleDirectlyEmployedSchema:
             StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
         ]
     )
+
     expected_compute_median_absolute_deviation_stats_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
         ]
     )
+
     expected_flag_outliers_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
@@ -449,6 +452,9 @@ class NullPeopleDirectlyEmployedSchema:
             ),
         ]
     )
+
+    apply_removal_flag_to_clean_schema = null_outliers_schema
+    apply_removal_flag_with_outlier_flags_schema = expected_flag_outliers_schema
     expected_apply_removal_flag_schema = StructType(
         [
             *null_outliers_schema,
