@@ -234,7 +234,11 @@ class ApplyRemovalFlag(NullPeopleDirectlyEmployedTests):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_apply_removal_flag_returns_expected_values(self):
-        returned_data = self.returned_df.collect()
-        expected_data = self.expected_df.collect()
+        returned_data = self.returned_df.sort(
+            [PIRCleanCols.location_id, PIRCleanCols.cqc_pir_import_date]
+        ).collect()
+        expected_data = self.expected_df.sort(
+            [PIRCleanCols.location_id, PIRCleanCols.cqc_pir_import_date]
+        ).collect()
 
         self.assertEqual(returned_data, expected_data)
