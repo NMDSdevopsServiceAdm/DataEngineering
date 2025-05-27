@@ -195,7 +195,7 @@ module "clean_ons_data_job" {
 
 module "archive_filled_posts_estimates_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_08_archive_estimates/jobs"
   script_name     = "archive_filled_posts_estimates.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
