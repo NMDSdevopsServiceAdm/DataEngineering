@@ -40,7 +40,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         )
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.clean_people_directly_employed_outliers")
+    @patch(f"{PATCH_PATH}.null_people_directly_employed_outliers")
     @patch(f"{PATCH_PATH}.filter_latest_submission_date")
     @patch(f"{PATCH_PATH}.add_care_home_column")
     @patch(f"{PATCH_PATH}.remove_unused_pir_types")
@@ -55,7 +55,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         remove_unused_pir_types_patch: Mock,
         add_care_home_column_patch: Mock,
         filter_latest_submission_date_patch: Mock,
-        clean_people_directly_employed_outliers_patch: Mock,
+        null_people_directly_employed_outliers_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
@@ -66,7 +66,7 @@ class CleanCQCpirDatasetTests(unittest.TestCase):
         remove_unused_pir_types_patch.assert_called_once()
         add_care_home_column_patch.assert_called_once()
         filter_latest_submission_date_patch.assert_called_once()
-        clean_people_directly_employed_outliers_patch.assert_called_once()
+        null_people_directly_employed_outliers_patch.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
