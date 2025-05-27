@@ -96,7 +96,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.location_id,
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)
@@ -128,7 +128,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.location_id,
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)
@@ -160,7 +160,7 @@ class CalculateRollingSumOfCountOfJobRoles(
                 IndCQC.location_id,
                 IndCQC.unix_time,
                 IndCQC.primary_service_type,
-                IndCQC.ascwds_job_role_counts_interpolated,
+                IndCQC.imputed_ascwds_job_role_counts,
                 IndCQC.ascwds_job_role_rolling_sum,
             )
             .orderBy(IndCQC.location_id, IndCQC.unix_time)

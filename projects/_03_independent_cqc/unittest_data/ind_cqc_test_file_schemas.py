@@ -116,6 +116,15 @@ class ModelAndMergePirData:
         ]
     )
 
+    include_pir_if_never_submitted_ascwds_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+            StructField(IndCQC.ascwds_pir_merged, FloatType(), True),
+            StructField(IndCQC.pir_filled_posts_model, FloatType(), True),
+        ]
+    )
+
     drop_temporary_columns_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

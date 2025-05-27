@@ -254,19 +254,6 @@ class CQCProviderData:
 
 
 @dataclass
-class ONSData:
-    # fmt: off
-    ons_sample_rows_full = [
-        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class CapacityTrackerCareHomeData:
     capacity_tracker_care_home_rows = [
         (
@@ -7317,27 +7304,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePostcodeDirectoryCleanedData:
-    # fmt: off
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101"),
-        ("AB2 2CD", "20240101"),
-        ("AB1 2CD", "20240201"),
-        ("AB2 2CD", "20240201"),
-    ]
-
-    cleaned_postcode_directory_rows = [
-        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = raw_postcode_directory_rows
-
-
-@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
@@ -7423,6 +7389,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
         ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
         ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
     ]
+    # fmt: on
 
 
 @dataclass
@@ -7525,17 +7492,6 @@ class ValidateProvidersAPIRawData:
         ("1-000000002", "20240101", "name"),
         ("1-000000001", "20240201", "name"),
         ("1-000000002", "20240201", "name"),
-    ]
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    # fmt: off
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
     ]
 
 
@@ -10316,7 +10272,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    transform_interpolated_job_role_ratios_to_counts_rows = [
+    transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,
@@ -10343,7 +10299,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
-    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+    expected_transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,

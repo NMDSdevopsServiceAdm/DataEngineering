@@ -1368,23 +1368,21 @@ class FilterAscwdsJobRoleCountMapWhenJobGroupRatiosOutsidePercentileBoundaries(
         self.assertEqual(expected_data, returned_data)
 
 
-class TransformInterpolatedJobRoleRatiosToCounts(
+class TransformImputedJobRoleRatiosToCounts(
     EstimateIndCQCFilledPostsByJobRoleUtilsTests
 ):
     def setUp(self) -> None:
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.transform_interpolated_job_role_ratios_to_counts_rows,
-            Schemas.transform_interpolated_job_role_ratios_to_counts_schema,
+            Data.transform_imputed_job_role_ratios_to_counts_rows,
+            Schemas.transform_imputed_job_role_ratios_to_counts_schema,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_transform_interpolated_job_role_ratios_to_counts_rows,
-            Schemas.expected_transform_interpolated_job_role_ratios_to_counts_schema,
+            Data.expected_transform_imputed_job_role_ratios_to_counts_rows,
+            Schemas.expected_transform_imputed_job_role_ratios_to_counts_schema,
         )
-        self.returned_df = job.transform_interpolated_job_role_ratios_to_counts(
-            self.test_df
-        )
+        self.returned_df = job.transform_imputed_job_role_ratios_to_counts(self.test_df)
 
         self.new_columns_added = [
             column
@@ -1392,15 +1390,15 @@ class TransformInterpolatedJobRoleRatiosToCounts(
             if column not in self.test_df.columns
         ]
 
-    def test_transform_interpolated_job_role_ratios_to_counts_adds_1_expected_column(
+    def test_transform_imputed_job_role_ratios_to_counts_adds_1_expected_column(
         self,
     ):
         self.assertEqual(len(self.new_columns_added), 1)
         self.assertEqual(
-            self.new_columns_added[0], IndCQC.ascwds_job_role_counts_interpolated
+            self.new_columns_added[0], IndCQC.imputed_ascwds_job_role_counts
         )
 
-    def test_transform_interpolated_job_role_ratios_to_counts_returns_expected_data(
+    def test_transform_imputed_job_role_ratios_to_counts_returns_expected_data(
         self,
     ):
         expected_data = self.expected_df.collect()
@@ -1408,10 +1406,10 @@ class TransformInterpolatedJobRoleRatiosToCounts(
 
         for row in range(len(expected_data)):
             expected_dict: dict = expected_data[row][
-                IndCQC.ascwds_job_role_counts_interpolated
+                IndCQC.imputed_ascwds_job_role_counts
             ]
             returned_dict: dict = returned_data[row][
-                IndCQC.ascwds_job_role_counts_interpolated
+                IndCQC.imputed_ascwds_job_role_counts
             ]
 
             try:
