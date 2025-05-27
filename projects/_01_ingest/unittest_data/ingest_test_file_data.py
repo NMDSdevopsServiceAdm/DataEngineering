@@ -699,8 +699,8 @@ class CleanCQCPIRData:
 
 
 @dataclass
-class CleanPeopleDirectlyEmployedData:
-    clean_people_directly_employed_outliers_rows = [
+class NullPeopleDirectlyEmployedData:
+    null_people_directly_employed_outliers_rows = [
         ("1-0001", date(2024, 1, 1), 1),
         ("1-0001", date(2025, 1, 1), 10),
         ("1-0002", date(2024, 1, 1), 100),
