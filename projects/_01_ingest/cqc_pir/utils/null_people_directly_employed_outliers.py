@@ -203,7 +203,7 @@ def compute_median(df: DataFrame, col_to_analyse: str, new_col_name: str) -> Dat
 
 
 def flag_outliers(
-    df_dispersion: DataFrame, df_mad: DataFrame, cutoff: float
+    df_dispersion: DataFrame, df_mad: DataFrame, proportion_of_data_to_filter: float
 ) -> DataFrame:
     """
     Flags workplaces in the top percentile of dispersion ratio or MAD value.
@@ -211,18 +211,20 @@ def flag_outliers(
     Args:
         df_dispersion (DataFrame): DataFrame with 'location_id' and 'dispersion_ratio'.
         df_mad (DataFrame): DataFrame with 'location_id' and 'mad_value'.
-        cutoff (float): Percentile threshold for outlier removal.
+        proportion_of_data_to_filter (float): Proportion of data to remove as outliers.
 
     Returns:
         DataFrame: Contains 'location_id', 'dispersion_flag', and 'mad_flag'.
     """
+    proportion_of_data_to_keep = 1 - proportion_of_data_to_filter
+
     df_joined = df_dispersion.join(df_mad, on=PIRCleanCols.location_id)
 
-    disp_threshold = df_joined.approxQuantile(TempCol.dispersion_ratio, [cutoff], 0.01)[
-        0
-    ]
+    disp_threshold = df_joined.approxQuantile(
+        TempCol.dispersion_ratio, [proportion_of_data_to_keep], 0.01
+    )[0]
     mad_threshold = df_joined.approxQuantile(
-        TempCol.median_absolute_deviation, [cutoff], 0.01
+        TempCol.median_absolute_deviation, [proportion_of_data_to_keep], 0.01
     )[0]
 
     df_joined = df_joined.withColumn(
