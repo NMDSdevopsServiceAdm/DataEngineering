@@ -559,6 +559,22 @@ class NullPeopleDirectlyEmployedSchema:
         ]
     )
 
+    compute_median_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+    expected_compute_median_schema = StructType(
+        [
+            *compute_median_schema,
+            StructField(NullPIRTemp.median_absolute_deviation, FloatType(), True),
+        ]
+    )
+
     expected_flag_outliers_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),

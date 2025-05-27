@@ -180,6 +180,39 @@ class ComputeMedianAbsoluteDeviationStatsTests(NullPeopleDirectlyEmployedTests):
             )
 
 
+class ComputeMedianTests(NullPeopleDirectlyEmployedTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.compute_median_rows,
+            Schemas.compute_median_schema,
+        )
+        self.returned_df = job.compute_median(
+            self.test_df,
+            PIRCleanCols.pir_people_directly_employed_cleaned,
+            NullPIRTemp.median_absolute_deviation,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_compute_median_rows,
+            Schemas.expected_compute_median_schema,
+        )
+
+    def test_compute_median_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+    def test_compute_median_returns_expected_values(self):
+        returned_data = self.returned_df.sort(PIRCleanCols.location_id).collect()
+        expected_data = self.expected_df.collect()
+
+        for row in range(len(expected_data)):
+            self.assertAlmostEqual(
+                returned_data[row][NullPIRTemp.median_absolute_deviation],
+                expected_data[row][NullPIRTemp.median_absolute_deviation],
+                places=3,
+            )
+
+
 class FlagOutliers(NullPeopleDirectlyEmployedTests):
     def setUp(self) -> None:
         super().setUp()
