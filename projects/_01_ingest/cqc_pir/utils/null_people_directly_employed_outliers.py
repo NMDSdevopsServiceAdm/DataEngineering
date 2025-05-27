@@ -98,31 +98,11 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
         DataFrame: DataFrame with 'staff_cleaned' and removal flags.
     """
     df_dispersion = compute_dispersion_stats(df)
-    print("Dispertion stats")
-    df_dispersion.sort(F.desc(TempCol.dispersion_ratio)).show(50)
 
     df_mad = compute_median_absolute_deviation_stats(df)
-    print("MAD stats")
-    df_mad.sort(F.desc(TempCol.median_absolute_deviation)).show(50)
 
     df_flags = flag_outliers(df_dispersion, df_mad, proportion_of_data_to_filter)
-    print("Flagged outliers")
-    df_flags.where(
-        (F.col(PIRCleanCols.location_id) == "1-5801302321")
-        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
-        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
-        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
-        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
-    ).sort(PIRCleanCols.location_id).show()
     cleaned_df = apply_removal_flag(df, df_flags)
-    print("Allpy flags")
-    cleaned_df.where(
-        (F.col(PIRCleanCols.location_id) == "1-5801302321")
-        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
-        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
-        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
-        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
-    ).sort(PIRCleanCols.location_id).show()
 
     columns_to_drop = [field.name for field in fields(TempCol())]
     cleaned_df = cleaned_df.drop(*columns_to_drop)
@@ -244,22 +224,24 @@ def flag_outliers(
 
     df_joined = df_dispersion.join(df_mad, on=PIRCleanCols.location_id)
 
-    disp_threshold = df_joined.approxQuantile(
-        TempCol.dispersion_ratio, [proportion_of_data_to_keep], 0.01
-    )[0]
-    mad_threshold = df_joined.approxQuantile(
-        TempCol.median_absolute_deviation, [proportion_of_data_to_keep], 0.01
-    )[0]
-    print(f"Dispersion threshold: {disp_threshold}")
-    print(f"MAD threshold: {mad_threshold}")
+    percentile_df = df_joined.agg(
+        F.expr(
+            f"percentile({TempCol.dispersion_ratio}, array({proportion_of_data_to_keep}))"
+        )[0].alias(TempCol.dispersion_ratio_cutoff),
+        F.expr(
+            f"percentile({TempCol.median_absolute_deviation}, array({proportion_of_data_to_keep}))"
+        )[0].alias(TempCol.median_absolute_deviation_cutoff),
+    )
+    df_joined = df_joined.join(percentile_df)
 
     df_joined = df_joined.withColumn(
         TempCol.dispersion_outlier_flag,
-        F.col(TempCol.dispersion_ratio) > disp_threshold,
+        F.col(TempCol.dispersion_ratio) > F.col(TempCol.dispersion_ratio_cutoff),
     )
     df_joined = df_joined.withColumn(
         TempCol.median_absolute_deviation_flag,
-        F.col(TempCol.median_absolute_deviation) > mad_threshold,
+        F.col(TempCol.median_absolute_deviation)
+        > F.col(TempCol.median_absolute_deviation_cutoff),
     )
 
     df_joined = df_joined.select(
