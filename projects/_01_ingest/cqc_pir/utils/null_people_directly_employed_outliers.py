@@ -257,6 +257,8 @@ def flag_outliers(
     mad_threshold = df_joined.approxQuantile(
         TempCol.median_absolute_deviation, [proportion_of_data_to_keep], 0.01
     )[0]
+    print(f"Dispersion threshold: {disp_threshold}")
+    print(f"MAD threshold: {mad_threshold}")
 
     df_joined = df_joined.withColumn(
         TempCol.dispersion_outlier_flag,
