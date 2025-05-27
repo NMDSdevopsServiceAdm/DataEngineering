@@ -510,6 +510,7 @@ class NullPeopleDirectlyEmployedSchema:
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
             StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
         ]
     )

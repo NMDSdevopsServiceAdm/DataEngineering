@@ -7,6 +7,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as PIRCleanCols,
     NullPeopleDirectlyEmployedTemporaryColumns as TempCol,
 )
+from utils.column_values.categorical_column_values import CareHome
 from projects.utils.utils.utils import calculate_new_column
 
 PROPORTION_OF_DATA_TO_REMOVE: float = (
@@ -31,7 +32,10 @@ def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(
         PIRCleanCols.pir_people_directly_employed_cleaned,
-        F.col(PIRCols.pir_people_directly_employed),
+        F.when(
+            F.col(PIRCleanCols.care_home) == CareHome.not_care_home,
+            F.col(PIRCols.pir_people_directly_employed),
+        ).otherwise(F.lit(None)),
     )
 
     df = null_large_single_submission_locations(df)
