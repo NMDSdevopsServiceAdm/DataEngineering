@@ -58,27 +58,26 @@ def null_large_single_submission_locations(df: DataFrame) -> DataFrame:
     """
     w = Window.partitionBy(PIRCleanCols.location_id)
 
-    two_submissions: int = 2
+    one_submission: int = 1
     large_location_identifier: int = 100
 
     df = df.withColumn(
         TempCol.submission_count,
         F.count(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
     )
-    df = df.withColumn(
-        TempCol.max_people_employed,
-        F.max(PIRCleanCols.pir_people_directly_employed_cleaned).over(w),
-    )
 
     df = df.withColumn(
         PIRCleanCols.pir_people_directly_employed_cleaned,
         F.when(
-            (F.col(TempCol.max_people_employed) >= large_location_identifier)
-            & (F.col(TempCol.submission_count) < two_submissions),
+            (
+                F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
+                >= large_location_identifier
+            )
+            & (F.col(TempCol.submission_count) == one_submission),
             F.lit(None),
         ).otherwise(F.col(PIRCleanCols.pir_people_directly_employed_cleaned)),
     )
-    df = df.drop(TempCol.max_people_employed, TempCol.submission_count)
+    df = df.drop(TempCol.submission_count)
 
     return df
 
@@ -101,7 +100,7 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
     cleaned_df = apply_removal_flag(df, df_flags)
 
     columns_to_drop = [field.name for field in fields(TempCol())]
-    # cleaned_df = cleaned_df.drop(*columns_to_drop)
+    cleaned_df = cleaned_df.drop(*columns_to_drop)
 
     return cleaned_df
 

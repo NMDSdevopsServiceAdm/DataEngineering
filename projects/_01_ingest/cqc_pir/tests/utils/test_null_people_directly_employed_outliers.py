@@ -53,7 +53,7 @@ class MainTests(NullPeopleDirectlyEmployedTests):
         self.assertIn(
             PIRCleanCols.pir_people_directly_employed_cleaned, self.returned_df.columns
         )
-        # self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_main_returns_original_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
@@ -89,7 +89,7 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
     def setUp(self) -> None:
         super().setUp()
 
-        self.data_to_filter = 0.5
+        self.data_to_filter = 0.25
         self.test_df = self.spark.createDataFrame(
             Data.null_outliers_rows,
             Schemas.null_outliers_schema,
@@ -121,7 +121,7 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
         returned_data = returned_df.collect()
         expected_data = self.expected_df.collect()
 
-        # self.assertEqual(returned_data, expected_data)
+        self.assertEqual(returned_data, expected_data)
 
 
 class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
