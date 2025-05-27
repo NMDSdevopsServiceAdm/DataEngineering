@@ -94,10 +94,42 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
         DataFrame: DataFrame with 'staff_cleaned' and removal flags.
     """
     df_dispersion = compute_dispersion_stats(df)
+    print("Dispertion stats")
+    df_dispersion.where(
+        (F.col(PIRCleanCols.location_id) == "1-5801302321")
+        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
+        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
+        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
+        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
+    ).sort().show()
     df_mad = compute_median_absolute_deviation_stats(df)
+    print("MAD stats")
+    df_mad.where(
+        (F.col(PIRCleanCols.location_id) == "1-5801302321")
+        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
+        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
+        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
+        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
+    ).sort().show()
 
     df_flags = flag_outliers(df_dispersion, df_mad, proportion_of_data_to_filter)
+    print("Flagged outliers")
+    df_flags.where(
+        (F.col(PIRCleanCols.location_id) == "1-5801302321")
+        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
+        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
+        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
+        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
+    ).sort().show()
     cleaned_df = apply_removal_flag(df, df_flags)
+    print("Allpy flags")
+    cleaned_df.where(
+        (F.col(PIRCleanCols.location_id) == "1-5801302321")
+        | (F.col(PIRCleanCols.location_id) == "1-10393291795")
+        | (F.col(PIRCleanCols.location_id) == "1-7879687302")
+        | (F.col(PIRCleanCols.location_id) == "1-4460859648")
+        | (F.col(PIRCleanCols.location_id) == "1-9982318052")
+    ).sort().show()
 
     columns_to_drop = [field.name for field in fields(TempCol())]
     cleaned_df = cleaned_df.drop(*columns_to_drop)
