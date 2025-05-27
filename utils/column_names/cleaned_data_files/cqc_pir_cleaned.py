@@ -26,7 +26,7 @@ class NullPeopleDirectlyEmployedTemporaryColumns:
     mean_people_employed: str = "mean_people_employed"
     dispersion_ratio: str = "dispersion_ratio"
     median_people_employed: str = "median_people_employed"
-    median_absolute_deviation_value: str = "median_absolute_deviation_value"
+    median_absolute_deviation: str = "median_absolute_deviation"
     absolute_deviation: str = "absolute_deviation"
     dispersion_outlier_flag: str = "dispersion_outlier_flag"
     median_absolute_deviation_flag: str = "median_absolute_deviation_flag"

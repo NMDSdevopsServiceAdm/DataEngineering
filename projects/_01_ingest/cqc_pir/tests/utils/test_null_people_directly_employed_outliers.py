@@ -116,9 +116,7 @@ class NullOutliersTests(NullPeopleDirectlyEmployedTests):
         flag_outliers_mock.assert_called_once()
         apply_removal_flag_mock.assert_called_once()
 
-    def test_null_outliers_returns_expected_values(
-        self,
-    ):
+    def test_null_outliers_returns_expected_values(self):
         returned_df = job.null_outliers(self.test_df, self.data_to_filter)
         returned_data = returned_df.collect()
         expected_data = self.expected_df.collect()
@@ -139,9 +137,7 @@ class ComputeDispersionStatsTests(NullPeopleDirectlyEmployedTests):
             Schemas.expected_compute_dispersion_stats_schema,
         )
 
-    def test_compute_dispersion_stats_returns_expected_columns(
-        self,
-    ):
+    def test_compute_dispersion_stats_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_compute_dispersion_stats_returns_expected_values(self):
@@ -169,9 +165,7 @@ class ComputeMedianAbsoluteDeviationStatsTests(NullPeopleDirectlyEmployedTests):
             Schemas.expected_compute_median_absolute_deviation_stats_schema,
         )
 
-    def test_compute_median_absolute_deviation_stats_returns_expected_columns(
-        self,
-    ):
+    def test_compute_median_absolute_deviation_stats_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_compute_median_absolute_deviation_stats_returns_expected_values(self):
@@ -180,8 +174,8 @@ class ComputeMedianAbsoluteDeviationStatsTests(NullPeopleDirectlyEmployedTests):
 
         for row in range(len(expected_data)):
             self.assertAlmostEqual(
-                returned_data[row][NullPIRTemp.median_absolute_deviation_value],
-                expected_data[row][NullPIRTemp.median_absolute_deviation_value],
+                returned_data[row][NullPIRTemp.median_absolute_deviation],
+                expected_data[row][NullPIRTemp.median_absolute_deviation],
                 places=3,
             )
 
@@ -207,9 +201,7 @@ class FlagOutliers(NullPeopleDirectlyEmployedTests):
             Data.expected_flag_outliers_rows, Schemas.expected_flag_outliers_schema
         )
 
-    def test_flag_outliers_returns_expected_columns(
-        self,
-    ):
+    def test_flag_outliers_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_flag_outliers_returns_expected_values(self):
@@ -240,17 +232,13 @@ class ApplyRemovalFlag(NullPeopleDirectlyEmployedTests):
             Schemas.expected_apply_removal_flag_schema,
         )
 
-    def test_apply_removal_flag_returns_expected_columns(
-        self,
-    ):
+    def test_apply_removal_flag_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
     def test_apply_removal_flag_returns_expected_values(self):
         returned_data = self.returned_df.sort(
             [PIRCleanCols.location_id, PIRCleanCols.cqc_pir_import_date]
         ).collect()
-        expected_data = self.expected_df.sort(
-            [PIRCleanCols.location_id, PIRCleanCols.cqc_pir_import_date]
-        ).collect()
+        expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)

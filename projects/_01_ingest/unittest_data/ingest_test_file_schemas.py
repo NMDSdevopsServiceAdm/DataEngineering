@@ -555,7 +555,7 @@ class NullPeopleDirectlyEmployedSchema:
     expected_compute_median_absolute_deviation_stats_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
-            StructField(NullPIRTemp.median_absolute_deviation_value, FloatType(), True),
+            StructField(NullPIRTemp.median_absolute_deviation, FloatType(), True),
         ]
     )
 

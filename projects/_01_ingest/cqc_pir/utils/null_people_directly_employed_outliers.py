@@ -152,32 +152,12 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
         df (DataFrame): Input DataFrame with columns 'location_id' and 'staff'.
 
     Returns:
-        DataFrame: Contains distinct 'location_id' and 'median_absolute_deviation_value'.
+        DataFrame: Contains distinct 'location_id' and 'median_absolute_deviation'.
     """
-    w = Window.partitionBy(PIRCleanCols.location_id)
-    median: float = 0.5
-
-    value_count = F.count(
-        F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
-    ).over(w)
-    sum_pir_people_directly_employed = F.sum(
-        F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
-    ).over(w)
-    df = df.withColumn(
+    df = compute_median(
+        df,
+        PIRCleanCols.pir_people_directly_employed_cleaned,
         TempCol.median_people_employed,
-        F.when(value_count == 0, F.lit(None))
-        .when(
-            value_count == 1, F.col(PIRCleanCols.pir_people_directly_employed_cleaned)
-        )
-        .when(
-            value_count == 2,
-            sum_pir_people_directly_employed / value_count,
-        )
-        .otherwise(
-            F.percentile_approx(
-                PIRCleanCols.pir_people_directly_employed_cleaned, median
-            ).over(w)
-        ),
     )
     df = calculate_new_column(
         df,
@@ -186,16 +166,40 @@ def compute_median_absolute_deviation_stats(df: DataFrame) -> DataFrame:
         "absolute difference",
         TempCol.median_people_employed,
     )
-    df = df.withColumn(
-        TempCol.median_absolute_deviation_value,
-        F.percentile_approx(TempCol.absolute_deviation, median).over(w),
+    df = compute_median(
+        df,
+        TempCol.absolute_deviation,
+        TempCol.median_absolute_deviation,
     )
 
     mad_df = df.select(
-        PIRCleanCols.location_id, TempCol.median_absolute_deviation_value
+        PIRCleanCols.location_id, TempCol.median_absolute_deviation
     ).distinct()
 
     return mad_df
+
+
+def compute_median(df: DataFrame, col_to_analyse: str, new_col_name: str) -> DataFrame:
+    """
+    Computes the median of a specified column grouped by 'location_id' and stores it in a new named column.
+
+    Args:
+        df (DataFrame): Input DataFrame with 'location_id' and the column to analyse.
+        col_to_analyse (str): The column for which to compute the median.
+        new_col_name (str): The name of the new column to store the median values.
+
+    Returns:
+        DataFrame: The original DataFrame with an additional column containing the median values.
+    """
+    median: float = 0.5
+
+    median_df = df.groupBy(PIRCleanCols.location_id).agg(
+        F.expr(f"percentile({col_to_analyse}, array({median}))")[0].alias(new_col_name),
+    )
+
+    df = df.join(median_df, PIRCleanCols.location_id, "left")
+
+    return df
 
 
 def flag_outliers(
@@ -218,7 +222,7 @@ def flag_outliers(
         0
     ]
     mad_threshold = df_joined.approxQuantile(
-        TempCol.median_absolute_deviation_value, [cutoff], 0.01
+        TempCol.median_absolute_deviation, [cutoff], 0.01
     )[0]
 
     df_joined = df_joined.withColumn(
@@ -227,7 +231,7 @@ def flag_outliers(
     )
     df_joined = df_joined.withColumn(
         TempCol.median_absolute_deviation_flag,
-        F.col(TempCol.median_absolute_deviation_value) > mad_threshold,
+        F.col(TempCol.median_absolute_deviation) > mad_threshold,
     )
 
     df_joined = df_joined.select(
