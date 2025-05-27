@@ -101,7 +101,7 @@ def null_outliers(df: DataFrame, proportion_of_data_to_filter: float) -> DataFra
     cleaned_df = apply_removal_flag(df, df_flags)
 
     columns_to_drop = [field.name for field in fields(TempCol())]
-    cleaned_df = cleaned_df.drop(*columns_to_drop)
+    # cleaned_df = cleaned_df.drop(*columns_to_drop)
 
     return cleaned_df
 
