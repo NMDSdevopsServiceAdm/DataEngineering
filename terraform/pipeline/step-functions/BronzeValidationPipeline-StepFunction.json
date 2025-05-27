@@ -73,23 +73,6 @@
                 "End": true
               }
             }
-          },
-          {
-            "StartAt": "Run validate postcode directory raw job",
-            "States": {
-                "Run validate postcode directory raw job": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${validate_postcode_directory_raw_data_job_name}",
-                  "Arguments": {
-                    "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_raw/"
-                  }
-                },
-                "End": true
-              }
-            }
           }
         ],
         "Next": "Start crawler when success",
