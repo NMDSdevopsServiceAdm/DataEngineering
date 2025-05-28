@@ -19,6 +19,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     cqc_location_import_date: str = "cqc_location_import_date"
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
     cqc_sector: str = CQCPClean.cqc_sector
+    dormant_date: str = "dormant_date"
     earliest_import_date_per_dormancy_value: str = (
         "earliest_import_date_per_dormancy_value"
     )
@@ -36,7 +37,8 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     imputed_specialisms: str = "imputed_" + NewCqcLocationApiColumns.specialisms
-    months_since_not_dormant: str = "months_since_not_dormant"
+    last_dormant_date: str = "last_dormant_date"
+    months_since_dormant: str = "months_since_dormant"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     primary_service_type: str = "primary_service_type"
@@ -50,3 +52,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     services_offered: str = "services_offered"
     specialisms_offered: str = "specialisms_offered"
     time_registered: str = "time_registered"
+    time_since_dormant: str = "time_since_dormant"

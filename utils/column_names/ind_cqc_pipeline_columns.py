@@ -206,10 +206,6 @@ class IndCqcColumns:
     model_name: str = "model_name"
     model_run_timestamp: str = "model_run_timestamp"
     model_version: str = "model_version"
-    months_since_not_dormant: str = CQCLClean.months_since_not_dormant
-    months_since_not_dormant_capped_at_10_years: str = (
-        CQCLClean.months_since_not_dormant + "_capped_at_10_years"
-    )
     name: str = CQCLClean.name
     next_submission_time: str = "next_submission_time"
     next_value: str = "next_value"
@@ -294,6 +290,10 @@ class IndCqcColumns:
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_since_dormant: str = CQCLClean.time_since_dormant
+    time_since_dormant_capped_at_ten_years: str = (
+        CQCLClean.time_since_dormant + "_capped_at_ten_years"
+    )
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

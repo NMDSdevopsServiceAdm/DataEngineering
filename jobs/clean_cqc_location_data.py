@@ -111,12 +111,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
     cqc_location_df = calculate_time_registered_for(cqc_location_df)
-
-    cqc_location_df = add_column_for_earliest_import_date_per_dormancy_value(
-        cqc_location_df
-    )
-
-    cqc_location_df = calculate_months_since_not_dormant(cqc_location_df)
+    cqc_location_df = calculate_time_since_dormant(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
@@ -787,94 +782,67 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
         return cleaned_locations_df
 
 
-def add_column_for_earliest_import_date_per_dormancy_value(df: DataFrame) -> DataFrame:
+def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     """
-    Adds a column that repeats the earliest cqc_location_import_date across rows where dormancy column is the same per location.
+    Adds a column to show the number of months since the location was last dormant.
+
+    This function calculates the number of months since the last time a location was marked as dormant.
+    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
+    the number of months since that date for each location.
+
+    'time_since_dormant' values before the first instance of dormancy are null.
+    If the location has never been dormant then 'time_since_dormant' is null.
 
     Args:
-        df (DataFrame): A dataframe with cqc_location_import_date and dormancy columns.
+        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
 
     Returns:
-        DataFrame: A dataframe with additional earliest_import_date_per_dormancy_value column.
+        DataFrame: A dataframe with an additional column 'time_since_dormant' that shows the number of months since the last dormant date.
     """
-
     w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
     )
 
-    temp_previous_dormancy_column = "temp_previous_dormancy_column"
     df = df.withColumn(
-        temp_previous_dormancy_column,
-        F.lag(F.col(CQCLClean.dormancy), offset=1).over(w),
-    )
-
-    temp_dormancy_change_flag_column = "temp_dormancy_change_flag_column"
-    df = df.withColumn(
-        temp_dormancy_change_flag_column,
+        CQCLClean.dormant_date,
         F.when(
-            (
-                F.col(CQCLClean.dormancy).isNull()
-                & F.col(temp_previous_dormancy_column).isNotNull()
-            )
-            | (
-                F.col(CQCLClean.dormancy).isNotNull()
-                & F.col(temp_previous_dormancy_column).isNull()
-            )
-            | (F.col(CQCLClean.dormancy) != F.col(temp_previous_dormancy_column)),
-            1,
-        ).otherwise(0),
-    ).fillna(1, subset=temp_dormancy_change_flag_column)
-
-    temp_streak_id_column = "temp_streak_id_column"
-    df = df.withColumn(
-        temp_streak_id_column,
-        F.sum(F.col(temp_dormancy_change_flag_column)).over(
-            w.rowsBetween(Window.unboundedPreceding, 0)
+            F.col(CQCLClean.dormancy) == Dormancy.dormant,
+            F.col(CQCLClean.cqc_location_import_date),
         ),
     )
 
-    w_streak = Window.partitionBy(CQCLClean.location_id, temp_streak_id_column)
-
     df = df.withColumn(
-        CQCLClean.earliest_import_date_per_dormancy_value,
-        F.min(CQCLClean.cqc_location_import_date).over(w_streak),
+        CQCLClean.last_dormant_date,
+        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
     )
 
-    df = df.drop(
-        temp_previous_dormancy_column,
-        temp_dormancy_change_flag_column,
-        temp_streak_id_column,
-    )
-
-    return df
-
-
-def calculate_months_since_not_dormant(df: DataFrame) -> DataFrame:
-    """
-    Adds a column to show number of months since location became non-dormant.
-
-    When a locations dormancy is null then this shows the number of consecutive months while dormancy is null.
-    When a ocation is dormant then this shows 1 for all periods while location is dormant.
-    When a location is not dormant then this shows the consecutive number of months while not dormant.
-
-    Args:
-        df (DataFrame): A dataframe with dormancy column and earliest_import_date_per_dormancy_value.
-
-    Returns:
-        DataFrame: A dataframe with additional months_since_not_dormant column.
-    """
-
     df = df.withColumn(
-        CQCLClean.months_since_not_dormant,
-        F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+        CQCLClean.months_since_dormant,
+        F.when(
+            F.col(CQCLClean.last_dormant_date).isNotNull(),
             F.floor(
                 F.months_between(
                     F.col(CQCLClean.cqc_location_import_date),
-                    F.col(CQCLClean.earliest_import_date_per_dormancy_value),
+                    F.col(CQCLClean.last_dormant_date),
                 )
-            )
-            + 1
+            ),
         ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.time_since_dormant,
+        F.when(
+            F.col(CQCLClean.last_dormant_date).isNotNull(),
+            F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+                F.col(CQCLClean.months_since_dormant) + 1
+            ),
+        ),
+    )
+
+    df = df.drop(
+        CQCLClean.dormant_date,
+        CQCLClean.last_dormant_date,
+        CQCLClean.months_since_dormant,
     )
 
     return df

@@ -984,20 +984,18 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
         )
 
 
-class AddColumnForEarliestImportDatePerDormancyValue(CleanCQCLocationDatasetTests):
+class CalculateTimeSinceDormant(CleanCQCLocationDatasetTests):
     def setUp(self):
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.add_column_for_earliest_import_date_per_dormancy_value_rows,
-            Schemas.add_column_for_earliest_import_date_per_dormancy_value_schema,
+            Data.calculate_time_since_dormant_rows,
+            Schemas.calculate_time_since_dormant_schema,
         )
-        self.returned_df = job.add_column_for_earliest_import_date_per_dormancy_value(
-            self.test_df
-        )
+        self.returned_df = job.calculate_time_since_dormant(self.test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_add_column_for_earliest_import_date_per_dormancy_value_rows,
-            Schemas.expected_add_column_for_earliest_import_date_per_dormancy_value_schema,
+            Data.expected_calculate_time_since_dormant_rows,
+            Schemas.expected_calculate_time_since_dormant_schema,
         )
 
         self.columns_added_by_function = [
@@ -1006,65 +1004,18 @@ class AddColumnForEarliestImportDatePerDormancyValue(CleanCQCLocationDatasetTest
             if column not in self.test_df.columns
         ]
 
-    def test_add_column_for_earliest_import_date_per_dormancy_value_returns_1_expected_column(
-        self,
-    ):
+    def test_calculate_time_since_dormant_returns_new_column(self):
         self.assertEqual(len(self.columns_added_by_function), 1)
         self.assertEqual(
-            self.columns_added_by_function[0],
-            CQCLCleaned.earliest_import_date_per_dormancy_value,
+            self.columns_added_by_function[0], CQCLCleaned.time_since_dormant
         )
 
-    def test_add_column_for_earliest_import_date_per_dormancy_value_returns_expected_values(
-        self,
-    ):
+    def test_calculate_time_since_dormant_returns_expected_values(self):
         returned_data = self.returned_df.sort(
-            [CQCLCleaned.location_id, CQCLCleaned.cqc_location_import_date]
+            CQCLCleaned.cqc_location_import_date
         ).collect()
-        expected_data = self.expected_df.sort(
-            [CQCLCleaned.location_id, CQCLCleaned.cqc_location_import_date]
-        ).collect()
-        self.assertEqual(returned_data, expected_data)
+        expected_data = self.expected_df.collect()
 
-
-class CalculateMonthsSinceNotDormant(CleanCQCLocationDatasetTests):
-    def setUp(self):
-        super().setUp()
-
-        self.test_df = self.spark.createDataFrame(
-            Data.calculate_months_since_not_dormant_rows,
-            Schemas.calculate_months_since_not_dormant_schema,
-        )
-        self.returned_df = job.calculate_months_since_not_dormant(self.test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_months_since_not_dormant_rows,
-            Schemas.expected_calculate_months_since_not_dormant_schema,
-        )
-
-        self.columns_added_by_function = [
-            column
-            for column in self.returned_df.columns
-            if column not in self.test_df.columns
-        ]
-
-    def test_calculate_months_since_not_dormant_returns_1_expected_column(
-        self,
-    ):
-        self.assertEqual(len(self.columns_added_by_function), 1)
-        self.assertEqual(
-            self.columns_added_by_function[0],
-            CQCLCleaned.months_since_not_dormant,
-        )
-
-    def test_calculate_months_since_not_dormant_returns_expected_values(
-        self,
-    ):
-        returned_data = self.returned_df.sort(
-            [CQCLCleaned.location_id, CQCLCleaned.cqc_location_import_date]
-        ).collect()
-        expected_data = self.expected_df.sort(
-            [CQCLCleaned.location_id, CQCLCleaned.cqc_location_import_date]
-        ).collect()
         self.assertEqual(returned_data, expected_data)
 
 

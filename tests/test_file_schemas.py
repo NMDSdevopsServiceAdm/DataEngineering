@@ -976,29 +976,17 @@ class CQCLocationsSchema:
         ]
     )
 
-    add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+    calculate_time_since_dormant_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
             StructField(CQCLClean.dormancy, StringType(), True),
         ]
     )
-    expected_add_column_for_earliest_import_date_per_dormancy_value_schema = StructType(
+    expected_calculate_time_since_dormant_schema = StructType(
         [
-            *add_column_for_earliest_import_date_per_dormancy_value_schema,
-            StructField(
-                CQCLClean.earliest_import_date_per_dormancy_value, DateType(), False
-            ),
-        ]
-    )
-
-    calculate_months_since_not_dormant_schema = (
-        expected_add_column_for_earliest_import_date_per_dormancy_value_schema
-    )
-    expected_calculate_months_since_not_dormant_schema = StructType(
-        [
-            *calculate_months_since_not_dormant_schema,
-            StructField(CQCLClean.months_since_not_dormant, IntegerType(), False),
+            *calculate_time_since_dormant_schema,
+            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
         ]
     )
 
@@ -2037,7 +2025,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.imputed_registration_date, DateType(), False),
             StructField(IndCQC.time_registered, IntegerType(), False),
-            StructField(IndCQC.months_since_not_dormant, IntegerType(), False),
+            StructField(IndCQC.time_since_dormant, IntegerType(), False),
             StructField(IndCQC.current_region, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
