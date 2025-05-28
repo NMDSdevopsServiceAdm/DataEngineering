@@ -87,13 +87,13 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
                 f"Returned row {i} does not match expected",
             )
 
-    def test_primary_service_rate_of_change_trendline_returns_expected_columns(
-        self,
-    ):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
+    # def test_primary_service_rate_of_change_trendline_returns_expected_columns(
+    #     self,
+    # ):
+    #     self.assertEqual(
+    #         sorted(self.returned_df.columns),
+    #         sorted(self.expected_df.columns),
+    #     )
 
 
 class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):

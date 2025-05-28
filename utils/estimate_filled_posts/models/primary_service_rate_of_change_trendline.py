@@ -66,7 +66,7 @@ def model_primary_service_rate_of_change_trendline(
         "left",
     )
 
-    df = df.drop(IndCqc.single_period_rate_of_change)
+    # df = df.drop(IndCqc.single_period_rate_of_change)
 
     return df
 
