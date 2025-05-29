@@ -83,7 +83,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 6)
+        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         group_rural_urban_sparse_categories_mock.assert_called_once()
         filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
         self.assertEqual(add_date_index_column_mock.call_count, 2)
