@@ -2,11 +2,16 @@ import unittest
 import warnings
 from unittest.mock import Mock, patch
 
-import jobs.reconciliation as job
+import projects._02_sfc_internal.reconciliation.jobs.reconciliation as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    ReconciliationData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    ReconciliationSchema as Schemas,
+)
 from utils import utils
 
-from tests.test_file_data import ReconciliationData as Data
-from tests.test_file_schemas import ReconciliationSchema as Schemas
+PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.jobs.reconciliation"
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -33,8 +38,8 @@ class MainTests(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_run(
         self,
         read_from_parquet_patch: Mock,
