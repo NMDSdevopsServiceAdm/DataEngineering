@@ -7,9 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from utils.feature_engineering_resources.feature_engineering_dormancy import (
-    FeatureEngineeringValueLabelsDormancy as DormancyFeatures,
-)
 from utils.feature_engineering_resources.feature_engineering_region import (
     FeatureEngineeringValueLabelsRegion as RegionFeatures,
 )
