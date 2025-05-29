@@ -151,13 +151,6 @@ def main(
         features_df, IndCQC.dormancy
     )
 
-    with_dormancy_features_df, dormancy_key = expand_encode_and_extract_features(
-        with_dormancy_features_df,
-        IndCQC.dormancy,
-        DormancyFeatures.labels_dict,
-        is_array_col=False,
-    )
-
     with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
 
     with_dormancy_features_df = cap_integer_at_max_value(
@@ -167,6 +160,13 @@ def main(
         new_col_name=IndCQC.time_registered_capped_at_ten_years,
     )
 
+    """ Features cannot be null, and in order to help the model learn that locations which are not dormant
+    are larger than those which are, we have entered a large value (999) for locations who have either never
+    been dormant, or before they first become dormant."""
+    with_dormancy_features_df = with_dormancy_features_df.fillna(
+        999, subset=[IndCQC.time_since_dormant]
+    )
+
     with_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
@@ -174,8 +174,8 @@ def main(
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_ten_years,
+            IndCQC.time_since_dormant,
         ]
-        + dormancy_key
         + related_location
         + service_list
         + specialisms_list

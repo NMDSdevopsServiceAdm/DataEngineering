@@ -2025,7 +2025,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.imputed_registration_date, DateType(), False),
             StructField(IndCQC.time_registered, IntegerType(), False),
-            StructField(IndCQC.time_since_dormant, IntegerType(), False),
+            StructField(IndCQC.time_since_dormant, IntegerType(), True),
             StructField(IndCQC.current_region, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),

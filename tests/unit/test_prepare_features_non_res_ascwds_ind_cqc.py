@@ -107,8 +107,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         expected_features = SparseVector(
             32,
-            [0, 1, 4, 10, 18, 19, 26, 31],
-            [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0],
+            [0, 1, 3, 9, 17, 18, 25, 30, 31],
+            [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0, 1.0],
         )
         returned_features = result.select(F.col(IndCQC.features)).collect()[0].features
 
@@ -153,7 +153,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         without_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
 
         self.assertEqual(self.test_df.count(), 7)
-        self.assertEqual(with_dormancy_df.count(), 4)
+        self.assertEqual(with_dormancy_df.count(), 5)
         self.assertEqual(without_dormancy_df.count(), 5)
 
 

@@ -797,7 +797,7 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
         df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
 
     Returns:
-        DataFrame: A dataframe with an additional column 'time_since_dormant' that shows the number of months since the last dormant date.
+        DataFrame: A dataframe with an additional column 'time_since_dormant'.
     """
     w = Window.partitionBy(CQCLClean.location_id).orderBy(
         CQCLClean.cqc_location_import_date
