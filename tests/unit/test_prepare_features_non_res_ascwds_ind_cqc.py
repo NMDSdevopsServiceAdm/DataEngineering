@@ -153,7 +153,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         without_dormancy_df: DataFrame = write_to_parquet_mock.call_args_list[0][0][0]
 
         self.assertEqual(self.test_df.count(), 7)
-        self.assertEqual(with_dormancy_df.count(), 5)
+        self.assertEqual(with_dormancy_df.count(), 4)
         self.assertEqual(without_dormancy_df.count(), 5)
 
 
