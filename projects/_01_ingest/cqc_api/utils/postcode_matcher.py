@@ -112,9 +112,9 @@ def join_postcode_data(
         [ONSClean.contemporary_ons_import_date, postcode_col],
         "left",
     )
-    matched_df = joined_df.filter(F.col(postcode_df.columns[1]).isNotNull())
+    matched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNotNull())
 
-    unmatched_df = joined_df.filter(F.col(postcode_df.columns[1]).isNull())
+    unmatched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNull())
     unmatched_df = unmatched_df.select(*locations_df.columns)
 
     return matched_df, unmatched_df

@@ -101,18 +101,50 @@ class JoinPostcodeDataTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
-        # locations_df = self.spark.createDataFrame(
-        #     Data.join_postcode_data_locations_rows, Schemas.
-        # )
-        # postcode_df = self.spark.createDataFrame(
-        #     Data.join_postcode_data_postcodes_rows, Schemas.
-        # )
-        # returned_matched_df, returned_unmatched_df = job.join_postcode_data(
-        #     locations_df, postcode_df, CQCLClean.postcode_cleaned
-        # )
-        # returned_matched_df = self.spark.createDataFrame(
-        #     Data.expected_join_postcode_data_matched_rows, Schemas.
-        # )
-        # returned_unmatched_df = self.spark.createDataFrame(
-        #     Data.expected_join_postcode_data_unmatched_rows, Schemas.
-        # )
+        locations_df = self.spark.createDataFrame(
+            Data.join_postcode_data_locations_rows,
+            Schemas.join_postcode_data_locations_schema,
+        )
+        postcode_df = self.spark.createDataFrame(
+            Data.join_postcode_data_postcodes_rows,
+            Schemas.join_postcode_data_postcodes_schema,
+        )
+        self.returned_matched_df, self.returned_unmatched_df = job.join_postcode_data(
+            locations_df, postcode_df, CQCLClean.postcode_cleaned
+        )
+        self.expected_matched_df = self.spark.createDataFrame(
+            Data.expected_join_postcode_data_matched_rows,
+            Schemas.expected_join_postcode_data_matched_schema,
+        )
+        self.expected_unmatched_df = self.spark.createDataFrame(
+            Data.expected_join_postcode_data_unmatched_rows,
+            Schemas.expected_join_postcode_data_unmatched_schema,
+        )
+
+    def test_join_postcode_data_returns_expected_matched_columns(self):
+        self.assertEqual(
+            sorted(self.returned_matched_df.columns),
+            sorted(self.expected_matched_df.columns),
+        )
+
+    def test_join_postcode_data_returns_expected_matched_rows(self):
+        returned_data = (
+            self.returned_matched_df.select(*self.expected_matched_df.columns)
+            .sort(CQCLClean.location_id)
+            .collect()
+        )
+        expected_data = self.expected_matched_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_join_postcode_data_returns_expected_unmatched_columns(self):
+        self.assertEqual(
+            self.returned_unmatched_df.columns,
+            self.expected_unmatched_df.columns,
+        )
+
+    def test_join_postcode_data_returns_expected_unmatched_rows(self):
+        self.assertEqual(
+            self.returned_unmatched_df.sort(CQCLClean.location_id).collect(),
+            self.expected_unmatched_df.collect(),
+        )
