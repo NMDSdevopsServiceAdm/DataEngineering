@@ -6,7 +6,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 
 
-def clean_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
+def null_people_directly_employed_outliers(df: DataFrame) -> DataFrame:
     """
     Creates a clean version of the'pir_people_directly_employed' column.
 

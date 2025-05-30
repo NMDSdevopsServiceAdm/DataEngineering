@@ -283,6 +283,7 @@ class IndCqcColumns:
     single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
     standardised_residual: str = "standardised_residual"
+    submitted_ascwds_data: str = "submitted_ascwds_data"
     sum_non_rm_managerial_estimated_filled_posts: str = (
         "sum_non_rm_managerial_estimated_filled_posts"
     )
