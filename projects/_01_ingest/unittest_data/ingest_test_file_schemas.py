@@ -572,14 +572,13 @@ class PostcodeMatcherSchema:
 
     clean_postcode_column_schema = StructType(
         [
-            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCL.postal_code, StringType(), True),
             StructField(CQCLClean.cssr, StringType(), True),
         ]
     )
     expected_clean_postcode_column_when_col_not_dropped_schema = StructType(
         [
-            StructField(CQCLClean.postcode, StringType(), True),
-            StructField(CQCLClean.cssr, StringType(), True),
+            *clean_postcode_column_schema,
             StructField(CQCLClean.postcode_cleaned, StringType(), True),
         ]
     )
