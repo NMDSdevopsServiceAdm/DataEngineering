@@ -7389,6 +7389,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
         ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
         ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
     ]
+    # fmt: on
 
 
 @dataclass
@@ -10271,7 +10272,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    transform_interpolated_job_role_ratios_to_counts_rows = [
+    transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,
@@ -10298,7 +10299,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
-    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+    expected_transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,

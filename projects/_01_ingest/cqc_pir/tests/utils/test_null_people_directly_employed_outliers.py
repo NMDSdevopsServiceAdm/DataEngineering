@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import projects._01_ingest.cqc_pir.utils.clean_people_directly_employed_outliers as job
+import projects._01_ingest.cqc_pir.utils.null_people_directly_employed_outliers as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    CleanPeopleDirectlyEmployedData as Data,
+    NullPeopleDirectlyEmployedData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
-    CleanPeopleDirectlyEmployedSchema as Schemas,
+    NullPeopleDirectlyEmployedSchema as Schemas,
 )
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -14,26 +14,26 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 
 PATCH_PATH: str = (
-    "projects._01_ingest.cqc_pir.utils.clean_people_directly_employed_outliers"
+    "projects._01_ingest.cqc_pir.utils.null_people_directly_employed_outliers"
 )
 
 
-class CleanPeopleDirectlyEmployedTests(unittest.TestCase):
+class NullPeopleDirectlyEmployedTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
 
-class MainTests(CleanPeopleDirectlyEmployedTests):
+class MainTests(NullPeopleDirectlyEmployedTests):
     def setUp(self) -> None:
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.clean_people_directly_employed_outliers_rows,
-            Schemas.clean_people_directly_employed_outliers_schema,
+            Data.null_people_directly_employed_outliers_rows,
+            Schemas.null_people_directly_employed_outliers_schema,
         )
-        self.returned_df = job.clean_people_directly_employed_outliers(self.test_df)
+        self.returned_df = job.null_people_directly_employed_outliers(self.test_df)
         self.expected_df = self.spark.createDataFrame(
-            [], Schemas.expected_clean_people_directly_employed_outliers_schema
+            [], Schemas.expected_null_people_directly_employed_outliers_schema
         )
 
     @patch(f"{PATCH_PATH}.null_large_single_submission_locations")
@@ -41,7 +41,7 @@ class MainTests(CleanPeopleDirectlyEmployedTests):
         self,
         null_large_single_submission_locations_mock: Mock,
     ):
-        job.clean_people_directly_employed_outliers(self.test_df)
+        job.null_people_directly_employed_outliers(self.test_df)
 
         null_large_single_submission_locations_mock.assert_called_once()
 
@@ -55,7 +55,7 @@ class MainTests(CleanPeopleDirectlyEmployedTests):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
 
-class NullLargeSingleSubmissionLocationsTests(CleanPeopleDirectlyEmployedTests):
+class NullLargeSingleSubmissionLocationsTests(NullPeopleDirectlyEmployedTests):
     def setUp(self) -> None:
         super().setUp()
 

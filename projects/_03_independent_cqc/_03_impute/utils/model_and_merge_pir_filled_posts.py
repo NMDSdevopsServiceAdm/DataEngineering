@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from pyspark.ml.regression import LinearRegressionModel
 from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import IntegerType
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -75,6 +76,7 @@ def merge_ascwds_and_pir_filled_post_submissions(df: DataFrame) -> DataFrame:
     df = create_repeated_ascwds_clean_column(df)
     df = create_last_submission_columns(df)
     df = create_ascwds_pir_merged_column(df)
+    df = include_pir_if_never_submitted_ascwds(df)
     df = drop_temporary_columns(df)
     return df
 
@@ -190,6 +192,37 @@ def create_ascwds_pir_merged_column(df: DataFrame) -> DataFrame:
             F.col(IndCQC.pir_filled_posts_model),
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
     )
+    return df
+
+
+def include_pir_if_never_submitted_ascwds(df: DataFrame) -> DataFrame:
+    """
+    Updates the 'ascwds_pir_merged' column to use PIR filled posts model values for locations who have never submitted ASC-WDS data.
+
+    Args:
+        df (DataFrame): Input DataFrame with columns:
+            - location_id (str)
+            - ascwds_pir_merged (double)
+            - pir_filled_posts_model (double)
+
+    Returns:
+        DataFrame: DataFrame with updated 'ascwds_pir_merged' values
+                   where applicable.
+    """
+    w = Window.partitionBy(IndCQC.location_id)
+
+    df = df.withColumn(
+        IndCQC.submitted_ascwds_data,
+        F.max(F.col(IndCQC.ascwds_pir_merged).isNotNull().cast(IntegerType())).over(w),
+    )
+    df = df.withColumn(
+        IndCQC.ascwds_pir_merged,
+        F.when(
+            F.col(IndCQC.submitted_ascwds_data) == 0,
+            F.col(IndCQC.pir_filled_posts_model),
+        ).otherwise(F.col(IndCQC.ascwds_pir_merged)),
+    ).drop(IndCQC.submitted_ascwds_data)
+
     return df
 
 
