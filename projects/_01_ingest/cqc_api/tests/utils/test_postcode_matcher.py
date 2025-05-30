@@ -69,7 +69,7 @@ class CleanPostcodeColumnTests(PostcodeMatcherTests):
             Data.expected_clean_postcode_column_rows,
             Schemas.expected_clean_postcode_column_when_col_not_dropped_schema,
         )
-        self.returned_data = self.returned_df.sort(CQCLClean.postal_code).collect()
+        self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
         self.expected_data = self.expected_df.collect()
 
     def test_clean_postcode_column_returns_expected_values(self):
