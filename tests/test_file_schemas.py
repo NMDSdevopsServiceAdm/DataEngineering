@@ -976,6 +976,20 @@ class CQCLocationsSchema:
         ]
     )
 
+    calculate_time_since_dormant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.dormancy, StringType(), True),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = StructType(
+        [
+            *calculate_time_since_dormant_schema,
+            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:
@@ -2011,6 +2025,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.imputed_registration_date, DateType(), False),
             StructField(IndCQC.time_registered, IntegerType(), False),
+            StructField(IndCQC.time_since_dormant, IntegerType(), True),
             StructField(IndCQC.current_region, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),

@@ -83,7 +83,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(add_array_column_count_mock.call_count, 2)
         self.assertEqual(cap_integer_at_max_value_mock.call_count, 4)
-        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 6)
+        self.assertEqual(expand_encode_and_extract_features_mock.call_count, 5)
         group_rural_urban_sparse_categories_mock.assert_called_once()
         filter_without_dormancy_features_to_pre_2025_mock.assert_called_once()
         self.assertEqual(add_date_index_column_mock.call_count, 2)
@@ -107,8 +107,8 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
 
         expected_features = SparseVector(
             32,
-            [0, 1, 4, 10, 18, 19, 26, 31],
-            [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0],
+            [0, 1, 3, 9, 17, 18, 25, 30, 31],
+            [1.0, 1.0, 17.5, 1.0, 1.0, 1.0, 1.0, 35.0, 1.0],
         )
         returned_features = result.select(F.col(IndCQC.features)).collect()[0].features
 
