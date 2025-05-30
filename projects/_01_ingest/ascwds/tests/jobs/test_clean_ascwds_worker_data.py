@@ -3,15 +3,14 @@ from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql.dataframe import DataFrame
 
-import jobs.clean_ascwds_worker_data as job
-from utils.utils import get_spark
-from tests.test_file_data import ASCWDSWorkerData
+import projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ASCWDSWorkplaceData,
+    ASCWDSWorkerData,
 )
-from tests.test_file_schemas import ASCWDSWorkerSchemas
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkplaceSchemas,
+    ASCWDSWorkerSchemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -19,6 +18,9 @@ from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     PartitionKeys,
 )
+from utils.utils import get_spark
+
+PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"
 
 
 class IngestASCWDSWorkerDatasetTests(unittest.TestCase):
@@ -46,8 +48,8 @@ class MainTests(IngestASCWDSWorkerDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
         read_from_parquet_mock.return_value = self.test_ascwds_worker_df
 
