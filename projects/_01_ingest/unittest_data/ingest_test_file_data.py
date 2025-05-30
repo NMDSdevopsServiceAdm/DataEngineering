@@ -747,3 +747,64 @@ class ValidatePIRCleanedData:
         ("1-000000001", date(2024, 1, 9), 10, "Y"),
         ("1-000000002", date(2024, 1, 9), 10, "Y"),
     ]
+
+
+@dataclass
+class PostcodeMatcherData:
+    # fmt: off
+    locations_where_all_match_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
+        ("1-002", date(2025, 1, 1), "AA1 2AA"),
+        ("1-002", date(2025, 1, 1), "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "29 5HF"),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
+    ]
+    locations_with_unmatched_postcode_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "AA2 5XX"),  # never known
+    ]
+    # fmt: on
+
+    postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2020, 1, 1), "CSSR 3"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2025, 1, 1), "CSSR 3"),
+    ]
+
+    clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1"),
+        ("AA1 2AA", "ccsr 1"),
+        ("aA1 3aA", "ccsr 1"),
+    ]
+    expected_clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1", "AA11AA"),
+        ("AA1 2AA", "ccsr 1", "AA12AA"),
+        ("aA1 3aA", "ccsr 1", "AA13AA"),
+    ]
+
+    join_postcode_data_locations_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA"),
+        ("1-001", date(2025, 1, 1), "AA11AA"),
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
+        ("1-002", date(2025, 1, 1), "AA12AA"),
+    ]
+    join_postcode_data_postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+    ]
+    expected_join_postcode_data_matched_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-002", date(2025, 1, 1), "AA12AA", "CSSR 2"),
+    ]
+    expected_join_postcode_data_unmatched_rows = [
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
+    ]
