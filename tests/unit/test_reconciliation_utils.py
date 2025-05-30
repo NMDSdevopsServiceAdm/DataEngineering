@@ -3,11 +3,14 @@ import warnings
 from datetime import date
 from unittest.mock import Mock, patch
 
-import utils.reconciliation.reconciliation_utils as job
+import projects._02_sfc_internal.reconciliation.utils.reconciliation_utils as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    ReconciliationUtilsData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    ReconciliationUtilsSchema as Schemas,
+)
 from utils import utils
-
-from tests.test_file_data import ReconciliationUtilsData as Data
-from tests.test_file_schemas import ReconciliationUtilsSchema as Schemas
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -20,6 +23,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
+
+PATCH_PATH: str = "projects._02_sfc_internal.reconciliation.utils.reconciliation_utils"
 
 
 class ReconciliationTests(unittest.TestCase):
@@ -81,36 +86,33 @@ class PrepareLatestCleanedAscwdsWorkforceData(ReconciliationTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(
-        "utils.reconciliation.reconciliation_utils.remove_ascwds_head_office_accounts_without_location_ids"
-    )
-    @patch(
-        "utils.reconciliation.reconciliation_utils.filter_to_cqc_registration_type_only"
-    )
-    @patch("utils.reconciliation.reconciliation_utils.get_ascwds_parent_accounts")
-    @patch(
-        "utils.reconciliation.reconciliation_utils.add_parents_or_singles_and_subs_col_to_df"
-    )
-    @patch("utils.utils.filter_df_to_maximum_value_in_column")
+    @patch(f"{PATCH_PATH}.get_ascwds_parent_accounts")
+    @patch(f"{PATCH_PATH}.remove_ascwds_head_office_accounts_without_location_ids")
+    @patch(f"{PATCH_PATH}.filter_to_cqc_registration_type_only")
+    @patch(f"{PATCH_PATH}.add_parents_or_singles_and_subs_col_to_df")
+    @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
     def test_prepare_latest_cleaned_ascwds_workforce_data_runs(
         self,
         filter_df_to_maximum_value_in_column_patch: Mock,
+        apply_categorical_labels_patch: Mock,
         add_parents_or_singles_and_subs_col_to_df_patch: Mock,
-        get_ascwds_parent_accounts_patch: Mock,
         filter_to_cqc_registration_type_only_patch: Mock,
         remove_ascwds_head_office_accounts_without_location_ids_patch: Mock,
+        get_ascwds_parent_accounts_patch: Mock,
     ):
         job.prepare_latest_cleaned_ascwds_workforce_data(
             self.test_clean_ascwds_workplace_df,
         )
 
         self.assertEqual(filter_df_to_maximum_value_in_column_patch.call_count, 1)
+        self.assertEqual(apply_categorical_labels_patch.call_count, 1)
         self.assertEqual(add_parents_or_singles_and_subs_col_to_df_patch.call_count, 1)
-        self.assertEqual(get_ascwds_parent_accounts_patch.call_count, 1)
         self.assertEqual(filter_to_cqc_registration_type_only_patch.call_count, 1)
         self.assertEqual(
             remove_ascwds_head_office_accounts_without_location_ids_patch.call_count, 1
         )
+        self.assertEqual(get_ascwds_parent_accounts_patch.call_count, 1)
 
 
 class AddParentsOrSinglesAndSubsColToDf(ReconciliationTests):
