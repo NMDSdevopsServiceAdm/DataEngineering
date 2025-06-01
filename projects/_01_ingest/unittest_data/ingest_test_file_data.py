@@ -497,7 +497,7 @@ class CapacityTrackerNonResData:
 
 
 @dataclass
-class ONSData:
+class IngestONSData:
     sample_rows = [
         ("Yorkshire & Humber", "Leeds", "50.10101"),
         ("Yorkshire & Humber", "York", "52.10101"),
@@ -509,6 +509,50 @@ class ONSData:
         ("Yorkshire & Humber", "York", "52.10101"),
         ("Yorkshire & Humber", "Hull", "53.10101"),
     ]
+
+
+@dataclass
+class ValidatePostcodeDirectoryRawData:
+    raw_postcode_directory_rows = [
+        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
+        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
+        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
+        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
+    ]
+
+
+@dataclass
+class CleanONSData:
+    # fmt: off
+    ons_sample_rows_full = [
+        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
+        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidatePostcodeDirectoryCleanedData:
+    raw_postcode_directory_rows = [
+        ("AB1 2CD", "20240101"),
+        ("AB2 2CD", "20240101"),
+        ("AB1 2CD", "20240201"),
+        ("AB2 2CD", "20240201"),
+    ]
+
+    # fmt: off
+    cleaned_postcode_directory_rows = [
+        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = raw_postcode_directory_rows
 
 
 @dataclass
@@ -548,4 +592,219 @@ class ValidateASCWDSWorkerCleanedData:
         ("estab_2", date(2024, 1, 1), "worker_2", "8", "Care Worker"),
         ("estab_1", date(2024, 1, 9), "worker_3", "8", "Care Worker"),
         ("estab_2", date(2024, 1, 9), "worker_4", "8", "Care Worker"),
+    ]
+
+
+@dataclass
+class CleanCQCPIRData:
+    sample_rows_full = [
+        (
+            "1-1000000001",
+            "Location 1",
+            "Community",
+            "2024-01-01",
+            1,
+            0,
+            0,
+            None,
+            None,
+            "Community based adult social care services",
+            "ASC North",
+            "Wakefield",
+            0,
+            "Y",
+            "Active",
+            "20230201",
+        ),
+        (
+            "1-1000000002",
+            "Location 2",
+            "Residential",
+            "2024-01-01",
+            86,
+            8,
+            3,
+            None,
+            None,
+            "Residential social care",
+            "ASC London",
+            "Islington",
+            53,
+            None,
+            "Active",
+            "20230201",
+        ),
+        (
+            "1-1000000003",
+            "Location 3",
+            "Residential",
+            "2024-01-01",
+            37,
+            5,
+            5,
+            None,
+            None,
+            "Residential social care",
+            "ASC Central",
+            "Nottingham",
+            50,
+            None,
+            "Active",
+            "20230201",
+        ),
+    ]
+
+    add_care_home_column_rows = [
+        ("loc 1", "Residential"),
+        ("loc 2", "Shared Lives"),
+        ("loc 3", None),
+        ("loc 4", "Community"),
+    ]
+    expected_care_home_column_rows = [
+        ("loc 1", "Residential", "Y"),
+        ("loc 2", "Shared Lives", None),
+        ("loc 3", None, None),
+        ("loc 4", "Community", "N"),
+    ]
+    remove_unused_pir_types_rows = add_care_home_column_rows
+    expected_remove_unused_pir_types_rows = [
+        ("loc 1", "Residential"),
+        ("loc 4", "Community"),
+    ]
+
+    remove_rows_missing_pir_people_directly_employed = [
+        ("loc_1", 1),
+        ("loc_1", 0),
+        ("loc_1", None),
+    ]
+
+    expected_remove_rows_missing_pir_people_directly_employed = [
+        ("loc_1", 1),
+    ]
+
+    subset_for_latest_submission_date_before_filter = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+    ]
+    subset_for_latest_submission_date_after_filter_deduplication = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+    ]
+
+
+@dataclass
+class NullPeopleDirectlyEmployedData:
+    null_people_directly_employed_outliers_rows = [
+        ("1-0001", date(2024, 1, 1), 1),
+        ("1-0001", date(2025, 1, 1), 10),
+        ("1-0002", date(2024, 1, 1), 100),
+        ("1-0002", date(2025, 1, 1), 1000),
+    ]
+
+    null_large_single_submission_locations_rows = [
+        ("1-0001", date(2024, 1, 1), None),
+        ("1-0001", date(2025, 1, 1), 99),
+        ("1-0002", date(2024, 1, 1), None),
+        ("1-0002", date(2025, 1, 1), 100),
+        ("1-0003", date(2024, 1, 1), 99),
+        ("1-0003", date(2025, 1, 1), 100),
+        ("1-0004", date(2024, 1, 1), 500),
+        ("1-0004", date(2025, 1, 1), 600),
+    ]
+    expected_null_large_single_submission_locations_rows = [
+        ("1-0001", date(2024, 1, 1), None),
+        ("1-0001", date(2025, 1, 1), 99),
+        ("1-0002", date(2024, 1, 1), None),
+        ("1-0002", date(2025, 1, 1), None),
+        ("1-0003", date(2024, 1, 1), 99),
+        ("1-0003", date(2025, 1, 1), 100),
+        ("1-0004", date(2024, 1, 1), 500),
+        ("1-0004", date(2025, 1, 1), 600),
+    ]
+
+
+@dataclass
+class ValidatePIRRawData:
+    raw_cqc_pir_rows = [
+        ("1-000000001", "20240101", 10),
+        ("1-000000002", "20240101", 10),
+        ("1-000000001", "20240109", 10),
+        ("1-000000002", "20240109", 10),
+    ]
+
+
+@dataclass
+class ValidatePIRCleanedData:
+    cleaned_cqc_pir_rows = [
+        ("1-000000001", date(2024, 1, 1), 10, "Y"),
+        ("1-000000002", date(2024, 1, 1), 10, "Y"),
+        ("1-000000001", date(2024, 1, 9), 10, "Y"),
+        ("1-000000002", date(2024, 1, 9), 10, "Y"),
+    ]
+
+
+@dataclass
+class PostcodeMatcherData:
+    # fmt: off
+    locations_where_all_match_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
+        ("1-002", date(2025, 1, 1), "AA1 2AA"),
+        ("1-002", date(2025, 1, 1), "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "29 5HF"),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
+    ]
+    locations_with_unmatched_postcode_rows = [
+        ("1-001", date(2020, 1, 1), "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "AA2 5XX"),  # never known
+    ]
+    # fmt: on
+
+    postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2020, 1, 1), "CSSR 3"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+        ("AA13AA", date(2025, 1, 1), "CSSR 3"),
+    ]
+
+    clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1"),
+        ("AA1 2AA", "ccsr 1"),
+        ("aA1 3aA", "ccsr 1"),
+    ]
+    expected_clean_postcode_column_rows = [
+        ("aA11Aa", "ccsr 1", "AA11AA"),
+        ("AA1 2AA", "ccsr 1", "AA12AA"),
+        ("aA1 3aA", "ccsr 1", "AA13AA"),
+    ]
+
+    join_postcode_data_locations_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA"),
+        ("1-001", date(2025, 1, 1), "AA11AA"),
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
+        ("1-002", date(2025, 1, 1), "AA12AA"),
+    ]
+    join_postcode_data_postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
+    ]
+    expected_join_postcode_data_matched_rows = [
+        ("1-001", date(2020, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-002", date(2025, 1, 1), "AA12AA", "CSSR 2"),
+    ]
+    expected_join_postcode_data_unmatched_rows = [
+        ("1-002", date(2020, 1, 1), "AA1ZAA"),
     ]

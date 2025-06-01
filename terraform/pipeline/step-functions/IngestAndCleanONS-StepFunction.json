@@ -1,41 +1,41 @@
 {
-  "Comment": "A step function to ingest, clean and validate CQC PIR data",
-  "StartAt": "CQC PIR pipeline",
+  "Comment": "A state machine indicating the transformation steps from ingesting, cleaning and validating the ONS Postcode Directory",
+  "StartAt": "ONS Postcode Directory pipeline",
   "States": {
-    "CQC PIR pipeline": {
+    "ONS Postcode Directory pipeline": {
       "Type": "Parallel",
       "Next": "Run validation crawler when success",
       "Branches": [
         {
-          "StartAt": "Ingest CQC PIR",
+          "StartAt": "Ingest ONS data",
           "States": {
-            "Ingest CQC PIR": {
+            "Ingest ONS data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${ingest_cqc_pir_job_name}",
+                "JobName": "${ingest_ons_data_job_name}",
                 "Arguments": {
-                  "--source.$": "$.jobs.ingest_cqc_pir_data.source",
-                  "--destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir/"
+                  "--source.$": "$.jobs.ingest_ons_dataset.source",
+                  "--destination": "${dataset_bucket_uri}/domain=ONS/"
                 }
               },
-              "Next": "Clean and validate ingested CQC data"
+              "Next": "Clean and validate ingested ONS data"
             },
-            "Clean and validate ingested CQC data": {
+            "Clean and validate ingested ONS data": {
               "Type": "Parallel",
-              "Next": "Validate cleaned CQC PIR data",
+              "Next": "Validate cleaned ONS data",
               "Branches": [
                 {
-                  "StartAt": "Clean CQC PIR data",
+                  "StartAt": "Clean ONS data",
                   "States": {
-                    "Clean CQC PIR data": {
+                    "Clean ONS data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${clean_cqc_pir_data_job_name}",
+                        "JobName": "${clean_ons_data_job_name}",
                         "Arguments": {
-                          "--cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                          "--cleaned_cqc_pir_destination": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/"
+                          "--ons_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                          "--cleaned_ons_destination": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
                         }
                       },
                       "End": true
@@ -43,16 +43,16 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate CQC PIR ingest job",
+                  "StartAt": "Validate ingested ONS data",
                   "States": {
-                      "Run validate CQC PIR ingest job": {
+                    "Validate ingested ONS data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
-                        "JobName": "${validate_pir_raw_data_job_name}",
+                        "JobName": "${validate_postcode_directory_raw_data_job_name}",
                         "Arguments": {
-                          "--raw_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_raw/"
+                          "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_raw/"
                         }
                       },
                       "End": true
@@ -61,14 +61,15 @@
                 }
               ]
             },
-            "Validate cleaned CQC PIR data": {
+            "Validate cleaned ONS data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${validate_pir_cleaned_data_job_name}",
+                "JobName": "${validate_postcode_directory_cleaned_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_pir_cleaned/"
+                  "--raw_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory/",
+                  "--cleaned_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_postcode_directory_cleaned/"
                 }
               },
               "End": true
@@ -92,12 +93,12 @@
         "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run CQC crawler when success"
+      "Next": "Run ONS crawler when success"
     },
-    "Run CQC crawler when success": {
+    "Run ONS crawler when success": {
       "Type": "Task",
       "Parameters": {
-        "Name": "${cqc_crawler_name}"
+        "Name": "${ons_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Success"
@@ -124,12 +125,12 @@
         "Name": "${data_validation_reports_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run CQC crawler when failed"
+      "Next": "Run ONS crawler when failed"
     },
-    "Run CQC crawler when failed": {
+    "Run ONS crawler when failed": {
       "Type": "Task",
       "Parameters": {
-        "Name": "${cqc_crawler_name}"
+        "Name": "${ons_crawler_name}"
       },
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Fail"

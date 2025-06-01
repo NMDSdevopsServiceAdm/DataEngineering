@@ -254,19 +254,6 @@ class CQCProviderData:
 
 
 @dataclass
-class ONSData:
-    # fmt: off
-    ons_sample_rows_full = [
-        ("AB10AA", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AB", "cssr1", "region1", "subicb1", "icb1", "icb_region1", "ccg1", "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2022", "01", "01", "20220101"),
-        ("AB10AA", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AB", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-        ("AB10AC", "cssr2", "region1", "subicb2", "icb2", "icb_region2", None, "51.23456", "-.12345", "123", "E010123", "E020123", "Rural village", "E010123", "E020123", "pcon1", "2023", "01", "01", "20230101"),
-    ]
-    # fmt: on
-
-
-@dataclass
 class CapacityTrackerCareHomeData:
     capacity_tracker_care_home_rows = [
         (
@@ -317,112 +304,6 @@ class CapacityTrackerCareHomeData:
 class CapacityTrackerNonResData:
     capacity_tracker_non_res_rows = [
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
-    ]
-
-
-@dataclass
-class CQCpirData:
-    sample_rows_full = [
-        (
-            "1-1000000001",
-            "Location 1",
-            "Community",
-            "2024-01-01",
-            1,
-            0,
-            0,
-            None,
-            None,
-            "Community based adult social care services",
-            "ASC North",
-            "Wakefield",
-            0,
-            "Y",
-            "Active",
-            "20230201",
-        ),
-        (
-            "1-1000000002",
-            "Location 2",
-            "Residential",
-            "2024-01-01",
-            86,
-            8,
-            3,
-            None,
-            None,
-            "Residential social care",
-            "ASC London",
-            "Islington",
-            53,
-            None,
-            "Active",
-            "20230201",
-        ),
-        (
-            "1-1000000003",
-            "Location 3",
-            "Residential",
-            "2024-01-01",
-            37,
-            5,
-            5,
-            None,
-            None,
-            "Residential social care",
-            "ASC Central",
-            "Nottingham",
-            50,
-            None,
-            "Active",
-            "20230201",
-        ),
-    ]
-
-    add_care_home_column_rows = [
-        ("loc 1", "Residential"),
-        ("loc 2", "Shared Lives"),
-        ("loc 3", None),
-        ("loc 4", "Community"),
-    ]
-    expected_care_home_column_rows = [
-        ("loc 1", "Residential", "Y"),
-        ("loc 2", "Shared Lives", None),
-        ("loc 3", None, None),
-        ("loc 4", "Community", "N"),
-    ]
-    remove_unused_pir_types_rows = add_care_home_column_rows
-    expected_remove_unused_pir_types_rows = [
-        ("loc 1", "Residential"),
-        ("loc 4", "Community"),
-    ]
-
-    remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-        ("loc_1", 0),
-        ("loc_1", None),
-    ]
-
-    expected_remove_rows_missing_pir_people_directly_employed = [
-        ("loc_1", 1),
-    ]
-
-
-@dataclass
-class CQCPirCleanedData:
-    subset_for_latest_submission_date_before_filter = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
-    ]
-    subset_for_latest_submission_date_after_filter_deduplication = [
-        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
-        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
-        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
-        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
     ]
 
 
@@ -3002,6 +2883,15 @@ class PostcodeMatcherData:
 
 @dataclass
 class UtilsData:
+    cqc_pir_rows = [
+        ("1-1199876096", "Y", date(2022, 2, 1), date(2021, 5, 7)),
+        ("1-1199876096", "Y", date(2022, 7, 1), date(2022, 5, 20)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 12)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "N", date(2023, 6, 1), date(2023, 5, 24)),
+        ("1-1199876096", "Y", date(2023, 6, 1), date(2023, 5, 24)),
+    ]
+
     filter_to_max_value_rows = [
         ("1", date(2024, 1, 1), "20220101"),
         ("2", date(2024, 1, 1), "20230101"),
@@ -3373,55 +3263,28 @@ class CleaningUtilsData:
 
 @dataclass
 class MergeIndCQCData:
-    clean_cqc_pir_rows = [
-        ("1-000000001", "Y", date(2024, 1, 1), 10),
-        ("1-000000002", "N", date(2024, 1, 1), 20),
-        ("1-000000003", "Y", date(2024, 1, 1), 30),
-        ("1-000000001", "Y", date(2024, 2, 1), 1),
-        ("1-000000002", "N", date(2024, 2, 1), 4),
-    ]
-
-    # fmt: off
     clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None,),
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None),
     ]
-    # fmt: on
 
-    # fmt: off
-    clean_ascwds_workplace_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "1", 1,),
-        (date(2024, 1, 1), "1-000000003", "3", 2,),
-        (date(2024, 1, 5), "1-000000001", "1", 3,),
-        (date(2024, 1, 9), "1-000000001", "1", 4,),
-        (date(2024, 1, 9), "1-000000003", "3", 5,),
-        (date(2024, 3, 1), "1-000000003", "4", 6,),
+    data_to_merge_without_care_home_col_rows = [
+        (date(2024, 1, 1), "1-000000001", "1", 1),
+        (date(2024, 1, 1), "1-000000003", "3", 2),
+        (date(2024, 1, 5), "1-000000001", "1", 3),
+        (date(2024, 1, 9), "1-000000001", "1", 4),
+        (date(2024, 1, 9), "1-000000003", "3", 5),
+        (date(2024, 3, 1), "1-000000003", "4", 6),
     ]
-    # fmt: on
-
     # fmt: off
-    expected_merged_cqc_and_pir = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-    ]
-    # fmt: on
-
-    # fmt: off
-    expected_cqc_and_ascwds_merged_rows = [
+    expected_merged_without_care_home_col_rows = [
         ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
         ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
         ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
@@ -3434,14 +3297,24 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
-    # fmt: off
-    cqc_sector_rows = [
-        ("loc-1", "Local Authority",),
-        ("loc-2", None,),
-        ("loc-3", "Independent",),
+    data_to_merge_with_care_home_col_rows = [
+        ("1-000000001", "Y", date(2024, 1, 1), 10),
+        ("1-000000002", "N", date(2024, 1, 1), 20),
+        ("1-000000003", "Y", date(2024, 1, 1), 30),
+        ("1-000000001", "Y", date(2024, 2, 1), 1),
+        ("1-000000002", "N", date(2024, 2, 1), 4),
     ]
-    expected_cqc_sector_rows = [
-        ("loc-3", "Independent",),
+    # fmt: off
+    expected_merged_with_care_home_col_rows = [
+        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
     ]
     # fmt: on
 
@@ -4999,22 +4872,24 @@ class ModelImputationWithExtrapolationAndInterpolationData:
     imputation_model_rows = [
         ("1-001", None, None, None),
         ("1-002", None, None, 30.0),
-        ("1-003", None, 20.0, None),
-        ("1-004", None, 20.0, 30.0),
-        ("1-005", 10.0, None, None),
-        ("1-006", 10.0, None, 30.0),
-        ("1-007", 10.0, 20.0, None),
-        ("1-008", 10.0, 20.0, 30.0),
+        ("1-003", None, None, -2.0),
+        ("1-004", None, -2.0, None),
+        ("1-005", None, -2.0, 30.0),
+        ("1-006", 10.0, None, None),
+        ("1-007", 10.0, None, 30.0),
+        ("1-008", 10.0, -2.0, None),
+        ("1-009", 10.0, -2.0, 30.0),
     ]
     expected_imputation_model_rows = [
         ("1-001", None, None, None, None),
         ("1-002", None, None, 30.0, 30.0),
-        ("1-003", None, 20.0, None, 20.0),
-        ("1-004", None, 20.0, 30.0, 20.0),
-        ("1-005", 10.0, None, None, 10.0),
-        ("1-006", 10.0, None, 30.0, 10.0),
-        ("1-007", 10.0, 20.0, None, 10.0),
-        ("1-008", 10.0, 20.0, 30.0, 10.0),
+        ("1-003", None, None, -2.0, 1.0),
+        ("1-004", None, -2.0, None, 1.0),
+        ("1-005", None, -2.0, 30.0, 1.0),
+        ("1-006", 10.0, None, None, 10.0),
+        ("1-007", 10.0, None, 30.0, 10.0),
+        ("1-008", 10.0, -2.0, None, 10.0),
+        ("1-009", 10.0, -2.0, 30.0, 10.0),
     ]
 
 
@@ -5060,8 +4935,12 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 10.0),
         ("1-002", 1675209600, 10.0, 20.0),
         ("1-002", 1677628800, None, 30.0),
-        ("1-003", 1677628800, None, 20.0),
+        ("1-002", 1677629000, None, 100.0),
+        ("1-003", 1672531200, 20.0, 100.0),
+        ("1-003", 1675209600, None, 20.0),
+        ("1-004", 1677628800, None, 20.0),
     ]
+    # fmt: off
     expected_extrapolation_forwards_rows = [
         ("1-001", 1672531200, 15.0, 10.0, None),
         ("1-001", 1675209600, None, 20.0, 30.0),
@@ -5069,8 +4948,12 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 10.0, None),
         ("1-002", 1675209600, 10.0, 20.0, None),
         ("1-002", 1677628800, None, 30.0, 15.0),
-        ("1-003", 1677628800, None, 20.0, None),
+        ("1-002", 1677629000, None, 100.0, 40.0),  # capped at upper cutoff
+        ("1-003", 1672531200, 20.0, 100.0, None),
+        ("1-003", 1675209600, None, 20.0, 5.0),  # capped at lower cutoff
+        ("1-004", 1677628800, None, 20.0, None),
     ]
+    # fmt: on
     extrapolation_forwards_mock_rows = [
         ("1-001", 12345, 15.0, 10.0, 15.0, 10.0),
     ]
@@ -5082,8 +4965,13 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0),
-        ("1-003", 1677628800, None, None, None, 20.0),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0),
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0),
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0),
+        ("1-005", 1677628800, None, None, None, 20.0),
     ]
+    # fmt: off
     expected_extrapolation_backwards_rows = [
         ("1-001", 1672531200, 15.0, 1672531200, 1677628800, 10.0, None),
         ("1-001", 1675209600, None, 1672531200, 1677628800, 20.0, None),
@@ -5091,8 +4979,13 @@ class ModelExtrapolation:
         ("1-002", 1672531200, None, 1675209600, 1675209600, 10.0, 5.0),
         ("1-002", 1675209600, 10.0, 1675209600, 1675209600, 20.0, None),
         ("1-002", 1677628800, None, 1675209600, 1675209600, 30.0, None),
-        ("1-003", 1677628800, None, None, None, 20.0, None),
+        ("1-003", 1672531200, None, 1675209600, 1675209600, 1.0, 5.0),  # capped at lower cutoff
+        ("1-003", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-004", 1672531200, None, 1675209600, 1675209600, 100.0, 80.0),  # capped at upper cutoff
+        ("1-004", 1675209600, 20.0, 1675209600, 1675209600, 20.0, None),
+        ("1-005", 1677628800, None, None, None, 20.0, None),
     ]
+    # fmt: on
     extrapolation_backwards_mock_rows = [
         ("1-001", 12345, 15.0, 12345, 12345, 10.0, 15.0, 10.0),
     ]
@@ -7067,7 +6960,7 @@ class ValidationUtils:
     min_values_multiple_columns_rule = {
         RuleName.min_values: {
             IndCQC.number_of_beds: 1,
-            IndCQC.pir_people_directly_employed: 0,
+            IndCQC.pir_people_directly_employed_cleaned: 0,
         }
     }
     min_values_below_minimum_rows = [
@@ -7116,7 +7009,7 @@ class ValidationUtils:
             "Min value in column",
             "Warning",
             "Success",
-            "MinimumConstraint(Minimum(pir_people_directly_employed,None,None))",
+            "MinimumConstraint(Minimum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),
@@ -7130,7 +7023,7 @@ class ValidationUtils:
     max_values_multiple_columns_rule = {
         RuleName.max_values: {
             IndCQC.number_of_beds: 10,
-            IndCQC.pir_people_directly_employed: 20,
+            IndCQC.pir_people_directly_employed_cleaned: 20,
         }
     }
     max_values_below_maximum_rows = [
@@ -7179,7 +7072,7 @@ class ValidationUtils:
             "Max value in column",
             "Warning",
             "Success",
-            "MaximumConstraint(Maximum(pir_people_directly_employed,None,None))",
+            "MaximumConstraint(Maximum(pir_people_directly_employed_cleaned,None,None))",
             "Success",
             "",
         ),
@@ -7442,39 +7335,6 @@ class ValidateProvidersAPICleanedData:
 
 
 @dataclass
-class ValidatePIRCleanedData:
-    # fmt: off
-    cleaned_cqc_pir_rows = [
-        ("1-000000001", date(2024, 1, 1), 10, "Y"),
-        ("1-000000002", date(2024, 1, 1), 10, "Y"),
-        ("1-000000001", date(2024, 1, 9), 10, "Y"),
-        ("1-000000002", date(2024, 1, 9), 10, "Y"),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidatePostcodeDirectoryCleanedData:
-    # fmt: off
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101"),
-        ("AB2 2CD", "20240101"),
-        ("AB1 2CD", "20240201"),
-        ("AB2 2CD", "20240201"),
-    ]
-
-    cleaned_postcode_directory_rows = [
-        ("AB1 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 1), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB1 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-        ("AB2 2CD", date(2024, 1, 9), "cssr", "region", date(2024, 1, 9), "cssr", "region", "rui"),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = raw_postcode_directory_rows
-
-
-@dataclass
 class ValidateCleanedIndCqcData:
     # fmt: off
     merged_ind_cqc_rows = [
@@ -7560,6 +7420,7 @@ class ValidateFeaturesNonResASCWDSWithDormancyIndCqcData:
         ("1-005", date(2024, 1, 1), CareHome.not_care_home, None, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - null dormancy
         ("1-004", date(2024, 1, 1), CareHome.care_home, Dormancy.dormant, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - care home
     ]
+    # fmt: on
 
 
 @dataclass
@@ -7666,29 +7527,6 @@ class ValidateProvidersAPIRawData:
 
 
 @dataclass
-class ValidatePIRRawData:
-    # fmt: off
-    raw_cqc_pir_rows = [
-        ("1-000000001", "20240101", 10),
-        ("1-000000002", "20240101", 10),
-        ("1-000000001", "20240109", 10),
-        ("1-000000002", "20240109", 10),
-    ]
-    # fmt: on
-
-
-@dataclass
-class ValidatePostcodeDirectoryRawData:
-    # fmt: off
-    raw_postcode_directory_rows = [
-        ("AB1 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240101", "cssr", "region", "rui"),
-        ("AB1 2CD", "20240201", "cssr", "region", "rui"),
-        ("AB2 2CD", "20240201", "cssr", "region", "rui"),
-    ]
-
-
-@dataclass
 class RawDataAdjustments:
     expected_worker_data = [
         ("worker_1", "20240101", "estab_1", "other"),
@@ -7710,55 +7548,6 @@ class RawDataAdjustments:
     ]
 
     worker_data_without_rows_to_remove = expected_worker_data
-
-    expected_pir_data = [
-        ("loc_1", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-May-23", "0", "other"),
-        ("1-1199876096", "20230601", "Residential", "24-Jan-24", "0", "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20230601", "Non-residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20230601", "Residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20230601", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20230601", "Residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Residential", "24-Jan-24", "0", "other"),
-        ("loc_1", "20240101", "Residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Non-residential", "24-May-23", "0", "other"),
-        ("loc_1", "20240101", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20240101", "Non-residential", "24-May-23", None, "other"),
-        ("1-1199876096", "20230601", "Residential", "24-Jan-24", None, "other"),
-        ("1-1199876096", "20230601", "Non-residential", "24-May-23", None, "other"),
-        ("loc_1", "20230601", "Non-residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20230601", "Residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20230601", "Non-residential", "24-May-23", None, "other"),
-        ("loc_1", "20230601", "Residential", "24-May-23", None, "other"),
-        ("loc_1", "20240101", "Residential", "24-Jan-24", None, "other"),
-        ("loc_1", "20240101", "Residential", "24-May-23", None, "other"),
-        ("loc_1", "20240101", "Non-residential", "24-May-23", None, "other"),
-    ]
-    pir_data_with_single_row_to_remove = [
-        *expected_pir_data,
-        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
-    ]
-    pir_data_with_multiple_rows_to_remove = [
-        *expected_pir_data,
-        ("1-1199876096", "20230601", "Residential", "24-May-23", None, "other"),
-        (
-            "1-1199876096",
-            "20230601",
-            "Residential",
-            "24-May-23",
-            None,
-            "something else",
-        ),
-    ]
-
-    pir_data_without_rows_to_remove = expected_pir_data
 
     locations_data_with_multiple_rows_to_remove = [
         ("loc_1", "other"),
@@ -10514,7 +10303,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
-    transform_interpolated_job_role_ratios_to_counts_rows = [
+    transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,
@@ -10541,7 +10330,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             None,
         ),
     ]
-    expected_transform_interpolated_job_role_ratios_to_counts_rows = [
+    expected_transform_imputed_job_role_ratios_to_counts_rows = [
         (
             "1-001",
             100.0,
@@ -10582,56 +10371,186 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
 
+    # fmt: off
+    job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            }
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-001",
+            1000000600,
+            None,
+        ),
+        (
+            "1-002",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            }
+        ),
+        (
+            "1-002",
+            1000000300,
+            None
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-003", 1000000200, None),
+        ("1-003", 1000000300, None),
+        ("1-003", 1000000400, None),
+        ("1-003", 1000000500, None),
+    ]
+    expected_job_role_ratios_extrapolation_rows = [
+        (
+            "1-001",
+            1000000200,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000300,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-001",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-001",
+            1000000500,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-001",
+            1000000600,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            1000000200,
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-002",
+            1000000300,
+            None,
+            None,
+        ),
+        (
+            "1-002",
+            1000000400,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        ("1-003", 1000000200, None, None),
+        ("1-003", 1000000300, None, None),
+        ("1-003", 1000000400, None, None),
+        ("1-003", 1000000500, None, None),
+    ]
+    # fmt: on
+
     recalculate_managerial_filled_posts_rows = [
         (
             "1-001",
             0.0,
-            0.0,
-            0.0,
+            1.0,
+            4.0,
             5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            10.0,
-            15.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.0,
-                MainJobRoleLabels.deputy_manager: 0.0,
-                MainJobRoleLabels.first_line_manager: 0.0,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.2,
-                MainJobRoleLabels.team_leader: 0.3,
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
             },
-            0.5,
+            1.0,
         ),
         (
             "1-002",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
             0.0,
         ),
@@ -10641,78 +10560,55 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
-            -0.5,
+            -1.0,
+        ),
+        (
+            "1-004",
+            0.0,
+            1.0,
+            4.0,
+            5.0,
+            {
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
+            },
+            -1.0,
         ),
     ]
-
     expected_recalculate_managerial_filled_posts_rows = [
         (
             "1-001",
             0.0,
-            0.0,
-            0.0,
-            5.05,
-            5.05,
-            5.05,
-            5.05,
-            5.05,
-            10.1,
-            15.15,
+            1.1,
+            4.4,
+            5.5,
             {
-                MainJobRoleLabels.data_governance_manager: 0.0,
-                MainJobRoleLabels.deputy_manager: 0.0,
-                MainJobRoleLabels.first_line_manager: 0.0,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.2,
-                MainJobRoleLabels.team_leader: 0.3,
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
             },
-            0.5,
+            1.0,
         ),
         (
             "1-002",
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
             0.0,
         ),
@@ -10722,25 +10618,27 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
             {
-                MainJobRoleLabels.data_governance_manager: 0.1,
-                MainJobRoleLabels.deputy_manager: 0.1,
-                MainJobRoleLabels.first_line_manager: 0.1,
-                MainJobRoleLabels.it_manager: 0.1,
-                MainJobRoleLabels.it_service_desk_manager: 0.1,
-                MainJobRoleLabels.middle_management: 0.1,
-                MainJobRoleLabels.other_managerial_staff: 0.1,
-                MainJobRoleLabels.senior_management: 0.1,
-                MainJobRoleLabels.supervisor: 0.1,
-                MainJobRoleLabels.team_leader: 0.1,
+                "managerial_role_1": 0.25,
+                "managerial_role_2": 0.25,
+                "managerial_role_3": 0.25,
+                "managerial_role_4": 0.25,
             },
-            -0.5,
+            -1.0,
+        ),
+        (
+            "1-004",
+            0.0,
+            0.9,
+            3.6,
+            4.5,
+            {
+                "managerial_role_1": 0.0,
+                "managerial_role_2": 0.1,
+                "managerial_role_3": 0.4,
+                "managerial_role_4": 0.5,
+            },
+            -1.0,
         ),
     ]
 
@@ -10748,10 +10646,131 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ("1-001", 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0),
     ]
-
     expected_recalculate_total_filled_posts_rows = [
         ("1-001", 0.0, 0.0, 0.0, 0.0, 0.0),
         ("1-002", 2.0, 1.0, 2.0, 1.0, 6.0),
+    ]
+
+    combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+        ),
+    ]
+    expected_combine_interpolated_and_extrapolated_job_role_ratios_rows = [
+        (
+            "1-001",
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.1,
+                MainJobRoleLabels.registered_nurse: 0.1,
+            },
+        ),
+        (
+            "1-002",
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.2,
+                MainJobRoleLabels.registered_nurse: 0.2,
+            },
+        ),
+        (
+            "1-003",
+            None,
+            None,
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+            {
+                MainJobRoleLabels.care_worker: 0.3,
+                MainJobRoleLabels.registered_nurse: 0.3,
+            },
+        ),
+        (
+            "1-004",
+            None,
+            None,
+            None,
+            None,
+        ),
+    ]
+
+    overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (10.0, 1),
+        (10.0, 0),
+    ]
+    expected_overwrite_registered_manager_estimate_with_cqc_count_rows = [
+        (1.0, 1),
+        (0.0, 0),
+    ]
+
+    calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
+        (10.0, 10.0),
+        (10.0, 9.0),
+        (9.0, 10.0),
+    ]
+    expected_calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles_rows = [
+        (10.0, 10.0, 0.0),
+        (10.0, 9.0, -1.0),
+        (9.0, 10.0, 1.0),
     ]
 
 

@@ -38,6 +38,8 @@ ind_cqc_columns = [
     IndCQC.related_location,
     IndCQC.time_registered,
     IndCQC.registered_manager_names,
+    IndCQC.ct_import_date,
+    IndCQC.ct_care_workers_employed,
     IndCQC.cqc_pir_import_date,
     IndCQC.pir_people_directly_employed_dedup,
     IndCQC.pir_filled_posts_model,

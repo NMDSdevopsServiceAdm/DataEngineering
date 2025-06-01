@@ -18,7 +18,7 @@ class OnsPostcodeDirectoryColumns:
     rural_urban_indicator_2011: str = "ru11ind"
     lower_super_output_area_2021: str = "lsoa21"
     middle_super_output_area_2021: str = "msoa21"
-    westminster_parliamentary_consitituency: str = "pcon"
+    parliamentary_constituency: str = "pcon"
     year: str = "year"
     month: str = "month"
     day: str = "day"

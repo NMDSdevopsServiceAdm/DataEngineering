@@ -56,7 +56,7 @@ module "ingest_cqc_pir_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
@@ -66,12 +66,12 @@ module "ingest_cqc_pir_data_job" {
 
 module "clean_cqc_pir_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
   script_name     = "clean_cqc_pir_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "4.0"
 
   job_parameters = {
     "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
@@ -169,6 +169,7 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--source"      = ""
@@ -179,11 +180,12 @@ module "ingest_ons_data_job" {
 
 module "clean_ons_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "clean_ons_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
 
   job_parameters = {
     "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
@@ -223,12 +225,14 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 }
 
 module "clean_ind_cqc_filled_posts_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "clean_ind_cqc_filled_posts.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "clean_ind_cqc_filled_posts.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--merged_ind_cqc_source"       = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
@@ -387,12 +391,14 @@ module "flatten_cqc_ratings_job" {
 }
 
 module "clean_cqc_provider_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "clean_cqc_provider_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "clean_cqc_provider_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--cqc_provider_source"  = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
@@ -449,6 +455,7 @@ module "merge_ind_cqc_data_job" {
     "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
+    "--cleaned_non_res_ct_source"       = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
     "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
   }
 }
@@ -505,7 +512,7 @@ module "validate_providers_api_cleaned_data_job" {
 
 module "validate_pir_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
   script_name     = "validate_pir_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -550,7 +557,7 @@ module "validate_ascwds_worker_cleaned_data_job" {
 
 module "validate_postcode_directory_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "validate_postcode_directory_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -565,13 +572,15 @@ module "validate_postcode_directory_cleaned_data_job" {
 }
 
 module "validate_merged_ind_cqc_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "validate_merged_ind_cqc_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "validate_merged_ind_cqc_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
@@ -773,7 +782,7 @@ module "validate_providers_api_raw_data_job" {
 
 module "validate_pir_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_pir/jobs"
   script_name     = "validate_pir_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -788,7 +797,7 @@ module "validate_pir_raw_data_job" {
 
 module "validate_postcode_directory_raw_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/ons_pd/jobs"
   script_name     = "validate_postcode_directory_raw_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -821,7 +830,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
   script_name       = "impute_ind_cqc_ascwds_and_pir.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
-  number_of_workers = 4
+  number_of_workers = 6
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
 
@@ -908,13 +917,15 @@ module "diagnostics_on_capacity_tracker_job" {
 }
 
 module "validate_cleaned_capacity_tracker_care_home_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "validate_cleaned_capacity_tracker_care_home_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "validate_cleaned_capacity_tracker_care_home_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "4.0"
+  worker_type       = "G.1X"
+  number_of_workers = 4
 
   job_parameters = {
     "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"

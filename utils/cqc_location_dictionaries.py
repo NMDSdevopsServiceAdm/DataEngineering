@@ -62,6 +62,7 @@ class InvalidPostcodes:
         "HA9OEW": "HA9 0EW",
         "HD1 1AD": "HD1 1RL",
         "HP20 1SN.": "HP20 1SN",
+        "HU6 7QT": "HU6 7TQ",
         "HU13 OEG": "HU13 0EG",
         "HU17 ORH": "HU17 0RH",
         "HU21 0LS": "HU170LS",

@@ -65,7 +65,7 @@ def main(
 
     locations_df = create_column_with_repeated_values_removed(
         locations_df,
-        IndCQC.pir_people_directly_employed,
+        IndCQC.pir_people_directly_employed_cleaned,
         IndCQC.pir_people_directly_employed_dedup,
     )
 

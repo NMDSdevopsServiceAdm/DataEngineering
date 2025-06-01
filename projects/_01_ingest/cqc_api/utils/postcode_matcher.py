@@ -20,7 +20,14 @@ def run_postcode_matching(
     truncated_postcode_df: DataFrame,
 ) -> DataFrame:
     """
-    Runs full postcode matching logic with fallbacks and strict final validation.
+    Runs full postcode matching logic and raises error if final validation fails.
+
+    This function consists of 5 steps:
+        - Match postcodes where there is an exact match at that point in time.
+        - If not, use the first exact matching postcode for that location ID where available.
+        - If not, replace known postcode issues using the invalid postcode dictionary.
+        - If not, match the postcode based on the first half of the postcode only (truncated postcode).
+        - If not, raise an error to manually investigate any unmatched postcodes.
 
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
@@ -137,9 +144,10 @@ def join_postcode_data(
         [ONSClean.contemporary_ons_import_date, postcode_col],
         "left",
     )
-    matched_df = joined_df.filter(F.col(postcode_df.columns[1]).isNotNull())
+    matched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNotNull())
 
-    unmatched_df = joined_df.filter(F.col(postcode_df.columns[1]).isNull())
+    unmatched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNull())
+    unmatched_df = unmatched_df.select(*locations_df.columns)
 
     return matched_df, unmatched_df
 
