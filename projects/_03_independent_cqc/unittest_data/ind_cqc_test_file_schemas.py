@@ -10,7 +10,10 @@ from pyspark.sql.types import (
     DateType,
 )
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
+    ArchivePartitionKeys as ArchiveKeys,
+    IndCqcColumns as IndCQC,
+)
 
 
 @dataclass
@@ -270,5 +273,39 @@ class RunLinearRegressionModelSchema:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    filled_posts_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    select_import_dates_to_archive_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    create_archive_date_partitions_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+
+    expected_create_archive_date_partitions_schema = StructType(
+        [
+            *create_archive_date_partitions_schema,
+            StructField(ArchiveKeys.archive_day, StringType(), True),
+            StructField(ArchiveKeys.archive_month, StringType(), True),
+            StructField(ArchiveKeys.archive_year, StringType(), True),
+            StructField(ArchiveKeys.archive_timestamp, StringType(), True),
         ]
     )
