@@ -26,7 +26,8 @@ def run_postcode_matching(
         - 3 - (TO DO) If not, replace known postcode issues using the invalid postcode dictionary.
         - 4 - (TO DO) If not, match the postcode based on the first half of the postcode only (truncated postcode).
         - 5 - (TO DO) If not, raise an error to manually investigate any unmatched postcodes.
-        - 6 - If an error isn't raised, return a DataFrame with all matched postcodes from steps 1 to 4.
+
+    If an error isn't raised, return a DataFrame with all of the matched postcodes from steps 1 to 4.
 
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
