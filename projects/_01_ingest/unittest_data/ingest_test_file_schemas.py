@@ -610,3 +610,22 @@ class PostcodeMatcherSchema:
         ]
     )
     expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
+
+    first_successful_postcode_unmatched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+        ]
+    )
+    first_successful_postcode_matched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    expected_get_first_successful_postcode_match_schema = (
+        first_successful_postcode_unmatched_schema
+    )

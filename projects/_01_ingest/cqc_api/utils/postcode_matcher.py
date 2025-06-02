@@ -155,6 +155,7 @@ def get_first_successful_postcode_match(
         CQCLClean.cqc_location_import_date
     )
     row_number: str = "row_number"
+    successfully_matched_postcode: str = "successfully_matched_postcode"
 
     first_matched_df = (
         matched_df.select(
@@ -164,11 +165,18 @@ def get_first_successful_postcode_match(
         )
         .withColumn(row_number, F.row_number().over(window_spec))
         .filter(F.col(row_number) == 1)
+        .withColumnRenamed(CQCLClean.postcode_cleaned, successfully_matched_postcode)
         .drop(row_number, CQCLClean.cqc_location_import_date)
     )
 
-    unmatched_reassigned_df = unmatched_df.drop(CQCLClean.postcode_cleaned).join(
-        first_matched_df, CQCLClean.location_id, "left"
-    )
+    reassigned_df = unmatched_df.join(first_matched_df, CQCLClean.location_id, "left")
 
-    return unmatched_reassigned_df
+    reassigned_df = reassigned_df.withColumn(
+        CQCLClean.postcode_cleaned,
+        F.when(
+            F.col(successfully_matched_postcode).isNotNull(),
+            F.col(successfully_matched_postcode),
+        ).otherwise(F.col(CQCLClean.postcode_cleaned)),
+    ).drop(successfully_matched_postcode)
+
+    return reassigned_df
