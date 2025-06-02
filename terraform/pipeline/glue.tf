@@ -442,7 +442,7 @@ module "reconciliation_job" {
 
 module "merge_ind_cqc_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_01_merge/jobs"
   script_name       = "merge_ind_cqc_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -573,7 +573,7 @@ module "validate_postcode_directory_cleaned_data_job" {
 
 module "validate_merged_ind_cqc_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_01_merge/jobs"
   script_name       = "validate_merged_ind_cqc_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
