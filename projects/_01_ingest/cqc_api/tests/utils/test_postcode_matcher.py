@@ -182,9 +182,7 @@ class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
         )
 
     def test_get_first_successful_postcode_match_returns_original_number_of_rows(self):
-        self.assertEqual(
-            sorted(self.returned_df.count()), sorted(self.unmatched_df.count())
-        )
+        self.assertEqual(self.returned_df.count(), self.unmatched_df.count())
 
     def test_get_first_successful_postcode_match_returns_expected_postcodes(self):
         for i in range(len(self.expected_data)):
