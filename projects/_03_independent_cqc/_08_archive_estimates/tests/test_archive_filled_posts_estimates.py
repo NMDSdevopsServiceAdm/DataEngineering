@@ -6,14 +6,20 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql import functions as F
 
 
-import jobs.archive_filled_posts_estimates as job
-from tests.test_file_data import ArchiveFilledPostsEstimates as Data
-from tests.test_file_schemas import ArchiveFilledPostsEstimates as Schemas
+import projects._03_independent_cqc._08_archive_estimates.jobs.archive_filled_posts_estimates as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ArchiveFilledPostsEstimates as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ArchiveFilledPostsEstimates as Schemas,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
 )
+
+PATCH_PATH: str = "projects._03_independent_cqc._08_archive_estimates.jobs.archive_filled_posts_estimates"
 
 
 class ArchiveFilledPostsEstimatesTests(unittest.TestCase):
@@ -39,8 +45,8 @@ class MainTests(ArchiveFilledPostsEstimatesTests):
             ArchiveKeys.archive_timestamp,
         ]
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,

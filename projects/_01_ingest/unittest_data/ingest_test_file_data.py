@@ -4,6 +4,7 @@ from datetime import date
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass
@@ -268,6 +269,112 @@ class ASCWDSWorkplaceData:
         ("1", date(2024, 4, 4), date(2024, 5, 5)),
         ("2", date(2024, 4, 4), date(2024, 4, 4)),
         ("3", date(2024, 4, 4), date(2024, 3, 3)),
+    ]
+
+
+@dataclass
+class ASCWDSWorkerData:
+    worker_rows = [
+        ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
+        ("1-000000002", "102", "101", "1", "20200101", "2020", "01", "01"),
+        ("1-000000003", "103", "102", "1", "20200101", "2020", "01", "01"),
+        ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
+        ("1-000000005", "104", "104", "2", "19000101", "1900", "01", "01"),
+        ("1-000000006", "invalid", "105", "3", "20200101", "2020", "01", "01"),
+        ("1-000000007", "999", "106", "1", "20200101", "2020", "01", "01"),
+    ]
+
+    expected_remove_workers_without_workplaces_rows = [
+        ("1-000000001", "101", "100", "1", "20200101", "2020", "01", "01"),
+        ("1-000000002", "102", "101", "1", "20200101", "2020", "01", "01"),
+        ("1-000000003", "103", "102", "1", "20200101", "2020", "01", "01"),
+        ("1-000000004", "104", "103", "1", "20190101", "2019", "01", "01"),
+    ]
+
+    create_clean_main_job_role_column_rows = [
+        ("101", date(2024, 1, 1), "-1"),
+        ("101", date(2025, 1, 1), "1"),
+        ("102", date(2025, 1, 1), "-1"),
+        ("103", date(2024, 1, 1), "3"),
+        ("103", date(2025, 1, 1), "4"),
+        ("141", date(2025, 1, 1), "41"),
+    ]
+    expected_create_clean_main_job_role_column_rows = [
+        ("101", date(2024, 1, 1), "-1", "1", MainJobRoleLabels.senior_management),
+        ("101", date(2025, 1, 1), "1", "1", MainJobRoleLabels.senior_management),
+        ("103", date(2024, 1, 1), "3", "3", MainJobRoleLabels.first_line_manager),
+        ("103", date(2025, 1, 1), "4", "4", MainJobRoleLabels.registered_manager),
+        ("141", date(2025, 1, 1), "41", "40", MainJobRoleLabels.care_coordinator),
+    ]
+
+    replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
+        ("41", "41"),
+    ]
+    expected_replace_care_navigator_with_care_coordinator_values_updated_when_care_navigator_is_present_rows = [
+        ("41", "40"),
+    ]
+    replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
+        ("25", "25"),
+        ("40", "40"),
+    ]
+    expected_replace_care_navigator_with_care_coordinator_values_remain_unchanged_when_care_navigator_not_present_rows = [
+        ("25", "25"),
+        ("40", "40"),
+    ]
+
+    impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 1, 1), "-1"),
+        ("1002", date(2024, 6, 1), "7"),
+    ]
+    expected_impute_not_known_job_roles_returns_next_known_value_when_before_first_known_value_rows = [
+        ("1001", date(2024, 1, 1), "8"),
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 1, 1), "7"),
+        ("1002", date(2024, 6, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "-1"),
+        ("1002", date(2024, 3, 1), "7"),
+        ("1002", date(2024, 8, 1), "-1"),
+    ]
+    expected_impute_not_known_job_roles_returns_previously_known_value_when_after_known_value_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "8"),
+        ("1002", date(2024, 3, 1), "7"),
+        ("1002", date(2024, 8, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "-1"),
+        ("1001", date(2024, 5, 1), "-1"),
+        ("1001", date(2024, 6, 1), "7"),
+    ]
+    expected_impute_not_known_job_roles_returns_previously_known_value_when_in_between_known_values_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1001", date(2024, 4, 1), "8"),
+        ("1001", date(2024, 5, 1), "8"),
+        ("1001", date(2024, 6, 1), "7"),
+    ]
+
+    impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+    ]
+    expected_impute_not_known_job_roles_returns_not_known_when_job_role_never_known_rows = [
+        ("1001", date(2024, 1, 1), "-1"),
+    ]
+
+    remove_workers_with_not_known_job_role_rows = [
+        ("1001", date(2024, 3, 1), "8"),
+        ("1002", date(2024, 3, 1), "-1"),
+        ("1002", date(2024, 4, 1), "-1"),
+    ]
+    expected_remove_workers_with_not_known_job_role_rows = [
+        ("1001", date(2024, 3, 1), "8"),
     ]
 
 
