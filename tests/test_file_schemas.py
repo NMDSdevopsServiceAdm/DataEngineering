@@ -21,9 +21,6 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -59,74 +56,14 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.raw_data_files.cqc_pir_columns import (
-    CqcPirColumns as CQCPIR,
-)
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
-)
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
 )
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
-
-@dataclass
-class ASCWDSWorkerSchemas:
-    worker_schema = StructType(
-        [
-            StructField(AWK.location_id, StringType(), True),
-            StructField(AWK.establishment_id, StringType(), True),
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.main_job_role_id, StringType(), True),
-            StructField(AWK.import_date, StringType(), True),
-            StructField(AWK.year, StringType(), True),
-            StructField(AWK.month, StringType(), True),
-            StructField(AWK.day, StringType(), True),
-        ]
-    )
-
-    create_clean_main_job_role_column_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
-    expected_create_clean_main_job_role_column_schema = StructType(
-        [
-            *create_clean_main_job_role_column_schema,
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    replace_care_navigator_with_care_coordinator_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    impute_not_known_job_roles_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    remove_workers_with_not_known_job_role_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
 
 
 @dataclass
