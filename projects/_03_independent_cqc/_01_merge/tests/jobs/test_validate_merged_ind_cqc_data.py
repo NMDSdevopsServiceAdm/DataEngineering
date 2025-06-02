@@ -2,12 +2,18 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_merged_ind_cqc_data as job
-
-from tests.test_file_data import ValidateMergedIndCqcData as Data
-from tests.test_file_schemas import ValidateMergedIndCqcData as Schemas
-
+import projects._03_independent_cqc._01_merge.jobs.validate_merged_ind_cqc_data as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ValidateMergedIndCqcData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ValidateMergedIndCqcData as Schemas,
+)
 from utils import utils
+
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._01_merge.jobs.validate_merged_ind_cqc_data"
+)
 
 
 class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
@@ -34,8 +40,8 @@ class MainTests(ValidateMergedIndCQCDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,

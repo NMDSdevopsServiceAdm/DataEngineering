@@ -3122,64 +3122,6 @@ class CleaningUtilsData:
 
 
 @dataclass
-class MergeIndCQCData:
-    clean_cqc_location_for_merge_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None),
-    ]
-
-    data_to_merge_without_care_home_col_rows = [
-        (date(2024, 1, 1), "1-000000001", "1", 1),
-        (date(2024, 1, 1), "1-000000003", "3", 2),
-        (date(2024, 1, 5), "1-000000001", "1", 3),
-        (date(2024, 1, 9), "1-000000001", "1", 4),
-        (date(2024, 1, 9), "1-000000003", "3", 5),
-        (date(2024, 3, 1), "1-000000003", "4", 6),
-    ]
-    # fmt: off
-    expected_merged_without_care_home_col_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Independent", "Y", 10, "1", 1,),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Independent", "N", None, "3", 2,),
-        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Independent", "Y", 10, "1", 4,),
-        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Independent", "N", None, "3", 5,),
-        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Independent", "Y", 10, None, None,),
-        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, None, None,),
-        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Independent", "N", None, "4", 6,),
-    ]
-    # fmt: on
-
-    data_to_merge_with_care_home_col_rows = [
-        ("1-000000001", "Y", date(2024, 1, 1), 10),
-        ("1-000000002", "N", date(2024, 1, 1), 20),
-        ("1-000000003", "Y", date(2024, 1, 1), 30),
-        ("1-000000001", "Y", date(2024, 2, 1), 1),
-        ("1-000000002", "N", date(2024, 2, 1), 4),
-    ]
-    # fmt: off
-    expected_merged_with_care_home_col_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10, 10, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None, 20, date(2024, 1, 1)),
-        (date(2024, 1, 1), "1-000000003", "Independent", "N", None, None, date(2024, 1, 1)),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 2, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000001", "Independent", "Y", 10, 1, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000002", "Independent", "N", None, 4, date(2024, 2, 1)),
-        (date(2024, 3, 1), "1-000000003", "Independent", "N", None, None, date(2024, 2, 1)),
-    ]
-    # fmt: on
-
-
-@dataclass
 class MergeCoverageData:
     # fmt: off
     clean_cqc_location_for_merge_rows = [
@@ -5584,31 +5526,6 @@ class MLModelMetrics:
     expected_predictions_with_dependent_rows = [
         ("1-00001", 50.0, 56.89),
         ("1-00003", 10.0, 12.34),
-    ]
-
-
-@dataclass
-class ValidateMergedIndCqcData:
-    # fmt: off
-    cqc_locations_rows = [
-        (date(2024, 1, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 1, 1), "1-000000002", "Independent", "N", None,),
-        (date(2024, 2, 1), "1-000000001", "Independent", "Y", 10,),
-        (date(2024, 2, 1), "1-000000002", "Independent", "N", None,),
-    ]
-
-    merged_ind_cqc_rows = [
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = [
-        ("loc_1", Sector.independent),
-        ("loc_2", Sector.local_authority),
-        ("loc_3", None),
     ]
 
 
