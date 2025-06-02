@@ -74,16 +74,6 @@ def run_postcode_matching(
     # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = original_matched_df.unionByName(reassigned_matched_df)
 
-    rows = (
-        reassigned_unmatched_df.select(CQCL.location_id, CQCL.postal_code)
-        .distinct()
-        .collect()
-    )
-    errors = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
-    print(
-        f"Unmatched postcodes found: {reassigned_unmatched_df.select(CQCL.location_id, CQCL.postal_code).distinct().count()}: {errors}"
-    )
-
     return final_matched_df
 
 
