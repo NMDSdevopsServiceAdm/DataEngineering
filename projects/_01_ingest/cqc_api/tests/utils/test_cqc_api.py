@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import Mock, patch, call
 from typing import Generator
 
-from utils import cqc_api as cqc
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 
 
 class CqcApiTests(unittest.TestCase):
