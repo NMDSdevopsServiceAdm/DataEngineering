@@ -426,7 +426,7 @@ module "clean_cqc_location_data_job" {
 
 module "reconciliation_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_02_sfc_internal/reconciliation/jobs"
   script_name     = "reconciliation.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
