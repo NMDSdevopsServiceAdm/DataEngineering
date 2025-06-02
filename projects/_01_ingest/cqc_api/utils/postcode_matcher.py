@@ -22,12 +22,14 @@ def run_postcode_matching(
     """
     Runs full postcode matching logic and raises error if final validation fails.
 
-    This function consists of 5 steps:
-        - Match postcodes where there is an exact match at that point in time.
-        - If not, use the first exact matching postcode for that location ID where available.
-        - If not, replace known postcode issues using the invalid postcode dictionary.
-        - If not, match the postcode based on the first half of the postcode only (truncated postcode).
-        - If not, raise an error to manually investigate any unmatched postcodes.
+    This function consists of 5 iterations of matching postcodes:
+        - 1 - Match postcodes where there is an exact match at that point in time.
+        - 2 - If not, reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
+        - 3 - (TO DO) If not, replace known postcode issues using the invalid postcode dictionary.
+        - 4 - (TO DO) If not, match the postcode based on the first half of the postcode only (truncated postcode).
+        - 5 - (TO DO) If not, raise an error to manually investigate any unmatched postcodes.
+
+    If an error isn't raised, return a DataFrame with all of the matched postcodes from steps 1 to 4.
 
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
@@ -59,40 +61,37 @@ def run_postcode_matching(
         ONSClean.contemporary_ons_import_date,
     )
 
+    # Step 1 - Match postcodes where there is an exact match at that point in time.
     original_matched_df, original_unmatched_df = join_postcode_data(
         locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    if original_unmatched_df.count() == 0:
-        return original_matched_df
 
+    # Step 2 - Reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
     reassigned_df = get_first_successful_postcode_match(
         original_unmatched_df, original_matched_df
     )
     reassigned_matched_df, reassigned_unmatched_df = join_postcode_data(
         reassigned_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    if reassigned_unmatched_df.count() == 0:
-        return original_matched_df.unionByName(reassigned_matched_df)
 
+    # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
     amended_postcodes_df = amend_invalid_postcodes(reassigned_unmatched_df)
     amended_matched_df, amended_unmatched_df = join_postcode_data(
         amended_postcodes_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    if amended_unmatched_df.count() == 0:
-        return original_matched_df.unionByName(reassigned_matched_df).unionByName(
-            amended_matched_df
-        )
 
-    # TODO - truncated matching process
+    # TODO - Step 4 - Match the postcode based on the first half of the postcode only (truncated postcode).
 
+    # Step 5 - Raise an error to manually investigate any unmatched postcodes.
+    raise_error_if_unmatched(final_matched_df, postcode_df.columns[1])
+
+    # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = (
         original_matched_df.unionByName(reassigned_matched_df).unionByName(
             amended_matched_df
         )
         # .unionByName(truncated_match)
     )
-
-    raise_error_if_unmatched(final_matched_df, postcode_df.columns[1])
 
     return final_matched_df
 
@@ -129,7 +128,10 @@ def join_postcode_data(
     postcode_col: str,
 ) -> Tuple[DataFrame, DataFrame]:
     """
-    Joins postcode data into the locations DataFrame based on matching postcodes
+    Joins postcode data into the locations DataFrame based on matching postcodes.
+
+    A successful join is determined by the presence of a non-null value in the
+    current_cssr column of the ONS postcode directory.
 
     Args:
         locations_df (DataFrame): Workplace DataFrame with a postcode column.
@@ -144,9 +146,9 @@ def join_postcode_data(
         [ONSClean.contemporary_ons_import_date, postcode_col],
         "left",
     )
-    matched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNotNull())
+    matched_df = joined_df.filter(F.col(ONSClean.current_cssr).isNotNull())
 
-    unmatched_df = joined_df.filter(F.col(postcode_df.columns[-1]).isNull())
+    unmatched_df = joined_df.filter(F.col(ONSClean.current_cssr).isNull())
     unmatched_df = unmatched_df.select(*locations_df.columns)
 
     return matched_df, unmatched_df
@@ -157,8 +159,12 @@ def get_first_successful_postcode_match(
     matched_df: DataFrame,
 ) -> DataFrame:
     """
-    Replace unmatched postcodes with the earliest successfully matched postcode
-    for the same location_id based on the import_date column.
+    Replace unmatched postcodes with the earliest successfully matched postcode for that location_id.
+
+    Incorrectly matched postcodes are often corrected in the CQC database over time.
+    Whilst newly entered postcodes will never be reassigned by this method, locations who have
+    updated their postcodes to one which now matches the ONS postcode directory will have their
+    historical unmatched postcodes reassigned to their first successfully matched one.
 
     Args:
         unmatched_df (DataFrame): Unmatched workplaces DataFrame.
@@ -171,6 +177,7 @@ def get_first_successful_postcode_match(
         CQCLClean.cqc_location_import_date
     )
     row_number: str = "row_number"
+    successfully_matched_postcode: str = "successfully_matched_postcode"
 
     first_matched_df = (
         matched_df.select(
@@ -180,14 +187,21 @@ def get_first_successful_postcode_match(
         )
         .withColumn(row_number, F.row_number().over(window_spec))
         .filter(F.col(row_number) == 1)
+        .withColumnRenamed(CQCLClean.postcode_cleaned, successfully_matched_postcode)
         .drop(row_number, CQCLClean.cqc_location_import_date)
     )
 
-    matched_df = unmatched_df.drop(CQCLClean.postcode_cleaned).join(
-        first_matched_df, CQCLClean.location_id, "left"
-    )
+    reassigned_df = unmatched_df.join(first_matched_df, CQCLClean.location_id, "left")
 
-    return matched_df
+    reassigned_df = reassigned_df.withColumn(
+        CQCLClean.postcode_cleaned,
+        F.when(
+            F.col(successfully_matched_postcode).isNotNull(),
+            F.col(successfully_matched_postcode),
+        ).otherwise(F.col(CQCLClean.postcode_cleaned)),
+    ).drop(successfully_matched_postcode)
+
+    return reassigned_df
 
 
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
