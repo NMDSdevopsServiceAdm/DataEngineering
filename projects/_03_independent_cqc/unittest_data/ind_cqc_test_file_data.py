@@ -298,3 +298,33 @@ class RunLinearRegressionModelData:
         ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
         ("1-003", None, None),
     ]
+
+
+@dataclass
+class ArchiveFilledPostsEstimates:
+    filled_posts_rows = [("loc 1", date(2024, 1, 1))]
+
+    select_import_dates_to_archive_rows = [
+        ("loc 1", date(2024, 6, 8)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2024, 3, 1)),
+        ("loc 1", date(2023, 4, 1)),
+        ("loc 1", date(2023, 3, 1)),
+    ]
+    expected_select_import_dates_to_archive_rows = [
+        ("loc 1", date(2024, 6, 8)),
+        ("loc 1", date(2024, 5, 1)),
+        ("loc 1", date(2024, 4, 1)),
+        ("loc 1", date(2023, 4, 1)),
+    ]
+
+    create_archive_date_partitions_rows = [("loc 1", date(2024, 1, 2))]
+    expected_create_archive_date_partitions_rows = [
+        ("loc 1", date(2024, 1, 2), "02", "01", "2024", "2024-01-02 12:00"),
+    ]
+
+    single_digit_number = 9
+    expected_single_digit_number_as_string = "09"
+    double_digit_number = 10
+    expected_double_digit_number_as_string = "10"

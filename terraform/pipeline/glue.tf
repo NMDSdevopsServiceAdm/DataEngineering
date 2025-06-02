@@ -97,7 +97,7 @@ module "ingest_ascwds_dataset_job" {
 
 module "clean_ascwds_worker_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/ascwds/jobs"
   script_name       = "clean_ascwds_worker_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
@@ -195,7 +195,7 @@ module "clean_ons_data_job" {
 
 module "archive_filled_posts_estimates_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_08_archive_estimates/jobs"
   script_name     = "archive_filled_posts_estimates.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

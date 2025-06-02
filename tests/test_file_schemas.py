@@ -21,9 +21,6 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -45,7 +42,6 @@ from utils.column_names.cqc_ratings_columns import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    ArchivePartitionKeys as ArchiveKeys,
     IndCqcColumns as IndCQC,
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
@@ -64,60 +60,6 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 )
 from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
-
-@dataclass
-class ASCWDSWorkerSchemas:
-    worker_schema = StructType(
-        [
-            StructField(AWK.location_id, StringType(), True),
-            StructField(AWK.establishment_id, StringType(), True),
-            StructField(AWK.worker_id, StringType(), True),
-            StructField(AWK.main_job_role_id, StringType(), True),
-            StructField(AWK.import_date, StringType(), True),
-            StructField(AWK.year, StringType(), True),
-            StructField(AWK.month, StringType(), True),
-            StructField(AWK.day, StringType(), True),
-        ]
-    )
-
-    create_clean_main_job_role_column_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_id, StringType(), True),
-        ]
-    )
-    expected_create_clean_main_job_role_column_schema = StructType(
-        [
-            *create_clean_main_job_role_column_schema,
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-            StructField(AWKClean.main_job_role_clean_labelled, StringType(), True),
-        ]
-    )
-
-    replace_care_navigator_with_care_coordinator_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    impute_not_known_job_roles_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
-
-    remove_workers_with_not_known_job_role_schema = StructType(
-        [
-            StructField(AWKClean.worker_id, StringType(), True),
-            StructField(AWKClean.ascwds_worker_import_date, DateType(), True),
-            StructField(AWKClean.main_job_role_clean, StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -5085,40 +5027,6 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.potential_grouped_provider, BooleanType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ArchiveFilledPostsEstimates:
-    filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    select_import_dates_to_archive_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    create_archive_date_partitions_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    expected_create_archive_date_partitions_schema = StructType(
-        [
-            *create_archive_date_partitions_schema,
-            StructField(ArchiveKeys.archive_day, StringType(), True),
-            StructField(ArchiveKeys.archive_month, StringType(), True),
-            StructField(ArchiveKeys.archive_year, StringType(), True),
-            StructField(ArchiveKeys.archive_timestamp, StringType(), True),
         ]
     )
 

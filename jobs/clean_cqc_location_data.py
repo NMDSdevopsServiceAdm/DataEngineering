@@ -35,6 +35,7 @@ from utils.cqc_location_utils.extract_registered_manager_names import (
     extract_registered_manager_names_from_imputed_regulated_activities_column,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
+from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
 
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -159,6 +160,9 @@ def main(
     registered_locations_df = impute_missing_data_from_provider_dataset(
         registered_locations_df, CQCLClean.cqc_sector
     )
+
+    # TODO - when complete, reassign registered_locations_df and remove all old postcode work
+    run_postcode_matching(registered_locations_df, ons_postcode_directory_df)
 
     registered_locations_df = join_ons_postcode_data_into_cqc_df(
         registered_locations_df, ons_postcode_directory_df
