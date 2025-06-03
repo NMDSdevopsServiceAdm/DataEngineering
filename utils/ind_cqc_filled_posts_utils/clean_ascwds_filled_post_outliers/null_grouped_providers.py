@@ -124,10 +124,6 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
             & (
                 df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
-            )
-            & (
-                df[IndCQC.ascwds_filled_posts_dedup_clean]
-                >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
             ),
             F.lit(True),
         ).otherwise(F.lit(False)),
@@ -155,6 +151,10 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
         F.when(
             (df[IndCQC.care_home] == CareHome.care_home)
             & (df[IndCQC.potential_grouped_provider] == True)
+            & (
+                df[IndCQC.ascwds_filled_posts_dedup_clean]
+                >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
+            )
             & (
                 (
                     df[IndCQC.ascwds_filled_posts_dedup_clean]
@@ -198,4 +198,24 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
         F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
     )
 
+    # df = df.withColumn(
+    #     IndCQC.ascwds_filled_posts_dedup_clean,
+    #     F.when(
+    #         (df[IndCQC.care_home] == CareHome.not_care_home)
+    #         & (df[IndCQC.potential_grouped_provider] == True)
+    #         & (
+    #             (
+    #                 df[IndCQC.ascwds_filled_posts_dedup_clean] # TODO
+    #             )
+    #             | (
+    #                 df[IndCQC.ascwds_filled_posts_dedup_clean] # TODO
+    #             )
+    #         ),
+    #         None,
+    #     ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+    # )
+
+    # df = update_filtering_rule(
+    #     df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
+    # )
     return df
