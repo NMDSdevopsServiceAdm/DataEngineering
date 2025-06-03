@@ -4642,9 +4642,9 @@ class ModelImputationWithExtrapolationAndInterpolationData:
     expected_imputation_model_rows = [
         ("1-001", None, None, None, None),
         ("1-002", None, None, 30.0, 30.0),
-        ("1-003", None, None, -2.0, 1.0),
-        ("1-004", None, -2.0, None, 1.0),
-        ("1-005", None, -2.0, 30.0, 1.0),
+        ("1-003", None, None, -2.0, 3.0),
+        ("1-004", None, -2.0, None, 3.0),
+        ("1-005", None, -2.0, 30.0, 3.0),
         ("1-006", 10.0, None, None, 10.0),
         ("1-007", 10.0, None, 30.0, 10.0),
         ("1-008", 10.0, -2.0, None, 10.0),
