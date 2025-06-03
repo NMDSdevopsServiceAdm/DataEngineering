@@ -58,20 +58,14 @@ class MainTests(NullGroupedProvidersTests):
         )
         self.returned_df = job.null_grouped_providers(self.test_df)
 
-    def test_null_grouped_providers_runs(
-        self,
-    ):
+    def test_null_grouped_providers_runs(self):
         self.assertIsInstance(self.returned_df, DataFrame)
 
-    def test_null_grouped_providers_returns_same_number_of_rows(
-        self,
-    ):
+    def test_null_grouped_providers_returns_same_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
     # Temp hashed out
-    # def test_null_grouped_providers_returns_same_columns(
-    #     self,
-    # ):
+    # def test_null_grouped_providers_returns_same_columns(self):
     #     self.assertEqual(self.returned_df.schema, self.test_df.schema)
 
 
