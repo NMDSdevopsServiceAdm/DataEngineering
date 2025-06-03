@@ -24,7 +24,7 @@ def model_care_homes(
         ratio_predictions_df, IndCqc.prediction, IndCqc.prediction
     )
     filled_post_predictions_df = set_min_value(
-        filled_post_predictions_df, IndCqc.prediction, 1.0
+        filled_post_predictions_df, IndCqc.prediction, 3.0
     )
 
     save_model_metrics(

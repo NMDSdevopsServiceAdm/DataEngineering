@@ -158,5 +158,5 @@ def model_imputation(
             F.col(IndCqc.interpolation_model),
         ),
     )
-    df = set_min_value(df, imputation_model_column_name, 1.0)
+    df = set_min_value(df, imputation_model_column_name, 3.0)
     return df

@@ -48,7 +48,7 @@ def combine_non_res_with_and_without_dormancy_models(
 
     combined_models_df = combine_model_predictions(combined_models_df)
 
-    combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 1.0)
+    combined_models_df = set_min_value(combined_models_df, IndCqc.prediction, 3.0)
 
     locations_with_predictions_df = insert_predictions_into_pipeline(
         locations_df,

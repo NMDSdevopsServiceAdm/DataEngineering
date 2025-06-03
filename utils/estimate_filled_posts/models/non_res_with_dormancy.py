@@ -38,7 +38,7 @@ def model_non_res_with_dormancy(
 
     predictions_df = trained_model.transform(features_df)
 
-    predictions_df = set_min_value(predictions_df, IndCqc.prediction, 1.0)
+    predictions_df = set_min_value(predictions_df, IndCqc.prediction, 3.0)
 
     save_model_metrics(
         predictions_df,
