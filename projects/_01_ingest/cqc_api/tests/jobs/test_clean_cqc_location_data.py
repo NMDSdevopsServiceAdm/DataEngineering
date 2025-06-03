@@ -5,9 +5,13 @@ from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import DataFrame, functions as F
 
-import jobs.clean_cqc_location_data as job
-from tests.test_file_data import CQCLocationsData as Data
-from tests.test_file_schemas import CQCLocationsSchema as Schemas
+import projects._01_ingest.cqc_api.jobs.clean_cqc_location_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CQCLocationsData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CQCLocationsSchema as Schemas,
+)
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (

@@ -2,9 +2,13 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_locations_api_cleaned_data as job
-from tests.test_file_data import ValidateLocationsAPICleanedData as Data
-from tests.test_file_schemas import ValidateLocationsAPICleanedData as Schemas
+import projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateLocationsAPICleanedData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidateLocationsAPICleanedData as Schemas,
+)
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,

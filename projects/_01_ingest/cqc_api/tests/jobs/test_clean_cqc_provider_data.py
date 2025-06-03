@@ -4,11 +4,15 @@ import pyspark.sql.functions as F
 
 from utils import utils
 
-import jobs.clean_cqc_provider_data as job
+import projects._01_ingest.cqc_api.jobs.clean_cqc_provider_data as job
 
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from tests.test_file_data import CQCProviderData as Data
-from tests.test_file_schemas import CQCProviderSchema as Schema
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CQCProviderData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CQCProviderSchema as Schema,
+)
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
