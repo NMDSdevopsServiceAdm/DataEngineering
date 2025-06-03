@@ -167,7 +167,6 @@ def main(
     with_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
-            IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_ten_years,
