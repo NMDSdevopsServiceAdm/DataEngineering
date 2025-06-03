@@ -21,12 +21,14 @@ class NullGroupedProvidersConfig:
         SINGLE_LOCATION_IDENTIFIER (int): Identifier for a single location.
         NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
         NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
+        MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY (int): Minimum number of staff to allocate as a grouped provider.
     """
 
     MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER: int = 2
     SINGLE_LOCATION_IDENTIFIER: int = 1
     NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER: int = 3
     NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER: int = 4
+    MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY: int = 50
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -122,6 +124,10 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
             & (
                 df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
+            )
+            & (
+                df[IndCQC.ascwds_filled_posts_dedup_clean]
+                >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
             ),
             F.lit(True),
         ).otherwise(F.lit(False)),

@@ -3,16 +3,10 @@ import warnings
 
 from pyspark.sql import DataFrame
 
-from tests.test_file_data import (
-    NullGroupedProvidersData as Data,
-)
-from tests.test_file_schemas import (
-    NullGroupedProvidersSchema as Schemas,
-)
+from tests.test_file_data import NullGroupedProvidersData as Data
+from tests.test_file_schemas import NullGroupedProvidersSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
     null_grouped_providers as job,
 )
@@ -23,6 +17,35 @@ class NullGroupedProvidersTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_multiple_locations_at_provider_identifier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER,
+            2,
+        )
+
+    def test_single_location_identifier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER, 1)
+
+    def test_number_of_beds_at_provider_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER, 3
+        )
+
+    def test_number_of_beds_at_location_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER, 4
+        )
+
+    def test_minimum_size_of_location_to_identify(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY, 50
+        )
 
 
 class MainTests(NullGroupedProvidersTests):

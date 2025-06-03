@@ -4875,6 +4875,7 @@ class NullGroupedProvidersSchema:
                 IntegerType(),
                 True,
             ),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
         ]
     )
     expected_identify_potential_grouped_providers_schema = StructType(
