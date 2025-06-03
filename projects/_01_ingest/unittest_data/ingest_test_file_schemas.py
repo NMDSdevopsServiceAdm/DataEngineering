@@ -30,6 +30,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
@@ -664,3 +667,27 @@ class PostcodeMatcherSchema:
         ]
     )
     expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    raw_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+        ]
+    )
