@@ -682,6 +682,30 @@ class PostcodeMatcherSchema:
 
 
 @dataclass
+class ValidateLocationsAPIRawData:
+    raw_cqc_locations_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCL.provider_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.type, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    raw_cqc_providers_schema = StructType(
+        [
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+        ]
+    )
+
+
+@dataclass
 class CQCLocationsSchema:
     detailed_schema = StructType(
         [

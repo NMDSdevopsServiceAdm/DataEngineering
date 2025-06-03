@@ -4858,28 +4858,6 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleData:
 
 
 @dataclass
-class ValidateLocationsAPIRawData:
-    raw_cqc_locations_rows = [
-        ("1-00001", "20240101", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240101", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00001", "20240201", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
-        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
-    ]
-
-
-@dataclass
-class ValidateProvidersAPIRawData:
-    # fmt: off
-    raw_cqc_providers_rows = [
-        ("1-000000001", "20240101", "name"),
-        ("1-000000002", "20240101", "name"),
-        ("1-000000001", "20240201", "name"),
-        ("1-000000002", "20240201", "name"),
-    ]
-
-
-@dataclass
 class RawDataAdjustments:
     expected_worker_data = [
         ("worker_1", "20240101", "estab_1", "other"),
