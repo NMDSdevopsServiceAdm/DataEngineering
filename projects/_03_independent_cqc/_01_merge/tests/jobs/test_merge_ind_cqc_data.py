@@ -1,9 +1,13 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-import jobs.merge_ind_cqc_data as job
-from tests.test_file_data import MergeIndCQCData as Data
-from tests.test_file_schemas import MergeIndCQCData as Schemas
+import projects._03_independent_cqc._01_merge.jobs.merge_ind_cqc_data as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    MergeIndCQCData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    MergeIndCQCData as Schemas,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -16,7 +20,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 
-PATCH_PATH: str = "jobs.merge_ind_cqc_data"
+PATCH_PATH: str = "projects._03_independent_cqc._01_merge.jobs.merge_ind_cqc_data"
 
 
 class MergeIndCQCDatasetTests(unittest.TestCase):

@@ -1397,60 +1397,6 @@ class FilterCleanedValuesSchema:
 
 
 @dataclass
-class MergeIndCQCData:
-    clean_cqc_location_for_merge_schema = StructType(
-        [
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-        ]
-    )
-
-    data_to_merge_without_care_home_col_schema = StructType(
-        [
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(AWPClean.location_id, StringType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.total_staff, IntegerType(), True),
-        ]
-    )
-    expected_merged_without_care_home_col_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(AWPClean.establishment_id, StringType(), True),
-            StructField(AWPClean.total_staff, IntegerType(), True),
-        ]
-    )
-
-    data_to_merge_with_care_home_col_schema = StructType(
-        [
-            StructField(CQCPIRClean.location_id, StringType(), False),
-            StructField(CQCPIRClean.care_home, StringType(), True),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-            StructField(
-                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-        ]
-    )
-    expected_merged_with_care_home_col_schema = StructType(
-        [
-            *clean_cqc_location_for_merge_schema,
-            StructField(
-                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
-        ]
-    )
-
-
-@dataclass
 class MergeCoverageData:
     clean_cqc_location_for_merge_schema = StructType(
         [
@@ -3031,56 +2977,6 @@ class MLModelMetrics:
 
 
 @dataclass
-class ValidateMergedIndCqcData:
-    cqc_locations_schema = MergeIndCQCData.clean_cqc_location_for_merge_schema
-    merged_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.provider_name, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(
-                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-        ]
-    )
-    calculate_expected_size_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class ValidateMergedCoverageData:
     cqc_locations_schema = StructType(
         [
@@ -4437,36 +4333,20 @@ class ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas:
 
 
 @dataclass
-class ValidateLocationsAPIRawData:
-    raw_cqc_locations_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCL.name, StringType(), True),
-            StructField(CQCL.type, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class ValidateProvidersAPIRawData:
-    raw_cqc_providers_schema = StructType(
-        [
-            StructField(CQCPClean.provider_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(CQCPClean.name, StringType(), True),
-        ]
-    )
-
-
-@dataclass
 class RawDataAdjustments:
     worker_data_schema = StructType(
         [
             StructField(AWK.worker_id, StringType(), True),
             StructField(AWK.import_date, StringType(), True),
             StructField(AWK.establishment_id, StringType(), True),
+            StructField("other_column", StringType(), True),
+        ]
+    )
+
+    workplace_data_schema = StructType(
+        [
+            StructField(AWP.import_date, StringType(), True),
+            StructField(AWP.establishment_id, StringType(), True),
             StructField("other_column", StringType(), True),
         ]
     )

@@ -4,7 +4,10 @@ from datetime import date
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
 )
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    LocationType,
+)
 
 
 @dataclass
@@ -914,4 +917,26 @@ class PostcodeMatcherData:
     ]
     expected_join_postcode_data_unmatched_rows = [
         ("1-002", date(2020, 1, 1), "AA1ZAA"),
+    ]
+
+
+@dataclass
+class ValidateLocationsAPIRawData:
+    raw_cqc_locations_rows = [
+        ("1-00001", "20240101", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240101", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00001", "20240201", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
+        ("1-00002", "20240201", "1-001", "name", LocationType.social_care_identifier),
+    ]
+
+
+@dataclass
+class ValidateProvidersAPIRawData:
+    # fmt: off
+    raw_cqc_providers_rows = [
+        ("1-000000001", "20240101", "name"),
+        ("1-000000002", "20240101", "name"),
+        ("1-000000001", "20240201", "name"),
+        ("1-000000002", "20240201", "name"),
     ]
