@@ -15,6 +15,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
+PATCH_PATH = "projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data"
+
+
 class ValidateLocationsAPICleanedDatasetTests(unittest.TestCase):
     TEST_RAW_CQC_LOCATION_SOURCE = "some/directory"
     TEST_CQC_LOCATIONS_API_CLEANED_SOURCE = "some/other/directory"
@@ -39,8 +42,8 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
