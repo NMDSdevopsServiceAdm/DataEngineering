@@ -7261,6 +7261,37 @@ class RawDataAdjustments:
 
     worker_data_without_rows_to_remove = expected_worker_data
 
+    workplace_data_with_duplicates_rows = [
+        ("20250101", "48904", "other_data"),
+        ("20250101", "49966", "other_data"),
+        ("20250101", "49967", "other_data"),
+        ("20250101", "49968", "other_data"),
+        ("20250101", "50538", "other_data"),
+        ("20250101", "50561", "other_data"),
+        ("20250101", "50590", "other_data"),
+        ("20250101", "50596", "other_data"),
+        ("20250101", "12345", "other_data"),
+        ("20250101", "50598", "other_data"),
+        ("20250101", "50621", "other_data"),
+        ("20250101", "50623", "other_data"),
+        ("20250101", "50624", "other_data"),
+        ("20250101", "50627", "other_data"),
+        ("20250101", "50629", "other_data"),
+        ("20250101", "50639", "other_data"),
+        ("20250101", "50640", "other_data"),
+        ("20250101", "50767", "other_data"),
+        ("20250101", "50769", "other_data"),
+        ("20250101", "50770", "other_data"),
+        ("20250101", "50771", "other_data"),
+        ("20250101", "50869", "other_data"),
+        ("20250101", "50870", "other_data"),
+        ("20250101", "67890", "other_data"),
+    ]
+    expected_workplace_data_with_duplicates_rows = [
+        ("20250101", "12345", "other_data"),
+        ("20250101", "67890", "other_data"),
+    ]
+
     locations_data_with_multiple_rows_to_remove = [
         ("loc_1", "other"),
         (RecordsToRemoveInLocationsData.dental_practice, "other"),
