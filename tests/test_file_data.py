@@ -7262,6 +7262,10 @@ class RawDataAdjustments:
     worker_data_without_rows_to_remove = expected_worker_data
 
     workplace_data_with_duplicates_rows = [
+        ("20250101", "48904", "other_data"),
+        ("20250101", "49966", "other_data"),
+        ("20250101", "49967", "other_data"),
+        ("20250101", "49968", "other_data"),
         ("20250101", "50538", "other_data"),
         ("20250101", "50561", "other_data"),
         ("20250101", "50590", "other_data"),
