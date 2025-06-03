@@ -7919,22 +7919,22 @@ class NullGroupedProvidersData:
 
     null_care_home_grouped_providers_where_filled_posts_below_cutoffs = [
         ("loc 1", CareHome.care_home, 4.0, 4.0, 2, 3, 2.0, True, AscwdsFilteringRule.populated),
-        ("loc 2", CareHome.care_home, 49.0, 49.0, 2, 2, 3.0, True, AscwdsFilteringRule.populated),
+        ("loc 2", CareHome.care_home, 49.0, 49.0, 2, 2, 24.5, True, AscwdsFilteringRule.populated),
     ]
 
     null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs = [
-        ("loc 1", CareHome.care_home, 50.0, 50.0, 2, 2, 3.0, True, AscwdsFilteringRule.populated),
-        ("loc 2", CareHome.care_home, 57.0, 57.0, 2, 2, 3.0, True, AscwdsFilteringRule.populated),
-        ("loc 3", CareHome.care_home, 58.0, 58.0, 2, 6, 4.0, True, AscwdsFilteringRule.populated),
-        ("loc 4", CareHome.care_home, 59.0, 59.0, 2, 6, 4.5, True, AscwdsFilteringRule.populated),
-        ("loc 5", CareHome.care_home, 59.0, 59.0, 2, 2, 4.5, True, AscwdsFilteringRule.populated),
+        ("loc 1", CareHome.care_home, 50.0, 50.0, 2, 2, 25.0, True, AscwdsFilteringRule.populated),
+        ("loc 2", CareHome.care_home, 60.0, 60.0, 2, 2, 30.0, True, AscwdsFilteringRule.populated),
+        ("loc 3", CareHome.care_home, 70.0, 70.0, 2, 6, 35.0, True, AscwdsFilteringRule.populated),
+        ("loc 4", CareHome.care_home, 80.0, 80.0, 2, 6, 40.0, True, AscwdsFilteringRule.populated),
+        ("loc 5", CareHome.care_home, 90.0, 90.0, 2, 2, 45.0, True, AscwdsFilteringRule.populated),
     ]
     expected_null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs = [
         ("loc 1", CareHome.care_home, 50.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 2", CareHome.care_home, 57.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 3", CareHome.care_home, 58.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 4", CareHome.care_home, 59.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 5", CareHome.care_home, 59.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+        ("loc 2", CareHome.care_home, 60.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+        ("loc 3", CareHome.care_home, 70.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+        ("loc 4", CareHome.care_home, 80.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+        ("loc 5", CareHome.care_home, 90.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
     ]
     # fmt: on
 
