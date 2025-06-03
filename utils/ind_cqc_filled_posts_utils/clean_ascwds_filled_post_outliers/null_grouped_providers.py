@@ -191,5 +191,11 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with grouped providers' non-residential data nulled.
     """
-    # TODO: Design filter for non-res grouped providers.
+    loc_w = Window.partitionBy(IndCQC.location_id)
+
+    df = df.withColumn(
+        "avg_pir_at_location",
+        F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
+    )
+
     return df
