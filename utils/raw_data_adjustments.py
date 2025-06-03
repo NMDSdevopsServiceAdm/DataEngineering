@@ -42,7 +42,6 @@ def remove_duplicate_workplaces_in_raw_workplace_data(
       - Four locations who submit the exact same ASCWDS files on the same day.
       - 18 separate locations, seemingly unrelated, all submit identical data on the same day.
     """
-    raw_workplace_df.sort
     raw_workplace_df = raw_workplace_df.where(
         (raw_workplace_df[AWPClean.establishment_id] != "48904")
         & (raw_workplace_df[AWPClean.establishment_id] != "49966")
