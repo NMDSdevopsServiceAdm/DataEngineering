@@ -57,7 +57,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
             IndCQC.locations_in_ascwds_at_provider_count,
             IndCQC.locations_in_ascwds_with_data_at_provider_count,
             IndCQC.number_of_beds_at_provider,
-            IndCQC.potential_grouped_provider,
+            # IndCQC.potential_grouped_provider,
         ]
     )
     return df
