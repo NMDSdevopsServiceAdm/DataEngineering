@@ -24,6 +24,9 @@ from utils.column_values.categorical_column_values import (
 )
 
 
+PATCH_PATH = "projects._01_ingest.cqc_api.jobs.clean_cqc_provider_data"
+
+
 class CleanCQCProviderDatasetTests(unittest.TestCase):
     TEST_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
@@ -40,12 +43,25 @@ class MainTests(CleanCQCProviderDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
-        read_from_parquet_patch.return_value = self.test_cqc_providers_parquet
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.add_cqc_sector_column_to_cqc_provider_dataframe")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    def test_main_runs(
+        self,
+        read_from_parquet_mock: Mock,
+        column_to_date_mock: Mock,
+        add_cqc_sector_column_to_cqc_provider_dataframe_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        read_from_parquet_mock.return_value = self.test_cqc_providers_parquet
+
         job.main(self.TEST_SOURCE, self.TEST_DESTINATION)
-        write_to_parquet_patch.assert_called_once_with(
+
+        read_from_parquet_mock.assert_called_once()
+        column_to_date_mock.assert_called_once()
+        add_cqc_sector_column_to_cqc_provider_dataframe_mock.assert_called_once()
+        write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
