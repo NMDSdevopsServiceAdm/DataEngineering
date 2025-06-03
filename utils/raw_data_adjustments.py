@@ -42,32 +42,33 @@ def remove_duplicate_workplaces_in_raw_workplace_data(
       - Four locations who submit the exact same ASCWDS files on the same day.
       - 18 separate locations, seemingly unrelated, all submit identical data on the same day.
     """
+    raw_workplace_df.sort
     raw_workplace_df = raw_workplace_df.where(
         (raw_workplace_df[AWPClean.establishment_id] != "48904")
-        | (raw_workplace_df[AWPClean.establishment_id] != "49966")
-        | (raw_workplace_df[AWPClean.establishment_id] != "49967")
-        | (raw_workplace_df[AWPClean.establishment_id] != "49968")
+        & (raw_workplace_df[AWPClean.establishment_id] != "49966")
+        & (raw_workplace_df[AWPClean.establishment_id] != "49967")
+        & (raw_workplace_df[AWPClean.establishment_id] != "49968")
     )
 
     raw_workplace_df = raw_workplace_df.where(
         (raw_workplace_df[AWPClean.establishment_id] != "50538")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50561")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50590")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50596")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50598")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50621")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50623")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50624")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50627")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50629")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50639")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50640")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50767")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50769")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50770")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50771")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50869")
-        | (raw_workplace_df[AWPClean.establishment_id] != "50870")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50561")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50590")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50596")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50598")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50621")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50623")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50624")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50627")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50629")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50639")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50640")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50767")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50769")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50770")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50771")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50869")
+        & (raw_workplace_df[AWPClean.establishment_id] != "50870")
     )
 
     return raw_workplace_df
