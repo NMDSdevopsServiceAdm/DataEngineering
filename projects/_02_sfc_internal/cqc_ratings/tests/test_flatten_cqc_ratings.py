@@ -45,20 +45,69 @@ class MainTests(FlattenCQCRatingsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.create_benchmark_ratings_dataset")
+    @patch(f"{PATCH_PATH}.join_establishment_ids")
+    @patch(f"{PATCH_PATH}.add_good_and_outstanding_flag_column")
+    @patch(f"{PATCH_PATH}.select_ratings_for_benchmarks")
+    @patch(f"{PATCH_PATH}.add_location_id_hash")
+    @patch(f"{PATCH_PATH}.create_standard_ratings_dataset")
+    @patch(f"{PATCH_PATH}.add_numerical_ratings")
+    @patch(f"{PATCH_PATH}.add_latest_rating_flag_column")
+    @patch(f"{PATCH_PATH}.add_rating_sequence_column")
+    @patch(f"{PATCH_PATH}.remove_blank_and_duplicate_rows")
+    @patch(f"{PATCH_PATH}.prepare_historic_ratings")
+    @patch(f"{PATCH_PATH}.prepare_current_ratings")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.filter_to_first_import_of_most_recent_month")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
-        read_from_parquet_patch.side_effect = [
+    def test_main(
+        self,
+        read_from_parquet_mock: Mock,
+        filter_to_first_import_of_most_recent_month_mock: Mock,
+        select_rows_with_value_mock: Mock,
+        prepare_current_ratings_mock: Mock,
+        prepare_historic_ratings_mock: Mock,
+        remove_blank_and_duplicate_rows_mock: Mock,
+        add_rating_sequence_column_mock: Mock,
+        add_latest_rating_flag_column_mock: Mock,
+        add_numerical_ratings_mock: Mock,
+        create_standard_ratings_dataset_mock: Mock,
+        add_location_id_hash_mock: Mock,
+        select_ratings_for_benchmarks_mock: Mock,
+        add_good_and_outstanding_flag_column_mock: Mock,
+        join_establishment_ids_mock: Mock,
+        create_benchmark_ratings_dataset_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        read_from_parquet_mock.side_effect = [
             self.test_cqc_locations_df,
             self.test_ascwds_df,
         ]
+
         job.main(
             self.TEST_LOCATIONS_SOURCE,
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
         )
-        self.assertEqual(read_from_parquet_patch.call_count, 2)
-        self.assertEqual(write_to_parquet_patch.call_count, 2)
+
+        self.assertEqual(read_from_parquet_mock.call_count, 2)
+        self.assertEqual(filter_to_first_import_of_most_recent_month_mock.call_count, 2)
+        select_rows_with_value_mock.assert_called_once()
+        prepare_current_ratings_mock.assert_called_once()
+        prepare_historic_ratings_mock.assert_called_once()
+        remove_blank_and_duplicate_rows_mock.assert_called_once()
+        self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
+        add_latest_rating_flag_column_mock.assert_called_once()
+        add_numerical_ratings_mock.assert_called_once()
+        create_standard_ratings_dataset_mock.assert_called_once()
+        add_location_id_hash_mock.assert_called_once()
+        select_ratings_for_benchmarks_mock.assert_called_once()
+        add_good_and_outstanding_flag_column_mock.assert_called_once()
+        join_establishment_ids_mock.assert_called_once()
+        create_benchmark_ratings_dataset_mock.assert_called_once()
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
+
         expected_write_to_parquet_calls = [
             call(
                 ANY,
@@ -71,7 +120,7 @@ class MainTests(FlattenCQCRatingsTests):
                 mode="overwrite",
             ),
         ]
-        write_to_parquet_patch.assert_has_calls(
+        write_to_parquet_mock.assert_has_calls(
             expected_write_to_parquet_calls,
             any_order=True,
         )
