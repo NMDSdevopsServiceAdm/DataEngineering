@@ -60,9 +60,9 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
     df = null_non_residential_grouped_providers(df)
     df = df.drop(
         *[
-            NGPcol.locations_at_provider_count,
-            NGPcol.locations_in_ascwds_at_provider_count,
-            NGPcol.locations_in_ascwds_with_data_at_provider_count,
+            NGPcol.count_of_cqc_locations_in_provider,
+            NGPcol.count_of_awcwds_locations_in_provider,
+            NGPcol.count_of_awcwds_locations_with_data_in_provider,
             NGPcol.number_of_beds_at_provider,
             # IndCQC.potential_grouped_provider,
         ]
@@ -90,14 +90,15 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
 
     prov_w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
     df = df.withColumn(
-        NGPcol.locations_at_provider_count, F.count(df[IndCQC.location_id]).over(prov_w)
+        NGPcol.count_of_cqc_locations_in_provider,
+        F.count(df[IndCQC.location_id]).over(prov_w),
     )
     df = df.withColumn(
-        NGPcol.locations_in_ascwds_at_provider_count,
+        NGPcol.count_of_awcwds_locations_in_provider,
         F.count(df[IndCQC.establishment_id]).over(prov_w),
     )
     df = df.withColumn(
-        NGPcol.locations_in_ascwds_with_data_at_provider_count,
+        NGPcol.count_of_awcwds_locations_with_data_in_provider,
         F.count(df[IndCQC.ascwds_filled_posts_dedup_clean]).over(prov_w),
     )
     df = df.withColumn(
@@ -129,15 +130,15 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
         IndCQC.potential_grouped_provider,
         F.when(
             (
-                df[NGPcol.locations_at_provider_count]
+                df[NGPcol.count_of_cqc_locations_in_provider]
                 >= NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER
             )
             & (
-                df[NGPcol.locations_in_ascwds_at_provider_count]
+                df[NGPcol.count_of_awcwds_locations_in_provider]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             )
             & (
-                df[NGPcol.locations_in_ascwds_with_data_at_provider_count]
+                df[NGPcol.count_of_awcwds_locations_with_data_in_provider]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             ),
             F.lit(True),

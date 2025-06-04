@@ -3783,17 +3783,18 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, DoubleType(), True),
         ]
     )
     expected_calculate_data_for_grouped_provider_identification_schema = StructType(
         [
             *calculate_data_for_grouped_provider_identification_schema,
-            StructField(NGPcol.locations_at_provider_count, IntegerType(), True),
+            StructField(NGPcol.count_of_cqc_locations_in_provider, IntegerType(), True),
             StructField(
-                NGPcol.locations_in_ascwds_at_provider_count, IntegerType(), True
+                NGPcol.count_of_awcwds_locations_in_provider, IntegerType(), True
             ),
             StructField(
-                NGPcol.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.count_of_awcwds_locations_with_data_in_provider,
                 IntegerType(),
                 True,
             ),
@@ -3804,12 +3805,12 @@ class NullGroupedProvidersSchema:
     identify_potential_grouped_providers_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(NGPcol.locations_at_provider_count, IntegerType(), True),
+            StructField(NGPcol.count_of_cqc_locations_in_provider, IntegerType(), True),
             StructField(
-                NGPcol.locations_in_ascwds_at_provider_count, IntegerType(), True
+                NGPcol.count_of_awcwds_locations_in_provider, IntegerType(), True
             ),
             StructField(
-                NGPcol.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.count_of_awcwds_locations_with_data_in_provider,
                 IntegerType(),
                 True,
             ),
@@ -3819,7 +3820,7 @@ class NullGroupedProvidersSchema:
         [
             *identify_potential_grouped_providers_schema,
             StructField(
-                NGPcol.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.count_of_awcwds_locations_with_data_in_provider,
                 BooleanType(),
                 True,
             ),

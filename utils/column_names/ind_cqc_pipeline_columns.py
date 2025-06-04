@@ -329,11 +329,11 @@ class NonResWithAndWithoutDormancyCombinedColumns:
 class NullGroupedProviderColumns:
     """The names of the temporary columns created during the null grouped providers process."""
 
-    locations_at_provider_count: str = "locations_at_provider_count"
-    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
-    locations_in_ascwds_with_data_at_provider_count: str = (
-        "locations_in_ascwds_with_data_at_provider_count"
+    count_of_awcwds_locations_in_provider: str = "count_of_awcwds_locations_in_provider"
+    count_of_awcwds_locations_with_data_in_provider: str = (
+        "count_of_awcwds_locations_with_data_in_provider"
     )
+    count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
     location_pir_average: str = "location_pir_average"
     number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     provider_pir_count: str = "provider_pir_count"
