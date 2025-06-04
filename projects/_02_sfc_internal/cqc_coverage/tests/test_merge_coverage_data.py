@@ -59,9 +59,8 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.filter_df_to_maximum_value_in_column")
-    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.add_columns_for_locality_manager_dashboard")
     @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
     @patch(f"{PATCH_PATH}.rUtils.add_parents_or_singles_and_subs_col_to_df")
