@@ -2,13 +2,20 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_locations_api_cleaned_data as job
-from tests.test_file_data import ValidateLocationsAPICleanedData as Data
-from tests.test_file_schemas import ValidateLocationsAPICleanedData as Schemas
+import projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateLocationsAPICleanedData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidateLocationsAPICleanedData as Schemas,
+)
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
 )
+
+
+PATCH_PATH = "projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data"
 
 
 class ValidateLocationsAPICleanedDatasetTests(unittest.TestCase):
@@ -35,8 +42,8 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
