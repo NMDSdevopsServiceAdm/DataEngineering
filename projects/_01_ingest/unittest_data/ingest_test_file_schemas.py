@@ -635,14 +635,14 @@ class PostcodeMatcherSchema:
         [
             StructField(ONS.postcode, StringType(), False),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
-            StructField(ONS.cssr, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
         ]
     )
 
     clean_postcode_column_schema = StructType(
         [
             StructField(CQCL.postal_code, StringType(), False),
-            StructField(CQCLClean.cssr, StringType(), False),
+            StructField(CQCLClean.current_cssr, StringType(), False),
         ]
     )
     expected_clean_postcode_column_when_col_not_dropped_schema = StructType(
@@ -653,7 +653,7 @@ class PostcodeMatcherSchema:
     )
     expected_clean_postcode_column_when_col_is_dropped_schema = StructType(
         [
-            StructField(CQCLClean.cssr, StringType(), False),
+            StructField(CQCLClean.current_cssr, StringType(), False),
             StructField(CQCLClean.postcode_cleaned, StringType(), False),
         ]
     )
@@ -669,16 +669,35 @@ class PostcodeMatcherSchema:
         [
             StructField(CQCLClean.postcode_cleaned, StringType(), False),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
-            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
         ]
     )
     expected_join_postcode_data_matched_schema = StructType(
         [
             *join_postcode_data_locations_schema,
-            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
         ]
     )
     expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
+
+    first_successful_postcode_unmatched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+        ]
+    )
+    first_successful_postcode_matched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    expected_get_first_successful_postcode_match_schema = (
+        first_successful_postcode_unmatched_schema
+    )
 
 
 @dataclass
