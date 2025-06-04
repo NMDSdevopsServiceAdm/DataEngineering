@@ -1,11 +1,13 @@
 import unittest
-
 from unittest.mock import ANY, Mock, patch
 
-import jobs.merge_coverage_data as job
-
-from tests.test_file_data import MergeCoverageData as Data
-from tests.test_file_schemas import MergeCoverageData as Schemas
+import projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    MergeCoverageData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    MergeCoverageData as Schemas,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -24,6 +26,9 @@ from utils.column_values.categorical_column_values import (
     CQCLatestRating,
     CQCCurrentOrHistoricValues,
 )
+
+
+PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data"
 
 
 class SetupForTests(unittest.TestCase):
@@ -54,22 +59,30 @@ class MainTests(SetupForTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.cleaning_utils.reduce_dataset_to_earliest_file_per_month")
-    @patch("utils.cleaning_utils.remove_duplicates_based_on_column_order")
-    @patch("utils.utils.filter_df_to_maximum_value_in_column")
-    @patch("jobs.merge_coverage_data.join_ascwds_data_into_cqc_location_df")
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.add_columns_for_locality_manager_dashboard")
+    @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
+    @patch(f"{PATCH_PATH}.rUtils.add_parents_or_singles_and_subs_col_to_df")
+    @patch(f"{PATCH_PATH}.add_flag_for_in_ascwds")
+    @patch(f"{PATCH_PATH}.join_ascwds_data_into_cqc_location_df")
+    @patch(f"{PATCH_PATH}.cUtils.remove_duplicates_based_on_column_order")
+    @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
-        join_ascwds_data_into_cqc_location_df: Mock,
-        filter_to_maximum_value_in_column: Mock,
-        remove_duplicates_based_on_column_order: Mock,
-        reduce_dataset_to_earliest_file_per_month: Mock,
+        read_from_parquet_mock: Mock,
+        reduce_dataset_to_earliest_file_per_month_mock: Mock,
+        remove_duplicates_based_on_column_order_mock: Mock,
+        join_ascwds_data_into_cqc_location_df_mock: Mock,
+        add_flag_for_in_ascwds_mock: Mock,
+        add_parents_or_singles_and_subs_col_to_df_mock: Mock,
+        join_latest_cqc_rating_into_coverage_df_mock: Mock,
+        add_columns_for_locality_manager_dashboard_mock: Mock,
+        write_to_parquet_mock: Mock,
+        filter_df_to_maximum_value_in_column_mock: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
+        read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_clean_ascwds_workplace_df,
             self.test_cqc_ratings_df,
@@ -83,21 +96,25 @@ class MainTests(SetupForTests):
             self.TEST_REDUCED_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
+        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
+        self.assertEqual(remove_duplicates_based_on_column_order_mock.call_count, 2)
+        join_ascwds_data_into_cqc_location_df_mock.assert_called_once()
+        add_flag_for_in_ascwds_mock.assert_called_once()
+        add_parents_or_singles_and_subs_col_to_df_mock.assert_called_once()
+        join_latest_cqc_rating_into_coverage_df_mock.assert_called_once()
+        add_columns_for_locality_manager_dashboard_mock.assert_called_once()
 
-        join_ascwds_data_into_cqc_location_df.assert_called_once()
-        filter_to_maximum_value_in_column.assert_called_once()
-        reduce_dataset_to_earliest_file_per_month.assert_called_once()
-        self.assertEqual(remove_duplicates_based_on_column_order.call_count, 2)
-
-        write_to_parquet_patch.assert_called_with(
+        write_to_parquet_mock.assert_called_with(
             ANY,
             self.TEST_MERGED_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
 
-        write_to_parquet_patch.assert_called_with(
+        filter_df_to_maximum_value_in_column_mock.assert_called_once()
+
+        write_to_parquet_mock.assert_called_with(
             ANY,
             self.TEST_REDUCED_DESTINATION,
             mode="overwrite",

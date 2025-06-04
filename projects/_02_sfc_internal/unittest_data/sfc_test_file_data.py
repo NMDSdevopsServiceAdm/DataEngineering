@@ -7,6 +7,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCRatingsValues,
+    CQCCurrentOrHistoricValues,
     IsParent,
     LocationType,
     ParentsOrSinglesAndSubs,
@@ -297,6 +298,122 @@ class ReconciliationUtilsData:
     expected_data_for_join_rows = [
         ("loc_1", "estab_1", "name"),
         ("loc_3", "estab_2", None),
+    ]
+
+
+@dataclass
+class MergeCoverageData:
+    # fmt: off
+    clean_cqc_location_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", "Name 1", "AB1 2CD", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-000000002", "Name 2", "EF3 4GH", "Independent", "N", None),
+        (date(2024, 1, 1), "1-000000003", "Name 3", "IJ5 6KL", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000001", "Name 1", "AB1 2CD", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-000000002", "Name 2", "EF3 4GH", "Independent", "N", None),
+        (date(2024, 2, 1), "1-000000003", "Name 3", "IJ5 6KL", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000001", "Name 1", "AB1 2CD", "Independent", "Y", 10),
+        (date(2024, 3, 1), "1-000000002", "Name 2", "EF3 4GH", "Independent", "N", None),
+        (date(2024, 3, 1), "1-000000003", "Name 3", "IJ5 6KL", "Independent", "N", None),
+    ]
+    # fmt: on
+
+    clean_ascwds_workplace_for_merge_rows = [
+        (date(2024, 1, 1), "1-000000001", date(2024, 1, 1), "1", 1),
+        (date(2024, 1, 1), "1-000000003", date(2024, 1, 1), "3", 2),
+        (date(2024, 1, 5), "1-000000001", date(2024, 1, 1), "1", 3),
+        (date(2024, 1, 9), "1-000000001", date(2024, 1, 1), "1", 4),
+        (date(2024, 1, 9), "1-000000003", date(2024, 1, 1), "3", 5),
+        (date(2024, 3, 1), "1-000000003", date(2024, 1, 1), "4", 6),
+    ]
+
+    # fmt: off
+    expected_cqc_and_ascwds_merged_rows = [
+        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 1),
+        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 1, 1), date(2024, 1, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 2),
+        ("1-000000001", date(2024, 1, 9), date(2024, 2, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, date(2024, 1, 1), "1", 4),
+        ("1-000000002", date(2024, 1, 9), date(2024, 2, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 1, 9), date(2024, 2, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "3", 5),
+        ("1-000000001", date(2024, 3, 1), date(2024, 3, 1), "Name 1", "AB1 2CD", "Independent", "Y", 10, None, None, None),
+        ("1-000000002", date(2024, 3, 1), date(2024, 3, 1), "Name 2", "EF3 4GH", "Independent", "N", None, None, None, None),
+        ("1-000000003", date(2024, 3, 1), date(2024, 3, 1), "Name 3", "IJ5 6KL", "Independent", "N", None, date(2024, 1, 1), "4", 6),
+    ]
+    # fmt: on
+
+    sample_in_ascwds_rows = [
+        (None,),
+        ("1",),
+    ]
+
+    expected_in_ascwds_rows = [
+        (None, 0),
+        ("1", 1),
+    ]
+
+    sample_cqc_locations_rows = [("1-000000001",), ("1-000000002",)]
+
+    sample_cqc_ratings_for_merge_rows = [
+        ("1-000000001", "2024-01-01", "Good", 0, CQCCurrentOrHistoricValues.historic),
+        ("1-000000001", "2024-01-02", "Good", 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000001", None, "Good", None, None),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.current),
+        ("1-000000002", "2024-01-01", None, 1, CQCCurrentOrHistoricValues.historic),
+        (
+            "1-000000002",
+            "2024-01-01",
+            None,
+            1,
+            CQCCurrentOrHistoricValues.historic,
+        ),  # CQC ratings data will contain duplicates so this needs to be handled correctly
+    ]
+
+    # fmt: off
+    expected_cqc_locations_and_latest_cqc_rating_rows = [
+        ("1-000000001", "2024-01-02", "Good",),
+        ("1-000000002", "2024-01-01", None,),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateMergedCoverageData:
+    cqc_locations_rows = [
+        (date(2024, 1, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "01", "01"),
+        (
+            date(2024, 1, 1),
+            "1-002",
+            "Name",
+            "EF3 4GH",
+            "N",
+            None,
+            "2024",
+            "01",
+            "01",
+        ),
+        (date(2024, 2, 1), "1-001", "Name", "AB1 2CD", "Y", 10, "2024", "02", "01"),
+        (
+            date(2024, 2, 1),
+            "1-002",
+            "Name",
+            "EF3 4GH",
+            "N",
+            None,
+            "2024",
+            "02",
+            "01",
+        ),
+    ]
+
+    merged_coverage_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), "Name", "AB1 2CD", "Y"),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), "Name", "EF3 4GH", "N"),
+    ]
+    calculate_expected_size_rows = [
+        ("loc 1", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
+        ("loc 1", date(2024, 1, 8), "name", "AB1 2CD", "Y", "2024", "01", "08"),
+        ("loc 2", date(2024, 1, 1), "name", "AB1 2CD", "Y", "2024", "01", "01"),
     ]
 
 
