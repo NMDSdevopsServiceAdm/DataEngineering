@@ -20,9 +20,6 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
     cqc_sector: str = CQCPClean.cqc_sector
     dormant_date: str = "dormant_date"
-    earliest_import_date_per_dormancy_value: str = (
-        "earliest_import_date_per_dormancy_value"
-    )
     first_known_relationships: str = (
         "first_known_" + NewCqcLocationApiColumns.relationships
     )
