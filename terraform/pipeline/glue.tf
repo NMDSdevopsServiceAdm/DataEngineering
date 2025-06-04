@@ -376,7 +376,7 @@ module "split_pa_filled_posts_into_icb_areas_job" {
 
 module "flatten_cqc_ratings_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_02_sfc_internal/cqc_ratings/jobs"
   script_name     = "flatten_cqc_ratings.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

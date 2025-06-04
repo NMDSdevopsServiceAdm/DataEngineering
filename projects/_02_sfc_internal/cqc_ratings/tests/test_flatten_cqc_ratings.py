@@ -1,14 +1,15 @@
 import unittest
 from unittest.mock import ANY, Mock, patch, call
-import pyspark.sql.functions as F
+
+import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    FlattenCQCRatings as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    FlattenCQCRatings as Schema,
+)
 
 from utils import utils
-
-import jobs.flatten_cqc_ratings as job
-
-from tests.test_file_data import FlattenCQCRatings as Data
-from tests.test_file_schemas import FlattenCQCRatings as Schema
-
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
 )
@@ -18,6 +19,9 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
 )
+
+
+PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 
 
 class FlattenCQCRatingsTests(unittest.TestCase):
@@ -40,8 +44,8 @@ class MainTests(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_patch: Mock, write_to_parquet_patch: Mock):
         read_from_parquet_patch.side_effect = [
             self.test_cqc_locations_df,
