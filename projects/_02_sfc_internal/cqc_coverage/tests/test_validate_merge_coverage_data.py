@@ -1,10 +1,18 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import jobs.validate_merge_coverage_data as job
-from tests.test_file_data import ValidateMergedCoverageData as Data
-from tests.test_file_schemas import ValidateMergedCoverageData as Schemas
+import projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    ValidateMergedCoverageData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    ValidateMergedCoverageData as Schemas,
+)
+
 from utils import utils
+
+
+PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data"
 
 
 class ValidateMergedCoverageDatasetTests(unittest.TestCase):
@@ -31,8 +39,8 @@ class MainTests(ValidateMergedCoverageDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,

@@ -930,6 +930,20 @@ class PostcodeMatcherData:
         ("1-002", date(2020, 1, 1), "AA1ZAA"),
     ]
 
+    first_successful_postcode_unmatched_rows = [
+        ("1-001", date(2023, 1, 1), "AA10AA"),
+        ("1-003", date(2025, 1, 1), "AA13AA"),
+    ]
+    first_successful_postcode_matched_rows = [
+        ("1-001", date(2024, 1, 1), "AA11AB", "CSSR 2"),
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-002", date(2025, 1, 1), "AA12AA", "CSSR 1"),
+    ]
+    expected_get_first_successful_postcode_match_rows = [
+        ("1-001", date(2023, 1, 1), "AA11AB"),
+        ("1-003", date(2025, 1, 1), "AA13AA"),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPIRawData:

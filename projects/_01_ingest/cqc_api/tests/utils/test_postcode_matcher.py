@@ -34,6 +34,7 @@ class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.get_first_successful_postcode_match")
     @patch(f"{PATCH_PATH}.join_postcode_data")
     @patch(f"{PATCH_PATH}.cUtils.add_aligned_date_column")
     @patch(f"{PATCH_PATH}.clean_postcode_column")
@@ -42,6 +43,7 @@ class MainTests(PostcodeMatcherTests):
         clean_postcode_column_mock: Mock,
         add_aligned_date_column_mock: Mock,
         join_postcode_data_mock: Mock,
+        get_first_successful_postcode_match_mock: Mock,
     ):
         join_postcode_data_mock.return_value = self.locations_df, self.locations_df
 
@@ -49,7 +51,8 @@ class MainTests(PostcodeMatcherTests):
 
         self.assertEqual(clean_postcode_column_mock.call_count, 2)
         add_aligned_date_column_mock.assert_called_once()
-        join_postcode_data_mock.assert_called_once()
+        self.assertEqual(join_postcode_data_mock.call_count, 2)
+        get_first_successful_postcode_match_mock.assert_called_once()
 
 
 class CleanPostcodeColumnTests(PostcodeMatcherTests):
@@ -148,3 +151,42 @@ class JoinPostcodeDataTests(PostcodeMatcherTests):
             self.returned_unmatched_df.sort(CQCLClean.location_id).collect(),
             self.expected_unmatched_df.collect(),
         )
+
+
+class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.unmatched_df = self.spark.createDataFrame(
+            Data.first_successful_postcode_unmatched_rows,
+            Schemas.first_successful_postcode_unmatched_schema,
+        )
+        matched_df = self.spark.createDataFrame(
+            Data.first_successful_postcode_matched_rows,
+            Schemas.first_successful_postcode_matched_schema,
+        )
+        self.returned_df = job.get_first_successful_postcode_match(
+            self.unmatched_df, matched_df
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_get_first_successful_postcode_match_rows,
+            Schemas.expected_get_first_successful_postcode_match_schema,
+        )
+
+        self.returned_data = self.returned_df.sort(CQCLClean.location_id).collect()
+        self.expected_data = expected_df.collect()
+
+    def test_get_first_successful_postcode_match_returns_original_columns(self):
+        self.assertEqual(
+            sorted(self.returned_df.columns), sorted(self.unmatched_df.columns)
+        )
+
+    def test_get_first_successful_postcode_match_returns_original_number_of_rows(self):
+        self.assertEqual(self.returned_df.count(), self.unmatched_df.count())
+
+    def test_get_first_successful_postcode_match_returns_expected_postcodes(self):
+        for i in range(len(self.expected_data)):
+            self.assertEqual(
+                self.returned_data[i][CQCLClean.postcode_cleaned],
+                self.expected_data[i][CQCLClean.postcode_cleaned],
+            )
