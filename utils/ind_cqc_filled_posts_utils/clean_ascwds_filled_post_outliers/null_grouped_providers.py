@@ -5,6 +5,7 @@ from pyspark.sql import DataFrame, functions as F, Window
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+    NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
 from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
@@ -55,10 +56,10 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
     df = null_non_residential_grouped_providers(df)
     df = df.drop(
         *[
-            IndCQC.locations_at_provider_count,
-            IndCQC.locations_in_ascwds_at_provider_count,
-            IndCQC.locations_in_ascwds_with_data_at_provider_count,
-            IndCQC.number_of_beds_at_provider,
+            NGPcol.locations_at_provider_count,
+            NGPcol.locations_in_ascwds_at_provider_count,
+            NGPcol.locations_in_ascwds_with_data_at_provider_count,
+            NGPcol.number_of_beds_at_provider,
             # IndCQC.potential_grouped_provider,
         ]
     )
@@ -77,23 +78,35 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
     Returns:
         DataFrame: A dataframe with the new variables locations_at_provider, locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider and number_of_beds_at_provider.
     """
-    w = Window.partitionBy(
-        [IndCQC.provider_id, IndCQC.cqc_location_import_date]
-    ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    location_pir_average: str = "location_pir_average"
+    provider_pir_count: str = "provider_pir_count"
+    provider_pir_sum: str = "provider_pir_sum"
+
+    loc_w = Window.partitionBy(IndCQC.location_id)
     df = df.withColumn(
-        IndCQC.locations_at_provider_count, F.count(df[IndCQC.location_id]).over(w)
+        location_pir_average,
+        F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
+    )
+
+    prov_w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
+    df = df.withColumn(
+        NGPcol.locations_at_provider_count, F.count(df[IndCQC.location_id]).over(prov_w)
     )
     df = df.withColumn(
-        IndCQC.locations_in_ascwds_at_provider_count,
-        F.count(df[IndCQC.establishment_id]).over(w),
+        NGPcol.locations_in_ascwds_at_provider_count,
+        F.count(df[IndCQC.establishment_id]).over(prov_w),
     )
     df = df.withColumn(
-        IndCQC.locations_in_ascwds_with_data_at_provider_count,
-        F.count(df[IndCQC.ascwds_filled_posts_dedup_clean]).over(w),
+        NGPcol.locations_in_ascwds_with_data_at_provider_count,
+        F.count(df[IndCQC.ascwds_filled_posts_dedup_clean]).over(prov_w),
     )
     df = df.withColumn(
-        IndCQC.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(w)
+        NGPcol.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(prov_w)
     )
+    df = df.withColumn(
+        provider_pir_count, F.count(df[location_pir_average]).over(prov_w)
+    )
+    df = df.withColumn(provider_pir_sum, F.sum(df[location_pir_average]).over(prov_w))
 
     return df
 
@@ -114,15 +127,15 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
         IndCQC.potential_grouped_provider,
         F.when(
             (
-                df[IndCQC.locations_at_provider_count]
+                df[NGPcol.locations_at_provider_count]
                 >= NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER
             )
             & (
-                df[IndCQC.locations_in_ascwds_at_provider_count]
+                df[NGPcol.locations_in_ascwds_at_provider_count]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             )
             & (
-                df[IndCQC.locations_in_ascwds_with_data_at_provider_count]
+                df[NGPcol.locations_in_ascwds_with_data_at_provider_count]
                 == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
             ),
             F.lit(True),
@@ -164,7 +177,7 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
                 | (
                     df[IndCQC.ascwds_filled_posts_dedup_clean]
                     >= NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER
-                    * df[IndCQC.number_of_beds_at_provider]
+                    * df[NGPcol.number_of_beds_at_provider]
                 )
             ),
             None,
@@ -191,12 +204,6 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with grouped providers' non-residential data nulled.
     """
-    loc_w = Window.partitionBy(IndCQC.location_id)
-
-    df = df.withColumn(
-        "avg_pir_at_location",
-        F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
-    )
 
     # df = df.withColumn(
     #     IndCQC.ascwds_filled_posts_dedup_clean,

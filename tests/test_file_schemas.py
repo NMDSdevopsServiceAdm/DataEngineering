@@ -45,6 +45,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+    NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -4851,28 +4852,28 @@ class NullGroupedProvidersSchema:
     expected_calculate_data_for_grouped_provider_identification_schema = StructType(
         [
             *calculate_data_for_grouped_provider_identification_schema,
-            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(NGPcol.locations_at_provider_count, IntegerType(), True),
             StructField(
-                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+                NGPcol.locations_in_ascwds_at_provider_count, IntegerType(), True
             ),
             StructField(
-                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.locations_in_ascwds_with_data_at_provider_count,
                 IntegerType(),
                 True,
             ),
-            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+            StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
         ]
     )
 
     identify_potential_grouped_providers_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.locations_at_provider_count, IntegerType(), True),
+            StructField(NGPcol.locations_at_provider_count, IntegerType(), True),
             StructField(
-                IndCQC.locations_in_ascwds_at_provider_count, IntegerType(), True
+                NGPcol.locations_in_ascwds_at_provider_count, IntegerType(), True
             ),
             StructField(
-                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.locations_in_ascwds_with_data_at_provider_count,
                 IntegerType(),
                 True,
             ),
@@ -4882,7 +4883,7 @@ class NullGroupedProvidersSchema:
         [
             *identify_potential_grouped_providers_schema,
             StructField(
-                IndCQC.locations_in_ascwds_with_data_at_provider_count,
+                NGPcol.locations_in_ascwds_with_data_at_provider_count,
                 BooleanType(),
                 True,
             ),
@@ -4896,7 +4897,7 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.number_of_beds_at_provider, IntegerType(), True),
+            StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.potential_grouped_provider, BooleanType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),

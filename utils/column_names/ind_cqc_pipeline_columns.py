@@ -190,11 +190,6 @@ class IndCqcColumns:
     last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
-    locations_at_provider_count: str = "locations_at_provider_count"
-    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
-    locations_in_ascwds_with_data_at_provider_count: str = (
-        "locations_in_ascwds_with_data_at_provider_count"
-    )
     lower_percentile: str = "lower_percentile"
     main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
@@ -214,7 +209,6 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
-    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"
     organisation_id: str = AWPClean.organisation_id
@@ -329,3 +323,15 @@ class NonResWithAndWithoutDormancyCombinedColumns:
     )
     residual_at_overlap: str = "residual_at_overlap"
     time_registered_banded_and_capped: str = "time_registered_banded_and_capped"
+
+
+@dataclass
+class NullGroupedProviderColumns:
+    """The names of the temporary columns created during the null grouped providers process."""
+
+    locations_at_provider_count: str = "locations_at_provider_count"
+    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
+    locations_in_ascwds_with_data_at_provider_count: str = (
+        "locations_in_ascwds_with_data_at_provider_count"
+    )
+    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
