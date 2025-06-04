@@ -1,10 +1,18 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import jobs.validate_merge_coverage_data as job
-from tests.test_file_data import ValidateMergedCoverageData as Data
-from tests.test_file_schemas import ValidateMergedCoverageData as Schemas
+import projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data as job
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    ValidateMergedCoverageData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    ValidateMergedCoverageData as Schemas,
+)
+
 from utils import utils
+
+
+PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data"
 
 
 class ValidateMergedCoverageDatasetTests(unittest.TestCase):
@@ -31,14 +39,20 @@ class MainTests(ValidateMergedCoverageDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.raise_exception_if_any_checks_failed")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.validate_dataset")
+    @patch(f"{PATCH_PATH}.calculate_expected_size_of_merged_coverage_dataset")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
+        read_from_parquet_mock: Mock,
+        calculate_expected_size_of_merged_coverage_dataset_mock: Mock,
+        validate_dataset_mock: Mock,
+        write_to_parquet_mock: Mock,
+        raise_exception_if_any_checks_failed_mock: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
+        read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_merged_coverage_df,
         ]
@@ -50,8 +64,11 @@ class MainTests(ValidateMergedCoverageDatasetTests):
                 self.TEST_DESTINATION,
             )
 
-            self.assertEqual(read_from_parquet_patch.call_count, 2)
-            self.assertEqual(write_to_parquet_patch.call_count, 1)
+            self.assertEqual(read_from_parquet_mock.call_count, 2)
+            calculate_expected_size_of_merged_coverage_dataset_mock.assert_called_once()
+            validate_dataset_mock.assert_called_once()
+            self.assertEqual(write_to_parquet_mock.call_count, 1)
+            raise_exception_if_any_checks_failed_mock.assert_called_once()
 
 
 class CalculateExpectedSizeofDataset(ValidateMergedCoverageDatasetTests):

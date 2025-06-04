@@ -14,7 +14,14 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.coverage_columns import CoverageColumns
+from utils.column_names.cqc_ratings_columns import (
+    CQCRatingsColumns as CQCRatings,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -324,5 +331,121 @@ class ReconciliationUtilsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(AWPClean.establishment_id, StringType(), True),
             StructField(CQCL.name, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class MergeCoverageData:
+    clean_cqc_location_for_merge_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+        ]
+    )
+
+    clean_ascwds_workplace_for_merge_schema = StructType(
+        [
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    expected_cqc_and_ascwds_merged_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(AWPClean.ascwds_workplace_import_date, DateType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(AWPClean.master_update_date, DateType(), True),
+            StructField(AWPClean.establishment_id, StringType(), True),
+            StructField(AWPClean.total_staff, IntegerType(), True),
+        ]
+    )
+
+    sample_in_ascwds_schema = StructType(
+        [
+            StructField(AWPClean.establishment_id, StringType(), True),
+        ]
+    )
+
+    expected_in_ascwds_schema = StructType(
+        [
+            *sample_in_ascwds_schema,
+            StructField(CoverageColumns.in_ascwds, IntegerType(), True),
+        ]
+    )
+
+    sample_cqc_locations_schema = StructType(
+        [StructField(AWPClean.location_id, StringType(), True)]
+    )
+
+    sample_cqc_ratings_for_merge_schema = StructType(
+        [
+            StructField(AWPClean.location_id, StringType(), True),
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
+            StructField(CQCRatings.current_or_historic, StringType(), True),
+        ]
+    )
+
+    expected_cqc_locations_and_latest_cqc_rating_schema = StructType(
+        [
+            *sample_cqc_locations_schema,
+            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateMergedCoverageData:
+    cqc_locations_schema = StructType(
+        [
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+    merged_coverage_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
+            StructField(IndCQC.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+        ]
+    )
+
+    calculate_expected_size_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.name, StringType(), True),
+            StructField(CQCLClean.postal_code, StringType(), True),
+            StructField(CQCLClean.care_home, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
         ]
     )
