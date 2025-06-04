@@ -12,6 +12,89 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
+class MergeIndCQCData:
+    clean_cqc_location_for_merge_rows = [
+        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10),
+        (date(2024, 1, 1), "1-002", Sector.independent, "N", None),
+        (date(2024, 1, 1), "1-003", Sector.independent, "N", None),
+        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10),
+        (date(2024, 2, 1), "1-002", Sector.independent, "N", None),
+        (date(2024, 2, 1), "1-003", Sector.independent, "N", None),
+        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10),
+        (date(2024, 3, 1), "1-002", Sector.independent, "N", None),
+        (date(2024, 3, 1), "1-003", Sector.independent, "N", None),
+    ]
+
+    data_to_merge_without_care_home_col_rows = [
+        (date(2024, 1, 1), "1-001", "1", 1),
+        (date(2024, 1, 1), "1-003", "3", 2),
+        (date(2024, 1, 5), "1-001", "1", 3),
+        (date(2024, 1, 9), "1-001", "1", 4),
+        (date(2024, 1, 9), "1-003", "3", 5),
+        (date(2024, 3, 1), "1-003", "4", 6),
+    ]
+    # fmt: off
+    expected_merged_without_care_home_col_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "Y", 10, "1", 1),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, None, None),
+        ("1-003", date(2024, 1, 1), date(2024, 1, 1), Sector.independent, "N", None, "3", 2),
+        ("1-001", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "Y", 10, "1", 4),
+        ("1-002", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, None, None),
+        ("1-003", date(2024, 1, 9), date(2024, 2, 1), Sector.independent, "N", None, "3", 5),
+        ("1-001", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "Y", 10, None, None),
+        ("1-002", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, None, None),
+        ("1-003", date(2024, 3, 1), date(2024, 3, 1), Sector.independent, "N", None, "4", 6),
+    ]
+    # fmt: on
+
+    data_to_merge_with_care_home_col_rows = [
+        ("1-001", "Y", date(2024, 1, 1), 10),
+        ("1-002", "N", date(2024, 1, 1), 20),
+        ("1-003", "Y", date(2024, 1, 1), 30),
+        ("1-001", "Y", date(2024, 2, 1), 1),
+        ("1-002", "N", date(2024, 2, 1), 4),
+    ]
+    # fmt: off
+    expected_merged_with_care_home_col_rows = [
+        (date(2024, 1, 1), "1-001", Sector.independent, "Y", 10, 10, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-002", Sector.independent, "N", None, 20, date(2024, 1, 1)),
+        (date(2024, 1, 1), "1-003", Sector.independent, "N", None, None, date(2024, 1, 1)),
+        (date(2024, 2, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 2, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-001", Sector.independent, "Y", 10, 1, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-002", Sector.independent, "N", None, 4, date(2024, 2, 1)),
+        (date(2024, 3, 1), "1-003", Sector.independent, "N", None, None, date(2024, 2, 1)),
+    ]
+    # fmt: on
+
+
+@dataclass
+class ValidateMergedIndCqcData:
+    cqc_locations_rows = [
+        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 1, 1), "1-002", "Independent", "N", None),
+        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
+        (date(2024, 2, 1), "1-002", "Independent", "N", None),
+    ]
+
+    # fmt: off
+    merged_ind_cqc_rows = [
+        ("1-001", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-002", date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-001", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+        ("1-002", date(2024, 1, 9), date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, ["service"], PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", 5, "estab_1", "org_1", 5, 5),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        ("1-001", Sector.independent),
+        ("1-002", Sector.local_authority),
+        ("1-003", None),
+    ]
+
+
+@dataclass
 class ImputeIndCqcAscwdsAndPirData:
     cleaned_ind_cqc_rows = [
         (

@@ -2,10 +2,14 @@ import unittest
 
 from unittest.mock import Mock, patch
 
-import jobs.validate_providers_api_raw_data as job
+import projects._01_ingest.cqc_api.jobs.validate_providers_api_raw_data as job
 
-from tests.test_file_data import ValidateProvidersAPIRawData as Data
-from tests.test_file_schemas import ValidateProvidersAPIRawData as Schemas
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateProvidersAPIRawData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ValidateProvidersAPIRawData as Schemas,
+)
 
 from utils import utils
 
