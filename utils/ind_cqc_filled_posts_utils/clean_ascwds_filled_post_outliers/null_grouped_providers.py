@@ -23,6 +23,8 @@ class NullGroupedProvidersConfig:
         NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
         NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
         MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY (int): Minimum number of staff to allocate as a grouped provider.
+        PIR_LOCATION_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR average for that location.
+        PIR_PROVIDER_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR total at the provider.
     """
 
     MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER: int = 2
@@ -30,6 +32,8 @@ class NullGroupedProvidersConfig:
     NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER: int = 3
     NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER: int = 4
     MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY: int = 50
+    PIR_LOCATION_MULTIPLIER: float = 2.5
+    PIR_PROVIDER_MULTIPLIER: float = 1.5
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -194,7 +198,15 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
 
 def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     """
-    Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one non-residential location.
+    Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
+
+    We have discovered that some locations join ASCWDS and submit their entire workforce in one
+    location, which makes it appear that this location is particularly large.
+
+    If the location looks like it is a grouped provider (based on the CQC provider having multiple
+    locations, but only one of those locations is in ASCWDS), we will remove the ASCWDS data
+    for that location if the filled posts are significantly larger than the average PIR for that
+    location or the total PIR for all locations in that provider.
 
     Args:
         df (DataFrame): A dataframe with independent cqc data.
@@ -202,25 +214,40 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A dataframe with grouped providers' non-residential data nulled.
     """
+    ascwds_to_pir_location_ratio = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.location_pir_average]
+    )
+    ascwds_exceeds_pir_location_threshold = (
+        ascwds_to_pir_location_ratio
+        >= NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER
+    )
 
-    # df = df.withColumn(
-    #     IndCQC.ascwds_filled_posts_dedup_clean,
-    #     F.when(
-    #         (df[IndCQC.care_home] == CareHome.not_care_home)
-    #         & (df[IndCQC.potential_grouped_provider] == True)
-    #         & (
-    #             (
-    #                 df[IndCQC.ascwds_filled_posts_dedup_clean] # TODO
-    #             )
-    #             | (
-    #                 df[IndCQC.ascwds_filled_posts_dedup_clean] # TODO
-    #             )
-    #         ),
-    #         None,
-    #     ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
-    # )
+    ascwds_to_pir_provider_ratio = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.provider_pir_sum]
+    )
+    ascwds_exceeds_pir_provider_threshold = (
+        ascwds_to_pir_provider_ratio
+        >= NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER
+    ) & (
+        df[NGPcol.provider_pir_count]
+        > NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
+    )
 
-    # df = update_filtering_rule(
-    #     df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
-    # )
+    df = df.withColumn(
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        F.when(
+            (df[IndCQC.care_home] == CareHome.not_care_home)
+            & (df[IndCQC.potential_grouped_provider] == True)
+            & (df[NGPcol.location_pir_average].isNotNull())
+            & (
+                ascwds_exceeds_pir_location_threshold
+                | (ascwds_exceeds_pir_provider_threshold)
+            ),
+            None,
+        ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
+    )
+
+    df = update_filtering_rule(
+        df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
+    )
     return df
