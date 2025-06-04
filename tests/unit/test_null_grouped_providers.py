@@ -111,7 +111,7 @@ class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTes
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(
-                IndCQC.provider_id, IndCQC.cqc_location_import_date, IndCQC.location_id
+                IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
         )
 

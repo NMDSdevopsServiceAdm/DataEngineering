@@ -3789,6 +3789,7 @@ class NullGroupedProvidersSchema:
     expected_calculate_data_for_grouped_provider_identification_schema = StructType(
         [
             *calculate_data_for_grouped_provider_identification_schema,
+            StructField(NGPcol.location_pir_average, DoubleType(), True),
             StructField(NGPcol.count_of_cqc_locations_in_provider, IntegerType(), True),
             StructField(
                 NGPcol.count_of_awcwds_locations_in_provider, IntegerType(), True
@@ -3799,6 +3800,8 @@ class NullGroupedProvidersSchema:
                 True,
             ),
             StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
+            StructField(NGPcol.provider_pir_count, IntegerType(), True),
+            StructField(NGPcol.provider_pir_sum, DoubleType(), True),
         ]
     )
 

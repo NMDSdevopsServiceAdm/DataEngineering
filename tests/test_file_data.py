@@ -5507,31 +5507,31 @@ class NullGroupedProvidersData:
         ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 15.0),
     ]
     expected_calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0, 1, 1, 1, 4),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, 12.0, 1, 1, 0, 4),
-        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, None, 5, 1, 0, 0, 5),
-        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 15.0, 1, 1, 1, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0, 11.0, 1, 1, 1, 4, 1, 11.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, 12.0, 11.0, 1, 1, 0, 4, 1, 11.0),
+        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, None, None, 1, 0, 0, 5, 0, None),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 15.0, 15.0, 1, 1, 1, None, 1, 15.0),
     ]
 
     calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5),
-        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6),
-        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None),
-        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None),
-        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 20.0),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 15.0),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 25.0),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 10.0),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, None),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, None),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, None),
     ]
     expected_calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 2, 2, 2, 7),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 2, 2, 2, 7),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 2, 1, 1, 9),
-        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 2, 1, 1, 9),
-        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 2, 1, 0, 6),
-        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, 2, 1, 0, 6),
-        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
-        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0, 15.0, 2, 2, 2, 7, 2, 35.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 20.0, 15.0, 2, 1, 1, 9, 2, 35.0),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 15.0, 20.0, 2, 2, 2, 7, 2, 35.0),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 25.0, 20.0, 2, 1, 1, 9, 2, 35.0),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 10.0, 10.0, 2, 1, 0, 6, 1, 10.0),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, None, None, 2, 1, 0, 6, 1, 10.0),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, None, None, 2, 0, 0, None, 0, None),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, None, None, 2, 0, 0, None, 0, None),
     ]
 
     identify_potential_grouped_providers_rows = [
