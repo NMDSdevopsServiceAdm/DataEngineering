@@ -334,4 +334,7 @@ class NullGroupedProviderColumns:
     locations_in_ascwds_with_data_at_provider_count: str = (
         "locations_in_ascwds_with_data_at_provider_count"
     )
+    location_pir_average: str = "location_pir_average"
     number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
+    provider_pir_count: str = "provider_pir_count"
+    provider_pir_sum: str = "provider_pir_sum"

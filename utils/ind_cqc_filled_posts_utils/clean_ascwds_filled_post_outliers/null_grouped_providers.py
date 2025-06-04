@@ -78,13 +78,9 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
     Returns:
         DataFrame: A dataframe with the new variables locations_at_provider, locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider and number_of_beds_at_provider.
     """
-    location_pir_average: str = "location_pir_average"
-    provider_pir_count: str = "provider_pir_count"
-    provider_pir_sum: str = "provider_pir_sum"
-
     loc_w = Window.partitionBy(IndCQC.location_id)
     df = df.withColumn(
-        location_pir_average,
+        NGPcol.location_pir_average,
         F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
     )
 
@@ -104,9 +100,11 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         NGPcol.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(prov_w)
     )
     df = df.withColumn(
-        provider_pir_count, F.count(df[location_pir_average]).over(prov_w)
+        NGPcol.provider_pir_count, F.count(df[NGPcol.location_pir_average]).over(prov_w)
     )
-    df = df.withColumn(provider_pir_sum, F.sum(df[location_pir_average]).over(prov_w))
+    df = df.withColumn(
+        NGPcol.provider_pir_sum, F.sum(df[NGPcol.location_pir_average]).over(prov_w)
+    )
 
     return df
 
