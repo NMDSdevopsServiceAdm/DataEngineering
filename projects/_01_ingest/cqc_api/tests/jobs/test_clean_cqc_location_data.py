@@ -5,9 +5,13 @@ from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import DataFrame, functions as F
 
-import jobs.clean_cqc_location_data as job
-from tests.test_file_data import CQCLocationsData as Data
-from tests.test_file_schemas import CQCLocationsSchema as Schemas
+import projects._01_ingest.cqc_api.jobs.clean_cqc_location_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CQCLocationsData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CQCLocationsSchema as Schemas,
+)
 from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
@@ -19,6 +23,9 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
+
+
+PATCH_PATH = "projects._01_ingest.cqc_api.jobs.clean_cqc_location_data"
 
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
@@ -48,22 +55,62 @@ class MainTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset")
+    @patch(f"{PATCH_PATH}.join_ons_postcode_data_into_cqc_df")
+    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.impute_missing_data_from_provider_dataset")
+    @patch(f"{PATCH_PATH}.join_cqc_provider_data")
+    @patch(f"{PATCH_PATH}.add_related_location_column")
     @patch(
-        "jobs.clean_cqc_location_data.raise_error_if_cqc_postcode_was_not_found_in_ons_dataset"
+        f"{PATCH_PATH}.extract_registered_manager_names_from_imputed_regulated_activities_column"
     )
-    @patch("utils.cleaning_utils.column_to_date", wraps=cUtils.column_to_date)
-    @patch("utils.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
+    @patch(f"{PATCH_PATH}.allocate_primary_service_type")
+    @patch(f"{PATCH_PATH}.remove_specialist_colleges")
+    @patch(f"{PATCH_PATH}.extract_from_struct")
+    @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.select_registered_locations_only")
+    @patch(f"{PATCH_PATH}.impute_historic_relationships")
+    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
+    @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
+    @patch(f"{PATCH_PATH}.remove_records_from_locations_data")
+    @patch(f"{PATCH_PATH}.remove_non_social_care_locations")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
+    @patch(f"{PATCH_PATH}.clean_provider_id_column")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date", wraps=cUtils.column_to_date)
+    @patch(f"{PATCH_PATH}.create_cleaned_registration_date_column")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
-        format_date_fields_mock: Mock,
+        read_from_parquet_mock: Mock,
+        create_cleaned_registration_date_column_mock: Mock,
         column_to_date_mock: Mock,
-        raise_error_if_cqc_postcode_was_not_found_in_ons_dataset: Mock,
+        clean_provider_id_column_mock: Mock,
+        select_rows_with_non_null_value_mock: Mock,
+        remove_non_social_care_locations_mock: Mock,
+        remove_records_from_locations_data_mock: Mock,
+        format_date_fields_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
+        impute_historic_relationships_mock: Mock,
+        select_registered_locations_only_mock: Mock,
+        impute_missing_struct_column_mock: Mock,
+        remove_locations_that_never_had_regulated_activities_mock: Mock,
+        extract_from_struct_mock: Mock,
+        remove_specialist_colleges_mock: Mock,
+        allocate_primary_service_type_mock: Mock,
+        realign_carehome_column_with_primary_service_mock: Mock,
+        extract_registered_manager_names_from_imputed_regulated_activities_column_mock: Mock,
+        add_related_location_column_mock: Mock,
+        join_cqc_provider_data_mock: Mock,
+        impute_missing_data_from_provider_dataset_mock: Mock,
+        run_postcode_matching_mock: Mock,
+        join_ons_postcode_data_into_cqc_df_mock: Mock,
+        raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
+        read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_provider_df,
             self.test_ons_postcode_directory_df,
@@ -76,20 +123,38 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
-        format_date_fields_mock.assert_called_once()
+        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        create_cleaned_registration_date_column_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 2)
-        self.assertEqual(
-            raise_error_if_cqc_postcode_was_not_found_in_ons_dataset.call_count, 1
-        )
-        write_to_parquet_patch.assert_called_once_with(
+        clean_provider_id_column_mock.assert_called_once()
+        select_rows_with_non_null_value_mock.assert_called_once()
+        remove_non_social_care_locations_mock.assert_called_once()
+        remove_records_from_locations_data_mock.assert_called_once()
+        format_date_fields_mock.assert_called_once()
+        calculate_time_registered_for_mock.assert_called_once()
+        impute_historic_relationships_mock.assert_called_once()
+        select_registered_locations_only_mock.assert_called_once()
+        self.assertEqual(impute_missing_struct_column_mock.call_count, 3)
+        remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
+        self.assertEqual(extract_from_struct_mock.call_count, 2)
+        remove_specialist_colleges_mock.assert_called_once()
+        allocate_primary_service_type_mock.assert_called_once()
+        realign_carehome_column_with_primary_service_mock.assert_called_once()
+        extract_registered_manager_names_from_imputed_regulated_activities_column_mock.assert_called_once()
+        add_related_location_column_mock.assert_called_once()
+        join_cqc_provider_data_mock.assert_called_once()
+        self.assertEqual(impute_missing_data_from_provider_dataset_mock.call_count, 2)
+        run_postcode_matching_mock.assert_called_once()
+        join_ons_postcode_data_into_cqc_df_mock.assert_called_once()
+        raise_error_if_cqc_postcode_was_not_found_in_ons_dataset_mock.assert_called_once()
+        write_to_parquet_mock.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
 
-        final_df: DataFrame = write_to_parquet_patch.call_args[0][0]
+        final_df: DataFrame = write_to_parquet_mock.call_args[0][0]
         expected_cols = list(asdict(CQCLCleaned()).values())
         for col in final_df.columns:
             self.assertIn(col, expected_cols)

@@ -392,7 +392,7 @@ module "flatten_cqc_ratings_job" {
 
 module "clean_cqc_provider_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/cqc_api/jobs"
   script_name       = "clean_cqc_provider_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -408,7 +408,7 @@ module "clean_cqc_provider_data_job" {
 
 module "clean_cqc_location_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/cqc_api/jobs"
   script_name       = "clean_cqc_location_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -480,7 +480,7 @@ module "merge_coverage_data_job" {
 
 module "validate_locations_api_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
   script_name     = "validate_locations_api_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -496,7 +496,7 @@ module "validate_locations_api_cleaned_data_job" {
 
 module "validate_providers_api_cleaned_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
   script_name     = "validate_providers_api_cleaned_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

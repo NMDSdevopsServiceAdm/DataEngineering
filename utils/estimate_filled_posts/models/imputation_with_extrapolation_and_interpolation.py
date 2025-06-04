@@ -5,7 +5,6 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 from utils.estimate_filled_posts.models.extrapolation import model_extrapolation
 from utils.estimate_filled_posts.models.interpolation import model_interpolation
-from utils.estimate_filled_posts.models.utils import set_min_value
 
 
 def model_imputation_with_extrapolation_and_interpolation(
@@ -158,5 +157,5 @@ def model_imputation(
             F.col(IndCqc.interpolation_model),
         ),
     )
-    df = set_min_value(df, imputation_model_column_name, 1.0)
+
     return df

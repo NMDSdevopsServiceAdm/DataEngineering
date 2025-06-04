@@ -45,20 +45,26 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.select_columns_required_for_reconciliation_df")
     @patch(f"{PATCH_PATH}.cUtils.set_column_bounds")
+    @patch(f"{PATCH_PATH}.cUtils.cast_to_int")
     @patch(f"{PATCH_PATH}.cUtils.apply_categorical_labels")
+    @patch(f"{PATCH_PATH}.cUtils.column_to_date")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
-    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.remove_duplicate_workplaces_in_raw_workplace_data")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
-        write_to_parquet_mock: Mock,
+        remove_duplicate_workplaces_in_raw_workplace_data: Mock,
         format_date_fields_mock: Mock,
+        column_to_date_mock: Mock,
         apply_categorical_labels_mock: Mock,
+        cast_to_int_mock: Mock,
         set_column_bounds_mock: Mock,
         select_columns_required_for_reconciliation_df_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_ascwds_workplace_df
 
@@ -69,12 +75,13 @@ class MainTests(CleanASCWDSWorkplaceDatasetTests):
         )
 
         read_from_parquet_mock.assert_called_once_with(self.TEST_SOURCE)
-        self.assertEqual(format_date_fields_mock.call_count, 1)
-        self.assertEqual(apply_categorical_labels_mock.call_count, 1)
+        remove_duplicate_workplaces_in_raw_workplace_data.assert_called_once()
+        format_date_fields_mock.assert_called_once()
+        column_to_date_mock.assert_called_once()
+        apply_categorical_labels_mock.assert_called_once()
+        cast_to_int_mock.assert_called_once()
         self.assertEqual(set_column_bounds_mock.call_count, 2)
-        self.assertEqual(
-            select_columns_required_for_reconciliation_df_mock.call_count, 1
-        )
+        select_columns_required_for_reconciliation_df_mock.assert_called_once()
         self.assertEqual(write_to_parquet_mock.call_count, 2)
 
 
