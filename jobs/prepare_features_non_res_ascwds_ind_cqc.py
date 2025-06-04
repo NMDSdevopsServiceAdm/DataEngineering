@@ -25,6 +25,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from utils.features.helper import (
     add_array_column_count,
     add_date_index_column,
+    add_squared_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     filter_without_dormancy_features_to_pre_2025,
@@ -149,6 +150,9 @@ def main(
     )
 
     with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
+    with_dormancy_features_df = add_squared_column(
+        with_dormancy_features_df, IndCQC.cqc_location_import_date_indexed
+    )
 
     with_dormancy_features_df = cap_integer_at_max_value(
         with_dormancy_features_df,
@@ -167,6 +171,8 @@ def main(
     with_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
+            IndCQC.cqc_location_import_date_indexed,
+            IndCQC.cqc_location_import_date_indexed_squared,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
             IndCQC.time_registered_capped_at_ten_years,
