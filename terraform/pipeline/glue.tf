@@ -226,7 +226,7 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 
 module "clean_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_02_clean/jobs"
   script_name       = "clean_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -607,7 +607,7 @@ module "validate_merge_coverage_data_job" {
 
 module "validate_cleaned_ind_cqc_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_02_clean/jobs"
   script_name     = "validate_cleaned_ind_cqc_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
