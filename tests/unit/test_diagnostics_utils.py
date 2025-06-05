@@ -381,7 +381,7 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
             percentage_value_cutoff,
             standardised_value_cutoff,
         )
-        self.assertEqual(calculate_windowed_column_mock.call_count, 3)
+        self.assertEqual(calculate_windowed_column_mock.call_count, 4)
         self.assertEqual(
             calculate_percentage_of_residuals_within_cutoffs_mock.call_count, 3
         )
