@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pyspark.sql import DataFrame, Column, functions as F
+from pyspark.sql import DataFrame, Column, Window, functions as F
 
 
 def calculate_new_column(
@@ -59,3 +59,44 @@ def calculate_new_column(
         condition = base_condition
 
     return df.withColumn(new_col, F.when(condition, calculation).otherwise(None))
+
+
+def calculate_windowed_column(
+    df: DataFrame,
+    window: Window,
+    new_col: str,
+    input_column: str,
+    aggregation_function: str,
+) -> DataFrame:
+    """
+    This function adds a column containing the specified function (mean, min or max) over the given window.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        window (Window): The window specification to use.
+        new_col (str): The name of the new column to be added.
+        input_column (str): The name of the input column to be aggregated.
+        aggregation_function (str): The function to use in the calculation ('avg', 'count', 'max', 'min' or 'sum').
+
+    Returns:
+        DataFrame: A dataframe with an additional column containing the specified aggregation function over the given window.
+
+    Raises:
+        ValueError: If chosen function does not match 'avg', 'count', 'max', 'min' or 'sum'.
+    """
+    functions = {
+        "avg": F.avg,
+        "count": F.count,
+        "max": F.max,
+        "min": F.min,
+        "sum": F.sum,
+    }
+
+    if aggregation_function not in functions:
+        raise ValueError(
+            f"Error: The aggregation function '{aggregation_function}' was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
+        )
+
+    method = functions[aggregation_function]
+
+    return df.withColumn(new_col, method(F.col(input_column)).over(window))
