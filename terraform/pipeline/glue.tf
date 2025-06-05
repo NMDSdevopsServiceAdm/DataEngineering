@@ -376,7 +376,7 @@ module "split_pa_filled_posts_into_icb_areas_job" {
 
 module "flatten_cqc_ratings_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_02_sfc_internal/cqc_ratings/jobs"
   script_name     = "flatten_cqc_ratings.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -462,7 +462,7 @@ module "merge_ind_cqc_data_job" {
 
 module "merge_coverage_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
   script_name     = "merge_coverage_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -591,7 +591,7 @@ module "validate_merged_ind_cqc_data_job" {
 
 module "validate_merge_coverage_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
   script_name     = "validate_merge_coverage_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -854,7 +854,7 @@ module "estimate_ind_cqc_filled_posts_job" {
   job_parameters = {
     "--imputed_ind_cqc_data_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_imputed_ascwds_and_pir/"
     "--care_home_features_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
-    "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.1.0/"
+    "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.1.1/"
     "--non_res_with_dormancy_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_with_dormancy/"
     "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/4.1.0/"
     "--non_res_without_dormancy_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
