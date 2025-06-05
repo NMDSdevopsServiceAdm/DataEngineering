@@ -2,8 +2,8 @@ import unittest
 import re
 import json
 
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from utils import (
-    cqc_api as cqc,
     aws_secrets_manager_utilities as ars,
 )
 

@@ -102,6 +102,7 @@ class InvalidPostcodes:
         "PA20 3BD": "PO20 3BD",
         "PE2 5JH": "PE2 5SF",
         "PL67BF": "PL6 7FB",
+        "PL6 7BF": "PL6 7FB",
         "PL7 1RP": "PL7 1RF",
         "PO8 4PY": "PO4 8PY",
         "PR! 9HL": "PR1 9HL",

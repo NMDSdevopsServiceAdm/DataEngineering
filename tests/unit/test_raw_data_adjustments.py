@@ -60,6 +60,34 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
 
+class RemoveDuplicateWorkplacesTests(TestRawDataAdjustments):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.workplace_data_with_duplicates_rows, Schemas.workplace_data_schema
+        )
+        self.returned_df = job.remove_duplicate_workplaces_in_raw_workplace_data(
+            self.test_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_workplace_data_with_duplicates_rows,
+            Schemas.workplace_data_schema,
+        )
+
+    def test_remove_duplicate_workplaces_in_raw_workplace_data_returns_original_columns(
+        self,
+    ):
+        self.assertEqual(sorted(self.returned_df.columns), sorted(self.test_df.columns))
+
+    def test_remove_duplicate_workplaces_in_raw_workplace_data_removes_rows_identified_as_duplicates(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(expected_data, returned_data)
+
+
 class RemoveRecordsFromLocationsDataTests(TestRawDataAdjustments):
     def setUp(self) -> None:
         super().setUp()
