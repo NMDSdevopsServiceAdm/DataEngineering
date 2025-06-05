@@ -23,29 +23,26 @@ class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_multiple_locations_at_provider_identifier(self):
+    def test_posts_per_bed_at_provider_multiplier(self):
         self.assertEqual(
-            job.NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER,
-            2,
+            job.NullGroupedProvidersConfig.POSTS_PER_BED_AT_PROVIDER_MULTIPLIER, 3
         )
 
-    def test_single_location_identifier(self):
-        self.assertEqual(job.NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER, 1)
-
-    def test_number_of_beds_at_provider_multiplier(self):
+    def test_posts_per_bed_at_location_multiplier(self):
         self.assertEqual(
-            job.NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER, 3
-        )
-
-    def test_number_of_beds_at_location_multiplier(self):
-        self.assertEqual(
-            job.NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER, 4
+            job.NullGroupedProvidersConfig.POSTS_PER_BED_AT_LOCATION_MULTIPLIER, 4
         )
 
     def test_minimum_size_of_location_to_identify(self):
         self.assertEqual(
             job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY, 50
         )
+
+    def test_number_of_beds_at_location_multiplier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER, 2.5)
+
+    def test_minimum_size_of_location_to_identify(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER, 1.5)
 
 
 class MainTests(NullGroupedProvidersTests):
@@ -64,9 +61,8 @@ class MainTests(NullGroupedProvidersTests):
     def test_null_grouped_providers_returns_same_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
-    # Temp hashed out
-    # def test_null_grouped_providers_returns_same_columns(self):
-    #     self.assertEqual(self.returned_df.schema, self.test_df.schema)
+    def test_null_grouped_providers_returns_same_columns(self):
+        self.assertEqual(self.returned_df.schema, self.test_df.schema)
 
 
 class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTests):

@@ -11,6 +11,7 @@ from utils.column_values.categorical_column_values import AscwdsFilteringRule, C
 from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
+from projects.utils.utils.utils import calculate_windowed_column
 
 
 @dataclass
@@ -18,19 +19,15 @@ class NullGroupedProvidersConfig:
     """Configuration values for defining grouped providers
 
     Attributes:
-        MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER (int): Identifier for providers with multiple locations.
-        SINGLE_LOCATION_IDENTIFIER (int): Identifier for a single location.
-        NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
-        NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
+        POSTS_PER_BED_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
+        POSTS_PER_BED_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
         MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY (int): Minimum number of staff to allocate as a grouped provider.
         PIR_LOCATION_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR average for that location.
         PIR_PROVIDER_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR total at the provider.
     """
 
-    MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER: int = 2
-    SINGLE_LOCATION_IDENTIFIER: int = 1
-    NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER: int = 3
-    NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER: int = 4
+    POSTS_PER_BED_AT_PROVIDER_MULTIPLIER: int = 3
+    POSTS_PER_BED_AT_LOCATION_MULTIPLIER: int = 4
     MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY: int = 50
     PIR_LOCATION_MULTIPLIER: float = 2.5
     PIR_PROVIDER_MULTIPLIER: float = 1.5
@@ -64,7 +61,7 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
             NGPcol.count_of_awcwds_locations_in_provider,
             NGPcol.count_of_awcwds_locations_with_data_in_provider,
             NGPcol.number_of_beds_at_provider,
-            # IndCQC.potential_grouped_provider,
+            NGPcol.potential_grouped_provider,
         ]
     )
     return df
@@ -83,32 +80,44 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         DataFrame: A dataframe with the new variables locations_at_provider, locations_in_ascwds_at_provider, locations_in_ascwds_with_data_at_provider and number_of_beds_at_provider.
     """
     loc_w = Window.partitionBy(IndCQC.location_id)
-    df = df.withColumn(
-        NGPcol.location_pir_average,
-        F.avg(df[IndCQC.pir_people_directly_employed_dedup]).over(loc_w),
-    )
-
     prov_w = Window.partitionBy([IndCQC.provider_id, IndCQC.cqc_location_import_date])
-    df = df.withColumn(
+
+    df = calculate_windowed_column(
+        df,
+        loc_w,
+        NGPcol.location_pir_average,
+        IndCQC.pir_people_directly_employed_dedup,
+        "avg",
+    )
+    df = calculate_windowed_column(
+        df,
+        prov_w,
         NGPcol.count_of_cqc_locations_in_provider,
-        F.count(df[IndCQC.location_id]).over(prov_w),
+        IndCQC.location_id,
+        "count",
     )
-    df = df.withColumn(
+    df = calculate_windowed_column(
+        df,
+        prov_w,
         NGPcol.count_of_awcwds_locations_in_provider,
-        F.count(df[IndCQC.establishment_id]).over(prov_w),
+        IndCQC.establishment_id,
+        "count",
     )
-    df = df.withColumn(
+    df = calculate_windowed_column(
+        df,
+        prov_w,
         NGPcol.count_of_awcwds_locations_with_data_in_provider,
-        F.count(df[IndCQC.ascwds_filled_posts_dedup_clean]).over(prov_w),
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        "count",
     )
-    df = df.withColumn(
-        NGPcol.number_of_beds_at_provider, F.sum(df[IndCQC.number_of_beds]).over(prov_w)
+    df = calculate_windowed_column(
+        df, prov_w, NGPcol.number_of_beds_at_provider, IndCQC.number_of_beds, "sum"
     )
-    df = df.withColumn(
-        NGPcol.provider_pir_count, F.count(df[NGPcol.location_pir_average]).over(prov_w)
+    df = calculate_windowed_column(
+        df, prov_w, NGPcol.provider_pir_count, NGPcol.location_pir_average, "count"
     )
-    df = df.withColumn(
-        NGPcol.provider_pir_sum, F.sum(df[NGPcol.location_pir_average]).over(prov_w)
+    df = calculate_windowed_column(
+        df, prov_w, NGPcol.provider_pir_sum, NGPcol.location_pir_average, "sum"
     )
 
     return df
@@ -118,7 +127,10 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     """
     Identifies whether a location is potentially a grouped provider.
 
-    A potential grouped provider is identified on the basis that the provider has multiple locations but only one of those locations is in ASCWDS and provides filled post data. This function creates a column called potential_grouped_provider with True if the location is a potential grouped provider and False if not.
+    A potential grouped provider is identified on the basis that the provider has multiple
+    locations but only one of those locations is in ASCWDS and provides filled post data.
+    This function creates a column called potential_grouped_provider with True if the
+    location is a potential grouped provider and False if not.
 
     Args:
         df (DataFrame): A dataframe with independent cqc data.
@@ -127,20 +139,11 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with the new Boolean variable potential_grouped_provider.
     """
     df = df.withColumn(
-        IndCQC.potential_grouped_provider,
+        NGPcol.potential_grouped_provider,
         F.when(
-            (
-                df[NGPcol.count_of_cqc_locations_in_provider]
-                >= NullGroupedProvidersConfig.MULTIPLE_LOCATIONS_AT_PROVIDER_IDENTIFIER
-            )
-            & (
-                df[NGPcol.count_of_awcwds_locations_in_provider]
-                == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
-            )
-            & (
-                df[NGPcol.count_of_awcwds_locations_with_data_in_provider]
-                == NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
-            ),
+            (df[NGPcol.count_of_cqc_locations_in_provider] > 1)
+            & (df[NGPcol.count_of_awcwds_locations_in_provider] == 1)
+            & (df[NGPcol.count_of_awcwds_locations_with_data_in_provider] == 1),
             F.lit(True),
         ).otherwise(F.lit(False)),
     )
@@ -150,38 +153,46 @@ def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
 
 def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     """
-    Null ascwds_filled_posts_dedup_clean where a provider has multiple locations, all their ascwds is under one care home location.
+    Null ASCWDS data when they have submitted their whole workforce into one ASCWDS account.
 
     By comparing ASCWDS against Capacity Tracker data, there was a large drop in accuracy between the values once filled
     posts were at least triple the number of beds in the whole provider, or at least quadruple the number of beds in that
     particular location.
 
     Args:
-        df (DataFrame): A dataframe with independent cqc data.
+        df (DataFrame): A DataFrame with independent CQC data and ASCWDS data.
 
     Returns:
         DataFrame: A dataframe with grouped providers' care home data nulled.
     """
+    location_is_a_care_home = df[IndCQC.care_home] == CareHome.care_home
+    location_identified_as_a_potential_grouped_provider = (
+        df[NGPcol.potential_grouped_provider] == True
+    )
+    ascwds_filled_posts_above_minimum_size_to_identify = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean]
+        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
+    )
+    ascwds_filled_posts_above_location_threshold = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean]
+        >= NullGroupedProvidersConfig.POSTS_PER_BED_AT_LOCATION_MULTIPLIER
+        * df[IndCQC.number_of_beds]
+    )
+    ascwds_filled_posts_above_provider_threshold = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean]
+        >= NullGroupedProvidersConfig.POSTS_PER_BED_AT_PROVIDER_MULTIPLIER
+        * df[NGPcol.number_of_beds_at_provider]
+    )
+
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
-            (df[IndCQC.care_home] == CareHome.care_home)
-            & (df[IndCQC.potential_grouped_provider] == True)
+            location_is_a_care_home
+            & location_identified_as_a_potential_grouped_provider
+            & ascwds_filled_posts_above_minimum_size_to_identify
             & (
-                df[IndCQC.ascwds_filled_posts_dedup_clean]
-                >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
-            )
-            & (
-                (
-                    df[IndCQC.ascwds_filled_posts_dedup_clean]
-                    >= NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_LOCATION_MULTIPLIER
-                    * df[IndCQC.number_of_beds]
-                )
-                | (
-                    df[IndCQC.ascwds_filled_posts_dedup_clean]
-                    >= NullGroupedProvidersConfig.NUMBER_OF_BEDS_AT_PROVIDER_MULTIPLIER
-                    * df[NGPcol.number_of_beds_at_provider]
-                )
+                ascwds_filled_posts_above_location_threshold
+                | ascwds_filled_posts_above_provider_threshold
             ),
             None,
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),
@@ -210,39 +221,43 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     location or the total PIR for all locations in that provider.
 
     Args:
-        df (DataFrame): A dataframe with independent cqc data.
+        df (DataFrame): A DataFrame with independent CQC data and ASCWDS data.
 
     Returns:
         DataFrame: A dataframe with grouped providers' non-residential data nulled.
     """
-    ascwds_to_pir_location_ratio = (
-        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.location_pir_average]
+    location_is_not_a_care_home = df[IndCQC.care_home] == CareHome.not_care_home
+    location_identified_as_a_potential_grouped_provider = (
+        df[NGPcol.potential_grouped_provider] == True
     )
+    ascwds_filled_posts_above_minimum_size_to_identify = (
+        df[IndCQC.ascwds_filled_posts_dedup_clean]
+        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
+    )
+    location_has_submitted_pir_data = df[NGPcol.location_pir_average].isNotNull()
     ascwds_exceeds_pir_location_threshold = (
-        ascwds_to_pir_location_ratio
-        >= NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER
-    )
-
-    ascwds_to_pir_provider_ratio = (
-        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.provider_pir_sum]
-    )
+        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.location_pir_average]
+    ) >= NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER
     ascwds_exceeds_pir_provider_threshold = (
-        ascwds_to_pir_provider_ratio
-        >= NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER
-    ) & (
-        df[NGPcol.provider_pir_count]
-        > NullGroupedProvidersConfig.SINGLE_LOCATION_IDENTIFIER
+        df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.provider_pir_sum]
+    ) >= NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER
+    multiple_locations_submitted_pir_data_at_provider = (
+        df[NGPcol.provider_pir_count] > 1
     )
 
     df = df.withColumn(
         IndCQC.ascwds_filled_posts_dedup_clean,
         F.when(
-            (df[IndCQC.care_home] == CareHome.not_care_home)
-            & (df[IndCQC.potential_grouped_provider] == True)
-            & (df[NGPcol.location_pir_average].isNotNull())
+            location_is_not_a_care_home
+            & location_identified_as_a_potential_grouped_provider
+            & ascwds_filled_posts_above_minimum_size_to_identify
+            & location_has_submitted_pir_data
             & (
                 ascwds_exceeds_pir_location_threshold
-                | (ascwds_exceeds_pir_provider_threshold)
+                | (
+                    ascwds_exceeds_pir_provider_threshold
+                    & multiple_locations_submitted_pir_data_at_provider
+                )
             ),
             None,
         ).otherwise(F.col(IndCQC.ascwds_filled_posts_dedup_clean)),

@@ -238,7 +238,6 @@ class IndCqcColumns:
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
-    potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_within_10_posts: str = "prediction_within_10_posts"
     prediction_within_25_posts: str = "prediction_within_25_posts"
@@ -336,5 +335,6 @@ class NullGroupedProviderColumns:
     count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
     location_pir_average: str = "location_pir_average"
     number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
+    potential_grouped_provider: str = "potential_grouped_provider"
     provider_pir_count: str = "provider_pir_count"
     provider_pir_sum: str = "provider_pir_sum"

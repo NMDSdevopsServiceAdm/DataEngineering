@@ -2961,7 +2961,7 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-            StructField(IndCQC.potential_grouped_provider, BooleanType(), True),
+            StructField(NGPcol.potential_grouped_provider, BooleanType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
