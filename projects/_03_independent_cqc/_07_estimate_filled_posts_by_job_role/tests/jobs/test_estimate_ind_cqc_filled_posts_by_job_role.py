@@ -15,7 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-PATCH_PATH = "jobs.estimate_ind_cqc_filled_posts_by_job_role"
+PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role"
 
 
 class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):

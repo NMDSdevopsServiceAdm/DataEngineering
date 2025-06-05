@@ -21,7 +21,9 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.mo
 )
 
 
-PATCH_PATH = "utils.estimate_filled_posts_by_job_role_utils.utils"
+PATCH_PATH = (
+    "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.utils"
+)
 
 
 class EstimateIndCQCFilledPostsByJobRoleUtilsTests(unittest.TestCase):
@@ -1233,7 +1235,7 @@ class CreateJobGroupCounts(EstimateIndCQCFilledPostsByJobRoleUtilsTests):
             Schemas.sum_job_group_counts_from_job_role_count_map_for_patching_create_map_column_schema,
         )
 
-    @patch("utils.estimate_filled_posts_by_job_role_utils.utils.create_map_column")
+    @patch(f"{PATCH_PATH}.create_map_column")
     def test_sum_job_group_counts_from_job_role_count_map_calls_premade_functionality(
         self, create_map_column_mock: Mock
     ):
