@@ -1,5 +1,6 @@
 import unittest
 import warnings
+from unittest.mock import Mock, patch
 
 from pyspark.sql import DataFrame
 
@@ -7,9 +8,9 @@ from tests.test_file_data import NullGroupedProvidersData as Data
 from tests.test_file_schemas import NullGroupedProvidersSchema as Schemas
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
-    null_grouped_providers as job,
-)
+import utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
+
+PATCH_PATH: str = "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers"
 
 
 class NullGroupedProvidersTests(unittest.TestCase):

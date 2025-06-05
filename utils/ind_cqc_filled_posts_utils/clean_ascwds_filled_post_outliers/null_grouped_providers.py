@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from pyspark.sql import DataFrame, functions as F, Window
 
@@ -55,15 +55,10 @@ def null_grouped_providers(df: DataFrame) -> DataFrame:
 
     df = null_care_home_grouped_providers(df)
     df = null_non_residential_grouped_providers(df)
-    df = df.drop(
-        *[
-            NGPcol.count_of_cqc_locations_in_provider,
-            NGPcol.count_of_awcwds_locations_in_provider,
-            NGPcol.count_of_awcwds_locations_with_data_in_provider,
-            NGPcol.number_of_beds_at_provider,
-            NGPcol.potential_grouped_provider,
-        ]
-    )
+
+    columns_to_drop = [field.name for field in fields(NGPcol())]
+    df = df.drop(*columns_to_drop)
+
     return df
 
 
