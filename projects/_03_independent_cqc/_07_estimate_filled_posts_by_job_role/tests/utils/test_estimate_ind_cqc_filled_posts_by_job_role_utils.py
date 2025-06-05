@@ -1,17 +1,25 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.estimate_filled_posts_by_job_role_utils import utils as job
-from utils.estimate_filled_posts_by_job_role_utils.models import interpolation as interp
-from utils.estimate_filled_posts_by_job_role_utils.models import (
-    extrapolation as extrapolate,
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils import (
+    utils as job,
 )
-from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleUtilsData as Data
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    EstimateIndCQCFilledPostsByJobRoleUtilsData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
+
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models import (
+    interpolation as interp,
+)
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models import (
+    extrapolation as extrapolate,
+)
+
 
 PATCH_PATH = "utils.estimate_filled_posts_by_job_role_utils.utils"
 

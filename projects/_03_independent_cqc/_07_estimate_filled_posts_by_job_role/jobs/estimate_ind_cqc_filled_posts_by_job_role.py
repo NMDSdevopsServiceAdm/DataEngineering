@@ -6,14 +6,16 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts_by_job_role_utils.models.primary_service_rolling_sum import (
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.primary_service_rolling_sum import (
     calculate_rolling_sum_of_job_roles,
 )
-from utils.estimate_filled_posts_by_job_role_utils import utils as JRutils
-from utils.estimate_filled_posts_by_job_role_utils.models.interpolation import (
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils import (
+    utils as JRutils,
+)
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.interpolation import (
     model_job_role_ratio_interpolation,
 )
-from utils.estimate_filled_posts_by_job_role_utils.models.extrapolation import (
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.extrapolation import (
     extrapolate_job_role_ratios,
 )
 from utils.ind_cqc_filled_posts_utils import utils as FPutils

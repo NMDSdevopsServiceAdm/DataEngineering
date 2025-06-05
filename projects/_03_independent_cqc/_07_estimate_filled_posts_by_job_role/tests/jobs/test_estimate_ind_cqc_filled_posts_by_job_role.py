@@ -1,9 +1,14 @@
 import unittest
 from unittest.mock import ANY, call, patch, Mock
 
-import jobs.estimate_ind_cqc_filled_posts_by_job_role as job
-from tests.test_file_data import EstimateIndCQCFilledPostsByJobRoleData as Data
-from tests.test_file_schemas import EstimateIndCQCFilledPostsByJobRoleSchemas as Schemas
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    EstimateIndCQCFilledPostsByJobRoleData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    EstimateIndCQCFilledPostsByJobRoleSchemas as Schemas,
+)
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,

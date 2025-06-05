@@ -866,7 +866,7 @@ module "estimate_ind_cqc_filled_posts_job" {
 
 module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/jobs"
   script_name       = "estimate_ind_cqc_filled_posts_by_job_role.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
