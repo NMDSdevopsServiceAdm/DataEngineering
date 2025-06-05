@@ -4,6 +4,7 @@ from pyspark.sql.types import (
     StringType,
     DateType,
     DoubleType,
+    IntegerType,
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
@@ -38,5 +39,11 @@ expected_calculate_windowed_column_schema = StructType(
     [
         *calculate_windowed_column_schema,
         StructField(new_column, DoubleType(), True),
+    ]
+)
+expected_calculate_windowed_column_count_schema = StructType(
+    [
+        *calculate_windowed_column_schema,
+        StructField(new_column, IntegerType(), True),
     ]
 )

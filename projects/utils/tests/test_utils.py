@@ -190,7 +190,7 @@ class CalculateWindowedColumnTests(UtilsTests):
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_calculate_windowed_column_count_rows,
-            Schemas.expected_calculate_windowed_column_schema,
+            Schemas.expected_calculate_windowed_column_count_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
