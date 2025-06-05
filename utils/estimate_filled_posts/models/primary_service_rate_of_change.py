@@ -74,11 +74,9 @@ def clean_column_with_values(df: DataFrame) -> DataFrame:
     w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = calculate_care_home_status_count(df)
-
     df = calculate_windowed_column(
         df, w_spec, TempCol.submission_count, TempCol.column_with_values, "count"
     )
-
     df = df.withColumn(
         TempCol.column_with_values,
         F.when(
@@ -106,25 +104,6 @@ def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
         TempCol.care_home_status_count,
         F.size((F.collect_set(IndCqc.care_home).over(w))),
     )
-    return df
-
-
-def calculate_submission_count(df: DataFrame) -> DataFrame:
-    """
-    Calculate how many submissions each location has made.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The input DataFrame with submission count.
-    """
-    w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
-
-    df = calculate_windowed_column(
-        df, w, TempCol.submission_count, TempCol.column_with_values, "count"
-    )
-
     return df
 
 
