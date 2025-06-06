@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch, Mock
 
 from pyspark.sql import WindowSpec
 
@@ -12,6 +13,8 @@ from tests.test_file_schemas import DiagnosticsUtilsSchemas as Schemas
 from tests.test_file_data import DiagnosticsUtilsData as Data
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+
+PATCH_PATH: str = "utils.diagnostics_utils.diagnostics_utils"
 
 
 class DiagnosticsUtilsTests(unittest.TestCase):
@@ -317,77 +320,6 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
         )
         self.expected_data = self.expected_df.collect()
 
-    def test_aggregate_residuals_raises_error_when_function_is_not_permitted(
-        self,
-    ):
-        with self.assertRaises(ValueError) as context:
-            job.aggregate_residuals(
-                self.test_df,
-                self.window,
-                IndCQC.average_absolute_residual,
-                IndCQC.absolute_residual,
-                function="other",
-            )
-
-        self.assertTrue(
-            "Error: The selection function 'other' was not found. Please use 'mean', 'min' or 'max'.",
-            "Exception does not contain the correct error message",
-        )
-
-    def test_aggregate_residuals_returns_expected_values_when_function_is_mean(
-        self,
-    ):
-        returned_df = job.aggregate_residuals(
-            self.test_df,
-            self.window,
-            IndCQC.average_absolute_residual,
-            IndCQC.absolute_residual,
-            function="mean",
-        )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][IndCQC.average_absolute_residual],
-                self.expected_data[i][IndCQC.average_absolute_residual],
-                places=3,
-            )
-
-    def test_aggregate_residuals_returns_expected_values_when_function_is_min(
-        self,
-    ):
-        returned_df = job.aggregate_residuals(
-            self.test_df,
-            self.window,
-            IndCQC.min_residual,
-            IndCQC.residual,
-            function="min",
-        )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][IndCQC.min_residual],
-                self.expected_data[i][IndCQC.min_residual],
-                places=3,
-            )
-
-    def test_aggregate_residuals_returns_expected_values_when_function_is_max(
-        self,
-    ):
-        returned_df = job.aggregate_residuals(
-            self.test_df,
-            self.window,
-            IndCQC.max_residual,
-            IndCQC.residual,
-            function="max",
-        )
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        for i in range(len(returned_data)):
-            self.assertAlmostEqual(
-                returned_data[i][IndCQC.max_residual],
-                self.expected_data[i][IndCQC.max_residual],
-                places=3,
-            )
-
     def test_calculate_percentage_of_residuals_within_cutoffs_returns_expected_values(
         self,
     ):
@@ -430,6 +362,30 @@ class CalculateAggregateResidualsTests(DiagnosticsUtilsTests):
                 ],
                 places=3,
             )
+
+    @patch(
+        f"{PATCH_PATH}.calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs"
+    )
+    @patch(f"{PATCH_PATH}.calculate_percentage_of_residuals_within_cutoffs")
+    @patch(f"{PATCH_PATH}.calculate_windowed_column")
+    def test_calculate_aggregate_residuals_calls_all_functions(
+        self,
+        calculate_windowed_column_mock: Mock,
+        calculate_percentage_of_residuals_within_cutoffs_mock: Mock,
+        calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs_mock: Mock,
+    ):
+        job.calculate_aggregate_residuals(
+            self.test_df,
+            self.window,
+            absolute_value_cutoff,
+            percentage_value_cutoff,
+            standardised_value_cutoff,
+        )
+        self.assertEqual(calculate_windowed_column_mock.call_count, 4)
+        self.assertEqual(
+            calculate_percentage_of_residuals_within_cutoffs_mock.call_count, 3
+        )
+        calculate_percentage_of_residuals_within_absolute_or_percentage_cutoffs_mock.assert_called_once()
 
     def test_calculate_aggregate_residuals_returns_expected_columns(self):
         returned_df = job.calculate_aggregate_residuals(

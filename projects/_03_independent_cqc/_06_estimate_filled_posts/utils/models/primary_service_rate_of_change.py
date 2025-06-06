@@ -12,6 +12,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpo
 )
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
+from projects.utils.utils.utils import calculate_windowed_column
 
 
 def model_primary_service_rate_of_change(
@@ -72,9 +73,12 @@ def clean_column_with_values(df: DataFrame) -> DataFrame:
     """
     one_care_home_status: int = 1
     two_submissions: int = 2
+    w_spec = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
 
     df = calculate_care_home_status_count(df)
-    df = calculate_submission_count(df)
+    df = calculate_windowed_column(
+        df, w_spec, TempCol.submission_count, TempCol.column_with_values, "count"
+    )
     df = df.withColumn(
         TempCol.column_with_values,
         F.when(
@@ -101,24 +105,6 @@ def calculate_care_home_status_count(df: DataFrame) -> DataFrame:
     df = df.withColumn(
         TempCol.care_home_status_count,
         F.size((F.collect_set(IndCqc.care_home).over(w))),
-    )
-    return df
-
-
-def calculate_submission_count(df: DataFrame) -> DataFrame:
-    """
-    Calculate how many submissions each location has made.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-
-    Returns:
-        DataFrame: The input DataFrame with submission count.
-    """
-    w = Window.partitionBy(IndCqc.location_id, IndCqc.care_home)
-
-    df = df.withColumn(
-        TempCol.submission_count, F.count(TempCol.column_with_values).over(w)
     )
     return df
 
