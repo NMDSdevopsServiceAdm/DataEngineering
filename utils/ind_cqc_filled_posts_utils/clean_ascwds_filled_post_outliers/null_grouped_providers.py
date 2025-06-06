@@ -111,10 +111,18 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
         df, prov_w, NGPcol.number_of_beds_at_provider, IndCQC.number_of_beds, "sum"
     )
     df = calculate_windowed_column(
-        df, prov_w, NGPcol.provider_pir_count, NGPcol.location_pir_average, "count"
+        df,
+        prov_w,
+        NGPcol.provider_pir_count,
+        IndCQC.pir_people_directly_employed_dedup,
+        "count",
     )
     df = calculate_windowed_column(
-        df, prov_w, NGPcol.provider_pir_sum, NGPcol.location_pir_average, "sum"
+        df,
+        prov_w,
+        NGPcol.provider_pir_sum,
+        IndCQC.pir_people_directly_employed_dedup,
+        "sum",
     )
 
     return df
