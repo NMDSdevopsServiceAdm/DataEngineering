@@ -6,6 +6,9 @@ from pyspark.ml.linalg import Vectors
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_values.categorical_column_values import (
     CareHome,
     EstimateFilledPostsSource,
@@ -3511,3 +3514,152 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcData:
         ("1-005", date(2025, 1, 2), CareHome.not_care_home, [{"name": "Name", "description": "Desc"}], [{"name": "Name"}]), # filtered - date after 1/1/2025
     ]
     # fmt: on
+
+
+@dataclass
+class ModelFeatures:
+    vectorise_input_rows = [
+        ("1-0001", 12.0, 0, 1, date(2024, 1, 1)),
+        ("1-0002", 50.0, 1, 1, date(2024, 1, 1)),
+    ]
+    expected_vectorised_feature_rows = [
+        ("1-0001", Vectors.dense([12.0, 0.0, 1.0])),
+        ("1-0002", Vectors.dense([50.0, 1.0, 1.0])),
+    ]
+
+    expand_encode_and_extract_features_lookup_dict = {
+        "has_A": "A",
+        "has_B": "B",
+        "has_C": "C",
+    }
+    expected_expand_encode_and_extract_features_feature_list = [
+        "has_A",
+        "has_B",
+        "has_C",
+    ]
+
+    expand_encode_and_extract_features_when_not_array_rows = [
+        ("1-0001", "A"),
+        ("1-0002", "C"),
+        ("1-0003", "B"),
+        ("1-0004", "D"),
+        ("1-0005", None),
+    ]
+    expected_expand_encode_and_extract_features_when_not_array_rows = [
+        ("1-0001", "A", 1, 0, 0),
+        ("1-0002", "C", 0, 0, 1),
+        ("1-0003", "B", 0, 1, 0),
+        ("1-0004", "D", 0, 0, 0),
+        ("1-0005", None, None, None, None),
+    ]
+
+    expand_encode_and_extract_features_when_is_array_rows = [
+        ("1-0001", ["A", "B"]),
+        ("1-0002", ["B"]),
+        ("1-0003", ["C", "A"]),
+        ("1-0004", ["B", "D"]),
+        ("1-0005", None),
+    ]
+    expected_expand_encode_and_extract_features_when_is_array_rows = [
+        ("1-0001", ["A", "B"], 1, 1, 0),
+        ("1-0002", ["B"], 0, 1, 0),
+        ("1-0003", ["C", "A"], 1, 0, 1),
+        ("1-0004", ["B", "D"], 0, 1, 0),
+        ("1-0005", None, None, None, None),
+    ]
+
+    cap_integer_at_max_value_rows = [
+        ("1-0001", 1),
+        ("1-0002", 2),
+        ("1-0003", 3),
+        ("1-0004", None),
+    ]
+    expected_cap_integer_at_max_value_rows = [
+        ("1-0001", 1, 1),
+        ("1-0002", 2, 2),
+        ("1-0003", 3, 2),
+        ("1-0004", None, None),
+    ]
+
+    add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}]),
+    ]
+    expected_add_array_column_count_with_one_element_rows = [
+        ("1-001", [{CQCL.name: "name", CQCL.description: "description"}], 1),
+    ]
+
+    add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+        ),
+    ]
+    expected_add_array_column_count_with_multiple_elements_rows = [
+        (
+            "1-001",
+            [
+                {CQCL.name: "name_1", CQCL.description: "description_1"},
+                {CQCL.name: "name_2", CQCL.description: "description_2"},
+                {CQCL.name: "name_3", CQCL.description: "description_3"},
+            ],
+            3,
+        ),
+    ]
+
+    add_array_column_count_with_empty_array_rows = [
+        ("1-001", []),
+    ]
+    expected_add_array_column_count_with_empty_array_rows = [
+        ("1-001", [], 0),
+    ]
+
+    add_array_column_count_with_null_value_rows = [
+        ("1-001", None),
+    ]
+    expected_add_array_column_count_with_null_value_rows = [
+        ("1-001", None, 0),
+    ]
+
+    add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1)),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1)),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1)),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1)),
+    ]
+    expected_add_date_index_column_rows = [
+        ("1-0001", CareHome.not_care_home, date(2024, 10, 1), 1),
+        ("1-0002", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0003", CareHome.not_care_home, date(2024, 12, 1), 2),
+        ("1-0004", CareHome.not_care_home, date(2025, 2, 1), 3),
+        ("1-0005", CareHome.care_home, date(2025, 2, 1), 1),
+    ]
+
+    group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural"),
+        ("1-002", "Rural sparse"),
+        ("1-003", "Another with sparse in it"),
+        ("1-004", "Urban"),
+        ("1-005", "Sparse with a capital S"),
+    ]
+    expected_group_rural_urban_sparse_categories_rows = [
+        ("1-001", "Rural", "Rural"),
+        ("1-002", "Rural sparse", "Sparse setting"),
+        ("1-003", "Another with sparse in it", "Sparse setting"),
+        ("1-004", "Urban", "Urban"),
+        ("1-005", "Sparse with a capital S", "Sparse setting"),
+    ]
+
+    filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
+        ("1-003", date(2025, 1, 2)),
+    ]
+    expected_filter_without_dormancy_features_to_pre_2025_rows = [
+        ("1-001", date(2024, 12, 31)),
+        ("1-002", date(2025, 1, 1)),
+    ]

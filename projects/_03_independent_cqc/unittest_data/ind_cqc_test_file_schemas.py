@@ -1428,3 +1428,126 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema:
     )
 
     calculate_expected_size_schema = cleaned_ind_cqc_schema
+
+
+@dataclass
+class ModelFeatures:
+    vectorise_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("col_1", FloatType(), True),
+            StructField("col_2", IntegerType(), True),
+            StructField("col_3", IntegerType(), True),
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+        ]
+    )
+    expected_vectorised_feature_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.features, VectorUDT(), True),
+        ]
+    )
+
+    expand_encode_and_extract_features_when_not_array_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("categories", StringType(), True),
+        ]
+    )
+    expected_expand_encode_and_extract_features_when_not_array_schema = StructType(
+        [
+            *expand_encode_and_extract_features_when_not_array_schema,
+            StructField("has_A", IntegerType(), True),
+            StructField("has_B", IntegerType(), True),
+            StructField("has_C", IntegerType(), True),
+        ]
+    )
+
+    expand_encode_and_extract_features_when_is_array_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField("categories", ArrayType(StringType()), True),
+        ]
+    )
+    expected_expand_encode_and_extract_features_when_is_array_schema = StructType(
+        [
+            *expand_encode_and_extract_features_when_is_array_schema,
+            StructField("has_A", IntegerType(), True),
+            StructField("has_B", IntegerType(), True),
+            StructField("has_C", IntegerType(), True),
+        ]
+    )
+
+    cap_integer_at_max_value_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+    expected_cap_integer_at_max_value_schema = StructType(
+        [
+            *cap_integer_at_max_value_schema,
+            StructField(IndCQC.service_count_capped, IntegerType(), True),
+        ]
+    )
+
+    add_array_column_count_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(
+                IndCQC.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_add_array_column_count_schema = StructType(
+        [
+            *add_array_column_count_schema,
+            StructField(IndCQC.service_count, IntegerType(), True),
+        ]
+    )
+
+    add_date_index_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+        ]
+    )
+    expected_add_date_index_column_schema = StructType(
+        [
+            *add_date_index_column_schema,
+            StructField(IndCQC.cqc_location_import_date_indexed, IntegerType(), False),
+        ]
+    )
+
+    group_rural_urban_sparse_categories_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+        ]
+    )
+    expected_group_rural_urban_sparse_categories_schema = StructType(
+        [
+            *group_rural_urban_sparse_categories_schema,
+            StructField(
+                IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
+                StringType(),
+                True,
+            ),
+        ]
+    )
+
+    filter_without_dormancy_features_to_pre_2025_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date, DateType(), False),
+        ]
+    )
