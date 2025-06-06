@@ -40,6 +40,18 @@ class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
             25.0,
         )
 
+    def test_minimum_size_of_non_res_location_to_identify(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY,
+            50.0,
+        )
+
+    def test_ascwds_posts_per_pir_posts_at_location_multiplier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_LOCATION_THRESHOLD, 2.5)
+
+    def test_ascwds_posts_per_pir_posts_at_provider_multiplier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_PROVIDER_THRESHOLD, 1.5)
+
 
 class MainTests(NullGroupedProvidersTests):
     def setUp(self) -> None:
@@ -181,6 +193,49 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
         )
 
         returned_df = job.null_care_home_grouped_providers(test_df)
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        test_data = test_df.collect()
+
+        for i in range(returned_df.count()):
+            self.assertEqual(
+                returned_data[i],
+                test_data[i],
+                f"Row {i} does not match: {returned_data[i]} != {test_data[i]}",
+            )
+
+
+class NullNonResidentialGroupedProvidersTests(NullGroupedProvidersTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_null_non_residential_grouped_providers_returns_null_when_criteria_met(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_non_res_grouped_providers_when_meets_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+
+        returned_df = job.null_non_residential_grouped_providers(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_non_res_grouped_providers_when_meets_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+        self.assertEqual(
+            expected_df.collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )
+
+    def test_null_non_residential_grouped_providers_returns_original_data_when_criteria_not_met(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_non_res_grouped_providers_when_does_not_meet_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+
+        returned_df = job.null_non_residential_grouped_providers(test_df)
 
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         test_data = test_df.collect()
