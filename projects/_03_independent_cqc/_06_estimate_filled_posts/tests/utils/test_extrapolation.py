@@ -1,18 +1,21 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 import warnings
-
 from pyspark.sql import Window, WindowSpec
 
-import utils.estimate_filled_posts.models.extrapolation as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation as job
 from tests.test_file_data import ModelExtrapolation as Data
 from tests.test_file_schemas import ModelExtrapolation as Schemas
 
-PATCH_PATH = "utils.estimate_filled_posts.models.extrapolation"
+
+PATCH_PATH = (
+    "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation"
+)
 
 
 class ModelExtrapolationTests(unittest.TestCase):

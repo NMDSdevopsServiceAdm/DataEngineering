@@ -4,11 +4,13 @@ import warnings
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.models.primary_service_rate_of_change as job
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChange as Data
 from tests.test_file_schemas import ModelPrimaryServiceRateOfChange as Schemas
 
-PATCH_PATH: str = "utils.estimate_filled_posts.models.primary_service_rate_of_change"
+
+PATCH_PATH: str = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change"
 
 
 class ModelPrimaryServiceRateOfChangeTests(unittest.TestCase):

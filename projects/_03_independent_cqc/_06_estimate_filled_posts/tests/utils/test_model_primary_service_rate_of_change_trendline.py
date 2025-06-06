@@ -4,15 +4,15 @@ import warnings
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline as job
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline as job
 from tests.test_file_data import ModelPrimaryServiceRateOfChangeTrendlineData as Data
 from tests.test_file_schemas import (
     ModelPrimaryServiceRateOfChangeTrendlineSchemas as Schemas,
 )
 
-PATCH_PATH = (
-    "utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline"
-)
+
+PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline"
 
 
 class ModelPrimaryServiceRateOfChangeTrendlineTests(unittest.TestCase):

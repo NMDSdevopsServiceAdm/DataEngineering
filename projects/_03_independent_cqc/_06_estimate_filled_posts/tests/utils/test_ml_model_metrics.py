@@ -6,9 +6,15 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
 )
-import utils.estimate_filled_posts.ml_model_metrics as job
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.ml_model_metrics as job
 from tests.test_file_data import MLModelMetrics as Data
 from tests.test_file_schemas import MLModelMetrics as Schemas
+
+
+PATCH_PATH = (
+    "projects._03_independent_cqc._06_estimate_filled_posts.utils.ml_model_metrics"
+)
 
 
 class TestGenerateMLModelMetrics(unittest.TestCase):
@@ -28,7 +34,7 @@ class MainTests(TestGenerateMLModelMetrics):
 
     partition_keys = [IndCqc.model_name, IndCqc.model_version]
 
-    @patch("utils.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     def test_main_runs(
         self,
         write_to_parquet_patch: Mock,
