@@ -23,16 +23,16 @@ class NullGroupedProvidersConfig:
         POSTS_PER_BED_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
         MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY (float): Minimum number of staff at a care home to allocate as a grouped provider.
         MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY (float): Minimum number of staff at a non-res location to allocate as a grouped provider.
-        PIR_LOCATION_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR average for that location.
-        PIR_PROVIDER_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR total at the provider.
+        PIR_LOCATION_THRESHOLD (float): Threshold for the ratio of ASCWDS filled posts to the PIR average for that location.
+        PIR_PROVIDER_THRESHOLD (float): Threshold for the ratio of ASCWDS filled posts to the PIR total at the provider.
     """
 
     POSTS_PER_BED_AT_PROVIDER_MULTIPLIER: int = 3
     POSTS_PER_BED_AT_LOCATION_MULTIPLIER: int = 4
     MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY: float = 25.0
     MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY: float = 50.0
-    PIR_LOCATION_MULTIPLIER: float = 2.5
-    PIR_PROVIDER_MULTIPLIER: float = 1.5
+    PIR_LOCATION_THRESHOLD: float = 2.5
+    PIR_PROVIDER_THRESHOLD: float = 1.5
 
 
 def null_grouped_providers(df: DataFrame) -> DataFrame:
@@ -234,10 +234,10 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     location_has_submitted_pir_data = df[NGPcol.location_pir_average].isNotNull()
     ascwds_exceeds_pir_location_threshold = (
         df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.location_pir_average]
-    ) >= NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER
+    ) >= NullGroupedProvidersConfig.PIR_LOCATION_THRESHOLD
     ascwds_exceeds_pir_provider_threshold = (
         df[IndCQC.ascwds_filled_posts_dedup_clean] / df[NGPcol.provider_pir_sum]
-    ) >= NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER
+    ) >= NullGroupedProvidersConfig.PIR_PROVIDER_THRESHOLD
     multiple_locations_submitted_pir_data_at_provider = (
         df[NGPcol.provider_pir_count] > 1
     )

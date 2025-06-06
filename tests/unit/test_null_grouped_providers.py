@@ -46,11 +46,11 @@ class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
             50.0,
         )
 
-    def test_number_of_beds_at_location_multiplier(self):
-        self.assertEqual(job.NullGroupedProvidersConfig.PIR_LOCATION_MULTIPLIER, 2.5)
+    def test_ascwds_posts_per_pir_posts_at_location_multiplier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_LOCATION_THRESHOLD, 2.5)
 
-    def test_minimum_size_of_location_to_identify(self):
-        self.assertEqual(job.NullGroupedProvidersConfig.PIR_PROVIDER_MULTIPLIER, 1.5)
+    def test_ascwds_posts_per_pir_posts_at_provider_multiplier(self):
+        self.assertEqual(job.NullGroupedProvidersConfig.PIR_PROVIDER_THRESHOLD, 1.5)
 
 
 class MainTests(NullGroupedProvidersTests):
