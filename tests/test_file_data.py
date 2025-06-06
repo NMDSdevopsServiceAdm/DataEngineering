@@ -4266,8 +4266,7 @@ class NullGroupedProvidersData:
         ("1-001", CareHome.not_care_home, 25.0, 25.0, None, 2, None, True, AscwdsFilteringRule.populated),  # non res location
         ("1-002", CareHome.care_home, 25.0, 25.0, 2, 3, 12.5, False, AscwdsFilteringRule.populated),  # not identified as potential grouped provider
         ("1-003", CareHome.care_home, 24.0, 24.0, 2, 2, 12.0, True, AscwdsFilteringRule.populated),  # below minimum size
-        ("1-004", CareHome.care_home, 25.0, 25.0, 20, 20, 1.25, True, AscwdsFilteringRule.populated),  # below location threshold
-        ("1-005", CareHome.care_home, 25.0, 25.0, 2, 50, 12.5, True, AscwdsFilteringRule.populated),  # below provider threshold
+        ("1-004", CareHome.care_home, 25.0, 25.0, 20, 22, 1.25, True, AscwdsFilteringRule.populated), # below location and provider threshold
     ]
     # fmt: on
 

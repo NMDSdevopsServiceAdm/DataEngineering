@@ -122,15 +122,15 @@ def calculate_data_for_grouped_provider_identification(df: DataFrame) -> DataFra
 
 def identify_potential_grouped_providers(df: DataFrame) -> DataFrame:
     """
-    Identifies whether a location is potentially a grouped provider.
+    Identify potential grouped providers based on one ASCWDS account for a CQC provider with several locations.
 
-    A potential grouped provider is identified on the basis that the provider has multiple
-    locations but only one of those locations is in ASCWDS and provides filled post data.
-    This function creates a column called potential_grouped_provider with True if the
-    location is a potential grouped provider and False if not.
+    A potential grouped provider is identified on the basis that the provider has multiple locations but only
+    one of those locations is in ASCWDS and provides filled post data.
+    This function creates a column called potential_grouped_provider with True if the location is a potential
+    grouped provider and False if not.
 
     Args:
-        df (DataFrame): A dataframe with independent cqc data.
+        df (DataFrame): A DataFrame with independent CQC data and ASCWDS data.
 
     Returns:
         DataFrame: A dataframe with the new Boolean variable potential_grouped_provider.
