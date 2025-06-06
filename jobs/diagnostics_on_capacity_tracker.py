@@ -14,10 +14,10 @@ from utils.column_names.capacity_tracker_columns import (
 )
 from utils.column_values.categorical_column_values import CareHome
 from utils.diagnostics_utils import diagnostics_utils as dUtils
-from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
     model_primary_service_rate_of_change_trendline,
 )
 from utils.ind_cqc_filled_posts_utils.utils import (
