@@ -1,15 +1,18 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_estimated_ind_cqc_filled_posts_by_job_role_data as job
-
-from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsByJobRoleData as Data
-from tests.test_file_schemas import (
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.validate_estimated_ind_cqc_filled_posts_by_job_role_data as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ValidateEstimatedIndCqcFilledPostsByJobRoleData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateEstimatedIndCqcFilledPostsByJobRoleSchemas as Schemas,
 )
 
 from utils import utils
+
+
+PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.validate_estimated_ind_cqc_filled_posts_by_job_role_data"
 
 
 class ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests(unittest.TestCase):
@@ -39,8 +42,8 @@ class MainTests(ValidateEstimatedIndCqcFilledPostsByJobRoleDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
