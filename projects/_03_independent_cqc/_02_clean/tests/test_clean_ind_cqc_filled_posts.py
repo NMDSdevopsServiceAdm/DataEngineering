@@ -11,16 +11,22 @@ from pyspark.sql.types import (
     DateType,
 )
 
-import jobs.clean_ind_cqc_filled_posts as job
-
-from tests.test_file_data import CleanIndCQCData as Data
-from tests.test_file_schemas import CleanIndCQCData as Schemas
+import projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CleanIndCQCData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    CleanIndCQCData as Schemas,
+)
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
+
+
+PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
 
 class CleanIndFilledPostsTests(unittest.TestCase):
@@ -46,19 +52,29 @@ class MainTests(CleanIndFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.cleaning_utils.create_banded_bed_count_column")
-    @patch("jobs.clean_ind_cqc_filled_posts.create_column_with_repeated_values_removed")
-    @patch("jobs.clean_ind_cqc_filled_posts.clean_ascwds_filled_post_outliers")
-    @patch("jobs.clean_ind_cqc_filled_posts.calculate_ascwds_filled_posts")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
+    @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
+    @patch(f"{PATCH_PATH}.create_column_with_repeated_values_removed")
+    @patch(f"{PATCH_PATH}.calculate_ascwds_filled_posts")
+    @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
+    @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
+    @patch(f"{PATCH_PATH}.remove_duplicate_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
-        read_from_parquet_mock,
+        read_from_parquet_mock: Mock,
+        reduce_dataset_to_earliest_file_per_month_mock: Mock,
+        remove_duplicate_cqc_care_homes_mock: Mock,
+        replace_zero_beds_with_null_mock: Mock,
+        populate_missing_care_home_number_of_beds_mock: Mock,
         calculate_ascwds_filled_posts_mock: Mock,
-        clean_ascwds_filled_post_outliers_mock: Mock,
         create_column_with_repeated_values_removed_mock: Mock,
+        calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
+        clean_ascwds_filled_post_outliers_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -68,11 +84,15 @@ class MainTests(CleanIndFilledPostsTests):
             self.CLEANED_IND_CQC_DESTINATION,
         )
 
+        reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
+        remove_duplicate_cqc_care_homes_mock.assert_called_once()
+        replace_zero_beds_with_null_mock.assert_called_once()
+        populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
-        clean_ascwds_filled_post_outliers_mock.assert_called_once()
-        create_banded_bed_count_column_mock.assert_called_once()
-
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
+        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
+        create_banded_bed_count_column_mock.assert_called_once()
+        clean_ascwds_filled_post_outliers_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
