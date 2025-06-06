@@ -2966,6 +2966,20 @@ class NullGroupedProvidersSchema:
         ]
     )
 
+    null_non_res_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(NGPcol.potential_grouped_provider, BooleanType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(NGPcol.location_pir_average, DoubleType(), True),
+            StructField(NGPcol.provider_pir_count, IntegerType(), True),
+            StructField(NGPcol.provider_pir_sum, DoubleType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidateCleanedCapacityTrackerCareHomeData:

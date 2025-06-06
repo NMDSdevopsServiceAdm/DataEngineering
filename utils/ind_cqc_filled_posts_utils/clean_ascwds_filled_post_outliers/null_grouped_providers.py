@@ -21,14 +21,16 @@ class NullGroupedProvidersConfig:
     Attributes:
         POSTS_PER_BED_AT_PROVIDER_MULTIPLIER (int): Multiplier for the number of beds at the whole provider.
         POSTS_PER_BED_AT_LOCATION_MULTIPLIER (int): Multiplier for the number of beds at the individual location.
-        MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY (int): Minimum number of staff to allocate as a grouped provider.
+        MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY (float): Minimum number of staff at a care home to allocate as a grouped provider.
+        MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY (float): Minimum number of staff at a non-res location to allocate as a grouped provider.
         PIR_LOCATION_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR average for that location.
         PIR_PROVIDER_MULTIPLIER (float): Multiplier for the ratio of ASCWDS filled posts to the PIR total at the provider.
     """
 
     POSTS_PER_BED_AT_PROVIDER_MULTIPLIER: int = 3
     POSTS_PER_BED_AT_LOCATION_MULTIPLIER: int = 4
-    MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY: int = 50
+    MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY: float = 25.0
+    MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY: float = 50.0
     PIR_LOCATION_MULTIPLIER: float = 2.5
     PIR_PROVIDER_MULTIPLIER: float = 1.5
 
@@ -166,7 +168,7 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     )
     ascwds_filled_posts_above_minimum_size_to_identify = (
         df[IndCQC.ascwds_filled_posts_dedup_clean]
-        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
+        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY
     )
     ascwds_filled_posts_above_location_threshold = (
         df[IndCQC.ascwds_filled_posts_dedup_clean]
@@ -227,7 +229,7 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     )
     ascwds_filled_posts_above_minimum_size_to_identify = (
         df[IndCQC.ascwds_filled_posts_dedup_clean]
-        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_LOCATION_TO_IDENTIFY
+        >= NullGroupedProvidersConfig.MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY
     )
     location_has_submitted_pir_data = df[NGPcol.location_pir_average].isNotNull()
     ascwds_exceeds_pir_location_threshold = (
@@ -261,4 +263,5 @@ def null_non_residential_grouped_providers(df: DataFrame) -> DataFrame:
     df = update_filtering_rule(
         df, rule_name=AscwdsFilteringRule.non_res_location_was_grouped_provider
     )
+
     return df
