@@ -11,7 +11,7 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     utils as job,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
