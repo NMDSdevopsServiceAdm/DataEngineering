@@ -1503,6 +1503,20 @@ class CQCLocationsSchema:
         ]
     )
 
+    calculate_time_since_dormant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.dormancy, StringType(), True),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = StructType(
+        [
+            *calculate_time_since_dormant_schema,
+            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:

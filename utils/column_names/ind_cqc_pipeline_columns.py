@@ -107,6 +107,9 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
+    cqc_location_import_date_indexed_squared: str = (
+        cqc_location_import_date_indexed + "_squared"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_import_date: str = CTNRClean.capacity_tracker_import_date
@@ -291,6 +294,7 @@ class IndCqcColumns:
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_since_dormant: str = CQCLClean.time_since_dormant
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

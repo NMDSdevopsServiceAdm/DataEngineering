@@ -24,7 +24,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
 
-
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.clean_cqc_location_data"
 
 
@@ -1047,6 +1046,41 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
         self.assertEqual(
             expected_df.collect(), returned_df.sort(CQCL.location_id).collect()
         )
+
+
+class CalculateTimeSinceDormant(CleanCQCLocationDatasetTests):
+    def setUp(self):
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_time_since_dormant_rows,
+            Schemas.calculate_time_since_dormant_schema,
+        )
+        self.returned_df = job.calculate_time_since_dormant(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_since_dormant_rows,
+            Schemas.expected_calculate_time_since_dormant_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_time_since_dormant_returns_new_column(self):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+        self.assertEqual(
+            self.columns_added_by_function[0], CQCLCleaned.time_since_dormant
+        )
+
+    def test_calculate_time_since_dormant_returns_expected_values(self):
+        returned_data = self.returned_df.sort(
+            CQCLCleaned.cqc_location_import_date
+        ).collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":

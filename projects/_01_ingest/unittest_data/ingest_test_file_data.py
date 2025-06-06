@@ -9,6 +9,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
+    Dormancy,
     LocationType,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -3155,6 +3156,31 @@ class CQCLocationsData:
             ],
             RelatedLocation.has_related_location,
         ),
+    ]
+
+    calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 9, 1), None),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant),
+    ]
+    expected_calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None, None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, None),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
+        ("1-001", date(2025, 9, 1), None, 4),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
     ]
 
 

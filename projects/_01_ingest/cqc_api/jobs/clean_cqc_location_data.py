@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
+    Dormancy,
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
@@ -111,6 +112,7 @@ def main(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
     cqc_location_df = calculate_time_registered_for(cqc_location_df)
+    cqc_location_df = calculate_time_since_dormant(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
@@ -782,6 +784,64 @@ def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
             "All postcodes were found in the ONS postcode file, returning original dataframe"
         )
         return cleaned_locations_df
+
+
+def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the number of months since the location was last dormant.
+
+    This function calculates the number of months since the last time a location was marked as dormant.
+    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
+    the number of months since that date for each location.
+
+    'time_since_dormant' values before the first instance of dormancy are null.
+    If the location has never been dormant then 'time_since_dormant' is null.
+
+    Args:
+        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
+
+    Returns:
+        DataFrame: A dataframe with an additional column 'time_since_dormant'.
+    """
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+
+    df = df.withColumn(
+        CQCLClean.dormant_date,
+        F.when(
+            F.col(CQCLClean.dormancy) == Dormancy.dormant,
+            F.col(CQCLClean.cqc_location_import_date),
+        ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.last_dormant_date,
+        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
+    )
+
+    df = df.withColumn(
+        CQCLClean.time_since_dormant,
+        F.when(
+            F.col(CQCLClean.last_dormant_date).isNotNull(),
+            F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+                F.floor(
+                    F.months_between(
+                        F.col(CQCLClean.cqc_location_import_date),
+                        F.col(CQCLClean.last_dormant_date),
+                    )
+                )
+                + 1,
+            ),
+        ),
+    )
+
+    df = df.drop(
+        CQCLClean.dormant_date,
+        CQCLClean.last_dormant_date,
+    )
+
+    return df
 
 
 if __name__ == "__main__":
