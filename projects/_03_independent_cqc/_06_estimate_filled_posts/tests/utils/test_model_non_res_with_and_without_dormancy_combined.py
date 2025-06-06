@@ -8,8 +8,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined as job
-from tests.test_file_data import ModelNonResWithAndWithoutDormancyCombinedRows as Data
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelNonResWithAndWithoutDormancyCombinedRows as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
 
