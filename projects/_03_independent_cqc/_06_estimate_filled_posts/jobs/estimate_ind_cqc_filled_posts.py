@@ -7,18 +7,20 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.estimate_filled_posts.models.care_homes import model_care_homes
-from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
-    model_imputation_with_extrapolation_and_interpolation,
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes import (
+    model_care_homes,
 )
-from utils.estimate_filled_posts.models.non_res_with_dormancy import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
 )
-from utils.estimate_filled_posts.models.non_res_without_dormancy import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
-from utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
     combine_non_res_with_and_without_dormancy_models,
+)
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
 )
 from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 

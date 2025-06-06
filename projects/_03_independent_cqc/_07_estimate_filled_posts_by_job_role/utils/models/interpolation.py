@@ -8,7 +8,9 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.ut
     pivot_job_role_column,
     convert_map_with_all_null_values_to_null,
 )
-from utils.estimate_filled_posts.models.interpolation import model_interpolation
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
+    model_interpolation,
+)
 
 
 def model_job_role_ratio_interpolation(

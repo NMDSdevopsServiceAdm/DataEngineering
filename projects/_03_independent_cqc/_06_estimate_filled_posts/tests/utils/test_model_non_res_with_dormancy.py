@@ -4,12 +4,18 @@ import warnings
 from datetime import date
 
 from utils import utils
-import utils.estimate_filled_posts.models.non_res_with_dormancy as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from tests.test_file_data import ModelNonResWithDormancy as Data
-from tests.test_file_schemas import ModelNonResWithDormancy as Schemas
 
-PATCH_PATH: str = "utils.estimate_filled_posts.models.non_res_with_dormancy"
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelNonResWithDormancy as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ModelNonResWithDormancy as Schemas,
+)
+
+
+PATCH_PATH: str = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy"
 
 
 class TestModelNonResWithDormancy(unittest.TestCase):

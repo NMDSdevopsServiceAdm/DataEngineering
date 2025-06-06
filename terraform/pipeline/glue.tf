@@ -689,7 +689,7 @@ module "validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job" {
 
 module "validate_estimated_ind_cqc_filled_posts_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
   script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -843,7 +843,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
 
 module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
   script_name       = "estimate_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"

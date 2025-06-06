@@ -8,16 +8,16 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
     model_primary_service_rate_of_change_trendline,
 )
-from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.rolling_average import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average import (
     model_calculate_rolling_average,
 )
-from utils.estimate_filled_posts.models.utils import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     clean_number_of_beds_banded,
     combine_care_home_ratios_and_non_res_posts,
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,

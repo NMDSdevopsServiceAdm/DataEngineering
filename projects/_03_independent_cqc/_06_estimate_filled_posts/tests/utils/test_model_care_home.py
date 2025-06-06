@@ -4,12 +4,20 @@ import warnings
 from datetime import date
 
 from utils import utils
-import utils.estimate_filled_posts.models.care_homes as job
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from tests.test_file_data import ModelCareHomes as Data
-from tests.test_file_schemas import ModelCareHomes as Schemas
 
-PATCH_PATH: str = "utils.estimate_filled_posts.models.care_homes"
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelCareHomes as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ModelCareHomes as Schemas,
+)
+
+
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes"
+)
 
 
 class TestModelCareHome(unittest.TestCase):

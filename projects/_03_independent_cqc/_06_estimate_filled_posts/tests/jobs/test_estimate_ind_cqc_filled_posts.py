@@ -2,13 +2,17 @@ import unittest
 import warnings
 from unittest.mock import ANY, Mock, patch
 
-import jobs.estimate_ind_cqc_filled_posts as job
+import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
 from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+
+
+PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
 
 
 class EstimateIndCQCFilledPostsTests(unittest.TestCase):
@@ -42,18 +46,14 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("jobs.estimate_ind_cqc_filled_posts.merge_columns_in_order")
-    @patch(
-        "jobs.estimate_ind_cqc_filled_posts.model_imputation_with_extrapolation_and_interpolation"
-    )
-    @patch(
-        "jobs.estimate_ind_cqc_filled_posts.combine_non_res_with_and_without_dormancy_models"
-    )
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_without_dormancy")
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_non_res_with_dormancy")
-    @patch("jobs.estimate_ind_cqc_filled_posts.model_care_homes")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.merge_columns_in_order")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
+    @patch(f"{PATCH_PATH}.model_non_res_without_dormancy")
+    @patch(f"{PATCH_PATH}.model_non_res_with_dormancy")
+    @patch(f"{PATCH_PATH}.model_care_homes")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,

@@ -2,9 +2,14 @@ import unittest
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-import utils.estimate_filled_posts.models.rolling_average as job
-from tests.test_file_data import ModelRollingAverageData as Data
-from tests.test_file_schemas import ModelRollingAverageSchemas as Schemas
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelRollingAverageData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ModelRollingAverageSchemas as Schemas,
+)
 
 
 class ModelRollingAverageTests(unittest.TestCase):
