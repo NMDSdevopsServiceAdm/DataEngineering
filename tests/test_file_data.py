@@ -4190,7 +4190,9 @@ class NullGroupedProvidersData:
         ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated),
         ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, None, 4, None, AscwdsFilteringRule.missing_data),
     ]
+    # fmt: on
 
+    # fmt: off
     calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4),
         ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4),
@@ -4203,11 +4205,13 @@ class NullGroupedProvidersData:
         ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, 1, 0, 0, 5),
         ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 1, 1, 1, None),
     ]
+    # fmt: on
 
+    # fmt: off
     calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3),
         ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3),
         ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5),
         ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6),
         ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None),
@@ -4216,14 +4220,15 @@ class NullGroupedProvidersData:
     ]
     expected_calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
         ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 2, 2, 2, 7),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 2, 2, 2, 7),
         ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 2, 1, 1, 9),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 2, 2, 2, 7),
         ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 2, 1, 1, 9),
         ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 2, 1, 0, 6),
         ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, 2, 1, 0, 6),
         ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
         ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
     ]
+    # fmt: on
 
     identify_potential_grouped_providers_rows = [
         ("1", 1, 1, 1),
@@ -4248,31 +4253,20 @@ class NullGroupedProvidersData:
         ("9", 5, 1, 1, True),
     ]
 
-    null_care_home_grouped_providers_where_location_is_not_care_home = [
-        ("loc 1", CareHome.not_care_home, 50.0, 50.0, None, 2, None, True, AscwdsFilteringRule.populated),
+    # fmt: off
+    null_care_home_grouped_providers_when_meets_criteria_rows = [
+        ("1-001", CareHome.care_home, 25.0, 25.0, 2, 2, 12.5, True, AscwdsFilteringRule.populated),
+        ("1-002", CareHome.care_home, 60.0, 60.0, 2, 2, 30.0, True, AscwdsFilteringRule.populated),
     ]
-
-    null_care_home_grouped_providers_where_location_is_not_potential_grouped_provider = [
-        ("loc 1", CareHome.care_home, 50.0, 50.0, 2, 3, 25.0, False, AscwdsFilteringRule.populated),
+    expected_null_care_home_grouped_providers_when_meets_criteria_rows = [
+        ("1-001", CareHome.care_home, 25.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+        ("1-002", CareHome.care_home, 60.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
     ]
-
-    null_care_home_grouped_providers_where_filled_posts_below_cutoffs = [
-        ("loc 1", CareHome.care_home, 4.0, 4.0, 2, 3, 2.0, True, AscwdsFilteringRule.populated),
-    ]
-
-    null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs = [
-        ("loc 1", CareHome.care_home, 6.0, 6.0, 2, 2, 3.0, True, AscwdsFilteringRule.populated),
-        ("loc 2", CareHome.care_home, 7.0, 7.0, 2, 2, 3.0, True, AscwdsFilteringRule.populated),
-        ("loc 3", CareHome.care_home, 8.0, 8.0, 2, 6, 4.0, True, AscwdsFilteringRule.populated),
-        ("loc 4", CareHome.care_home, 9.0, 9.0, 2, 6, 4.5, True, AscwdsFilteringRule.populated),
-        ("loc 5", CareHome.care_home, 9.0, 9.0, 2, 2, 4.5, True, AscwdsFilteringRule.populated),
-    ]
-    expected_null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs = [
-        ("loc 1", CareHome.care_home, 6.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 2", CareHome.care_home, 7.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 3", CareHome.care_home, 8.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 4", CareHome.care_home, 9.0, None, 2, 6, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
-        ("loc 5", CareHome.care_home, 9.0, None, 2, 2, None, True, AscwdsFilteringRule.care_home_location_was_grouped_provider),
+    null_care_home_grouped_providers_where_location_does_not_meet_criteria_rows = [
+        ("1-001", CareHome.not_care_home, 25.0, 25.0, None, 2, None, True, AscwdsFilteringRule.populated),  # non res location
+        ("1-002", CareHome.care_home, 25.0, 25.0, 2, 3, 12.5, False, AscwdsFilteringRule.populated),  # not identified as potential grouped provider
+        ("1-003", CareHome.care_home, 24.0, 24.0, 2, 2, 12.0, True, AscwdsFilteringRule.populated),  # below minimum size
+        ("1-004", CareHome.care_home, 25.0, 25.0, 20, 22, 1.25, True, AscwdsFilteringRule.populated),  # below location and provider threshold
     ]
     # fmt: on
 
