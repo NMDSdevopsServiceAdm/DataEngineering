@@ -957,20 +957,6 @@ class ModelPrimaryServiceRateOfChange:
         ]
     )
 
-    calculate_submission_count_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(RoC_TempCol.column_with_values, DoubleType(), True),
-        ]
-    )
-    expected_calculate_submission_count_schema = StructType(
-        [
-            *calculate_submission_count_schema,
-            StructField(RoC_TempCol.submission_count, IntegerType(), True),
-        ]
-    )
-
     interpolate_column_with_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),

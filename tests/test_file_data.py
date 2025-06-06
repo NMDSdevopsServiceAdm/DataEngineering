@@ -1635,34 +1635,6 @@ class ModelPrimaryServiceRateOfChange:
         ("1-002", CareHome.not_care_home, 2),
     ]
 
-    calculate_submission_count_same_care_home_status_rows = [
-        ("1-001", CareHome.care_home, None),
-        ("1-001", CareHome.care_home, None),
-        ("1-002", CareHome.care_home, None),
-        ("1-002", CareHome.care_home, 10.0),
-        ("1-003", CareHome.care_home, 10.0),
-        ("1-003", CareHome.care_home, 10.0),
-    ]
-    expected_calculate_submission_count_same_care_home_status_rows = [
-        ("1-001", CareHome.care_home, None, 0),
-        ("1-001", CareHome.care_home, None, 0),
-        ("1-002", CareHome.care_home, None, 1),
-        ("1-002", CareHome.care_home, 10.0, 1),
-        ("1-003", CareHome.care_home, 10.0, 2),
-        ("1-003", CareHome.care_home, 10.0, 2),
-    ]
-
-    calculate_submission_count_mixed_care_home_status_rows = [
-        ("1-001", CareHome.not_care_home, 10.0),
-        ("1-001", CareHome.care_home, 10.0),
-        ("1-001", CareHome.care_home, 10.0),
-    ]
-    expected_calculate_submission_count_mixed_care_home_status_rows = [
-        ("1-001", CareHome.not_care_home, 10.0, 1),
-        ("1-001", CareHome.care_home, 10.0, 2),
-        ("1-001", CareHome.care_home, 10.0, 2),
-    ]
-
     interpolate_column_with_values_rows = [
         ("1-001", 1704067200, 30.0),
         ("1-001", 1704153600, None),
