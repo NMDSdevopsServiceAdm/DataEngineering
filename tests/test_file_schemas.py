@@ -701,64 +701,6 @@ class IndCQCDataUtils:
 
 
 @dataclass
-class CleanIndCQCData:
-    merged_schema_for_cleaning_job = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.import_date, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(ONSClean.current_region, StringType(), True),
-            StructField(CQCLClean.current_cssr, StringType(), True),
-            StructField(CQCLClean.current_rural_urban_ind_11, StringType(), True),
-            StructField(CQCLClean.care_home, StringType(), True),
-            StructField(CQCLClean.number_of_beds, IntegerType(), True),
-            StructField(
-                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
-            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
-            StructField(CQCLClean.primary_service_type, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.postcode, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-        ]
-    )
-
-    remove_cqc_duplicates_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.postcode, StringType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(AWPClean.total_staff_bounded, IntegerType(), True),
-            StructField(AWPClean.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-        ]
-    )
-
-    repeated_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-        ]
-    )
-
-    expected_without_repeated_values_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField("integer_column", IntegerType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField("integer_column_deduplicated", IntegerType(), True),
-        ]
-    )
-
-
-@dataclass
 class CalculateAscwdsFilledPostsSchemas:
     calculate_ascwds_filled_posts_schema = StructType(
         [
@@ -2135,69 +2077,6 @@ class ValidationUtils:
             StructField(IndCQC.primary_service_type, StringType(), True),
         ]
     )
-
-
-@dataclass
-class ValidateCleanedIndCqcData:
-    merged_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.postcode, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-        ]
-    )
-    cleaned_ind_cqc_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_location_import_date, DateType(), True),
-            StructField(IndCQC.ascwds_workplace_import_date, DateType(), True),
-            StructField(IndCQC.cqc_pir_import_date, DateType(), True),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.name, StringType(), True),
-            StructField(IndCQC.provider_id, StringType(), True),
-            StructField(IndCQC.provider_name, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
-            StructField(IndCQC.registration_status, StringType(), True),
-            StructField(IndCQC.imputed_registration_date, DateType(), True),
-            StructField(IndCQC.dormancy, StringType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(
-                IndCQC.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-                True,
-            ),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.contemporary_ons_import_date, DateType(), True),
-            StructField(IndCQC.contemporary_cssr, StringType(), True),
-            StructField(IndCQC.contemporary_region, StringType(), True),
-            StructField(IndCQC.current_ons_import_date, DateType(), True),
-            StructField(IndCQC.current_cssr, StringType(), True),
-            StructField(IndCQC.current_region, StringType(), True),
-            StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
-            StructField(
-                IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
-            ),
-            StructField(IndCQC.establishment_id, StringType(), True),
-            StructField(IndCQC.organisation_id, StringType(), True),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.pir_people_directly_employed_dedup, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-        ]
-    )
-    calculate_expected_size_schema = merged_ind_cqc_schema
 
 
 @dataclass
