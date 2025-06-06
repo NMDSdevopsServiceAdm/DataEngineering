@@ -5,13 +5,14 @@ from unittest.mock import ANY, Mock, patch, call
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.linalg import SparseVector
 
-import jobs.prepare_features_non_res_ascwds_ind_cqc as job
+import projects._03_independent_cqc._04_feature_engineering.jobs.prepare_features_non_res_ascwds_ind_cqc as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     NonResAscwdsFeaturesData as Data,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     NonResAscwdsFeaturesSchema as Schemas,
 )
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
