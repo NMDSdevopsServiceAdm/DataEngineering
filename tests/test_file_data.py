@@ -1247,7 +1247,7 @@ class IndCQCDataUtils:
                     "description": "Shared Lives",
                 },
             ],
-            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+            PrimaryServiceTypeSecondLevel.shared_lives,
         ),
         (
             "1-003",
@@ -1261,7 +1261,7 @@ class IndCQCDataUtils:
                     "description": "Care home service with nursing",
                 },
             ],
-            PrimaryServiceTypeSecondLevel.care_home_only,
+            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
         ),
         (
             "1-004",
@@ -1275,7 +1275,7 @@ class IndCQCDataUtils:
                     "description": "Care home service without nursing",
                 },
             ],
-            PrimaryServiceTypeSecondLevel.non_residential,
+            PrimaryServiceTypeSecondLevel.care_home_only,
         ),
         (
             "1-005",
