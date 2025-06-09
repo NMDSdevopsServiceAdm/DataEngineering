@@ -1241,7 +1241,7 @@ class IndCQCDataUtils:
                 },
                 {
                     "name": "Any given name",
-                    "description": "Rehabilitation services",
+                    "description": "Some other service type",
                 },
             ],
         ),
