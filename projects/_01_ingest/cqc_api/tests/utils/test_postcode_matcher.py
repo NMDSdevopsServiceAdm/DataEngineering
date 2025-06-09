@@ -213,3 +213,27 @@ class TruncatePostcodeTests(PostcodeMatcherTests):
 
     def test_truncate_postcode_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
+
+
+class CreateTruncatedPostcodeDfTests(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.create_truncated_postcode_df_rows,
+            Schemas.create_truncated_postcode_df_schema,
+        )
+        self.returned_df = job.create_truncated_postcode_df(test_df)
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_truncated_postcode_df_rows,
+            Schemas.expected_create_truncated_postcode_df_schema,
+        )
+        self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_truncate_postcode_returns_expected_values(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+    def test_truncate_postcode_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)

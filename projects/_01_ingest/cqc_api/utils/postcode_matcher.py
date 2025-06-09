@@ -66,7 +66,7 @@ def run_postcode_matching(
 
     # TODO - Step 3 - Replace known postcode issues using the invalid postcode dictionary.
 
-    # TODO - Step 4 - Match the postcode based on the first half of the postcode only (truncated postcode).
+    # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
 
     # TODO - Step 5 - Raise an error to manually investigate any unmatched postcodes.
 
@@ -201,7 +201,7 @@ def truncate_postcode(df: DataFrame) -> DataFrame:
     )
 
 
-def create_truncated_postcode_file(df: DataFrame) -> DataFrame:
+def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
     """
     Generates a DataFrame containing one representative row for each truncated postcode.
 
@@ -228,7 +228,6 @@ def create_truncated_postcode_file(df: DataFrame) -> DataFrame:
         ONSClean.contemporary_ccg,
         ONSClean.current_cssr,
         ONSClean.current_sub_icb,
-        ONSClean.current_ccg,
     ]
 
     df = truncate_postcode(df)
