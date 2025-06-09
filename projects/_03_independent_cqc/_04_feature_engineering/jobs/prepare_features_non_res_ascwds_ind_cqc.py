@@ -28,6 +28,7 @@ from utils.feature_engineering_resources.feature_engineering_specialisms import 
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_array_column_count,
     add_date_index_column,
+    add_squared_column,
     cap_integer_at_max_value,
     expand_encode_and_extract_features,
     filter_without_dormancy_features_to_pre_2025,
@@ -159,6 +160,9 @@ def main(
     )
 
     with_dormancy_features_df = add_date_index_column(with_dormancy_features_df)
+    with_dormancy_features_df = add_squared_column(
+        with_dormancy_features_df, IndCQC.cqc_location_import_date_indexed
+    )
 
     with_dormancy_features_df = cap_integer_at_max_value(
         with_dormancy_features_df,

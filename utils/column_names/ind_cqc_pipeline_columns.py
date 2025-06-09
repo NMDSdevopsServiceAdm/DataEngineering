@@ -107,6 +107,9 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
+    cqc_location_import_date_indexed_squared: str = (
+        cqc_location_import_date_indexed + "_squared"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_import_date: str = CTNRClean.capacity_tracker_import_date
