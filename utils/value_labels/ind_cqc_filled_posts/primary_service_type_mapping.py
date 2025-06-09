@@ -9,10 +9,10 @@ from utils.column_values.categorical_column_values import (
 
 
 @dataclass
-class CqcServiceToPrimaryServiceTypeLookup:
+class CqcServiceToPrimaryServiceTypeSecondLevelLookup:
     """A dict where keys = CQC gac service description and values = second level primary service type"""
 
-    cqc_service_to_primary_service_type_second_level = {
+    dict = {
         "Shared Lives": PrimaryServiceTypeSecondLevel.shared_lives,
         "Care home service with nursing": PrimaryServiceTypeSecondLevel.care_home_with_nursing,
         "Care home service without nursing": PrimaryServiceTypeSecondLevel.care_home_only,

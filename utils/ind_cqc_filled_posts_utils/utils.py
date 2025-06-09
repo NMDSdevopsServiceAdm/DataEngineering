@@ -10,7 +10,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceTypeSecondLevel,
 )
 from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
-    CqcServiceToPrimaryServiceTypeLookup,
+    CqcServiceToPrimaryServiceTypeSecondLevelLookup,
 )
 
 
@@ -230,9 +230,7 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
         DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
     """
 
-    lookup_dict = (
-        CqcServiceToPrimaryServiceTypeLookup.cqc_service_to_primary_service_type_second_level
-    )
+    lookup_dict = CqcServiceToPrimaryServiceTypeSecondLevelLookup.dict
     array_column = F.col(IndCQC.imputed_gac_service_types)
 
     calculation = F.lit(PrimaryServiceTypeSecondLevel.other_non_residential)
