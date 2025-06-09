@@ -22,7 +22,10 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
+from utils.ind_cqc_filled_posts_utils.utils import (
+    merge_columns_in_order,
+    allocate_primary_service_type_second_level,
+)
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -163,6 +166,10 @@ def main(
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
+    )
+
+    estimate_filled_posts_df = allocate_primary_service_type_second_level(
+        estimate_filled_posts_df
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
