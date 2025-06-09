@@ -183,41 +183,45 @@ def get_first_successful_postcode_match(
     return reassigned_df
 
 
-def truncated_postcode(df: DataFrame) -> DataFrame:
+def truncate_postcode(df: DataFrame) -> DataFrame:
     """
-    Creates a new column which is the
+    Creates a new column which has the last 2 characters of the postcode cleaned column removed
 
     Args:
-        df (DataFrame): The postcode directory DataFrame.
+        df (DataFrame): A DataFrame containing the full postcode.
 
     Returns:
-        DataFrame: Repaired DataFrame with postcodes reassigned from historical data.
+        DataFrame: DataFrame with the truncated postcode added.
     """
-    df = df.withColumn(
+    return df.withColumn(
         CQCLClean.postcode_truncated,
-        F.expr(f"regexp_replace({CQCLClean.postcode_cleaned}, ' ?[A-Z]{2}$', '')"),
+        F.substring(
+            CQCLClean.postcode_cleaned, 1, F.length(CQCLClean.postcode_cleaned) - 2
+        ),
     )
 
 
 def create_truncated_postcode_file(df: DataFrame) -> DataFrame:
     """
+    Generates a DataFrame containing one representative row for each truncated postcode.
 
+    This function performs the following steps:
+    1. Truncates postcodes by removing the final two characters.
+    2. Groups by truncated postcode and a set of geography columns to count frequency.
+    3. Identifies the most common combination for each truncated postcode.
+    4. Filters the DataFrame to keep only the first row for each most common combination.
 
     Args:
-        df (DataFrame): The postcode directory DataFrame.
+        df (DataFrame): Input DataFrame containing cleaned postcodes and geography columns.
 
     Returns:
-        DataFrame: Repaired DataFrame with postcodes reassigned from historical data.
+        DataFrame: Filtered DataFrame containing one representative row per truncated postcode,
+        with the most frequently occurring combination of geography fields.
     """
     count_col = "count"
     rank_col = "rank"
 
-    df = df.withColumn(
-        CQCLClean.postcode_truncated,
-        F.expr(f"regexp_replace({CQCLClean.postcode_cleaned}, ' ?[A-Z]{2}$', '')"),
-    )
-
-    combo_cols = [
+    grouping_cols = [
         ONSClean.contemporary_ons_import_date,
         ONSClean.contemporary_cssr,
         ONSClean.contemporary_sub_icb,
@@ -227,20 +231,18 @@ def create_truncated_postcode_file(df: DataFrame) -> DataFrame:
         ONSClean.current_ccg,
     ]
 
-    # Window spec to count occurrences of each unique combination per truncated postcode
-    group_window = Window.partitionBy(CQCLClean.postcode_truncated, *combo_cols)
+    df = truncate_postcode(df)
 
-    # Count how many times each combination appears within each truncated postcode (keep first instance)
+    group_window = Window.partitionBy(CQCLClean.postcode_truncated, *grouping_cols)
+
     df = df.withColumn(count_col, F.count("*").over(group_window))
 
     rank_window = Window.partitionBy(CQCLClean.postcode_truncated).orderBy(
-        F.desc(count_col), *combo_cols
+        F.desc(count_col), *grouping_cols
     )
     df = df.withColumn(rank_col, F.row_number().over(rank_window))
 
-    # Filter to keep only the most common combination per postcode_truncated
     df = df.filter(F.col(rank_col) == 1).drop(
         rank_col, count_col, CQCLClean.postcode_cleaned
     )
-
     return df
