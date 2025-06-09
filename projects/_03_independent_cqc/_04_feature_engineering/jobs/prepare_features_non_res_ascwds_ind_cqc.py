@@ -111,13 +111,20 @@ def main(
 
     without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
 
+    without_dormancy_features_df = cap_integer_at_max_value(
+        without_dormancy_features_df,
+        IndCQC.time_registered,
+        max_value=48,
+        new_col_name=IndCQC.time_registered_capped_at_four_years,
+    )
+
     without_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered,
+            IndCQC.time_registered_capped_at_four_years,
         ]
         + related_location
         + service_list
