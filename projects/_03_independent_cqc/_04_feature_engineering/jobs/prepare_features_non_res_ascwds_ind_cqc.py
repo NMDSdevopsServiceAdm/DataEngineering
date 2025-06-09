@@ -25,7 +25,7 @@ from utils.feature_engineering_resources.feature_engineering_services import (
 from utils.feature_engineering_resources.feature_engineering_specialisms import (
     FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
 )
-from utils.features.helper import (
+from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_array_column_count,
     add_date_index_column,
     cap_integer_at_max_value,

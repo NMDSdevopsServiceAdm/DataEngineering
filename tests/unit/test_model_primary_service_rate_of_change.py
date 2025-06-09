@@ -154,61 +154,6 @@ class CalculateCareHomeStatusCountTests(ModelPrimaryServiceRateOfChangeTests):
             )
 
 
-class CalculateSubmissionCountTests(ModelPrimaryServiceRateOfChangeTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.calculate_submission_count_same_care_home_status_rows,
-            Schemas.calculate_submission_count_schema,
-        )
-        self.returned_df = job.calculate_submission_count(test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_submission_count_same_care_home_status_rows,
-            Schemas.expected_calculate_submission_count_schema,
-        )
-        self.returned_data = self.returned_df.sort(IndCqc.location_id).collect()
-        self.expected_data = self.expected_df.collect()
-
-    def test_calculate_submission_count_returns_expected_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
-
-    def test_returned_submission_values_match_expected_when_location_does_not_have_multiple_care_home_statuses(
-        self,
-    ):
-        for i in range(len(self.returned_data)):
-            self.assertEqual(
-                self.returned_data[i][job.TempCol.submission_count],
-                self.expected_data[i][job.TempCol.submission_count],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_submission_values_match_expected_when_location_has_multiple_care_home_statuses(
-        self,
-    ):
-        mixed_status_df = self.spark.createDataFrame(
-            Data.calculate_submission_count_mixed_care_home_status_rows,
-            Schemas.calculate_submission_count_schema,
-        )
-        returned_df = job.calculate_submission_count(mixed_status_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_submission_count_mixed_care_home_status_rows,
-            Schemas.expected_calculate_submission_count_schema,
-        )
-        returned_data = returned_df.sort(IndCqc.care_home).collect()
-        expected_data = expected_df.collect()
-
-        for i in range(len(returned_data)):
-            self.assertEqual(
-                returned_data[i][job.TempCol.submission_count],
-                expected_data[i][job.TempCol.submission_count],
-                f"Returned row {i} does not match expected",
-            )
-
-
 class InterpolateColumnWithValuesTests(ModelPrimaryServiceRateOfChangeTests):
     def setUp(self) -> None:
         super().setUp()

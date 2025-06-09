@@ -5,16 +5,21 @@ from unittest.mock import ANY, Mock, patch
 from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.linalg import SparseVector
 
-import jobs.prepare_features_care_home_ind_cqc as job
-from tests.test_file_data import CareHomeFeaturesData as Data
-from tests.test_file_schemas import CareHomeFeaturesSchema as Schemas
+import projects._03_independent_cqc._04_feature_engineering.jobs.prepare_features_care_home_ind_cqc as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CareHomeFeaturesData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    CareHomeFeaturesSchema as Schemas,
+)
+
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
 
-PATCH_PATH: str = "jobs.prepare_features_care_home_ind_cqc"
+PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.prepare_features_care_home_ind_cqc"
 
 
 class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
