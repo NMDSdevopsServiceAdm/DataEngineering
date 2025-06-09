@@ -248,7 +248,7 @@ class IndCqcColumns:
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
     primary_service_type_second_level: str = (
-        CQCLClean.primary_service_type + "second_level"
+        CQCLClean.primary_service_type + "_second_level"
     )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
