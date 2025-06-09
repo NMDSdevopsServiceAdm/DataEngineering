@@ -1120,11 +1120,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Care home service with nursing",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Care home service with nursing",
+                    "description": "Shared Lives",
                 },
             ],
         ),
@@ -1133,11 +1133,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Care home service without nursing",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Care home service without nursing",
+                    "description": "Care home service with nursing",
                 },
             ],
         ),
@@ -1146,11 +1146,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Domiciliary care service",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Domiciliary care service",
+                    "description": "Care home service without nursing",
                 },
             ],
         ),
@@ -1159,37 +1159,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
                     "description": "Community health care services - Nurses Agency only",
                 },
-            ],
-        ),
-        (
-            "1-006",
-            [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Supported living service",
-                },
-            ],
-        ),
-        (
-            "1-007",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Extra Care housing services",
+                    "description": "Domiciliary care service",
                 },
             ],
         ),
@@ -1198,11 +1172,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                    "description": "Extra Care housing services",
                 },
             ],
         ),
@@ -1211,20 +1185,20 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Hospice services",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Hospice services",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
                 },
             ],
         ),
         (
-            "1-010",
+            "1-011",
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Rehabilitation services",
                 },
                 {
                     "name": "Any given name",
@@ -1241,7 +1215,7 @@ class IndCQCDataUtils:
                 },
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Rehabilitation services",
                 },
             ],
         ),
@@ -1266,11 +1240,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Care home service with nursing",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Care home service with nursing",
+                    "description": "Shared Lives",
                 },
             ],
             PrimaryServiceTypeSecondLevel.care_home_with_nursing,
@@ -1280,11 +1254,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Care home service without nursing",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Care home service without nursing",
+                    "description": "Care home service with nursing",
                 },
             ],
             PrimaryServiceTypeSecondLevel.care_home_only,
@@ -1294,11 +1268,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Domiciliary care service",
                 },
                 {
                     "name": "Any given name",
-                    "description": "Domiciliary care service",
+                    "description": "Care home service without nursing",
                 },
             ],
             PrimaryServiceTypeSecondLevel.non_residential,
@@ -1308,39 +1282,11 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
                     "description": "Community health care services - Nurses Agency only",
                 },
-            ],
-            PrimaryServiceTypeSecondLevel.non_residential,
-        ),
-        (
-            "1-006",
-            [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Supported living service",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.non_residential,
-        ),
-        (
-            "1-007",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Extra Care housing services",
+                    "description": "Domiciliary care service",
                 },
             ],
             PrimaryServiceTypeSecondLevel.non_residential,
@@ -1350,7 +1296,21 @@ class IndCQCDataUtils:
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Extra Care housing services",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-009",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Hospice services",
                 },
                 {
                     "name": "Any given name",
@@ -1360,25 +1320,11 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.other_residential,
         ),
         (
-            "1-009",
+            "1-011",
             [
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
-                },
-                {
-                    "name": "Any given name",
-                    "description": "Hospice services",
-                },
-            ],
-            PrimaryServiceTypeSecondLevel.other_residential,
-        ),
-        (
-            "1-010",
-            [
-                {
-                    "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Rehabilitation services",
                 },
                 {
                     "name": "Any given name",
@@ -1396,7 +1342,7 @@ class IndCQCDataUtils:
                 },
                 {
                     "name": "Any given name",
-                    "description": "Some other service type",
+                    "description": "Rehabilitation services",
                 },
             ],
             PrimaryServiceTypeSecondLevel.other_non_residential,
