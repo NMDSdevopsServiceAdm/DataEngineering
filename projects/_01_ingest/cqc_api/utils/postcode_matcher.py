@@ -195,8 +195,8 @@ def truncate_postcode(df: DataFrame) -> DataFrame:
     """
     return df.withColumn(
         CQCLClean.postcode_truncated,
-        F.substring(
-            CQCLClean.postcode_cleaned, 1, F.length(CQCLClean.postcode_cleaned) - 2
+        F.expr(
+            f"substring({CQCLClean.postcode_cleaned}, 1, length({CQCLClean.postcode_cleaned}) - 2)"
         ),
     )
 

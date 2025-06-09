@@ -699,6 +699,19 @@ class PostcodeMatcherSchema:
         first_successful_postcode_unmatched_schema
     )
 
+    truncate_postcode_schema = StructType(
+        [
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+        ]
+    )
+    expected_truncate_postcode_schema = StructType(
+        [
+            *truncate_postcode_schema,
+            StructField(CQCLClean.postcode_truncated, StringType(), False),
+        ]
+    )
+
 
 @dataclass
 class ValidateLocationsAPIRawData:

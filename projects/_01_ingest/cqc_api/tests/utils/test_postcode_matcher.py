@@ -190,3 +190,26 @@ class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
                 self.returned_data[i][CQCLClean.postcode_cleaned],
                 self.expected_data[i][CQCLClean.postcode_cleaned],
             )
+
+
+class TruncatePostcodeTests(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.truncate_postcode_rows, Schemas.truncate_postcode_schema
+        )
+        self.returned_df = job.truncate_postcode(test_df)
+
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_truncate_postcode_rows,
+            Schemas.expected_truncate_postcode_schema,
+        )
+        self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
+        self.expected_data = self.expected_df.collect()
+
+    def test_truncate_postcode_returns_expected_values(self):
+        self.assertEqual(self.returned_data, self.expected_data)
+
+    def test_truncate_postcode_returns_expected_columns(self):
+        self.assertEqual(self.returned_df.columns, self.expected_df.columns)

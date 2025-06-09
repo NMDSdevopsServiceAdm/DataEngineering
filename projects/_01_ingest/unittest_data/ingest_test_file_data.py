@@ -944,6 +944,19 @@ class PostcodeMatcherData:
         ("1-003", date(2025, 1, 1), "AA13AA"),
     ]
 
+    truncate_postcode_rows = [
+        ("AA11AA", date(2023, 1, 1)),
+        ("AA11AB", date(2023, 1, 1)),
+        ("AB1CD", date(2023, 1, 1)),
+        ("B1CD", date(2023, 1, 1)),
+    ]
+    expected_truncate_postcode_rows = [
+        ("AA11AA", date(2023, 1, 1), "AA11"),
+        ("AA11AB", date(2023, 1, 1), "AA11"),
+        ("AB1CD", date(2023, 1, 1), "AB1"),
+        ("B1CD", date(2023, 1, 1), "B1"),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPIRawData:
