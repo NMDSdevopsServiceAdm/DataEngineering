@@ -181,3 +181,66 @@ def get_first_successful_postcode_match(
     ).drop(successfully_matched_postcode)
 
     return reassigned_df
+
+
+def truncated_postcode(df: DataFrame) -> DataFrame:
+    """
+    Creates a new column which is the
+
+    Args:
+        df (DataFrame): The postcode directory DataFrame.
+
+    Returns:
+        DataFrame: Repaired DataFrame with postcodes reassigned from historical data.
+    """
+    df = df.withColumn(
+        CQCLClean.postcode_truncated,
+        F.expr(f"regexp_replace({CQCLClean.postcode_cleaned}, ' ?[A-Z]{2}$', '')"),
+    )
+
+
+def create_truncated_postcode_file(df: DataFrame) -> DataFrame:
+    """
+
+
+    Args:
+        df (DataFrame): The postcode directory DataFrame.
+
+    Returns:
+        DataFrame: Repaired DataFrame with postcodes reassigned from historical data.
+    """
+    count_col = "count"
+    rank_col = "rank"
+
+    df = df.withColumn(
+        CQCLClean.postcode_truncated,
+        F.expr(f"regexp_replace({CQCLClean.postcode_cleaned}, ' ?[A-Z]{2}$', '')"),
+    )
+
+    combo_cols = [
+        ONSClean.contemporary_ons_import_date,
+        ONSClean.contemporary_cssr,
+        ONSClean.contemporary_sub_icb,
+        ONSClean.contemporary_ccg,
+        ONSClean.current_cssr,
+        ONSClean.current_sub_icb,
+        ONSClean.current_ccg,
+    ]
+
+    # Window spec to count occurrences of each unique combination per truncated postcode
+    group_window = Window.partitionBy(CQCLClean.postcode_truncated, *combo_cols)
+
+    # Count how many times each combination appears within each truncated postcode (keep first instance)
+    df = df.withColumn(count_col, F.count("*").over(group_window))
+
+    rank_window = Window.partitionBy(CQCLClean.postcode_truncated).orderBy(
+        F.desc(count_col), *combo_cols
+    )
+    df = df.withColumn(rank_col, F.row_number().over(rank_window))
+
+    # Filter to keep only the most common combination per postcode_truncated
+    df = df.filter(F.col(rank_col) == 1).drop(
+        rank_col, count_col, CQCLClean.postcode_cleaned
+    )
+
+    return df
