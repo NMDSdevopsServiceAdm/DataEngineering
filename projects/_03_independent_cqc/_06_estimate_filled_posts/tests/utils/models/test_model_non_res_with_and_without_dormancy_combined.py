@@ -2,15 +2,21 @@ import unittest
 from unittest.mock import patch, Mock
 
 from utils import utils
-import utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined as job
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
 )
-from tests.test_file_data import ModelNonResWithAndWithoutDormancyCombinedRows as Data
-from tests.test_file_schemas import (
+
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelNonResWithAndWithoutDormancyCombinedRows as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ModelNonResWithAndWithoutDormancyCombinedSchemas as Schemas,
 )
+
+
+PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined"
 
 
 class ModelNonResWithAndWithoutDormancyCombinedTests(unittest.TestCase):
@@ -26,18 +32,10 @@ class MainTests(ModelNonResWithAndWithoutDormancyCombinedTests):
             Data.estimated_posts_rows, Schemas.estimated_posts_schema
         )
 
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.set_min_value"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.utils.select_rows_with_value"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.insert_predictions_into_pipeline"
-    )
-    @patch(
-        "utils.estimate_filled_posts.models.non_res_with_and_without_dormancy_combined.get_selected_value"
-    )
+    @patch(f"{PATCH_PATH}.set_min_value")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.insert_predictions_into_pipeline")
+    @patch(f"{PATCH_PATH}.get_selected_value")
     def test_models_runs(
         self,
         get_selected_value_mock: Mock,

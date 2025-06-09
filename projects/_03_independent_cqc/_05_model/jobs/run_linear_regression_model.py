@@ -3,7 +3,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCqc,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models import utils as mUtils
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
+    utils as mUtils,
+)
 from utils import utils
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]

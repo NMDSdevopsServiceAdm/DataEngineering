@@ -1,7 +1,7 @@
 from pyspark.sql import DataFrame, functions as F
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.estimate_filled_posts.models.extrapolation import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapolation import (
     define_window_specs,
     calculate_first_and_final_submission_dates,
 )

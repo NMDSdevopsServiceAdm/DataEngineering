@@ -1,16 +1,23 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 import warnings
-
 from pyspark.sql import Window, WindowSpec
 
-import utils.estimate_filled_posts.models.interpolation as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from tests.test_file_data import ModelInterpolation as Data
-from tests.test_file_schemas import ModelInterpolation as Schemas
 
-PATCH_PATH: str = "utils.estimate_filled_posts.models.interpolation"
+import projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    ModelInterpolation as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    ModelInterpolation as Schemas,
+)
+
+
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation"
+)
 
 
 class ModelInterpolationTests(unittest.TestCase):

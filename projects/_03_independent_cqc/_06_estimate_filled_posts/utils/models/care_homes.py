@@ -3,11 +3,13 @@ from pyspark.sql import DataFrame
 
 from utils.cleaning_utils import calculate_filled_posts_from_beds_and_ratio
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.estimate_filled_posts.models.utils import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
-from utils.estimate_filled_posts.ml_model_metrics import save_model_metrics
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.ml_model_metrics import (
+    save_model_metrics,
+)
 
 
 def model_care_homes(
