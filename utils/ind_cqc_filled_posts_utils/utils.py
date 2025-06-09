@@ -1,7 +1,14 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceTypeSecondLevel,
+)
 
 
 def add_source_description_to_source_column(
@@ -219,5 +226,80 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
     """
+
+    df = df.withColumn(
+        IndCQC.primary_service_type_second_level,
+        F.when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Shared Lives",
+            ),
+            PrimaryServiceTypeSecondLevel.shared_lives,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Care home service with nursing",
+            ),
+            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Care home service without nursing",
+            ),
+            PrimaryServiceTypeSecondLevel.care_home_only,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Domiciliary care service",
+            ),
+            PrimaryServiceTypeSecondLevel.non_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Community health care services - Nurses Agency only",
+            ),
+            PrimaryServiceTypeSecondLevel.non_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Supported living service",
+            ),
+            PrimaryServiceTypeSecondLevel.non_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Extra Care housing services",
+            ),
+            PrimaryServiceTypeSecondLevel.non_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Residential substance misuse treatment and/or rehabilitation service",
+            ),
+            PrimaryServiceTypeSecondLevel.other_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Hospice services",
+            ),
+            PrimaryServiceTypeSecondLevel.other_residential,
+        )
+        .when(
+            F.array_contains(
+                df[IndCQC.imputed_gac_service_types][CQCL.description],
+                "Acute services with overnight beds",
+            ),
+            PrimaryServiceTypeSecondLevel.other_residential,
+        )
+        .otherwise(PrimaryServiceTypeSecondLevel.other_non_residential),
+    )
 
     return df
