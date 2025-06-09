@@ -284,6 +284,7 @@ class IndCqcColumns:
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_since_dormant: str = CQCLClean.time_since_dormant
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
