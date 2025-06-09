@@ -52,27 +52,49 @@ def run_postcode_matching(
     )
 
     # Step 1 - Match postcodes where there is an exact match at that point in time.
-    original_matched_df, original_unmatched_df = join_postcode_data(
+    matched_locations_df, unmatched_locations_df = join_postcode_data(
         locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
 
     # Step 2 - Reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
-    reassigned_df = get_first_successful_postcode_match(
-        original_unmatched_df, original_matched_df
+    reassigned_locations_df = get_first_successful_postcode_match(
+        unmatched_locations_df, matched_locations_df
     )
-    reassigned_matched_df, reassigned_unmatched_df = join_postcode_data(
-        reassigned_df, postcode_df, CQCLClean.postcode_cleaned
+    (
+        matched_reassigned_locations_df,
+        unmatched_reassigned_locations_df,
+    ) = join_postcode_data(
+        reassigned_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
 
     # TODO - Step 3 - Replace known postcode issues using the invalid postcode dictionary.
 
     # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
+    truncated_postcode_df = create_truncated_postcode_df(postcode_df)
+    truncated_locations_df = truncate_postcode(unmatched_reassigned_locations_df)
+
+    (
+        matched_truncated_locations_df,
+        unmatched_truncated_locations_df,
+    ) = join_postcode_data(
+        truncated_locations_df, truncated_postcode_df, CQCLClean.postcode_truncated
+    )
 
     # TODO - Step 5 - Raise an error to manually investigate any unmatched postcodes.
 
     # TODO - continue to add to this DataFrame as more matching steps are implemented.
     # Step 6 - Create a final DataFrame with all matched postcodes.
-    final_matched_df = original_matched_df.unionByName(reassigned_matched_df)
+    final_matched_df = matched_locations_df.unionByName(
+        matched_reassigned_locations_df
+    ).unionByName(matched_truncated_locations_df)
+
+    unmatched = unmatched_truncated_locations_df.filter(
+        F.col(CQCL.postal_code).isNull()
+    )
+    if not unmatched.rdd.isEmpty():
+        rows = unmatched.select(CQCL.location_id, CQCL.postal_code).distinct().collect()
+        errors = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
+        print(f"Unmatched postcodes found: {errors}")
 
     return final_matched_df
 
