@@ -234,7 +234,7 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
     array_column = F.col(IndCQC.imputed_gac_service_types)
 
     calculation = F.lit(PrimaryServiceTypeSecondLevel.other_non_residential)
-    for description, primary_service_type_second_level in lookup_dict.items():
+    for description, primary_service_type_second_level in reversed(lookup_dict.items()):
         calculation = F.when(
             F.exists(array_column, lambda x: x[CQCL.description] == description),
             primary_service_type_second_level,
