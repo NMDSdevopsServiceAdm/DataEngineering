@@ -34,6 +34,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.add_squared_column")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.vectorise_dataframe")
     @patch(f"{PATCH_PATH}.add_date_index_column")
@@ -56,6 +57,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         add_date_index_column_mock: Mock,
         vectorise_dataframe_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
+        add_squared_column_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.test_df
@@ -94,6 +96,7 @@ class NonResLocationsFeatureEngineeringTests(unittest.TestCase):
         self.assertEqual(add_date_index_column_mock.call_count, 2)
         self.assertEqual(vectorise_dataframe_mock.call_count, 2)
         select_rows_with_non_null_value_mock.assert_called_once()
+        add_squared_column_mock.assert_called_once()
         write_to_parquet_mock.assert_has_calls(write_to_parquet_calls)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
