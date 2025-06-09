@@ -2770,49 +2770,49 @@ class NullFilledPostsUsingInvalidMissingDataCodeData:
 class NullGroupedProvidersData:
     # fmt: off
     null_grouped_providers_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None,  None, 4, None, AscwdsFilteringRule.missing_data),
-        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, None, 4, None, AscwdsFilteringRule.missing_data),
-        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated),
-        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, None, 4, None, AscwdsFilteringRule.missing_data),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 13.0, 4, 3.25, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", None, None,  None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 3", "prov 1", date(2024, 1, 1), "Y", None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
+        ("loc 1", "prov 1", date(2024, 1, 8), "Y", "estab 1", 12.0, 12.0, 4, 3.0, AscwdsFilteringRule.populated, 1.0),
+        ("loc 2", "prov 1", date(2024, 1, 8), "Y", None, None, None, 4, None, AscwdsFilteringRule.missing_data, 1.0),
     ]
     # fmt: on
 
     # fmt: off
     calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4),
-        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5),
-        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, 12.0),
+        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, None),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 15.0),
     ]
     expected_calculate_data_for_grouped_provider_identification_where_provider_has_one_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 1, 1, 1, 4),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, 1, 1, 0, 4),
-        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, 1, 0, 0, 5),
-        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 1, 1, 1, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0, 11.0, 1, 1, 1, 4, 1, 11.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", None, 4, 12.0, 11.0, 1, 1, 0, 4, 1, 11.0),
+        ("loc 2", "prov 2", date(2024, 1, 1), "Y", None, None, 5, None, None, 1, 0, 0, 5, 0, None),
+        ("loc 3", "prov 3", date(2024, 1, 1), "N", "estab 3", 10.0, None, 15.0, 15.0, 1, 1, 1, None, 1, 15.0),
     ]
     # fmt: on
 
     # fmt: off
     calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3),
-        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5),
-        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6),
-        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None),
-        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None),
-        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 20.0),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 15.0),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 25.0),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 10.0),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, None),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, None),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, None),
     ]
     expected_calculate_data_for_grouped_provider_identification_where_provider_has_multiple_location_rows = [
-        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 2, 2, 2, 7),
-        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 2, 1, 1, 9),
-        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 2, 2, 2, 7),
-        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 2, 1, 1, 9),
-        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 2, 1, 0, 6),
-        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, 2, 1, 0, 6),
-        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
-        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, 2, 0, 0, None),
+        ("loc 1", "prov 1", date(2024, 1, 1), "Y", "estab 1", 13.0, 4, 10.0, 15.0, 2, 2, 2, 7, 2, 35.0),
+        ("loc 1", "prov 1", date(2024, 2, 1), "Y", "estab 1", 13.0, 4, 20.0, 15.0, 2, 1, 1, 9, 2, 35.0),
+        ("loc 2", "prov 1", date(2024, 1, 1), "Y", "estab 2", 14.0, 3, 15.0, 20.0, 2, 2, 2, 7, 2, 35.0),
+        ("loc 2", "prov 1", date(2024, 2, 1), "Y", None, None, 5, 25.0, 20.0, 2, 1, 1, 9, 2, 35.0),
+        ("loc 3", "prov 2", date(2024, 1, 1), "Y", None, None, 6, 10.0, 10.0, 2, 1, 0, 6, 1, 10.0),
+        ("loc 4", "prov 2", date(2024, 1, 1), "N", "estab 3", None, None, None, None, 2, 1, 0, 6, 1, 10.0),
+        ("loc 5", "prov 3", date(2024, 1, 1), "N", None, None, None, None, None, 2, 0, 0, None, 0, None),
+        ("loc 6", "prov 3", date(2024, 1, 1), "N", None, None, None, None, None, 2, 0, 0, None, 0, None),
     ]
     # fmt: on
 
@@ -2852,7 +2852,27 @@ class NullGroupedProvidersData:
         ("1-001", CareHome.not_care_home, 25.0, 25.0, None, 2, None, True, AscwdsFilteringRule.populated),  # non res location
         ("1-002", CareHome.care_home, 25.0, 25.0, 2, 3, 12.5, False, AscwdsFilteringRule.populated),  # not identified as potential grouped provider
         ("1-003", CareHome.care_home, 24.0, 24.0, 2, 2, 12.0, True, AscwdsFilteringRule.populated),  # below minimum size
-        ("1-004", CareHome.care_home, 25.0, 25.0, 20, 22, 1.25, True, AscwdsFilteringRule.populated),  # below location and provider threshold
+        ("1-004", CareHome.care_home, 25.0, 25.0, 20, 22, 1.25, True, AscwdsFilteringRule.populated), # below location and provider threshold
+    ]
+    # fmt: on
+
+    # fmt: off
+    null_non_res_grouped_providers_when_meets_criteria_rows = [
+        ("1-001", CareHome.not_care_home, True, 50.0, 50.0, 10.0, 2, 25.0, AscwdsFilteringRule.populated),
+        ("1-002", CareHome.not_care_home, True, None, None, 15.0, 2, 25.0, None),
+    ]
+    expected_null_non_res_grouped_providers_when_meets_criteria_rows = [
+        ("1-001", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.non_res_location_was_grouped_provider),
+        ("1-002", CareHome.not_care_home, True, None, None, 15.0, 2, 25.0, None),
+    ]
+    null_non_res_grouped_providers_when_does_not_meet_criteria_rows = [
+        ("1-001", CareHome.care_home, True, 50.0, 50.0, 10.0, 2, 25.0, AscwdsFilteringRule.populated),  # care home location
+        ("1-002", CareHome.not_care_home, False, 50.0, 50.0, 10.0, 2, 25.0, AscwdsFilteringRule.populated),  # not identified as potential grouped provider
+        ("1-003", CareHome.not_care_home, True, 49.0, 49.0, 10.0, 2, 25.0, AscwdsFilteringRule.populated),  # below minimum size
+        ("1-004", CareHome.not_care_home, True, 50.0, 50.0, None, 2, 25.0, AscwdsFilteringRule.populated),  # no PIR data for location
+        ("1-005", CareHome.not_care_home, True, 50.0, 50.0, 40.0, 2, 45.0, AscwdsFilteringRule.populated),  # below location threshold and provider sum
+        ("1-006", CareHome.not_care_home, True, 50.0, 50.0, 40.0, 1, 40.0, AscwdsFilteringRule.populated),  # below location threshold and provider count
+        ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ]
     # fmt: on
 

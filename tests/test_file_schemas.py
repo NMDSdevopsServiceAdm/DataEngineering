@@ -1562,6 +1562,7 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, DoubleType(), True),
         ]
     )
 
@@ -1574,11 +1575,13 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.pir_people_directly_employed_dedup, DoubleType(), True),
         ]
     )
     expected_calculate_data_for_grouped_provider_identification_schema = StructType(
         [
             *calculate_data_for_grouped_provider_identification_schema,
+            StructField(NGPcol.location_pir_average, DoubleType(), True),
             StructField(NGPcol.count_of_cqc_locations_in_provider, IntegerType(), True),
             StructField(
                 NGPcol.count_of_awcwds_locations_in_provider, IntegerType(), True
@@ -1589,6 +1592,8 @@ class NullGroupedProvidersSchema:
                 True,
             ),
             StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
+            StructField(NGPcol.provider_pir_count, IntegerType(), True),
+            StructField(NGPcol.provider_pir_sum, DoubleType(), True),
         ]
     )
 
@@ -1627,6 +1632,20 @@ class NullGroupedProvidersSchema:
             StructField(NGPcol.number_of_beds_at_provider, IntegerType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
             StructField(NGPcol.potential_grouped_provider, BooleanType(), True),
+            StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
+        ]
+    )
+
+    null_non_res_grouped_providers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.care_home, StringType(), True),
+            StructField(NGPcol.potential_grouped_provider, BooleanType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup, DoubleType(), True),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(NGPcol.location_pir_average, DoubleType(), True),
+            StructField(NGPcol.provider_pir_count, IntegerType(), True),
+            StructField(NGPcol.provider_pir_sum, DoubleType(), True),
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
