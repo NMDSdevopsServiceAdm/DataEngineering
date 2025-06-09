@@ -20,6 +20,7 @@ from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
     RelatedLocation,
@@ -1098,6 +1099,308 @@ class IndCQCDataUtils:
         ("loc 1", 1, 1.0, 100.0, 50.0),
         ("loc 1", 2, 2.0, 50.0, 50.0),
         ("loc 1", 3, None, 25.0, 50.0),
+    ]
+
+    allocate_primary_service_type_second_level_rows = [
+        (
+            "1-001",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+        ),
+        (
+            "1-002",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+            ],
+        ),
+        (
+            "1-003",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            "1-004",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+            ],
+        ),
+        (
+            "1-005",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Community health care services - Nurses Agency only",
+                },
+            ],
+        ),
+        (
+            "1-006",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Supported living service",
+                },
+            ],
+        ),
+        (
+            "1-007",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Extra Care housing services",
+                },
+            ],
+        ),
+        (
+            "1-008",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+            ],
+        ),
+        (
+            "1-009",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Hospice services",
+                },
+            ],
+        ),
+        (
+            "1-010",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Acute services with overnight beds",
+                },
+            ],
+        ),
+        (
+            "1-011",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Rehabilitation services",
+                },
+            ],
+        ),
+    ]
+    expected_allocate_primary_service_type_second_level_rows = [
+        (
+            "1-001",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.shared_lives,
+        ),
+        (
+            "1-002",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+        ),
+        (
+            "1-003",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.care_home_only,
+        ),
+        (
+            "1-004",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-005",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Community health care services - Nurses Agency only",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-006",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Supported living service",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-007",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Extra Care housing services",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-008",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_residential,
+        ),
+        (
+            "1-009",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Hospice services",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_residential,
+        ),
+        (
+            "1-010",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Acute services with overnight beds",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_residential,
+        ),
+        (
+            "1-011",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_non_residential,
+        ),
     ]
 
 
