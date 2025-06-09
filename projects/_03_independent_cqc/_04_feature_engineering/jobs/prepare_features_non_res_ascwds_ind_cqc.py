@@ -111,20 +111,13 @@ def main(
 
     without_dormancy_features_df = add_date_index_column(without_dormancy_features_df)
 
-    without_dormancy_features_df = cap_integer_at_max_value(
-        without_dormancy_features_df,
-        IndCQC.time_registered,
-        max_value=48,
-        new_col_name=IndCQC.time_registered_capped_at_four_years,
-    )
-
     without_dormancy_feature_list: List[str] = sorted(
         [
             IndCQC.activity_count_capped,
             IndCQC.cqc_location_import_date_indexed,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_four_years,
+            IndCQC.time_registered,
         ]
         + related_location
         + service_list
@@ -154,13 +147,6 @@ def main(
         with_dormancy_features_df, IndCQC.cqc_location_import_date_indexed
     )
 
-    with_dormancy_features_df = cap_integer_at_max_value(
-        with_dormancy_features_df,
-        IndCQC.time_registered,
-        max_value=120,
-        new_col_name=IndCQC.time_registered_capped_at_ten_years,
-    )
-
     """ Features cannot be null, and in order to help the model learn that locations which are not dormant
     are larger than those which are, we have entered a large value (999) for locations who have either never
     been dormant, or before they first become dormant."""
@@ -175,7 +161,7 @@ def main(
             IndCQC.cqc_location_import_date_indexed_squared,
             IndCQC.posts_rolling_average_model,
             IndCQC.service_count_capped,
-            IndCQC.time_registered_capped_at_ten_years,
+            IndCQC.time_registered,
             IndCQC.time_since_dormant,
         ]
         + related_location
