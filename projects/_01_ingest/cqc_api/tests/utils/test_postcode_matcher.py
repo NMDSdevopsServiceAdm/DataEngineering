@@ -34,6 +34,7 @@ class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.truncate_postcode")
     @patch(f"{PATCH_PATH}.create_truncated_postcode_df")
     @patch(f"{PATCH_PATH}.get_first_successful_postcode_match")
     @patch(f"{PATCH_PATH}.join_postcode_data")
@@ -46,6 +47,7 @@ class MainTests(PostcodeMatcherTests):
         join_postcode_data_mock: Mock,
         get_first_successful_postcode_match_mock: Mock,
         create_truncated_postcode_df_mock: Mock,
+        truncate_postcode_mock: Mock,
     ):
         join_postcode_data_mock.return_value = self.locations_df, self.locations_df
 
@@ -53,9 +55,10 @@ class MainTests(PostcodeMatcherTests):
 
         self.assertEqual(clean_postcode_column_mock.call_count, 2)
         add_aligned_date_column_mock.assert_called_once()
-        self.assertEqual(join_postcode_data_mock.call_count, 2)
+        self.assertEqual(join_postcode_data_mock.call_count, 3)
         get_first_successful_postcode_match_mock.assert_called_once()
         create_truncated_postcode_df_mock.assert_called_once()
+        truncate_postcode_mock.assert_called_once()
 
 
 class CleanPostcodeColumnTests(PostcodeMatcherTests):
