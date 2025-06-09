@@ -205,3 +205,19 @@ def get_selected_value(
     )
 
     return df
+
+
+def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
+    """
+    Allocates second level the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+
+    primary_service_type_second_level is allocated based on mapping to second level primary service dictionary.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
+    """
+
+    return df

@@ -322,3 +322,8 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
             "Error: The selection parameter 'other' was not found. Please use 'first' or 'last'.",
             "Exception does not contain the correct error message",
         )
+
+
+class AllocatePrimaryServiceTypeSecondLevel(TestIndCqcFilledPostUtils):
+    def setUp(self):
+        super().setUp()
