@@ -42,6 +42,7 @@ ind_cqc_columns = [
     IndCQC.imputed_registration_date,
     IndCQC.related_location,
     IndCQC.time_registered,
+    IndCQC.time_since_dormant,
     IndCQC.registered_manager_names,
     IndCQC.ct_import_date,
     IndCQC.ct_care_workers_employed,

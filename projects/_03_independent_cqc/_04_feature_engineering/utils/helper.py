@@ -83,7 +83,7 @@ def add_array_column_count(
         col_to_check(str): The name of the array column.
 
     Returns:
-        DataFrame: A dataframe with an extra column with the count of items in hte specified array.
+        DataFrame: A dataframe with an extra column with the count of items in the specified array.
     """
     return df.withColumn(
         new_col_name, F.greatest(F.size(F.col(col_to_check)), F.lit(0))
@@ -182,3 +182,17 @@ def filter_without_dormancy_features_to_pre_2025(df: DataFrame) -> DataFrame:
         DataFrame: Filtered DataFrame.
     """
     return df.filter(F.col(IndCQC.cqc_location_import_date) <= date(2025, 1, 1))
+
+
+def add_squared_column(df: DataFrame, col_to_square: str) -> DataFrame:
+    """
+    Squares the values in a specified column and returns a new DataFrame with the squared values.
+
+    Args:
+        df (DataFrame): A dataframe with a column to be squared.
+        col_to_square (str): The name of the column to be squared.
+
+    Returns:
+        DataFrame: A dataframe with an extra column with the squared values.
+    """
+    return df.withColumn(f"{col_to_square}_squared", F.pow(F.col(col_to_square), 2))

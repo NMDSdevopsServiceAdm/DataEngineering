@@ -561,6 +561,7 @@ class AscwdsFilteringRule(ColumnValues):
     care_home_location_was_grouped_provider: str = (
         "care_home_location_was_grouped_provider"
     )
+    non_res_location_was_grouped_provider: str = "non_res_location_was_grouped_provider"
     winsorized_beds_ratio_outlier: str = "winsorized_beds_ratio_outlier"
 
 

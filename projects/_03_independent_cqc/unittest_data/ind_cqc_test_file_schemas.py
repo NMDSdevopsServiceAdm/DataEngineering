@@ -1292,6 +1292,7 @@ class NonResAscwdsFeaturesSchema(object):
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
             StructField(IndCQC.imputed_registration_date, DateType(), False),
             StructField(IndCQC.time_registered, IntegerType(), False),
+            StructField(IndCQC.time_since_dormant, IntegerType(), True),
             StructField(IndCQC.current_region, StringType(), False),
             StructField(IndCQC.dormancy, StringType(), True),
             StructField(IndCQC.services_offered, ArrayType(StringType()), True),
@@ -1552,6 +1553,21 @@ class ModelFeatures:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.cqc_location_import_date, DateType(), False),
+        ]
+    )
+
+    add_squared_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.cqc_location_import_date_indexed, DoubleType(), True),
+        ]
+    )
+    expected_add_squared_column_schema = StructType(
+        [
+            *add_squared_column_schema,
+            StructField(
+                IndCQC.cqc_location_import_date_indexed_squared, DoubleType(), True
+            ),
         ]
     )
 
