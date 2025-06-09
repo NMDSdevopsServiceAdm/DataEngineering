@@ -3,15 +3,14 @@ import warnings
 
 from pyspark.sql import Window
 
-from tests.test_file_data import IndCQCDataUtils as Data
-from tests.test_file_schemas import IndCQCDataUtils as Schemas
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
 import utils.ind_cqc_filled_posts_utils.utils as job
+from tests.test_file_data import IndCQCDataUtils as Data
+from tests.test_file_schemas import IndCQCDataUtils as Schemas
 
 
 class TestIndCqcFilledPostUtils(unittest.TestCase):
@@ -327,3 +326,35 @@ class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
 class AllocatePrimaryServiceTypeSecondLevel(TestIndCqcFilledPostUtils):
     def setUp(self):
         super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.allocate_primary_service_type_second_level_rows,
+            Schemas.allocate_primary_service_type_second_level_schema,
+        )
+        self.returned_df = job.allocate_primary_service_type_second_level(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_allocate_primary_service_type_second_level_rows,
+            Schemas.expected_allocate_primary_service_type_second_level_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in test_df.columns
+        ]
+
+    def test_allocate_primary_service_type_second_level_adds_1_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(
+            self.new_columns_added[0], IndCQC.primary_service_type_second_level
+        )
+
+    def test_allocate_primary_service_type_second_level_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
+        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_data, expected_data)
