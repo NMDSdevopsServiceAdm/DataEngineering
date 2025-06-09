@@ -107,6 +107,9 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
+    cqc_location_import_date_indexed_squared: str = (
+        cqc_location_import_date_indexed + "_squared"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_import_date: str = CTNRClean.capacity_tracker_import_date
@@ -190,11 +193,6 @@ class IndCqcColumns:
     last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
-    locations_at_provider_count: str = "locations_at_provider_count"
-    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
-    locations_in_ascwds_with_data_at_provider_count: str = (
-        "locations_in_ascwds_with_data_at_provider_count"
-    )
     lower_percentile: str = "lower_percentile"
     main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
@@ -214,7 +212,6 @@ class IndCqcColumns:
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
     number_of_beds: str = CQCLClean.number_of_beds
-    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"
     organisation_id: str = AWPClean.organisation_id
@@ -244,7 +241,6 @@ class IndCqcColumns:
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
-    potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_within_10_posts: str = "prediction_within_10_posts"
     prediction_within_25_posts: str = "prediction_within_25_posts"
@@ -291,6 +287,7 @@ class IndCqcColumns:
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
     time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_since_dormant: str = CQCLClean.time_since_dormant
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
@@ -329,3 +326,19 @@ class NonResWithAndWithoutDormancyCombinedColumns:
     )
     residual_at_overlap: str = "residual_at_overlap"
     time_registered_banded_and_capped: str = "time_registered_banded_and_capped"
+
+
+@dataclass
+class NullGroupedProviderColumns:
+    """The names of the temporary columns created during the null grouped providers process."""
+
+    count_of_awcwds_locations_in_provider: str = "count_of_awcwds_locations_in_provider"
+    count_of_awcwds_locations_with_data_in_provider: str = (
+        "count_of_awcwds_locations_with_data_in_provider"
+    )
+    count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
+    location_pir_average: str = "location_pir_average"
+    number_of_beds_at_provider: str = "number_of_beds_at_provider"
+    potential_grouped_provider: str = "potential_grouped_provider"
+    provider_pir_count: str = "provider_pir_count"
+    provider_pir_sum: str = "provider_pir_sum"

@@ -85,6 +85,7 @@ def run_postcode_matching(
     # Step 5 - Raise an error to manually investigate any unmatched postcodes.
     raise_error_if_unmatched(final_matched_df, postcode_df.columns[1])
 
+    # TODO - continue to add to this DataFrame as more matching steps are implemented.
     # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = (
         original_matched_df.unionByName(reassigned_matched_df).unionByName(
