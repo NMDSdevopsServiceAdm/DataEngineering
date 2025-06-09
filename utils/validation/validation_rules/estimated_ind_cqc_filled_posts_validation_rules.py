@@ -21,6 +21,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
             IndCqcColumns.cqc_location_import_date,
             IndCqcColumns.care_home,
             IndCqcColumns.primary_service_type,
+            IndCqcColumns.primary_service_type_second_level,
             IndCqcColumns.current_ons_import_date,
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
@@ -64,6 +65,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
         RuleName.categorical_values_in_columns: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.categorical_values,
+            IndCqcColumns.primary_service_type_second_level: CatValues.primary_service_type_second_level_column_values,
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.categorical_values,
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.categorical_values,
@@ -72,6 +74,7 @@ class EstimatedIndCqcFilledPostsValidationRules:
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
             IndCqcColumns.primary_service_type: CatValues.primary_service_type_column_values.count_of_categorical_values,
+            IndCqcColumns.primary_service_type_second_level: CatValues.primary_service_type_second_level_column_values,
             IndCqcColumns.current_cssr: CatValues.current_cssr_column_values.count_of_categorical_values,
             IndCqcColumns.current_region: CatValues.current_region_column_values.count_of_categorical_values,
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
