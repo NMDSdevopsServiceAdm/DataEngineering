@@ -1,7 +1,7 @@
 import unittest
 import warnings
 
-from pyspark.sql import functions as F
+from pyspark.sql import Window, functions as F
 
 from projects.utils.utils import utils
 from projects.utils.unittest_data import utils_test_file_data as Data
@@ -17,104 +17,243 @@ class UtilsTests(unittest.TestCase):
         warnings.simplefilter("ignore", ResourceWarning)
 
 
-class CalculateTests(UtilsTests):
+class CalculateNewColumnTests(UtilsTests):
     def setUp(self) -> None:
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.calculate_rows, Schemas.calculate_schema
+            Data.calculate_new_column_rows, Schemas.calculate_new_column_schema
         )
-        self.new_col: str = "new_column"
-        self.col_1: str = "column_1"
-        self.col_2: str = "column_2"
 
-    def test_calculate_plus(self):
+    def test_calculate_new_column_plus(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "plus", self.col_2
+            self.test_df, Schemas.new_column, Schemas.column_1, "plus", Schemas.column_2
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_plus_rows, Schemas.expected_calculate_schema
+            Data.expected_calculate_new_column_plus_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_minus(self):
+    def test_calculate_new_column_minus(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "minus", self.col_2
+            self.test_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "minus",
+            Schemas.column_2,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_minus_rows, Schemas.expected_calculate_schema
+            Data.expected_calculate_new_column_minus_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_multiplication(self):
+    def test_calculate_new_column_multiplication(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "multiplied by", self.col_2
+            self.test_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "multiplied by",
+            Schemas.column_2,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_multipy_rows, Schemas.expected_calculate_schema
+            Data.expected_calculate_new_column_multipy_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_division(self):
+    def test_calculate_new_column_division(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "divided by", self.col_2
+            self.test_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "divided by",
+            Schemas.column_2,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_divide_rows, Schemas.expected_calculate_schema
+            Data.expected_calculate_new_column_divide_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_average(self):
+    def test_calculate_new_column_average(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "average", self.col_2
+            self.test_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "average",
+            Schemas.column_2,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_average_rows, Schemas.expected_calculate_schema
+            Data.expected_calculate_new_column_average_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_absolute_difference(self):
+    def test_calculate_new_column_absolute_difference(self):
         returned_df = utils.calculate_new_column(
-            self.test_df, self.new_col, self.col_1, "absolute difference", self.col_2
+            self.test_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "absolute difference",
+            Schemas.column_2,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_absolute_difference_rows,
-            Schemas.expected_calculate_schema,
+            Data.expected_calculate_new_column_absolute_difference_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
-    def test_calculate_with_invalid_method(self):
+    def test_calculate_new_column_with_invalid_method(self):
         with self.assertRaises(ValueError) as context:
             utils.calculate_new_column(
-                self.test_df, self.new_col, self.col_1, "other method", self.col_2
+                self.test_df,
+                Schemas.new_column,
+                Schemas.column_1,
+                "other method",
+                Schemas.column_2,
             )
         self.assertTrue("Invalid method: other method" in str(context.exception))
 
-    def test_calculate_with_when_clause(self):
+    def test_calculate_new_column_with_when_clause(self):
         test_with_when_df = self.spark.createDataFrame(
-            Data.calculate_with_when_clause_rows, Schemas.calculate_schema
+            Data.calculate_new_column_with_when_clause_rows,
+            Schemas.calculate_new_column_schema,
         )
 
-        condition = F.col(self.col_1) < 15.0
+        condition = F.col(Schemas.column_1) < 15.0
         returned_df = utils.calculate_new_column(
-            test_with_when_df, self.new_col, self.col_1, "plus", self.col_2, condition
+            test_with_when_df,
+            Schemas.new_column,
+            Schemas.column_1,
+            "plus",
+            Schemas.column_2,
+            condition,
         )
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_with_when_clause_rows,
-            Schemas.expected_calculate_schema,
+            Data.expected_calculate_new_column_with_when_clause_rows,
+            Schemas.expected_calculate_new_column_schema,
         )
         returned_data = returned_df.sort(IndCQC.location_id).collect()
         expected_data = expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
+
+class CalculateWindowedColumnTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_windowed_column_rows,
+            Schemas.calculate_windowed_column_schema,
+        )
+        self.window = Window.partitionBy(IndCQC.care_home).orderBy(
+            IndCQC.cqc_location_import_date
+        )
+
+    def test_calculate_windowed_column_avg(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "avg",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_avg_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_count(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "count",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_count_rows,
+            Schemas.expected_calculate_windowed_column_count_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_max(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "max",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_max_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_min(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "min",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_min_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_sum(self):
+        returned_df = utils.calculate_windowed_column(
+            self.test_df,
+            self.window,
+            Schemas.new_column,
+            IndCQC.ascwds_filled_posts,
+            "sum",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_windowed_column_sum_rows,
+            Schemas.expected_calculate_windowed_column_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_windowed_column_raises_error_with_invalid_method(self):
+        with self.assertRaises(ValueError) as context:
+            utils.calculate_windowed_column(
+                self.test_df,
+                self.window,
+                Schemas.new_column,
+                IndCQC.ascwds_filled_posts,
+                "other",
+            )
+        self.assertTrue(
+            "Error: The aggregation function 'other' was not found. Please use 'avg', 'count', 'max', 'min' or 'sum'."
+            in str(context.exception)
+        )

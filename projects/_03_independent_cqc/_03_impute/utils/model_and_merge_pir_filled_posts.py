@@ -7,8 +7,12 @@ from pyspark.sql.types import IntegerType
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import CareHome
-from utils.estimate_filled_posts.models.utils import insert_predictions_into_pipeline
-from utils.features.helper import vectorise_dataframe
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
+    insert_predictions_into_pipeline,
+)
+from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
+    vectorise_dataframe,
+)
 from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
 
 

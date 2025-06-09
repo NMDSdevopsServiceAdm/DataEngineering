@@ -211,7 +211,7 @@ module "archive_filled_posts_estimates_job" {
 
 module "prepare_features_non_res_ascwds_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
   script_name     = "prepare_features_non_res_ascwds_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -226,7 +226,7 @@ module "prepare_features_non_res_ascwds_ind_cqc_job" {
 
 module "clean_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_02_clean/jobs"
   script_name       = "clean_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -607,7 +607,7 @@ module "validate_merge_coverage_data_job" {
 
 module "validate_cleaned_ind_cqc_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_02_clean/jobs"
   script_name     = "validate_cleaned_ind_cqc_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -639,7 +639,7 @@ module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
 
 module "validate_features_care_home_ind_cqc_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
   script_name     = "validate_features_care_home_ind_cqc_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -655,7 +655,7 @@ module "validate_features_care_home_ind_cqc_data_job" {
 
 module "validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
   script_name     = "validate_features_non_res_ascwds_with_dormancy_ind_cqc_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -672,7 +672,7 @@ module "validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job" {
 
 module "validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
   script_name     = "validate_features_non_res_ascwds_without_dormancy_ind_cqc_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -689,7 +689,7 @@ module "validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job" {
 
 module "validate_estimated_ind_cqc_filled_posts_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
   script_name     = "validate_estimated_ind_cqc_filled_posts_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -706,7 +706,7 @@ module "validate_estimated_ind_cqc_filled_posts_data_job" {
 
 module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/jobs"
   script_name     = "validate_estimated_ind_cqc_filled_posts_by_job_role_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -812,7 +812,7 @@ module "validate_postcode_directory_raw_data_job" {
 
 module "prepare_features_care_home_ind_cqc_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_04_feature_engineering/jobs"
   script_name     = "prepare_features_care_home_ind_cqc.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -843,7 +843,7 @@ module "impute_ind_cqc_ascwds_and_pir_job" {
 
 module "estimate_ind_cqc_filled_posts_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_06_estimate_filled_posts/jobs"
   script_name       = "estimate_ind_cqc_filled_posts.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
@@ -866,7 +866,7 @@ module "estimate_ind_cqc_filled_posts_job" {
 
 module "estimate_ind_cqc_filled_posts_by_job_role_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/jobs"
   script_name       = "estimate_ind_cqc_filled_posts_by_job_role.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
