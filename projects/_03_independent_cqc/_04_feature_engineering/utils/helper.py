@@ -83,7 +83,7 @@ def add_array_column_count(
         col_to_check(str): The name of the array column.
 
     Returns:
-        DataFrame: A dataframe with an extra column with the count of items in hte specified array.
+        DataFrame: A dataframe with an extra column with the count of items in the specified array.
     """
     return df.withColumn(
         new_col_name, F.greatest(F.size(F.col(col_to_check)), F.lit(0))
@@ -193,6 +193,6 @@ def add_squared_column(df: DataFrame, col_to_square: str) -> DataFrame:
         col_to_square (str): The name of the column to be squared.
 
     Returns:
-        DataFrame: A dataframe with an extra column with the count of items in hte specified array.
+        DataFrame: A dataframe with an extra column with the squared values.
     """
     return df.withColumn(f"{col_to_square}_squared", F.pow(F.col(col_to_square), 2))
