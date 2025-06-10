@@ -72,16 +72,10 @@ def run_postcode_matching(
     # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
     truncated_postcode_df = create_truncated_postcode_df(postcode_df)
     print("truncated_postcode_df")
-    truncated_postcode_df.show(20, truncate=False)
     truncated_postcode_df.where(F.col(CQCLClean.postcode_truncated) == "PL71").show(
         20, truncate=False
     )
     truncated_locations_df = truncate_postcode(unmatched_reassigned_locations_df)
-    print("truncated_locations_df")
-    truncated_locations_df.show(20, truncate=False)
-    truncated_locations_df.where(F.col(CQCL.location_id) == "1-414052699").show(
-        20, truncate=False
-    )
 
     (
         matched_truncated_locations_df,
@@ -98,6 +92,7 @@ def run_postcode_matching(
         matched_reassigned_locations_df, allowMissingColumns=True
     ).unionByName(matched_truncated_locations_df, allowMissingColumns=True)
 
+    print("Matched postcodes found.")
     if not matched_truncated_locations_df.rdd.isEmpty():
         rows = (
             matched_truncated_locations_df.select(CQCL.location_id, CQCL.postal_code)
@@ -107,6 +102,7 @@ def run_postcode_matching(
         matches = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
         print(f"Matched postcodes found: {matches}")
 
+    print("Unmatched postcodes found.")
     if not unmatched_truncated_locations_df.rdd.isEmpty():
         rows = (
             unmatched_truncated_locations_df.select(
@@ -277,7 +273,6 @@ def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
     rank_col = "rank"
 
     grouping_cols = [
-        ONSClean.contemporary_ons_import_date,
         ONSClean.contemporary_cssr,
         ONSClean.contemporary_sub_icb,
         ONSClean.contemporary_ccg,
@@ -287,13 +282,18 @@ def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
 
     df = truncate_postcode(df)
 
-    group_window = Window.partitionBy(CQCLClean.postcode_truncated, *grouping_cols)
+    group_window = Window.partitionBy(
+        CQCLClean.postcode_truncated,
+        ONSClean.contemporary_ons_import_date,
+        *grouping_cols,
+    )
 
     df = df.withColumn(count_col, F.count("*").over(group_window))
 
-    rank_window = Window.partitionBy(CQCLClean.postcode_truncated).orderBy(
-        F.desc(count_col), *grouping_cols
-    )
+    rank_window = Window.partitionBy(
+        CQCLClean.postcode_truncated, ONSClean.contemporary_ons_import_date
+    ).orderBy(F.desc(count_col), *grouping_cols)
+
     df = df.withColumn(rank_col, F.row_number().over(rank_window))
 
     df = df.filter(F.col(rank_col) == 1).drop(
