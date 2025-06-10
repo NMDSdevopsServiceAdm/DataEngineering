@@ -104,7 +104,7 @@ class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
 
     def test_max_number_of_days_to_interpolate_between_value(self):
         self.assertEqual(
-            job.NumericalValues.max_number_of_days_to_interpolate_between, 370
+            job.NumericalValues.max_number_of_days_to_interpolate_between, 275
         )
 
 
