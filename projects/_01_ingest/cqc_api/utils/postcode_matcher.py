@@ -52,27 +52,40 @@ def run_postcode_matching(
     )
 
     # Step 1 - Match postcodes where there is an exact match at that point in time.
-    original_matched_df, original_unmatched_df = join_postcode_data(
+    matched_locations_df, unmatched_locations_df = join_postcode_data(
         locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
 
     # Step 2 - Reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
-    reassigned_df = get_first_successful_postcode_match(
-        original_unmatched_df, original_matched_df
+    reassigned_locations_df = get_first_successful_postcode_match(
+        unmatched_locations_df, matched_locations_df
     )
-    reassigned_matched_df, reassigned_unmatched_df = join_postcode_data(
-        reassigned_df, postcode_df, CQCLClean.postcode_cleaned
+    (
+        matched_reassigned_locations_df,
+        unmatched_reassigned_locations_df,
+    ) = join_postcode_data(
+        reassigned_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
 
     # TODO - Step 3 - Replace known postcode issues using the invalid postcode dictionary.
 
-    # TODO - Step 4 - Match the postcode based on the first half of the postcode only (truncated postcode).
+    # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
+    truncated_postcode_df = create_truncated_postcode_df(postcode_df)
+    truncated_locations_df = truncate_postcode(unmatched_reassigned_locations_df)
+    (
+        matched_truncated_locations_df,
+        unmatched_truncated_locations_df,
+    ) = join_postcode_data(
+        truncated_locations_df, truncated_postcode_df, CQCLClean.postcode_truncated
+    )
 
     # TODO - Step 5 - Raise an error to manually investigate any unmatched postcodes.
 
     # TODO - continue to add to this DataFrame as more matching steps are implemented.
     # Step 6 - Create a final DataFrame with all matched postcodes.
-    final_matched_df = original_matched_df.unionByName(reassigned_matched_df)
+    final_matched_df = matched_locations_df.unionByName(
+        matched_reassigned_locations_df, allowMissingColumns=True
+    ).unionByName(matched_truncated_locations_df, allowMissingColumns=True)
 
     return final_matched_df
 
@@ -181,3 +194,71 @@ def get_first_successful_postcode_match(
     ).drop(successfully_matched_postcode)
 
     return reassigned_df
+
+
+def truncate_postcode(df: DataFrame) -> DataFrame:
+    """
+    Creates a new column which has the last 2 characters of the postcode cleaned column removed
+
+    Args:
+        df (DataFrame): A DataFrame containing the full postcode.
+
+    Returns:
+        DataFrame: DataFrame with the truncated postcode added.
+    """
+    return df.withColumn(
+        CQCLClean.postcode_truncated,
+        F.expr(
+            f"substring({CQCLClean.postcode_cleaned}, 1, length({CQCLClean.postcode_cleaned}) - 2)"
+        ),
+    )
+
+
+def create_truncated_postcode_df(df: DataFrame) -> DataFrame:
+    """
+    Generates a DataFrame containing one representative row for each truncated postcode.
+
+    This function performs the following steps:
+    1. Truncates postcodes by removing the final two characters.
+    2. Groups by truncated postcode and a set of geography columns to count frequency.
+    3. Identifies the most common combination for each truncated postcode.
+    4. Filters the DataFrame to keep only the first row for each most common combination.
+
+    Args:
+        df (DataFrame): Input DataFrame containing cleaned postcodes and geography columns.
+
+    Returns:
+        DataFrame: Filtered DataFrame containing one representative row per truncated postcode,
+        with the most frequently occurring combination of geography fields.
+    """
+    count_col = "count"
+    rank_col = "rank"
+
+    grouping_cols = [
+        ONSClean.contemporary_cssr,
+        ONSClean.contemporary_sub_icb,
+        ONSClean.contemporary_ccg,
+        ONSClean.current_cssr,
+        ONSClean.current_sub_icb,
+    ]
+
+    df = truncate_postcode(df)
+
+    group_window = Window.partitionBy(
+        CQCLClean.postcode_truncated,
+        ONSClean.contemporary_ons_import_date,
+        *grouping_cols,
+    )
+
+    df = df.withColumn(count_col, F.count("*").over(group_window))
+
+    rank_window = Window.partitionBy(
+        CQCLClean.postcode_truncated, ONSClean.contemporary_ons_import_date
+    ).orderBy(F.desc(count_col), *grouping_cols)
+
+    df = df.withColumn(rank_col, F.row_number().over(rank_window))
+
+    df = df.filter(F.col(rank_col) == 1).drop(
+        rank_col, count_col, CQCLClean.postcode_cleaned
+    )
+    return df

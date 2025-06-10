@@ -699,6 +699,42 @@ class PostcodeMatcherSchema:
         first_successful_postcode_unmatched_schema
     )
 
+    truncate_postcode_schema = StructType(
+        [
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+        ]
+    )
+    expected_truncate_postcode_schema = StructType(
+        [
+            *truncate_postcode_schema,
+            StructField(CQCLClean.postcode_truncated, StringType(), False),
+        ]
+    )
+
+    create_truncated_postcode_df_schema = StructType(
+        [
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
+            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.contemporary_ccg, StringType(), False),
+            StructField(ONSClean.contemporary_sub_icb, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(ONSClean.current_sub_icb, StringType(), False),
+        ]
+    )
+    expected_create_truncated_postcode_df_schema = StructType(
+        [
+            StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
+            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.contemporary_ccg, StringType(), False),
+            StructField(ONSClean.contemporary_sub_icb, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(ONSClean.current_sub_icb, StringType(), False),
+            StructField(CQCLClean.postcode_truncated, StringType(), False),
+        ]
+    )
+
 
 @dataclass
 class ValidateLocationsAPIRawData:
