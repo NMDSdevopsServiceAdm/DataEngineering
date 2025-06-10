@@ -96,6 +96,17 @@ def run_postcode_matching(
         errors = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
         print(f"Unmatched postcodes found: {errors}")
 
+    print(f"locations_df count: {locations_df.count()}")
+    print(f"final_matched_df count: {final_matched_df.count()}")
+    print("")
+    print(f"unmatched_locations_df count: {unmatched_locations_df.count()}")
+    print(
+        f"unmatched_reassigned_locations_df count: {unmatched_reassigned_locations_df.count()}"
+    )
+    print(
+        f"unmatched_truncated_locations_df count: {unmatched_truncated_locations_df.count()}"
+    )
+
     return final_matched_df
 
 
