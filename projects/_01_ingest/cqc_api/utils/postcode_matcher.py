@@ -95,7 +95,7 @@ def run_postcode_matching(
             .collect()
         )
         matches = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
-        print(f"Unmatched postcodes found: {matches}")
+        print(f"Matched postcodes found: {matches}")
 
     if not unmatched_truncated_locations_df.rdd.isEmpty():
         rows = (
