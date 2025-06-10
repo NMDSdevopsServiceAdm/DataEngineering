@@ -88,13 +88,35 @@ def run_postcode_matching(
         matched_reassigned_locations_df, allowMissingColumns=True
     ).unionByName(matched_truncated_locations_df, allowMissingColumns=True)
 
-    if not unmatched_truncated_locations_df.rdd.isEmpty():
+    if not matched_truncated_locations_df.rdd.isEmpty():
         rows = (
-            unmatched_truncated_locations_df.select(CQCL.location_id, CQCL.postal_code)
+            matched_truncated_locations_df.select(CQCL.location_id, CQCL.postal_code)
             .distinct()
             .collect()
         )
-        errors = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
+        matches = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
+        print(f"Unmatched postcodes found: {matches}")
+
+    if not unmatched_truncated_locations_df.rdd.isEmpty():
+        rows = (
+            unmatched_truncated_locations_df.select(
+                CQCL.location_id,
+                CQCL.postal_code,
+                CQCLClean.postcode_cleaned,
+                CQCLClean.postcode_truncated,
+            )
+            .distinct()
+            .collect()
+        )
+        errors = [
+            (
+                r[CQCL.location_id],
+                r[CQCL.postal_code],
+                r[CQCLClean.postcode_cleaned],
+                r[CQCLClean.postcode_truncated],
+            )
+            for r in rows
+        ]
         print(f"Unmatched postcodes found: {errors}")
 
     return final_matched_df
