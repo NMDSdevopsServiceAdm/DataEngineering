@@ -19,6 +19,7 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.mo
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models import (
     extrapolation as extrapolate,
 )
+from utils.column_values.categorical_column_values import JobGroupLabels
 
 
 PATCH_PATH = (
@@ -1675,3 +1676,45 @@ class CalculateDifferenceBetweenEstimateFilledPostsAndEstimateFilledPostsFromAll
         expected_data = self.expected_df.collect()
 
         self.assertEqual(expected_data, returned_data)
+
+
+class CreateEstimateFilledPostsJobGroupColumns(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.create_estimate_filled_posts_job_group_columns_rows,
+            Schemas.create_estimate_filled_posts_job_group_columns_schema,
+        )
+        self.returned_df = job.create_estimate_filled_posts_job_group_columns(test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_estimate_filled_posts_job_group_columns_rows,
+            Schemas.expected_create_estimate_filled_posts_job_group_columns_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in test_df.columns
+        ]
+
+    def test_create_estimate_filled_posts_job_group_columns_adds_4_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(self.new_columns_added[0], JobGroupLabels.direct_care)
+        self.assertEqual(self.new_columns_added[1], JobGroupLabels.managers)
+        self.assertEqual(
+            self.new_columns_added[2], JobGroupLabels.regulated_professions
+        )
+        self.assertEqual(self.new_columns_added[3], JobGroupLabels.other)
+
+    def test_create_estimate_filled_posts_job_group_columns_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
