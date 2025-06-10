@@ -21,7 +21,7 @@ class CustomValidationRules:
     }
 
     job_role_limit_care_home_with_nursing_advocacy = {
-        CustomTypeArguments.column_condition: f"({IndCQC.primary_service_type} = '{PrimaryServiceType.care_home_with_nursing}' AND {MainJobRoleLabels.advocacy} < {JobRoleLimitsPerPrimaryServiceType.limit_care_home_with_nursing_advocacy}) AND ({IndCQC.primary_service_type} = '{PrimaryServiceType.care_home_only}' AND {MainJobRoleLabels.advocacy} < {JobRoleLimitsPerPrimaryServiceType.limit_care_only_home_advocacy}) AND ({IndCQC.primary_service_type} = '{PrimaryServiceType.non_residential}' AND {MainJobRoleLabels.advocacy} < {JobRoleLimitsPerPrimaryServiceType.limit_non_residential_advocacy})",
-        CustomTypeArguments.constraint_name: "job_role_limit_per_primary_service_advocacy",
+        CustomTypeArguments.column_condition: f"({IndCQC.primary_service_type} = '{PrimaryServiceType.care_home_with_nursing}' AND {MainJobRoleLabels.advocacy} < {JobRoleLimitsPerPrimaryServiceType.limit_care_home_with_nursing_advocacy})",
+        CustomTypeArguments.constraint_name: "job_role_limit_care_home_with_nursing_advocacy",
         CustomTypeArguments.hint: f"The estimated filled posts have exceeded the limit at care homes with nursing for advocacy role",
     }
