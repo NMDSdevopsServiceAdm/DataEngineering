@@ -944,6 +944,34 @@ class PostcodeMatcherData:
         ("1-003", date(2025, 1, 1), "AA13AA"),
     ]
 
+    truncate_postcode_rows = [
+        ("AA11AA", date(2023, 1, 1)),
+        ("AA11AB", date(2023, 1, 1)),
+        ("AB1CD", date(2023, 1, 1)),
+        ("B1CD", date(2023, 1, 1)),
+    ]
+    expected_truncate_postcode_rows = [
+        ("AA11AA", date(2023, 1, 1), "AA11"),
+        ("AA11AB", date(2023, 1, 1), "AA11"),
+        ("AB1CD", date(2023, 1, 1), "AB1"),
+        ("B1CD", date(2023, 1, 1), "B1"),
+    ]
+
+    # fmt: off
+    create_truncated_postcode_df_rows = [
+        ("AB12CD", date(2025, 1, 1), "LA_1", "CCG_1", "ICB_1", "LA_1", "ICB_1"),
+        ("AB12CE", date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2"),
+        ("AB12CF", date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2"),
+        ("AB12CG", date(2025, 1, 1), "LA_3", "CCG_1", "ICB_1", "LA_1", "ICB_1"),
+        ("AB12CG", date(2025, 1, 1), "LA_4", "CCG_1", "ICB_1", "LA_1", "ICB_1"),
+        ("AB13CD", date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3"),
+    ]
+    expected_create_truncated_postcode_df_rows = [
+        (date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
+        (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
+    ]
+    # fmt: on
+
 
 @dataclass
 class ValidateLocationsAPIRawData:
