@@ -71,12 +71,7 @@ def run_postcode_matching(
 
     # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
     truncated_postcode_df = create_truncated_postcode_df(postcode_df)
-    print("truncated_postcode_df")
-    truncated_postcode_df.where(F.col(CQCLClean.postcode_truncated) == "PL71").show(
-        20, truncate=False
-    )
     truncated_locations_df = truncate_postcode(unmatched_reassigned_locations_df)
-
     (
         matched_truncated_locations_df,
         unmatched_truncated_locations_df,
@@ -91,39 +86,6 @@ def run_postcode_matching(
     final_matched_df = matched_locations_df.unionByName(
         matched_reassigned_locations_df, allowMissingColumns=True
     ).unionByName(matched_truncated_locations_df, allowMissingColumns=True)
-
-    print("Matched postcodes found.")
-    if not matched_truncated_locations_df.rdd.isEmpty():
-        rows = (
-            matched_truncated_locations_df.select(CQCL.location_id, CQCL.postal_code)
-            .distinct()
-            .collect()
-        )
-        matches = [(r[CQCL.location_id], r[CQCL.postal_code]) for r in rows]
-        print(f"Matched postcodes found: {matches}")
-
-    print("Unmatched postcodes found.")
-    if not unmatched_truncated_locations_df.rdd.isEmpty():
-        rows = (
-            unmatched_truncated_locations_df.select(
-                CQCL.location_id,
-                CQCL.postal_code,
-                CQCLClean.postcode_cleaned,
-                CQCLClean.postcode_truncated,
-            )
-            .distinct()
-            .collect()
-        )
-        errors = [
-            (
-                r[CQCL.location_id],
-                r[CQCL.postal_code],
-                r[CQCLClean.postcode_cleaned],
-                r[CQCLClean.postcode_truncated],
-            )
-            for r in rows
-        ]
-        print(f"Unmatched postcodes found: {errors}")
 
     return final_matched_df
 
