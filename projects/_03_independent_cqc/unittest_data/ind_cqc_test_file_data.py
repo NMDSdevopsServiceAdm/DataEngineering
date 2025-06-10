@@ -2610,13 +2610,31 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (9.0, 10.0, 1.0),
     ]
 
+    test_job_group_to_job_role_dict = {
+        JobGroupLabels.direct_care: [
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+        ],
+        JobGroupLabels.managers: [
+            MainJobRoleLabels.middle_management,
+            MainJobRoleLabels.senior_management,
+        ],
+        JobGroupLabels.regulated_professions: [
+            MainJobRoleLabels.registered_nurse,
+            MainJobRoleLabels.social_worker,
+        ],
+        JobGroupLabels.other: [
+            MainJobRoleLabels.admin_staff,
+            MainJobRoleLabels.ancillary_staff,
+        ],
+    }
     create_estimate_filled_posts_job_group_columns_rows = [
-        (1, 1, 2, 2, 3, 3, 4, 4),
-        (None, 1, 2, 2, 3, 3, 4, 4),
+        (1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0),
+        (None, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0),
     ]
     expected_create_estimate_filled_posts_job_group_columns_rows = [
-        (1, 1, 2, 2, 3, 3, 4, 4, 2, 4, 6, 8),
-        (None, 1, 2, 2, 3, 3, 4, 4, 1, 4, 6, 8),
+        (1.0, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, 2.0, 4.0, 6.0, 8.0),
+        (None, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, None, 4.0, 6.0, 8.0),
     ]
 
 
