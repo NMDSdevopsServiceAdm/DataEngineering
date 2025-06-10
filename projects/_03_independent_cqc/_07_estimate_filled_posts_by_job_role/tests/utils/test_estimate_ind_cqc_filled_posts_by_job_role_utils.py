@@ -1684,11 +1684,15 @@ class CreateEstimateFilledPostsJobGroupColumns(
     def setUp(self) -> None:
         super().setUp()
 
+        test_job_group_to_job_role_dict = Data.test_job_group_to_job_role_dict
+
         test_df = self.spark.createDataFrame(
             Data.create_estimate_filled_posts_job_group_columns_rows,
             Schemas.create_estimate_filled_posts_job_group_columns_schema,
         )
-        self.returned_df = job.create_estimate_filled_posts_job_group_columns(test_df)
+        self.returned_df = job.create_estimate_filled_posts_job_group_columns(
+            test_df, test_job_group_to_job_role_dict
+        )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_create_estimate_filled_posts_job_group_columns_rows,
             Schemas.expected_create_estimate_filled_posts_job_group_columns_schema,
@@ -1703,7 +1707,7 @@ class CreateEstimateFilledPostsJobGroupColumns(
     def test_create_estimate_filled_posts_job_group_columns_adds_4_expected_column(
         self,
     ):
-        self.assertEqual(len(self.new_columns_added), 1)
+        self.assertEqual(len(self.new_columns_added), 4)
         self.assertEqual(self.new_columns_added[0], JobGroupLabels.direct_care)
         self.assertEqual(self.new_columns_added[1], JobGroupLabels.managers)
         self.assertEqual(
