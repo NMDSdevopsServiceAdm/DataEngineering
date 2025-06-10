@@ -71,7 +71,17 @@ def run_postcode_matching(
 
     # TODO - Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
     truncated_postcode_df = create_truncated_postcode_df(postcode_df)
+    print("truncated_postcode_df")
+    truncated_postcode_df.show(20, truncate=False)
+    truncated_postcode_df.where(F.col(CQCLClean.postcode_truncated) == "PL71").show(
+        20, truncate=False
+    )
     truncated_locations_df = truncate_postcode(unmatched_reassigned_locations_df)
+    print("truncated_locations_df")
+    truncated_locations_df.show(20, truncate=False)
+    truncated_locations_df.where(F.col(CQCL.location_id) == "1-414052699").show(
+        20, truncate=False
+    )
 
     (
         matched_truncated_locations_df,
