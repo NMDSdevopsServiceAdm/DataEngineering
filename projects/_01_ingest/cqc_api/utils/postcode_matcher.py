@@ -85,8 +85,8 @@ def run_postcode_matching(
     # TODO - continue to add to this DataFrame as more matching steps are implemented.
     # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = matched_locations_df.unionByName(
-        matched_reassigned_locations_df
-    ).unionByName(matched_truncated_locations_df)
+        matched_reassigned_locations_df, allowMissingColumns=True
+    ).unionByName(matched_truncated_locations_df, allowMissingColumns=True)
 
     unmatched = unmatched_truncated_locations_df.filter(
         F.col(CQCL.postal_code).isNull()
