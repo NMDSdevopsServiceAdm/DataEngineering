@@ -223,16 +223,17 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    # mapping_dict: Dict[str, str] = InvalidPostcodes.invalid_postcodes_map_v2
+    mapping_dict: Dict[str, str] = InvalidPostcodes.invalid_postcodes_map_v2
 
-    # mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
+    mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 
-    # df = df.withColumn(
-    #     CQCL.postal_code,
-    #     F.coalesce(
-    #         mapping_expr.getItem(F.col(CQCL.postal_code)), F.col(CQCL.postal_code)
-    #     ),
-    # )
+    df = df.withColumn(
+        CQCLClean.postcode_cleaned,
+        F.coalesce(
+            mapping_expr[F.col(CQCLClean.postcode_cleaned)],
+            F.col(CQCLClean.postcode_cleaned),
+        ),
+    )
     return df
 
 
@@ -321,10 +322,13 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     if not unmatched_df.rdd.isEmpty():
         rows = (
             unmatched_df.select(
-                CQCL.location_id, CQCL.name, CQCL.postal_address_line1, CQCL.postal_code
+                CQCL.location_id,
+                CQCL.name,
+                CQCL.postal_address_line1,
+                CQCLClean.postcode_cleaned,
             )
             .distinct()
-            .sort(CQCL.postal_code)
+            .sort(CQCLClean.postcode_cleaned)
             .collect()
         )
         errors = [
@@ -332,7 +336,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
                 r[CQCL.location_id],
                 r[CQCL.name],
                 r[CQCL.postal_address_line1],
-                r[CQCL.postal_code],
+                r[CQCLClean.postcode_cleaned],
             )
             for r in rows
         ]

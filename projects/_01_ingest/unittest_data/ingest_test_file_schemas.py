@@ -705,6 +705,13 @@ class PostcodeMatcherSchema:
         first_successful_postcode_unmatched_schema
     )
 
+    amend_invalid_postcodes_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+        ]
+    )
+
     truncate_postcode_schema = StructType(
         [
             StructField(CQCLClean.postcode_cleaned, StringType(), False),
@@ -743,11 +750,11 @@ class PostcodeMatcherSchema:
 
     raise_error_if_unmatched_schema = StructType(
         [
-            StructField(CQCL.location_id, StringType(), False),
+            StructField(CQCLClean.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
-            StructField(CQCL.name, StringType(), False),
-            StructField(CQCL.postal_address_line1, StringType(), False),
-            StructField(CQCL.postal_code, StringType(), False),
+            StructField(CQCLClean.name, StringType(), False),
+            StructField(CQCLClean.postal_address_line1, StringType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
         ]
     )
 

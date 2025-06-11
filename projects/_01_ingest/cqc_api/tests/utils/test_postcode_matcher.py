@@ -226,6 +226,28 @@ class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
             )
 
 
+class InvalidPostCodesTests(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_amend_invalid_postcodes_returns_expected_values(self):
+        test_df = self.spark.createDataFrame(
+            Data.amend_invalid_postcodes_rows, Schemas.amend_invalid_postcodes_schema
+        )
+
+        returned_df = job.amend_invalid_postcodes(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_amend_invalid_postcodes_rows,
+            Schemas.amend_invalid_postcodes_schema,
+        )
+
+        self.assertEqual(
+            returned_df.sort(CQCLClean.location_id).collect(),
+            expected_df.collect(),
+        )
+
+
 class TruncatePostcodeTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
