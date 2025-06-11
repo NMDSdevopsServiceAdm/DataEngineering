@@ -1,15 +1,21 @@
 import unittest
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.dataframe import DataFrame
-
-import jobs.clean_capacity_tracker_care_home_data as job
-from tests.test_file_data import CapacityTrackerCareHomeData as Data
-from tests.test_file_schemas import CapacityTrackerCareHomeSchema as Schemas
+import projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_care_home_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CapacityTrackerCareHomeData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CapacityTrackerCareHomeSchema as Schemas,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+)
+
+PATCH_PATH: str = (
+    "projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_care_home_data"
 )
 
 
@@ -35,8 +41,8 @@ class MainTests(CapacityTrackerCareHomeTests):
             Schemas.capacity_tracker_care_home_schema,
         )
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(self, read_from_parquet_mock: Mock, write_to_parquet_mock: Mock):
         read_from_parquet_mock.return_value = self.test_df
 
