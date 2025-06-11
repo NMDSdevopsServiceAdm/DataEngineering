@@ -1,5 +1,6 @@
 from pyspark.sql import DataFrame, Window, functions as F
-from typing import Dict, Tuple
+from functools import reduce
+from typing import Dict, List, Tuple
 
 import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
@@ -84,21 +85,23 @@ def run_postcode_matching(
         truncated_locations_df, truncated_postcode_df, CQCLClean.postcode_truncated
     )
 
-    # Step 5 - Raise an error to manually investigate any unmatched postcodes.
+    # Step 5 - Raise an error and abort pipeline to manually investigate any unmatched postcodes.
     raise_error_if_unmatched(unmatched_truncated_locations_df)
 
     # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = combine_matched_dataframes(
-        matched_locations_df,
-        matched_reassigned_locations_df,
-        matched_amended_locations_df,
-        matched_truncated_locations_df,
+        [
+            matched_locations_df,
+            matched_reassigned_locations_df,
+            matched_amended_locations_df,
+            matched_truncated_locations_df,
+        ]
     )
 
     return final_matched_df
 
 
-# this function exists already, called normalise_column_values
+# TODO this function exists already, called normalise_column_values
 # remove the function once this is done.
 def clean_postcode_column(
     df: DataFrame, postcode_col: str, cleaned_col_name: str, drop_col: bool
@@ -336,16 +339,18 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
         raise TypeError(f"Unmatched postcodes found: {errors}")
 
 
-def combine_matched_dataframes(
-    matched_locations_df: DataFrame,
-    matched_reassigned_locations_df: DataFrame,
-    matched_amended_locations_df: DataFrame,
-    matched_truncated_locations_df: DataFrame,
-) -> DataFrame:
-    return (
-        matched_locations_df.unionByName(
-            matched_reassigned_locations_df, allowMissingColumns=True
-        )
-        .unionByName(matched_amended_locations_df, allowMissingColumns=True)
-        .unionByName(matched_truncated_locations_df, allowMissingColumns=True)
+def combine_matched_dataframes(dataframes: List[DataFrame]) -> DataFrame:
+    """
+    Combines a list of DataFrames using unionByName.
+
+    allowMissingColumns is set to True to account for some DataFrames having additional columns.
+
+    Args:
+        dataframes (List[DataFrame]): List of DataFrames to combine.
+
+    Returns:
+        DataFrame: Unified DataFrame with all rows.
+    """
+    return reduce(
+        lambda df1, df2: df1.unionByName(df2, allowMissingColumns=True), dataframes
     )
