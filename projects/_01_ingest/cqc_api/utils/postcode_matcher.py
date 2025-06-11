@@ -101,8 +101,6 @@ def run_postcode_matching(
     return final_matched_df
 
 
-# TODO this function exists already, called normalise_column_values
-# remove the function once this is done.
 def clean_postcode_column(
     df: DataFrame, postcode_col: str, cleaned_col_name: str, drop_col: bool
 ) -> DataFrame:
