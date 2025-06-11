@@ -1,7 +1,17 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
 from typing import List
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceTypeSecondLevel,
+)
+from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
+    CqcServiceToPrimaryServiceTypeSecondLevelLookup,
+)
 
 
 def add_source_description_to_source_column(
@@ -203,5 +213,35 @@ def get_selected_value(
             ignorenulls=True,
         ).over(window_spec),
     )
+
+    return df
+
+
+def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
+    """
+    Allocates second level the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+
+    primary_service_type_second_level is allocated based on mapping to second level primary service dictionary.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
+    """
+
+    lookup_dict = CqcServiceToPrimaryServiceTypeSecondLevelLookup.dict
+    array_column = F.col(IndCQC.imputed_gac_service_types)
+
+    calculation = F.lit(PrimaryServiceTypeSecondLevel.other_non_residential)
+    for description, primary_service_type_second_level in reversed(
+        list(lookup_dict.items())
+    ):
+        calculation = F.when(
+            F.exists(array_column, lambda x: x[CQCL.description] == description),
+            primary_service_type_second_level,
+        ).otherwise(calculation)
+
+    df = df.withColumn(IndCQC.primary_service_type_second_level, calculation)
 
     return df
