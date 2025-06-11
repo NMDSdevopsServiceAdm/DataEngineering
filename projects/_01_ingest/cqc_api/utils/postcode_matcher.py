@@ -88,12 +88,11 @@ def run_postcode_matching(
     raise_error_if_unmatched(unmatched_truncated_locations_df)
 
     # Step 6 - Create a final DataFrame with all matched postcodes.
-    final_matched_df = (
-        matched_locations_df.unionByName(
-            matched_reassigned_locations_df, allowMissingColumns=True
-        )
-        .unionByName(matched_amended_locations_df, allowMissingColumns=True)
-        .unionByName(matched_truncated_locations_df, allowMissingColumns=True)
+    final_matched_df = combine_matched_dataframes(
+        matched_locations_df,
+        matched_reassigned_locations_df,
+        matched_amended_locations_df,
+        matched_truncated_locations_df,
     )
 
     return final_matched_df
@@ -322,6 +321,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
                 CQCL.location_id, CQCL.name, CQCL.postal_address_line1, CQCL.postal_code
             )
             .distinct()
+            .sort(CQCL.postal_code)
             .collect()
         )
         errors = [
@@ -334,3 +334,18 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
             for r in rows
         ]
         raise TypeError(f"Unmatched postcodes found: {errors}")
+
+
+def combine_matched_dataframes(
+    matched_locations_df: DataFrame,
+    matched_reassigned_locations_df: DataFrame,
+    matched_amended_locations_df: DataFrame,
+    matched_truncated_locations_df: DataFrame,
+) -> DataFrame:
+    return (
+        matched_locations_df.unionByName(
+            matched_reassigned_locations_df, allowMissingColumns=True
+        )
+        .unionByName(matched_amended_locations_df, allowMissingColumns=True)
+        .unionByName(matched_truncated_locations_df, allowMissingColumns=True)
+    )
