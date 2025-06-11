@@ -41,7 +41,6 @@ class OnsCleanedColumns(ONScol):
     current_lsoa21: str = "current_" + ONScol.lower_super_output_area_2021
     current_msoa21: str = "current_" + ONScol.middle_super_output_area_2021
     current_constituency: str = "current_" + ONScol.parliamentary_constituency
-    postcode_truncated: str = ONScol.postcode + "_truncated"
 
 
 contemporary_geography_columns: list = [
