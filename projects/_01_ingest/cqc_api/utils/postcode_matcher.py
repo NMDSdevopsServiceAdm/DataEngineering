@@ -221,16 +221,16 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = InvalidPostcodes.invalid_postcodes_map_v2
+    # mapping_dict: Dict[str, str] = InvalidPostcodes.invalid_postcodes_map_v2
 
-    mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
+    # mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 
-    df = df.withColumn(
-        CQCL.postal_code,
-        F.coalesce(
-            mapping_expr.getItem(F.col(CQCL.postal_code)), F.col(CQCL.postal_code)
-        ),
-    )
+    # df = df.withColumn(
+    #     CQCL.postal_code,
+    #     F.coalesce(
+    #         mapping_expr.getItem(F.col(CQCL.postal_code)), F.col(CQCL.postal_code)
+    #     ),
+    # )
     return df
 
 
