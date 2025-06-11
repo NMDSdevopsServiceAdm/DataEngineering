@@ -3,10 +3,10 @@ from unittest.mock import ANY, Mock, patch
 
 import projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_non_res_data as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    CapacityTrackerNonResData as Data,
+    CleanCapacityTrackerNonResData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
-    CapacityTrackerNonResSchema as Schemas,
+    CleanCapacityTrackerNonResSchema as Schemas,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys

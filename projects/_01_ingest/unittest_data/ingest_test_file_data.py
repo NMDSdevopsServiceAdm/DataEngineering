@@ -393,7 +393,7 @@ class ASCWDSWorkerData:
 
 
 @dataclass
-class CapacityTrackerCareHomeData:
+class IngestCapacityTrackerCareHomeData:
     sample_rows = [
         (
             "Barnsley Metropolitan Borough Council",
@@ -500,7 +500,7 @@ class CapacityTrackerCareHomeData:
 
 
 @dataclass
-class CapacityTrackerNonResData:
+class IngestCapacityTrackerNonResData:
     sample_rows = [
         (
             "Barnsley Metropolitan Borough Council",
@@ -618,7 +618,7 @@ class CapacityTrackerNonResData:
 
 
 @dataclass
-class CapacityTrackerCareHomeData:
+class CleanCapacityTrackerCareHomeData:
     capacity_tracker_care_home_rows = [
         (
             "loc 1",
@@ -665,7 +665,7 @@ class CapacityTrackerCareHomeData:
 
 
 @dataclass
-class CapacityTrackerNonResData:
+class CleanCapacityTrackerNonResData:
     capacity_tracker_non_res_rows = [
         ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
     ]

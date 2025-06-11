@@ -257,7 +257,7 @@ class ASCWDSWorkerSchemas:
 
 
 @dataclass
-class CapacityTrackerCareHomeSchema:
+class IngestCapacityTrackerCareHomeSchema:
     sample_schema = StructType(
         [
             StructField(CTCH.local_authority, StringType(), True),
@@ -296,7 +296,7 @@ class CapacityTrackerCareHomeSchema:
 
 
 @dataclass
-class CapacityTrackerNonResSchema:
+class IngestCapacityTrackerNonResSchema:
     sample_schema = StructType(
         [
             StructField(CTNR.local_authority, StringType(), True),
@@ -345,7 +345,7 @@ class CapacityTrackerNonResSchema:
 
 
 @dataclass
-class CapacityTrackerCareHomeSchema:
+class CleanCapacityTrackerCareHomeSchema:
     capacity_tracker_care_home_schema = StructType(
         [
             StructField(CTCH.cqc_id, StringType(), True),
@@ -397,7 +397,7 @@ class CapacityTrackerCareHomeSchema:
 
 
 @dataclass
-class CapacityTrackerNonResSchema:
+class CleanCapacityTrackerNonResSchema:
     capacity_tracker_non_res_schema = StructType(
         [
             StructField(CTNR.cqc_id, StringType(), True),
