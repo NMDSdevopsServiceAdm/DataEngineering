@@ -12,7 +12,9 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.cqc_location_dictionaries import InvalidPostcodes
+from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
+    ManualPostcodeCorrections,
+)
 
 
 def run_postcode_matching(
@@ -221,7 +223,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = InvalidPostcodes.invalid_postcodes_map_v2
+    mapping_dict: Dict[str, str] = ManualPostcodeCorrections.postcode_corrections_dict
 
     mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 

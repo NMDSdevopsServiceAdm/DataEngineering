@@ -149,9 +149,3 @@ class InvalidPostcodes:
         "YO42 2NP": "YO42 2NH",
         "YO61 3FF": "YO61 3FN",
     }
-
-    invalid_postcodes_map_v2 = {
-        "CH52LY": "CH16HU",  # Welsh postcode, replaced with nearest English postcode
-        "HU17ORH": "HU170RH",  # Replaced letter 'O' with zero '0'
-        "TF73QH": "TF74EH",  # Incorrectly entered and no other postcodes exist starting 'TF7 3'
-    }
