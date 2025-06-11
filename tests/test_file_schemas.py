@@ -532,19 +532,6 @@ class CleaningUtilsSchemas:
         ]
     )
 
-    truncate_postcode_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), False),
-            StructField(CQCLClean.postcode, StringType(), False),
-        ]
-    )
-    expected_truncate_postcode_schema = StructType(
-        [
-            *truncate_postcode_schema,
-            StructField(CQCLClean.postcode_truncated, StringType(), False),
-        ]
-    )
-
 
 @dataclass
 class FilterCleanedValuesSchema:

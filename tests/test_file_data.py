@@ -824,17 +824,6 @@ class CleaningUtilsData:
         ("1-004", CareHome.not_care_home, None, None),
     ]
 
-    truncate_postcode_rows = [
-        ("1-001", "A11AA"),
-        ("1-002", "AA11AA"),
-        ("1-003", "AA112AA"),
-    ]
-    expected_truncate_postcode_rows = [
-        ("1-001", "A11AA", "A11"),
-        ("1-002", "AA11AA", "AA11"),
-        ("1-003", "AA112AA", "AA112"),
-    ]
-
 
 @dataclass
 class LmEngagementUtilsData:
