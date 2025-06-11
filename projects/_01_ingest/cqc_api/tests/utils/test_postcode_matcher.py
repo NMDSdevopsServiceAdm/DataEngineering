@@ -273,6 +273,37 @@ class CreateTruncatedPostcodeDfTests(PostcodeMatcherTests):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
 
+class RaiseErrorIfUnmatched(PostcodeMatcherTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_raise_error_if_unmatched_raises_type_error_when_contains_data(self):
+        unknown_df = self.spark.createDataFrame(
+            Data.raise_error_if_unmatched_rows,
+            Schemas.raise_error_if_unmatched_schema,
+        )
+
+        with self.assertRaises(TypeError) as context:
+            job.raise_error_if_unmatched(unknown_df)
+
+        self.assertTrue(
+            "Unmatched postcodes found: [('1-001', 'name 1', '1 road name', 'AB1 2CD')]",
+            str(context.exception),
+        )
+
+    def test_raise_error_if_unmatched_does_not_raise_error_when_df_is_empty(self):
+        empty_df = self.spark.createDataFrame(
+            [], Schemas.raise_error_if_unmatched_schema
+        )
+
+        try:
+            job.raise_error_if_unmatched(empty_df)
+        except Exception as e:
+            self.fail(
+                f"raise_error_if_unmatched() raised an exception unexpectedly: {e}"
+            )
+
+
 class CombineMatchedDataframesTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()

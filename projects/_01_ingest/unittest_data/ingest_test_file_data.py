@@ -975,6 +975,10 @@ class PostcodeMatcherData:
     ]
     # fmt: on
 
+    raise_error_if_unmatched_rows = [
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AB1 2CD")
+    ]
+
     combine_matched_df1_rows = [
         ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
         ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1"),

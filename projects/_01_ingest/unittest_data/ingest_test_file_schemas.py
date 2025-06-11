@@ -741,6 +741,16 @@ class PostcodeMatcherSchema:
         ]
     )
 
+    raise_error_if_unmatched_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCL.name, StringType(), False),
+            StructField(CQCL.postal_address_line1, StringType(), False),
+            StructField(CQCL.postal_code, StringType(), False),
+        ]
+    )
+
     combine_matched_df1_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), False),
