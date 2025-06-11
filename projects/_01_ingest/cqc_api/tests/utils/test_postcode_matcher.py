@@ -34,8 +34,11 @@ class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    @patch(f"{PATCH_PATH}.combine_matched_dataframes")
+    @patch(f"{PATCH_PATH}.raise_error_if_unmatched")
     @patch(f"{PATCH_PATH}.truncate_postcode")
     @patch(f"{PATCH_PATH}.create_truncated_postcode_df")
+    @patch(f"{PATCH_PATH}.amend_invalid_postcodes")
     @patch(f"{PATCH_PATH}.get_first_successful_postcode_match")
     @patch(f"{PATCH_PATH}.join_postcode_data")
     @patch(f"{PATCH_PATH}.cUtils.add_aligned_date_column")
@@ -46,8 +49,11 @@ class MainTests(PostcodeMatcherTests):
         add_aligned_date_column_mock: Mock,
         join_postcode_data_mock: Mock,
         get_first_successful_postcode_match_mock: Mock,
+        amend_invalid_postcodes_mock: Mock,
         create_truncated_postcode_df_mock: Mock,
         truncate_postcode_mock: Mock,
+        raise_error_if_unmatched_mock: Mock,
+        combine_matched_dataframes_mock: Mock,
     ):
         join_postcode_data_mock.return_value = self.locations_df, self.locations_df
 
@@ -55,10 +61,32 @@ class MainTests(PostcodeMatcherTests):
 
         self.assertEqual(clean_postcode_column_mock.call_count, 2)
         add_aligned_date_column_mock.assert_called_once()
-        self.assertEqual(join_postcode_data_mock.call_count, 3)
+        self.assertEqual(join_postcode_data_mock.call_count, 4)
         get_first_successful_postcode_match_mock.assert_called_once()
+        amend_invalid_postcodes_mock.assert_called_once()
         create_truncated_postcode_df_mock.assert_called_once()
         truncate_postcode_mock.assert_called_once()
+        raise_error_if_unmatched_mock.assert_called_once()
+        combine_matched_dataframes_mock.assert_called_once()
+
+    def test_main_completes_when_all_postcodes_match(self):
+        returned_df = job.run_postcode_matching(self.locations_df, self.postcodes_df)
+
+        self.assertEqual(returned_df.count(), self.locations_df.count())
+
+    def test_main_raises_error_when_some_postcodes_do_not_match(self):
+        locations_df = self.spark.createDataFrame(
+            Data.locations_with_unmatched_postcode_rows,
+            Schemas.locations_schema,
+        )
+
+        with self.assertRaises(TypeError) as context:
+            job.run_postcode_matching(locations_df, self.postcodes_df)
+
+        self.assertTrue(
+            "Unmatched postcodes found: [('1-005', 'name 5', '5 road name', 'AA2 5XX')]",
+            str(context.exception),
+        )
 
 
 class CleanPostcodeColumnTests(PostcodeMatcherTests):

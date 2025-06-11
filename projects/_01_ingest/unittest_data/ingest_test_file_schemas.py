@@ -628,6 +628,8 @@ class PostcodeMatcherSchema:
         [
             StructField(CQCL.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCL.name, StringType(), False),
+            StructField(CQCL.postal_address_line1, StringType(), False),
             StructField(CQCL.postal_code, StringType(), False),
         ]
     )
@@ -635,7 +637,11 @@ class PostcodeMatcherSchema:
         [
             StructField(ONS.postcode, StringType(), False),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
+            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.contemporary_sub_icb, StringType(), True),
+            StructField(ONSClean.contemporary_ccg, StringType(), True),
             StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(ONSClean.current_sub_icb, StringType(), False),
         ]
     )
 
