@@ -975,6 +975,21 @@ class PostcodeMatcherData:
     ]
     # fmt: on
 
+    combine_matched_df1_rows = [
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1"),
+    ]
+    combine_matched_df2_rows = [
+        ("1-002", date(2025, 1, 1), "ZZ11AA", "ZZ11", "CSSR 2"),
+        ("1-004", date(2025, 1, 1), "ZZ12AA", "ZZ12", "CSSR 3"),
+    ]
+    expected_combine_matched_rows = [
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1", None),
+        ("1-002", date(2025, 1, 1), "ZZ11AA", "CSSR 2", "ZZ11"),
+        ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1", None),
+        ("1-004", date(2025, 1, 1), "ZZ12AA", "CSSR 3", "ZZ12"),
+    ]
+
 
 @dataclass
 class ValidateLocationsAPIRawData:

@@ -741,6 +741,33 @@ class PostcodeMatcherSchema:
         ]
     )
 
+    combine_matched_df1_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    combine_matched_df2_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(CQCLClean.postcode_truncated, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    expected_combine_matched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(CQCLClean.postcode_truncated, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidateLocationsAPIRawData:
