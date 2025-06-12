@@ -25,7 +25,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${clean_capacity_tracker_care_home_job}",
+                "JobName": "${clean_ct_care_home_data_job_name}",
                 "Arguments": {
                   "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
                   "--cleaned_capacity_tracker_care_home_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
@@ -38,7 +38,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${validate_cleaned_capacity_tracker_care_home_data_job}",
+                "JobName": "${validate_ct_care_home_cleaned_data_job_name}",
                 "Arguments": {
                   "--capacity_tracker_care_home_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/",
                   "--capacity_tracker_care_home_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/",
