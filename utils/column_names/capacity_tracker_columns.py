@@ -51,17 +51,17 @@ class CapacityTrackerCareHomeColumns:
 
 @dataclass
 class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
-    ct_care_home_import_date: str = "ct_care_home_import_date"
-    agency_total_employed: str = "agency_total_employed"
-    non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
-    agency_and_non_agency_total_employed_rate_of_change_trendline: str = (
-        agency_and_non_agency_total_employed + "_rate_of_change_trendline"
-    )
     agency_and_non_agency_total_employed_imputed: str = (
         agency_and_non_agency_total_employed + "_imputed"
     )
+    agency_and_non_agency_total_employed_rate_of_change_trendline: str = (
+        agency_and_non_agency_total_employed + "_rate_of_change_trendline"
+    )
+    agency_total_employed: str = "agency_total_employed"
     care_home: str = NewCqcLocationApiColumns.care_home
+    ct_care_home_import_date: str = "ct_care_home_import_date"
+    non_agency_total_employed: str = "non_agency_total_employed"
 
 
 @dataclass
@@ -115,19 +115,18 @@ class CapacityTrackerNonResColumns:
 
 @dataclass
 class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
+    capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
     capacity_tracker_filled_post_estimate: str = "capacity_tracker_filled_post_estimate"
     capacity_tracker_filled_post_estimate_source: str = (
         capacity_tracker_filled_post_estimate + "_source"
     )
-    ct_non_res_import_date: str = "ct_non_res_import_date"
+    care_home: str = NewCqcLocationApiColumns.care_home
     cqc_care_workers_employed_imputed: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
     )
-    capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
     cqc_care_workers_employed_rate_of_change_trendline: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed
         + "_rate_of_change_trendline"
     )
+    ct_non_res_import_date: str = "ct_non_res_import_date"
     unix_timestamp: str = "unix_timestamp"
-
-    care_home: str = NewCqcLocationApiColumns.care_home
