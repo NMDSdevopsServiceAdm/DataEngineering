@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-from pyspark.ml.linalg import VectorUDT
 from pyspark.sql.types import (
     StructType,
     StructField,
@@ -15,9 +14,7 @@ from pyspark.sql.types import (
 )
 
 from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResColumns as CTNR,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
@@ -29,18 +26,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-)
 from utils.column_names.coverage_columns import CoverageColumns
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
-    PrimaryServiceRateOfChangeColumns as RoC_TempCol,
-    NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
     NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
@@ -53,74 +42,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.validation_table_columns import Validation
-
-
-@dataclass
-class CapacityTrackerCareHomeSchema:
-    capacity_tracker_care_home_schema = StructType(
-        [
-            StructField(CTCH.cqc_id, StringType(), True),
-            StructField(CTCH.nurses_employed, StringType(), True),
-            StructField(CTCH.care_workers_employed, StringType(), True),
-            StructField(CTCH.non_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_nurses_employed, StringType(), True),
-            StructField(CTCH.agency_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField("other column", StringType(), True),
-        ]
-    )
-    remove_matching_agency_and_non_agency_schema = StructType(
-        [
-            StructField(CTCH.cqc_id, StringType(), True),
-            StructField(CTCH.nurses_employed, StringType(), True),
-            StructField(CTCH.care_workers_employed, StringType(), True),
-            StructField(CTCH.non_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_nurses_employed, StringType(), True),
-            StructField(CTCH.agency_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-        ]
-    )
-    create_new_columns_with_totals_schema = StructType(
-        [
-            StructField(CTCH.cqc_id, StringType(), True),
-            StructField(CTCH.nurses_employed, IntegerType(), True),
-            StructField(CTCH.care_workers_employed, IntegerType(), True),
-            StructField(CTCH.non_care_workers_employed, IntegerType(), True),
-            StructField(CTCH.agency_nurses_employed, IntegerType(), True),
-            StructField(CTCH.agency_care_workers_employed, IntegerType(), True),
-            StructField(CTCH.agency_non_care_workers_employed, IntegerType(), True),
-        ]
-    )
-    expected_create_new_columns_with_totals_schema = StructType(
-        [
-            *create_new_columns_with_totals_schema,
-            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
-            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
-        ]
-    )
-
-
-@dataclass
-class CapacityTrackerNonResSchema:
-    capacity_tracker_non_res_schema = StructType(
-        [
-            StructField(CTNR.cqc_id, StringType(), True),
-            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
-            StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField("other column", StringType(), True),
-        ]
-    )
 
 
 @dataclass
@@ -1649,59 +1570,3 @@ class NullGroupedProvidersSchema:
             StructField(IndCQC.ascwds_filtering_rule, StringType(), True),
         ]
     )
-
-
-@dataclass
-class ValidateCleanedCapacityTrackerCareHomeData:
-    ct_care_home_schema = StructType(
-        [
-            StructField(CTCH.cqc_id, StringType(), True),
-            StructField(CTCH.nurses_employed, StringType(), True),
-            StructField(CTCH.care_workers_employed, StringType(), True),
-            StructField(CTCH.non_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_nurses_employed, StringType(), True),
-            StructField(CTCH.agency_care_workers_employed, StringType(), True),
-            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-        ]
-    )
-    cleaned_ct_care_home_schema = StructType(
-        [
-            *ct_care_home_schema,
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
-            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
-            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
-        ]
-    )
-    calculate_expected_size_schema = ct_care_home_schema
-
-
-@dataclass
-class ValidateCleanedCapacityTrackerNonResData:
-    ct_non_res_schema = StructType(
-        [
-            StructField(CTNR.cqc_id, StringType(), True),
-            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
-            StructField(CTNR.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-        ]
-    )
-    cleaned_ct_non_res_schema = StructType(
-        [
-            StructField(CTNRClean.cqc_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
-            StructField(CTNRClean.service_user_count, StringType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
-        ]
-    )
-    calculate_expected_size_schema = ct_non_res_schema
