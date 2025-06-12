@@ -431,7 +431,7 @@ class ValidateCleanedCapacityTrackerCareHomeData:
     cleaned_ct_care_home_schema = StructType(
         [
             *ct_care_home_schema,
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTCHClean.ct_care_home_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
             StructField(
@@ -462,7 +462,7 @@ class ValidateCleanedCapacityTrackerNonResData:
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
-            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTNRClean.ct_non_res_import_date, DateType(), True),
         ]
     )
     calculate_expected_size_schema = ct_non_res_schema
