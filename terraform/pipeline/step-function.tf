@@ -231,7 +231,7 @@ resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ingest_ct_care_home_state_machine" {
-  name     = "${local.workspace_prefix}-IngestCtCareHome"
+  name     = "${local.workspace_prefix}-Ingest-Capacity-Tracker-Care-Home"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCapacityTrackerCareHome-StepFunction.json", {
@@ -257,7 +257,7 @@ resource "aws_sfn_state_machine" "ingest_ct_care_home_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ingest_ct_non_res_state_machine" {
-  name     = "${local.workspace_prefix}-IngestCtNonRes"
+  name     = "${local.workspace_prefix}-Ingest-Capacity-Tracker-Non-Res"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCapacityTrackerNonRes-StepFunction.json", {
