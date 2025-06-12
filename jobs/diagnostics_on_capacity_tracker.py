@@ -20,9 +20,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputat
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
     model_primary_service_rate_of_change_trendline,
 )
-from utils.ind_cqc_filled_posts_utils.utils import (
-    populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list,
-)
+from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -143,7 +141,7 @@ def run_diagnostics_for_care_homes(
         CTCHClean.agency_and_non_agency_total_employed,
         number_of_days_in_window,
         CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
-        max_days_between_submissions=370,
+        max_number_of_days_to_interpolate_between,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
@@ -209,7 +207,7 @@ def run_diagnostics_for_non_residential(
         CTNRClean.cqc_care_workers_employed,
         number_of_days_in_window,
         CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
-        max_days_between_submissions=370,
+        max_number_of_days_to_interpolate_between,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,
@@ -224,16 +222,14 @@ def run_diagnostics_for_non_residential(
     non_res_diagnostics_df = convert_to_all_posts_using_ratio(
         non_res_diagnostics_df, care_worker_ratio
     )
-    non_res_diagnostics_df = (
-        populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-            non_res_diagnostics_df,
-            [
-                CTNRClean.capacity_tracker_all_posts,
-                IndCQC.estimate_filled_posts,
-            ],
-            CTNRClean.capacity_tracker_filled_post_estimate,
-            CTNRClean.capacity_tracker_filled_post_estimate_source,
-        )
+    non_res_diagnostics_df = merge_columns_in_order(
+        non_res_diagnostics_df,
+        [
+            CTNRClean.capacity_tracker_all_posts,
+            IndCQC.estimate_filled_posts,
+        ],
+        CTNRClean.capacity_tracker_filled_post_estimate,
+        CTNRClean.capacity_tracker_filled_post_estimate_source,
     )
     list_of_models = dUtils.create_list_of_models()
     non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
