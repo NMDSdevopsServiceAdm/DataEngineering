@@ -10,11 +10,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
+PATCH_PATH: str = "jobs.diagnostics_on_capacity_tracker"
+
 
 class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
-    CAPACITY_TRACKER_CARE_HOME_SOURCE = "a/directory"
-    CAPACITY_TRACKER_NON_RES_SOURCE = "other/directory"
     CARE_HOME_DIAGNOSTICS_DESTINATION = "some/other/directory"
     CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION = "another/directory"
     NON_RES_DIAGNOSTICS_DESTINATION = "some/other/directory"
@@ -27,44 +27,42 @@ class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
             Data.estimate_filled_posts_rows,
             Schemas.estimate_filled_posts_schema,
         )
-        self.ct_care_home_df = self.spark.createDataFrame(
-            Data.capacity_tracker_care_home_rows,
-            Schemas.capacity_tracker_care_home_schema,
-        )
-        self.ct_non_res_df = self.spark.createDataFrame(
-            Data.capacity_tracker_non_res_rows, Schemas.capacity_tracker_non_res_schema
-        )
 
 
 class MainTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.dUtils.create_summary_diagnostics_table")
+    @patch(f"{PATCH_PATH}.run_diagnostics_for_non_residential")
+    @patch(f"{PATCH_PATH}.run_diagnostics_for_care_homes")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
+        read_from_parquet_mock: Mock,
+        run_diagnostics_for_care_homes_mock: Mock,
+        run_diagnostics_for_non_residential_mock: Mock,
+        create_summary_diagnostics_table_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
-            self.estimate_jobs_df,
-            self.ct_care_home_df,
-            self.ct_non_res_df,
-        ]
+        read_from_parquet_mock.side_effect = self.estimate_jobs_df
 
         job.main(
             self.ESTIMATED_FILLED_POSTS_SOURCE,
-            self.CAPACITY_TRACKER_CARE_HOME_SOURCE,
-            self.CAPACITY_TRACKER_NON_RES_SOURCE,
             self.CARE_HOME_DIAGNOSTICS_DESTINATION,
             self.CARE_HOME_SUMMARY_DIAGNOSTICS_DESTINATION,
             self.NON_RES_DIAGNOSTICS_DESTINATION,
             self.NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 4)
+        read_from_parquet_mock.assert_called_once_with(
+            self.ESTIMATED_FILLED_POSTS_SOURCE, job.estimate_filled_posts_columns
+        )
+        run_diagnostics_for_care_homes_mock.assert_called_once()
+        run_diagnostics_for_non_residential_mock.assert_called_once()
+        self.assertEqual(create_summary_diagnostics_table_mock.call_count, 2)
+        self.assertEqual(write_to_parquet_mock.call_count, 4)
 
 
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
@@ -88,76 +86,8 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
         self.assertIsInstance(job.number_of_days_in_window, int)
 
     def test_max_number_of_days_to_interpolate_between_is_expected_value(self):
-        self.assertEqual(job.max_number_of_days_to_interpolate_between, 370)
+        self.assertEqual(job.max_number_of_days_to_interpolate_between, 185)
         self.assertIsInstance(job.max_number_of_days_to_interpolate_between, int)
-
-
-class JoinCapacityTrackerTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.join_capacity_tracker_care_home_df = self.spark.createDataFrame(
-            Data.join_capacity_tracker_care_home_rows,
-            Schemas.join_estimates_schema,
-        )
-        self.returned_care_home_df = job.join_capacity_tracker_data(
-            self.join_capacity_tracker_care_home_df,
-            self.ct_care_home_df,
-            care_home=True,
-        )
-        self.expected_care_home_df = self.spark.createDataFrame(
-            Data.expected_joined_care_home_rows,
-            Schemas.expected_joined_care_home_schema,
-        )
-        self.join_capacity_tracker_non_res_df = self.spark.createDataFrame(
-            Data.join_capacity_tracker_non_res_rows,
-            Schemas.estimate_filled_posts_schema,
-        )
-        self.returned_non_res_df = job.join_capacity_tracker_data(
-            self.join_capacity_tracker_non_res_df, self.ct_non_res_df, care_home=False
-        )
-        self.expected_non_res_df = self.spark.createDataFrame(
-            Data.expected_joined_non_res_rows, Schemas.expected_joined_non_res_schema
-        )
-
-    def test_join_capacity_tracker_data_adds_correct_columns_when_care_home_is_true(
-        self,
-    ):
-        self.assertEqual(
-            sorted(self.returned_care_home_df.columns),
-            sorted(self.expected_care_home_df.columns),
-        )
-
-    def test_join_capacity_tracker_data_correctly_joins_data_when_care_home_is_true(
-        self,
-    ):
-        self.assertEqual(
-            self.returned_care_home_df.select(self.expected_care_home_df.columns)
-            .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
-            .collect(),
-            self.expected_care_home_df.sort(
-                IndCQC.location_id, IndCQC.cqc_location_import_date
-            ).collect(),
-        )
-
-    def test_join_capacity_tracker_data_adds_correct_columns_when_care_home_is_false(
-        self,
-    ):
-        self.assertEqual(
-            sorted(self.returned_non_res_df.columns),
-            sorted(self.expected_non_res_df.columns),
-        )
-
-    def test_join_capacity_tracker_data_correctly_joins_data_when_care_home_is_false(
-        self,
-    ):
-        self.assertEqual(
-            self.returned_non_res_df.select(self.expected_non_res_df.columns)
-            .sort(IndCQC.location_id, IndCQC.cqc_location_import_date)
-            .collect(),
-            self.expected_non_res_df.sort(
-                IndCQC.location_id, IndCQC.cqc_location_import_date
-            ).collect(),
-        )
 
 
 class CalculateCareWorkerRatioTests(DiagnosticsOnCapacityTrackerTests):
