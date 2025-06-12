@@ -274,8 +274,6 @@ if __name__ == "__main__":
 
     (
         estimate_filled_posts_source,
-        capacity_tracker_care_home_source,
-        capacity_tracker_non_res_source,
         care_home_diagnostics_destination,
         care_home_summary_diagnostics_destination,
         non_res_diagnostics_destination,
@@ -284,14 +282,6 @@ if __name__ == "__main__":
         (
             "--estimate_filled_posts_source",
             "Source s3 directory for job_estimates",
-        ),
-        (
-            "--capacity_tracker_care_home_source",
-            "Source s3 directory for capacity tracker care home cleaned data",
-        ),
-        (
-            "--capacity_tracker_non_res_source",
-            "Source s3 directory for capacity tracker non residential cleaned data",
         ),
         (
             "--care_home_diagnostics_destination",
@@ -313,8 +303,6 @@ if __name__ == "__main__":
 
     main(
         estimate_filled_posts_source,
-        capacity_tracker_care_home_source,
-        capacity_tracker_non_res_source,
         care_home_diagnostics_destination,
         care_home_summary_diagnostics_destination,
         non_res_diagnostics_destination,
