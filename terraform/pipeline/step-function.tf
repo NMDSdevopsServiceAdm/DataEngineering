@@ -57,6 +57,7 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
     estimate_ind_cqc_filled_posts_by_job_role_job_name                      = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
     validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name       = module.validate_estimated_ind_cqc_filled_posts_by_job_role_data_job.job_name
     diagnostics_on_known_filled_posts_job_name                              = module.diagnostics_on_known_filled_posts_job.job_name
+    diagnostics_on_capacity_tracker_job_name                                = module.diagnostics_on_capacity_tracker_job.job_name
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
     ind_cqc_filled_posts_crawler_name                                       = module.ind_cqc_filled_posts_crawler.crawler_name
     data_validation_reports_crawler_name                                    = module.data_validation_reports_crawler.crawler_name

@@ -41,7 +41,7 @@ def main(
     capacity_tracker_non_res_df = cUtils.column_to_date(
         capacity_tracker_non_res_df,
         Keys.import_date,
-        CTNRClean.capacity_tracker_import_date,
+        CTNRClean.ct_non_res_import_date,
     )
     columns_to_bound = [CTNR.cqc_care_workers_employed, CTNR.service_user_count]
     capacity_tracker_non_res_df = cUtils.set_bounds_for_columns(

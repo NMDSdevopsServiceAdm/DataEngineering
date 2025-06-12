@@ -12,11 +12,11 @@ class CleanedCapacityTrackerNonResValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             CTNRClean.cqc_id,
-            CTNRClean.capacity_tracker_import_date,
+            CTNRClean.ct_non_res_import_date,
         ],
         RuleName.index_columns: [
             CTNRClean.cqc_id,
-            CTNRClean.capacity_tracker_import_date,
+            CTNRClean.ct_non_res_import_date,
         ],
         RuleName.min_values: {
             CTNRClean.cqc_care_workers_employed: 1,

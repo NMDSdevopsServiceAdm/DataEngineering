@@ -28,6 +28,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     TEST_CQC_PIR_SOURCE = "some/other/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CT_NON_RES_SOURCE = "yet/another/directory"
+    TEST_CT_CARE_HOME_SOURCE = "one/more/directory"
     TEST_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -62,6 +63,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             self.test_data_with_care_home_col,
             self.test_data_without_care_home_col,
             self.test_data_with_care_home_col,
+            self.test_data_with_care_home_col,
         ]
 
         job.main(
@@ -69,12 +71,13 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             self.TEST_CQC_PIR_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CT_NON_RES_SOURCE,
+            self.TEST_CT_CARE_HOME_SOURCE,
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 4)
+        self.assertEqual(read_from_parquet_patch.call_count, 5)
         select_rows_with_value_mock.assert_called_once()
-        self.assertEqual(join_data_into_cqc_df_mock.call_count, 3)
+        self.assertEqual(join_data_into_cqc_df_mock.call_count, 4)
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
