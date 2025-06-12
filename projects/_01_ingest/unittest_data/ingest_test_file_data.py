@@ -879,7 +879,7 @@ class PostcodeMatcherData:
         ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
         ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
         ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
-        # ("1-003", date(2025, 1, 1), "name 3", "3 road name", "29 5HF"),  # known issue (actually need one from the invalid list here)
+        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),  # known issue (actually need one from the invalid list here)
         ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),  # match this in truncated
     ]
     locations_with_unmatched_postcode_rows = [
