@@ -65,6 +65,97 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
         self.assertEqual(write_to_parquet_mock.call_count, 4)
 
 
+class RunDiagnosticsForCareHomes(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.dUtils.calculate_aggregate_residuals")
+    @patch(f"{PATCH_PATH}.dUtils.calculate_residuals")
+    @patch(f"{PATCH_PATH}.dUtils.calculate_distribution_metrics")
+    @patch(f"{PATCH_PATH}.dUtils.create_window_for_model_and_service_splits")
+    @patch(f"{PATCH_PATH}.dUtils.filter_to_known_values")
+    @patch(f"{PATCH_PATH}.dUtils.restructure_dataframe_to_column_wise")
+    @patch(f"{PATCH_PATH}.dUtils.create_list_of_models")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    def test_run_diagnostics_for_care_homes_runs(
+        self,
+        select_rows_with_value_mock: Mock,
+        model_primary_service_rate_of_change_trendline_mock: Mock,
+        model_imputation_with_extrapolation_and_interpolation_mock: Mock,
+        create_list_of_models_mock: Mock,
+        restructure_dataframe_to_column_wise_mock: Mock,
+        filter_to_known_values_mock: Mock,
+        create_window_for_model_and_service_splits_mock: Mock,
+        calculate_distribution_metrics_mock: Mock,
+        calculate_residuals_mock: Mock,
+        calculate_aggregate_residuals_mock: Mock,
+    ):
+        job.run_diagnostics_for_care_homes(self.estimate_jobs_df)
+
+        select_rows_with_value_mock.assert_called_once()
+        model_primary_service_rate_of_change_trendline_mock.assert_called_once()
+        model_imputation_with_extrapolation_and_interpolation_mock.assert_called_once()
+        create_list_of_models_mock.assert_called_once()
+        restructure_dataframe_to_column_wise_mock.assert_called_once()
+        filter_to_known_values_mock.assert_called_once()
+        create_window_for_model_and_service_splits_mock.assert_called_once()
+        calculate_distribution_metrics_mock.assert_called_once()
+        calculate_residuals_mock.assert_called_once()
+        calculate_aggregate_residuals_mock.assert_called_once()
+
+
+class RunDiagnosticsForNonResidential(DiagnosticsOnCapacityTrackerTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.dUtils.calculate_aggregate_residuals")
+    @patch(f"{PATCH_PATH}.dUtils.calculate_residuals")
+    @patch(f"{PATCH_PATH}.dUtils.calculate_distribution_metrics")
+    @patch(f"{PATCH_PATH}.dUtils.create_window_for_model_and_service_splits")
+    @patch(f"{PATCH_PATH}.dUtils.filter_to_known_values")
+    @patch(f"{PATCH_PATH}.dUtils.restructure_dataframe_to_column_wise")
+    @patch(f"{PATCH_PATH}.dUtils.create_list_of_models")
+    @patch(f"{PATCH_PATH}.merge_columns_in_order")
+    @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
+    @patch(f"{PATCH_PATH}.calculate_care_worker_ratio")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
+    @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    def test_run_diagnostics_for_non_residential_runs(
+        self,
+        select_rows_with_value_mock: Mock,
+        model_primary_service_rate_of_change_trendline_mock: Mock,
+        model_imputation_with_extrapolation_and_interpolation_mock: Mock,
+        calculate_care_worker_ratio_mock: Mock,
+        convert_to_all_posts_using_ratio_mock: Mock,
+        merge_columns_in_order_mock: Mock,
+        create_list_of_models_mock: Mock,
+        restructure_dataframe_to_column_wise_mock: Mock,
+        filter_to_known_values_mock: Mock,
+        create_window_for_model_and_service_splits_mock: Mock,
+        calculate_distribution_metrics_mock: Mock,
+        calculate_residuals_mock: Mock,
+        calculate_aggregate_residuals_mock: Mock,
+    ):
+        job.run_diagnostics_for_non_residential(self.estimate_jobs_df)
+
+        select_rows_with_value_mock.assert_called_once()
+        model_primary_service_rate_of_change_trendline_mock.assert_called_once()
+        model_imputation_with_extrapolation_and_interpolation_mock.assert_called_once()
+        calculate_care_worker_ratio_mock.assert_called_once()
+        convert_to_all_posts_using_ratio_mock.assert_called_once()
+        merge_columns_in_order_mock.assert_called_once()
+        create_list_of_models_mock.assert_called_once()
+        restructure_dataframe_to_column_wise_mock.assert_called_once()
+        filter_to_known_values_mock.assert_called_once()
+        create_window_for_model_and_service_splits_mock.assert_called_once()
+        calculate_distribution_metrics_mock.assert_called_once()
+        calculate_residuals_mock.assert_called_once()
+        calculate_aggregate_residuals_mock.assert_called_once()
+
+
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
