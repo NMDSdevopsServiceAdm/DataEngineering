@@ -253,6 +253,7 @@ def latest_datefield_for_grouping(
     return latest_date_df
 
 
+# TODO REMOVE OLD POSTCODE PROCESS
 def normalise_column_values(df: DataFrame, col_name: str):
     return df.withColumn(col_name, F.upper(F.regexp_replace(F.col(col_name), " ", "")))
 
