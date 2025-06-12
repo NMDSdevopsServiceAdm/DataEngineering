@@ -16,6 +16,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 
@@ -112,8 +113,12 @@ class IndCqcColumns:
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    ct_import_date: str = CTNRClean.capacity_tracker_import_date
-    ct_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_care_home_agency_and_non_agency_total_employed: str = (
+        CTCHClean.agency_and_non_agency_total_employed
+    )
+    ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
     current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr

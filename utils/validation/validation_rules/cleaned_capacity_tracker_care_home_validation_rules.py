@@ -12,11 +12,11 @@ class CleanedCapacityTrackerCareHomeValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             CTCHClean.cqc_id,
-            CTCHClean.capacity_tracker_import_date,
+            CTCHClean.ct_care_home_import_date,
         ],
         RuleName.index_columns: [
             CTCHClean.cqc_id,
-            CTCHClean.capacity_tracker_import_date,
+            CTCHClean.ct_care_home_import_date,
         ],
         RuleName.min_values: {
             CTCHClean.nurses_employed: 0,

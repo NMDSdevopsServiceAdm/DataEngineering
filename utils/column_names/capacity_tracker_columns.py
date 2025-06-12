@@ -51,7 +51,7 @@ class CapacityTrackerCareHomeColumns:
 
 @dataclass
 class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
-    capacity_tracker_import_date: str = "capacity_tracker_import_date"
+    ct_care_home_import_date: str = "ct_care_home_import_date"
     agency_total_employed: str = "agency_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
     agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
@@ -61,6 +61,7 @@ class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
     agency_and_non_agency_total_employed_imputed: str = (
         agency_and_non_agency_total_employed + "_imputed"
     )
+    care_home: str = NewCqcLocationApiColumns.care_home
 
 
 @dataclass
@@ -118,9 +119,7 @@ class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
     capacity_tracker_filled_post_estimate_source: str = (
         capacity_tracker_filled_post_estimate + "_source"
     )
-    capacity_tracker_import_date: str = (
-        CapacityTrackerCareHomeCleanColumns.capacity_tracker_import_date
-    )
+    ct_non_res_import_date: str = "ct_non_res_import_date"
     cqc_care_workers_employed_imputed: str = (
         CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
     )
