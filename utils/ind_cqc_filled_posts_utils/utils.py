@@ -1,7 +1,6 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
+from pyspark.sql.types import MapType, DoubleType
 from typing import List
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def add_source_description_to_source_column(
@@ -20,57 +19,6 @@ def add_source_description_to_source_column(
             source_description,
         ).otherwise(F.col(source_column_name)),
     )
-
-
-# TODO Remove this function if it has been replaced and is no longer used.
-def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-    df: DataFrame,
-    order_of_models_to_populate_estimate_filled_posts_with: list,
-    estimates_column_to_populate: str,
-    estimates_source_column_to_populate: str,
-) -> DataFrame:
-    """
-    Populate the estimates and source columns using the hierarchy provided in the list.
-
-    The first item in the list is populated first. Subsequent null values are filled by the following items in the list.
-
-    Args:
-        df(DataFrame): A data frame with estimates that need merging into a single column.
-        order_of_models_to_populate_estimate_filled_posts_with (list): A list of column names of models.
-        estimates_column_to_populate (str): The name of the column to populate with estimates.
-        estimates_source_column_to_populate (str): The name of the column to populate with estimate sources.
-
-    Returns:
-        DataFrame: A data frame with estimates and estimates source column populated.
-    """
-    df = df.withColumn(estimates_column_to_populate, F.lit(None).cast(IntegerType()))
-    df = df.withColumn(
-        estimates_source_column_to_populate, F.lit(None).cast(StringType())
-    )
-
-    # TODO - replace for loop with better functionality
-    # see https://trello.com/c/94jAj8cd/428-update-how-we-populate-estimates
-    for model_name in order_of_models_to_populate_estimate_filled_posts_with:
-        df = df.withColumn(
-            estimates_column_to_populate,
-            F.when(
-                (
-                    F.col(estimates_column_to_populate).isNull()
-                    & (F.col(model_name).isNotNull())
-                    & (F.col(model_name) >= 1.0)
-                ),
-                F.col(model_name),
-            ).otherwise(F.col(estimates_column_to_populate)),
-        )
-
-        df = add_source_description_to_source_column(
-            df,
-            estimates_column_to_populate,
-            estimates_source_column_to_populate,
-            model_name,
-        )
-
-    return df
 
 
 def merge_columns_in_order(
