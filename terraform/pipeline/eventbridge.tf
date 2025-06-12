@@ -61,48 +61,6 @@ resource "aws_cloudwatch_event_rule" "ons_pd_csv_added" {
 EOF
 }
 
-resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
-  name        = "${local.workspace_prefix}-ct-care_home-csv-added"
-  description = "Captures when a new Capacity Tracker care home CSV is uploaded to sfc-data-engineering-raw bucket"
-
-  event_pattern = <<EOF
-{
-  "source": ["aws.s3"],
-  "detail-type": ["Object Created"],
-  "detail": {
-    "bucket": {
-      "name": ["sfc-data-engineering-raw"]
-    },
-    "object": {
-      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_care_home" }  ]
-    }
-  }
-}
-EOF
-}
-
-resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
-  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
-  name        = "${local.workspace_prefix}-ct-non_res-csv-added"
-  description = "Captures when a new Capacity Tracker non residential CSV is uploaded to sfc-data-engineering-raw bucket"
-
-  event_pattern = <<EOF
-{
-  "source": ["aws.s3"],
-  "detail-type": ["Object Created"],
-  "detail": {
-    "bucket": {
-      "name": ["sfc-data-engineering-raw"]
-    },
-    "object": {
-      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_non_res" }  ]
-    }
-  }
-}
-EOF
-}
-
 resource "aws_iam_policy" "start_state_machines" {
   name = "${local.workspace_prefix}-start-state-machines"
   policy = jsonencode({
@@ -114,8 +72,6 @@ resource "aws_iam_policy" "start_state_machines" {
         Resource = [
           aws_sfn_state_machine.ingest_ascwds_state_machine.arn,
           aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn,
-          aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn,
-          aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn,
           aws_sfn_state_machine.ingest_ons_pd_state_machine.arn
         ]
       }
@@ -208,52 +164,6 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
     {
         "jobs": {
             "ingest_ons_data" : {
-                "source": "s3://<bucket_name>/<key>"
-            }
-        }
-    }
-    EOF
-  }
-}
-
-resource "aws_cloudwatch_event_target" "trigger_ingest_ct_care_home_state_machine" {
-  rule      = aws_cloudwatch_event_rule.ct_care_home_csv_added.name
-  target_id = "${local.workspace_prefix}-StartIngestCTCHStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn
-  role_arn  = aws_iam_role.start_state_machines.arn
-
-  input_transformer {
-    input_paths = {
-      bucket_name = "$.detail.bucket.name",
-      key         = "$.detail.object.key",
-    }
-    input_template = <<EOF
-    {
-        "jobs": {
-            "ingest_capacity_tracker_data" : {
-                "source": "s3://<bucket_name>/<key>"
-            }
-        }
-    }
-    EOF
-  }
-}
-
-resource "aws_cloudwatch_event_target" "trigger_ingest_ct_non_res_state_machine" {
-  rule      = aws_cloudwatch_event_rule.ct_non_res_csv_added.name
-  target_id = "${local.workspace_prefix}-StartIngestCTNRStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn
-  role_arn  = aws_iam_role.start_state_machines.arn
-
-  input_transformer {
-    input_paths = {
-      bucket_name = "$.detail.bucket.name",
-      key         = "$.detail.object.key",
-    }
-    input_template = <<EOF
-    {
-        "jobs": {
-            "ingest_capacity_tracker_data" : {
                 "source": "s3://<bucket_name>/<key>"
             }
         }
