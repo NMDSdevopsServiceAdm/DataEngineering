@@ -63,6 +63,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             self.test_data_with_care_home_col,
             self.test_data_without_care_home_col,
             self.test_data_with_care_home_col,
+            self.test_data_with_care_home_col,
         ]
 
         job.main(
