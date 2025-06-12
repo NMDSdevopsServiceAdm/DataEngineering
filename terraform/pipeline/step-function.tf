@@ -152,34 +152,6 @@ resource "aws_sfn_state_machine" "historic_direct_payments_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "ingest_and_clean_capacity_tracker_data_state_machine" {
-  name     = "${local.workspace_prefix}-IngestAndCleanCapacityTrackerDataPipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/IngestAndCleanCapacityTrackerDataPipeline-StepFunction.json", {
-    ingest_capacity_tracker_data_job_name                    = module.ingest_capacity_tracker_data_job.job_name
-    clean_capacity_tracker_care_home_job_name                = module.clean_capacity_tracker_care_home_job.job_name
-    clean_capacity_tracker_non_res_job_name                  = module.clean_capacity_tracker_non_res_job.job_name
-    diagnostics_on_capacity_tracker_job_name                 = module.diagnostics_on_capacity_tracker_job.job_name
-    capacity_tracker_crawler_name                            = module.capacity_tracker_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name                        = module.ind_cqc_filled_posts_crawler.crawler_name
-    dataset_bucket_uri                                       = module.datasets_bucket.bucket_uri
-    run_capacity_tracker_silver_validation_state_machine_arn = aws_sfn_state_machine.capacity_tracker_silver_validation_state_machine.arn
-    run_crawler_state_machine_arn                            = aws_sfn_state_machine.run_crawler.arn
-    pipeline_failure_lambda_function_arn                     = aws_lambda_function.error_notification_lambda.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy
-  ]
-}
-
 resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   name     = "${local.workspace_prefix}-IngestASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
