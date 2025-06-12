@@ -114,6 +114,8 @@ resource "aws_iam_policy" "start_state_machines" {
         Resource = [
           aws_sfn_state_machine.ingest_ascwds_state_machine.arn,
           aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn,
+          aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn,
+          aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn,
           aws_sfn_state_machine.ingest_ons_pd_state_machine.arn
         ]
       }
@@ -206,6 +208,52 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
     {
         "jobs": {
             "ingest_ons_data" : {
+                "source": "s3://<bucket_name>/<key>"
+            }
+        }
+    }
+    EOF
+  }
+}
+
+resource "aws_cloudwatch_event_target" "trigger_ingest_ct_care_home_state_machine" {
+  rule      = aws_cloudwatch_event_rule.ct_care_home_csv_added.name
+  target_id = "${local.workspace_prefix}-StartIngestCTCHStateMachine"
+  arn       = aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn
+  role_arn  = aws_iam_role.start_state_machines.arn
+
+  input_transformer {
+    input_paths = {
+      bucket_name = "$.detail.bucket.name",
+      key         = "$.detail.object.key",
+    }
+    input_template = <<EOF
+    {
+        "jobs": {
+            "ingest_capacity_tracker_data" : {
+                "source": "s3://<bucket_name>/<key>"
+            }
+        }
+    }
+    EOF
+  }
+}
+
+resource "aws_cloudwatch_event_target" "trigger_ingest_ct_non_res_state_machine" {
+  rule      = aws_cloudwatch_event_rule.ct_non_res_csv_added.name
+  target_id = "${local.workspace_prefix}-StartIngestCTNRStateMachine"
+  arn       = aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn
+  role_arn  = aws_iam_role.start_state_machines.arn
+
+  input_transformer {
+    input_paths = {
+      bucket_name = "$.detail.bucket.name",
+      key         = "$.detail.object.key",
+    }
+    input_template = <<EOF
+    {
+        "jobs": {
+            "ingest_capacity_tracker_data" : {
                 "source": "s3://<bucket_name>/<key>"
             }
         }
