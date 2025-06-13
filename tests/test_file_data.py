@@ -1168,7 +1168,7 @@ class IndCQCDataUtils:
             ],
         ),
         (
-            "1-008",
+            "1-006",
             [
                 {
                     "name": "Any given name",
@@ -1181,7 +1181,7 @@ class IndCQCDataUtils:
             ],
         ),
         (
-            "1-009",
+            "1-007",
             [
                 {
                     "name": "Any given name",
@@ -1194,7 +1194,7 @@ class IndCQCDataUtils:
             ],
         ),
         (
-            "1-011",
+            "1-008",
             [
                 {
                     "name": "Any given name",
@@ -1207,7 +1207,7 @@ class IndCQCDataUtils:
             ],
         ),
         (
-            "1-011",
+            "1-009",
             [
                 {
                     "name": "Any given name",
@@ -1292,7 +1292,7 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.non_residential,
         ),
         (
-            "1-008",
+            "1-006",
             [
                 {
                     "name": "Any given name",
@@ -1306,7 +1306,7 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.non_residential,
         ),
         (
-            "1-009",
+            "1-007",
             [
                 {
                     "name": "Any given name",
@@ -1320,7 +1320,7 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.other_residential,
         ),
         (
-            "1-011",
+            "1-008",
             [
                 {
                     "name": "Any given name",
@@ -1334,7 +1334,7 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.other_residential,
         ),
         (
-            "1-011",
+            "1-009",
             [
                 {
                     "name": "Any given name",
