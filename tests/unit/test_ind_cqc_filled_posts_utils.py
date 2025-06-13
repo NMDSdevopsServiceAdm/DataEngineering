@@ -354,7 +354,7 @@ class AllocatePrimaryServiceTypeSecondLevel(TestIndCqcFilledPostUtils):
     def test_allocate_primary_service_type_second_level_returns_expected_values(
         self,
     ):
-        returned_data = self.returned_df.sort(IndCQC.location_id).collect()
-        expected_data = self.expected_df.sort(IndCQC.location_id).collect()
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
