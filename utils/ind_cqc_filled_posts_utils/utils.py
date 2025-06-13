@@ -230,18 +230,19 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
         DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
     """
 
-    lookup_dict = PSSL_lookup.dict
-    array_column = F.col(IndCQC.imputed_gac_service_types)
+    lookup_dict = list(PSSL_lookup.dict.items())
+    default_value = F.lit(PSSL_values.other_non_residential)
 
-    calculation = F.lit(PSSL_values.other_non_residential)
-    for description, primary_service_type_second_level in reversed(
-        list(lookup_dict.items())
-    ):
-        calculation = F.when(
-            F.exists(array_column, lambda x: x[CQCL.description] == description),
-            primary_service_type_second_level,
-        ).otherwise(calculation)
+    condition = default_value
+    for description, primary_service_type_second_level in lookup_dict:
+        match_description = F.exists(
+            F.col(IndCQC.imputed_gac_service_types),
+            lambda x: x[CQCL.description] == description,
+        )
+        condition = F.when(
+            match_description, primary_service_type_second_level
+        ).otherwise(condition)
 
-    df = df.withColumn(IndCQC.primary_service_type_second_level, calculation)
+    df = df.withColumn(IndCQC.primary_service_type_second_level, condition)
 
     return df
