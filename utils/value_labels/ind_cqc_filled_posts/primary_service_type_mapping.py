@@ -10,7 +10,14 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class CqcServiceToPrimaryServiceTypeSecondLevelLookup:
-    """A dict where keys = CQC gac service description and values = second level primary service type"""
+    """
+    A dict where keys = CQC gac service description and values = second level primary service type
+
+    The order of these items determines the primary_service_second_level allocated to locations
+    that offer multiple services.
+
+    Changing the order of this dict will change how services are allocated.
+    """
 
     dict = {
         "Shared Lives": PrimaryServiceTypeSecondLevel.shared_lives,
