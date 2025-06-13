@@ -7,10 +7,10 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    PrimaryServiceTypeSecondLevel,
+    PrimaryServiceTypeSecondLevel as PSSL_values,
 )
 from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
-    CqcServiceToPrimaryServiceTypeSecondLevelLookup,
+    CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
 )
 
 
@@ -230,10 +230,10 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
         DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
     """
 
-    lookup_dict = CqcServiceToPrimaryServiceTypeSecondLevelLookup.dict
+    lookup_dict = PSSL_lookup.dict
     array_column = F.col(IndCQC.imputed_gac_service_types)
 
-    calculation = F.lit(PrimaryServiceTypeSecondLevel.other_non_residential)
+    calculation = F.lit(PSSL_values.other_non_residential)
     for description, primary_service_type_second_level in reversed(
         list(lookup_dict.items())
     ):
