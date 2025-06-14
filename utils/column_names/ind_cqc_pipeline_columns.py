@@ -113,10 +113,12 @@ class IndCqcColumns:
     )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
-    ct_care_home_agency_and_non_agency_total_employed: str = (
-        CTCHClean.agency_and_non_agency_total_employed
-    )
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_care_home_total_employed: str = CTCHClean.agency_and_non_agency_total_employed
+    ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
+    ct_care_home_total_employed_rate_of_change_trendline: str = (
+        ct_care_home_total_employed + "_rate_of_change_trendline"
+    )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
     ct_non_res_care_workers_employed_imputed: str = (

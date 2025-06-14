@@ -38,7 +38,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
     IndCQC.number_of_beds,
-    IndCQC.ct_care_home_agency_and_non_agency_total_employed,
+    IndCQC.ct_care_home_total_employed,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.current_region,
     IndCQC.current_cssr,
@@ -117,22 +117,22 @@ def run_diagnostics_for_care_homes(filled_posts_df: DataFrame) -> DataFrame:
     )
     care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
         care_home_diagnostics_df,
-        CTCHClean.agency_and_non_agency_total_employed,
+        IndCQC.ct_care_home_total_employed,
         number_of_days_in_window,
-        CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
         max_number_of_days_to_interpolate_between,
     )
     care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         care_home_diagnostics_df,
-        CTCHClean.agency_and_non_agency_total_employed,
-        CTCHClean.agency_and_non_agency_total_employed_rate_of_change_trendline,
-        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
         care_home=True,
     )
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df,
-        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        IndCQC.ct_care_home_total_employed_imputed,
         list_of_models,
     )
     care_home_diagnostics_df = dUtils.filter_to_known_values(
@@ -146,7 +146,7 @@ def run_diagnostics_for_care_homes(filled_posts_df: DataFrame) -> DataFrame:
     )
     care_home_diagnostics_df = dUtils.calculate_residuals(
         care_home_diagnostics_df,
-        CTCHClean.agency_and_non_agency_total_employed_imputed,
+        IndCQC.ct_care_home_total_employed_imputed,
     )
     care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
         care_home_diagnostics_df,

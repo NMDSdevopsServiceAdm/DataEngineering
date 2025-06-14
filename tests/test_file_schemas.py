@@ -1034,9 +1034,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.ct_care_home_import_date, DateType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
             StructField(IndCQC.ct_non_res_import_date, DateType(), True),
             StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
