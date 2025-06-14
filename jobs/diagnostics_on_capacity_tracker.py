@@ -7,10 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 from utils.column_values.categorical_column_values import CareHome
 from utils.diagnostics_utils import diagnostics_utils as dUtils
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
