@@ -38,6 +38,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
     IndCQC.number_of_beds,
+    IndCQC.ct_care_home_agency_and_non_agency_total_employed,
+    IndCQC.ct_non_res_care_workers_employed,
     IndCQC.current_region,
     IndCQC.current_cssr,
     IndCQC.unix_time,
@@ -171,16 +173,16 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
     )
     non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
         non_res_diagnostics_df,
-        CTNRClean.cqc_care_workers_employed,
+        IndCQC.ct_non_res_care_workers_employed,
         number_of_days_in_window,
-        CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
         max_number_of_days_to_interpolate_between,
     )
     non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
         non_res_diagnostics_df,
-        CTNRClean.cqc_care_workers_employed,
-        CTNRClean.cqc_care_workers_employed_rate_of_change_trendline,
-        CTNRClean.cqc_care_workers_employed_imputed,
+        IndCQC.ct_non_res_care_workers_employed,
+        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
         care_home=False,
     )
     care_worker_ratio = calculate_care_worker_ratio(
@@ -192,16 +194,16 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
     non_res_diagnostics_df = merge_columns_in_order(
         non_res_diagnostics_df,
         [
-            CTNRClean.capacity_tracker_all_posts,
+            IndCQC.ct_non_res_all_posts,
             IndCQC.estimate_filled_posts,
         ],
-        CTNRClean.capacity_tracker_filled_post_estimate,
-        CTNRClean.capacity_tracker_filled_post_estimate_source,
+        IndCQC.ct_non_res_filled_post_estimate,
+        IndCQC.ct_non_res_filled_post_estimate_source,
     )
     list_of_models = dUtils.create_list_of_models()
     non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         non_res_diagnostics_df,
-        CTNRClean.capacity_tracker_filled_post_estimate,
+        IndCQC.ct_non_res_filled_post_estimate,
         list_of_models,
     )
     non_res_diagnostics_df = dUtils.filter_to_known_values(
@@ -214,7 +216,7 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
         non_res_diagnostics_df, window
     )
     non_res_diagnostics_df = dUtils.calculate_residuals(
-        non_res_diagnostics_df, CTNRClean.capacity_tracker_filled_post_estimate
+        non_res_diagnostics_df, IndCQC.ct_non_res_filled_post_estimate
     )
     non_res_diagnostics_df = dUtils.calculate_aggregate_residuals(
         non_res_diagnostics_df,
@@ -236,11 +238,11 @@ def calculate_care_worker_ratio(df: DataFrame) -> float:
         float: A float representing the ratio between care workers and all posts.
     """
     df = df.where(
-        (df[CTNRClean.cqc_care_workers_employed_imputed].isNotNull())
+        (df[IndCQC.ct_non_res_care_workers_employed_imputed].isNotNull())
         & (df[IndCQC.estimate_filled_posts].isNotNull())
     )
     total_care_workers = df.agg(
-        F.sum(df[CTNRClean.cqc_care_workers_employed_imputed])
+        F.sum(df[IndCQC.ct_non_res_care_workers_employed_imputed])
     ).collect()[0][0]
     total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
     care_worker_ratio = total_care_workers / total_posts
@@ -262,8 +264,8 @@ def convert_to_all_posts_using_ratio(
         DataFrame: A dataframe with a new column containing the all-workers estimate.
     """
     df = df.withColumn(
-        CTNRClean.capacity_tracker_all_posts,
-        F.col(CTNRClean.cqc_care_workers_employed_imputed) / care_worker_ratio,
+        IndCQC.ct_non_res_all_posts,
+        F.col(IndCQC.ct_non_res_care_workers_employed_imputed) / care_worker_ratio,
     )
     return df
 

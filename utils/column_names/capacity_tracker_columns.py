@@ -115,18 +115,6 @@ class CapacityTrackerNonResColumns:
 
 @dataclass
 class CapacityTrackerNonResCleanColumns(CapacityTrackerNonResColumns):
-    capacity_tracker_all_posts: str = "capacity_tracker_all_posts"
-    capacity_tracker_filled_post_estimate: str = "capacity_tracker_filled_post_estimate"
-    capacity_tracker_filled_post_estimate_source: str = (
-        capacity_tracker_filled_post_estimate + "_source"
-    )
     care_home: str = NewCqcLocationApiColumns.care_home
-    cqc_care_workers_employed_imputed: str = (
-        CapacityTrackerNonResColumns.cqc_care_workers_employed + "_imputed"
-    )
-    cqc_care_workers_employed_rate_of_change_trendline: str = (
-        CapacityTrackerNonResColumns.cqc_care_workers_employed
-        + "_rate_of_change_trendline"
-    )
     ct_non_res_import_date: str = "ct_non_res_import_date"
     unix_timestamp: str = "unix_timestamp"

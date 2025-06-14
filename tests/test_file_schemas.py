@@ -1033,12 +1033,12 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
-            StructField(CTCHClean.ct_care_home_import_date, DateType(), True),
+            StructField(IndCQC.ct_care_home_import_date, DateType(), True),
             StructField(
                 CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
             ),
-            StructField(CTNRClean.ct_non_res_import_date, DateType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
+            StructField(IndCQC.ct_non_res_import_date, DateType(), True),
+            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -1049,21 +1049,23 @@ class DiagnosticsOnCapacityTrackerSchemas:
     convert_to_all_posts_using_ratio_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
+            ),
         ]
     )
     expected_convert_to_all_posts_using_ratio_schema = StructType(
         [
             *convert_to_all_posts_using_ratio_schema,
-            StructField(
-                CTNRClean.capacity_tracker_filled_post_estimate, FloatType(), True
-            ),
+            StructField(IndCQC.ct_non_res_filled_post_estimate, FloatType(), True),
         ]
     )
     calculate_care_worker_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
+            ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )

@@ -117,7 +117,20 @@ class IndCqcColumns:
         CTCHClean.agency_and_non_agency_total_employed
     )
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_imputed: str = (
+        CTNRClean.cqc_care_workers_employed + "_imputed"
+    )
+    ct_non_res_care_workers_employed_rate_of_change_trendline: str = (
+        CTNRClean.cqc_care_workers_employed + "_rate_of_change_trendline"
+    )
+    ct_non_res_filled_post_estimate: str = (
+        "capacity_tracker_non_res_filled_post_estimate"
+    )
+    ct_non_res_filled_post_estimate_source: str = (
+        ct_non_res_filled_post_estimate + "_source"
+    )
     ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
     current_ccg: str = ONSClean.current_ccg
     current_constituency: str = ONSClean.current_constituency
