@@ -288,10 +288,10 @@ class CreateTruncatedPostcodeDfTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_truncate_postcode_returns_expected_values(self):
+    def test_create_truncated_postcode_df_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
-    def test_truncate_postcode_returns_expected_columns(self):
+    def test_create_truncated_postcode_df_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
 
@@ -347,8 +347,8 @@ class CombineMatchedDataframesTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.location_id).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_truncate_postcode_returns_expected_values(self):
+    def test_combine_matched_dataframes_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
-    def test_truncate_postcode_returns_expected_columns(self):
+    def test_combine_matched_dataframes_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
