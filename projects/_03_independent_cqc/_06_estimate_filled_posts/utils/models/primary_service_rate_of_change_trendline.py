@@ -86,7 +86,13 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
         IndCqc.number_of_beds_banded_cleaned,
         IndCqc.unix_time,
         IndCqc.single_period_rate_of_change,
-    ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])
+    ).dropDuplicates(
+        [
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_cleaned,
+            IndCqc.unix_time,
+        ]
+    )
 
     return df
 
