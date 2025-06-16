@@ -109,7 +109,9 @@ def calculate_rate_of_change_trendline(
     Returns:
         DataFrame: The DataFrame with the rate of change trendline included.
     """
-    w = Window.partitionBy(IndCqc.primary_service_type).orderBy(IndCqc.unix_time)
+    w = Window.partitionBy(
+        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_cleaned
+    ).orderBy(IndCqc.unix_time)
 
     trendline_df = df.withColumn(
         rate_of_change_trendline_column_name,
