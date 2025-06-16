@@ -393,7 +393,7 @@ class ASCWDSWorkerData:
 
 
 @dataclass
-class CapacityTrackerCareHomeData:
+class IngestCapacityTrackerCareHomeData:
     sample_rows = [
         (
             "Barnsley Metropolitan Borough Council",
@@ -500,7 +500,7 @@ class CapacityTrackerCareHomeData:
 
 
 @dataclass
-class CapacityTrackerNonResData:
+class IngestCapacityTrackerNonResData:
     sample_rows = [
         (
             "Barnsley Metropolitan Borough Council",
@@ -614,6 +614,104 @@ class CapacityTrackerNonResData:
         "column_without_spaces",
         "column_with_brackets",
         "column_with_brackets_and_spaces",
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerCareHomeData:
+    capacity_tracker_care_home_rows = [
+        (
+            "loc 1",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            "other data",
+        ),
+    ]
+
+    remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+        ("loc 2", "1", "2", "3", "1", "5", "6"),
+        ("loc 3", "1", "2", "3", "4", "2", "6"),
+        ("loc 4", "1", "2", "3", "4", "5", "3"),
+        ("loc 5", "1", "2", "3", "1", "2", "6"),
+        ("loc 6", "1", "2", "3", "1", "5", "3"),
+        ("loc 7", "1", "2", "3", "4", "2", "3"),
+        ("loc 8", "1", "2", "3", "1", "2", "3"),
+    ]
+    expected_remove_matching_agency_and_non_agency_rows = [
+        ("loc 1", "1", "2", "3", "4", "5", "6"),
+        ("loc 2", "1", "2", "3", "1", "5", "6"),
+        ("loc 3", "1", "2", "3", "4", "2", "6"),
+        ("loc 4", "1", "2", "3", "4", "5", "3"),
+        ("loc 5", "1", "2", "3", "1", "2", "6"),
+        ("loc 6", "1", "2", "3", "1", "5", "3"),
+        ("loc 7", "1", "2", "3", "4", "2", "3"),
+    ]
+
+    create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 40, 50, 60),
+    ]
+    expected_create_new_columns_with_totals_rows = [
+        ("loc 1", 1, 2, 3, 40, 50, 60, 6, 150, 156),
+    ]
+
+
+@dataclass
+class CleanCapacityTrackerNonResData:
+    capacity_tracker_non_res_rows = [
+        ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
+    ]
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerCareHomeData:
+    ct_care_home_rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
+    ]
+
+    # fmt: off
+    cleaned_ct_care_home_rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
+        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
+    ]
+    # fmt: on
+
+    calculate_expected_size_rows = [
+        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
+    ]
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerNonResData:
+    ct_non_res_rows = [
+        ("1-000000001", "1", "2", "2024", "01", "01"),
+        ("1-000000002", "1", "2", "2024", "01", "01"),
+        ("1-000000001", "1", "2", "2024", "02", "01"),
+        ("1-000000002", "1", "2", "2024", "02", "01"),
+    ]
+
+    cleaned_ct_non_res_rows = [
+        ("1-000000001", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
+        ("1-000000002", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
+        ("1-000000001", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
+        ("1-000000002", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
+    ]
+
+    calculate_expected_size_rows = [
+        ("1-000000001", "1", "2", "2024", "01", "01"),
     ]
 
 
@@ -879,7 +977,7 @@ class PostcodeMatcherData:
         ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
         ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
         ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
-        # ("1-003", date(2025, 1, 1), "name 3", "3 road name", "29 5HF"),  # known issue (actually need one from the invalid list here)
+        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),  # known issue (actually need one from the invalid list here)
         ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),  # match this in truncated
     ]
     locations_with_unmatched_postcode_rows = [
@@ -898,6 +996,7 @@ class PostcodeMatcherData:
         ("AA12AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 2", "SubICB 1"),
         ("AA13AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 3", "SubICB 1"),
         ("AA14AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 4", "SubICB 1"),
+        ("TF74EH", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 5", "SubICB 1"),
     ]
     # fmt: on
 

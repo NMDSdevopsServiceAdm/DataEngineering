@@ -10,6 +10,8 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
+PATCH_PATH: str = "jobs.diagnostics_on_capacity_tracker"
+
 
 class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
     ESTIMATED_FILLED_POSTS_SOURCE = "some/directory"
@@ -40,14 +42,14 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_patch: Mock,
-        write_to_parquet_patch: Mock,
+        read_from_parquet_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
+        read_from_parquet_mock.side_effect = [
             self.estimate_jobs_df,
             self.ct_care_home_df,
             self.ct_non_res_df,
@@ -63,8 +65,8 @@ class MainTests(DiagnosticsOnCapacityTrackerTests):
             self.NON_RES_SUMMARY_DIAGNOSTICS_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 3)
-        self.assertEqual(write_to_parquet_patch.call_count, 4)
+        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        self.assertEqual(write_to_parquet_mock.call_count, 4)
 
 
 class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
