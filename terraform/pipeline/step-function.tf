@@ -129,34 +129,6 @@ resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "ingest_and_clean_capacity_tracker_data_state_machine" {
-  name     = "${local.workspace_prefix}-Ingest-Capacity-Tracker"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/IngestCapacityTracker-StepFunction.json", {
-    ingest_capacity_tracker_data_job_name                    = module.ingest_capacity_tracker_data_job.job_name
-    clean_capacity_tracker_care_home_job_name                = module.clean_capacity_tracker_care_home_job.job_name
-    clean_capacity_tracker_non_res_job_name                  = module.clean_capacity_tracker_non_res_job.job_name
-    diagnostics_on_capacity_tracker_job_name                 = module.diagnostics_on_capacity_tracker_job.job_name
-    capacity_tracker_crawler_name                            = module.capacity_tracker_crawler.crawler_name
-    ind_cqc_filled_posts_crawler_name                        = module.ind_cqc_filled_posts_crawler.crawler_name
-    dataset_bucket_uri                                       = module.datasets_bucket.bucket_uri
-    run_capacity_tracker_silver_validation_state_machine_arn = aws_sfn_state_machine.capacity_tracker_silver_validation_state_machine.arn
-    run_crawler_state_machine_arn                            = aws_sfn_state_machine.run_crawler.arn
-    pipeline_failure_lambda_function_arn                     = aws_lambda_function.error_notification_lambda.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy
-  ]
-}
-
 resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
   name     = "${local.workspace_prefix}-Ingest-ASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -194,6 +166,58 @@ resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
     dataset_bucket_uri                   = module.datasets_bucket.bucket_uri
     run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "ingest_ct_care_home_state_machine" {
+  name     = "${local.workspace_prefix}-Ingest-Capacity-Tracker-Care-Home"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/IngestCapacityTrackerCareHome-StepFunction.json", {
+    ingest_ct_care_home_job_name                = module.ingest_capacity_tracker_data_job.job_name
+    clean_ct_care_home_data_job_name            = module.clean_capacity_tracker_care_home_job.job_name
+    validate_ct_care_home_cleaned_data_job_name = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
+    ct_crawler_name                             = module.capacity_tracker_crawler.crawler_name
+    data_validation_reports_crawler_name        = module.data_validation_reports_crawler.crawler_name
+    dataset_bucket_uri                          = module.datasets_bucket.bucket_uri
+    run_crawler_state_machine_arn               = aws_sfn_state_machine.run_crawler.arn
+    pipeline_failure_lambda_function_arn        = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "ingest_ct_non_res_state_machine" {
+  name     = "${local.workspace_prefix}-Ingest-Capacity-Tracker-Non-Res"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/IngestCapacityTrackerNonRes-StepFunction.json", {
+    ingest_ct_non_res_job_name                = module.ingest_capacity_tracker_data_job.job_name
+    clean_ct_non_res_data_job_name            = module.clean_capacity_tracker_non_res_job.job_name
+    validate_ct_non_res_cleaned_data_job_name = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
+    ct_crawler_name                           = module.capacity_tracker_crawler.crawler_name
+    data_validation_reports_crawler_name      = module.data_validation_reports_crawler.crawler_name
+    dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
+    run_crawler_state_machine_arn             = aws_sfn_state_machine.run_crawler.arn
+    pipeline_failure_lambda_function_arn      = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
@@ -271,30 +295,6 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
     validate_providers_api_cleaned_data_job_name    = module.validate_providers_api_cleaned_data_job.job_name
     data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy,
-    module.datasets_bucket
-  ]
-}
-
-resource "aws_sfn_state_machine" "capacity_tracker_silver_validation_state_machine" {
-  name     = "${local.workspace_prefix}-Capacity-Tracker-Silver-Validation-Pipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/CapacityTrackerSilverValidationPipeline-StepFunction.json", {
-    dataset_bucket_uri                                        = module.datasets_bucket.bucket_uri
-    validate_cleaned_capacity_tracker_care_home_data_job_name = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
-    validate_cleaned_capacity_tracker_non_res_data_job_name   = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
-    data_validation_reports_crawler_name                      = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn                      = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
