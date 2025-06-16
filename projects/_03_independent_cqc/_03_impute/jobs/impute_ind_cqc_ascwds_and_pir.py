@@ -59,6 +59,8 @@ def main(
         IndCQC.combined_ratio_and_filled_posts,
     )
 
+    df = clean_number_of_beds_banded(df)
+
     df = model_primary_service_rate_of_change_trendline(
         df,
         IndCQC.combined_ratio_and_filled_posts,
@@ -94,8 +96,6 @@ def main(
         IndCQC.primary_service_type,
         IndCQC.posts_rolling_average_model,
     )
-
-    df = clean_number_of_beds_banded(df)
 
     df = model_calculate_rolling_average(
         df,
