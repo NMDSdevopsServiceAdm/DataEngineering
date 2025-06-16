@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
-from pyspark.ml.linalg import Vectors
-
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -15,19 +11,11 @@ from utils.column_values.categorical_columns_by_dataset import (
 from utils.column_values.categorical_column_values import (
     AscwdsFilteringRule,
     CareHome,
-    CQCCurrentOrHistoricValues,
-    Dormancy,
     EstimateFilledPostsSource,
     MainJobRoleLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
-    Region,
-    RegistrationStatus,
-    RelatedLocation,
-    RUI,
     Sector,
-    Services,
-    Specialisms,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
     ascwds_filled_posts_difference_within_range_source_description,
@@ -39,60 +27,6 @@ from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.validation.validation_rule_custom_type import CustomValidationRules
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
-
-@dataclass
-class CapacityTrackerCareHomeData:
-    capacity_tracker_care_home_rows = [
-        (
-            "loc 1",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "2024",
-            "01",
-            "01",
-            "20240101",
-            "other data",
-        ),
-    ]
-
-    remove_matching_agency_and_non_agency_rows = [
-        ("loc 1", "1", "2", "3", "4", "5", "6"),
-        ("loc 2", "1", "2", "3", "1", "5", "6"),
-        ("loc 3", "1", "2", "3", "4", "2", "6"),
-        ("loc 4", "1", "2", "3", "4", "5", "3"),
-        ("loc 5", "1", "2", "3", "1", "2", "6"),
-        ("loc 6", "1", "2", "3", "1", "5", "3"),
-        ("loc 7", "1", "2", "3", "4", "2", "3"),
-        ("loc 8", "1", "2", "3", "1", "2", "3"),
-    ]
-    expected_remove_matching_agency_and_non_agency_rows = [
-        ("loc 1", "1", "2", "3", "4", "5", "6"),
-        ("loc 2", "1", "2", "3", "1", "5", "6"),
-        ("loc 3", "1", "2", "3", "4", "2", "6"),
-        ("loc 4", "1", "2", "3", "4", "5", "3"),
-        ("loc 5", "1", "2", "3", "1", "2", "6"),
-        ("loc 6", "1", "2", "3", "1", "5", "3"),
-        ("loc 7", "1", "2", "3", "4", "2", "3"),
-    ]
-
-    create_new_columns_with_totals_rows = [
-        ("loc 1", 1, 2, 3, 40, 50, 60),
-    ]
-    expected_create_new_columns_with_totals_rows = [
-        ("loc 1", 1, 2, 3, 40, 50, 60, 6, 150, 156),
-    ]
-
-
-@dataclass
-class CapacityTrackerNonResData:
-    capacity_tracker_non_res_rows = [
-        ("loc 1", "12", "300", "2024", "01", "01", "20240101", "other data"),
-    ]
 
 
 @dataclass
@@ -2503,6 +2437,10 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10,
             1704067200,
+            date(2024, 1, 1),
+            11,
+            None,
+            None,
             "2024",
             "01",
             "01",
@@ -2525,102 +2463,15 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10,
             1706832000,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-        (
-            "loc 2",
-            date(2024, 1, 1),
-            CareHome.not_care_home,
-            PrimaryServiceType.non_residential,
-            10.0,
-            None,
-            None,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            None,
-            1704067200,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-    ]
-
-    capacity_tracker_care_home_rows = [
-        ("loc 1", date(2024, 1, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
-        ("loc 1", date(2024, 2, 1), 8, 3, 11, "2024", "01", "01", "20240101"),
-    ]
-    capacity_tracker_non_res_rows = [
-        ("loc 2", date(2024, 1, 1), 10, 80, "2024", "01", "01", "20240101"),
-    ]
-
-    join_capacity_tracker_care_home_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-        (
-            "loc 1",
-            date(2024, 2, 2),
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-    ]
-
-    expected_joined_care_home_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-            date(2024, 1, 1),
-            8,
-            3,
-            11,
-        ),
-        (
-            "loc 1",
-            date(2024, 2, 2),
-            CareHome.care_home,
-            PrimaryServiceType.care_home_only,
-            10.0,
-            "2024",
-            "01",
-            "01",
-            "20240101",
             date(2024, 2, 1),
-            8,
-            3,
             11,
+            None,
+            None,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
-    ]
-
-    join_capacity_tracker_non_res_rows = [
         (
             "loc 2",
             date(2024, 1, 1),
@@ -2638,37 +2489,14 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             None,
             1704067200,
-            "2024",
-            "01",
-            "01",
-            "20240101",
-        ),
-    ]
-    expected_joined_non_res_rows = [
-        (
-            "loc 2",
-            date(2024, 1, 1),
-            CareHome.not_care_home,
-            PrimaryServiceType.non_residential,
-            10.0,
             None,
             None,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            10.0,
-            None,
-            1704067200,
-            "2024",
-            "01",
-            "01",
-            "20240101",
             date(2024, 1, 1),
             10,
-            80,
+            "2024",
+            "01",
+            "01",
+            "20240101",
         ),
     ]
 
@@ -3124,67 +2952,3 @@ class NullGroupedProvidersData:
         ("1-008", CareHome.not_care_home, True, 50.0, None, 10.0, 2, 25.0, AscwdsFilteringRule.contained_invalid_missing_data_code),  # already filtered
     ]
     # fmt: on
-
-
-@dataclass
-class ValidateCleanedCapacityTrackerCareHomeData:
-    # fmt: off
-    ct_care_home_rows = [
-        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
-        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01"),
-        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
-        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01"),
-    ]
-
-    cleaned_ct_care_home_rows = [
-        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
-        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "01", "01", date(2024, 1, 1), 6, 15, 21),
-        ("1-000000001", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
-        ("1-000000002", "1", "2", "3", "4", "5", "6", "2024", "02", "01", date(2024, 2, 1), 6, 15, 21),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "2024",
-            "01",
-            "01",
-        ),
-    ]
-
-
-@dataclass
-class ValidateCleanedCapacityTrackerNonResData:
-    # fmt: off
-    ct_non_res_rows = [
-        ("1-000000001", "1", "2", "2024", "01", "01"),
-        ("1-000000002", "1", "2", "2024", "01", "01"),
-        ("1-000000001", "1", "2", "2024", "02", "01"),
-        ("1-000000002", "1", "2", "2024", "02", "01"),
-    ]
-
-    cleaned_ct_non_res_rows = [
-        ("1-000000001", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
-        ("1-000000002", "1", "2", "2024", "01", "01", date(2024, 1, 1)),
-        ("1-000000001", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
-        ("1-000000002", "1", "2", "2024", "02", "01", date(2024, 2, 1)),
-    ]
-    # fmt: on
-
-    calculate_expected_size_rows = [
-        (
-            "1-000000001",
-            "1",
-            "2",
-            "2024",
-            "01",
-            "01",
-        ),
-    ]

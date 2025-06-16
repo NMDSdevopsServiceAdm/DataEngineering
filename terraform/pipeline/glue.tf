@@ -115,7 +115,7 @@ module "clean_ascwds_worker_job" {
 
 module "clean_capacity_tracker_care_home_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "clean_capacity_tracker_care_home_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -130,7 +130,7 @@ module "clean_capacity_tracker_care_home_job" {
 
 module "clean_capacity_tracker_non_res_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "clean_capacity_tracker_non_res_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -195,7 +195,7 @@ module "clean_ons_data_job" {
 
 module "archive_filled_posts_estimates_job" {
   source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_08_archive_estimates/jobs"
+  script_dir      = "projects/_03_independent_cqc/_09_archive_estimates/jobs"
   script_name     = "archive_filled_posts_estimates.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -455,7 +455,8 @@ module "merge_ind_cqc_data_job" {
     "--cleaned_cqc_location_source"     = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--cleaned_cqc_pir_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--cleaned_non_res_ct_source"       = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+    "--cleaned_ct_non_res_source"       = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+    "--cleaned_ct_care_home_source"     = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
     "--destination"                     = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
   }
 }
@@ -856,9 +857,9 @@ module "estimate_ind_cqc_filled_posts_job" {
     "--care_home_features_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/"
     "--care_home_model_source"                   = "${module.pipeline_resources.bucket_uri}/models/care_home_filled_posts_prediction/6.1.1/"
     "--non_res_with_dormancy_features_source"    = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_with_dormancy/"
-    "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/5.0.0/"
+    "--non_res_with_dormancy_model_source"       = "${module.pipeline_resources.bucket_uri}/models/non_residential_with_dormancy_prediction/5.1.0/"
     "--non_res_without_dormancy_features_source" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_features_non_res_ascwds_without_dormancy/"
-    "--non_res_without_dormancy_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/4.2.0/"
+    "--non_res_without_dormancy_model_source"    = "${module.pipeline_resources.bucket_uri}/models/non_residential_without_dormancy_prediction/4.3.0/"
     "--estimated_ind_cqc_destination"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
     "--ml_model_metrics_destination"             = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_ml_model_metrics/"
   }
@@ -898,17 +899,17 @@ module "diagnostics_on_known_filled_posts_job" {
 }
 
 module "diagnostics_on_capacity_tracker_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "jobs"
-  script_name     = "diagnostics_on_capacity_tracker.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
+  source            = "../modules/glue-job"
+  script_dir        = "jobs"
+  script_name       = "diagnostics_on_capacity_tracker.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  worker_type       = "G.1X"
+  number_of_workers = 4
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
 
   job_parameters = {
     "--estimate_filled_posts_source"              = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
-    "--capacity_tracker_care_home_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-    "--capacity_tracker_non_res_source"           = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
     "--care_home_diagnostics_destination"         = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics/"
     "--care_home_summary_diagnostics_destination" = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_care_home_diagnostics_summary/"
     "--non_res_diagnostics_destination"           = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=capacity_tracker_non_residential_diagnostics/"
@@ -918,7 +919,7 @@ module "diagnostics_on_capacity_tracker_job" {
 
 module "validate_cleaned_capacity_tracker_care_home_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/capacity_tracker/jobs"
   script_name       = "validate_cleaned_capacity_tracker_care_home_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -936,7 +937,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
 
 module "validate_cleaned_capacity_tracker_non_res_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "validate_cleaned_capacity_tracker_non_res_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
