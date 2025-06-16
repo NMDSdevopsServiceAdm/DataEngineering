@@ -76,7 +76,7 @@ class PrimaryServiceTypeSecondLevel(ColumnValues):
     non_residential: str = "Non-residential"
     other_residential: str = "Other residential"
     other_non_residential: str = "Other non-residential"
-    shared_lives: str = "Shared lives"
+    shared_lives: str = "Shared Lives"
 
 
 @dataclass
