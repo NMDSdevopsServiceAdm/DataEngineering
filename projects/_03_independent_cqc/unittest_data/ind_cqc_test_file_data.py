@@ -3880,26 +3880,30 @@ class ModelPrimaryServiceRateOfChange:
 
     # fmt: off
     add_rolling_sum_columns_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1),
-        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2),
-        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3),
-        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4),
-        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None),
-        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0),
-        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672790400, None, 1.3),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.4, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.3, 1.4),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.5, None),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672531200, 10.0, None),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672617600, 20.0, 10.0),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672704000, 30.0, 20.0),
     ]
     expected_add_rolling_sum_columns_rows = [
-        ("1-001", PrimaryServiceType.care_home_only, 1672531200, 1.1, None, None, None),
-        ("1-001", PrimaryServiceType.care_home_only, 1672617600, 1.2, 1.1, 2.5, 2.5),
-        ("1-001", PrimaryServiceType.care_home_only, 1672704000, 1.3, 1.2, 3.8, 3.7),
-        ("1-001", PrimaryServiceType.care_home_only, 1672790400, None, 1.3, 3.8, 3.7),
-        ("1-002", PrimaryServiceType.care_home_only, 1672531200, 1.4, None, None, None),
-        ("1-002", PrimaryServiceType.care_home_only, 1672617600, 1.3, 1.4, 2.5, 2.5),
-        ("1-003", PrimaryServiceType.non_residential, 1672531200, 10.0, None, None, None),
-        ("1-003", PrimaryServiceType.non_residential, 1672617600, 20.0, 10.0, 20.0, 10.0),
-        ("1-003", PrimaryServiceType.non_residential, 1672704000, 30.0, 20.0, 50.0, 30.0),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.1, None, None, None),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.2, 1.1, 2.5, 2.5),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.3, 1.2, 3.8, 3.7),
+        ("1-001", PrimaryServiceType.care_home_only, 1.0, 1672790400, None, 1.3, 3.8, 3.7),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.4, None, None, None),
+        ("1-002", PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.3, 1.4, 2.5, 2.5),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.5, None, None, None),
+        ("1-003", PrimaryServiceType.care_home_only, 2.0, 1672617600, 1.6, 1.5, 1.6, 1.5),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672531200, 10.0, None, None, None),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672617600, 20.0, 10.0, 20.0, 10.0),
+        ("1-004", PrimaryServiceType.non_residential, None, 1672704000, 30.0, 20.0, 50.0, 30.0),
     ]
     # fmt: on
 

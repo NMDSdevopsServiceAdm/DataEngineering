@@ -1778,6 +1778,7 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 RoC_TempCol.column_with_values_interpolated, DoubleType(), True
