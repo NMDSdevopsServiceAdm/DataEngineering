@@ -1030,7 +1030,7 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.non_res_combined_model, FloatType(), True),
             StructField(IndCQC.imputed_pir_filled_posts_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
             StructField(IndCQC.ct_care_home_import_date, DateType(), True),
