@@ -1687,6 +1687,7 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(IndCQC.number_of_beds_banded_cleaned, IntegerType(), True),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
         ]
     )
