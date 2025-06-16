@@ -115,7 +115,7 @@ module "clean_ascwds_worker_job" {
 
 module "clean_capacity_tracker_care_home_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "clean_capacity_tracker_care_home_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -130,7 +130,7 @@ module "clean_capacity_tracker_care_home_job" {
 
 module "clean_capacity_tracker_non_res_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "clean_capacity_tracker_non_res_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -195,7 +195,7 @@ module "clean_ons_data_job" {
 
 module "archive_filled_posts_estimates_job" {
   source          = "../modules/glue-job"
-  script_dir      = "projects/_03_independent_cqc/_08_archive_estimates/jobs"
+  script_dir      = "projects/_03_independent_cqc/_09_archive_estimates/jobs"
   script_name     = "archive_filled_posts_estimates.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -918,7 +918,7 @@ module "diagnostics_on_capacity_tracker_job" {
 
 module "validate_cleaned_capacity_tracker_care_home_data_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_01_ingest/capacity_tracker/jobs"
   script_name       = "validate_cleaned_capacity_tracker_care_home_data.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
@@ -936,7 +936,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
 
 module "validate_cleaned_capacity_tracker_non_res_data_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_01_ingest/capacity_tracker/jobs"
   script_name     = "validate_cleaned_capacity_tracker_non_res_data.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources

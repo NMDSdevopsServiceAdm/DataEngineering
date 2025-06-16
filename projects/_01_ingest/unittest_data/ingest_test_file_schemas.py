@@ -13,7 +13,9 @@ from pyspark.sql.types import (
 
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResColumns as CTNR,
+    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
@@ -255,7 +257,7 @@ class ASCWDSWorkerSchemas:
 
 
 @dataclass
-class CapacityTrackerCareHomeSchema:
+class IngestCapacityTrackerCareHomeSchema:
     sample_schema = StructType(
         [
             StructField(CTCH.local_authority, StringType(), True),
@@ -294,7 +296,7 @@ class CapacityTrackerCareHomeSchema:
 
 
 @dataclass
-class CapacityTrackerNonResSchema:
+class IngestCapacityTrackerNonResSchema:
     sample_schema = StructType(
         [
             StructField(CTNR.local_authority, StringType(), True),
@@ -340,6 +342,130 @@ class CapacityTrackerNonResSchema:
             StructField("column_with_brackets and spaces()", StringType(), True),
         ]
     )
+
+
+@dataclass
+class CleanCapacityTrackerCareHomeSchema:
+    capacity_tracker_care_home_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+    remove_matching_agency_and_non_agency_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+        ]
+    )
+    create_new_columns_with_totals_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, IntegerType(), True),
+            StructField(CTCH.care_workers_employed, IntegerType(), True),
+            StructField(CTCH.non_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_nurses_employed, IntegerType(), True),
+            StructField(CTCH.agency_care_workers_employed, IntegerType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, IntegerType(), True),
+        ]
+    )
+    expected_create_new_columns_with_totals_schema = StructType(
+        [
+            *create_new_columns_with_totals_schema,
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
+        ]
+    )
+
+
+@dataclass
+class CleanCapacityTrackerNonResSchema:
+    capacity_tracker_non_res_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNR.service_user_count, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+            StructField("other column", StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerCareHomeData:
+    ct_care_home_schema = StructType(
+        [
+            StructField(CTCH.cqc_id, StringType(), True),
+            StructField(CTCH.nurses_employed, StringType(), True),
+            StructField(CTCH.care_workers_employed, StringType(), True),
+            StructField(CTCH.non_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_nurses_employed, StringType(), True),
+            StructField(CTCH.agency_care_workers_employed, StringType(), True),
+            StructField(CTCH.agency_non_care_workers_employed, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+    cleaned_ct_care_home_schema = StructType(
+        [
+            *ct_care_home_schema,
+            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
+            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
+            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
+            StructField(
+                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
+            ),
+        ]
+    )
+    calculate_expected_size_schema = ct_care_home_schema
+
+
+@dataclass
+class ValidateCleanedCapacityTrackerNonResData:
+    ct_non_res_schema = StructType(
+        [
+            StructField(CTNR.cqc_id, StringType(), True),
+            StructField(CTNR.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNR.service_user_count, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+        ]
+    )
+    cleaned_ct_non_res_schema = StructType(
+        [
+            StructField(CTNRClean.cqc_id, StringType(), True),
+            StructField(CTNRClean.cqc_care_workers_employed, StringType(), True),
+            StructField(CTNRClean.service_user_count, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(CTNRClean.capacity_tracker_import_date, DateType(), True),
+        ]
+    )
+    calculate_expected_size_schema = ct_non_res_schema
 
 
 @dataclass
@@ -628,6 +754,8 @@ class PostcodeMatcherSchema:
         [
             StructField(CQCL.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCL.name, StringType(), False),
+            StructField(CQCL.postal_address_line1, StringType(), False),
             StructField(CQCL.postal_code, StringType(), False),
         ]
     )
@@ -635,7 +763,11 @@ class PostcodeMatcherSchema:
         [
             StructField(ONS.postcode, StringType(), False),
             StructField(ONSClean.contemporary_ons_import_date, DateType(), False),
+            StructField(ONSClean.contemporary_cssr, StringType(), False),
+            StructField(ONSClean.contemporary_sub_icb, StringType(), True),
+            StructField(ONSClean.contemporary_ccg, StringType(), True),
             StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(ONSClean.current_sub_icb, StringType(), False),
         ]
     )
 
@@ -699,6 +831,13 @@ class PostcodeMatcherSchema:
         first_successful_postcode_unmatched_schema
     )
 
+    amend_invalid_postcodes_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+        ]
+    )
+
     truncate_postcode_schema = StructType(
         [
             StructField(CQCLClean.postcode_cleaned, StringType(), False),
@@ -732,6 +871,43 @@ class PostcodeMatcherSchema:
             StructField(ONSClean.current_cssr, StringType(), False),
             StructField(ONSClean.current_sub_icb, StringType(), False),
             StructField(CQCLClean.postcode_truncated, StringType(), False),
+        ]
+    )
+
+    raise_error_if_unmatched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.name, StringType(), False),
+            StructField(CQCLClean.postal_address_line1, StringType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+        ]
+    )
+
+    combine_matched_df1_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    combine_matched_df2_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(CQCLClean.postcode_truncated, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+        ]
+    )
+    expected_combine_matched_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.postcode_cleaned, StringType(), False),
+            StructField(ONSClean.current_cssr, StringType(), False),
+            StructField(CQCLClean.postcode_truncated, StringType(), True),
         ]
     )
 

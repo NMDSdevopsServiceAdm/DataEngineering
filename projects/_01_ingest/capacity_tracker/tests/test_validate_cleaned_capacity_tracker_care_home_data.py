@@ -1,15 +1,16 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
-import jobs.validate_cleaned_capacity_tracker_care_home_data as job
-
-from tests.test_file_data import ValidateCleanedCapacityTrackerCareHomeData as Data
-from tests.test_file_schemas import (
+import projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_care_home_data as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ValidateCleanedCapacityTrackerCareHomeData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateCleanedCapacityTrackerCareHomeData as Schemas,
 )
-
 from utils import utils
+
+PATCH_PATH: str = "projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_care_home_data"
 
 
 class ValidateCleanedCapacityTrackerCareHomeDatasetTests(unittest.TestCase):
@@ -36,8 +37,8 @@ class MainTests(ValidateCleanedCapacityTrackerCareHomeDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
