@@ -746,7 +746,10 @@ class CreateBandedBedCountColumnTests(unittest.TestCase):
             Data.create_banded_bed_count_column_rows,
             Schemas.create_banded_bed_count_column_schema,
         )
-        returned_df = job.create_banded_bed_count_column(test_df)
+        test_splits = [0, 1, 25, float("Inf")]
+        returned_df = job.create_banded_bed_count_column(
+            test_df, IndCQC.number_of_beds_banded, test_splits
+        )
 
         expected_df = self.spark.createDataFrame(
             Data.expected_create_banded_bed_count_column_rows,

@@ -182,7 +182,7 @@ def add_rolling_sum_columns(df: DataFrame, number_of_days: int) -> DataFrame:
 
     rolling_sum_window = (
         Window.partitionBy(
-            IndCqc.primary_service_type, IndCqc.number_of_beds_banded_cleaned
+            IndCqc.primary_service_type, IndCqc.number_of_beds_banded_for_rate_of_change
         )
         .orderBy(F.col(IndCqc.unix_time))
         .rangeBetween(-convert_days_to_unix_time(number_of_days), 0)

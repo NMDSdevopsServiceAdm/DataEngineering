@@ -1,6 +1,7 @@
 from pyspark.sql import DataFrame, functions as F, Window
 from typing import Optional
 
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change import (
     model_primary_service_rate_of_change,
@@ -46,6 +47,12 @@ def model_primary_service_rate_of_change_trendline(
         DataFrame: The DataFrame with the trendline column.
     """
 
+    df = cUtils.create_banded_bed_count_column(
+        df,
+        IndCqc.number_of_beds_banded_for_rate_of_change,
+        [0, 1, 10, 25, float("Inf")],
+    )
+
     df = model_primary_service_rate_of_change(
         df,
         column_with_values,
@@ -64,13 +71,16 @@ def model_primary_service_rate_of_change_trendline(
         rate_of_change_trendline_df,
         [
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_cleaned,
+            IndCqc.number_of_beds_banded_for_rate_of_change,
             IndCqc.unix_time,
         ],
         "left",
     )
 
-    df = df.drop(IndCqc.single_period_rate_of_change)
+    df = df.drop(
+        IndCqc.number_of_beds_banded_for_rate_of_change,
+        IndCqc.single_period_rate_of_change,
+    )
 
     return df
 
@@ -87,13 +97,13 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
     df = df.select(
         IndCqc.primary_service_type,
-        IndCqc.number_of_beds_banded_cleaned,
+        IndCqc.number_of_beds_banded_for_rate_of_change,
         IndCqc.unix_time,
         IndCqc.single_period_rate_of_change,
     ).dropDuplicates(
         [
             IndCqc.primary_service_type,
-            IndCqc.number_of_beds_banded_cleaned,
+            IndCqc.number_of_beds_banded_for_rate_of_change,
             IndCqc.unix_time,
         ]
     )
@@ -121,7 +131,7 @@ def calculate_rate_of_change_trendline(
         DataFrame: The DataFrame with the rate of change trendline included.
     """
     w = Window.partitionBy(
-        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_cleaned
+        IndCqc.primary_service_type, IndCqc.number_of_beds_banded_for_rate_of_change
     ).orderBy(IndCqc.unix_time)
 
     trendline_df = df.withColumn(

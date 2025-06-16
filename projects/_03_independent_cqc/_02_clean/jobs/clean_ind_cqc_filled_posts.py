@@ -60,7 +60,11 @@ def main(
         locations_df, IndCQC.ascwds_filled_posts_dedup
     )
 
-    locations_df = cUtils.create_banded_bed_count_column(locations_df)
+    locations_df = cUtils.create_banded_bed_count_column(
+        locations_df,
+        IndCQC.number_of_beds_banded,
+        [0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
+    )
 
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 

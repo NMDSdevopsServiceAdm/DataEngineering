@@ -750,12 +750,14 @@ class CleaningUtilsData:
         ("1-002", CareHome.care_home, 24),
         ("1-003", CareHome.care_home, 500),
         ("1-004", CareHome.not_care_home, None),
+        ("1-005", CareHome.not_care_home, 20),
     ]
     expected_create_banded_bed_count_column_rows = [
         ("1-001", CareHome.care_home, 1, 1.0),
-        ("1-002", CareHome.care_home, 24, 6.0),
-        ("1-003", CareHome.care_home, 500, 8.0),
-        ("1-004", CareHome.not_care_home, None, None),
+        ("1-002", CareHome.care_home, 24, 1.0),
+        ("1-003", CareHome.care_home, 500, 2.0),
+        ("1-004", CareHome.not_care_home, None, 0.0),
+        ("1-005", CareHome.not_care_home, 20, 0.0),
     ]
 
 
