@@ -173,7 +173,7 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
     The function builds a chain of when/otherwise clauses using the keys from the lookup_dict.
     The last key in the lookup_dict becomes the first when clause to evaluate.
     For example, when imputed_gac_service_types[description] == "Shared Lives" then return "Shared Lives".
-    Therfore, the lookup_dict order determines which service type is allocated to a location.
+    Therefore, the lookup_dict order determines which service type is allocated to a location.
 
     When none of the imputed_gac_service_types[description] are in the lookup_dict keys, then the row
     gets the default value 'Other non-residential'.
