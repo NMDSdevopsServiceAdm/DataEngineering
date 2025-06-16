@@ -3957,32 +3957,34 @@ class ModelPrimaryServiceRateOfChangeTrendlineData:
     # fmt: on
 
     calculate_rate_of_change_trendline_mock_rows = [
-        (PrimaryServiceType.care_home_only, 1672531200, 1.0),
-        (PrimaryServiceType.care_home_only, 1672617600, 1.5),
-        (PrimaryServiceType.care_home_only, 1672704000, 3.0),
-        (PrimaryServiceType.care_home_only, 1672790400, 4.5),
-        (PrimaryServiceType.non_residential, 1672531200, 1.0),
-        (PrimaryServiceType.non_residential, 1672617600, 1.2),
-        (PrimaryServiceType.non_residential, 1672704000, 1.2),
-        (PrimaryServiceType.non_residential, 1672790400, 1.8),
+        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.5),
+        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 3.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 4.5),
+        (PrimaryServiceType.non_residential, None, 1672531200, 1.0),
+        (PrimaryServiceType.non_residential, None, 1672617600, 1.2),
+        (PrimaryServiceType.non_residential, None, 1672704000, 1.2),
+        (PrimaryServiceType.non_residential, None, 1672790400, 1.8),
     ]
 
     deduplicate_dataframe_rows = [
-        (PrimaryServiceType.care_home_only, 1672531200, 1.0, 2.0),
-        (PrimaryServiceType.care_home_only, 1672617600, 1.1, 2.0),
-        (PrimaryServiceType.care_home_only, 1672704000, 1.2, 2.0),
-        (PrimaryServiceType.care_home_only, 1672790400, 1.3, 2.0),
-        (PrimaryServiceType.care_home_only, 1672531200, 1.0, 2.0),
-        (PrimaryServiceType.care_home_only, 1672617600, 1.1, 2.0),
-        (PrimaryServiceType.non_residential, 1672617600, 10.0, 2.0),
-        (PrimaryServiceType.non_residential, 1672617600, 10.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.2, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 1.3, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0, 2.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1, 2.0),
+        (PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.0, 2.0),
+        (PrimaryServiceType.non_residential, None, 1672617600, 10.0, 2.0),
+        (PrimaryServiceType.non_residential, None, 1672617600, 10.0, 2.0),
     ]
     expected_deduplicate_dataframe_rows = [
-        (PrimaryServiceType.care_home_only, 1672531200, 1.0),
-        (PrimaryServiceType.care_home_only, 1672617600, 1.1),
-        (PrimaryServiceType.care_home_only, 1672704000, 1.2),
-        (PrimaryServiceType.care_home_only, 1672790400, 1.3),
-        (PrimaryServiceType.non_residential, 1672617600, 10.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672531200, 1.0),
+        (PrimaryServiceType.care_home_only, 1.0, 1672617600, 1.1),
+        (PrimaryServiceType.care_home_only, 1.0, 1672704000, 1.2),
+        (PrimaryServiceType.care_home_only, 1.0, 1672790400, 1.3),
+        (PrimaryServiceType.care_home_only, 2.0, 1672531200, 1.0),
+        (PrimaryServiceType.non_residential, None, 1672617600, 10.0),
     ]
 
     calculate_rate_of_change_trendline_rows = [

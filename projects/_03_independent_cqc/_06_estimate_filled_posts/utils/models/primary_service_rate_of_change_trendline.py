@@ -73,7 +73,7 @@ def model_primary_service_rate_of_change_trendline(
 
 def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
-    Selects primary service type, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
+    Selects primary service type, banded beds, unix time and single period rate of change then deduplicates the DataFrame based on primary service type and unix time.
 
     Args:
         df (DataFrame): The input DataFrame.
@@ -83,6 +83,7 @@ def deduplicate_dataframe(df: DataFrame) -> DataFrame:
     """
     df = df.select(
         IndCqc.primary_service_type,
+        IndCqc.number_of_beds_banded_cleaned,
         IndCqc.unix_time,
         IndCqc.single_period_rate_of_change,
     ).dropDuplicates([IndCqc.primary_service_type, IndCqc.unix_time])

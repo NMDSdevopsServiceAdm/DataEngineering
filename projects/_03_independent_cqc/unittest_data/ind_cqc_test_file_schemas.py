@@ -1835,6 +1835,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     calculate_rate_of_change_trendline_mock_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
@@ -1845,6 +1846,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
             StructField("another_col", DoubleType(), True),
@@ -1853,6 +1855,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     expected_deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
