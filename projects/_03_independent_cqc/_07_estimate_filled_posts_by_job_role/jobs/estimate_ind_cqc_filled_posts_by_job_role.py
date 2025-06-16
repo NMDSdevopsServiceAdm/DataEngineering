@@ -263,7 +263,7 @@ def main(
     estimated_ind_cqc_filled_posts_by_job_role_df = (
         JRutils.create_estimate_filled_posts_job_group_columns(
             estimated_ind_cqc_filled_posts_by_job_role_df,
-            JobGroupDicts.job_group_to_job_role_dict,
+            JobGroupDicts.job_role_to_job_group_dict,
         )
     )
 

@@ -1684,14 +1684,14 @@ class CreateEstimateFilledPostsJobGroupColumns(
     def setUp(self) -> None:
         super().setUp()
 
-        test_job_group_to_job_role_dict = Data.test_job_group_to_job_role_dict
+        test_job_role_to_job_group_dict = Data.test_job_role_to_job_group_dict
 
         test_df = self.spark.createDataFrame(
             Data.create_estimate_filled_posts_job_group_columns_rows,
             Schemas.create_estimate_filled_posts_job_group_columns_schema,
         )
         self.returned_df = job.create_estimate_filled_posts_job_group_columns(
-            test_df, test_job_group_to_job_role_dict
+            test_df, test_job_role_to_job_group_dict
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_create_estimate_filled_posts_job_group_columns_rows,
