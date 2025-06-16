@@ -1,0 +1,118 @@
+{
+  "Comment": "A step function to ingest, clean and validate Capacity Tracker Non Residential data",
+  "StartAt": "Capacity Tracker Non Residential pipeline",
+  "States": {
+    "Capacity Tracker Non Residential pipeline": {
+      "Type": "Parallel",
+      "Next": "Run validation crawler when success",
+      "Branches": [
+        {
+          "StartAt": "Ingest Capacity Tracker Non Res",
+          "States": {
+            "Ingest Capacity Tracker Non Res": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${ingest_ct_non_res_job_name}",
+                "Arguments": {
+                  "--source.$": "$.jobs.ingest_capacity_tracker_data.source",
+                  "--destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
+                }
+              },
+              "Next": "Clean Capacity Tracker Non Res data"
+            },
+            "Clean Capacity Tracker Non Res data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_ct_non_res_data_job_name}",
+                "Arguments": {
+                  "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
+                  "--cleaned_capacity_tracker_non_res_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+
+                }
+              },
+              "Next": "Validate cleaned CT Non Res data"
+            },
+            "Validate cleaned CT Non Res data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_ct_non_res_cleaned_data_job_name}",
+                "Arguments": {
+                  "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
+                  "--capacity_tracker_non_res_cleaned_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_capacity_tracker_non_residential_cleaned_data/"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Publish error notification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Run validation crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run CT crawler when success"
+    },
+    "Run CT crawler when success": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${ct_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Success"
+    },
+    "Publish error notification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "Run validation crawler when failed"
+    },
+    "Run validation crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Run CT crawler when failed"
+    },
+    "Run CT crawler when failed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${ct_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}

@@ -61,6 +61,47 @@ resource "aws_cloudwatch_event_rule" "ons_pd_csv_added" {
 EOF
 }
 
+resource "aws_cloudwatch_event_rule" "ct_care_home_csv_added" {
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  name        = "${local.workspace_prefix}-ct-care_home-csv-added"
+  description = "Captures when a new Capacity Tracker care home CSV is uploaded to sfc-data-engineering-raw bucket"
+
+  event_pattern = <<EOF
+{
+  "source": ["aws.s3"],
+  "detail-type": ["Object Created"],
+  "detail": {
+    "bucket": {
+      "name": ["sfc-data-engineering-raw"]
+    },
+    "object": {
+      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_care_home" }  ]
+    }
+  }
+}
+EOF
+}
+
+resource "aws_cloudwatch_event_rule" "ct_non_res_csv_added" {
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
+  name        = "${local.workspace_prefix}-ct-non_res-csv-added"
+  description = "Captures when a new Capacity Tracker non residential CSV is uploaded to sfc-data-engineering-raw bucket"
+
+  event_pattern = <<EOF
+{
+  "source": ["aws.s3"],
+  "detail-type": ["Object Created"],
+  "detail": {
+    "bucket": {
+      "name": ["sfc-data-engineering-raw"]
+    },
+    "object": {
+      "key": [ {"prefix": "domain=capacity_tracker/dataset=capacity_tracker_non_res" }  ]
+    }
+  }
+}
+EOF
+}
 resource "aws_iam_policy" "start_state_machines" {
   name = "${local.workspace_prefix}-start-state-machines"
   policy = jsonencode({
