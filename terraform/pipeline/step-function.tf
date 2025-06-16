@@ -230,6 +230,7 @@ resource "aws_sfn_state_machine" "ingest_ct_non_res_state_machine" {
     aws_iam_policy.step_function_iam_policy
   ]
 }
+
 resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
   name     = "${local.workspace_prefix}-Ingest-ONSPD"
   role_arn = aws_iam_role.step_function_iam_role.arn
