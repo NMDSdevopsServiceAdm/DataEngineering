@@ -39,6 +39,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
     IndCQC.number_of_beds,
+    IndCQC.number_of_beds_banded_cleaned,
     IndCQC.current_region,
     IndCQC.current_cssr,
     IndCQC.unix_time,
