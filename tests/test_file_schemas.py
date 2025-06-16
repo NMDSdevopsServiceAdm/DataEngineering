@@ -1033,19 +1033,10 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.unix_time, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-    join_estimates_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.cqc_location_import_date, DateType(), False),
-            StructField(IndCQC.care_home, StringType(), True),
-            StructField(IndCQC.primary_service_type, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.ct_care_home_import_date, DateType(), True),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
+            StructField(IndCQC.ct_non_res_import_date, DateType(), True),
+            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
@@ -1053,72 +1044,26 @@ class DiagnosticsOnCapacityTrackerSchemas:
         ]
     )
 
-    capacity_tracker_care_home_schema = StructType(
-        [
-            StructField(CTCHClean.cqc_id, StringType(), False),
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), False),
-            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
-            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    capacity_tracker_non_res_schema = StructType(
-        [
-            StructField(CTNRClean.cqc_id, StringType(), False),
-            StructField(CTNRClean.capacity_tracker_import_date, DateType(), False),
-            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
-            StructField(CTNRClean.service_user_count, IntegerType(), True),
-            StructField(Keys.year, StringType(), True),
-            StructField(Keys.month, StringType(), True),
-            StructField(Keys.day, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    expected_joined_care_home_schema = StructType(
-        [
-            *join_estimates_schema,
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
-            StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
-            StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
-        ]
-    )
-    expected_joined_non_res_schema = StructType(
-        [
-            *estimate_filled_posts_schema,
-            StructField(CTCHClean.capacity_tracker_import_date, DateType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed, IntegerType(), True),
-            StructField(CTNRClean.service_user_count, IntegerType(), True),
-        ]
-    )
     convert_to_all_posts_using_ratio_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
+            ),
         ]
     )
     expected_convert_to_all_posts_using_ratio_schema = StructType(
         [
             *convert_to_all_posts_using_ratio_schema,
-            StructField(
-                CTNRClean.capacity_tracker_filled_post_estimate, FloatType(), True
-            ),
+            StructField(IndCQC.ct_non_res_filled_post_estimate, FloatType(), True),
         ]
     )
     calculate_care_worker_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(CTNRClean.cqc_care_workers_employed_imputed, FloatType(), True),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
+            ),
             StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )

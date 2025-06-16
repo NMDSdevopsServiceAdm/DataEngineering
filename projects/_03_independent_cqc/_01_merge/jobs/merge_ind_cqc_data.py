@@ -19,6 +19,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_values.categorical_column_values import Sector
@@ -81,9 +82,16 @@ cleaned_cqc_pir_columns_to_import = [
 
 cleaned_ct_non_res_columns_to_import = [
     CTNRClean.cqc_id,
-    CTNRClean.capacity_tracker_import_date,
+    CTNRClean.ct_non_res_import_date,
     CTNRClean.care_home,
     CTNRClean.cqc_care_workers_employed,
+]
+
+cleaned_ct_care_home_columns_to_import = [
+    CTCHClean.cqc_id,
+    CTCHClean.ct_care_home_import_date,
+    CTCHClean.care_home,
+    CTCHClean.ct_care_home_total_employed,
 ]
 
 
@@ -91,7 +99,8 @@ def main(
     cleaned_cqc_location_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ascwds_workplace_source: str,
-    cleaned_non_res_ct_source: str,
+    cleaned_ct_non_res_source: str,
+    cleaned_ct_care_home_source: str,
     destination: str,
 ):
     spark = utils.get_spark()
@@ -112,7 +121,12 @@ def main(
     )
 
     ct_non_res_df = utils.read_from_parquet(
-        cleaned_non_res_ct_source, selected_columns=cleaned_ct_non_res_columns_to_import
+        cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
+    )
+
+    ct_care_home_df = utils.read_from_parquet(
+        cleaned_ct_care_home_source,
+        selected_columns=cleaned_ct_care_home_columns_to_import,
     )
 
     ind_cqc_location_df = utils.select_rows_with_value(
@@ -138,8 +152,16 @@ def main(
         ind_cqc_location_df,
         ct_non_res_df,
         CTNRClean.cqc_id,
-        CTNRClean.capacity_tracker_import_date,
+        CTNRClean.ct_non_res_import_date,
         CTNRClean.care_home,
+    )
+
+    ind_cqc_location_df = join_data_into_cqc_df(
+        ind_cqc_location_df,
+        ct_care_home_df,
+        CTCHClean.cqc_id,
+        CTCHClean.ct_care_home_import_date,
+        CTCHClean.care_home,
     )
 
     utils.write_to_parquet(
@@ -204,7 +226,8 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
-        cleaned_non_res_ct_source,
+        cleaned_ct_non_res_source,
+        cleaned_ct_care_home_source,
         destination,
     ) = utils.collect_arguments(
         (
@@ -220,8 +243,12 @@ if __name__ == "__main__":
             "Source s3 directory for parquet ASCWDS workplace cleaned dataset",
         ),
         (
-            "--cleaned_non_res_ct_source",
-            "Source s3 directory for parquet capacity tracker cleaned dataset",
+            "--cleaned_ct_non_res_source",
+            "Source s3 directory for parquet capacity tracker non residential cleaned dataset",
+        ),
+        (
+            "--cleaned_ct_care_home_source",
+            "Source s3 directory for parquet capacity tracker care home cleaned dataset",
         ),
         (
             "--destination",
@@ -232,7 +259,8 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
-        cleaned_non_res_ct_source,
+        cleaned_ct_non_res_source,
+        cleaned_ct_care_home_source,
         destination,
     )
 

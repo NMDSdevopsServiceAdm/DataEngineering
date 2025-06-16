@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql.dataframe import DataFrame
+from pyspark.sql import DataFrame, functions as F
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -9,6 +9,7 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 CAPACITY_TRACKER_CARE_HOME_COLUMNS = [
     CTCH.cqc_id,
@@ -47,7 +48,7 @@ def main(
     capacity_tracker_care_home_df = cUtils.column_to_date(
         capacity_tracker_care_home_df,
         Keys.import_date,
-        CTCHClean.capacity_tracker_import_date,
+        CTCHClean.ct_care_home_import_date,
     )
     capacity_tracker_care_home_df = (
         remove_rows_where_agency_and_non_agency_values_match(
@@ -67,6 +68,9 @@ def main(
     )
     capacity_tracker_care_home_df = create_new_columns_with_totals(
         capacity_tracker_care_home_df
+    )
+    capacity_tracker_care_home_df = capacity_tracker_care_home_df.withColumn(
+        CTCHClean.care_home, F.lit(CareHome.care_home)
     )
 
     print(f"Exporting as parquet to {cleaned_capacity_tracker_care_home_destination}")
@@ -129,7 +133,7 @@ def create_new_columns_with_totals(df: DataFrame) -> DataFrame:
         + df[CTCH.agency_non_care_workers_employed],
     )
     df = df.withColumn(
-        CTCHClean.agency_and_non_agency_total_employed,
+        CTCHClean.ct_care_home_total_employed,
         df[CTCHClean.agency_total_employed] + df[CTCHClean.non_agency_total_employed],
     )
     return df
