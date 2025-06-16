@@ -919,8 +919,6 @@ def create_estimate_filled_posts_job_group_columns(
         DataFrame: A dataframe with job group estimate filled posts columns.
     """
 
-    # test push.
-
     for (
         job_group,
         job_roles,
