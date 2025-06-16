@@ -1,5 +1,5 @@
 resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
-  name     = "${local.workspace_prefix}-Clean-And-Validate-Pipeline"
+  name     = "${local.workspace_prefix}-Clean-And-Validate"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/CleanAndValidate-StepFunction.json", {
@@ -34,7 +34,7 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_machine" {
-  name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates-Pipeline"
+  name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IndCqcFilledPostEstimatePipeline-StepFunction.json", {
@@ -76,10 +76,10 @@ resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_m
 }
 
 resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
-  name     = "${local.workspace_prefix}-Bulk-Download-CQC-API-Pipeline"
+  name     = "${local.workspace_prefix}-Ingest-CQC-API"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/BulkDownloadCQCAPIPipeline-StepFunction.json", {
+  definition = templatefile("step-functions/IngestCQCAPI-StepFunction.json", {
     dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
     bulk_cqc_locations_download_job_name         = module.bulk_cqc_locations_download_job.job_name
     bulk_cqc_providers_download_job_name         = module.bulk_cqc_providers_download_job.job_name
@@ -104,7 +104,7 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "direct_payments_state_machine" {
-  name     = "${local.workspace_prefix}-DirectPaymentRecipientsPipeline"
+  name     = "${local.workspace_prefix}-Direct-Payment-Recipients"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/DirectPaymentRecipientsPipeline-StepFunction.json", {
@@ -129,31 +129,8 @@ resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "historic_direct_payments_state_machine" {
-  name     = "${local.workspace_prefix}-HistoricDirectPaymentRecipientsPipeline"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/HistoricDirectPaymentRecipientsPipeline-StepFunction.json", {
-    prepare_dpr_external_job_name     = module.prepare_dpr_external_data_job.job_name
-    estimate_direct_payments_job_name = module.estimate_direct_payments_job.job_name
-    data_engineering_crawler_name     = module.data_engineering_crawler.crawler_name
-    dataset_bucket_uri                = module.datasets_bucket.bucket_uri
-    run_crawler_state_machine_arn     = aws_sfn_state_machine.run_crawler.arn
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy
-  ]
-}
-
 resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
-  name     = "${local.workspace_prefix}-IngestASCWDS"
+  name     = "${local.workspace_prefix}-Ingest-ASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestASCWDS-StepFunction.json", {
@@ -176,10 +153,10 @@ resource "aws_sfn_state_machine" "ingest_ascwds_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ingest_cqc_pir_state_machine" {
-  name     = "${local.workspace_prefix}-IngestCqcPir"
+  name     = "${local.workspace_prefix}-Ingest-CQC-PIR"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/IngestCqcPir-StepFunction.json", {
+  definition = templatefile("step-functions/IngestCQCPIR-StepFunction.json", {
     ingest_cqc_pir_job_name              = module.ingest_cqc_pir_data_job.job_name
     validate_pir_raw_data_job_name       = module.validate_pir_raw_data_job.job_name
     clean_cqc_pir_data_job_name          = module.clean_cqc_pir_data_job.job_name
@@ -254,10 +231,10 @@ resource "aws_sfn_state_machine" "ingest_ct_non_res_state_machine" {
   ]
 }
 resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
-  name     = "${local.workspace_prefix}-IngestAndCleanONS"
+  name     = "${local.workspace_prefix}-Ingest-ONSPD"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/IngestAndCleanONS-StepFunction.json", {
+  definition = templatefile("step-functions/IngestONSPD-StepFunction.json", {
     ingest_ons_data_job_name                          = module.ingest_ons_data_job.job_name
     validate_postcode_directory_raw_data_job_name     = module.validate_postcode_directory_raw_data_job.job_name
     clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
@@ -280,10 +257,10 @@ resource "aws_sfn_state_machine" "ingest_ons_pd_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
-  name     = "${local.workspace_prefix}-Bronze-Validation-Pipeline"
+  name     = "${local.workspace_prefix}-Validation-Bronze"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/BronzeValidationPipeline-StepFunction.json", {
+  definition = templatefile("step-functions/ValidationBronze-StepFunction.json", {
     dataset_bucket_uri                          = module.datasets_bucket.bucket_uri
     validate_ascwds_worker_raw_data_job_name    = module.validate_ascwds_worker_raw_data_job.job_name
     validate_ascwds_workplace_raw_data_job_name = module.validate_ascwds_workplace_raw_data_job.job_name
@@ -306,10 +283,10 @@ resource "aws_sfn_state_machine" "bronze_validation_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "silver_validation_state_machine" {
-  name     = "${local.workspace_prefix}-Silver-Validation-Pipeline"
+  name     = "${local.workspace_prefix}-Validation-Silver"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/SilverValidationPipeline-StepFunction.json", {
+  definition = templatefile("step-functions/ValidationSilver-StepFunction.json", {
     dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
     validate_ascwds_worker_cleaned_data_job_name    = module.validate_ascwds_worker_cleaned_data_job.job_name
     validate_ascwds_workplace_cleaned_data_job_name = module.validate_ascwds_workplace_cleaned_data_job.job_name
@@ -332,10 +309,10 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "coverage_state_machine" {
-  name     = "${local.workspace_prefix}-Coverage-Pipeline"
+  name     = "${local.workspace_prefix}-SfC-Coverage"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CoveragePipeline-StepFunction.json", {
+  definition = templatefile("step-functions/SfCCoverage-StepFunction.json", {
     dataset_bucket_uri                    = module.datasets_bucket.bucket_uri
     merge_coverage_data_job_name          = module.merge_coverage_data_job.job_name
     validate_merge_coverage_data_job_name = module.validate_merge_coverage_data_job.job_name
@@ -357,7 +334,7 @@ resource "aws_sfn_state_machine" "coverage_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "run_crawler" {
-  name       = "${local.workspace_prefix}-RunCrawler"
+  name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
   type       = "STANDARD"
   definition = templatefile("step-functions/RunCrawler-StepFunction.json", {})
