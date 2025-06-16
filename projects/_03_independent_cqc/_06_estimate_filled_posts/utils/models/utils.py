@@ -95,7 +95,7 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
     Bands below 2 are grouped together for locations with the primary service 'care home only'.
     All other bands remain as they were.
 
-    Always return null if the location is non-residential.
+    Always return zero if the location is non-residential.
 
     Args:
         df (DataFrame): The input DataFrame containing the 'number_of_beds_banded' column.
@@ -103,6 +103,7 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: The input DataFrame with the new 'number_of_beds_banded_cleaned' column added.
     """
+    band_zero: float = 0.0
     band_two: float = 2.0
     band_three: float = 3.0
 
@@ -123,7 +124,7 @@ def clean_number_of_beds_banded(df: DataFrame) -> DataFrame:
         )
         .when(
             (F.col(IndCqc.primary_service_type) == PrimaryServiceType.non_residential),
-            F.lit(None),
+            F.lit(band_zero),
         )
         .otherwise(F.col(IndCqc.number_of_beds_banded)),
     )

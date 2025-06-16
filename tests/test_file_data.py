@@ -2244,7 +2244,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             1704067200,
             None,
-            None,
+            0.0,
             date(2024, 1, 1),
             10,
             "2024",
