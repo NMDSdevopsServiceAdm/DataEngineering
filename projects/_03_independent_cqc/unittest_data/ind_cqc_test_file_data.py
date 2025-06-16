@@ -2629,6 +2629,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (None, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, None, 4.0, 6.0, 8.0),
     ]
 
+    create_job_role_estimates_data_validation_columns_rows = [
+        (10.0, 1.0, 1.0, 2.0, 3.0, 4.0),
+        (10.0, 1.0, 1.0, 2.0, 3.0, 4.0),
+    ]
+    expected_create_job_role_estimates_data_validation_columns_rows = [
+        (10.0, 1.0, 1.0, 2.0, 3.0, 4.0, 0.1, 0.1, 0.2, 0.3, 0.4),
+        (10.0, 1.0, 1.0, 2.0, 3.0, 4.0, 0.1, 0.1, 0.2, 0.3, 0.4),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:

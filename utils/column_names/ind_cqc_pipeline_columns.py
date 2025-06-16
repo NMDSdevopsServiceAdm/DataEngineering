@@ -211,6 +211,21 @@ class IndCqcColumns:
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    national_percentage_care_worker_filled_posts: str = (
+        "national_percentage_care_worker_filled_posts"
+    )
+    national_percentage_direct_care_filled_posts: str = (
+        "national_percentage_direct_care_filled_posts"
+    )
+    national_percentage_managers_filled_posts: str = (
+        "national_percentage_managers_filled_posts"
+    )
+    national_percentage_regulated_professions_filled_posts: str = (
+        "national_percentage_regulated_professions_filled_posts"
+    )
+    national_percentage_other_filled_posts: str = (
+        "national_percentage_other_filled_posts"
+    )
     number_of_beds: str = CQCLClean.number_of_beds
     number_of_beds_banded: str = "number_of_beds_banded"
     number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"

@@ -935,3 +935,18 @@ def create_estimate_filled_posts_job_group_columns(
         )
 
     return df
+
+
+def create_job_role_estimates_data_validation_columns(df: DataFrame) -> DataFrame:
+    """
+    Creates new columns for checking the job role estimates data. These are:
+        - National job group percentage split of estimated filled posts.
+        - National care worker role as percentage of overall estimated filled posts.
+
+    Args:
+        df (DataFrame): A dataframe with job role and job group estimate filled posts columns.
+
+    Returns:
+        DataFrame: A dataframe with additional columns for checking the job role estimates data.
+    """
+    return df

@@ -1722,3 +1722,59 @@ class CreateEstimateFilledPostsJobGroupColumns(
         expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class CreateJobRoleEstimatesDataValidationColumns(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.create_job_role_estimates_data_validation_columns_rows,
+            Schemas.create_job_role_estimates_data_validation_columns_schema,
+        )
+        self.returned_df = job.create_job_role_estimates_data_validation_columns(
+            test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_job_role_estimates_data_validation_columns_rows,
+            Schemas.expected_create_job_role_estimates_data_validation_columns_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in test_df.columns
+        ]
+
+    def test_create_job_role_estimates_data_validation_columns_adds_5_expected_column(
+        self,
+    ):
+        self.assertEqual(len(self.new_columns_added), 5)
+        self.assertEqual(
+            self.new_columns_added[0],
+            IndCQC.national_percentage_care_worker_filled_posts,
+        )
+        self.assertEqual(
+            self.new_columns_added[1],
+            IndCQC.national_percentage_direct_care_filled_posts,
+        )
+        self.assertEqual(
+            self.new_columns_added[2], IndCQC.national_percentage_managers_filled_posts
+        )
+        self.assertEqual(
+            self.new_columns_added[3],
+            IndCQC.national_percentage_regulated_professions_filled_posts,
+        )
+        self.assertEqual(
+            self.new_columns_added[4], IndCQC.national_percentage_other_filled_posts
+        )
+
+    def test_create_job_role_estimates_data_validation_columns_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
