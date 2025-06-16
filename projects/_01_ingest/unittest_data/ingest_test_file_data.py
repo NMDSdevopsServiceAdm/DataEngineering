@@ -972,29 +972,33 @@ class ValidatePIRCleanedData:
 class PostcodeMatcherData:
     # fmt: off
     locations_where_all_match_rows = [
-        ("1-001", date(2020, 1, 1), "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "AA1 1aa"),  # lower case but matches ok
-        ("1-002", date(2020, 1, 1), "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
-        ("1-002", date(2025, 1, 1), "AA1 2AA"),
-        ("1-002", date(2025, 1, 1), "AA1 3AA"),
-        ("1-003", date(2025, 1, 1), "29 5HF"),  # known issue (actually need one from the invalid list here)
-        ("1-004", date(2025, 1, 1), "AA1 4ZZ"),  # match this in truncated
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),  # match this in truncated
     ]
     locations_with_unmatched_postcode_rows = [
-        ("1-001", date(2020, 1, 1), "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "AA1 1aa"),
-        ("1-005", date(2025, 1, 1), "AA2 5XX"),  # never known
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "name 5", "5 road name", "AA2 5XX"),  # never known
     ]
     # fmt: on
 
+    # fmt: off
     postcodes_rows = [
-        ("AA11AA", date(2020, 1, 1), "CSSR 1"),
-        ("AA12AA", date(2020, 1, 1), "CSSR 2"),
-        ("AA13AA", date(2020, 1, 1), "CSSR 3"),
-        ("AA11AA", date(2025, 1, 1), "CSSR 1"),
-        ("AA12AA", date(2025, 1, 1), "CSSR 2"),
-        ("AA13AA", date(2025, 1, 1), "CSSR 3"),
+        ("AA11AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 1", "SubICB 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 2", "SubICB 1"),
+        ("AA13AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 3", "SubICB 1"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 1", "SubICB 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 2", "SubICB 1"),
+        ("AA13AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 3", "SubICB 1"),
+        ("AA14AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 4", "SubICB 1"),
+        ("TF74EH", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 5", "SubICB 1"),
     ]
+    # fmt: on
 
     clean_postcode_column_rows = [
         ("aA11Aa", "ccsr 1"),
@@ -1042,6 +1046,17 @@ class PostcodeMatcherData:
         ("1-003", date(2025, 1, 1), "AA13AA"),
     ]
 
+    amend_invalid_postcodes_rows = [
+        ("1-001", "CH52LY"),
+        ("1-002", "AB12CD"),
+        ("1-003", None),
+    ]
+    expected_amend_invalid_postcodes_rows = [
+        ("1-001", "CH16HU"),  # amended as per invalid postcode dictionary
+        ("1-002", "AB12CD"),  # not in dictionary, doesn't change
+        ("1-003", None),  # null values should remain as null
+    ]
+
     truncate_postcode_rows = [
         ("AA11AA", date(2023, 1, 1)),
         ("AA11AB", date(2023, 1, 1)),
@@ -1069,6 +1084,25 @@ class PostcodeMatcherData:
         (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
     ]
     # fmt: on
+
+    raise_error_if_unmatched_rows = [
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AB1 2CD")
+    ]
+
+    combine_matched_df1_rows = [
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
+        ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1"),
+    ]
+    combine_matched_df2_rows = [
+        ("1-002", date(2025, 1, 1), "ZZ11AA", "ZZ11", "CSSR 2"),
+        ("1-004", date(2025, 1, 1), "ZZ12AA", "ZZ12", "CSSR 3"),
+    ]
+    expected_combine_matched_rows = [
+        ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1", None),
+        ("1-002", date(2025, 1, 1), "ZZ11AA", "CSSR 2", "ZZ11"),
+        ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1", None),
+        ("1-004", date(2025, 1, 1), "ZZ12AA", "CSSR 3", "ZZ12"),
+    ]
 
 
 @dataclass

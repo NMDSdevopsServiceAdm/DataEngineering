@@ -42,21 +42,22 @@ from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matc
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cqc_location_api_cols_to_import = [
-    CQCL.care_home,
-    CQCL.dormancy,
-    CQCL.gac_service_types,
     CQCL.location_id,
     CQCL.provider_id,
     CQCL.name,
-    CQCL.number_of_beds,
+    CQCL.postal_address_line1,
     CQCL.postal_code,
     CQCL.registration_status,
     CQCL.registration_date,
     CQCL.deregistration_date,
-    CQCL.regulated_activities,
-    CQCL.specialisms,
     CQCL.type,
     CQCL.relationships,
+    CQCL.care_home,
+    CQCL.number_of_beds,
+    CQCL.dormancy,
+    CQCL.gac_service_types,
+    CQCL.regulated_activities,
+    CQCL.specialisms,
     Keys.import_date,
     Keys.year,
     Keys.month,
@@ -348,6 +349,7 @@ def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
+# TODO REMOVE OLD POSTCODE PROCESS
 def join_ons_postcode_data_into_cqc_df(
     cqc_df: DataFrame, ons_df: DataFrame
 ) -> DataFrame:
@@ -371,6 +373,7 @@ def join_ons_postcode_data_into_cqc_df(
     return cqc_df
 
 
+# TODO REMOVE OLD POSTCODE PROCESS
 def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
 
@@ -729,6 +732,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     return locations_df
 
 
+# TODO REMOVE OLD POSTCODE PROCESS
 def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
     cleaned_locations_df: DataFrame,
     column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
