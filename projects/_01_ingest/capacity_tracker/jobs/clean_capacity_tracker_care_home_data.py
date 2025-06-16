@@ -133,7 +133,7 @@ def create_new_columns_with_totals(df: DataFrame) -> DataFrame:
         + df[CTCH.agency_non_care_workers_employed],
     )
     df = df.withColumn(
-        CTCHClean.agency_and_non_agency_total_employed,
+        CTCHClean.ct_care_home_total_employed,
         df[CTCHClean.agency_total_employed] + df[CTCHClean.non_agency_total_employed],
     )
     return df

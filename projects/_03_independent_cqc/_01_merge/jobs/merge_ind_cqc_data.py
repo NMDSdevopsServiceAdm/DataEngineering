@@ -91,7 +91,7 @@ cleaned_ct_care_home_columns_to_import = [
     CTCHClean.cqc_id,
     CTCHClean.ct_care_home_import_date,
     CTCHClean.care_home,
-    CTCHClean.agency_and_non_agency_total_employed,
+    CTCHClean.ct_care_home_total_employed,
 ]
 
 

@@ -51,10 +51,10 @@ class CapacityTrackerCareHomeColumns:
 
 @dataclass
 class CapacityTrackerCareHomeCleanColumns(CapacityTrackerCareHomeColumns):
-    agency_and_non_agency_total_employed: str = "agency_and_non_agency_total_employed"
     agency_total_employed: str = "agency_total_employed"
     care_home: str = NewCqcLocationApiColumns.care_home
     ct_care_home_import_date: str = "ct_care_home_import_date"
+    ct_care_home_total_employed: str = "ct_care_home_total_employed"
     non_agency_total_employed: str = "non_agency_total_employed"
 
 

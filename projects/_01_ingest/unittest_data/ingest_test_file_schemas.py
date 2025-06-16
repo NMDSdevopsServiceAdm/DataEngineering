@@ -389,9 +389,7 @@ class CleanCapacityTrackerCareHomeSchema:
             *create_new_columns_with_totals_schema,
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
+            StructField(CTCHClean.ct_care_home_total_employed, IntegerType(), True),
         ]
     )
 
@@ -434,9 +432,7 @@ class ValidateCleanedCapacityTrackerCareHomeData:
             StructField(CTCHClean.ct_care_home_import_date, DateType(), True),
             StructField(CTCHClean.non_agency_total_employed, IntegerType(), True),
             StructField(CTCHClean.agency_total_employed, IntegerType(), True),
-            StructField(
-                CTCHClean.agency_and_non_agency_total_employed, IntegerType(), True
-            ),
+            StructField(CTCHClean.ct_care_home_total_employed, IntegerType(), True),
         ]
     )
     calculate_expected_size_schema = ct_care_home_schema
