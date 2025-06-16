@@ -297,7 +297,7 @@ def remove_duplicates_based_on_column_order(
 
 
 def create_banded_bed_count_column(
-    input_df: DataFrame, new_col: str, splits: list[float]
+    input_df: DataFrame, new_col: str, splits: List[float]
 ) -> DataFrame:
     """
     Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
@@ -310,7 +310,7 @@ def create_banded_bed_count_column(
     Args:
         input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
         new_col (str): The name of the output column with the banded values.
-        splits (list[float]): The list of split points for bucketing (must be strictly increasing).
+        splits (List[float]): The list of split points for bucketing (must be strictly increasing).
 
     Returns:
         DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
