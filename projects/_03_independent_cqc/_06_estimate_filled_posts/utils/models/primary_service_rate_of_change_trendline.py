@@ -62,7 +62,11 @@ def model_primary_service_rate_of_change_trendline(
 
     df = df.join(
         rate_of_change_trendline_df,
-        [IndCqc.primary_service_type, IndCqc.unix_time],
+        [
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_cleaned,
+            IndCqc.unix_time,
+        ],
         "left",
     )
 
