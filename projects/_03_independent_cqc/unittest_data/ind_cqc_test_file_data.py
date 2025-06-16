@@ -4735,7 +4735,7 @@ class EstimateFilledPostsModelsUtils:
         ("1-008", PrimaryServiceType.care_home_with_nursing, 3.0, 3.0),
         ("1-009", PrimaryServiceType.care_home_with_nursing, 4.0, 4.0),
         ("1-010", PrimaryServiceType.care_home_with_nursing, None, None),
-        ("1-011", PrimaryServiceType.non_residential, 1.0, 1.0),
+        ("1-011", PrimaryServiceType.non_residential, 1.0, None),
         ("1-012", PrimaryServiceType.non_residential, None, None),
     ]
 
