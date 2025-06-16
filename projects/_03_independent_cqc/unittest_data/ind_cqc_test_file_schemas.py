@@ -37,7 +37,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import MainJobRoleLabels
+from utils.column_values.categorical_column_values import (
+    MainJobRoleLabels,
+    JobGroupLabels,
+)
 
 
 @dataclass
@@ -1056,6 +1059,28 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 FloatType(),
                 False,
             ),
+        ]
+    )
+
+    create_estimate_filled_posts_job_group_columns_schema = StructType(
+        [
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_care_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.senior_management, FloatType(), True),
+            StructField(MainJobRoleLabels.middle_management, FloatType(), True),
+            StructField(MainJobRoleLabels.registered_nurse, FloatType(), True),
+            StructField(MainJobRoleLabels.social_worker, FloatType(), True),
+            StructField(MainJobRoleLabels.admin_staff, FloatType(), True),
+            StructField(MainJobRoleLabels.ancillary_staff, FloatType(), True),
+        ]
+    )
+    expected_create_estimate_filled_posts_job_group_columns_schema = StructType(
+        [
+            *create_estimate_filled_posts_job_group_columns_schema,
+            StructField(JobGroupLabels.direct_care, FloatType(), True),
+            StructField(JobGroupLabels.managers, FloatType(), True),
+            StructField(JobGroupLabels.regulated_professions, FloatType(), True),
+            StructField(JobGroupLabels.other, FloatType(), True),
         ]
     )
 

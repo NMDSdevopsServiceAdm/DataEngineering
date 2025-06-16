@@ -903,3 +903,35 @@ def calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts
     )
 
     return df
+
+
+def create_estimate_filled_posts_job_group_columns(
+    df: DataFrame, job_role_to_job_group_dict: dict
+) -> DataFrame:
+    """
+    Creates estimate filled posts job group columns by summing job roles.
+
+    Args:
+        df (DataFrame): A dataframe with job role estimate filled posts columns.
+        job_role_to_job_group_dict (dict): A dictitonary with keys as job roles and values as list of job roles.
+
+    Returns:
+        DataFrame: A dataframe with job group estimate filled posts columns.
+    """
+
+    job_group_to_job_role_dict: dict = {}
+    for job_role, job_group in job_role_to_job_group_dict.items():
+        if job_group not in job_group_to_job_role_dict:
+            job_group_to_job_role_dict[job_group] = []
+        job_group_to_job_role_dict[job_group].append(job_role)
+
+    for (
+        job_group,
+        job_roles,
+    ) in job_group_to_job_role_dict.items():
+        df = df.withColumn(
+            job_group,
+            sum(F.col(role) for role in job_roles),
+        )
+
+    return df
