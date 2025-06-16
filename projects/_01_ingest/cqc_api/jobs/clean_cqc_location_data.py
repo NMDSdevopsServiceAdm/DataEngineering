@@ -164,14 +164,8 @@ def main(
         registered_locations_df, CQCLClean.cqc_sector
     )
 
-    # TODO - when complete, reassign registered_locations_df and remove all old postcode work
-    run_postcode_matching(registered_locations_df, ons_postcode_directory_df)
-
-    registered_locations_df = join_ons_postcode_data_into_cqc_df(
+    registered_locations_df = run_postcode_matching(
         registered_locations_df, ons_postcode_directory_df
-    )
-    registered_locations_df = raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
-        registered_locations_df
     )
 
     utils.write_to_parquet(
@@ -347,39 +341,6 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
-
-
-# TODO REMOVE OLD POSTCODE PROCESS
-def join_ons_postcode_data_into_cqc_df(
-    cqc_df: DataFrame, ons_df: DataFrame
-) -> DataFrame:
-    cqc_df = amend_invalid_postcodes(cqc_df)
-
-    cqc_df = utils.normalise_column_values(cqc_df, CQCL.postal_code)
-
-    cqc_df = cUtils.add_aligned_date_column(
-        cqc_df,
-        ons_df,
-        CQCLClean.cqc_location_import_date,
-        ONSClean.contemporary_ons_import_date,
-    )
-    ons_df = ons_df.withColumnRenamed(ONSClean.postcode, CQCLClean.postal_code)
-
-    cqc_df = cqc_df.join(
-        ons_df,
-        [ONSClean.contemporary_ons_import_date, CQCLClean.postal_code],
-        "left",
-    )
-    return cqc_df
-
-
-# TODO REMOVE OLD POSTCODE PROCESS
-def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
-    post_codes_mapping = InvalidPostcodes.invalid_postcodes_map
-
-    map_func = F.udf(lambda row: post_codes_mapping.get(row, row))
-    df = df.withColumn(CQCL.postal_code, map_func(F.col(CQCL.postal_code)))
-    return df
 
 
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
@@ -730,64 +691,6 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
         locations_df[CQCL.registration_status] == RegistrationStatus.registered
     )
     return locations_df
-
-
-# TODO REMOVE OLD POSTCODE PROCESS
-def raise_error_if_cqc_postcode_was_not_found_in_ons_dataset(
-    cleaned_locations_df: DataFrame,
-    column_to_check_for_nulls: str = CQCLClean.current_ons_import_date,
-) -> DataFrame:
-    """
-    Checks a cleaned locations df for any CQC postcodes which could not be found in the ONS postcode directory based on the column_to_check_for_nulls.
-    This column should thus be chosen to be one column that would contain null values from a left join in the above case.
-    This is because this function attempts to create a small dataframe which should be empty in the case where column_to_check_for_nulls contains no nulls,
-    and thus implies all CQC postcodes were found in the ONS postcode directory.
-
-    Args:
-        cleaned_locations_df (DataFrame): A cleaned locations df that must contain at least the column_to_check_for_nulls, postcode and locationId.
-        column_to_check_for_nulls (str): Default - current_ons_import_date, should be any one of the left-joined columns to check for null entries.
-
-    Returns:
-        DataFrame: If the check does not find any null entries, it returns the original df. If it does find anything exceptions will be raised instead.
-
-    Raises:
-        ValueError: If column_to_check_for_nulls, CQCLClean.postal_code or CQCLClean.location_id is mistyped or otherwise not present in cleaned_locations_df
-        TypeError: If sample_clean_null_df is found not to be empty, will cause a glue job failure where the unmatched postcodes and corresponding locationid should feature in Glue's logs
-    """
-
-    COLUMNS_TO_FILTER = [
-        CQCLClean.postal_code,
-        CQCLClean.location_id,
-    ]
-    list_of_columns = cleaned_locations_df.columns
-    for column in [column_to_check_for_nulls, *COLUMNS_TO_FILTER]:
-        if column not in list_of_columns:
-            raise ValueError(
-                f"ERROR: A column or function parameter with name {column} cannot be found in the dataframe."
-            )
-
-    sample_clean_null_df = cleaned_locations_df.select(
-        [column_to_check_for_nulls, *COLUMNS_TO_FILTER]
-    ).filter(F.col(column_to_check_for_nulls).isNull())
-    if not sample_clean_null_df.rdd.isEmpty():
-        list_of_tuples = []
-        data_to_log = (
-            sample_clean_null_df.select(COLUMNS_TO_FILTER)
-            .groupBy(COLUMNS_TO_FILTER)
-            .count()
-            .collect()
-        )
-
-        for row in data_to_log:
-            list_of_tuples.append((row[0], row[1], f"count: {row[2]}"))
-        raise TypeError(
-            f"Error: The following {CQCL.postal_code}(s) and their corresponding {CQCL.location_id}(s) were not found in the ONS postcode data: {list_of_tuples}"
-        )
-    else:
-        print(
-            "All postcodes were found in the ONS postcode file, returning original dataframe"
-        )
-        return cleaned_locations_df
 
 
 def calculate_time_since_dormant(df: DataFrame) -> DataFrame:

@@ -1553,13 +1553,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    invalid_postcode_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.postal_code, StringType(), True),
-        ]
-    )
-
     registration_status_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1574,16 +1567,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    locations_for_ons_join_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.provider_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.postal_code, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
-        ]
-    )
-
     ons_postcode_directory_schema = StructType(
         [
             StructField(ONSClean.postcode, StringType(), True),
@@ -1593,28 +1576,6 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
-        ]
-    )
-
-    expected_ons_join_schema = StructType(
-        [
-            StructField(ONSClean.contemporary_ons_import_date, DateType(), True),
-            StructField(CQCL.postal_code, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.provider_id, StringType(), True),
-            StructField(ONSClean.contemporary_cssr, StringType(), True),
-            StructField(ONSClean.contemporary_region, StringType(), True),
-            StructField(ONSClean.current_ons_import_date, DateType(), True),
-            StructField(ONSClean.current_cssr, StringType(), True),
-            StructField(ONSClean.current_region, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
-        ]
-    )
-
-    expected_split_registered_schema = StructType(
-        [
-            *expected_ons_join_schema,
         ]
     )
 

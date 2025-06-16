@@ -2782,22 +2782,6 @@ class CQCLocationsData:
         ),
     ]
 
-    test_invalid_postcode_data = [
-        ("loc-1", "B69 E3G"),
-        ("loc-2", "UB4 0EJ."),
-        ("loc-3", "PO20 3BD"),
-        ("loc-4", "PR! 9HL"),
-        ("loc-5", None),
-    ]
-
-    expected_invalid_postcode_data = [
-        ("loc-1", "B69 3EG"),
-        ("loc-2", "UB4 0EJ"),
-        ("loc-3", "PO20 3BD"),
-        ("loc-4", "PR1 9HL"),
-        ("loc-5", None),
-    ]
-
     registration_status_with_missing_data_rows = [
         (
             "loc-1",
@@ -2880,103 +2864,6 @@ class CQCLocationsData:
             date(2021, 1, 1),
             "East Riding of Yorkshire",
             "Yorkshire & Humber",
-        ),
-    ]
-
-    locations_for_ons_join_rows = [
-        ("loc-1", "prov-1", date(2020, 1, 1), "PR1 9AB", "Registered"),
-        ("loc-2", "prov-1", date(2018, 1, 1), "B69 3EG", "Deregistered"),
-        (
-            "loc-3",
-            "prov-2",
-            date(2020, 1, 1),
-            "PR1 9HL",
-            "Deregistered",
-        ),
-        ("loc-4", "prov-2", date(2021, 1, 1), "LS1 2AB", "Registered"),
-    ]
-
-    expected_ons_join_with_null_rows = [
-        (
-            date(2019, 1, 1),
-            "PR19AB",
-            date(2020, 1, 1),
-            "loc-1",
-            "prov-1",
-            None,
-            None,
-            None,
-            None,
-            None,
-            "Registered",
-        ),
-        (
-            None,
-            "B693EG",
-            date(2018, 1, 1),
-            "loc-2",
-            "prov-1",
-            None,
-            None,
-            None,
-            None,
-            None,
-            "Deregistered",
-        ),
-        (
-            date(2019, 1, 1),
-            "PR19HL",
-            date(2020, 1, 1),
-            "loc-3",
-            "prov-2",
-            "Hull",
-            "Yorkshire & Humber",
-            date(2021, 1, 1),
-            "East Riding of Yorkshire",
-            "Yorkshire & Humber",
-            "Deregistered",
-        ),
-        (
-            date(2021, 1, 1),
-            "LS12AB",
-            date(2021, 1, 1),
-            "loc-4",
-            "prov-2",
-            "Leeds",
-            "Yorkshire & Humber",
-            date(2021, 1, 1),
-            "Leeds",
-            "Yorkshire & Humber",
-            "Registered",
-        ),
-    ]
-
-    expected_split_registered_no_nulls_rows = [
-        (
-            date(2019, 1, 1),
-            "PR19AB",
-            date(2020, 1, 1),
-            "loc-1",
-            "prov-1",
-            "Somerset",
-            "Oxen Lane",
-            date(2021, 1, 1),
-            "Somerset",
-            "English Region",
-            "Registered",
-        ),
-        (
-            date(2021, 1, 1),
-            "LS12AB",
-            date(2021, 1, 1),
-            "loc-4",
-            "prov-2",
-            "Leeds",
-            "Yorkshire & Humber",
-            date(2021, 1, 1),
-            "Leeds",
-            "Yorkshire & Humber",
-            "Registered",
         ),
     ]
 
