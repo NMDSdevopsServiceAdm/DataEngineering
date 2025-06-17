@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import MapType, FloatType
 from typing import List
 
@@ -451,7 +451,7 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         *[
             F.col(role).alias(temp)
             for role, temp in zip(non_rm_managers, non_rm_managers_temporary)
-        ]
+        ],
     )
 
     df = df.withColumn(
@@ -949,4 +949,19 @@ def create_job_role_estimates_data_validation_columns(df: DataFrame) -> DataFram
     Returns:
         DataFrame: A dataframe with additional columns for checking the job role estimates data.
     """
+    columns_to_aggreate = [
+        IndCQC.estimate_filled_posts_from_all_job_roles,
+        MainJobRoleLabels.care_worker,
+        JobGroupLabels.direct_care,
+        JobGroupLabels.managers,
+        JobGroupLabels.regulated_professions,
+        JobGroupLabels.other,
+    ]
+
+    df = df.select([IndCQC.cqc_location_import_date] + columns_to_aggreate)
+
+    df = df.groupBy(IndCQC.cqc_location_import_date).agg(
+        *[F.sum(column).alias(f"temp_sum_{column}") for column in columns_to_aggreate]
+    )
+
     return df

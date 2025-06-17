@@ -1086,6 +1086,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
 
     create_job_role_estimates_data_validation_columns_schema = StructType(
         [
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
             StructField(
                 IndCQC.estimate_filled_posts_from_all_job_roles, FloatType(), True
             ),
