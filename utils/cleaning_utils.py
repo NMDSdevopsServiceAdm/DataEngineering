@@ -296,19 +296,27 @@ def remove_duplicates_based_on_column_order(
     return df
 
 
-def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
+def create_banded_bed_count_column(
+    input_df: DataFrame, new_col: str, splits: List[float]
+) -> DataFrame:
     """
     Creates a new column in the input DataFrame that categorises the number of beds into defined bands.
 
     This function uses a Bucketizer to categorise the number of beds into specified bands.
     The banded bed counts are joined into the original DataFrame.
 
+    If the location is non-res then zero is returned.
+
     Args:
         input_df (DataFrame): The DataFrame containing the column 'number_of_beds' to be banded.
+        new_col (str): The name of the output column with the banded values.
+        splits (List[float]): The list of split points for bucketing (must be strictly increasing).
 
     Returns:
         DataFrame: A new DataFrame that includes the original data along with a new column 'number_of_beds_banded'.
     """
+    zero: float = 0.0
+
     number_of_beds_df = (
         input_df.select(IndCQC.number_of_beds)
         .where(F.col(IndCQC.number_of_beds).isNotNull())
@@ -316,13 +324,22 @@ def create_banded_bed_count_column(input_df: DataFrame) -> DataFrame:
     )
 
     set_banded_boundaries = Bucketizer(
-        splits=[0, 1, 3, 5, 10, 15, 20, 25, 50, float("Inf")],
+        splits=splits,
         inputCol=IndCQC.number_of_beds,
-        outputCol=IndCQC.number_of_beds_banded,
+        outputCol=new_col,
     )
 
     number_of_beds_with_bands_df = set_banded_boundaries.setHandleInvalid(
         "keep"
     ).transform(number_of_beds_df)
 
-    return input_df.join(number_of_beds_with_bands_df, IndCQC.number_of_beds, "left")
+    output_df = input_df.join(
+        number_of_beds_with_bands_df, IndCQC.number_of_beds, "left"
+    )
+
+    return output_df.withColumn(
+        new_col,
+        F.when(
+            F.col(IndCQC.care_home) == CareHome.not_care_home, F.lit(zero)
+        ).otherwise(F.col(new_col)),
+    )

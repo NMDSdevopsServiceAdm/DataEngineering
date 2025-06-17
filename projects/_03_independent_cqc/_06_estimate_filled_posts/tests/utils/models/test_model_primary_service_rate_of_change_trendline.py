@@ -52,8 +52,10 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
     @patch(f"{PATCH_PATH}.calculate_rate_of_change_trendline")
     @patch(f"{PATCH_PATH}.deduplicate_dataframe")
     @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     def test_main_calls_functions(
         self,
+        create_banded_bed_count_column_mock: Mock,
         model_primary_service_rate_of_change_mock: Mock,
         deduplicate_dataframe_mock: Mock,
         calculate_rate_of_change_trendline_mock: Mock,
@@ -71,6 +73,7 @@ class MainTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
             IndCqc.ascwds_rate_of_change_trendline_model,
         )
 
+        create_banded_bed_count_column_mock.assert_called_once()
         model_primary_service_rate_of_change_mock.assert_called_once()
         deduplicate_dataframe_mock.assert_called_once()
         calculate_rate_of_change_trendline_mock.assert_called_once()
@@ -113,7 +116,9 @@ class DeduplicateDataframeTests(ModelPrimaryServiceRateOfChangeTrendlineTests):
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.primary_service_type, IndCqc.unix_time
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
 
@@ -144,7 +149,9 @@ class CalculateRateOfChangeTrendlineTests(
         )
 
         self.returned_data = self.returned_df.sort(
-            IndCqc.primary_service_type, IndCqc.unix_time
+            IndCqc.primary_service_type,
+            IndCqc.number_of_beds_banded_for_rate_of_change,
+            IndCqc.unix_time,
         ).collect()
         self.expected_data = self.expected_df.collect()
 

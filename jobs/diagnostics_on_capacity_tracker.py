@@ -34,6 +34,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
     IndCQC.number_of_beds,
+    IndCQC.number_of_beds_banded,
     IndCQC.ct_care_home_total_employed,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.current_region,

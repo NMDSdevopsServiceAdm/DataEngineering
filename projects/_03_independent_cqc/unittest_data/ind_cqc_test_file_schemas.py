@@ -1637,20 +1637,6 @@ class EstimateFilledPostsModelsUtils:
         ]
     )
 
-    clean_number_of_beds_banded_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.primary_service_type, StringType(), False),
-            StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-        ]
-    )
-    expected_clean_number_of_beds_banded_schema = StructType(
-        [
-            *clean_number_of_beds_banded_schema,
-            StructField(IndCQC.number_of_beds_banded_cleaned, DoubleType(), True),
-        ]
-    )
-
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -1687,6 +1673,9 @@ class ModelPrimaryServiceRateOfChange:
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.number_of_beds, IntegerType(), True),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
         ]
     )
@@ -1778,6 +1767,9 @@ class ModelPrimaryServiceRateOfChange:
         [
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 RoC_TempCol.column_with_values_interpolated, DoubleType(), True
@@ -1817,6 +1809,7 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
             StructField(IndCQC.location_id, StringType(), False),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.number_of_beds, IntegerType(), True),
             StructField(IndCQC.primary_service_type, StringType(), False),
             StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
         ]
@@ -1832,6 +1825,9 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     calculate_rate_of_change_trendline_mock_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
@@ -1842,6 +1838,9 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
             StructField("another_col", DoubleType(), True),
@@ -1850,6 +1849,9 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     expected_deduplicate_dataframe_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
@@ -1858,6 +1860,9 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(IndCQC.single_period_rate_of_change, DoubleType(), True),
         ]
@@ -1865,6 +1870,9 @@ class ModelPrimaryServiceRateOfChangeTrendlineSchemas:
     expected_calculate_rate_of_change_trendline_schema = StructType(
         [
             StructField(IndCQC.primary_service_type, StringType(), False),
+            StructField(
+                IndCQC.number_of_beds_banded_for_rate_of_change, DoubleType(), True
+            ),
             StructField(IndCQC.unix_time, IntegerType(), False),
             StructField(
                 IndCQC.ascwds_rate_of_change_trendline_model, DoubleType(), True
