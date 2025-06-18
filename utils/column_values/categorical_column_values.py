@@ -68,6 +68,18 @@ class PrimaryServiceType(ColumnValues):
 
 
 @dataclass
+class PrimaryServiceTypeSecondLevel(ColumnValues):
+    """The possible values of the primary service type column in CQC locations data"""
+
+    care_home_with_nursing: str = "Care home with nursing"
+    care_home_only: str = "Care home without nursing"
+    non_residential: str = "Non-residential"
+    other_residential: str = "Other residential"
+    other_non_residential: str = "Other non-residential"
+    shared_lives: str = "Shared Lives"
+
+
+@dataclass
 class Services(ColumnValues):
     """The possible values of the GAC service types column in CQC locations data"""
 
