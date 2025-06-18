@@ -15,6 +15,8 @@ This version marks the codebase used for the publication of the Size and Structu
 
 - Incorporated more PIR data into the non-residential dataset.
 
+- A lower level of service breakdowns to include all the categories we group to in our publications.
+
 ### Changed
 - Reorganised file structure: introduced a projects-based layout with scoped jobs/, tests/, and utils/ directories. This improves navigation and code ownership across datasets and processes.
 
