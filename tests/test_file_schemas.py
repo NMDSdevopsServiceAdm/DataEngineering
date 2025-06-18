@@ -621,6 +621,29 @@ class IndCQCDataUtils:
         ]
     )
 
+    allocate_primary_service_type_second_level_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCLClean.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_allocate_primary_service_type_second_level_schema = StructType(
+        [
+            *allocate_primary_service_type_second_level_schema,
+            StructField(IndCQC.primary_service_type_second_level, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CalculateAscwdsFilledPostsSchemas:
