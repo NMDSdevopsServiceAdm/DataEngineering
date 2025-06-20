@@ -1,11 +1,17 @@
 import unittest
 from unittest.mock import patch, Mock
 
-import jobs.diagnostics_on_known_filled_posts as job
-from tests.test_file_schemas import DiagnosticsOnKnownFilledPostsSchemas as Schemas
-from tests.test_file_data import DiagnosticsOnKnownFilledPostsData as Data
+import projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_known_filled_posts as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    DiagnosticsOnKnownFilledPostsSchemas as Schemas,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    DiagnosticsOnKnownFilledPostsData as Data,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+
+PATCH_PATH: str = "projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_known_filled_posts"
 
 
 class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):
@@ -27,8 +33,8 @@ class MainTests(DiagnosticsOnKnownFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch("utils.utils.write_to_parquet")
-    @patch("utils.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
