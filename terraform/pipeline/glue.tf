@@ -884,7 +884,7 @@ module "estimate_ind_cqc_filled_posts_by_job_role_job" {
 
 module "diagnostics_on_known_filled_posts_job" {
   source          = "../modules/glue-job"
-  script_dir      = "jobs"
+  script_dir      = "projects/_03_independent_cqc/_08_diagnostics/jobs"
   script_name     = "diagnostics_on_known_filled_posts.py"
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
@@ -900,7 +900,7 @@ module "diagnostics_on_known_filled_posts_job" {
 
 module "diagnostics_on_capacity_tracker_job" {
   source            = "../modules/glue-job"
-  script_dir        = "jobs"
+  script_dir        = "projects/_03_independent_cqc/_08_diagnostics/jobs"
   script_name       = "diagnostics_on_capacity_tracker.py"
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   worker_type       = "G.1X"
