@@ -1,5 +1,7 @@
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from utils.estimate_filled_posts.models import utils as mUtils
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
+    utils as mUtils,
+)
 from projects._03_independent_cqc._05_model.utils.model_metrics import (
     save_model_metrics,
 )

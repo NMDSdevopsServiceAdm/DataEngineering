@@ -12,11 +12,11 @@ class CleanedCapacityTrackerCareHomeValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             CTCHClean.cqc_id,
-            CTCHClean.capacity_tracker_import_date,
+            CTCHClean.ct_care_home_import_date,
         ],
         RuleName.index_columns: [
             CTCHClean.cqc_id,
-            CTCHClean.capacity_tracker_import_date,
+            CTCHClean.ct_care_home_import_date,
         ],
         RuleName.min_values: {
             CTCHClean.nurses_employed: 0,
@@ -27,7 +27,7 @@ class CleanedCapacityTrackerCareHomeValidationRules:
             CTCHClean.agency_non_care_workers_employed: 0,
             CTCHClean.non_agency_total_employed: 0,
             CTCHClean.agency_total_employed: 0,
-            CTCHClean.agency_and_non_agency_total_employed: 1,
+            CTCHClean.ct_care_home_total_employed: 1,
         },
         RuleName.max_values: {
             CTCHClean.nurses_employed: 1000,
@@ -38,6 +38,6 @@ class CleanedCapacityTrackerCareHomeValidationRules:
             CTCHClean.agency_non_care_workers_employed: 1000,
             CTCHClean.non_agency_total_employed: 1000,
             CTCHClean.agency_total_employed: 4000,
-            CTCHClean.agency_and_non_agency_total_employed: 4000,
+            CTCHClean.ct_care_home_total_employed: 4000,
         },
     }

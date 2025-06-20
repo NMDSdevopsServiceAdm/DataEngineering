@@ -44,7 +44,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(
         f"{PATCH_PATH}.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values"
     )
-    @patch(f"{PATCH_PATH}.clean_number_of_beds_banded")
+    @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.model_calculate_rolling_average")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.merge_ascwds_and_pir_filled_post_submissions")
@@ -63,7 +63,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         merge_ascwds_and_pir_filled_post_submissions_mock: Mock,
         model_imputation_with_extrapolation_and_interpolation_mock: Mock,
         model_calculate_rolling_average_mock: Mock,
-        clean_number_of_beds_banded_mock: Mock,
+        create_banded_bed_count_column_mock: Mock,
         convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
@@ -85,7 +85,7 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
             model_imputation_with_extrapolation_and_interpolation_mock.call_count, 2
         )
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
-        clean_number_of_beds_banded_mock.assert_called_once()
+        create_banded_bed_count_column_mock.assert_called_once()
         convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_mock.assert_called_once()
         write_to_parquet_patch.assert_called_once_with(
             ANY,
@@ -104,7 +104,7 @@ class NumericalValuesTests(ImputeIndCqcAscwdsAndPirTests):
 
     def test_max_number_of_days_to_interpolate_between_value(self):
         self.assertEqual(
-            job.NumericalValues.max_number_of_days_to_interpolate_between, 370
+            job.NumericalValues.max_number_of_days_to_interpolate_between, 185
         )
 
 

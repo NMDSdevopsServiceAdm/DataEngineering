@@ -1,7 +1,17 @@
 from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import IntegerType, StringType, MapType, DoubleType
+from pyspark.sql.types import MapType, DoubleType
 from typing import List
+
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import (
+    PrimaryServiceTypeSecondLevel as PSSL_values,
+)
+from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
+    CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
+)
 
 
 def add_source_description_to_source_column(
@@ -20,57 +30,6 @@ def add_source_description_to_source_column(
             source_description,
         ).otherwise(F.col(source_column_name)),
     )
-
-
-# TODO Remove this function if it has been replaced and is no longer used.
-def populate_estimate_filled_posts_and_source_in_the_order_of_the_column_list(
-    df: DataFrame,
-    order_of_models_to_populate_estimate_filled_posts_with: list,
-    estimates_column_to_populate: str,
-    estimates_source_column_to_populate: str,
-) -> DataFrame:
-    """
-    Populate the estimates and source columns using the hierarchy provided in the list.
-
-    The first item in the list is populated first. Subsequent null values are filled by the following items in the list.
-
-    Args:
-        df(DataFrame): A data frame with estimates that need merging into a single column.
-        order_of_models_to_populate_estimate_filled_posts_with (list): A list of column names of models.
-        estimates_column_to_populate (str): The name of the column to populate with estimates.
-        estimates_source_column_to_populate (str): The name of the column to populate with estimate sources.
-
-    Returns:
-        DataFrame: A data frame with estimates and estimates source column populated.
-    """
-    df = df.withColumn(estimates_column_to_populate, F.lit(None).cast(IntegerType()))
-    df = df.withColumn(
-        estimates_source_column_to_populate, F.lit(None).cast(StringType())
-    )
-
-    # TODO - replace for loop with better functionality
-    # see https://trello.com/c/94jAj8cd/428-update-how-we-populate-estimates
-    for model_name in order_of_models_to_populate_estimate_filled_posts_with:
-        df = df.withColumn(
-            estimates_column_to_populate,
-            F.when(
-                (
-                    F.col(estimates_column_to_populate).isNull()
-                    & (F.col(model_name).isNotNull())
-                    & (F.col(model_name) >= 1.0)
-                ),
-                F.col(model_name),
-            ).otherwise(F.col(estimates_column_to_populate)),
-        )
-
-        df = add_source_description_to_source_column(
-            df,
-            estimates_column_to_populate,
-            estimates_source_column_to_populate,
-            model_name,
-        )
-
-    return df
 
 
 def merge_columns_in_order(
@@ -203,5 +162,42 @@ def get_selected_value(
             ignorenulls=True,
         ).over(window_spec),
     )
+
+    return df
+
+
+def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
+    """
+    Adds a column called primary_service_type_second_level which shows the allocated service type per location.
+
+    The function builds a chain of when/otherwise clauses using the keys from the lookup_dict.
+    The last key in the lookup_dict becomes the first when clause to evaluate.
+    For example, when imputed_gac_service_types[description] == "Shared Lives" then return "Shared Lives".
+    Therefore, the lookup_dict order determines which service type is allocated to a location.
+
+    When none of the imputed_gac_service_types[description] are in the lookup_dict keys, then the row
+    gets the default value 'Other non-residential'.
+
+    Args:
+        df (DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        DataFrame: The DataFrame with the new 'primary_service_type_second_level' column added.
+    """
+
+    lookup_dict = list(PSSL_lookup.dict.items())
+    default_value = F.lit(PSSL_values.other_non_residential)
+
+    condition = default_value
+    for description, primary_service_type_second_level in lookup_dict:
+        match_description = F.exists(
+            F.col(IndCQC.imputed_gac_service_types),
+            lambda x: x[CQCL.description] == description,
+        )
+        condition = F.when(
+            match_description, primary_service_type_second_level
+        ).otherwise(condition)
+
+    df = df.withColumn(IndCQC.primary_service_type_second_level, condition)
 
     return df

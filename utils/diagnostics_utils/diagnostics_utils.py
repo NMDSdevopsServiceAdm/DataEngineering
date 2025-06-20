@@ -15,6 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
+from projects.utils.utils.utils import calculate_windowed_column
 
 
 def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:
@@ -368,25 +369,25 @@ def calculate_aggregate_residuals(
     Returns:
         DataFrame: The DataFrame with additional columns for the calculated aggregate residuals and percentages.
     """
-    df = aggregate_residuals(
+    df = calculate_windowed_column(
         df,
         window,
         IndCQC.average_absolute_residual,
         IndCQC.absolute_residual,
-        function="mean",
+        aggregation_function="avg",
     )
-    df = aggregate_residuals(
+    df = calculate_windowed_column(
         df,
         window,
         IndCQC.average_percentage_residual,
         IndCQC.percentage_residual,
-        function="mean",
+        aggregation_function="avg",
     )
-    df = aggregate_residuals(
-        df, window, IndCQC.max_residual, IndCQC.residual, function="max"
+    df = calculate_windowed_column(
+        df, window, IndCQC.max_residual, IndCQC.residual, aggregation_function="max"
     )
-    df = aggregate_residuals(
-        df, window, IndCQC.min_residual, IndCQC.residual, function="min"
+    df = calculate_windowed_column(
+        df, window, IndCQC.min_residual, IndCQC.residual, aggregation_function="min"
     )
     df = calculate_percentage_of_residuals_within_cutoffs(
         df,
@@ -414,44 +415,6 @@ def calculate_aggregate_residuals(
         IndCQC.percentage_of_standardised_residuals_within_limit,
         IndCQC.standardised_residual,
         standardised_residual_cutoff,
-    )
-    return df
-
-
-def aggregate_residuals(
-    df: DataFrame,
-    window: Window,
-    new_column_name: str,
-    residual_column_name: str,
-    function: str,
-) -> DataFrame:
-    """
-    This function adds a column containing the specified function (mean, min or max) over the given window.
-
-    Args:
-        df (DataFrame): The input DataFrame containing the required columns.
-        window (Window): A window for aggregating the residuals.
-        new_column_name (str): The name of the new column to be added.
-        residual_column_name (str): The name of the residual column to aggregate.
-        function (str): The function to use in the calculation ('mean', 'min' or 'max').
-
-    Returns:
-        DataFrame: A dataframe with an additional column containing the specified aggregation function over the given window.
-
-    Raises:
-        ValueError: If chosen function does not match 'mean', 'min' or 'max'.
-    """
-    functions = {"mean": F.mean, "min": F.min, "max": F.max}
-
-    if function not in functions:
-        raise ValueError(
-            f"Error: The function parameter '{function}' was not found. Please use 'mean', 'min' or 'max'."
-        )
-
-    method = functions[function]
-
-    df = df.withColumn(
-        new_column_name, method(F.col(residual_column_name)).over(window)
     )
     return df
 

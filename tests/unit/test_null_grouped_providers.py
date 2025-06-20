@@ -1,21 +1,16 @@
 import unittest
 import warnings
+from unittest.mock import Mock, patch
 
 from pyspark.sql import DataFrame
 
-from tests.test_file_data import (
-    NullGroupedProvidersData as Data,
-)
-from tests.test_file_schemas import (
-    NullGroupedProvidersSchema as Schemas,
-)
+from tests.test_file_data import NullGroupedProvidersData as Data
+from tests.test_file_schemas import NullGroupedProvidersSchema as Schemas
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
-    null_grouped_providers as job,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+import utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
+
+PATCH_PATH: str = "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers"
 
 
 class NullGroupedProvidersTests(unittest.TestCase):
@@ -23,6 +18,43 @@ class NullGroupedProvidersTests(unittest.TestCase):
         self.spark = utils.get_spark()
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
+
+
+class NullGroupedProvidersConfigTests(NullGroupedProvidersTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_minimum_size_of_care_home_location_to_identify(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_CARE_HOME_LOCATION_TO_IDENTIFY,
+            25.0,
+        )
+
+    def test_minimum_size_of_non_res_location_to_identify(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.MINIMUM_SIZE_OF_NON_RES_LOCATION_TO_IDENTIFY,
+            50.0,
+        )
+
+    def test_posts_per_bed_at_location_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.POSTS_PER_BED_AT_LOCATION_MULTIPLIER, 4
+        )
+
+    def test_posts_per_bed_at_provider_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.POSTS_PER_BED_AT_PROVIDER_MULTIPLIER, 3
+        )
+
+    def test_posts_per_pir_posts_at_location_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.POSTS_PER_PIR_LOCATION_THRESHOLD, 2.5
+        )
+
+    def test_posts_per_pir_posts_at_provider_multiplier(self):
+        self.assertEqual(
+            job.NullGroupedProvidersConfig.POSTS_PER_PIR_PROVIDER_THRESHOLD, 1.5
+        )
 
 
 class MainTests(NullGroupedProvidersTests):
@@ -35,20 +67,34 @@ class MainTests(NullGroupedProvidersTests):
         )
         self.returned_df = job.null_grouped_providers(self.test_df)
 
-    def test_null_grouped_providers_runs(
-        self,
-    ):
+    def test_null_grouped_providers_runs(self):
         self.assertIsInstance(self.returned_df, DataFrame)
 
-    def test_null_grouped_providers_returns_same_number_of_rows(
-        self,
-    ):
+    def test_null_grouped_providers_returns_same_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.test_df.count())
 
-    def test_null_grouped_providers_returns_same_columns(
-        self,
-    ):
+    def test_null_grouped_providers_returns_same_columns(self):
         self.assertEqual(self.returned_df.schema, self.test_df.schema)
+
+    @patch(f"{PATCH_PATH}.null_non_residential_grouped_providers")
+    @patch(f"{PATCH_PATH}.null_care_home_grouped_providers")
+    @patch(f"{PATCH_PATH}.identify_potential_grouped_providers")
+    @patch(f"{PATCH_PATH}.calculate_data_for_grouped_provider_identification")
+    def test_null_grouped_providers_calls_functions(
+        self,
+        calculate_data_for_grouped_provider_identification_mock: Mock,
+        identify_potential_grouped_providers_mock: Mock,
+        null_care_home_grouped_providers_mock: Mock,
+        null_non_residential_grouped_providers_mock: Mock,
+    ):
+        job.null_grouped_providers(self.test_df)
+
+        calculate_data_for_grouped_provider_identification_mock.assert_called_once_with(
+            self.test_df
+        )
+        identify_potential_grouped_providers_mock.assert_called_once()
+        null_care_home_grouped_providers_mock.assert_called_once()
+        null_non_residential_grouped_providers_mock.assert_called_once()
 
 
 class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTests):
@@ -93,7 +139,7 @@ class CalculateDataForGroupedProviderIdentificationTests(NullGroupedProvidersTes
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(
-                IndCQC.provider_id, IndCQC.cqc_location_import_date, IndCQC.location_id
+                IndCQC.location_id, IndCQC.cqc_location_import_date
             ).collect(),
         )
 
@@ -124,65 +170,83 @@ class NullCareHomeGroupedProvidersTests(NullGroupedProvidersTests):
     def setUp(self) -> None:
         super().setUp()
 
-    def test_null_care_home_grouped_providers_where_location_is_not_care_home_remains_unchanged(
+    def test_null_care_home_grouped_providers_returns_null_when_criteria_met(
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.null_care_home_grouped_providers_where_location_is_not_care_home,
-            Schemas.null_care_home_grouped_providers_schema,
-        )
-
-        returned_df = job.null_care_home_grouped_providers(test_df)
-        expected_df = test_df
-        self.assertEqual(
-            expected_df.collect(),
-            returned_df.collect(),
-        )
-
-    def test_null_care_home_grouped_providers_where_location_is_not_potential_grouped_provider_remains_unchanged(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.null_care_home_grouped_providers_where_location_is_not_potential_grouped_provider,
-            Schemas.null_care_home_grouped_providers_schema,
-        )
-
-        returned_df = job.null_care_home_grouped_providers(test_df)
-        expected_df = test_df
-        self.assertEqual(
-            expected_df.collect(),
-            returned_df.collect(),
-        )
-
-    def test_null_care_home_grouped_providers_where_filled_posts_below_cutoffs_remains_unchanged(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.null_care_home_grouped_providers_where_filled_posts_below_cutoffs,
-            Schemas.null_care_home_grouped_providers_schema,
-        )
-
-        returned_df = job.null_care_home_grouped_providers(test_df)
-        expected_df = test_df
-        self.assertEqual(
-            expected_df.collect(),
-            returned_df.collect(),
-        )
-
-    def test_null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs_are_nulled(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs,
+            Data.null_care_home_grouped_providers_when_meets_criteria_rows,
             Schemas.null_care_home_grouped_providers_schema,
         )
 
         returned_df = job.null_care_home_grouped_providers(test_df)
         expected_df = self.spark.createDataFrame(
-            Data.expected_null_care_home_grouped_providers_where_filled_posts_on_or_above_cutoffs,
+            Data.expected_null_care_home_grouped_providers_when_meets_criteria_rows,
             Schemas.null_care_home_grouped_providers_schema,
         )
         self.assertEqual(
             expected_df.collect(),
             returned_df.sort(IndCQC.location_id).collect(),
         )
+
+    def test_null_care_home_grouped_providers_returns_original_data_when_criteria_not_met(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_care_home_grouped_providers_where_location_does_not_meet_criteria_rows,
+            Schemas.null_care_home_grouped_providers_schema,
+        )
+
+        returned_df = job.null_care_home_grouped_providers(test_df)
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        test_data = test_df.collect()
+
+        for i in range(returned_df.count()):
+            self.assertEqual(
+                returned_data[i],
+                test_data[i],
+                f"Row {i} does not match: {returned_data[i]} != {test_data[i]}",
+            )
+
+
+class NullNonResidentialGroupedProvidersTests(NullGroupedProvidersTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_null_non_residential_grouped_providers_returns_null_when_criteria_met(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_non_res_grouped_providers_when_meets_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+
+        returned_df = job.null_non_residential_grouped_providers(test_df)
+        expected_df = self.spark.createDataFrame(
+            Data.expected_null_non_res_grouped_providers_when_meets_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+        self.assertEqual(
+            expected_df.collect(),
+            returned_df.sort(IndCQC.location_id).collect(),
+        )
+
+    def test_null_non_residential_grouped_providers_returns_original_data_when_criteria_not_met(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.null_non_res_grouped_providers_when_does_not_meet_criteria_rows,
+            Schemas.null_non_res_grouped_providers_schema,
+        )
+
+        returned_df = job.null_non_residential_grouped_providers(test_df)
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        test_data = test_df.collect()
+
+        for i in range(returned_df.count()):
+            self.assertEqual(
+                returned_data[i],
+                test_data[i],
+                f"Row {i} does not match: {returned_data[i]} != {test_data[i]}",
+            )

@@ -33,6 +33,7 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
     RelatedLocation,
@@ -217,6 +218,9 @@ class FeatureEngineeringCategoricalValues:
 class EstimatedIndCQCFilledPostsCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        IndCQC.primary_service_type_second_level
+    )
     current_region_column_values = Region(IndCQC.current_region)
     current_cssr_column_values = CurrentCSSR(
         IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly

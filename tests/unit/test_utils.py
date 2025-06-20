@@ -706,16 +706,6 @@ class LatestDatefieldForGroupingTests(UtilsTests):
         # No other rows are removed
         self.assertEqual(after_df.count(), 5)
 
-    def test_normalise_column_values(self):
-        rows = [("lower_case"), ("with spaces "), ("uppe r_ca se")]
-        test_df = self.spark.createDataFrame(rows, StringType())
-
-        returned_df = utils.normalise_column_values(test_df, "value")
-
-        self.assertEqual(returned_df.collect()[0][0], "LOWER_CASE")
-        self.assertEqual(returned_df.collect()[1][0], "WITHSPACES")
-        self.assertEqual(returned_df.collect()[2][0], "UPPER_CASE")
-
 
 class FilterDataframeToMaximumValueTests(UtilsTests):
     def setUp(self) -> None:

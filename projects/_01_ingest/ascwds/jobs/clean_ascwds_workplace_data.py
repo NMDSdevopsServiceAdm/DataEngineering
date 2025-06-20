@@ -11,6 +11,7 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
+from utils.raw_data_adjustments import remove_duplicate_workplaces_in_raw_workplace_data
 from utils.scale_variable_limits import AscwdsScaleVariableLimits
 from utils.value_labels.ascwds_workplace.workplace_label_dictionary import (
     ascwds_workplace_labels_dict,
@@ -57,6 +58,9 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(ascwds_workplace_source)
 
     ascwds_workplace_df = filter_test_accounts(ascwds_workplace_df)
+    ascwds_workplace_df = remove_duplicate_workplaces_in_raw_workplace_data(
+        ascwds_workplace_df
+    )
     ascwds_workplace_df = remove_white_space_from_nmdsid(ascwds_workplace_df)
 
     ascwds_workplace_df = ascwds_workplace_df.withColumnRenamed(

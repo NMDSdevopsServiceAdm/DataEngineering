@@ -19,6 +19,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     cqc_location_import_date: str = "cqc_location_import_date"
     cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
     cqc_sector: str = CQCPClean.cqc_sector
+    dormant_date: str = "dormant_date"
     first_known_relationships: str = (
         "first_known_" + NewCqcLocationApiColumns.relationships
     )
@@ -33,8 +34,11 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     imputed_specialisms: str = "imputed_" + NewCqcLocationApiColumns.specialisms
+    last_dormant_date: str = "last_dormant_date"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
+    postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
+    postcode_truncated: str = postcode_cleaned + "_truncated"
     primary_service_type: str = "primary_service_type"
     provider_name: str = "provider_name"
     registered_manager_names: str = "registered_manager_names"
@@ -46,3 +50,4 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     services_offered: str = "services_offered"
     specialisms_offered: str = "specialisms_offered"
     time_registered: str = "time_registered"
+    time_since_dormant: str = "time_since_dormant"

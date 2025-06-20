@@ -4,21 +4,21 @@ from dataclasses import dataclass
 from pyspark.sql import DataFrame
 
 from utils import utils
+import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
     PartitionKeys as Keys,
 )
-from utils.estimate_filled_posts.models.primary_service_rate_of_change_trendline import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
     model_primary_service_rate_of_change_trendline,
 )
-from utils.estimate_filled_posts.models.imputation_with_extrapolation_and_interpolation import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.estimate_filled_posts.models.rolling_average import (
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling_average import (
     model_calculate_rolling_average,
 )
-from utils.estimate_filled_posts.models.utils import (
-    clean_number_of_beds_banded,
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     combine_care_home_ratios_and_non_res_posts,
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,
 )
@@ -33,7 +33,7 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 @dataclass
 class NumericalValues:
     number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
-    max_number_of_days_to_interpolate_between: int = 370  # proxy for 1 year
+    max_number_of_days_to_interpolate_between: int = 185  # proxy for 6 months
 
 
 def main(
@@ -95,15 +95,19 @@ def main(
         IndCQC.posts_rolling_average_model,
     )
 
-    df = clean_number_of_beds_banded(df)
-
+    df = cUtils.create_banded_bed_count_column(
+        df,
+        IndCQC.number_of_beds_banded_for_rolling_avg,
+        [0, 1, 10, 15, 20, 25, 50, float("Inf")],
+    )
     df = model_calculate_rolling_average(
         df,
         IndCQC.imputed_filled_posts_per_bed_ratio_model,
         NumericalValues.number_of_days_in_window,
-        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_cleaned],
+        [IndCQC.primary_service_type, IndCQC.number_of_beds_banded_for_rolling_avg],
         IndCQC.banded_bed_ratio_rolling_average_model,
     )
+    df = df.drop(IndCQC.number_of_beds_banded_for_rolling_avg)
 
     df = convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(
         df,
