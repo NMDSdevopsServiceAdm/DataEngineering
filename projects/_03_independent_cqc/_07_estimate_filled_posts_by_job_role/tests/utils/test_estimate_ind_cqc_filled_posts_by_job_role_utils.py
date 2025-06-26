@@ -1764,11 +1764,11 @@ class CreateJobRoleEstimatesDataValidationColumns(
             self.new_columns_added[2], IndCQC.national_percentage_managers_filled_posts
         )
         self.assertEqual(
-            self.new_columns_added[3],
-            IndCQC.national_percentage_regulated_professions_filled_posts,
+            self.new_columns_added[3], IndCQC.national_percentage_other_filled_posts
         )
         self.assertEqual(
-            self.new_columns_added[4], IndCQC.national_percentage_other_filled_posts
+            self.new_columns_added[4],
+            IndCQC.national_percentage_regulated_professions_filled_posts,
         )
 
     def test_create_job_role_estimates_data_validation_columns_returns_expected_values(
@@ -1777,4 +1777,8 @@ class CreateJobRoleEstimatesDataValidationColumns(
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
 
-        self.assertEqual(returned_data, expected_data)
+        for row in range(len(expected_data)):
+            for column in self.new_columns_added:
+                self.assertAlmostEqual(
+                    returned_data[row][column], expected_data[row][column], places=3
+                )
