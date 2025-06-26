@@ -1771,6 +1771,11 @@ class CreateJobRoleEstimatesDataValidationColumns(
             IndCQC.national_percentage_regulated_professions_filled_posts,
         )
 
+    def test_create_job_role_estimates_data_validation_columns_does_not_change_row_count(
+        self,
+    ):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
     def test_create_job_role_estimates_data_validation_columns_returns_expected_values(
         self,
     ):
