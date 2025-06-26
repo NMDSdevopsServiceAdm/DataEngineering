@@ -19,6 +19,9 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.mo
     extrapolate_job_role_ratios,
 )
 from utils.ind_cqc_filled_posts_utils import utils as FPutils
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup as JobGroupDicts,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
@@ -255,6 +258,13 @@ def main(
 
     estimated_ind_cqc_filled_posts_by_job_role_df = JRutils.calculate_difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles(
         estimated_ind_cqc_filled_posts_by_job_role_df,
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.create_estimate_filled_posts_job_group_columns(
+            estimated_ind_cqc_filled_posts_by_job_role_df,
+            JobGroupDicts.job_role_to_job_group_dict,
+        )
     )
 
     utils.write_to_parquet(
