@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
 )
+from projects.utils.utils.utils import calculate_new_column
 
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
@@ -940,8 +941,9 @@ def create_estimate_filled_posts_job_group_columns(
 def create_job_role_estimates_data_validation_columns(df: DataFrame) -> DataFrame:
     """
     Creates new columns for checking the job role estimates data. These are:
-        - National job group percentage split of estimated filled posts.
         - National care worker role as percentage of overall estimated filled posts.
+        - National job group percentage of overall estimated filled posts:
+            direct care, managers, other and regulated professions.
 
     Args:
         df (DataFrame): A dataframe with job role and job group estimate filled posts columns.
@@ -958,10 +960,59 @@ def create_job_role_estimates_data_validation_columns(df: DataFrame) -> DataFram
         JobGroupLabels.other,
     ]
 
-    df = df.select([IndCQC.cqc_location_import_date] + columns_to_aggreate)
+    df_aggregate = df.select([IndCQC.cqc_location_import_date] + columns_to_aggreate)
 
-    df = df.groupBy(IndCQC.cqc_location_import_date).agg(
-        *[F.sum(column).alias(f"temp_sum_{column}") for column in columns_to_aggreate]
+    temp_sum = "temp_sum_"
+    df_aggregate = df_aggregate.groupBy(IndCQC.cqc_location_import_date).agg(
+        *[F.sum(column).alias(f"{temp_sum}{column}") for column in columns_to_aggreate]
     )
+
+    temp_job_role_validation_map = "job_role_validation_map"
+    columns_not_in_map = [
+        IndCQC.cqc_location_import_date,
+        f"{temp_sum}{IndCQC.estimate_filled_posts_from_all_job_roles}",
+    ]
+    columns_to_map = [
+        field
+        for field in df_aggregate.schema.fieldNames()
+        if field not in columns_not_in_map
+    ]
+    df_aggregate = create_map_column(
+        df_aggregate,
+        columns_to_map,
+        temp_job_role_validation_map,
+        drop_original_columns=True,
+    )
+
+    df_aggregate = df_aggregate.withColumn(
+        temp_job_role_validation_map,
+        F.map_from_arrays(
+            F.map_keys(F.col(temp_job_role_validation_map)),
+            F.transform(
+                F.map_values(F.col(temp_job_role_validation_map)),
+                lambda v: v
+                / F.col(f"{temp_sum}{IndCQC.estimate_filled_posts_from_all_job_roles}"),
+            ),
+        ),
+    )
+
+    df_aggregate = unpack_mapped_column(df_aggregate, temp_job_role_validation_map)
+
+    rename_map_keys = {
+        f"{temp_sum}{MainJobRoleLabels.care_worker}": IndCQC.national_percentage_care_worker_filled_posts,
+        f"{temp_sum}{JobGroupLabels.direct_care}": IndCQC.national_percentage_direct_care_filled_posts,
+        f"{temp_sum}{JobGroupLabels.managers}": IndCQC.national_percentage_managers_filled_posts,
+        f"{temp_sum}{JobGroupLabels.other}": IndCQC.national_percentage_other_filled_posts,
+        f"{temp_sum}{JobGroupLabels.regulated_professions}": IndCQC.national_percentage_regulated_professions_filled_posts,
+    }
+    for current_name, new_name in rename_map_keys.items():
+        df_aggregate = df_aggregate.withColumnRenamed(current_name, new_name)
+
+    df_aggregate = df_aggregate.drop(
+        f"{temp_sum}{IndCQC.estimate_filled_posts_from_all_job_roles}",
+        temp_job_role_validation_map,
+    )
+
+    df = df.join(df_aggregate, IndCQC.cqc_location_import_date, "left")
 
     return df
