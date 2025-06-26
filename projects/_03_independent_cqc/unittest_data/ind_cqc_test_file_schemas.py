@@ -1110,12 +1110,12 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
                 IndCQC.national_percentage_managers_filled_posts, FloatType(), True
             ),
             StructField(
+                IndCQC.national_percentage_other_filled_posts, FloatType(), True
+            ),
+            StructField(
                 IndCQC.national_percentage_regulated_professions_filled_posts,
                 FloatType(),
                 True,
-            ),
-            StructField(
-                IndCQC.national_percentage_other_filled_posts, FloatType(), True
             ),
         ]
     )
