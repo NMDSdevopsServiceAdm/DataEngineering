@@ -1,5 +1,8 @@
 # Usage
 
+For further info on the steps I took to get this far, check out the [Walkthrough on Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx)
+Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx#Setting-up) section to get started, and from there explore the specific sections of relevance.
+
 ## Autodoc our code
 You could manually type a function description like this:
 
@@ -35,7 +38,7 @@ Check out the code in this file to see the magic.
     :Returns:
         latest_date_df: A dataframe with the latest value date_field_column only per grouping
 
-    :Raises: 
+    :Raises:
         TypeError: If any parameter other than the DataFrame does not contain a pyspark.sql.Column
 
 ```

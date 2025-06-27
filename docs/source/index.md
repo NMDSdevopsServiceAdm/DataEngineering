@@ -9,16 +9,28 @@
 This library is under heavy development
 ```
 
-For further info on the steps I took to get this far, check out the [Walkthrough on Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx)
-Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx#Setting-up) section to get started, and from there explore the specific sections of relevance
+To open this library locally, run `sphinx-autobuild docs/source/ docs/build/` at the command line.
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 2
-   
-usage
+:caption: 'Starting points:'
+:maxdepth: 1
+
 currentReadme
-sample_docpage
+ind_cqc_pipelines
 ```
 
+```{toctree}
+:caption: 'Pipelines:'
+:maxdepth: 1
+:glob:
+data_ingestion_pipelines/*
+ind_cqc_pipelines/*
+```
 
+```{toctree}
+:caption: 'Jobs:'
+:maxdepth: 1
+:glob:
+
+ind_cqc_jobs/*
+```
