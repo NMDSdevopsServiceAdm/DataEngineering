@@ -8,12 +8,14 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from utils.diagnostics_utils import diagnostics_utils as dUtils
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
     model_primary_service_rate_of_change_trendline,
+)
+from projects._03_independent_cqc._08_diagnostics.utils import (
+    diagnostics_utils as dUtils,
 )
 from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
 

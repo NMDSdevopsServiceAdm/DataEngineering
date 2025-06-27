@@ -1,16 +1,22 @@
 import unittest
 from unittest.mock import patch, Mock
 
-import jobs.diagnostics_on_capacity_tracker as job
-from tests.test_file_data import DiagnosticsOnCapacityTrackerData as Data
-from tests.test_file_schemas import DiagnosticsOnCapacityTrackerSchemas as Schemas
+import projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_capacity_tracker as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    DiagnosticsOnCapacityTrackerData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    DiagnosticsOnCapacityTrackerSchemas as Schemas,
+)
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
 
-PATCH_PATH: str = "jobs.diagnostics_on_capacity_tracker"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_capacity_tracker"
+)
 
 
 class DiagnosticsOnCapacityTrackerTests(unittest.TestCase):
