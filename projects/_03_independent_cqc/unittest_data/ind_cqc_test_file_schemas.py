@@ -1084,6 +1084,42 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
         ]
     )
 
+    create_job_role_estimates_data_validation_columns_schema = StructType(
+        [
+            StructField(IndCQC.cqc_location_import_date, DateType(), True),
+            StructField(
+                IndCQC.estimate_filled_posts_from_all_job_roles, FloatType(), True
+            ),
+            StructField(MainJobRoleLabels.care_worker, FloatType(), True),
+            StructField(JobGroupLabels.direct_care, FloatType(), True),
+            StructField(JobGroupLabels.managers, FloatType(), True),
+            StructField(JobGroupLabels.regulated_professions, FloatType(), True),
+            StructField(JobGroupLabels.other, FloatType(), True),
+        ]
+    )
+    expected_create_job_role_estimates_data_validation_columns_schema = StructType(
+        [
+            *create_job_role_estimates_data_validation_columns_schema,
+            StructField(
+                IndCQC.national_percentage_care_worker_filled_posts, FloatType(), True
+            ),
+            StructField(
+                IndCQC.national_percentage_direct_care_filled_posts, FloatType(), True
+            ),
+            StructField(
+                IndCQC.national_percentage_managers_filled_posts, FloatType(), True
+            ),
+            StructField(
+                IndCQC.national_percentage_other_filled_posts, FloatType(), True
+            ),
+            StructField(
+                IndCQC.national_percentage_regulated_professions_filled_posts,
+                FloatType(),
+                True,
+            ),
+        ]
+    )
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumSchemas:

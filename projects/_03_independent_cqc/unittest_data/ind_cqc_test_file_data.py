@@ -2632,6 +2632,19 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (None, 1.0, 2.0, 2.0, 3.0, 3.0, 4.0, 4.0, None, 4.0, 6.0, 8.0),
     ]
 
+    create_job_role_estimates_data_validation_columns_rows = [
+        (date(2024, 1, 1), 10.0, 1.0, 1.0, 2.0, 3.0, 4.0),
+        (date(2024, 1, 1), 10.0, 1.0, 1.0, 2.0, 3.0, 4.0),
+        (date(2025, 1, 1), 10.0, 4.0, 4.0, 3.0, 2.0, 1.0),
+        (date(2025, 1, 1), 10.0, 4.0, 4.0, 3.0, 2.0, 1.0),
+    ]
+    expected_create_job_role_estimates_data_validation_columns_rows = [
+        (date(2024, 1, 1), 10.0, 1.0, 1.0, 2.0, 3.0, 4.0, 0.1, 0.1, 0.2, 0.4, 0.3),
+        (date(2024, 1, 1), 10.0, 1.0, 1.0, 2.0, 3.0, 4.0, 0.1, 0.1, 0.2, 0.4, 0.3),
+        (date(2025, 1, 1), 10.0, 4.0, 4.0, 3.0, 2.0, 1.0, 0.4, 0.4, 0.3, 0.1, 0.2),
+        (date(2025, 1, 1), 10.0, 4.0, 4.0, 3.0, 2.0, 1.0, 0.4, 0.4, 0.3, 0.1, 0.2),
+    ]
+
 
 @dataclass
 class EstimateJobRolesPrimaryServiceRollingSumData:

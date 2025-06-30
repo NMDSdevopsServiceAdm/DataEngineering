@@ -267,6 +267,12 @@ def main(
         )
     )
 
+    estimated_ind_cqc_filled_posts_by_job_role_df = (
+        JRutils.create_job_role_estimates_data_validation_columns(
+            estimated_ind_cqc_filled_posts_by_job_role_df
+        )
+    )
+
     utils.write_to_parquet(
         estimated_ind_cqc_filled_posts_by_job_role_df,
         estimated_ind_cqc_filled_posts_by_job_role_destination,

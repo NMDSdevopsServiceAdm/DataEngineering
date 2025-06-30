@@ -1,4 +1,4 @@
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 from pyspark.sql.types import MapType, FloatType
 from typing import List
 
@@ -22,6 +22,7 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
 )
+from projects.utils.utils.utils import calculate_new_column, calculate_windowed_column
 
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
@@ -451,7 +452,7 @@ def calculate_sum_and_proportion_split_of_non_rm_managerial_estimate_posts(
         *[
             F.col(role).alias(temp)
             for role, temp in zip(non_rm_managers, non_rm_managers_temporary)
-        ]
+        ],
     )
 
     df = df.withColumn(
@@ -933,5 +934,85 @@ def create_estimate_filled_posts_job_group_columns(
             job_group,
             sum(F.col(role) for role in job_roles),
         )
+
+    return df
+
+
+def create_job_role_estimates_data_validation_columns(df: DataFrame) -> DataFrame:
+    """
+    Creates new columns for checking the job role estimates data. These are:
+        - National care worker role as percentage of overall estimated filled posts.
+        - National job group percentage of overall estimated filled posts:
+            direct care, managers, other and regulated professions.
+
+    Args:
+        df (DataFrame): A dataframe with job role and job group estimate filled posts columns.
+
+    Returns:
+        DataFrame: A dataframe with additional columns for checking the job role estimates data.
+    """
+
+    w = Window.partitionBy(IndCQC.cqc_location_import_date)
+
+    calls_to_calculate_windowed_column = [
+        IndCQC.estimate_filled_posts_from_all_job_roles,
+        MainJobRoleLabels.care_worker,
+        JobGroupLabels.direct_care,
+        JobGroupLabels.managers,
+        JobGroupLabels.regulated_professions,
+        JobGroupLabels.other,
+    ]
+
+    temp_sum = "temp_sum"
+    for input_col in calls_to_calculate_windowed_column:
+        df = calculate_windowed_column(
+            df,
+            w,
+            f"{temp_sum}{input_col}",
+            input_col,
+            "sum",
+        )
+
+    calls_to_calculate_new_column = [
+        (
+            IndCQC.national_percentage_care_worker_filled_posts,
+            f"{temp_sum}{MainJobRoleLabels.care_worker}",
+        ),
+        (
+            IndCQC.national_percentage_direct_care_filled_posts,
+            f"{temp_sum}{JobGroupLabels.direct_care}",
+        ),
+        (
+            IndCQC.national_percentage_managers_filled_posts,
+            f"{temp_sum}{JobGroupLabels.managers}",
+        ),
+        (
+            IndCQC.national_percentage_regulated_professions_filled_posts,
+            f"{temp_sum}{JobGroupLabels.regulated_professions}",
+        ),
+        (
+            IndCQC.national_percentage_other_filled_posts,
+            f"{temp_sum}{JobGroupLabels.other}",
+        ),
+    ]
+
+    for new_col, col_1 in calls_to_calculate_new_column:
+        df = calculate_new_column(
+            df,
+            new_col,
+            col_1,
+            "divided by",
+            f"{temp_sum}{IndCQC.estimate_filled_posts_from_all_job_roles}",
+        )
+
+    columns_to_drop = [
+        f"{temp_sum}{IndCQC.estimate_filled_posts_from_all_job_roles}",
+        f"{temp_sum}{MainJobRoleLabels.care_worker}",
+        f"{temp_sum}{JobGroupLabels.direct_care}",
+        f"{temp_sum}{JobGroupLabels.managers}",
+        f"{temp_sum}{JobGroupLabels.regulated_professions}",
+        f"{temp_sum}{JobGroupLabels.other}",
+    ]
+    df = df.drop(*columns_to_drop)
 
     return df

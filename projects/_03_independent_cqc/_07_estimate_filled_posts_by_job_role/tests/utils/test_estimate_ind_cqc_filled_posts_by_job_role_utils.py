@@ -1722,3 +1722,47 @@ class CreateEstimateFilledPostsJobGroupColumns(
         expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class CreateJobRoleEstimatesDataValidationColumns(
+    EstimateIndCQCFilledPostsByJobRoleUtilsTests
+):
+    def setUp(self) -> None:
+        super().setUp()
+
+        test_df = self.spark.createDataFrame(
+            Data.create_job_role_estimates_data_validation_columns_rows,
+            Schemas.create_job_role_estimates_data_validation_columns_schema,
+        )
+        self.returned_df = job.create_job_role_estimates_data_validation_columns(
+            test_df,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_create_job_role_estimates_data_validation_columns_rows,
+            Schemas.expected_create_job_role_estimates_data_validation_columns_schema,
+        )
+
+        self.new_columns_added = [
+            column
+            for column in self.returned_df.columns
+            if column not in test_df.columns
+        ]
+
+    def test_create_job_role_estimates_data_validation_columns_adds_expected_columns(
+        self,
+    ):
+        returned_columns = self.returned_df.columns.sort()
+        expected_columns = self.expected_df.columns.sort()
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_create_job_role_estimates_data_validation_columns_returns_expected_values(
+        self,
+    ):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+
+        for row in range(len(expected_data)):
+            for column in self.new_columns_added:
+                self.assertAlmostEqual(
+                    returned_data[row][column], expected_data[row][column], places=3
+                )
