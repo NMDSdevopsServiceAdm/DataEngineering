@@ -10,6 +10,7 @@ To open this library locally, run `sphinx-autobuild docs/source/ docs/build/` at
 :caption: 'Starting points:'
 :maxdepth: 1
 
+usage
 currentReadme
 ```
 

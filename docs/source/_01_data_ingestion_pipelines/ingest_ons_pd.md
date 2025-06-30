@@ -60,7 +60,7 @@ These are typically resolved at runtime via the calling context or environment c
 
 ## Visual Representation
 
-```mermaid
+```{mermaid}
 graph TD
     A[Ingest ONS data] --> B{Clean and Validate}
     B --> C[Clean ONS data]
