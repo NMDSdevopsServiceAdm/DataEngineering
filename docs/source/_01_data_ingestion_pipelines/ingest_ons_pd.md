@@ -64,17 +64,19 @@ These are typically resolved at runtime via the calling context or environment c
 
 ```{mermaid}
 graph TD
-    A[Ingest ONS Data] --> B{Clean and Validate}
-    B --> C[Clean ONS Data]
-    B --> D[Validate Ingested Data]
-    C --> E[Validate Cleaned Data]
+    A[Ingest ONS Data]:::format --> B{Clean and Validate}:::format
+    B --> C[Clean ONS Data]:::format
+    B --> D[Validate Ingested Data]:::format
+    C --> E[Validate Cleaned Data]:::format
     D --> E
-    E --> F{Success?}
-    F -->|Yes| G[Run Validation Crawler]
-    G --> H[Run ONS Crawler]
-    H --> I[Succeed]
-    F -->|No| J[Notify via Lambda]
-    J --> K[Run Validation Crawler When Failed]
-    K --> L[Run ONS Crawler When Failed]
-    L --> M[Fail]
+    E --> F{Success?}:::format
+    F -->|Yes| G[Run Validation Crawler]:::format
+    G --> H[Run ONS Crawler]:::format
+    H --> I[Succeed]:::format
+    F -->|No| J[Notify via Lambda]:::format
+    J --> K[Run Validation Crawler When Failed]:::format
+    K --> L[Run ONS Crawler When Failed]:::format
+    L --> M[Fail]:::format
+
+    classDef format fill:#F5FAFD,stroke:#005EB8,stroke-width:2px;
 ```

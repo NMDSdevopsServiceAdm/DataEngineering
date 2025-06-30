@@ -64,14 +64,16 @@ These are typically injected at runtime by the infrastructure orchestration laye
 
 ```{mermaid}
 graph TD
-    A[Ingest CT Care Home] --> B[Clean CT Care Home]
-    B --> C[Validate Cleaned Data]
-    C --> D{Success?}
-    D -->|Yes| E[Run Validation Crawler]
-    E --> F[Run CT Crawler]
-    F --> G[Succeed]
-    D -->|No| H[Notify via Lambda]
-    H --> I[Run Validation Crawler When Failed]
-    I --> J[Run CT Crawler When Failed]
-    J --> K[Fail]
+    A[Ingest CT Care Home]:::format --> B[Clean CT Care Home]:::format
+    B --> C[Validate Cleaned Data]:::format
+    C --> D{Success?}:::format
+    D -->|Yes| E[Run Validation Crawler]:::format
+    E --> F[Run CT Crawler]:::format
+    F --> G[Succeed]:::format
+    D -->|No| H[Notify via Lambda]:::format
+    H --> I[Run Validation Crawler When Failed]:::format
+    I --> J[Run CT Crawler When Failed]:::format
+    J --> K[Fail]:::format
+
+    classDef format fill:#F5FAFD,stroke:#005EB8,stroke-width:2px;
 ```
