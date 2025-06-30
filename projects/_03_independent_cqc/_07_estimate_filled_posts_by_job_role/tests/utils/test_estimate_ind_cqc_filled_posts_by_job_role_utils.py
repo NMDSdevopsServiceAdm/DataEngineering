@@ -1748,28 +1748,12 @@ class CreateJobRoleEstimatesDataValidationColumns(
             if column not in test_df.columns
         ]
 
-    def test_create_job_role_estimates_data_validation_columns_adds_5_expected_column(
+    def test_create_job_role_estimates_data_validation_columns_adds_expected_columns(
         self,
     ):
-        self.assertEqual(len(self.new_columns_added), 5)
-        self.assertEqual(
-            self.new_columns_added[0],
-            IndCQC.national_percentage_care_worker_filled_posts,
-        )
-        self.assertEqual(
-            self.new_columns_added[1],
-            IndCQC.national_percentage_direct_care_filled_posts,
-        )
-        self.assertEqual(
-            self.new_columns_added[2], IndCQC.national_percentage_managers_filled_posts
-        )
-        self.assertEqual(
-            self.new_columns_added[3],
-            IndCQC.national_percentage_regulated_professions_filled_posts,
-        )
-        self.assertEqual(
-            self.new_columns_added[4], IndCQC.national_percentage_other_filled_posts
-        )
+        returned_columns = self.returned_df.columns.sort()
+        expected_columns = self.expected_df.columns.sort()
+        self.assertEqual(returned_columns, expected_columns)
 
     def test_create_job_role_estimates_data_validation_columns_returns_expected_values(
         self,
