@@ -5,7 +5,7 @@
 ## Functions present
 
 ```{eval-rst}
-.. automodule:: jobs.clean_ascwds_workplace_data
+.. automodule:: projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data
    :members:
 ```
 
