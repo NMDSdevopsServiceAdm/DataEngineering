@@ -3,6 +3,7 @@ article h1 {
     background-color: #005EB8;
     color: white;
     padding: 3rem 1rem 0.75rem 1rem;
+    border-radius: 0px;
     margin-top: 2rem;
     margin-bottom: 1.5rem;
 }
