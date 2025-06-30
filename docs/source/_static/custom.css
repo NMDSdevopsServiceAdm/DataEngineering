@@ -15,3 +15,8 @@ article h5,
 article h6 {
     color: #005EB8; /* SfC 100% Blue colour */
 }
+
+/* Custom colour for function names in autodocs (`!important` ensures it overrides Furo's default styles)*/
+.sig-name {
+    color: #A20067 !important;
+}
