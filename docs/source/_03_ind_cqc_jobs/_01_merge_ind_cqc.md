@@ -59,13 +59,15 @@ A Parquet dataset of merged independent sector CQC locations, partitioned by yea
 
 ```{mermaid}
 graph TD
-    A[Cleaned CQC Locations] --> B[Filter To Independent Sector]
-    B --> J[Join Data Into CQC DF]
-    C[Cleaned ASCWDS Workplace] --> J
-    D[Cleaned CQC PIR] --> J
-    E[Cleaned CT Non-Res] --> J
-    F[Cleaned CT Care Home] --> J
-    J --> W[Write to Parquet]
+    A[Cleaned CQC Locations]:::format --> B[Filter To Independent Sector]:::format
+    B --> J[Join Data Into CQC DF]:::format
+    C[Cleaned ASCWDS Workplace]:::format --> J
+    D[Cleaned CQC PIR]:::format --> J
+    E[Cleaned CT Non-Res]:::format --> J
+    F[Cleaned CT Care Home]:::format --> J
+    J --> W[Write to Parquet]:::format
+
+    classDef format fill:#F5FAFD,stroke:#005EB8,stroke-width:2px;
 ```
 
 ---
