@@ -43,9 +43,9 @@
                   }
                 },
                 {
-                  "StartAt": "Run validate CQC PIR ingest job",
+                  "StartAt": "Validate Ingested CQC PIR data",
                   "States": {
-                      "Run validate CQC PIR ingest job": {
+                      "Validate Ingested CQC PIR data": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::glue:startJobRun.sync",
                       "Parameters": {
