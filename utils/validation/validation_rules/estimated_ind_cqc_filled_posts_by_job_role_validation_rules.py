@@ -118,8 +118,8 @@ class EstimatedIndCqcFilledPostsByJobRoleValidationRules:
             MainJobRoleLabels.technician: min_value,
         },
         RuleName.max_values: {
-            IndCqcColumns.national_percentage_care_worker_filled_posts: 0.69,  # Analysis from April 2025 showed 64%, therefore lower limit is 10 points more.
-            IndCqcColumns.national_percentage_direct_care_filled_posts: 0.81,  # Analysis from April 2025 showed 76%, therefore lower limit is 10 points more.
+            IndCqcColumns.national_percentage_care_worker_filled_posts: 0.69,  # Analysis from April 2025 showed 64%, therefore lower limit is 5 points more.
+            IndCqcColumns.national_percentage_direct_care_filled_posts: 0.81,  # Analysis from April 2025 showed 76%, therefore lower limit is 5 points more.
             IndCqcColumns.national_percentage_managers_filled_posts: 0.10,  # Analysis from April 2025 showed 6%, therefore lower limit is half more.
             IndCqcColumns.national_percentage_regulated_professions_filled_posts: 0.06,  # Analysis from April 2025 showed 4%, therefore lower limit is half more.
             IndCqcColumns.national_percentage_other_filled_posts: 0.21,  # Analysis from April 2025 showed 14%, therefore lower limit is half more.
