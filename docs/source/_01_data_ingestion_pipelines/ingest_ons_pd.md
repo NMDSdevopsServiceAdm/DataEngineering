@@ -4,6 +4,8 @@ This Step Function defines the ingestion, cleaning, and validation process for t
 
 ## Overview
 
+This pipeline is automatically triggered by an [Amazon EventBridge](https://docs.aws.amazon.com/eventbridge/latest/userguide/what-is-amazon-eventbridge.html) rule when a new CSV is added to a specific location in the S3 bucket. This allows the pipeline to respond dynamically to new data uploads without manual intervention.
+
 The pipeline consists of several stages:
 
 1. **Ingest ONS Data**: Fetch raw ONS postcode directory data from the S3 source (in CSV files) and store it in S3 (in Parquet files).
@@ -28,7 +30,7 @@ The Step Function is structured using a mix of **parallel** and **sequential** t
 | Ingest ONS data | Ingests raw postcode directory data | `glue:startJobRun.sync` |
 | Clean ONS data | Cleans the raw data | `glue:startJobRun.sync` |
 | Validate ingested ONS data | Validates the raw data | `glue:startJobRun.sync` |
-| Validate cleaned ONS data | Validates cleaned vs raw data | `glue:startJobRun.sync` |
+| Validate cleaned ONS data | Validates the cleaned data | `glue:startJobRun.sync` |
 | Start validation crawler | Updates validation dataset catalog | `glue:startCrawler` |
 | Start ONS crawler | Updates ONS dataset catalog | `glue:startCrawler` |
 | Error notification | Publishes error using Lambda | `lambda:invoke.waitForTaskToken` |
@@ -62,9 +64,17 @@ These are typically resolved at runtime via the calling context or environment c
 
 ```{mermaid}
 graph TD
-    A[Ingest ONS data] --> B{Clean and Validate}
-    B --> C[Clean ONS data]
-    B --> D[Validate ingested data]
-    B --> E[Validate cleaned data]
-    E --> F[Run validation crawler]
-    F --> G[Run ONS crawler]
+    A[Ingest ONS Data] --> B{Clean and Validate}
+    B --> C[Clean ONS Data]
+    B --> D[Validate Ingested Data]
+    C --> E[Validate Cleaned Data]
+    D --> E
+    E --> F{Success?}
+    F -->|Yes| G[Run Validation Crawler]
+    G --> H[Run ONS Crawler]
+    H --> I[Succeed]
+    F -->|No| J[Notify via Lambda]
+    J --> K[Run Validation Crawler When Failed]
+    K --> L[Run ONS Crawler When Failed]
+    L --> M[Fail]
+```
