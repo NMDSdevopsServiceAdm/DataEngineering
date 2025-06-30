@@ -1,0 +1,17 @@
+/* Style H1 headings */
+article h1 {
+    background-color: #005EB8;
+    color: white;
+    padding: 0.75rem 1rem;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Change heading colours without affecting body text */
+article h2,
+article h3,
+article h4,
+article h5,
+article h6 {
+    color: #005EB8; /* SfC 100% Blue colour */
+}
