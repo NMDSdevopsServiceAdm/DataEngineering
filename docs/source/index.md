@@ -1,24 +1,31 @@
-% Skills for Care Data Engineering documentation master file, created by
-% sphinx-quickstart on Thu Feb 15 12:56:16 2024.
-% You can adapt this file completely to your liking, but it should at least
-% contain the root `toctree` directive.
-
 # Welcome to Skills for Care Data Engineering's documentation!
 
 ```{warning}
 This library is under heavy development
 ```
 
-For further info on the steps I took to get this far, check out the [Walkthrough on Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx)
-Read through the steps in the [Setting up](https://skillsforcare.atlassian.net/wiki/spaces/DE/pages/1028227086/Sphinx#Setting-up) section to get started, and from there explore the specific sections of relevance
+To open this library locally, run `sphinx-autobuild docs/source/ docs/build/` at the command line.
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 2
-   
+:caption: 'Starting points:'
+:maxdepth: 1
+
 usage
 currentReadme
-sample_docpage
 ```
 
+```{toctree}
+:caption: 'Pipelines:'
+:maxdepth: 1
+:glob:
+_01_data_ingestion_pipelines/*
+_03_ind_cqc_pipelines/*
+```
 
+```{toctree}
+:caption: 'Jobs:'
+:maxdepth: 1
+:glob:
+
+_03_ind_cqc_jobs/*
+```

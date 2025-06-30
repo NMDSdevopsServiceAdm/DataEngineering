@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Skills for Care Data Engineering"
-copyright = "2024, Skills for Care"
+copyright = "2025, Skills for Care"
 author = "Skills for Care"
 release = "1.0.0"
 
@@ -24,6 +24,7 @@ extensions = [
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinxcontrib.mermaid",
 ]
 
 templates_path = ["_templates"]
@@ -34,4 +35,3 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"
-html_static_path = ["_static"]
