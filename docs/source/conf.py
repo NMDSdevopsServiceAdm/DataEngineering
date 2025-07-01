@@ -35,3 +35,15 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "furo"
+
+html_theme_options = {
+    "light_css_variables": {
+        "color-background-secondary": "#F5FAFD",
+    },
+}
+
+html_static_path = ["_static"]
+
+
+def setup(app):
+    app.add_css_file("custom.css")
