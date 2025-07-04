@@ -2,7 +2,7 @@ from polars import read_parquet, concat, col
 import polars as pl
 from polars.testing import assert_frame_equal
 
-from utils import download_from_s3, list_bucket_objects
+from diff_creator import get_diffs
 
 
 def main():
@@ -87,7 +87,7 @@ def main():
 
     print(f"Original entries: {base_df.shape}")
 
-    for month in range(4, 6):
+    for month in range(4, 13):
         print(f"Starting month {month}")
 
         write_folder = (
@@ -98,59 +98,21 @@ def main():
         print(f"Reading from {read_folder}")
         snapshot_df = read_parquet(f"s3://{bucket}/{read_folder}")
 
-        removed_entries = base_df.join(snapshot_df, how="anti", on="locationId")
-        new_entries = snapshot_df.join(base_df, how="anti", on="locationId")
-
-        joined_df = snapshot_df.join(
-            base_df, on="locationId", how="left", suffix="_base", maintain_order="right"
-        )
-        unchanged_conditions = []
-        for col_name in dataset_cols:
-            unchanged_conditions.append(
-                (col(f"{col_name}").eq_missing(col(f"{col_name}_base")))
-            )
-
-        rows_without_changes = joined_df.filter(unchanged_conditions)
-        rows_with_changes = joined_df.remove(
-            unchanged_conditions
-        )  # either new rows or rows where one or more field has changed
-
-        changed_entries = rows_with_changes.select(base_df.columns)
-        unchanged_entries = rows_without_changes.select(base_df.columns)
-
-        print(f"Removed entries: {removed_entries.shape[0]}")
-        print(f"Unchanged entries: {unchanged_entries.shape[0]}")
-        print(f"Changed entries: {changed_entries.shape[0]}")
-        print(f"Total = {changed_entries.shape[0] + unchanged_entries.shape[0]}")
-
-        assert (
-            changed_entries.shape[0]
-            + unchanged_entries.shape[0]
-            - new_entries.shape[0]
-            + removed_entries.shape[0]
-            == base_df.shape[0]
-        )
-
         print(
             f"Unique Last Updated before join: {base_df['last_updated'].value_counts()}"
         )
 
-        changed_entries = changed_entries.with_columns(
-            pl.lit(f"2013{month:02}01").alias("last_updated"),
-            pl.lit(False).alias("db_delete"),
+        base_df, changed_entries = get_diffs(
+            base_df,
+            snapshot_df,
+            snapshot_date=f"2013{month:02}01",
+            primary_key="locationId",
+            change_cols=dataset_cols,
         )
-        removed_entries = removed_entries.with_columns(
-            pl.lit(f"2013{month:02}01").alias("last_updated"),
-            pl.lit(True).alias("db_delete"),
-        )
-        base_df = concat([changed_entries, unchanged_entries])
-
-        changed_entries = concat([changed_entries, removed_entries])
 
         print(
             f"Unique Last Updated after join: {base_df['last_updated'].value_counts()}"
         )
-        print(f"Unique db_delete after join: {base_df['db_delete'].value_counts()}")
 
         changed_entries.write_parquet(
             f"s3://{write_bucket}/{write_folder}/",
