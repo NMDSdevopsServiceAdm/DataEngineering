@@ -31,7 +31,6 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
-from utils.cqc_location_dictionaries import InvalidPostcodes
 from utils.cqc_location_utils.extract_registered_manager_names import (
     extract_registered_manager_names_from_imputed_regulated_activities_column,
 )
