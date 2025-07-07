@@ -71,7 +71,6 @@ def main():
     write_folder = Rf"domain=CQC/dataset=locations_api_cleaned/year=2013/month=03/"
 
     base_df = read_parquet(f"s3://{bucket}/{read_folder}")
-    print(base_df.schema)
 
     base_df = base_df.with_columns(
         pl.lit("20130301").alias("last_updated"),
@@ -87,40 +86,42 @@ def main():
 
     print(f"Original entries: {base_df.shape}")
 
-    for month in range(4, 13):
-        print(f"Starting month {month}")
+    for year in range(2013, 2015):
+        for month in range(1, 13):
+            if year == 2013:
+                if month < 4:
+                    continue
+            print(f"Starting month {month}-{year}")
 
-        write_folder = (
-            Rf"domain=CQC/dataset=locations_api_cleaned/year=2013/month={month:02}/"
-        )
-        read_folder = Rf"domain=CQC/dataset=locations_api_cleaned/year=2013/month={month:02}/day=01/import_date=2013{month:02}01/"
+            write_folder = Rf"domain=CQC/dataset=locations_api_cleaned/year={year}/month={month:02}/"
+            read_folder = Rf"domain=CQC/dataset=locations_api_cleaned/year={year}/month={month:02}/day=01/import_date={year}{month:02}01/"
 
-        print(f"Reading from {read_folder}")
-        snapshot_df = read_parquet(f"s3://{bucket}/{read_folder}")
+            print(f"Reading from {read_folder}")
+            snapshot_df = read_parquet(f"s3://{bucket}/{read_folder}")
 
-        print(
-            f"Unique Last Updated before join: {base_df['last_updated'].value_counts()}"
-        )
+            print(
+                f"Unique Last Updated before join: {base_df['last_updated'].value_counts()}"
+            )
 
-        base_df, changed_entries = get_diffs(
-            base_df,
-            snapshot_df,
-            snapshot_date=f"2013{month:02}01",
-            primary_key="locationId",
-            change_cols=dataset_cols,
-        )
+            base_df, changed_entries = get_diffs(
+                base_df,
+                snapshot_df,
+                snapshot_date=f"{year}{month:02}01",
+                primary_key="locationId",
+                change_cols=dataset_cols,
+            )
 
-        print(
-            f"Unique Last Updated after join: {base_df['last_updated'].value_counts()}"
-        )
+            print(
+                f"Unique Last Updated after join: {base_df['last_updated'].value_counts()}"
+            )
 
-        changed_entries.write_parquet(
-            f"s3://{write_bucket}/{write_folder}/",
-            compression="snappy",
-            use_pyarrow=True,
-            pyarrow_options={"partition_cols": ["last_updated"]},
-            partition_chunk_size_bytes=220000,
-        )
+            changed_entries.write_parquet(
+                f"s3://{write_bucket}/{write_folder}/",
+                compression="snappy",
+                use_pyarrow=True,
+                pyarrow_options={"partition_cols": ["last_updated"]},
+                partition_chunk_size_bytes=220000,
+            )
 
 
 if __name__ == "__main__":
