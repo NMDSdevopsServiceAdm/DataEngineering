@@ -1,4 +1,4 @@
-from polars import DataFrame, col, concat, lit
+from polars import DataFrame, col, concat, lit, sum_horizontal
 
 
 def get_diffs(
@@ -44,6 +44,7 @@ def get_diffs(
     unchanged_entries = rows_without_changes.select(base_df.columns)
 
     print(f"Removed entries: {removed_entries.shape[0]}")
+    print(f"New entries: {new_entries.shape[0]}")
     print(f"Unchanged entries: {unchanged_entries.shape[0]}")
     print(f"Changed entries: {changed_entries.shape[0]}")
     print(f"Total = {changed_entries.shape[0] + unchanged_entries.shape[0]}")
