@@ -28,55 +28,12 @@ We’re commissioned by the Department of Health and Social Care to collect data
 
 ### About the Data Engineering Project
 
-Our data engineering project aims to convert our data modeling processes into reproducible analytical pipelines in AWS. These pipelines will be more accurate and efficient, allowing us to: 
+Our data engineering project aims to convert our data modeling processes into reproducible analytical pipelines in AWS. These pipelines will be more accurate and efficient, allowing us to:
  - model our estimates using all the data available to us
  - provide more frequent updates to our estimates
  - use more complex modelling techniques, such as machine learning or AI modules
  - make our detailed methods available to anyone who wants to explore them
 
-
-## Building the project
-
-### Download the following prerequisite installs:
-Tool | Windows | Mac/Linux
---- | --- | ---
-Python version 3.9.6 | https://www.python.org/downloads/ | https://www.python.org/downloads/
-Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git
-Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv
-Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html
-java jdk8 (need to create an oracle account) | https://www.java.com/en/download/ | https://www.java.com/en/download/
-
-### Install Java (MacOS)
-This project is using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
-```
-brew update
-brew install adoptopenjdk8
-```
-
-
-### Clone the project
-```
-git clone https://github.com/NMDSdevopsServiceAdm/DataEngineering.git
-```
-### Create virtual environment and install dependencies
-```
-cd DataEngineering
-pipenv install --dev
-```
-
-For detailed Windows setup see here: https://github.com/NMDSdevopsServiceAdm/DataEngineering/blob/main/WindowsSetup.md
-
-
-### Start virtual env
-```
-pipenv shell
-```
-### Stop virtual env
-```
-exit
-```
-#### IMPORTANT
-Do not use `deactivate` or `source deactivate` - this will leave pipenv in a confused state because you will still be in that spawned shell instance but not in an activated virtualenv. 
 
 ## Testing
 ### Run tests
@@ -141,7 +98,7 @@ For high level project documentation, including content such as handovers, ADRs,
 
 So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
 
-### Our Continuous Depoyment Pipeline 
+### Our Continuous Depoyment Pipeline
 ***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
 
 We utilise [CircleCI](https://circleci.com/docs/?utm_source=google&utm_medium=sem&utm_campaign=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand&utm_term=g_p-circleci_c__linux_20220513&utm_content=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand_keyword-text_eta-circleCI_phrase-&gclid=Cj0KCQjwhLKUBhDiARIsAMaTLnGUFcuTVX-Ux2Asd9rfD9z0kiZiIr69Aj-cSPmQAi7xtr6jkYzFVtwaAkj-EALw_wcB) to automate terraform deployments. <br>
@@ -195,7 +152,7 @@ tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
 <br>
 
 ### Installing AWS CLI
-AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it. 
+AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it.
 
 ### Creating Credentials for AWS CLI
 With the AWS CLI installed and configured, you will now need access to the Skills for Care AWS
@@ -296,7 +253,7 @@ We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are 
 5. Navigate to *"Notebooks"* from the left navigation column.
 6. Either create a new notebook, or start a pre-existing one.
 7. Wait for notebok to start (1-3 minutes)
-8. Select notebook and click *"Open in JupyterLab"* - This will start your interactive notebook session. 
+8. Select notebook and click *"Open in JupyterLab"* - This will start your interactive notebook session.
 9. Once finished with the notebooks terminate the cluster.
     - Navigate to *"Clusters"* from the left navigation column.
     - Select the running cluster
@@ -332,22 +289,22 @@ The libraries will be installed the next time a new cluster is cloned and starte
 
 ### Notebook costs
 An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
-The notebooks are free, but require a cluster to run on. 
+The notebooks are free, but require a cluster to run on.
 The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
 
 [install_python_libs_script]: https://s3.console.aws.amazon.com/s3/object/aws-emr-resources-344210435447-eu-west-2?region=eu-west-2&prefix=bootstrap-scripts/install-python-libraries-for-emr.sh
 [aws_cli_docs]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-### AWS Buckets Versioning 
+### AWS Buckets Versioning
 
-**Versioning** is a feature in AWS which lets us keep multiple variants of the same object in the same bucket. However, instead of just overriding and/or deleting the older version, S3 allows for the preservation, retrieval and archival of all object. 
+**Versioning** is a feature in AWS which lets us keep multiple variants of the same object in the same bucket. However, instead of just overriding and/or deleting the older version, S3 allows for the preservation, retrieval and archival of all object.
 
 #### Buckets come in three types:
 	- Unversioned (default)
 	- Versioning-enabled
 	- Versioning-suspended
 
-You enable and suspend a bucket's versioning functionality at a bucket level.  It should be noted that once versioning is enabled, it can **never** be returned to an unversioned state. 
+You enable and suspend a bucket's versioning functionality at a bucket level.  It should be noted that once versioning is enabled, it can **never** be returned to an unversioned state.
 
 The versioning state applies to all objects that are in or enter the bucket. If you enable versioning on a bucket, all objects that are in the bucket get a `version ID`. Any editing of these objects will generate a new unique `version ID`.
 
@@ -357,11 +314,11 @@ For more information about versioning see: https://docs.aws.amazon.com/AmazonS3/
 
 ### Activating Versioning on a Bucket
 
-In AWS you can select a Bucket > click "Properties" > here we see "Bucket Versioning", click edit and make the relevant changes needed. 
+In AWS you can select a Bucket > click "Properties" > here we see "Bucket Versioning", click edit and make the relevant changes needed.
 
-### Versioning by default 
+### Versioning by default
 
-Inside our stack we have a terraforming config file ([s3.tf](https://github.com/NMDSdevopsServiceAdm/DataEngineering/tree/main/terraform/modules/s3-bucket)) which lays out and applies certain formatting when creating buckets. 
+Inside our stack we have a terraforming config file ([s3.tf](https://github.com/NMDSdevopsServiceAdm/DataEngineering/tree/main/terraform/modules/s3-bucket)) which lays out and applies certain formatting when creating buckets.
 
 The directory path on your machine for this file:
 
