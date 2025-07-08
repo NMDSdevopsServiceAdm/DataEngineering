@@ -94,32 +94,6 @@ To understand more about how the Sphinx documentation was setup, consult our [Sp
 For high level project documentation, including content such as handovers, ADRs, signposting, private decision logs and guidance otherwise not available or suitable for our public repo, you can request access to our Confluence here: [Skills For Care Data Engineering Confluence Home](https://skillsforcare.atlassian.net/wiki/spaces/DE/overview?homepageId=1011220675)
 
 
-## Infrastructure
-
-So you want to update the platform's infrastructure? We utilise [Terraform](https://learn.hashicorp.com/terraform) as our tool of choice for managing our Infrastructure as Code (IAC). Have a read about IAC [here](https://en.wikipedia.org/wiki/Infrastructure_as_code).
-
-### Our Continuous Depoyment Pipeline
-***The CD part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
-
-We utilise [CircleCI](https://circleci.com/docs/?utm_source=google&utm_medium=sem&utm_campaign=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand&utm_term=g_p-circleci_c__linux_20220513&utm_content=sem-google-dg--emea-en-brandAuth-maxConv-auth-brand_keyword-text_eta-circleCI_phrase-&gclid=Cj0KCQjwhLKUBhDiARIsAMaTLnGUFcuTVX-Ux2Asd9rfD9z0kiZiIr69Aj-cSPmQAi7xtr6jkYzFVtwaAkj-EALw_wcB) to automate terraform deployments. <br>
-When creating a new git branch and pushing to the remote repository a CircleCi workflow will automatically trigger. <br>
-One of the steps in this workflow is to deploy terraform. You can find the full CircleCi configuration inside [.circleci/config.yml](.circleci/config.yml).
-Once the workflow has completed AWS will contain all the infrastructure required to run the pipeline and all associated glue jobs.<br>
-
-Environments will be torn down when the branch is deleted from GitHub.
-So make sure you delete your branch after merging into main (this is good practice anyway!).
-
-> ❗ **When merging with the main branch**: The workflow will run here too. There is a mandatory, manual approval step required here. Please read the output of `terraform plan`. Ensure this is correct, then give your approval. The workflow will complete and the main (production) infrastructure will be updated. The main branch workflows can be found [here](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering?branch=main&filter=all).
-
-<br>
-
-### Continuous Integration
-#***The CI part of [CICD](https://www.redhat.com/en/topics/devops/what-is-ci-cd#:~:text=CI%2FCD%20is%20a%20method,continuous%20delivery%2C%20and%20continuous%20deployment.)***
-
-When you push to a remote git branch, we run some linting checks for Python and Terraform code as a part of the CircleCi workflow (mentioned above).
-If your branch fails either of these checks, you need to run the relevant linter to fix the errors.
-Instructions for both Terraform and Python are detailed below.
-
 ### Linting Python code
 
 We use [black](https://black.readthedocs.io/en/stable/) to lint our Python code.
@@ -139,89 +113,6 @@ black .
 Ensure you are at the root of the repository, then run
 ```
 terraform fmt -recursive
-```
-
-## The manual approach
-### Installing Terraform
-The Terraform docs are an excellent resource for this: https://learn.hashicorp.com/
-tutorials/terraform/install-cli <br> Here's the tldr though, just in case.
-1. Download binary: https://www.terraform.io/downloads
-2. Unzip
-3. Make available on path
-
-<br>
-
-### Installing AWS CLI
-AWS CLI is a prerequisite of Terraform. Follow these [instructions](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) to install and configure it.
-
-### Creating Credentials for AWS CLI
-With the AWS CLI installed and configured, you will now need access to the Skills for Care AWS
-1. Request access from the team to the AWS Console.
-2. Once this access is granted, follow the steps here to [setup your access and secret key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html).
-
-### Deploying Terraform
-
-1. Set up your AWS crendentials as terraform variables
-
-Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
-
-```
-cp terraform/pipeline/terraform.tfvars.example terraform/pipeline/terraform.tfvars
-```
-Populate this file with your access key and secret access key.
-
-2. From terminal/command line ensure you're in the Terraform directory
-
-```
-% pwd
-/Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
-```
-
-3. Run `terraform plan` to evaluate the planned changes
-```
-terraform plan
-```
-
-4. Check the planned changes to make sure they are correct!
-5. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
-```
-terraform apply
-```
-<br>
-
-### Destroying Terraform
-
-“What goes up must come down.” - Isaac Newton
-
-Nobody wants a bunch of infrastructure left lying around, unused, it adds cognitive load, confusion and possible expense.
-
-To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
-
-```
-cd terraform/pipeline
-terraform init
-terraform workspace list
-```
-
-To switch to a different workspace run:
-
-```
-terraform workspace select <workspace_name>
-```
-
-Then run:
-
-```
-terraform destroy
-```
-
-This will generate a "destruction plan" - closely read through this plan and ensure you want to execute all of the planned changes. Once satisfied, confirm the changes. Terraform will then proceed to tear down all of the running infrastructure in your current workspace. <br>
-
-To delete a workspace make sure it is not your current workspace (you can select the default workspace) and run:
-
-```
-terraform workspace select default
-terraform workspace delete <workspace_name>
 ```
 
 ## Jupyter Notebooks
