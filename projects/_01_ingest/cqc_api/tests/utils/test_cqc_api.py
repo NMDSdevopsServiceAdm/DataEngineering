@@ -1,9 +1,8 @@
 import unittest
-from unittest.mock import Mock, patch, call
 from typing import Generator
+from unittest.mock import Mock, call, patch
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-
 
 PATCH_PATH = "projects._01_ingest.cqc_api.utils.cqc_api"
 
@@ -210,6 +209,68 @@ class GetAllObjectsTests(CqcApiTests):
         self.assertTrue(isinstance(generator, Generator))
         self.assertEqual(next(generator), test_response_page_1_json)
         self.assertEqual(next(generator), test_response_page_2_json)
+
+
+class GetUpdatedObjectsTests(CqcApiTests):
+    @patch(f"{PATCH_PATH}.get_changes_within_timeframe")
+    @patch(f"{PATCH_PATH}.get_object")
+    def test_get_updated_objects(self, mock_get_object: Mock, mock_get_changes: Mock):
+        # Given
+        changed_ids = ["1", "2", "5", "6", "9"]
+        expected_changes = [{"id": id} for id in changed_ids]
+
+        mock_get_changes.side_effect = [
+            {"page": 1, "totalPages": 3, "changes": ["1", "2"]},
+            {"page": 2, "totalPages": 3, "changes": ["5", "6"]},
+            {"page": 3, "totalPages": 3, "changes": ["9"]},
+        ]
+        mock_get_object.side_effect = expected_changes
+        # When
+        results = cqc.get_updated_objects(
+            object_type="any",
+            cqc_api_primary_key="cqc_api_primary_key",
+            start="2023-01-01T00:00:00Z",
+            end="2023-01-02T00:00:00Z",
+        )
+        # Then
+        self.assertTrue(isinstance(results, Generator))
+        for expected_change in expected_changes:
+            self.assertEqual(next(results), expected_change)
+        mock_get_object.assert_has_calls(
+            [call(id, "any", "cqc_api_primary_key") for id in changed_ids],
+            any_order=True,
+        )
+
+
+class GetChangesWithinTimeframeTests(CqcApiTests):
+    @patch(f"{PATCH_PATH}.call_api")
+    def test_get_changes_within_timeframe(self, mock_call_api: Mock):
+        # Given
+        mock_call_api.return_value = {"changes": ["1", "2", "3"]}
+        # When
+        result = cqc.get_changes_within_timeframe(
+            object_type="mock_organisations",
+            cqc_api_primary_key="cqc_api_primary_key",
+            start="2000-01-01T00:00:00Z",
+            end="2000-01-02T00:00:00Z",
+            page_number=5,
+            per_page=100,
+        )
+        # Then
+        mock_call_api.assert_called_once_with(
+            "https://api.service.cqc.org.uk/public/v1/changes/mock_organisations",
+            query_params={
+                "startTimestamp": "2000-01-01T00:00:00Z",
+                "endTimestamp": "2000-01-02T00:00:00Z",
+                "page": 5,
+                "perPage": 100,
+            },
+            headers_dict={
+                "User-Agent": "SkillsForCare",
+                "Ocp-Apim-Subscription-Key": "cqc_api_primary_key",
+            },
+        )
+        self.assertEqual(result, {"changes": ["1", "2", "3"]})
 
 
 if __name__ == "__main__":
