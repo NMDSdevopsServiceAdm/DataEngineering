@@ -59,11 +59,10 @@ def get_diffs(
 
     changed_entries = changed_entries.with_columns(
         lit(snapshot_date).alias("last_updated"),
-        lit(False).alias("db_delete"),
     )
     removed_entries = removed_entries.with_columns(
         lit(snapshot_date).alias("last_updated"),
-        lit(True).alias("db_delete"),
+        lit(snapshot_date).alias("deregistrationDate"),
     )
     base_df = concat([changed_entries, unchanged_entries])
 
