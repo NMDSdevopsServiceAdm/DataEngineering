@@ -191,7 +191,13 @@ def remove_june_2025(df: DataFrame) -> DataFrame:
         "Concat_year_month", F.concat(F.col(Keys.year), F.col(Keys.month))
     )
 
-    df = df.where(F.col("Concat_year_month") != "202506")
+    df = df.withColumn(
+        CQCPIRClean.pir_people_directly_employed_cleaned,
+        F.when(
+            F.col("Concat_year_month") != "202506",
+            F.col(CQCPIRClean.pir_people_directly_employed_cleaned),
+        ).otherwise(F.lit(None)),
+    )
 
     return df
 

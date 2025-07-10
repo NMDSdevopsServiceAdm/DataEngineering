@@ -100,6 +100,9 @@ class MergeIndCQCData:
         [
             StructField(CQCLClean.year, StringType(), True),
             StructField(CQCLClean.month, StringType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
         ]
     )
     expected_remove_june_2025_schema = StructType(
