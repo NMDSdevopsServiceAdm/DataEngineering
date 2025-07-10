@@ -1,7 +1,8 @@
-## DataEngineering
+# Skills for Care Data Engineering
 
-### Welcome to the Skills for Care Data Engineering repository.
+[![CircleCI](https://circleci.com/gh/NMDSdevopsServiceAdm/DataEngineering.svg?style=shield)](https://app.circleci.com/pipelines/github/NMDSdevopsServiceAdm/DataEngineering)
 
+## Welcome
 This repository contains the following:
 - Terraform infrustructure as code for pipeline deployment on AWS
 - Spark jobs for feature extraction data transformations
@@ -114,43 +115,3 @@ Ensure you are at the root of the repository, then run
 ```
 terraform fmt -recursive
 ```
-
-
-## Other Guidance
-
-### AWS Buckets Versioning
-
-**Versioning** is a feature in AWS which lets us keep multiple variants of the same object in the same bucket. However, instead of just overriding and/or deleting the older version, S3 allows for the preservation, retrieval and archival of all object.
-
-#### Buckets come in three types:
-	- Unversioned (default)
-	- Versioning-enabled
-	- Versioning-suspended
-
-You enable and suspend a bucket's versioning functionality at a bucket level.  It should be noted that once versioning is enabled, it can **never** be returned to an unversioned state.
-
-The versioning state applies to all objects that are in or enter the bucket. If you enable versioning on a bucket, all objects that are in the bucket get a `version ID`. Any editing of these objects will generate a new unique `version ID`.
-
-- Objects in a bucket before you set the version state have a `null` `version ID`.
-
-For more information about versioning see: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html
-
-### Activating Versioning on a Bucket
-
-In AWS you can select a Bucket > click "Properties" > here we see "Bucket Versioning", click edit and make the relevant changes needed.
-
-### Versioning by default
-
-Inside our stack we have a terraforming config file ([s3.tf](https://github.com/NMDSdevopsServiceAdm/DataEngineering/tree/main/terraform/modules/s3-bucket)) which lays out and applies certain formatting when creating buckets.
-
-The directory path on your machine for this file:
-
-     /DataEngineering/terraform/modules/s3-bucket/
-
-One thing to be aware of is that and bucket with the `sfc-` will have versioning on by default. If you run in to a situation when creating new buckets in the stack be aware that this prefix is applied automatically and correct accordingly.
-
-### Deleting and Restoring Objects
-
-With versioning enabled, the previous versions of that object exist and can be viewed within the bucket by clicking on the `Show Version` slider. With a versioning enabled bucket we can see every version of the object which was previously hidden. You have the ability to download or view the older version, you can also see previous version and objects that have been deleted.
-
-A new item appears in the list of objects; the **Delete Marker**. This gets added to any object which is deleted; not it does not get added to objects that get updated or over wrote. If you wish to restore a version that was previously deleted, click the check box beside the delete marker and at the top of the screen click "delete".  Deleting the delete marker restores the previous version of the object.
