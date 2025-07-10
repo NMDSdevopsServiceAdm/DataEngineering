@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, functions as F
 from typing import Optional
 
 from utils import utils
@@ -167,12 +167,33 @@ def main(
         CTCHClean.care_home,
     )
 
+    ind_cqc_location_df = remove_june_2025(ind_cqc_location_df)
+
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
     )
+
+
+def remove_june_2025(df: DataFrame) -> DataFrame:
+    """
+    doc string
+
+    Args:
+        df (DataFrame): words
+
+    Returns:
+        DataFrame: words
+    """
+    df = df.withColumn(
+        "Concat_year_month", F.concat(F.col(Keys.year), F.col(Keys.month))
+    )
+
+    df = df.where(F.col("Concat_year_month") != "202506")
+
+    return df
 
 
 def join_data_into_cqc_df(

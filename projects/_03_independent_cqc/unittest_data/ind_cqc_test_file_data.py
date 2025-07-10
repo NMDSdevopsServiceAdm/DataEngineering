@@ -86,6 +86,12 @@ class MergeIndCQCData:
     ]
     # fmt: on
 
+    remove_june_2025_rows = [("2024", "06"), ("2025", "05"), ("2025", "06")]
+    expected_remove_june_2025_rows = [
+        ("2024", "06", "202406"),
+        ("2025", "05", "202505"),
+    ]
+
 
 @dataclass
 class ValidateMergedIndCqcData:
