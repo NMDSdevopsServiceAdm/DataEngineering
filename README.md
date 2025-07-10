@@ -115,76 +115,8 @@ Ensure you are at the root of the repository, then run
 terraform fmt -recursive
 ```
 
-## Jupyter Notebooks
-
->The notebook extends the console-based approach to interactive computing in a qualitatively new direction, providing a web-based application suitable for capturing the whole computation process: developing, documenting, and executing code, as well as communicating the results. The Jupyter notebook combines two components:
->
->**A web application**: a browser-based tool for interactive authoring of documents which combine explanatory text, mathematics, computations and their rich media output.
->
->**Notebook documents**: a representation of all content visible in the web application, including inputs and outputs of the computations, explanatory text, mathematics, images, and rich media representations of objects.
-
-[Source](https://jupyter-notebook.readthedocs.io/en/stable/notebook.html)
-
-----
-
-### Spinning up a notebook
-> ❗ **You will need to request access from the team to AWS Console to complete these steps**, if you've not done this already.
-
-We utilise AWS EMR (Elastic Map Reduce) for our notebook environment. Below are the steps required to get this environment running.
-
-1. Head over to AWS [EMR](https://eu-west-2.console.aws.amazon.com/elasticmapreduce/home?region=eu-west-2)
-2. Select *"Clusters"* from the left navigation column.
-3. If there isn't a cluster already running, clone a new one from the most recently terminated.
-    - Select the most recently terminated cluster.
-    - Select *"Clone"* from the top navigation
-    - Confirm *"yes"* to *"...including steps..."*
-    - Check the hardware configuration found in step 2 is appropriate. We usually utilise 1 m5.xlarge master node and 3 m5.xlarge core nodes. By default we utilise spot pricing for reduced operational costs.
-    - Complete the wizzard by clicking *"Create Cluster"*
-4. Wait for cluster to finishing building (2 - 10 minutes)
-5. Navigate to *"Notebooks"* from the left navigation column.
-6. Either create a new notebook, or start a pre-existing one.
-7. Wait for notebok to start (1-3 minutes)
-8. Select notebook and click *"Open in JupyterLab"* - This will start your interactive notebook session.
-9. Once finished with the notebooks terminate the cluster.
-    - Navigate to *"Clusters"* from the left navigation column.
-    - Select the running cluster
-    - Click *"Terminate"*
-
 
 ## Other Guidance
-
-### Installing extra python libraries
-
-We run a bash script as an EMR step after the cluster has started which installs any python libraries we need on the cluster using pip.
-
-The script is stored [here][install_python_libs_script] in S3.
-You can edit this script to upload extra python libraries and they will be uploaded the next time a cluster is started.
-
-To add extra libraries:
-1. Download the script either via the "Download" button [in the console][install_python_libs_script] or using the [aws cli][aws_cli_docs].
-```
-aws s3 cp s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh .
-```
-2. Open the downloaded script and add the following line to the end of the script for each library that needs installing.
-```
-sudo python3 -m pip install package_name
-```
-3. Upload the updated script to the same location (s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh).
-Either using console or the aws cli.
-```
-aws s3 cp ./install-python-libraries-for-emr.sh s3://aws-emr-resources-344210435447-eu-west-2/bootstrap-scripts/install-python-libraries-for-emr.sh
-```
-
-The libraries will be installed the next time a new cluster is cloned and started.
-
-
-### Notebook costs
-An EMR cluster is charged per instance minute, for this reason ensure the cluster is terminated when not in use.
-The notebooks are free, but require a cluster to run on.
-The AWS EMR costing documentation can be found here: https://aws.amazon.com/emr/pricing/
-
-[install_python_libs_script]: https://s3.console.aws.amazon.com/s3/object/aws-emr-resources-344210435447-eu-west-2?region=eu-west-2&prefix=bootstrap-scripts/install-python-libraries-for-emr.sh
-[aws_cli_docs]: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
 ### AWS Buckets Versioning
 
