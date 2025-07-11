@@ -192,7 +192,8 @@ def remove_june_2025(df: DataFrame) -> DataFrame:
     )
 
     df = df.where(
-        F.col("Concat_year_month") != "202506" & F.col("Concat_year_month") != "202507"
+        (F.col("Concat_year_month") != "202506")
+        & (F.col("Concat_year_month") != "202507")
     )
 
     return df
