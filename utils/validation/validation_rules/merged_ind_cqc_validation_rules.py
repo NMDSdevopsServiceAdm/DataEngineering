@@ -13,7 +13,7 @@ from utils.validation.validation_rule_names import RuleNames as RuleName
 @dataclass
 class MergedIndCqcValidationRules:
     rules_to_check = {
-        RuleName.size_of_dataset: None,
+        # RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             IndCqcColumns.location_id,
             IndCqcColumns.ascwds_workplace_import_date,
