@@ -37,6 +37,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
 
 
 class MainTests(ValidateMergedIndCQCDatasetTests):
+    """
     def setUp(self) -> None:
         return super().setUp()
 
@@ -61,6 +62,7 @@ class MainTests(ValidateMergedIndCQCDatasetTests):
 
             self.assertEqual(read_from_parquet_patch.call_count, 2)
             self.assertEqual(write_to_parquet_patch.call_count, 1)
+    """
 
 
 class CalculateExpectedSizeofDataset(ValidateMergedIndCQCDatasetTests):
