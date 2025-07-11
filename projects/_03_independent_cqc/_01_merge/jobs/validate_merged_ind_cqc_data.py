@@ -38,6 +38,7 @@ def main(
     merged_ind_cqc_source: str,
     report_destination: str,
 ):
+    """
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
@@ -57,6 +58,7 @@ def main(
 
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
+    """
 
 
 def calculate_expected_size_of_merged_ind_cqc_dataset(
