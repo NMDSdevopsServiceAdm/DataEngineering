@@ -59,10 +59,13 @@ terraform fmt -recursive  # Terraform
 - High level project documentation live in [Confluence](https://skillsforcare.atlassian.net/wiki/spaces/DE/overview?homepageId=1011220675)
 
 ## Further Reading
-
 - [CONTRIBUTING.md](./CONTRIBUTING.md)
 - [SETUP.md](./SETUP.md)
 - [DEPLOY.md](./DEPLOY.md)
 - [NOTEBOOKS.md](./NOTEBOOKS.md)
 - [GUIDES.md](./GUIDES.md)
 - [CHANGELOG.md](./CHANGELOG.md)
+
+## Contact
+For questions, suggestions or feedback, please contact:
+📧 [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
