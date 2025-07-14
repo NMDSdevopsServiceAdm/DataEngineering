@@ -207,7 +207,7 @@ def remove_may_2025_pir(df: DataFrame) -> DataFrame:
         DataFrame: words
     """
     df = df.where(
-        F.col(CQCPIRClean.cqc_pir_import_date) <= F.to_date(F.lit("2025-05-01"))
+        F.col(CQCPIRClean.cqc_pir_import_date) <= F.to_date(F.lit("2025-01-01"))
     )
 
     return df
