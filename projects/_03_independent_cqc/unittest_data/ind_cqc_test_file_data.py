@@ -87,11 +87,12 @@ class MergeIndCQCData:
     # fmt: on
 
     remove_june_2025_rows = [
+        ("1-001", date(2025, 4, 1)),
         ("1-001", date(2025, 5, 1)),
         ("1-002", date(2025, 6, 1)),
     ]
     expected_remove_june_2025_rows = [
-        ("1-001", date(2025, 5, 1)),
+        ("1-001", date(2025, 4, 1)),
     ]
 
 
