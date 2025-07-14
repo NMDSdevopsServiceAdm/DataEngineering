@@ -96,7 +96,7 @@ class MergeIndCQCData:
         ]
     )
 
-    remove_june_2025_schema = StructType(
+    remove_may_2025_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), False),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
