@@ -11,25 +11,26 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 )
 
 
-def main(destination: str, start: str, end: str):
+def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str = ""):
+    if start > end:
+        raise ValueError("start_timestamp is after end_timestamp")
+
     spark = utils.get_spark()
     df = None
-    cqc_api_primary_key_value = json.loads(
-        ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
-    )["Ocp-Apim-Subscription-Key"]
+    if not cqc_api_primary_key_value:
+        cqc_api_primary_key_value = json.loads(
+            ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
+        )["Ocp-Apim-Subscription-Key"]
 
     logging.info("Collecting providers with changes from API")
-    for paginated_providers in cqc.get_updated_objects(
+    generator = cqc.get_updated_objects(
         object_type="providers",
+        organisation_type="provider",
         cqc_api_primary_key=cqc_api_primary_key_value,
         start=start,
         end=end,
-    ):
-        providers_df = spark.createDataFrame(paginated_providers, PROVIDER_SCHEMA)
-        if df:
-            df = df.union(providers_df)
-        else:
-            df = providers_df
+    )
+    df = spark.createDataFrame(generator, PROVIDER_SCHEMA)
 
     df = df.dropDuplicates([ColNames.provider_id])
     utils.write_to_parquet(df, destination, "append")

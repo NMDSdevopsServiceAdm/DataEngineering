@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Iterator
+from typing import Generator, Iterable
 
 import requests
 from ratelimit import limits, sleep_and_retry
@@ -14,9 +14,13 @@ CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
 
 
+class NoProviderOrLocationException(Exception):
+    pass
+
+
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
-def call_api(url, query_params=None, headers_dict=None):
+def call_api(url, query_params=None, headers_dict=None) -> dict:
     response = requests.get(url, query_params, headers=headers_dict)
 
     while response.status_code == 429:
@@ -30,9 +34,11 @@ def call_api(url, query_params=None, headers_dict=None):
                 response.status_code
             )
         )
+    if response.status_code == 404:
+        raise NoProviderOrLocationException(f"NoProviderOrLocationException: {response.status_code} - {response.json().get('message')}")
 
     if response.status_code != 200:
-        raise Exception("API response: {}".format(response.status_code))
+        raise Exception("API response: {} - {}".format(response.status_code, response.text))
 
     return response.json()
 
@@ -42,7 +48,7 @@ def get_all_objects(
     object_identifier: str,
     cqc_api_primary_key: str,
     per_page=DEFAULT_PAGE_SIZE,
-):
+) -> Iterable[list[dict]]:
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
 
     total_pages = call_api(
@@ -75,7 +81,7 @@ def get_page_objects(
     object_identifier,
     cqc_api_primary_key,
     per_page=DEFAULT_PAGE_SIZE,
-):
+) -> list[dict]:
     page_objects = []
     response_body = call_api(
         url,
@@ -95,9 +101,8 @@ def get_page_objects(
     return page_objects
 
 
-def get_object(cqc_location_id, object_type, cqc_api_primary_key):
+def get_object(cqc_location_id, object_type, cqc_api_primary_key) -> dict:
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}/"
-
     response = call_api(
         url + cqc_location_id,
         query_params=None,
@@ -106,21 +111,22 @@ def get_object(cqc_location_id, object_type, cqc_api_primary_key):
             "Ocp-Apim-Subscription-Key": cqc_api_primary_key,
         },
     )
-
     return response
 
 
 def get_updated_objects(
     object_type: str,
+    organisation_type: str,
     cqc_api_primary_key: str,
     start: str,
     end: str,
-) -> Iterator:
+    per_page=DEFAULT_PAGE_SIZE,
+) -> Generator[dict, None, None]:
     """Gets all objects of a given type that have been updated within a specified timeframe.
 
     Args:
         object_type (str): the type of object to retrive: one of 'providers', 'locations'
-        object_identifier (str): the key for the object, e.g. 'providerId' or 'locationId'
+        organisation_type (str): the URL organisationType key for the object, e.g. 'provider' or 'location'
         cqc_api_primary_key (str): the CQC API key
         start (str): the start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
         end (str): the end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
@@ -132,11 +138,12 @@ def get_updated_objects(
     while True:
         total_pages = -1
         changes_by_page = get_changes_within_timeframe(
-            object_type=object_type,
+            organisation_type=organisation_type,
             cqc_api_primary_key=cqc_api_primary_key,
             start=start,
             end=end,
             page_number=page_number,
+            per_page=per_page,
         )
         logging.debug(f"Changes for page {page_number}: {changes_by_page}")
 
@@ -145,9 +152,18 @@ def get_updated_objects(
             total_pages = changes_by_page["totalPages"]
             logging.info(f"Total pages to search for changes: {total_pages}")
 
+        if total_pages == 0:
+            logging.info(f"No {organisation_type}s updated between {start} and {end}")
+            return
+
         for id in changes_by_page["changes"]:
-            # return each object within a generator
-            yield get_object(id, object_type, cqc_api_primary_key)
+            try:
+                # return each object within a generator
+                yield get_object(id, object_type, cqc_api_primary_key)
+            except NoProviderOrLocationException as err:
+                # CQC API changes URL returns unfetchable providerIds
+                print(err)
+                print(f"Unable to fetch data for providerId: {id}")
 
         if changes_by_page["page"] == total_pages:
             logging.info("Completed final page of changes.")
@@ -158,17 +174,17 @@ def get_updated_objects(
 
 
 def get_changes_within_timeframe(
-    object_type: str,
+    organisation_type: str,
     cqc_api_primary_key: str,
     start: str,
     end: str,
     page_number: int,
-    per_page=DEFAULT_PAGE_SIZE,
+    per_page: int,
 ) -> dict:
     """Gets changes within a specified timeframe for a given object type.
 
     Args:
-        object_type (str): the type of object to retrive: one of 'providers', 'locations'
+        organisation_type (str): the type of object to retrive: one of 'provider', 'location'
         cqc_api_primary_key (str): the CQC API key
         start (str): _start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
         end (str): _end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
@@ -178,7 +194,7 @@ def get_changes_within_timeframe(
         dict: the repsonse from the CQC changes API, containing a list of changes and pagination information.
     """
 
-    url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/changes/{object_type}"
+    url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/changes/{organisation_type}"
 
     response = call_api(
         url,
