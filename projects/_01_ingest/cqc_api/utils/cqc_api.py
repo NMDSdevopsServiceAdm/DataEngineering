@@ -137,7 +137,7 @@ def get_updated_objects(
         per_page (int): the number of organisation objects to fetch per page, defaults to `DEFAULT_PAGE_SIZE`
 
     Yields:
-        Generator[dict, None, None]: all of the objects of the specified type which contain updated data for the specified timeframe.
+        dict: all of the objects of the specified type which contain updated data for the specified timeframe.
     """
     page_number = 1
     while True:

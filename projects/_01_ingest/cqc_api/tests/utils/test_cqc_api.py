@@ -138,7 +138,9 @@ class CallApiTests(CqcApiTests):
         test_response = TestResponse(404, {})
         get_mock.return_value = test_response
 
-        with self.assertRaisesRegex(cqc.NoProviderOrLocationException, "^API response: 404 -.*"):
+        with self.assertRaisesRegex(
+            cqc.NoProviderOrLocationException, "^API response: 404 -.*"
+        ):
             cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
 
     @patch("requests.get")
@@ -221,6 +223,7 @@ class GetUpdatedObjectsTests(CqcApiTests):
         # When
         results = cqc.get_updated_objects(
             object_type="any",
+            organisation_type="any_org_type",
             cqc_api_primary_key="cqc_api_primary_key",
             start="2023-01-01T00:00:00Z",
             end="2023-01-02T00:00:00Z",
