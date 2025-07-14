@@ -22,7 +22,7 @@ LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 class CqcApiIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.cqc_api_primary_key = json.loads(
-           ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
+            ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
         )["Ocp-Apim-Subscription-Key"]
         self.page = 1
 
@@ -86,12 +86,14 @@ class LocationApiTests(CqcApiIntegrationTests):
                 self.cqc_api_primary_key,
                 start_time,
                 end_time,
-                per_page=10
+                per_page=10,
             )
             # Then
             self.assertTrue(isinstance(result, Generator))
             for idx, change in enumerate(result, start=1):
-                self.assertTrue(set(change.keys()).issuperset(self.example_object.keys()))
+                self.assertTrue(
+                    set(change.keys()).issuperset(self.example_object.keys())
+                )
                 if result.__next__() is None:
                     self.assertEqual(idx, known_changes_size)
 
@@ -106,10 +108,11 @@ class LocationApiTests(CqcApiIntegrationTests):
                 self.cqc_api_primary_key,
                 same_time,
                 same_time,
-                per_page=10
+                per_page=10,
             )
             # Then
             self.assertIsNone(next(result, None))
+
 
 class ProviderApiTests(CqcApiIntegrationTests):
     def setUp(self) -> None:

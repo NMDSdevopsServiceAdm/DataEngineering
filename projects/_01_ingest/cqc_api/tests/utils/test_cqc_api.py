@@ -24,8 +24,9 @@ class CqcApiTests(unittest.TestCase):
 class TestResponse:
     status_code: int = 500
     content: dict = {}
+    text: str = ""
 
-    def __init__(self, status_code: int, content: dict) -> None:
+    def __init__(self, status_code: int, content: dict, text: str = "") -> None:
         self.status_code = status_code
         self.content = content
 
@@ -121,40 +122,32 @@ class CallApiTests(CqcApiTests):
         test_response = TestResponse(500, {})
         get_mock.return_value = test_response
 
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(Exception, "^API response: 500 -.*"):
             cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
-
-        self.assertTrue("API response: 500" in str(context.exception))
 
     @patch("requests.get")
     def test_call_api_handles_400(self, get_mock: Mock):
         test_response = TestResponse(400, {})
         get_mock.return_value = test_response
 
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(Exception, "^API response: 400 -.*"):
             cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
-
-        self.assertTrue("API response: 400" in str(context.exception))
 
     @patch("requests.get")
     def test_call_api_handles_404(self, get_mock: Mock):
         test_response = TestResponse(404, {})
         get_mock.return_value = test_response
 
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(cqc.NoProviderOrLocationException, "^API response: 404 -.*"):
             cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
-
-        self.assertTrue("API response: 404" in str(context.exception))
 
     @patch("requests.get")
     def test_call_api_handles_403_with_headers(self, get_mock: Mock):
         test_response = TestResponse(403, {})
         get_mock.return_value = test_response
 
-        with self.assertRaises(Exception) as context:
+        with self.assertRaisesRegex(Exception, "^API response: 403 -.*"):
             cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
-
-        self.assertTrue("API response: 403" in str(context.exception))
 
     @patch("requests.get")
     def test_call_api_handles_403_without_headers(self, get_mock: Mock):

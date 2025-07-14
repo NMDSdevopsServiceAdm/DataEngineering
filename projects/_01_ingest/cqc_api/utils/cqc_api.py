@@ -35,10 +35,14 @@ def call_api(url, query_params=None, headers_dict=None) -> dict:
             )
         )
     if response.status_code == 404:
-        raise NoProviderOrLocationException(f"NoProviderOrLocationException: {response.status_code} - {response.json().get('message')}")
+        raise NoProviderOrLocationException(
+            f"API response: {response.status_code} - {response.json().get('message')}"
+        )
 
     if response.status_code != 200:
-        raise Exception("API response: {} - {}".format(response.status_code, response.text))
+        raise Exception(
+            "API response: {} - {}".format(response.status_code, response.text)
+        )
 
     return response.json()
 
@@ -120,7 +124,7 @@ def get_updated_objects(
     cqc_api_primary_key: str,
     start: str,
     end: str,
-    per_page=DEFAULT_PAGE_SIZE,
+    per_page: int = DEFAULT_PAGE_SIZE,
 ) -> Generator[dict, None, None]:
     """Gets all objects of a given type that have been updated within a specified timeframe.
 
@@ -130,9 +134,10 @@ def get_updated_objects(
         cqc_api_primary_key (str): the CQC API key
         start (str): the start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
         end (str): the end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
+        per_page (int): the number of organisation objects to fetch per page, defaults to `DEFAULT_PAGE_SIZE`
 
     Yields:
-        Iterator: all of the objects of the specified type which contain updated data for the specified timeframe.
+        Generator[dict, None, None]: all of the objects of the specified type which contain updated data for the specified timeframe.
     """
     page_number = 1
     while True:
@@ -188,6 +193,7 @@ def get_changes_within_timeframe(
         cqc_api_primary_key (str): the CQC API key
         start (str): _start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
         end (str): _end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
+        page_number (int): the page number to fetch from the API
         per_page (int, optional): the page number from CQC's full page list. Defaults to DEFAULT_PAGE_SIZE.
 
     Returns:
