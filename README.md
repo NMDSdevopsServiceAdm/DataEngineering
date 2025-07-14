@@ -60,7 +60,6 @@ terraform fmt -recursive  # Terraform
 - For collaboration or more information, contact us at [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
 ## Further Reading
-- [CONTRIBUTING.md](./CONTRIBUTING.md)
 - [SETUP.md](./SETUP.md)
 - [DEPLOY.md](./DEPLOY.md)
 - [NOTEBOOKS.md](./NOTEBOOKS.md)
