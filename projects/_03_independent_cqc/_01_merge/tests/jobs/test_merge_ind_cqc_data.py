@@ -137,7 +137,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
             Data.remove_june_2025_rows, Schemas.remove_june_2025_schema
         )
 
-        returned_df = job.remove_june_2025_pir(test_df)
+        returned_df = job.remove_may_2025_pir(test_df)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_remove_june_2025_rows,
