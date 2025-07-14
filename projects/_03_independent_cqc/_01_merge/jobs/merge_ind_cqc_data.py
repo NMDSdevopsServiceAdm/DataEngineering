@@ -114,6 +114,8 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
+    # Remove <= 1st June from cqc_location_df.
+
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
@@ -122,6 +124,8 @@ def main(
     cqc_pir_df = utils.read_from_parquet(
         cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
+
+    cqc_pir_df = remove_june_2025_pir(cqc_pir_df)
 
     ct_non_res_df = utils.read_from_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
@@ -167,8 +171,6 @@ def main(
         CTCHClean.care_home,
     )
 
-    ind_cqc_location_df = remove_june_2025(ind_cqc_location_df)
-
     utils.write_to_parquet(
         ind_cqc_location_df,
         destination,
@@ -177,7 +179,7 @@ def main(
     )
 
 
-def remove_june_2025(df: DataFrame) -> DataFrame:
+def remove_june_2025_pir(df: DataFrame) -> DataFrame:
     """
     doc string
 
@@ -187,13 +189,8 @@ def remove_june_2025(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: words
     """
-    df = df.withColumn(
-        "Concat_year_month", F.concat(F.col(Keys.year), F.col(Keys.month))
-    )
-
     df = df.where(
-        (F.col("Concat_year_month") != "202506")
-        & (F.col("Concat_year_month") != "202507")
+        F.col(CQCPIRClean.cqc_pir_import_date) < F.to_date(F.lit("2025-06-01"))
     )
 
     return df

@@ -98,14 +98,8 @@ class MergeIndCQCData:
 
     remove_june_2025_schema = StructType(
         [
-            StructField(CQCLClean.year, StringType(), True),
-            StructField(CQCLClean.month, StringType(), True),
-        ]
-    )
-    expected_remove_june_2025_schema = StructType(
-        [
-            *remove_june_2025_schema,
-            StructField("Concat_year_month", StringType(), True),
+            StructField(CQCPIRClean.location_id, StringType(), False),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
         ]
     )
 

@@ -130,16 +130,18 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(returned_data, expected_data)
 
-    def test_remove_june_2025(self):
+    def test_remove_june_2025_pir(
+        self,
+    ):
         test_df = self.spark.createDataFrame(
             Data.remove_june_2025_rows, Schemas.remove_june_2025_schema
         )
 
-        returned_df = job.remove_june_2025(test_df)
+        returned_df = job.remove_june_2025_pir(test_df)
 
         expected_df = self.spark.createDataFrame(
             Data.expected_remove_june_2025_rows,
-            Schemas.expected_remove_june_2025_schema,
+            Schemas.remove_june_2025_schema,
         )
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
