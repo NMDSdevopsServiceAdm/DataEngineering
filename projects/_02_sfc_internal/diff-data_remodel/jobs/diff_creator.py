@@ -1,4 +1,5 @@
-from polars import DataFrame, col, concat, lit, sum_horizontal
+from polars import DataFrame, col, concat, lit, Int64
+from polars.testing import assert_frame_equal, assert_series_equal
 
 
 def get_diffs(
@@ -7,7 +8,7 @@ def get_diffs(
     snapshot_date: str,
     primary_key: str,
     change_cols: list,
-) -> tuple[DataFrame, DataFrame]:
+) -> DataFrame:
     """
     Creates delta dataframe for the new snapshot by:
      - stripping out repeated information
@@ -20,7 +21,7 @@ def get_diffs(
         primary_key: Primary key of the dataframes
         change_cols: list of column names in which a change should be marked as a delta
 
-    Returns: Tuple of new base dataframe and the delta dataframe of the snapshot
+    Returns: Delta dataframe of the snapshot
 
     """
     removed_entries = base_df.join(snapshot_df, how="anti", on=primary_key)
@@ -57,15 +58,21 @@ def get_diffs(
         == base_df.shape[0]
     )
 
-    changed_entries = changed_entries.with_columns(
-        lit(snapshot_date).alias("last_updated"),
+    assert (
+        snapshot_df.shape[0] + removed_entries.shape[0] - new_entries.shape[0]
+        == base_df.shape[0]
     )
+
     removed_entries = removed_entries.with_columns(
-        lit(snapshot_date).alias("last_updated"),
+        lit(snapshot_date).alias("import_date").cast(Int64),
         lit(snapshot_date).alias("deregistrationDate"),
     )
-    base_df = concat([changed_entries, unchanged_entries])
+
+    new_base_df = concat([changed_entries, unchanged_entries])
+    assert_frame_equal(snapshot_df, new_base_df, check_row_order=False)
 
     changed_entries = concat([changed_entries, removed_entries])
 
-    return base_df, changed_entries
+    assert changed_entries["import_date"].n_unique() == 1
+
+    return changed_entries
