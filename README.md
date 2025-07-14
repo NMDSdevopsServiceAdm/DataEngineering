@@ -71,6 +71,6 @@ terraform fmt -recursive  # Terraform
 For questions, suggestions or feedback, please contact:
 📧 [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
-## License - TBC!
+## License
 This repository is published for transparency and public interest only.
 It is **not licensed for reuse**. Please contact [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk) if you wish to reuse or adapt this code.
