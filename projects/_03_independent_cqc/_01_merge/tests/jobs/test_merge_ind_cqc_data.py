@@ -50,10 +50,14 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.join_data_into_cqc_df")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
+    @patch(f"{PATCH_PATH}.remove_may_2025_pir")
+    @patch(f"{PATCH_PATH}.remove_june_2025_cqc")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_patch: Mock,
+        remove_june_2025_cqc_mock: Mock,
+        remove_may_2025_pir_mock: Mock,
         select_rows_with_value_mock: Mock,
         join_data_into_cqc_df_mock: Mock,
         write_to_parquet_patch: Mock,
