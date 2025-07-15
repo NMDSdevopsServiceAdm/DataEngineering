@@ -27,8 +27,6 @@ jdk-8u....-windows-x64.exe
 
 ### Downloading JDBC driver to connect AWS Athena to Tableau (requires IT)
 
-**Note:** You need AWS account sorted before you start this step. Register to AWS with your work email and ask your manager for AWS permissions so they can add you to the security group. This will help you connect Tableau to Amazon Athena.
-
 1. Install JDBC driver on your pc - version JDBC 2.x with AWS SDK. The file name is AthenaJDBC42-2.1.5.1000.jar
 `https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html`
 
@@ -43,8 +41,8 @@ Field | To be filled with
 Server | athena.eu-west-2.amazonaws.com
 Port | 443
 S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
-Access Key ID | Your specific AWS access key from the AWS credentials page. Around 20 characters long.
-Secret Access Key | Your specific AWS secret key from the AWS credentials page. Around 40 characters long.
+Access Key ID | Tableau user AWS access key from the AWS credentials page. Around 20 characters long.
+Secret Access Key | Tableau user AWS secret key from the AWS credentials page. Around 40 characters long.
 
 5. Once connected select 'main-data-engineering-database' from the 'Database' dropdown in Tableau. All of the tables should now appear and are now available to analyse. Other databases can be selected.
 
