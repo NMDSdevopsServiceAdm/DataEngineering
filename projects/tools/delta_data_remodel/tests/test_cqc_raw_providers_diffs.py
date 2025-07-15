@@ -7,11 +7,12 @@ from polars.testing import assert_frame_equal
 import requests
 import json
 
-from utils import build_full_table_from_delta, list_bucket_objects, snapshots, get_diffs
-from raw_providers_schema import raw_providers_schema
+from projects.tools.delta_data_remodel.jobs.utils import build_full_table_from_delta, list_bucket_objects, snapshots, get_diffs
+from projects.tools.delta_data_remodel.jobs.raw_providers_schema import raw_providers_schema
 
 
 # todo: decide on how to configure so that it only runs when needed
+@unittest.skip("should be run manually")
 def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(
@@ -38,7 +39,7 @@ def test_rebuilt_dataset_equality():
         check_row_order=False,
     )
 
-
+@unittest.skip("should be run manually")
 def test_snapshot_equality():
     for delta_snapshot in snapshots(
         bucket="sfc-test-diff-datasets", read_folder="domain=CQC/dataset=providers_api/"
@@ -61,7 +62,7 @@ def test_snapshot_equality():
         )
         print(f"Timepoint {timepoint_int} is validated")
 
-
+@unittest.skip("should be run manually")
 def evaluate_dataset_changes():
     dataset_cols = [
         "locationIds",
@@ -129,7 +130,7 @@ def evaluate_dataset_changes():
     print(rows_with_changes.head())
     print(comparison.sum().select(dataset_cols).glimpse())
 
-
+@unittest.skip("should be run manually")
 def test_delta_matches_changes_api():
     bucket = "sfc-test-diff-datasets"
     prev_year = 2024
