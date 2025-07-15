@@ -26,6 +26,9 @@ jdk-8u....-windows-x64.exe
 
 
 ### Downloading JDBC driver to connect AWS Athena to Tableau (requires IT)
+
+**Note:** You need AWS account sorted before you start this step. Register to AWS with your work email and ask your manager for AWS permissions so they can add you to the security group. This will help you connect Tableau to Amazon Athena.
+
 1. Install JDBC driver on your pc - version JDBC 2.x with AWS SDK. The file name is AthenaJDBC42-2.1.5.1000.jar
 `https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html`
 
@@ -79,9 +82,7 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python39
 C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
 ```
 
-# The rest of the process should not require IT assistance
-
-### Adding user variables:
+### Adding user variables (requires IT):
 1. In the search panel, type `env` and select `Edit environment variables for your account`
 
 2. Under 'user variables', select `path` and then select `edit`
@@ -106,7 +107,7 @@ PYENV_ROOT | C:\Users\_your_name_\.pyenv\pyenv-win\
 PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
-### Python install:
+### Python install (requires IT):
 1. If a version of Python which is not 3.9 is already installed on your computer then you will need to uninstall it
 
 2. Go to https://www.python.org/downloads/
@@ -119,8 +120,11 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python39`
 
+**Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
+
+# The rest of the process should not require IT assistance
 
 ### Hadoop Install:
 1. Download Hadoop Version 3.2.2 (tar.gz)
