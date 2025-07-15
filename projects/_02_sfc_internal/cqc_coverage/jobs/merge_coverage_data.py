@@ -26,7 +26,7 @@ from utils.column_values.categorical_column_values import (
     InAscwds,
     CQCCurrentOrHistoricValues,
 )
-from utils.coverage_utils.lm_engagement_utils import (
+from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
     add_columns_for_locality_manager_dashboard,
 )
 
