@@ -245,7 +245,7 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
         mock_call_api.return_value = {"changes": ["1", "2", "3"]}
         # When
         result = cqc.get_changes_within_timeframe(
-            object_type="mock_organisations",
+            organisation_type="mock_organisations",
             cqc_api_primary_key="cqc_api_primary_key",
             start="2000-01-01T00:00:00Z",
             end="2000-01-02T00:00:00Z",
