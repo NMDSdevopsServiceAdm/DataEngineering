@@ -6,11 +6,11 @@ from polars.testing import assert_frame_equal
 import requests
 import json
 
-from utils import build_full_table_from_delta, list_bucket_objects, snapshots
-from diff_creator import get_diffs
+from utils import build_full_table_from_delta, list_bucket_objects, snapshots, get_diffs
 from raw_providers_schema import raw_providers_schema
 
 
+# todo: decide on how to configure so that it only runs when needed
 def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(

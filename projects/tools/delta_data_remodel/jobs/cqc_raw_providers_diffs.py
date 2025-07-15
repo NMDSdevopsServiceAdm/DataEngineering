@@ -1,10 +1,7 @@
-from polars import read_parquet, concat, col
-import polars as pl
-from polars.testing import assert_frame_equal
+from polars import read_parquet
 
-from diff_creator import get_diffs
 from raw_providers_schema import raw_providers_schema
-from utils import list_bucket_objects
+from utils import list_bucket_objects, get_diffs
 
 
 def main():

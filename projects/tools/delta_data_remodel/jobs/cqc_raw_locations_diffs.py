@@ -3,7 +3,7 @@ import polars as pl
 from polars.testing import assert_frame_equal
 
 from diff_creator import get_diffs
-from raw_schema import raw_schema
+from raw_locations_schema import raw_schema
 
 
 def main():
