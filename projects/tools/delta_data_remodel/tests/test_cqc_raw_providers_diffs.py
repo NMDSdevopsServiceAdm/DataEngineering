@@ -1,3 +1,4 @@
+import os
 import unittest
 from re import match
 
@@ -158,7 +159,7 @@ def test_delta_matches_changes_api():
                 end_timestamp = f"{year}-{month:02}-{day:02}T00:00:00Z"
                 headers = {
                     "User-Agent": "MadeTech",
-                    "Ocp-Apim-Subscription-Key": "99161e0fc17240e99e876a476aa403e9",
+                    "Ocp-Apim-Subscription-Key": os.getenv("OCP_API_KEY"),
                 }
 
                 api_response = requests.get(
