@@ -135,7 +135,7 @@ resource "aws_iam_policy" "glue_get_job_runs" {
   path        = "/"
   description = "Retrieves the job runs for specific glue jobs"
 
-  policy = templatefile("policy-documents/glue-get-job-runs.json")
+  policy = templatefile("policy-documents/glue-get-job-runs.json", {})
 }
 
 resource "aws_iam_role_policy_attachment" "glue_get_job_runs_attachment" {
