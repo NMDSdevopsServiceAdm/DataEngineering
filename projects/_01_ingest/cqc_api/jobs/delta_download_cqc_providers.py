@@ -48,13 +48,15 @@ if __name__ == "__main__":
             False,
         ),
     )
+    logging.info(f"Running job from {start} to {end}")
+
     todays_date = date.today()
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC",
         dataset="providers_api",
         date=todays_date,
-        version="2.0.0",
+        version="3.0.0",
     )
 
     main(destination, start, end)
