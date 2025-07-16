@@ -110,7 +110,7 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
     dataset_bucket_uri                    = module.datasets_bucket.bucket_uri
-    bulk_cqc_providers_download_job_name  = module.bulk_cqc_providers_download_job.job_name
+    bulk_cqc_providers_download_job_name  = "main-bulk_download_cqc_providers_job"
     delta_cqc_providers_download_job_name = module.delta_cqc_providers_download_job.job_name
   })
 

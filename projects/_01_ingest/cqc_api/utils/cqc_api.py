@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Generator, Iterable
+from typing import Generator, Iterable, List
 
 import requests
 from ratelimit import limits, sleep_and_retry
@@ -13,6 +13,9 @@ DEFAULT_PAGE_SIZE = 500
 CQC_API_BASE_URL = "https://api.service.cqc.org.uk"
 USER_AGENT = "SkillsForCare"
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 class NoProviderOrLocationException(Exception):
     pass
@@ -24,7 +27,7 @@ def call_api(url, query_params=None, headers_dict=None) -> dict:
     response = requests.get(url, query_params, headers=headers_dict)
 
     while response.status_code == 429:
-        print("Sleeping for ten seconds due to rate limiting")
+        logger.info("Sleeping for ten seconds due to rate limiting")
         time.sleep(10)
         response = requests.get(url, query_params, headers=headers_dict)
 
@@ -52,7 +55,7 @@ def get_all_objects(
     object_identifier: str,
     cqc_api_primary_key: str,
     per_page=DEFAULT_PAGE_SIZE,
-) -> Iterable[list[dict]]:
+) -> Iterable[List[dict]]:
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
 
     total_pages = call_api(
@@ -66,11 +69,13 @@ def get_all_objects(
         },
     )["totalPages"]
 
-    print(f"Total pages: {total_pages}")
-    print(f"Beginning CQC bulk download of {object_type}...")
+    logger.info(f"Total pages: {total_pages}")
+    logger.info(f"Beginning CQC bulk download of {object_type}...")
 
     for page_number in range(1, total_pages + 1):
-        print(f"Collecting {object_type} from API page {page_number}/{total_pages}")
+        logger.info(
+            f"Collecting {object_type} from API page {page_number}/{total_pages}"
+        )
         page_locations = get_page_objects(
             url, page_number, object_type, object_identifier, cqc_api_primary_key
         )
@@ -155,10 +160,10 @@ def get_updated_objects(
         # Get total pages from first query
         if total_pages == -1:
             total_pages = changes_by_page["totalPages"]
-            logging.info(f"Total pages to search for changes: {total_pages}")
+            logger.info(f"Total pages to search for changes: {total_pages}")
 
         if total_pages == 0:
-            logging.info(f"No {organisation_type}s updated between {start} and {end}")
+            logger.info(f"No {organisation_type}s updated between {start} and {end}")
             return
 
         for id in changes_by_page["changes"]:
@@ -167,14 +172,14 @@ def get_updated_objects(
                 yield get_object(id, object_type, cqc_api_primary_key)
             except NoProviderOrLocationException as err:
                 # CQC API changes URL returns unfetchable providerIds
-                print(err)
-                print(f"Unable to fetch data for providerId: {id}")
+                logger.info(err)
+                logger.info(f"Unable to fetch data for providerId: {id}")
 
         if changes_by_page["page"] == total_pages:
-            logging.info("Completed final page of changes.")
+            logger.info("Completed final page of changes.")
             break
 
-        logging.info(f"Querying page {page_number + 1} of {total_pages}.")
+        logger.info(f"Querying page {page_number + 1} of {total_pages}.")
         page_number += 1
 
 

@@ -1,5 +1,5 @@
 import json
-from datetime import date
+from datetime import date, datetime
 import logging
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
@@ -10,9 +10,15 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
 
 def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str = ""):
-    if start > end:
+    start_dt = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
+    end_dt = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    if start_dt > start_dt:
         raise ValueError("start_timestamp is after end_timestamp")
 
     spark = utils.get_spark()
@@ -22,14 +28,15 @@ def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str 
             ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
         )["Ocp-Apim-Subscription-Key"]
 
-    logging.info("Collecting providers with changes from API")
+    logger.info("Collecting providers with changes from API")
     generator = cqc.get_updated_objects(
         object_type="providers",
         organisation_type="provider",
         cqc_api_primary_key=cqc_api_primary_key_value,
-        start=start,
-        end=end,
+        start=start_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        end=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
     )
+
     df = spark.createDataFrame(generator, PROVIDER_SCHEMA)
 
     df = df.dropDuplicates([ColNames.provider_id])
@@ -40,15 +47,15 @@ def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str 
 
 if __name__ == "__main__":
     destination_prefix, start, end, *_ = utils.collect_arguments(
-        ("--start_timestamp", "Start timestamp for provider changes", True),
-        ("--end_timestamp", "End timestamp for provider changes", True),
         (
             "--destination_prefix",
             "Source s3 directory for parquet CQC providers dataset",
             False,
         ),
+        ("--start_timestamp", "Start timestamp for provider changes", True),
+        ("--end_timestamp", "End timestamp for provider changes", True),
     )
-    logging.info(f"Running job from {start} to {end}")
+    logger.info(f"Running job from {start} to {end}")
 
     todays_date = date.today()
     destination = utils.generate_s3_datasets_dir_date_path(
