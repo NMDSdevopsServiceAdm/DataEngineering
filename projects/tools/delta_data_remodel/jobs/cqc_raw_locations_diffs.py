@@ -1,3 +1,7 @@
+"""
+PLEASE NOTE: THIS FILE IS NOT PRODUCTION READY AND MAY NOT RUN
+"""
+
 from polars import read_parquet, concat, col
 import polars as pl
 from polars.testing import assert_frame_equal
@@ -85,9 +89,6 @@ def main():
     # )
 
     # print(f"Original entries: {base_df.shape}")
-
-    # todo: seems like a high rate of change - have a look and ensure this is genuine
-    # todo: in checks, probably check for an anomalously high change rate
 
     for month in range(4, 12):
         print(f"Starting month {month}")

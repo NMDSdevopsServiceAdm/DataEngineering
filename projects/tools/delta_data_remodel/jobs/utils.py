@@ -2,8 +2,8 @@ from re import match
 from typing import Generator, Optional
 
 import boto3
-from polars import read_parquet, concat, col, lit, Int64, DataFrame
-from polars.testing import assert_frame_equal
+import polars as pl
+import polars.testing as pl_testing
 
 from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
     raw_providers_schema,
@@ -28,16 +28,16 @@ def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
 
 def build_full_table_from_delta(
     bucket: str, read_folder: str, timepoint_limit: int = None
-) -> DataFrame:
+) -> pl.DataFrame:
     """
     Builds full dataset from delta dataset
     Args:
         bucket (str): bucket name
         read_folder (str): file path (excluding bucket name)
-        timepoint_limit (int): date before which you want the full dataset (eg 20141231) inclusive
+        timepoint_limit (int): date before which you want the full dataset (e.g. 20141231) inclusive
 
     Returns:
-        DataFrame: Dataframe including all data for each timepoint,
+        pl.DataFrame: pl.DataFrame including all data for each timepoint,
 
     """
     ss = []
@@ -49,13 +49,13 @@ def build_full_table_from_delta(
             break
         ss.append(t)
 
-    full_df = concat(ss)
+    full_df = pl.concat(ss)
     return full_df
 
 
 def build_snapshot_table_from_delta(
     bucket: str, read_folder: str, timepoint: int
-) -> Optional[DataFrame]:
+) -> Optional[pl.DataFrame]:
     """
     Gets full snapshot of data at a given timepoint
     Args:
@@ -64,7 +64,7 @@ def build_snapshot_table_from_delta(
         timepoint (int): timepoint to get data for (yyyymmdd)
 
     Returns:
-        Optional[DataFrame]: Snapshot dataframe, if one exists, else None
+        Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
 
     """
     for snapshot in snapshots(bucket, read_folder):
@@ -74,7 +74,7 @@ def build_snapshot_table_from_delta(
         return None
 
 
-def snapshots(bucket: str, read_folder: str) -> Generator[DataFrame, None, None]:
+def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
     Args:
@@ -82,10 +82,10 @@ def snapshots(bucket: str, read_folder: str) -> Generator[DataFrame, None, None]
         read_folder (str): delta dataset folder
 
     Yields:
-        DataFrame: Generator of snapshots
+        pl.DataFrame: Generator of snapshots
 
     """
-    delta_df = read_parquet(
+    delta_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=raw_providers_schema,
     )
@@ -102,44 +102,46 @@ def snapshots(bucket: str, read_folder: str) -> Generator[DataFrame, None, None]
             previous_ss = delta_data
         else:
             unchanged = previous_ss.remove(
-                col("providerId").is_in(delta_data["providerId"])
+                pl.col("providerId").is_in(delta_data["providerId"])
             )
             changed = delta_data.filter(
-                col("providerId").is_in(previous_ss["providerId"])
-            ).remove(col("deregistrationDate").ne(""))
-            new = delta_data.remove(col("providerId").is_in(previous_ss["providerId"]))
+                pl.col("providerId").is_in(previous_ss["providerId"])
+            ).remove(pl.col("deregistrationDate").ne(""))
+            new = delta_data.remove(
+                pl.col("providerId").is_in(previous_ss["providerId"])
+            )
 
-            previous_ss = concat([unchanged, changed, new])
+            previous_ss = pl.concat([unchanged, changed, new])
             previous_ss = previous_ss.with_columns(
-                lit(date.group("year")).alias("year").cast(Int64),
-                lit(date.group("month")).alias("month").cast(Int64),
-                lit(date.group("day")).alias("day").cast(Int64),
-                lit(import_date[0]).alias("import_date").cast(Int64),
+                pl.lit(date.group("year")).alias("year").cast(pl.Int64),
+                pl.lit(date.group("month")).alias("month").cast(pl.Int64),
+                pl.lit(date.group("day")).alias("day").cast(pl.Int64),
+                pl.lit(import_date[0]).alias("import_date").cast(pl.Int64),
             )
         yield previous_ss
 
 
 def get_diffs(
-    base_df: DataFrame,
-    snapshot_df: DataFrame,
+    base_df: pl.DataFrame,
+    snapshot_df: pl.DataFrame,
     snapshot_date: str,
     primary_key: str,
     change_cols: list,
-) -> DataFrame:
+) -> pl.DataFrame:
     """
-    Creates delta dataframe for the new snapshot by:
+    Creates delta pl.DataFrame for the new snapshot by:
      - stripping out repeated information
      - tagging changed/deleted information with the snapshot date
 
     Args:
-        base_df (DataFrame): Dataframe with the "base" information. IE the dataframe that has the 'truth' for the previous timepoint
-        snapshot_df (DataFrame): Dataframe with the information for the new timepoint
+        base_df (pl.DataFrame): pl.DataFrame with the "base" information. IE the pl.DataFrame that has the 'truth' for the previous timepoint
+        snapshot_df (pl.DataFrame): pl.DataFrame with the information for the new timepoint
         snapshot_date (str): Date of the new snapshot
-        primary_key (str): Primary key of the dataframes
+        primary_key (str): Primary key of the pl.DataFrames
         change_cols (list): list of column names in which a change should be marked as a delta
 
     Returns:
-        DataFrame: Delta dataframe of the snapshot
+        pl.DataFrame: Delta pl.DataFrame of the snapshot
 
     """
     removed_entries = base_df.join(snapshot_df, how="anti", on=primary_key)
@@ -151,7 +153,7 @@ def get_diffs(
     unchanged_conditions = []
     for col_name in change_cols:
         unchanged_conditions.append(
-            (col(f"{col_name}").eq_missing(col(f"{col_name}_base")))
+            (pl.col(f"{col_name}").eq_missing(pl.col(f"{col_name}_base")))
         )
 
     rows_without_changes = joined_df.filter(unchanged_conditions)
@@ -182,14 +184,14 @@ def get_diffs(
     )
 
     removed_entries = removed_entries.with_columns(
-        lit(snapshot_date).alias("import_date").cast(Int64),
-        lit(snapshot_date).alias("deregistrationDate"),
+        pl.lit(snapshot_date).alias("import_date").cast(pl.Int64),
+        pl.lit(snapshot_date).alias("deregistrationDate"),
     )
 
-    new_base_df = concat([changed_entries, unchanged_entries])
-    assert_frame_equal(snapshot_df, new_base_df, check_row_order=False)
+    new_base_df = pl.concat([changed_entries, unchanged_entries])
+    pl_testing.assert_frame_equal(snapshot_df, new_base_df, check_row_order=False)
 
-    changed_entries = concat([changed_entries, removed_entries])
+    changed_entries = pl.concat([changed_entries, removed_entries])
 
     assert changed_entries["import_date"].n_unique() == 1
 

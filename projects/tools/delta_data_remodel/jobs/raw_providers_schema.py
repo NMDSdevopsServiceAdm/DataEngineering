@@ -1,79 +1,78 @@
-from polars import Schema, String, Int64, Struct, List
+import polars as pl
 
-
-raw_providers_schema = Schema(
+raw_providers_schema = pl.Schema(
     [
-        ("providerId", String()),
-        ("locationIds", List(String())),
-        ("organisationType", String()),
-        ("ownershipType", String()),
-        ("type", String()),
-        ("name", String()),
-        ("brandId", String()),
-        ("brandName", String()),
-        ("odsCode", String()),
-        ("registrationStatus", String()),
-        ("registrationDate", String()),
-        ("companiesHouseNumber", String()),
-        ("charityNumber", String()),
-        ("website", String()),
-        ("postalAddressLine1", String()),
-        ("postalAddressLine2", String()),
-        ("postalAddressTownCity", String()),
-        ("postalAddressCounty", String()),
-        ("region", String()),
-        ("postalCode", String()),
-        ("alsoKnownAs", String()),
-        ("deregistrationDate", String()),
-        ("uprn", String()),
-        ("onspdLatitude", String()),
-        ("onspdLongitude", String()),
-        ("onspdIcbCode", String()),
-        ("onspdIcbName", String()),
-        ("mainPhoneNumber", String()),
-        ("inspectionDirectorate", String()),
-        ("constituency", String()),
-        ("localAuthority", String()),
-        ("lastInspection", Struct({"date": String()})),
-        ("lastReport", Struct({"publicationDate": String()})),
+        ("providerId", pl.String()),
+        ("locationIds", pl.List(pl.String())),
+        ("organisationType", pl.String()),
+        ("ownershipType", pl.String()),
+        ("type", pl.String()),
+        ("name", pl.String()),
+        ("brandId", pl.String()),
+        ("brandName", pl.String()),
+        ("odsCode", pl.String()),
+        ("registrationStatus", pl.String()),
+        ("registrationDate", pl.String()),
+        ("companiesHouseNumber", pl.String()),
+        ("charityNumber", pl.String()),
+        ("website", pl.String()),
+        ("postalAddressLine1", pl.String()),
+        ("postalAddressLine2", pl.String()),
+        ("postalAddressTownCity", pl.String()),
+        ("postalAddressCounty", pl.String()),
+        ("region", pl.String()),
+        ("postalCode", pl.String()),
+        ("alsoKnownAs", pl.String()),
+        ("deregistrationDate", pl.String()),
+        ("uprn", pl.String()),
+        ("onspdLatitude", pl.String()),
+        ("onspdLongitude", pl.String()),
+        ("onspdIcbCode", pl.String()),
+        ("onspdIcbName", pl.String()),
+        ("mainPhoneNumber", pl.String()),
+        ("inspectionDirectorate", pl.String()),
+        ("constituency", pl.String()),
+        ("localAuthority", pl.String()),
+        ("lastInspection", pl.Struct({"date": pl.String()})),
+        ("lastReport", pl.Struct({"publicationDate": pl.String()})),
         (
             "contacts",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "personTitle": String(),
-                        "personGivenName": String(),
-                        "personFamilyName": String(),
-                        "personRoles": List(String()),
+                        "personTitle": pl.String(),
+                        "personGivenName": pl.String(),
+                        "personFamilyName": pl.String(),
+                        "personRoles": pl.List(pl.String()),
                     }
                 )
             ),
         ),
         (
             "relationships",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "relatedProviderId": String(),
-                        "relatedProviderName": String(),
-                        "type": String(),
-                        "reason": String(),
+                        "relatedProviderId": pl.String(),
+                        "relatedProviderName": pl.String(),
+                        "type": pl.String(),
+                        "reason": pl.String(),
                     }
                 )
             ),
         ),
         (
             "regulatedActivities",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "name": String(),
-                        "code": String(),
-                        "nominatedIndividual": Struct(
+                        "name": pl.String(),
+                        "code": pl.String(),
+                        "nominatedIndividual": pl.Struct(
                             {
-                                "personTitle": String(),
-                                "personGivenName": String(),
-                                "personFamilyName": String(),
+                                "personTitle": pl.String(),
+                                "personGivenName": pl.String(),
+                                "personFamilyName": pl.String(),
                             }
                         ),
                     }
@@ -82,65 +81,71 @@ raw_providers_schema = Schema(
         ),
         (
             "inspectionCategories",
-            List(Struct({"code": String(), "primary": String(), "name": String()})),
+            pl.List(
+                pl.Struct(
+                    {"code": pl.String(), "primary": pl.String(), "name": pl.String()}
+                )
+            ),
         ),
         (
             "inspectionAreas",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "inspectionAreaId": String(),
-                        "inspectionAreaName": String(),
-                        "inspectionAreaType": String(),
-                        "status": String(),
-                        "endDate": String(),
-                        "supersededBy": List(String()),
+                        "inspectionAreaId": pl.String(),
+                        "inspectionAreaName": pl.String(),
+                        "inspectionAreaType": pl.String(),
+                        "status": pl.String(),
+                        "endDate": pl.String(),
+                        "supersededBy": pl.List(pl.String()),
                     }
                 )
             ),
         ),
         (
             "currentRatings",
-            Struct(
+            pl.Struct(
                 {
-                    "overall": Struct(
+                    "overall": pl.Struct(
                         {
-                            "rating": String(),
-                            "reportDate": String(),
-                            "reportLinkId": String(),
-                            "useOfResources": Struct(
+                            "rating": pl.String(),
+                            "reportDate": pl.String(),
+                            "reportLinkId": pl.String(),
+                            "useOfResources": pl.Struct(
                                 {
-                                    "useOfResourcesSummary": String(),
-                                    "useOfResourcesRating": String(),
-                                    "combinedQualitySummary": String(),
-                                    "combinedQualityRating": String(),
-                                    "reportDate": String(),
-                                    "reportLinkId": String(),
+                                    "useOfResourcesSummary": pl.String(),
+                                    "useOfResourcesRating": pl.String(),
+                                    "combinedQualitySummary": pl.String(),
+                                    "combinedQualityRating": pl.String(),
+                                    "reportDate": pl.String(),
+                                    "reportLinkId": pl.String(),
                                 }
                             ),
-                            "keyQuestionRatings": List(
-                                Struct(
+                            "keyQuestionRatings": pl.List(
+                                pl.Struct(
                                     {
-                                        "name": String(),
-                                        "rating": String(),
-                                        "reportDate": String(),
-                                        "organisationId": String(),
-                                        "reportLinkId": String(),
+                                        "name": pl.String(),
+                                        "rating": pl.String(),
+                                        "reportDate": pl.String(),
+                                        "organisationId": pl.String(),
+                                        "reportLinkId": pl.String(),
                                     }
                                 )
                             ),
                         }
                     ),
-                    "serviceRatings": List(
-                        Struct(
+                    "serviceRatings": pl.List(
+                        pl.Struct(
                             {
-                                "name": String(),
-                                "rating": String(),
-                                "reportDate": String(),
-                                "organisationId": String(),
-                                "reportLinkId": String(),
-                                "keyQuestionRatings": List(
-                                    Struct({"name": String(), "rating": String()})
+                                "name": pl.String(),
+                                "rating": pl.String(),
+                                "reportDate": pl.String(),
+                                "organisationId": pl.String(),
+                                "reportLinkId": pl.String(),
+                                "keyQuestionRatings": pl.List(
+                                    pl.Struct(
+                                        {"name": pl.String(), "rating": pl.String()}
+                                    )
                                 ),
                             }
                         )
@@ -150,35 +155,39 @@ raw_providers_schema = Schema(
         ),
         (
             "historicRatings",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "reportDate": String(),
-                        "reportLinkId": String(),
-                        "organisationId": String(),
-                        "overall": Struct(
+                        "reportDate": pl.String(),
+                        "reportLinkId": pl.String(),
+                        "organisationId": pl.String(),
+                        "overall": pl.Struct(
                             {
-                                "rating": String(),
-                                "useOfResources": Struct(
+                                "rating": pl.String(),
+                                "useOfResources": pl.Struct(
                                     {
-                                        "useOfResourcesSummary": String(),
-                                        "useOfResourcesRating": String(),
-                                        "combinedQualitySummary": String(),
-                                        "combinedQualityRating": String(),
+                                        "useOfResourcesSummary": pl.String(),
+                                        "useOfResourcesRating": pl.String(),
+                                        "combinedQualitySummary": pl.String(),
+                                        "combinedQualityRating": pl.String(),
                                     }
                                 ),
-                                "keyQuestionRatings": List(
-                                    Struct({"name": String(), "rating": String()})
+                                "keyQuestionRatings": pl.List(
+                                    pl.Struct(
+                                        {"name": pl.String(), "rating": pl.String()}
+                                    )
                                 ),
                             }
                         ),
-                        "serviceRatings": List(
-                            Struct(
+                        "serviceRatings": pl.List(
+                            pl.Struct(
                                 {
-                                    "name": String(),
-                                    "rating": String(),
-                                    "keyQuestionRatings": List(
-                                        Struct({"name": String(), "rating": String()})
+                                    "name": pl.String(),
+                                    "rating": pl.String(),
+                                    "keyQuestionRatings": pl.List(
+                                        pl.Struct(
+                                            {"name": pl.String(), "rating": pl.String()}
+                                        )
                                     ),
                                 }
                             )
@@ -189,22 +198,29 @@ raw_providers_schema = Schema(
         ),
         (
             "reports",
-            List(
-                Struct(
+            pl.List(
+                pl.Struct(
                     {
-                        "linkId": String(),
-                        "reportDate": String(),
-                        "firstVisitDate": String(),
-                        "reportUri": String(),
-                        "reportType": String(),
-                        "inspectionLocations": List(Struct({"locationId": String()})),
-                        "relatedDocuments": List(
-                            Struct({"documentUri": String(), "documentType": String()})
+                        "linkId": pl.String(),
+                        "reportDate": pl.String(),
+                        "firstVisitDate": pl.String(),
+                        "reportUri": pl.String(),
+                        "reportType": pl.String(),
+                        "inspectionLocations": pl.List(
+                            pl.Struct({"locationId": pl.String()})
+                        ),
+                        "relatedDocuments": pl.List(
+                            pl.Struct(
+                                {
+                                    "documentUri": pl.String(),
+                                    "documentType": pl.String(),
+                                }
+                            )
                         ),
                     }
                 )
             ),
         ),
-        ("unpublishedReports", List(Struct({"firstVisitDate": String()}))),
+        ("unpublishedReports", pl.List(pl.Struct({"firstVisitDate": pl.String()}))),
     ]
 )

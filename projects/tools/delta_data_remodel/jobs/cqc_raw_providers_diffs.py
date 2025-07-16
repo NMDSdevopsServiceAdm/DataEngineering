@@ -1,14 +1,17 @@
-from polars import read_parquet
+import polars as pl
 
 from raw_providers_schema import raw_providers_schema
-from utils import list_bucket_objects, get_diffs
+from projects.tools.delta_data_remodel.jobs.utils import list_bucket_objects, get_diffs
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 
 
 def main():
-    dataset_cols1 = raw_providers_schema.names()
-    dataset_cols1.remove("providerId")  # primary key
-    dataset_cols1.remove(
-        "mainPhoneNumber"
+    dataset_cols = raw_providers_schema.names()
+    dataset_cols.remove(CQCP.provider_id)  # primary key
+    dataset_cols.remove(
+        CQCP.main_phone_number
     )  # don't check for changes in phone number as sometimes in exponential format
 
     bucket = "sfc-main-datasets"
@@ -18,7 +21,7 @@ def main():
     )
     write_folder = Rf"domain=CQC/dataset=providers_api/year=2013/month=03/day=01/import_date=20130301/file.parquet"
 
-    base_df = read_parquet(
+    base_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=raw_providers_schema,
     )
@@ -48,7 +51,7 @@ def main():
                 print(f"Starting {day}-{month}-{year}")
                 write_folder = Rf"domain=CQC/dataset=providers_api/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
 
-                snapshot_df = read_parquet(
+                snapshot_df = pl.read_parquet(
                     f"s3://{bucket}/{read_folder}/",
                     schema=raw_providers_schema,
                 )

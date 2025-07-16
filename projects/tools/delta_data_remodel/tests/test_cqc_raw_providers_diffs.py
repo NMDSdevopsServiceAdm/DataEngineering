@@ -2,8 +2,7 @@ import os
 import unittest
 from re import match
 
-from polars import read_parquet, col
-from polars.testing import assert_frame_equal
+import polars as pl
 import requests
 import json
 
@@ -11,14 +10,12 @@ from projects.tools.delta_data_remodel.jobs.utils import (
     build_full_table_from_delta,
     list_bucket_objects,
     snapshots,
-    get_diffs,
 )
 from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
     raw_providers_schema,
 )
 
 
-# todo: decide on how to configure so that it only runs when needed
 @unittest.skip("should be run manually")
 def test_rebuilt_dataset_equality():
     full_from_delta = (
@@ -28,19 +25,19 @@ def test_rebuilt_dataset_equality():
             timepoint_limit=20131231,
         )
         .drop(["mainPhoneNumber", "year"])
-        .remove(col("deregistrationDate").ne(""))
+        .remove(pl.col("deregistrationDate").ne(""))
     )
 
     original_format = (
-        read_parquet(
+        pl.read_parquet(
             "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year=2013/",
             schema=raw_providers_schema,
         )
         .drop(["mainPhoneNumber"])
-        .remove(col("deregistrationDate").ne(""))
+        .remove(pl.col("deregistrationDate").ne(""))
     )
 
-    assert_frame_equal(
+    pl.testing.assert_frame_equal(
         full_from_delta,
         original_format,
         check_row_order=False,
@@ -56,14 +53,14 @@ def test_snapshot_equality():
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
         t = match(date_pattern, f"{timepoint_int}")
 
-        old_snapshot = read_parquet(
+        old_snapshot = pl.read_parquet(
             f"s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year={t.group('year')}/month={t.group('month')}/day={t.group('day')}/",
             schema=raw_providers_schema,
-        ).filter(col("deregistrationDate").is_null())
+        ).filter(pl.col("deregistrationDate").is_null())
 
-        assert_frame_equal(
+        pl.testing.assert_frame_equal(
             delta_snapshot.drop(["year", "month", "day", "mainPhoneNumber"]).filter(
-                col("deregistrationDate").is_null()
+                pl.col("deregistrationDate").is_null()
             ),
             old_snapshot.drop(["mainPhoneNumber"]),
             check_row_order=False,
@@ -116,17 +113,17 @@ def evaluate_dataset_changes():
         "unpublishedReports",
     ]
 
-    df_a = read_parquet(
+    df_a = pl.read_parquet(
         "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year=2024/month=04/day=08/import_date=20240408/"
     )
-    df_b = read_parquet(
+    df_b = pl.read_parquet(
         "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year=2024/month=04/day=15/import_date=20240415/"
     )
 
     unchanged_conditions = []
     for col_name in dataset_cols:
         unchanged_conditions.append(
-            (col(f"{col_name}").eq_missing(col(f"{col_name}_base")))
+            (pl.col(f"{col_name}").eq_missing(pl.col(f"{col_name}_base")))
         )
 
     joined_df = df_b.join(
@@ -163,7 +160,7 @@ def test_delta_matches_changes_api():
                 if read_folder not in day_folders:
                     continue
 
-                delta_df = read_parquet(
+                delta_df = pl.read_parquet(
                     f"s3://{bucket}/{read_folder}/import_date={year}{month:02}{day:02}/"
                 )
                 start_timestamp = f"{prev_year}-{prev_month:02}-{prev_day:02}T00:00:00Z"
@@ -180,8 +177,12 @@ def test_delta_matches_changes_api():
 
                 api_changes = json.loads(api_response.text)["changes"]
 
-                extra_d_changes = delta_df.remove(col("providerId").is_in(api_changes))
-                matching_changes = delta_df.filter(col("providerId").is_in(api_changes))
+                extra_d_changes = delta_df.remove(
+                    pl.col("providerId").is_in(api_changes)
+                )
+                matching_changes = delta_df.filter(
+                    pl.col("providerId").is_in(api_changes)
+                )
                 missing_d_changes = [
                     c for c in api_changes if c not in delta_df["providerId"].to_list()
                 ]

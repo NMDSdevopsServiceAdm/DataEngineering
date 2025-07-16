@@ -1,23 +1,16 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from polars import DataFrame, concat, col
-from polars.testing import assert_frame_equal
+import polars as pl
 
-from projects.tools.delta_data_remodel.jobs.utils import (
-    list_bucket_objects,
-    snapshots,
-    build_full_table_from_delta,
-    build_snapshot_table_from_delta,
-    get_diffs,
-)
+import projects.tools.delta_data_remodel.jobs.utils as job
 
-PATCH_PATH = "projects._01_ingest.ascwds.jobs.ingest_ascwds_dataset"
+PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 
 
 class UtilsTests(unittest.TestCase):
     def setUp(self):
-        self.base_snapshot = DataFrame(
+        self.base_snapshot = pl.DataFrame(
             {
                 "import_date": [
                     20130301,
@@ -32,7 +25,7 @@ class UtilsTests(unittest.TestCase):
             }
         )
 
-        self.first_delta = DataFrame(
+        self.first_delta = pl.DataFrame(
             {
                 "import_date": [
                     20130401,
@@ -51,7 +44,7 @@ class UtilsTests(unittest.TestCase):
             }
         )
 
-        self.second_full_snapshot = DataFrame(
+        self.second_full_snapshot = pl.DataFrame(
             {
                 "import_date": [
                     20130401,
@@ -89,7 +82,7 @@ class UtilsTests(unittest.TestCase):
         }
 
         # When
-        response = list_bucket_objects("bucket", "prefix")
+        response = job.list_bucket_objects("bucket", "prefix")
 
         # Then
         assert set(response) == expected
@@ -98,7 +91,7 @@ class UtilsTests(unittest.TestCase):
             Bucket="bucket", Prefix="prefix"
         )
 
-    @patch("projects.tools.delta_data_remodel.jobs.utils.read_parquet")
+    @patch(f"{PATCH_PATH}.pl.read_parquet")
     def test_snapshots(self, mock_read_parquet: Mock):
         # Given
         mock_read_parquet.return_value = self.base_snapshot
@@ -106,29 +99,33 @@ class UtilsTests(unittest.TestCase):
         expected = self.base_snapshot
 
         # When
-        generator = snapshots("bucket", "read_folder")
+        generator = job.snapshots("bucket", "read_folder")
 
         # Then
-        assert_frame_equal(next(generator), expected)
+        pl.testing.assert_frame_equal(next(generator), expected)
         with self.assertRaises(StopIteration):
             next(generator)
 
         mock_read_parquet.assert_called_once()
 
-    @patch("projects.tools.delta_data_remodel.jobs.utils.read_parquet")
+    @patch(f"{PATCH_PATH}.pl.read_parquet")
     def test_snapshots_multiple_timepoints(self, mock_read_parquet: Mock):
         # Given
-        mock_read_parquet.return_value = concat([self.base_snapshot, self.first_delta])
+        mock_read_parquet.return_value = pl.concat(
+            [self.base_snapshot, self.first_delta]
+        )
 
         expected_first = self.base_snapshot
         expected_second = self.second_full_snapshot
 
         # When
-        generator = snapshots("bucket", "read_folder")
+        generator = job.snapshots("bucket", "read_folder")
 
         # Then
-        assert_frame_equal(next(generator), expected_first, check_row_order=False)
-        assert_frame_equal(
+        pl.testing.assert_frame_equal(
+            next(generator), expected_first, check_row_order=False
+        )
+        pl.testing.assert_frame_equal(
             next(generator).drop(["year", "month", "day"]),
             expected_second,
             check_row_order=False,
@@ -138,7 +135,7 @@ class UtilsTests(unittest.TestCase):
 
         mock_read_parquet.assert_called_once()
 
-    @patch("projects.tools.delta_data_remodel.jobs.utils.snapshots")
+    @patch(f"{PATCH_PATH}.snapshots")
     def test_build_full_table_from_delta(self, mock_snapshots: Mock):
         # Given
         mock_snapshots.return_value = [
@@ -148,13 +145,13 @@ class UtilsTests(unittest.TestCase):
         expected = self.base_snapshot
 
         # When
-        result = build_full_table_from_delta("bucket", "read_folder")
+        result = job.build_full_table_from_delta("bucket", "read_folder")
 
         # Then
-        assert_frame_equal(result, expected)
+        pl.testing.assert_frame_equal(result, expected)
         mock_snapshots.assert_called_once()
 
-    @patch("projects.tools.delta_data_remodel.jobs.utils.snapshots")
+    @patch(f"{PATCH_PATH}.snapshots")
     def test_build_full_table_from_delta_multiple_dates(self, mock_snapshots: Mock):
         # Given
         mock_snapshots.return_value = [
@@ -162,18 +159,18 @@ class UtilsTests(unittest.TestCase):
             self.second_full_snapshot,
         ]
 
-        expected = concat([self.base_snapshot, self.second_full_snapshot])
+        expected = pl.concat([self.base_snapshot, self.second_full_snapshot])
 
         # When
-        result = build_full_table_from_delta("bucket", "read_folder").filter(
-            col("deregistrationDate").eq("")
+        result = job.build_full_table_from_delta("bucket", "read_folder").filter(
+            pl.col("deregistrationDate").eq("")
         )
 
         # Then
-        assert_frame_equal(result, expected)
+        pl.testing.assert_frame_equal(result, expected)
         mock_snapshots.assert_called_once()
 
-    @patch("projects.tools.delta_data_remodel.jobs.utils.snapshots")
+    @patch(f"{PATCH_PATH}.snapshots")
     def test_build_snapshot_table_from_delta(self, mock_snapshots: Mock):
         # Given
         mock_snapshots.return_value = [
@@ -183,19 +180,19 @@ class UtilsTests(unittest.TestCase):
         expected = self.base_snapshot
 
         # When
-        result = build_snapshot_table_from_delta(
+        result = job.build_snapshot_table_from_delta(
             "bucket", "read_folder", timepoint=20130301
         )
 
         # Then
-        assert_frame_equal(result, expected)
+        pl.testing.assert_frame_equal(result, expected)
         mock_snapshots.assert_called_once()
 
     def test_get_diffs(self):
         # When
         expected = self.first_delta
 
-        result = get_diffs(
+        result = job.get_diffs(
             self.base_snapshot,
             self.second_full_snapshot,
             snapshot_date="20130401",
@@ -204,7 +201,7 @@ class UtilsTests(unittest.TestCase):
         )
 
         # Then
-        assert_frame_equal(result, expected)
+        pl.testing.assert_frame_equal(result, expected)
 
 
 if __name__ == "__main__":
