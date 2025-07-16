@@ -480,6 +480,15 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "lambda:InvokeFunction"
         ],
         "Resource" : "${aws_lambda_function.error_notification_lambda.arn}*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "glue:GetJobRuns"
+        ],
+        "Resource" : [
+          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job"
+        ]
       }
     ]
   })

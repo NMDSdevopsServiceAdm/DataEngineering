@@ -129,16 +129,3 @@ resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
 
   policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = local.cqc_api_primary_key_secret_arn })
 }
-
-resource "aws_iam_policy" "glue_get_job_runs" {
-  name        = "${terraform.workspace}-glue-get-job-runs"
-  path        = "/"
-  description = "Retrieves the job runs for specific glue jobs"
-
-  policy = templatefile("policy-documents/glue-get-job-runs.json", {})
-}
-
-resource "aws_iam_role_policy_attachment" "glue_get_job_runs_attachment" {
-  policy_arn = aws_iam_policy.glue_get_job_runs.arn
-  role       = aws_iam_role.sfc_glue_service_iam_role.name
-}
