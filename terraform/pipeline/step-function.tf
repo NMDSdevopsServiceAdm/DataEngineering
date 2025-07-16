@@ -109,9 +109,9 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
-    dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
-    bulk_cqc_providers_download_job_name         = module.bulk_cqc_providers_download_job.job_name
-    delta_cqc_providers_download_job_name        = module.delta_cqc_providers_download_job.job_name
+    dataset_bucket_uri                    = module.datasets_bucket.bucket_uri
+    bulk_cqc_providers_download_job_name  = module.bulk_cqc_providers_download_job.job_name
+    delta_cqc_providers_download_job_name = module.delta_cqc_providers_download_job.job_name
   })
 
   logging_configuration {
