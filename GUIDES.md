@@ -10,4 +10,5 @@
 
 ## Confluence Use
 - ADRs, decision logs, guidance not suitable for public GitHub
-- Access: [Confluence Home](https://skillsforcare.atlassian.net/wiki/spaces/DE/overview?homepageId=1011220675)
+- For access or more information, please contact:
+  📧 [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
