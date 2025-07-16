@@ -24,8 +24,8 @@
         "JobName": "${delta_cqc_providers_download_job_name}",
         "Arguments": {
           "--destination_prefix": "${dataset_bucket_uri}",
-          "--start_timestamp": "$startDate",
-          "--end_timestamp": "$$.State.EnteredTime",
+          "--start_timestamp.$": "$startDate",
+          "--end_timestamp.$": "$$.State.EnteredTime",
           "--additional-python-modules": "ratelimit==2.2.1,"
         }
       },
