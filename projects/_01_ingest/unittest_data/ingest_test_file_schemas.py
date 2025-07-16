@@ -49,6 +49,7 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
+    NullPeopleDirectlyEmployedTemporaryColumns as NullPIRTemp,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -698,6 +699,7 @@ class NullPeopleDirectlyEmployedSchema:
         [
             StructField(CQCPIRClean.location_id, StringType(), True),
             StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(CQCPIRClean.care_home, StringType(), True),
             StructField(CQCPIR.pir_people_directly_employed, IntegerType(), True),
         ]
     )
@@ -717,6 +719,72 @@ class NullPeopleDirectlyEmployedSchema:
             StructField(
                 CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
             ),
+        ]
+    )
+
+    null_outliers_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+
+    expected_compute_dispersion_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.max_people_employed, IntegerType(), True),
+            StructField(NullPIRTemp.min_people_employed, IntegerType(), True),
+            StructField(NullPIRTemp.mean_people_employed, FloatType(), True),
+            StructField(NullPIRTemp.dispersion_ratio, FloatType(), True),
+        ]
+    )
+
+    expected_compute_median_absolute_deviation_stats_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.median_absolute_deviation, FloatType(), True),
+        ]
+    )
+
+    compute_median_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(CQCPIRClean.cqc_pir_import_date, DateType(), True),
+            StructField(
+                CQCPIRClean.pir_people_directly_employed_cleaned, IntegerType(), True
+            ),
+        ]
+    )
+    expected_compute_median_schema = StructType(
+        [
+            *compute_median_schema,
+            StructField(NullPIRTemp.median_absolute_deviation, FloatType(), True),
+        ]
+    )
+
+    expected_flag_outliers_schema = StructType(
+        [
+            StructField(CQCPIRClean.location_id, StringType(), True),
+            StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
+            StructField(
+                NullPIRTemp.median_absolute_deviation_flag, BooleanType(), True
+            ),
+        ]
+    )
+
+    apply_removal_flag_to_clean_schema = null_outliers_schema
+    apply_removal_flag_with_outlier_flags_schema = expected_flag_outliers_schema
+    expected_apply_removal_flag_schema = StructType(
+        [
+            *null_outliers_schema,
+            StructField(NullPIRTemp.dispersion_outlier_flag, BooleanType(), True),
+            StructField(
+                NullPIRTemp.median_absolute_deviation_flag, BooleanType(), True
+            ),
+            StructField(NullPIRTemp.outlier_flag, BooleanType(), True),
         ]
     )
 
