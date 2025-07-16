@@ -7,7 +7,7 @@
             "Type": "Task",
             "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
             "Parameters": {
-              "JobName": "${bulk_cqc_providers_download_job}"
+              "JobName": "${bulk_cqc_providers_download_job_name}"
             },
             "Next": "GetLatestSuccessRun"
           },
