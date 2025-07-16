@@ -1,12 +1,16 @@
 import unittest
 
-from tests.test_file_data import LmEngagementUtilsData as Data
-from tests.test_file_schemas import LmEngagementUtilsSchemas as Schemas
+from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
+    LmEngagementUtilsData as Data,
+)
+from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
+    LmEngagementUtilsSchemas as Schemas,
+)
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-import utils.coverage_utils.lm_engagement_utils as job
+import projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils as job
 
 
 class SetupForTests(unittest.TestCase):
