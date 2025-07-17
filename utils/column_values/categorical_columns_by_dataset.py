@@ -41,6 +41,7 @@ from utils.column_values.categorical_column_values import (
     Sector,
     Services,
     Specialisms,
+    SpecialistGeneralistOther,
 )
 
 
@@ -230,6 +231,15 @@ class EstimatedIndCQCFilledPostsCategoricalValues:
     )
     estimate_filled_posts_source_column_values = EstimateFilledPostsSource(
         IndCQC.estimate_filled_posts_source
+    )
+    specialist_generalist_other_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_dementia
+    )
+    specialist_generalist_other_lda_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_lda
+    )
+    specialist_generalist_other_mh_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_mh
     )
 
 

@@ -26,6 +26,7 @@ from utils.column_values.categorical_column_values import (
     Sector,
     Services,
     Specialisms,
+    SpecialistGeneralistOther,
 )
 
 
@@ -5099,3 +5100,90 @@ class DiagnosticsUtilsData:
         (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.imputed_posts_care_home_model, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     # fmt: on
+
+
+@dataclass
+class EstimatesFilledPostUtils:
+    classify_specialisms_rows = [
+        (
+            "loc 1",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+        ),
+        ("loc 2", [Specialisms.dementia]),
+        ("loc 3", [Specialisms.mental_health]),
+        ("loc 4", [Specialisms.learning_disabilities]),
+        ("loc 5", [Specialisms.eating_disorders]),
+        (
+            "loc 6",
+            [
+                Specialisms.mental_health,
+                Specialisms.sensory_impairment,
+                Specialisms.children,
+            ],
+        ),
+        ("loc 7", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
+    ]
+
+    expected_classify_specialisms_rows = [
+        (
+            "loc 1",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+        ),
+        (
+            "loc 2",
+            [Specialisms.dementia],
+            SpecialistGeneralistOther.specialist,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 3",
+            [Specialisms.mental_health],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.specialist,
+        ),
+        (
+            "loc 4",
+            [Specialisms.learning_disabilities],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.specialist,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 5",
+            [Specialisms.eating_disorders],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 6",
+            [
+                Specialisms.mental_health,
+                Specialisms.sensory_impairment,
+                Specialisms.children,
+            ],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+        ),
+        (
+            "loc 7",
+            [Specialisms.learning_disabilities, Specialisms.sensory_impairment],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
+        ),
+    ]

@@ -2848,3 +2848,27 @@ class DiagnosticsUtilsSchemas:
             ),
         ]
     )
+
+
+@dataclass
+class EstimatesFilledPostUtils:
+    classify_specialisms_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.specialisms_offered, ArrayType(StringType()), True),
+        ]
+    )
+    expected_classify_specialisms_schema = StructType(
+        [
+            *classify_specialisms_schema,
+            StructField(
+                IndCQC.specialist_generalist_other_dementia, StringType(), True
+            ),
+            StructField(
+                IndCQC.specialist_generalist_other_lda, StringType(), True
+            ),
+            StructField(
+                IndCQC.specialist_generalist_other_mh, StringType(), True
+            ),
+        ]
+    )

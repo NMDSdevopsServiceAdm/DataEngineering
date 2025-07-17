@@ -47,6 +47,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.classify_specialisms")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
@@ -63,6 +64,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
+        classify_specialisms_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -95,6 +97,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
+        self.assertEqual(classify_specialisms_mock, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,

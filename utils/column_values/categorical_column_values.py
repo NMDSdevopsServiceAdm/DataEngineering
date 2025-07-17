@@ -569,3 +569,10 @@ class AscwdsFilteringRule(ColumnValues):
 class RelatedLocation(ColumnValues):
     has_related_location: str = "Y"
     no_related_location: str = "N"
+
+
+@dataclass
+class SpecialistGeneralistOther(ColumnValues):
+    specialist: str = "specialist"
+    generalist: str = "generalist"
+    other: str = "other"

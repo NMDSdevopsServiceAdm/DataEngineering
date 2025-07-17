@@ -8,6 +8,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import (
     PrimaryServiceTypeSecondLevel as PSSL_values,
+    SpecialistGeneralistOther,
+    Specialisms,
 )
 from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
     CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,
@@ -199,32 +201,5 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
         ).otherwise(condition)
 
     df = df.withColumn(IndCQC.primary_service_type_second_level, condition)
-
-    return df
-
-def classify_specialisms(df: DataFrame) -> DataFrame:
-    # Dementia classification
-    df = df.withColumn(
-        "Dementia_SpecialistGeneralistOther",
-        F.when(F.array_contains(F.col("specialisms_offered"), "Dementia") & (F.size(F.col("specialisms_offered")) == 1), 1)
-        .when(F.array_contains(F.col("specialisms_offered"), "Dementia") & (F.size(F.col("specialisms_offered")) > 1), 2)
-        .otherwise(0)
-    )
-
-    # LSA classification
-    df = df.withColumn(
-        "LDA_SpecialistGeneralistOther",
-        F.when(F.array_contains(F.col("specialisms_offered"), "Learning disabilities") & (F.size(F.col("specialisms_offered")) == 1), 1)
-        .when(F.array_contains(F.col("specialisms_offered"), "Learning disabilities") & (F.size(F.col("specialisms_offered")) > 1), 2)
-        .otherwise(0)
-    )
-
-    # Mental Health classification
-    df = df.withColumn(
-        "MH_SpecialistGeneralistOther",
-        F.when(F.array_contains(F.col("specialisms_offered"), "Mental health conditions") & (F.size(F.col("specialisms_offered")) == 1), 1)
-        .when(F.array_contains(F.col("specialisms_offered"), "Mental health conditions") & (F.size(F.col("specialisms_offered")) > 1), 2)
-        .otherwise(0)
-    )
 
     return df
