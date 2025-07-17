@@ -124,7 +124,7 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
-      - docker/install-docker-tools
+      - docker/install-docker
       - aws-cli/setup
       - attach_workspace:
           at: .
