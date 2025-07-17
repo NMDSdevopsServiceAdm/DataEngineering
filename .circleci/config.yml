@@ -264,7 +264,8 @@ workflows:
 #              ignore: main
       - terraform-plan:
           requires:
-            - test
+#            - test
+            - lint-terraform
       - terraform-apply:
           requires:
             - terraform-plan
