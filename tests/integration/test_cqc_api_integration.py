@@ -23,6 +23,7 @@ class CqcApiIntegrationTests(unittest.TestCase):
         # self.cqc_api_primary_key = json.loads(
         #    ars.get_secret(secret_name="cqc_api_primary_key", region_name="eu-west-2")
         # )["Ocp-Apim-Subscription-Key"]
+        self.cqc_api_primary_key = "99161e0fc17240e99e876a476aa403e9"
         self.page = 1
 
 
