@@ -25,6 +25,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputat
 from utils.ind_cqc_filled_posts_utils.utils import (
     merge_columns_in_order,
     allocate_primary_service_type_second_level,
+    classify_specialisms,
 )
 
 ind_cqc_columns = [
@@ -180,6 +181,10 @@ def main(
     )
 
     estimate_filled_posts_df = allocate_primary_service_type_second_level(
+        estimate_filled_posts_df
+    )
+    
+    estimate_filled_posts_df = classify_specialisms(
         estimate_filled_posts_df
     )
 

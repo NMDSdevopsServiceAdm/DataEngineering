@@ -201,3 +201,41 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
     df = df.withColumn(IndCQC.primary_service_type_second_level, condition)
 
     return df
+
+def classify_specialisms(df: pd.DataFrame) -> pd.DataFrame:
+    # Prepare empty lists to store the results
+    dementia_class = []
+    lda_class = []
+    mh_class = []
+
+    # Loop through each row
+    for specialisms in df['specialisms_offered']:
+        if not isinstance(specialisms, list):
+            specialisms = []
+
+        total_services = len(specialisms)
+
+        # Classify Dementia
+        if 'Dementia' in specialisms:
+            dementia_class.append(1 if total_services == 1 else 2)
+        else:
+            dementia_class.append(0)
+
+        # Classify LD or A
+        if 'Learning disabilities' in specialisms:
+            lda_class.append(1 if total_services == 1 else 2)
+        else:
+            lda_class.append(0)
+
+        # Classify MH
+        if 'Mental health conditions' in specialisms:
+            mh_class.append(1 if total_services == 1 else 2)
+        else:
+            mh_class.append(0)
+
+    # Adding the new columns to the DataFrame
+    df['Dementia_SpecialistGeneralistOther'] = dementia_class
+    df['LDA_SpecialistGeneralistOther'] = lda_class
+    df['MH_SpecialistGeneralistOther'] = mh_class
+
+    return df
