@@ -16,6 +16,8 @@ parameters:
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
+  aws-cli: circleci/aws-cli@5.4.1
+  docker: circleci/docker@2.8.2
 
 jobs:
   test:
@@ -122,6 +124,8 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
+      - docker/install
+      - aws-cli/setup
       - attach_workspace:
           at: .
 
