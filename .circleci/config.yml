@@ -20,6 +20,12 @@ orbs:
   docker: circleci/docker@2.8.2
 
 jobs:
+  setup:
+    steps:
+      - checkout
+      - docker/install-docker
+      - aws-cli/setup
+
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -58,6 +64,7 @@ jobs:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
+
 
   lint-python:
     docker:
@@ -124,8 +131,6 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
-      - docker/install-docker
-      - aws-cli/setup
       - attach_workspace:
           at: .
 
@@ -250,6 +255,7 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - setup
 #      - test:
 #          filters:
 #            branches:
@@ -272,6 +278,7 @@ workflows:
             - lint-terraform
       - terraform-apply:
           requires:
+            - setup
             - terraform-plan
       - deploy-dependencies:
           requires:
