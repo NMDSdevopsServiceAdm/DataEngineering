@@ -202,40 +202,29 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
 
     return df
 
-def classify_specialisms(df: pd.DataFrame) -> pd.DataFrame:
-    # Prepare empty lists to store the results
-    dementia_class = []
-    lda_class = []
-    mh_class = []
+def classify_specialisms(df: DataFrame) -> DataFrame:
+    # Dementia classification
+    df = df.withColumn(
+        "Dementia_SpecialistGeneralistOther",
+        F.when(F.array_contains(F.col("specialisms_offered"), "Dementia") & (F.size(F.col("specialisms_offered")) == 1), 1)
+        .when(F.array_contains(F.col("specialisms_offered"), "Dementia") & (F.size(F.col("specialisms_offered")) > 1), 2)
+        .otherwise(0)
+    )
 
-    # Loop through each row
-    for specialisms in df['specialisms_offered']:
-        if not isinstance(specialisms, list):
-            specialisms = []
+    # LSA classification
+    df = df.withColumn(
+        "LDA_SpecialistGeneralistOther",
+        F.when(F.array_contains(F.col("specialisms_offered"), "Learning disabilities") & (F.size(F.col("specialisms_offered")) == 1), 1)
+        .when(F.array_contains(F.col("specialisms_offered"), "Learning disabilities") & (F.size(F.col("specialisms_offered")) > 1), 2)
+        .otherwise(0)
+    )
 
-        total_services = len(specialisms)
-
-        # Classify Dementia
-        if 'Dementia' in specialisms:
-            dementia_class.append(1 if total_services == 1 else 2)
-        else:
-            dementia_class.append(0)
-
-        # Classify LD or A
-        if 'Learning disabilities' in specialisms:
-            lda_class.append(1 if total_services == 1 else 2)
-        else:
-            lda_class.append(0)
-
-        # Classify MH
-        if 'Mental health conditions' in specialisms:
-            mh_class.append(1 if total_services == 1 else 2)
-        else:
-            mh_class.append(0)
-
-    # Adding the new columns to the DataFrame
-    df['Dementia_SpecialistGeneralistOther'] = dementia_class
-    df['LDA_SpecialistGeneralistOther'] = lda_class
-    df['MH_SpecialistGeneralistOther'] = mh_class
+    # Mental Health classification
+    df = df.withColumn(
+        "MH_SpecialistGeneralistOther",
+        F.when(F.array_contains(F.col("specialisms_offered"), "Mental health conditions") & (F.size(F.col("specialisms_offered")) == 1), 1)
+        .when(F.array_contains(F.col("specialisms_offered"), "Mental health conditions") & (F.size(F.col("specialisms_offered")) > 1), 2)
+        .otherwise(0)
+    )
 
     return df
