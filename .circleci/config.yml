@@ -47,15 +47,15 @@ jobs:
           paths:
             - ~/.local/share/virtualenvs
 
-#      - run:
-#          name: run unit tests
-#          command: |
-#            pipenv run python -m unittest discover -s . -p "test_*.py"
-#
-#      - run:
-#          name: run integration tests
-#          command: |
-#            pipenv run python -m unittest discover tests/integration
+      - run:
+          name: run unit tests
+          command: |
+            pipenv run python -m unittest discover -s . -p "test_*.py"
+
+      - run:
+          name: run integration tests
+          command: |
+            pipenv run python -m unittest discover tests/integration
 
   lint-python:
     docker:
@@ -246,22 +246,22 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: main
-      - lint-python:
-          filters:
-            branches:
-              ignore: main
+#      - test:
+#          filters:
+#            branches:
+#              ignore: main
+#      - lint-python:
+#          filters:
+#            branches:
+#              ignore: main
       - lint-terraform:
           filters:
             branches:
               ignore: main
-      - lint-docstrings:
-          filters:
-            branches:
-              ignore: main
+#      - lint-docstrings:
+#          filters:
+#            branches:
+#              ignore: main
       - terraform-plan:
           requires:
             - test
