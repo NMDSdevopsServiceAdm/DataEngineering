@@ -291,7 +291,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-#            - aws-ecr/build_and_push_image
+            - aws-ecr/build_and_push_image
             - lint-terraform
       - terraform-apply:
           requires:
