@@ -7,7 +7,7 @@ COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target "sfc_lambda"
 
 # Copy function code
-COPY main.py "sfc_lambda"
+COPY lambda_function.py "sfc_lambda"
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-CMD [ "lambda_function.main" ]
+CMD [ "lambda_function.lambda_handler" ]
