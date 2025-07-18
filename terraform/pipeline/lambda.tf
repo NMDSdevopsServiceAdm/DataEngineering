@@ -34,7 +34,7 @@ resource "aws_lambda_function" "create_snapshot_lambda" {
   runtime       = "python3.11"
   function_name = "${local.workspace_prefix}-create-full-snapshot"
   package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}/${local.workspace_prefix}-create-snapshot-lambda-repo:latest"
+  image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}:latest"
   memory_size   = 3072
   timeout       = 60
 }
