@@ -179,7 +179,7 @@ def main(
     )
 
 
-def remove_june_2025_cqc(df: DataFrame) -> DataFrame:
+def remove_july_2025_cqc(df: DataFrame) -> DataFrame:
     """
     doc string
 
@@ -190,7 +190,7 @@ def remove_june_2025_cqc(df: DataFrame) -> DataFrame:
         DataFrame: words
     """
     df = df.where(
-        F.col(CQCLClean.cqc_location_import_date) <= F.to_date(F.lit("2025-06-01"))
+        F.col(CQCLClean.cqc_location_import_date) <= F.to_date(F.lit("2025-07-01"))
     )
 
     return df
