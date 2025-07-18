@@ -114,7 +114,7 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
-    cqc_location_df = remove_june_2025_cqc(cqc_location_df)
+    cqc_location_df = remove_july_2025_cqc(cqc_location_df)
 
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
