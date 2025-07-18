@@ -132,7 +132,7 @@ jobs:
 #          command: |
 #            apk add --no-cache aws-cli
       - aws-cli/setup:
-          region: AWS_REGION
+          region: "eu-west-2"
       - run:
             name: Run an AWS CLI command
             command: |
