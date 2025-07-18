@@ -112,7 +112,7 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
     bulk_cqc_providers_download_job_name      = "main-bulk_download_cqc_providers_job"
     delta_cqc_providers_download_job_name     = module.delta_cqc_providers_download_job.job_name
-    delta_bronze_validation_state_machine_arn = aws_sfn_state_machine.bronze_validation_state_machine.arn
+    delta_bronze_validation_state_machine_arn = aws_sfn_state_machine.delta_bronze_validation_state_machine.arn
   })
 
   logging_configuration {
