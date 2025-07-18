@@ -90,7 +90,7 @@ def get_page_objects(
     object_identifier,
     cqc_api_primary_key,
     per_page=DEFAULT_PAGE_SIZE,
-) -> list[dict]:
+) -> List[dict]:
     page_objects = []
     response_body = call_api(
         url,
