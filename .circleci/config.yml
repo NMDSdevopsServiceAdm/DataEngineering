@@ -16,8 +16,6 @@ parameters:
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
-  aws-cli: circleci/aws-cli@5.4.1
-  docker: circleci/docker@2.8.2
 
 jobs:
 
@@ -128,10 +126,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: check dependencies
+          name: install aws-cli
           command: |
-            curl -V
-      - aws-cli/setup
+            apk add --no-cache aws-cli
+
       - run:
             name: Run an AWS CLI command
             command: |
