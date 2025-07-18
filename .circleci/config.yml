@@ -270,7 +270,7 @@ workflows:
                 region: "eu-west-2"
           dockerfile: "Dockerfile"
           path: "./lambdas/create_dataset_snapshot"
-          repo: "create-snapshot-lambda-repo"
+          repo: "${CIRCLE_BRANCH}-create-snapshot-lambda-repo"
           region: "eu-west-2"
 #      - test:
 #          filters:

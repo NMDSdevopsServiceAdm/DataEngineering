@@ -4,12 +4,6 @@ data "archive_file" "error_notification_lambda" {
   output_path = "../../lambdas/error_notifications.zip"
 }
 
-# data "archive_file" "create_snapshot_lambda" {
-#   type        = "zip"
-#   source_dir  = "../../lambdas/create_dataset_snapshot"
-#   output_path = "../../lambdas/create_dataset_snapshot.zip"
-# }
-
 resource "aws_s3_object" "error_notification_lambda" {
   bucket      = module.pipeline_resources.bucket_name
   key         = "lambda-scripts/error_notifications.py"
@@ -17,14 +11,6 @@ resource "aws_s3_object" "error_notification_lambda" {
   acl         = "private"
   source_hash = data.archive_file.error_notification_lambda.output_base64sha256
 }
-
-# resource "aws_s3_object" "create_snapshot_lambda" {
-#   bucket      = module.pipeline_resources.bucket_name
-#   key         = "lambda-scripts/create_snapshot.zip"
-#   source      = data.archive_file.create_snapshot_lambda.output_path
-#   acl         = "private"
-#   source_hash = data.archive_file.error_notification_lambda.output_base64sha256
-# }
 
 resource "aws_lambda_function" "error_notification_lambda" {
   role             = aws_iam_role.error_notification_lambda.arn
@@ -42,16 +28,16 @@ resource "aws_lambda_function" "error_notification_lambda" {
   }
 }
 
-# resource "aws_lambda_function" "create_snapshot_lambda" {
-#   role          = aws_iam_role.create_snapshot_lambda.arn
-#   handler       = "create_snapshot.main"
-#   runtime       = "python3.11"
-#   function_name = "${local.workspace_prefix}-create-full-snapshot"
-#   package_type  = "Image"
-#   image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
-#   memory_size   = 3072
-#   timeout       = 60
-# }
+resource "aws_lambda_function" "create_snapshot_lambda" {
+  role          = aws_iam_role.create_snapshot_lambda.arn
+  handler       = "create_snapshot.main"
+  runtime       = "python3.11"
+  function_name = "${local.workspace_prefix}-create-full-snapshot"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
+  memory_size   = 3072
+  timeout       = 60
+}
 
 data "aws_iam_policy_document" "error_notification_lambda_assume_role" {
   statement {
