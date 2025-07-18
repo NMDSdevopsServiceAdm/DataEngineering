@@ -1,6 +1,6 @@
 # ECR Repository to store the Docker image
 resource "aws_ecr_repository" "create_dataset_snapshot" {
-  name                 = "create-snapshot-lambda-repo"
+  name                 = "${local.workspace_prefix}-create-snapshot-lambda-repo"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
   image_scanning_configuration {
