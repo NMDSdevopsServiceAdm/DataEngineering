@@ -114,7 +114,7 @@ def main(
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
 
-    cqc_location_df = remove_june_2025_cqc(cqc_location_df)
+    cqc_location_df = remove_july_2025_cqc(cqc_location_df)
 
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
@@ -177,7 +177,7 @@ def main(
     )
 
 
-def remove_june_2025_cqc(df: DataFrame) -> DataFrame:
+def remove_july_2025_cqc(df: DataFrame) -> DataFrame:
     """
     doc string
 
@@ -188,7 +188,7 @@ def remove_june_2025_cqc(df: DataFrame) -> DataFrame:
         DataFrame: words
     """
     df = df.where(
-        F.col(CQCLClean.cqc_location_import_date) <= F.to_date(F.lit("2025-06-01"))
+        F.col(CQCLClean.cqc_location_import_date) <= F.to_date(F.lit("2025-07-01"))
     )
 
     return df
