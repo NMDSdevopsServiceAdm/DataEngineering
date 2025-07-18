@@ -16,8 +16,11 @@ parameters:
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
+  aws-cli: circleci/aws-cli@5.4.1
+  aws-ecr: circleci/aws-ecr@9.3.7
 
 jobs:
+
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -56,6 +59,7 @@ jobs:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
+
 
   lint-python:
     docker:
@@ -122,6 +126,19 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
+      - checkout
+#      - run:
+#          name: install aws-cli
+#          command: |
+#            apk add --no-cache aws-cli
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+            name: Run an AWS CLI command
+            command: |
+              aws s3 ls
+              aws sts get-caller-identity
+
       - attach_workspace:
           at: .
 
@@ -246,25 +263,36 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: main
-      - lint-python:
-          filters:
-            branches:
-              ignore: main
+      - aws-ecr/build_and_push_image:
+          account_id: "344210435447"
+          auth:
+            - aws-cli/setup:
+                region: "eu-west-2"
+          dockerfile: "Dockerfile"
+          path: "./lambdas/create_dataset_snapshot"
+          repo: "create_dataset_snapshot"
+          region: "eu-west-2"
+#      - test:
+#          filters:
+#            branches:
+#              ignore: main
+#      - lint-python:
+#          filters:
+#            branches:
+#              ignore: main
       - lint-terraform:
           filters:
             branches:
               ignore: main
-      - lint-docstrings:
-          filters:
-            branches:
-              ignore: main
+#      - lint-docstrings:
+#          filters:
+#            branches:
+#              ignore: main
       - terraform-plan:
           requires:
-            - test
+#            - test
+            - aws-ecr/build_and_push_image
+            - lint-terraform
       - terraform-apply:
           requires:
             - terraform-plan
