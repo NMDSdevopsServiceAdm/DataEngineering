@@ -97,7 +97,7 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
-        self.assertEqual(classify_specialisms_mock, 1)
+        self.assertEqual(classify_specialisms_mock.call_count, 1)
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
