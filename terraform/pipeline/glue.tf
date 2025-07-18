@@ -798,7 +798,7 @@ module "validate_providers_api_raw_data_job" {
   }
 }
 
-module "validate_providers_api_raw_delta_data_job_name" {
+module "validate_providers_api_raw_delta_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/cqc_api/jobs"
   script_name     = "validate_providers_api_raw_delta_data.py"
