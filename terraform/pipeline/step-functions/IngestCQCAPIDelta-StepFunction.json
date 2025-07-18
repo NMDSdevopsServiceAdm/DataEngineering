@@ -29,6 +29,17 @@
           "--additional-python-modules": "ratelimit==2.2.1,"
         }
       },
+      "Next": "BronzeValidation"
+    },
+    "BronzeValidation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Parameters": {
+        "StateMachineArn": "${delta_bronze_validation_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
       "End": true
     }
   }
