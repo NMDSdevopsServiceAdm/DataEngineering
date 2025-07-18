@@ -284,7 +284,6 @@ workflows:
             - lint-terraform
       - terraform-apply:
           requires:
-            - setup
             - terraform-plan
       - deploy-dependencies:
           requires:
