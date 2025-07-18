@@ -17,7 +17,7 @@ parameters:
 orbs:
   aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
-  aws-ecr: circleci/aws-ecr@9.3.7
+  aws-ecr: circleci/aws-ecr@9.5.4
 
 jobs:
 
