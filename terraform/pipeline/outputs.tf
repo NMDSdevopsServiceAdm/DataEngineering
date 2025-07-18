@@ -17,7 +17,7 @@ output "caller_arn" {
 output "caller_user" {
   value = data.aws_caller_identity.current.user_id
 }
-
-output "image_digest" {
-  value = data.aws_ecr_image.create_dataset_snapshot.image_digest
-}
+#
+# output "image_digest" {
+#   value = data.aws_ecr_image.create_dataset_snapshot.image_digest
+# }
