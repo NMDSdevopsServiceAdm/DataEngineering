@@ -96,6 +96,10 @@ class MergeIndCQCData:
     ]
     expected_remove_may_2025_rows = [
         ("1-001", date(2025, 1, 1)),
+        ("1-002", date(2025, 2, 1)),
+        ("1-003", date(2025, 3, 1)),
+        ("1-001", date(2025, 4, 1)),
+        ("1-002", date(2025, 5, 1)),
     ]
 
 

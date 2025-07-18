@@ -125,7 +125,7 @@ def main(
         cleaned_cqc_pir_source, selected_columns=cleaned_cqc_pir_columns_to_import
     )
 
-    cqc_pir_df = remove_may_2025_pir(cqc_pir_df)
+    cqc_pir_df = remove_pir_data(cqc_pir_df)
 
     ct_non_res_df = utils.read_from_parquet(
         cleaned_ct_non_res_source, selected_columns=cleaned_ct_non_res_columns_to_import
@@ -196,7 +196,7 @@ def remove_june_2025_cqc(df: DataFrame) -> DataFrame:
     return df
 
 
-def remove_may_2025_pir(df: DataFrame) -> DataFrame:
+def remove_pir_data(df: DataFrame) -> DataFrame:
     """
     doc string
 
@@ -207,7 +207,7 @@ def remove_may_2025_pir(df: DataFrame) -> DataFrame:
         DataFrame: words
     """
     df = df.where(
-        F.col(CQCPIRClean.cqc_pir_import_date) <= F.to_date(F.lit("2025-01-01"))
+        F.col(CQCPIRClean.cqc_pir_import_date) <= F.to_date(F.lit("2025-06-01"))
     )
 
     return df
