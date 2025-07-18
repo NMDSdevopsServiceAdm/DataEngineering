@@ -34,6 +34,7 @@ ind_cqc_columns = [
     IndCQC.provider_id,
     IndCQC.provider_name,
     IndCQC.services_offered,
+    IndCQC.specialisms_offered,
     IndCQC.primary_service_type,
     IndCQC.care_home,
     IndCQC.dormancy,
