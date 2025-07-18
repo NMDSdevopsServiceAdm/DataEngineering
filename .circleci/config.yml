@@ -101,7 +101,7 @@ jobs:
           name: Push Docker Image
           command: |
             # Authenticate Docker to ECR
-            aws ecr get-login-password --region "eu-west-2" | docker login --username AWS --password-stdin 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
             
             # Push the image
             docker push ${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
