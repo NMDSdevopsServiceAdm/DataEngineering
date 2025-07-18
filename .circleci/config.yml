@@ -131,10 +131,12 @@ jobs:
           name: check dependencies
           command: |
             curl -V
-      - aws-cli/setup:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          aws-region: AWS_REGION
+      - aws-cli/setup
+      - run:
+            name: Run an AWS CLI command
+            command: |
+              aws s3 ls
+              aws sts get-caller-identity
 
       - attach_workspace:
           at: .
