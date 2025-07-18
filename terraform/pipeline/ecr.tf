@@ -8,8 +8,8 @@ resource "aws_ecr_repository" "create_dataset_snapshot" {
   }
 }
 
-# Get the latest image digest
-data "aws_ecr_image" "create_dataset_snapshot" {
-  repository_name = aws_ecr_repository.create_dataset_snapshot.name
-  image_tag       = "latest"
-}
+# # Get the latest image digest
+# data "aws_ecr_image" "create_dataset_snapshot" {
+#   repository_name = aws_ecr_repository.create_dataset_snapshot.name
+#   image_tag       = "latest"
+# }
