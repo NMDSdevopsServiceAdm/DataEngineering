@@ -5,8 +5,8 @@ FROM public.ecr.aws/lambda/python:3.11
 RUN dir -s
 WORKDIR /sfc_lambda
 
-COPY requirements.txt  .
-RUN  pip3 install -r /lambdas/create_dataset_snapshot/requirements.txt --target .
+COPY /lambdas/create_dataset_snapshot/requirements.txt  .
+RUN  pip3 install -r requirements.txt --target .
 
 # Copy function code
 COPY /lambdas/create_dataset_snapshot/lambda_function.py .
