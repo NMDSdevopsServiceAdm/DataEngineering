@@ -269,7 +269,7 @@ workflows:
             - aws-cli/setup:
                 region: "eu-west-2"
           dockerfile: "Dockerfile"
-          extra_build_args: "--provenance=false --platform linux/amd64"
+          extra_build_args: "--provenance=false --platform linux/amd64 --sbom=false"
           path: "./lambdas/create_dataset_snapshot"
           repo: "${CIRCLE_BRANCH}-create-snapshot-lambda-repo"
           region: "eu-west-2"
