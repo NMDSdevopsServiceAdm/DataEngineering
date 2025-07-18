@@ -87,6 +87,25 @@ jobs:
           name: Check docstring fomatting
           command: pydoclint --style=google --quiet .
 
+  push-docker:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker Image
+          command: docker buildx build  --platform linux/amd64  lambdas/create_dataset_snapshot
+      - run:
+          name: Push Docker Image
+          command: |
+            # Authenticate Docker to ECR
+            aws ecr get-login-password --region "eu-west-2" | docker login --username AWS --password-stdin 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+            
+            # Push the image
+            docker push ${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
+
   lint-terraform:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
@@ -263,16 +282,7 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - aws-ecr/build_and_push_image:
-          account_id: "344210435447"
-          auth:
-            - aws-cli/setup:
-                region: "eu-west-2"
-          dockerfile: "Dockerfile"
-          extra_build_args: "--provenance=false --platform linux/amd64 --sbom=false"
-          path: "./lambdas/create_dataset_snapshot"
-          repo: "${CIRCLE_BRANCH}-create-snapshot-lambda-repo"
-          region: "eu-west-2"
+      - push-docker
 #      - test:
 #          filters:
 #            branches:
@@ -292,7 +302,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - aws-ecr/build_and_push_image
+            - push-docker
             - lint-terraform
       - terraform-apply:
           requires:

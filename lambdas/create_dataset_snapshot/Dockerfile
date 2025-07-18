@@ -5,11 +5,11 @@ FROM public.ecr.aws/lambda/python:3.11
 RUN dir -s
 WORKDIR /sfc_lambda
 
-COPY /lambdas/create_dataset_snapshot/requirements.txt  .
+COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target .
 
 # Copy function code
-COPY /lambdas/create_dataset_snapshot/lambda_function.py .
+COPY lambda_function.py .
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "lambda_function.lambda_handler" ]
