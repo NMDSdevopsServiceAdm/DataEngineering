@@ -263,15 +263,15 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - aws-ecr/build_and_push_image:
-          account_id: "344210435447"
-          auth:
-            - aws-cli/setup:
-                region: "eu-west-2"
-          dockerfile: "Dockerfile"
-          path: "./lambdas/create_dataset_snapshot"
-          repo: "create_dataset_snapshot"
-          region: "eu-west-2"
+#      - aws-ecr/build_and_push_image:
+#          account_id: "344210435447"
+#          auth:
+#            - aws-cli/setup:
+#                region: "eu-west-2"
+#          dockerfile: "Dockerfile"
+#          path: "./lambdas/create_dataset_snapshot"
+#          repo: "create_dataset_snapshot"
+#          region: "eu-west-2"
 #      - test:
 #          filters:
 #            branches:
