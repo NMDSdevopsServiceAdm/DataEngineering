@@ -269,7 +269,7 @@ workflows:
             - aws-cli/setup:
                 region: "eu-west-2"
           dockerfile: "Dockerfile"
-          path: "../lambdas/create_dataset_snapshot"
+          path: "./lambdas/create_dataset_snapshot"
           repo: "create_dataset_snapshot"
           region: "eu-west-2"
 #      - test:
