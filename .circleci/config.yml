@@ -131,7 +131,8 @@ jobs:
 #          name: install aws-cli
 #          command: |
 #            apk add --no-cache aws-cli
-      - aws-cli/setup
+      - aws-cli/setup:
+          region: AWS_REGION
       - run:
             name: Run an AWS CLI command
             command: |
