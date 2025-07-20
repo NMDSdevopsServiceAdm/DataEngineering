@@ -17,8 +17,8 @@ ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 
 def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str = ""):
-    start_dt = datetime.strptime(start, ISO_8601_FORMAT)
-    end_dt = datetime.strptime(end, ISO_8601_FORMAT)
+    start_dt = datetime.fromisoformat(start.replace("Z", ""))
+    end_dt = datetime.fromisoformat(end.replace("Z", ""))
 
     if start_dt > end_dt:
         raise ValueError("start_timestamp is after end_timestamp")
@@ -35,8 +35,8 @@ def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str 
         object_type="providers",
         organisation_type="provider",
         cqc_api_primary_key=cqc_api_primary_key_value,
-        start=start_dt.strftime(ISO_8601_FORMAT),
-        end=end_dt.strftime(ISO_8601_FORMAT),
+        start=f"{start_dt.isoformat(timespec='seconds')}Z",
+        end=f"{end_dt.isoformat(timespec='seconds')}Z",
     )
 
     df = spark.createDataFrame(generator, PROVIDER_SCHEMA)
