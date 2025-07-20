@@ -1,46 +1,45 @@
 import unittest
+from tempfile import TemporaryDirectory
 
-import projects._01_ingest.cqc_api.jobs.validate_providers_api_raw_delta_data as job
-
-from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    ValidateProvidersAPIRawData as Data,
-)
-from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
-    ValidateProvidersAPIRawData as Schemas,
-)
-
+import projects._01_ingest.cqc_api.jobs.delta_download_cqc_providers as job
 from utils import utils
 
 
-class ValidateProvidersAPIRawDatasetDeltaTests(unittest.TestCase):
-    TEST_RAW_CQC_PROVIDER_SOURCE = "some/directory"
-    TEST_DESTINATION = "some/other/other/directory"
+class MainTests(unittest.TestCase):
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
-        self.test_raw_cqc_provider_df = self.spark.createDataFrame(
-            Data.raw_cqc_providers_rows,
-            Schemas.raw_cqc_providers_schema,
-        )
+
 
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
 
-class MainTests(ValidateProvidersAPIRawDatasetDeltaTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
     def test_main(self):
+        with self.subTest("Known changes"):
+            # Given
+            known_changes_size = 3
+            start_time = "2025-06-02T08:00:00Z"
+            end_time = "2025-06-02T09:00:00Z"
+            
+            with TemporaryDirectory() as tempdir:
+                # When
+                job.main(f"{tempdir}/test.parquet", start_time, end_time)
+                result = self.spark.read.parquet(f"{tempdir}/test.parquet")
+                # Then
+                self.assertEqual(result.count(), known_changes_size)
 
-        job.main(
-            self.TEST_RAW_CQC_PROVIDER_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.subTest("Invalid dates"):
+            # Given
+            start_time = "2025-06-01T16:00:00Z"
+            end_time = "2025-06-01T00:00:00Z"
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
+            with TemporaryDirectory() as tempdir:
+                # Then
+                with self.assertRaises(ValueError):
+                    # When
+                    job.main(f"{tempdir}/test.parquet", start_time, end_time)
 
 
 if __name__ == "__main__":

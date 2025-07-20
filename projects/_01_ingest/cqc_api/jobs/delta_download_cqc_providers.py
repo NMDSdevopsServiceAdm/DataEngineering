@@ -13,12 +13,14 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 
 def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str = ""):
-    start_dt = datetime.strptime(start, "%Y-%m-%dT%H:%M:%S.%fZ")
-    end_dt = datetime.strptime(end, "%Y-%m-%dT%H:%M:%S.%fZ")
+    start_dt = datetime.strptime(start, ISO_8601_FORMAT)
+    end_dt = datetime.strptime(end, ISO_8601_FORMAT)
 
-    if start_dt > start_dt:
+    if start_dt > end_dt:
         raise ValueError("start_timestamp is after end_timestamp")
 
     spark = utils.get_spark()
@@ -33,8 +35,8 @@ def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str 
         object_type="providers",
         organisation_type="provider",
         cqc_api_primary_key=cqc_api_primary_key_value,
-        start=start_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        end=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        start=start_dt.strftime(ISO_8601_FORMAT),
+        end=end_dt.strftime(ISO_8601_FORMAT),
     )
 
     df = spark.createDataFrame(generator, PROVIDER_SCHEMA)
