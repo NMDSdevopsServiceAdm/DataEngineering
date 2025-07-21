@@ -259,7 +259,7 @@ workflows:
           name: check-updated-files
           mapping: |
             lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
-          base-revision: ${CIRCLE_BRANCH}
+          base-revision: main
 #      - test:
 #          filters:
 #            branches:
