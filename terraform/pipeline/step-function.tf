@@ -111,6 +111,7 @@ resource "aws_sfn_state_machine" "build_full_cqc_state_machine" {
   definition = templatefile("step-functions/BuildCQCDataset-StepFunction.json", {
     dataset_bucket_uri         = module.datasets_bucket.bucket_uri
     create_snapshot_lambda_arn = aws_lambda_function.create_snapshot_lambda.arn
+    image_tag                  = local.workspace_prefix
   })
 
   logging_configuration {
