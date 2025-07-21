@@ -90,9 +90,7 @@ class LocationApiTests(CqcApiIntegrationTests):
         # Then
         self.assertTrue(isinstance(result, Generator))
         for idx, change in enumerate(result, start=1):
-            self.assertTrue(
-                set(change.keys()).issuperset(self.example_object.keys())
-            )
+            self.assertTrue(set(change.keys()).issuperset(self.example_object.keys()))
             if result.__next__() is None:
                 self.assertEqual(idx, known_changes_size)
 

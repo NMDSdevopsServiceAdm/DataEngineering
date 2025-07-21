@@ -16,7 +16,7 @@ class MainTests(unittest.TestCase):
 
     def test_main_returns_expected_row_count(self):
         # Given
-        known_changes_size = 3. # manually verified number of changes for timeframe
+        known_changes_size = 3.0  # manually verified number of changes for timeframe
         start_time = "2025-06-02T08:00:00Z"
         end_time = "2025-06-02T09:00:00Z"
 
