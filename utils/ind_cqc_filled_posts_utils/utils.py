@@ -8,8 +8,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import (
     PrimaryServiceTypeSecondLevel as PSSL_values,
-    SpecialistGeneralistOther,
-    Specialisms,
 )
 from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
     CqcServiceToPrimaryServiceTypeSecondLevelLookup as PSSL_lookup,

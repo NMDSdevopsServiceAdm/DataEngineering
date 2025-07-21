@@ -65,6 +65,7 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.allocate_primary_service_type")
     @patch(f"{PATCH_PATH}.remove_specialist_colleges")
+    @patch(f"{PATCH_PATH}.classify_specialisms")
     @patch(f"{PATCH_PATH}.extract_from_struct")
     @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
@@ -95,6 +96,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         impute_missing_struct_column_mock: Mock,
         remove_locations_that_never_had_regulated_activities_mock: Mock,
         extract_from_struct_mock: Mock,
+        classify_specialisms_mock: Mock,
         remove_specialist_colleges_mock: Mock,
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
@@ -132,6 +134,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(impute_missing_struct_column_mock.call_count, 3)
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         self.assertEqual(extract_from_struct_mock.call_count, 2)
+        self.assertEqual(classify_specialisms_mock.call_count, 3)
         remove_specialist_colleges_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()

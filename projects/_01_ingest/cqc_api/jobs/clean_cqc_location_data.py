@@ -7,6 +7,7 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -25,6 +26,7 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     RelatedLocation,
     Services,
+    Specialisms
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -38,6 +40,9 @@ from utils.cqc_location_utils.extract_registered_manager_names import (
 from utils.raw_data_adjustments import remove_records_from_locations_data
 from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
 
+from projects._01_ingest.cqc_api.utils.utils import (
+    classify_specialisms,
+)
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -139,6 +144,21 @@ def main(
         registered_locations_df,
         registered_locations_df[CQCLClean.imputed_specialisms][CQCL.name],
         CQCLClean.specialisms_offered,
+    )
+    registered_locations_df = classify_specialisms(
+        registered_locations_df,
+        IndCQC.specialist_generalist_other_dementia,
+        Specialisms.dementia,
+    )
+    registered_locations_df = classify_specialisms(
+        registered_locations_df,
+        IndCQC.specialist_generalist_other_lda,
+        Specialisms.learning_disabilities,
+    )
+    registered_locations_df = classify_specialisms(
+        registered_locations_df,
+        IndCQC.specialist_generalist_other_mh,
+        Specialisms.mental_health,
     )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
     registered_locations_df = allocate_primary_service_type(registered_locations_df)

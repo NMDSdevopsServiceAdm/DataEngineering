@@ -17,6 +17,8 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
+    Specialisms,
+    SpecialistGeneralistOther,
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
@@ -3229,6 +3231,90 @@ class CQCLocationsData:
         ("1-001", date(2025, 9, 1), None, 4),
         ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
     ]
+    classify_specialisms_rows = [
+        (
+            "loc 1",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+        ),
+        ("loc 2", [Specialisms.dementia]),
+        ("loc 3", [Specialisms.mental_health]),
+        ("loc 4", [Specialisms.learning_disabilities]),
+        ("loc 5", [Specialisms.eating_disorders]),
+        (
+            "loc 6",
+            [
+                Specialisms.mental_health,
+                Specialisms.sensory_impairment,
+                Specialisms.children,
+            ],
+        ),
+        ("loc 7", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
+    ]
+
+    expected_classify_specialisms_rows = [
+        (
+            "loc 1",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+        ),
+        (
+            "loc 2",
+            [Specialisms.dementia],
+            SpecialistGeneralistOther.specialist,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 3",
+            [Specialisms.mental_health],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.specialist,
+        ),
+        (
+            "loc 4",
+            [Specialisms.learning_disabilities],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.specialist,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 5",
+            [Specialisms.eating_disorders],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 6",
+            [
+                Specialisms.mental_health,
+                Specialisms.sensory_impairment,
+                Specialisms.children,
+            ],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+        ),
+        (
+            "loc 7",
+            [Specialisms.learning_disabilities, Specialisms.sensory_impairment],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
+        ),
+    ]
+
 
 
 @dataclass
@@ -3418,3 +3504,5 @@ class ValidateProvidersAPICleanedData:
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows
+
+    

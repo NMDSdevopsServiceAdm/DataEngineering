@@ -1685,6 +1685,26 @@ class CQCLocationsSchema:
             StructField(CQCLClean.time_since_dormant, IntegerType(), True),
         ]
     )
+    classify_specialisms_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.specialisms_offered, ArrayType(StringType()), True),
+        ]
+    )
+    expected_classify_specialisms_schema = StructType(
+        [
+            *classify_specialisms_schema,
+            StructField(
+                CQCLClean.specialist_generalist_other_dementia, StringType(), True
+            ),
+            StructField(
+                CQCLClean.specialist_generalist_other_lda, StringType(), True
+            ),
+            StructField(
+                CQCLClean.specialist_generalist_other_mh, StringType(), True
+            ),
+        ]
+    )
 
 
 @dataclass
@@ -1977,3 +1997,5 @@ class ValidateProvidersAPICleanedData:
         ]
     )
     calculate_expected_size_schema = raw_cqc_providers_schema
+
+    

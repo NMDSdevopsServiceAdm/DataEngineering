@@ -3,13 +3,15 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
-
-import projects._03_independent_cqc._06_estimate_filled_posts.utils.utils as job
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    EstimatesFilledPostUtils as Data,
+from utils.column_values.categorical_column_values import (
+    Specialisms
 )
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    EstimatesFilledPostUtils as Schemas,
+import projects._01_ingest.cqc_api.utils.utils as job
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    CQCLocationsData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    CQCLocationsSchema as Schemas,
 )
 
 
@@ -24,8 +26,17 @@ class TestClassifySpecialisms(unittest.TestCase):
         returned_df = job.classify_specialisms(
             test_df,
             IndCQC.specialist_generalist_other_dementia,
+             Specialisms.dementia,
+        )
+        returned_df = job.classify_specialisms(
+            returned_df,
             IndCQC.specialist_generalist_other_lda,
+             Specialisms.learning_disabilities,
+        )
+        returned_df = job.classify_specialisms(
+            returned_df,
             IndCQC.specialist_generalist_other_mh,
+             Specialisms.mental_health,
         )
         expected_df = self.spark.createDataFrame(
             Data.expected_classify_specialisms_rows,

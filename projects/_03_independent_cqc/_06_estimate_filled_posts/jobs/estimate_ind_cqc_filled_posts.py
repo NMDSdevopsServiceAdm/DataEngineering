@@ -27,10 +27,6 @@ from utils.ind_cqc_filled_posts_utils.utils import (
     allocate_primary_service_type_second_level,
 )
 
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.utils import (
-    classify_specialisms,
-)
-
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
     IndCQC.location_id,
@@ -39,6 +35,9 @@ ind_cqc_columns = [
     IndCQC.provider_name,
     IndCQC.services_offered,
     IndCQC.specialisms_offered,
+    IndCQC.specialist_generalist_other_dementia,
+    IndCQC.specialist_generalist_other_lda,
+    IndCQC.specialist_generalist_other_mh,
     IndCQC.primary_service_type,
     IndCQC.care_home,
     IndCQC.dormancy,
@@ -185,13 +184,6 @@ def main(
 
     estimate_filled_posts_df = allocate_primary_service_type_second_level(
         estimate_filled_posts_df
-    )
-
-    estimate_filled_posts_df = classify_specialisms(
-        estimate_filled_posts_df,
-        IndCQC.specialist_generalist_other_dementia,
-        IndCQC.specialist_generalist_other_lda,
-        IndCQC.specialist_generalist_other_mh,
     )
 
     print(f"Exporting as parquet to {estimated_ind_cqc_destination}")
