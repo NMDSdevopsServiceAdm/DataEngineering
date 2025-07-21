@@ -111,8 +111,8 @@ jobs:
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
             
             # Push the image
-            docker tag latest ${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function
-            docker push ${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function
+            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
+            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
 
   lint-terraform:
     docker:
