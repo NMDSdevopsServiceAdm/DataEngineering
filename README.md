@@ -66,10 +66,8 @@ terraform fmt -recursive  # Terraform
 - [GUIDES.md](./GUIDES.md)
 - [CHANGELOG.md](./CHANGELOG.md)
 
-## Contact
-For questions, suggestions or feedback, please contact:
-📧 [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
-
 ## License
-This repository is published for transparency and public interest only.
-It is **not licensed for reuse**. Please contact [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk) if you wish to reuse or adapt this code.
+This repository is published for transparency and public interest only. It is **not licensed for reuse**.
+
+## Contact
+For questions, suggestions, feedback, or if you wish to reuse or adapt this code, please contact [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)

@@ -10,5 +10,4 @@
 
 ## Confluence Use
 - ADRs, decision logs, guidance not suitable for public GitHub
-- For access or more information, please contact:
-  📧 [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
+- For access or more information, please contact [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
