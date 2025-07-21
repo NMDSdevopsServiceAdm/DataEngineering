@@ -28,14 +28,14 @@ resource "aws_lambda_function" "error_notification_lambda" {
   }
 }
 
-resource "aws_lambda_function" "create_snapshot_lambda" {
-  role          = aws_iam_role.create_snapshot_lambda.arn
-  function_name = "${local.workspace_prefix}-create-full-snapshot"
-  package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}:latest"
-  memory_size   = 3072
-  timeout       = 60
-}
+# resource "aws_lambda_function" "create_snapshot_lambda" {
+#   role          = aws_iam_role.create_snapshot_lambda.arn
+#   function_name = "${local.workspace_prefix}-create-full-snapshot"
+#   package_type  = "Image"
+#   image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}:latest"
+#   memory_size   = 3072
+#   timeout       = 60
+# }
 
 data "aws_iam_policy_document" "error_notification_lambda_assume_role" {
   statement {

@@ -257,11 +257,11 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - path-filtering/filter:
-          name: check-updated-files
-          mapping: |
-            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
-          base-revision: main
+#      - path-filtering/filter:
+#          name: check-updated-files
+#          mapping: |
+#            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
+#          base-revision: main
 #      - test:
 #          filters:
 #            branches:
@@ -281,7 +281,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - check-updated-files
+#            - check-updated-files
             - lint-terraform
       - terraform-apply:
           requires:
