@@ -1,0 +1,70 @@
+version: 2.1
+
+parameters:
+  run-build-dataset-rebuild:
+    type: boolean
+    default: false
+  run-check-dataset-equality:
+    type: boolean
+    default: false
+
+orbs:
+  aws-s3: circleci/aws-s3@3.0
+  aws-cli: circleci/aws-cli@5.4.1
+  path-filtering: circleci/path-filtering@2.0.1
+
+jobs:
+  build-dataset-rebuild:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker Image
+          command: docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/create_dataset_snapshot
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Push Docker Image
+          command: |
+            # Authenticate Docker to ECR
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+
+            # Push the image
+            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+
+  build-check-equality:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Docker Image
+          command: docker buildx build  --platform linux/amd64 -t latest --no-cache --pull  lambdas/check_dataset_equality
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Push Docker Image
+          command: |
+            # Authenticate Docker to ECR
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+
+            # Push the image
+            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+            
+          
+
+workflows:
+  build:
+    jobs:
+      - build-dataset-rebuild:
+          << pipeline.parameters.run-build-dataset-rebuild >>
+      - build-check-equality:
+          when: << pipeline.parameters.run-check-dataset-equality >>
+

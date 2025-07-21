@@ -9,7 +9,7 @@
             "FunctionName": "${create_snapshot_lambda_arn}:${image_tag}",
             "Payload": {
                 "input_uri.$": "States.Format('{}/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', ${dataset_bucket_name}, States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                "output_uri.$": "${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/",
+                "output_uri.$": "States.Format('/full/domain=CQC/dataset=providers_api/version=3.0.0/', ${dataset_bucket_name}",
                 "snapshot_date.$": "$startDate"
             }
         },
