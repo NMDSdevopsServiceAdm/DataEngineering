@@ -104,7 +104,7 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
+resource "aws_sfn_state_machine" "build_full_cqc_state_machine" {
   name     = "${local.workspace_prefix}-Build-Full-CQC-Dataset"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
