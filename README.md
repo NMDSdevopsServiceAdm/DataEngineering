@@ -60,11 +60,12 @@ terraform fmt -recursive  # Terraform
 - For collaboration or more information, contact us at [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
 ## Further Reading
-- [SETUP.md](./SETUP.md)
-- [DEPLOY.md](./DEPLOY.md)
-- [NOTEBOOKS.md](./NOTEBOOKS.md)
-- [GUIDES.md](./GUIDES.md)
 - [CHANGELOG.md](./CHANGELOG.md)
+- [DEPLOY.md](./DEPLOY.md)
+- [GUIDES.md](./GUIDES.md)
+- [LICENSE.md](./LICENSE.md)
+- [NOTEBOOKS.md](./NOTEBOOKS.md)
+- [SETUP.md](./SETUP.md)
 
 ## License
 This repository is published for transparency and public interest only. It is **not licensed for reuse**.
