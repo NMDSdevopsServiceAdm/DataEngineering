@@ -26,7 +26,7 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     RelatedLocation,
     Services,
-    Specialisms
+    Specialisms,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,

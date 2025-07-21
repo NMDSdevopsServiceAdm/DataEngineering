@@ -3316,7 +3316,6 @@ class CQCLocationsData:
     ]
 
 
-
 @dataclass
 class CQCProviderData:
     sample_rows_full = [
@@ -3504,5 +3503,3 @@ class ValidateProvidersAPICleanedData:
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows
-
-    

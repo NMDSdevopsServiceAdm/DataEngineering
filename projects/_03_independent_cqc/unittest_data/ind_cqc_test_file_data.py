@@ -5099,4 +5099,3 @@ class DiagnosticsUtilsData:
         (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.imputed_posts_care_home_model, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     # fmt: on
-

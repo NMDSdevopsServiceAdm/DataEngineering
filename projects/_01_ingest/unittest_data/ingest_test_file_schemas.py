@@ -1697,12 +1697,8 @@ class CQCLocationsSchema:
             StructField(
                 CQCLClean.specialist_generalist_other_dementia, StringType(), True
             ),
-            StructField(
-                CQCLClean.specialist_generalist_other_lda, StringType(), True
-            ),
-            StructField(
-                CQCLClean.specialist_generalist_other_mh, StringType(), True
-            ),
+            StructField(CQCLClean.specialist_generalist_other_lda, StringType(), True),
+            StructField(CQCLClean.specialist_generalist_other_mh, StringType(), True),
         ]
     )
 
@@ -1997,5 +1993,3 @@ class ValidateProvidersAPICleanedData:
         ]
     )
     calculate_expected_size_schema = raw_cqc_providers_schema
-
-    
