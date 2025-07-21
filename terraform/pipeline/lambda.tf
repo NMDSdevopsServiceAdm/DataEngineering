@@ -30,8 +30,6 @@ resource "aws_lambda_function" "error_notification_lambda" {
 
 resource "aws_lambda_function" "create_snapshot_lambda" {
   role          = aws_iam_role.create_snapshot_lambda.arn
-  handler       = "create_snapshot.main"
-  runtime       = "python3.11"
   function_name = "${local.workspace_prefix}-create-full-snapshot"
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}:latest"
