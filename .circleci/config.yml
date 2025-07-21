@@ -264,7 +264,7 @@ workflows:
           name: check-updated-files
           mapping: |
             lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
-            lambdas/check_dataset_equality/.* run-check-dataset-equality true .circleci/check-dataset-equality-config.yml
+#            lambdas/check_dataset_equality/.* run-check-dataset-equality true .circleci/check-dataset-equality-config.yml
           base-revision: main
 #      - test:
 #          filters:
