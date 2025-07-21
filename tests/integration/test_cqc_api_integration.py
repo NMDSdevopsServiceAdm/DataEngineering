@@ -72,46 +72,45 @@ class LocationApiTests(CqcApiIntegrationTests):
             self.assertTrue(regex.match(location[CQCL.location_id]))
             self.assertIsNotNone(location[CQCL.provider_id])
 
-    def test_get_updated_objects(self):
-        with self.subTest("small-window"):
-            # Given
-            known_changes_size = 4
-            start_time = "2025-06-01T00:00:00Z"
-            end_time = "2025-06-01T16:00:00Z"
+    def test_get_updated_objects_known_quantity(self):
+        # Given
+        known_changes_size = 4  # manually verified number of changes for timeframe
+        start_time = "2025-06-01T00:00:00Z"
+        end_time = "2025-06-01T16:00:00Z"
 
-            # When
-            result = cqc.get_updated_objects(
-                self.object_type,
-                self.organisation_type,
-                self.cqc_api_primary_key,
-                start_time,
-                end_time,
-                per_page=10,
+        # When
+        result = cqc.get_updated_objects(
+            self.object_type,
+            self.organisation_type,
+            self.cqc_api_primary_key,
+            start_time,
+            end_time,
+            per_page=10,
+        )
+        # Then
+        self.assertTrue(isinstance(result, Generator))
+        for idx, change in enumerate(result, start=1):
+            self.assertTrue(
+                set(change.keys()).issuperset(self.example_object.keys())
             )
-            # Then
-            self.assertTrue(isinstance(result, Generator))
-            for idx, change in enumerate(result, start=1):
-                self.assertTrue(
-                    set(change.keys()).issuperset(self.example_object.keys())
-                )
-                if result.__next__() is None:
-                    self.assertEqual(idx, known_changes_size)
+            if result.__next__() is None:
+                self.assertEqual(idx, known_changes_size)
 
-        with self.subTest("zero-window"):
-            # Given
-            same_time = "2025-06-01T00:00:00Z"
+    def test_get_updated_objects_zero_time(self):
+        # Given
+        same_time = "2025-06-01T00:00:00Z"
 
-            # When
-            result = cqc.get_updated_objects(
-                self.object_type,
-                self.organisation_type,
-                self.cqc_api_primary_key,
-                same_time,
-                same_time,
-                per_page=10,
-            )
-            # Then
-            self.assertIsNone(next(result, None))
+        # When
+        result = cqc.get_updated_objects(
+            self.object_type,
+            self.organisation_type,
+            self.cqc_api_primary_key,
+            same_time,
+            same_time,
+            per_page=10,
+        )
+        # Then
+        self.assertIsNone(next(result, None))
 
 
 class ProviderApiTests(CqcApiIntegrationTests):

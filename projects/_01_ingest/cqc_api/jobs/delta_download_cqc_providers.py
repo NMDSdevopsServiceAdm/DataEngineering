@@ -3,12 +3,13 @@ from datetime import date, datetime
 import logging
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
+
+from schemas.cqc_provider_schema import PROVIDER_SCHEMA
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
