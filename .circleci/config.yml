@@ -100,19 +100,14 @@ jobs:
       - aws-cli/setup:
           region: "eu-west-2"
       - run:
-          name: Run an AWS CLI command
-          command: |
-            aws s3 ls
-            aws sts get-caller-identity
-      - run:
           name: Push Docker Image
           command: |
             # Authenticate Docker to ECR
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
             
             # Push the image
-            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
-            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo/lambda_function:latest
+            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo:latest
+            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo:latest
 
   lint-terraform:
     docker:
