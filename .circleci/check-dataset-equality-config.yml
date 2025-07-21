@@ -20,7 +20,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Build Docker Image
-          command: docker buildx build  --platform linux/amd64 -t latest  lambdas/check_dataset_equality
+          command: docker buildx build  --platform linux/amd64 -t latest --no-cache --pull  lambdas/check_dataset_equality
       - aws-cli/setup:
           region: "eu-west-2"
       - run:
