@@ -30,6 +30,6 @@ jobs:
 
 workflows:
   build:
+    when: << pipeline.parameters.run-build-dataset-rebuild >>
     jobs:
-      - build-dataset-rebuild:
-          when: << pipeline.parameters.run-build-dataset-rebuild >>
+      - build-dataset-rebuild

@@ -30,6 +30,6 @@ jobs:
 
 workflows:
   build:
+    when: << pipeline.parameters.run-check-dataset-equality >>
     jobs:
-      - build-check-equality:
-          when: << pipeline.parameters.run-check-dataset-equality >>
+      - build-check-equality
