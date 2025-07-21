@@ -97,6 +97,13 @@ jobs:
       - run:
           name: Build Docker Image
           command: docker buildx build  --platform linux/amd64  lambdas/create_dataset_snapshot
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Run an AWS CLI command
+          command: |
+            aws s3 ls
+            aws sts get-caller-identity
       - run:
           name: Push Docker Image
           command: |
@@ -150,14 +157,6 @@ jobs:
 #          name: install aws-cli
 #          command: |
 #            apk add --no-cache aws-cli
-      - aws-cli/setup:
-          region: "eu-west-2"
-      - run:
-            name: Run an AWS CLI command
-            command: |
-              aws s3 ls
-              aws sts get-caller-identity
-
       - attach_workspace:
           at: .
 
