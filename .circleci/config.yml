@@ -279,7 +279,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - path-filtering/filter
+            - check-updated-files
             - lint-terraform
       - terraform-apply:
           requires:
