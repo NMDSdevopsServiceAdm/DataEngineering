@@ -13,14 +13,16 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  run-build-dataset-rebuild:
+    type: boolean
+    default: false
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
-  aws-ecr: circleci/aws-ecr@9.5.4
+  path-filtering: circleci/path-filtering@1
 
 jobs:
-
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -61,6 +63,7 @@ jobs:
             pipenv run python -m unittest discover tests/integration
 
 
+
   lint-python:
     docker:
       - image: circleci/python:3.9.6
@@ -87,28 +90,6 @@ jobs:
           name: Check docstring fomatting
           command: pydoclint --style=google --quiet .
 
-  push-docker:
-    docker:
-      - image: docker:latest
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - run:
-          name: Build Docker Image
-          command: docker buildx build  --platform linux/amd64 -t latest  lambdas/create_dataset_snapshot
-      - aws-cli/setup:
-          region: "eu-west-2"
-      - run:
-          name: Push Docker Image
-          command: |
-            # Authenticate Docker to ECR
-            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
-            
-            # Push the image
-            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo:latest
-            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/${CIRCLE_BRANCH}-create-snapshot-lambda-repo:latest
-
   lint-terraform:
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
@@ -118,7 +99,6 @@ jobs:
       - run:
           name: Check terraform fomatting
           command: terraform fmt -check -recursive -diff
-
 
   terraform-plan:
     working_directory: /tmp/project
@@ -149,10 +129,6 @@ jobs:
     resource_class: small
     steps:
       - checkout
-#      - run:
-#          name: install aws-cli
-#          command: |
-#            apk add --no-cache aws-cli
       - attach_workspace:
           at: .
 
@@ -250,8 +226,10 @@ jobs:
             terraform workspace select default
             terraform workspace delete << pipeline.parameters.GHA_Meta >>
 
+
 workflows:
   version: 2
+
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -277,7 +255,11 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - push-docker
+      - path-filtering/filter:
+          name: check-updated-files
+          mapping: |
+            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
+          base-revision: ${CIRCLE_BRANCH}
 #      - test:
 #          filters:
 #            branches:
@@ -297,7 +279,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - push-docker
+            - path-filtering/filter
             - lint-terraform
       - terraform-apply:
           requires:
