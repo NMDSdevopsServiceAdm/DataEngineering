@@ -103,6 +103,8 @@ def main(input_uri, output_uri, snapshot_date):
         timepoint=date_int,
     )
 
+    logger.debug("Snapshot df has been read in")
+
     fs = s3fs.S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
         snapshot_df.write_parquet(destination, compression="snappy")

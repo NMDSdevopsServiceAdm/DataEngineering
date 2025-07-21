@@ -21,7 +21,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Build Docker Image
-          command: docker buildx build  --platform linux/amd64 -t latest  lambdas/create_dataset_snapshot
+          command: docker buildx build  --platform linux/amd64 -t latest lambdas/create_dataset_snapshot
       - aws-cli/setup:
           region: "eu-west-2"
       - run:
