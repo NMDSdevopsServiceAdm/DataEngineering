@@ -1,3 +1,5 @@
+import logging
+
 from re import match
 from typing import Optional, Generator
 from datetime import datetime
@@ -6,6 +8,10 @@ import polars as pl
 import s3fs
 
 # from raw_providers_schema import raw_providers_schema
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def build_snapshot_table_from_delta(
@@ -26,7 +32,7 @@ def build_snapshot_table_from_delta(
         if snapshot.item(1, "import_date") == timepoint:
             return snapshot
         else:
-            print(snapshot.item(1, "import_date"))
+            logger.debug(snapshot.item(1, "import_date"))
     else:
         return None
 
@@ -86,10 +92,10 @@ def main(input_uri, output_uri, snapshot_date):
     date_int = int(
         datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
     )
-    print(
+    logger.debug(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
-    print(f"{date_int=}")
+    logger.debug(f"{date_int=}")
 
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
@@ -104,3 +110,6 @@ def main(input_uri, output_uri, snapshot_date):
 
 def lambda_handler(event, context):
     main(event["input_uri"], event["output_uri"], event["snapshot_date"])
+    logger.info(
+        f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
+    )

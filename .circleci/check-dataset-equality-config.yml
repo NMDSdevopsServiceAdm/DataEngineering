@@ -1,12 +1,12 @@
 version: 2.1
 
 parameters:
-  run-build-dataset-rebuild:
+  run-check-dataset-equality:
     type: boolean
     default: false
 
 jobs:
-  build-dataset-rebuild:
+  build-check-equality:
     docker:
       - image: docker:latest
     steps:
@@ -15,7 +15,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Build Docker Image
-          command: docker buildx build  --platform linux/amd64 -t latest  lambdas/create_dataset_snapshot
+          command: docker buildx build  --platform linux/amd64 -t latest  lambdas/check_dataset_equality
       - aws-cli/setup:
           region: "eu-west-2"
       - run:
@@ -25,11 +25,11 @@ jobs:
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
 
             # Push the image
-            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
-            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+            docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-dataset-equality-repo:${CIRCLE_BRANCH}
+            docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-dataset-equality-repo:${CIRCLE_BRANCH}
 
 workflows:
   build:
     jobs:
-      - build-dataset-rebuild:
-          when: << pipeline.parameters.run-build-dataset-rebuild >>
+      - build-check-equality:
+          when: << pipeline.parameters.run-check-dataset-equality >>
