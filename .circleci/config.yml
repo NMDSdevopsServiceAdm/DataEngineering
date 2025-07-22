@@ -263,9 +263,10 @@ workflows:
       - path-filtering/filter:
           name: check-containers-updated
           mapping: |
-            lambdas/check_dataset_equality/.* run-check-dataset-equality true .circleci/build-check-dataset-equality-config.yml
-            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
+            lambdas/check_dataset_equality/.* run-check-dataset-equality true 
+            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true
           base-revision: main
+          config-path: .circleci/build-container-config.yml
 #      - test:
 #          filters:
 #            branches:
