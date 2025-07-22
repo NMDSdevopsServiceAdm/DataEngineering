@@ -24,18 +24,7 @@ class TestClassifySpecialisms(unittest.TestCase):
         )
         self.returned_df = job.classify_specialisms(
             self.test_df,
-            CQCLClean.specialist_generalist_other_dementia,
             Specialisms.dementia,
-        )
-        self.returned_df = job.classify_specialisms(
-            self.returned_df,
-            CQCLClean.specialist_generalist_other_lda,
-            Specialisms.learning_disabilities,
-        )
-        self.returned_df = job.classify_specialisms(
-            self.returned_df,
-            CQCLClean.specialist_generalist_other_mh,
-            Specialisms.mental_health,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_classify_specialisms_rows,

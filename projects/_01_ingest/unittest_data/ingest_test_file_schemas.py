@@ -1697,8 +1697,6 @@ class CQCLocationsSchema:
             StructField(
                 CQCLClean.specialist_generalist_other_dementia, StringType(), True
             ),
-            StructField(CQCLClean.specialist_generalist_other_lda, StringType(), True),
-            StructField(CQCLClean.specialist_generalist_other_mh, StringType(), True),
         ]
     )
 

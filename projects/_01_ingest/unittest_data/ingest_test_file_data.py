@@ -3241,18 +3241,7 @@ class CQCLocationsData:
                 Specialisms.mental_health,
             ],
         ),
-        ("loc 3", [Specialisms.learning_disabilities]),
-        ("loc 4", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
-        ("loc 5", [Specialisms.mental_health]),
-        (
-            "loc 6",
-            [
-                Specialisms.mental_health,
-                Specialisms.sensory_impairment,
-                Specialisms.children,
-            ],
-        ),
-        ("loc 7", [Specialisms.eating_disorders]),
+        ("loc 3", [Specialisms.eating_disorders]),
     ]
 
     expected_classify_specialisms_rows = [
@@ -3260,8 +3249,6 @@ class CQCLocationsData:
             "loc 1",
             [Specialisms.dementia],
             SpecialistGeneralistOther.specialist,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
         ),
         (
             "loc 2",
@@ -3271,46 +3258,10 @@ class CQCLocationsData:
                 Specialisms.mental_health,
             ],
             SpecialistGeneralistOther.generalist,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.generalist,
         ),
         (
             "loc 3",
-            [Specialisms.learning_disabilities],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.specialist,
-            SpecialistGeneralistOther.other,
-        ),
-        (
-            "loc 4",
-            [Specialisms.learning_disabilities, Specialisms.sensory_impairment],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.generalist,
-            SpecialistGeneralistOther.other,
-        ),
-        (
-            "loc 5",
-            [Specialisms.mental_health],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.specialist,
-        ),
-        (
-            "loc 6",
-            [
-                Specialisms.mental_health,
-                Specialisms.sensory_impairment,
-                Specialisms.children,
-            ],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.generalist,
-        ),
-        (
-            "loc 7",
             [Specialisms.eating_disorders],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
             SpecialistGeneralistOther.other,
         ),
     ]

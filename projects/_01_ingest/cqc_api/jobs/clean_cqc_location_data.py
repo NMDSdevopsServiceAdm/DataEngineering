@@ -145,17 +145,14 @@ def main(
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        CQCLClean.specialist_generalist_other_dementia,
         Specialisms.dementia,
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        CQCLClean.specialist_generalist_other_lda,
         Specialisms.learning_disabilities,
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        CQCLClean.specialist_generalist_other_mh,
         Specialisms.mental_health,
     )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
