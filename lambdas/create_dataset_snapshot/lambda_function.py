@@ -1,3 +1,4 @@
+import json
 import logging
 
 from re import match
@@ -11,7 +12,7 @@ import s3fs
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 def build_snapshot_table_from_delta(
@@ -111,6 +112,7 @@ def main(input_uri, output_uri, snapshot_date):
 
 
 def lambda_handler(event, context):
+    logger.debug("Received event: " + json.dumps(event, indent=2))
     main(event["input_uri"], event["output_uri"], event["snapshot_date"])
     logger.info(
         f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
