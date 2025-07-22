@@ -260,13 +260,13 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - path-filtering/filter:
-          name: check-containers-updated
-          mapping: |
-            lambdas/check_dataset_equality/.* run-check-dataset-equality true 
-            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true
-          base-revision: main
-          config-path: .circleci/build-container-config.yml
+#      - path-filtering/filter:
+#          name: check-containers-updated
+#          mapping: |
+#            lambdas/check_dataset_equality/.* run-check-dataset-equality true
+#            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true
+#          base-revision: main
+#          config-path: .circleci/build-container-config.yml
 #      - test:
 #          filters:
 #            branches:
@@ -286,7 +286,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - check-containers-updated
+#            - check-containers-updated
             - lint-terraform
       - terraform-apply:
           requires:
