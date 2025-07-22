@@ -7,7 +7,6 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -146,17 +145,17 @@ def main(
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        IndCQC.specialist_generalist_other_dementia,
+        CQCLClean.specialist_generalist_other_dementia,
         Specialisms.dementia,
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        IndCQC.specialist_generalist_other_lda,
+        CQCLClean.specialist_generalist_other_lda,
         Specialisms.learning_disabilities,
     )
     registered_locations_df = classify_specialisms(
         registered_locations_df,
-        IndCQC.specialist_generalist_other_mh,
+        CQCLClean.specialist_generalist_other_mh,
         Specialisms.mental_health,
     )
     registered_locations_df = remove_specialist_colleges(registered_locations_df)
