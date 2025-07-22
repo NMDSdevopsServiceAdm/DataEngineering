@@ -15,7 +15,7 @@ from utils import utils
 
 
 class ValidateLocationsAPIRawDatasetDeltaTests(unittest.TestCase):
-    TEST_RAW_CQC_PROVIDER_SOURCE = "some/directory"
+    TEST_RAW_CQC_LOCATION_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/other/directory"
 
     def setUp(self) -> None:
@@ -43,14 +43,14 @@ class MainTests(ValidateLocationsAPIRawDatasetDeltaTests):
     ):
         read_from_parquet_patch.return_value = self.test_raw_cqc_location_df
 
-        job.main(
-            self.TEST_RAW_CQC_PROVIDER_SOURCE,
-            self.TEST_DESTINATION,
-        )
+        with self.assertRaises(ValueError):
+            job.main(
+                self.TEST_RAW_CQC_LOCATION_SOURCE,
+                self.TEST_DESTINATION,
+            )
 
-        self.assertEqual(read_from_parquet_patch.call_count, 1)
-        self.assertEqual(write_to_parquet_patch.call_count, 1)
-
+            self.assertEqual(read_from_parquet_patch.call_count, 1)
+            self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
