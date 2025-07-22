@@ -4,7 +4,7 @@
     "States": {
         "BuildDataset": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Resource": "arn:aws:states:::lambda:invoke",
             "Parameters": {
                 "FunctionName": "${create_snapshot_lambda_arn}",
                 "Payload": {
@@ -17,7 +17,7 @@
         },
         "CheckEquality": {
             "Type": "Task",
-            "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+            "Resource": "arn:aws:states:::lambda:invoke",
             "Parameters": {
                 "FunctionName": "${check_equal_lambda_arn}",
                 "Payload": {
