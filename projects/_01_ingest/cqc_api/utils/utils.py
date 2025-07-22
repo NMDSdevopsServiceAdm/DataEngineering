@@ -15,11 +15,11 @@ def classify_specialisms(
     Classifies the specialisms offered and creates a new column for that specialism to indicate if it's specialist/generalist/other
 
     Args:
-    df (DataFrame): CQC registered locations DataFrame with the specialisms offered column.
-    specialism (str): Unique specialism name we want to create new column for.
+        df (DataFrame): CQC registered locations DataFrame with the specialisms offered column.
+        specialism (str): Unique specialism name we want to create new column for.
 
     Returns:
-    DataFrame: Updated dataFrame with new column for specified specialism
+        DataFrame: Updated dataFrame with new column for specified specialism
 
     """
     new_column_name: str = f"specialist_generalist_other_{specialism}"
