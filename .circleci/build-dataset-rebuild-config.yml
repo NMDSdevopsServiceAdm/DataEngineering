@@ -4,9 +4,6 @@ parameters:
   run-build-dataset-rebuild:
     type: boolean
     default: false
-  run-check-dataset-equality:
-    type: boolean
-    default: false
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
@@ -40,5 +37,5 @@ jobs:
 workflows:
   build:
     jobs:
-        - build-dataset-rebuild:
-            << pipeline.parameters.run-build-dataset-rebuild >>
+    - build-dataset-rebuild:
+        when: << pipeline.parameters.run-build-dataset-rebuild >>

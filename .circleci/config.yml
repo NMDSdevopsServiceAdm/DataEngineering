@@ -263,12 +263,8 @@ workflows:
       - path-filtering/filter:
           name: check-dataset-rebuild-updated
           mapping: |
-            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
-          base-revision: main
-      - path-filtering/filter:
-          name: check-dataset-equality-updated
-          mapping: |
             lambdas/check_dataset_equality/.* run-check-dataset-equality true .circleci/build-check-dataset-equality-config.yml
+            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
           base-revision: main
 #      - test:
 #          filters:
