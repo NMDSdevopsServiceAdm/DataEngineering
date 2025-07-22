@@ -13,6 +13,9 @@ def classify_specialisms(
 ) -> DataFrame:
     """
     Classifies the specialisms offered and creates a new column for that specialism to indicate if it's specialist/generalist/other
+    Specialist - when the named specialism is the only one offered by the location.
+    Generalist - when the named specialism is offered alongside others.
+    Other - the named specialism is not offered.
 
     Args:
         df (DataFrame): CQC registered locations DataFrame with the specialisms offered column.
