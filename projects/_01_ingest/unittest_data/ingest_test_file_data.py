@@ -3239,7 +3239,7 @@ class CQCLocationsData:
                 Specialisms.dementia,
                 Specialisms.eating_disorders,
                 Specialisms.mental_health,
-            ]
+            ],
         ),
         ("loc 3", [Specialisms.learning_disabilities]),
         ("loc 4", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
@@ -3250,7 +3250,7 @@ class CQCLocationsData:
                 Specialisms.mental_health,
                 Specialisms.sensory_impairment,
                 Specialisms.children,
-            ]
+            ],
         ),
         ("loc 7", [Specialisms.eating_disorders]),
     ]
