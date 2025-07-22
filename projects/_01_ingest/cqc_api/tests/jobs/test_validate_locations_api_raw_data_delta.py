@@ -52,5 +52,6 @@ class MainTests(ValidateLocationsAPIRawDatasetDeltaTests):
             self.assertEqual(read_from_parquet_patch.call_count, 1)
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
+
 if __name__ == "__main__":
     unittest.main(warnings="ignore")
