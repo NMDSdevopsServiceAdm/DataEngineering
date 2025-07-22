@@ -62,7 +62,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-                "JobName": "${delta_cqc_providers_download_job_name}",
+                "JobName": "${delta_cqc_locations_download_job_name}",
                 "Arguments": {
                   "--destination_prefix": "${dataset_bucket_uri}",
                   "--start_timestamp.$": "$startDate",
