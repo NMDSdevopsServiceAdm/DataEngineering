@@ -61,7 +61,7 @@ def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, No
     ):
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
         date = match(date_pattern, f"{import_date[0]}")
-
+        logger.debug(f"Importing date: {import_date[0]}")
         if import_date[0] == 20130301:
             previous_ss = delta_data
         else:
