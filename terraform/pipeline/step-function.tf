@@ -113,7 +113,6 @@ resource "aws_sfn_state_machine" "build_full_cqc_state_machine" {
     dataset_bucket_name        = module.datasets_bucket.bucket_name
     create_snapshot_lambda_arn = aws_lambda_function.create_snapshot_lambda.arn
     check_equal_lambda_arn     = aws_lambda_function.check_datasets_equal.arn
-    image_tag                  = local.workspace_prefix
   })
 
   logging_configuration {
