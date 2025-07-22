@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.11
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
 RUN dir -s
-WORKDIR /sfc_lambda
+#WORKDIR /sfc_lambda
 
 COPY requirements.txt  .
 RUN  pip3 install -r requirements.txt --target .
