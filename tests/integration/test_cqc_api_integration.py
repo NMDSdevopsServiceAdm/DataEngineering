@@ -27,6 +27,7 @@ class CqcApiIntegrationTests(unittest.TestCase):
         self.page = 1
 
 
+# @unittest.skip("API server issue")
 class LocationApiTests(CqcApiIntegrationTests):
     def setUp(self) -> None:
         super().setUp()
@@ -111,6 +112,7 @@ class LocationApiTests(CqcApiIntegrationTests):
         self.assertIsNone(next(result, None))
 
 
+# @unittest.skip("API server issue")
 class ProviderApiTests(CqcApiIntegrationTests):
     def setUp(self) -> None:
         super().setUp()

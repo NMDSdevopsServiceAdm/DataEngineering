@@ -17,16 +17,17 @@ class MainTests(unittest.TestCase):
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
 
-
     @patch(f"{PATCH_PATH}.ars.get_secret")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
-    def test_main_returns_expected_row_count(self, mock_get_updated_objects, mock_get_secret):
+    def test_main_returns_expected_row_count(
+        self, mock_get_updated_objects, mock_get_secret
+    ):
         # Given
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "test"}'
         mock_get_updated_objects.return_value = [
             {"providerId": 1},
             {"providerId": 2},
-            {"providerId": 3}
+            {"providerId": 3},
         ]
         start_time = "2025-06-02T08:00:00Z"
         end_time = "2025-06-02T09:00:00Z"
