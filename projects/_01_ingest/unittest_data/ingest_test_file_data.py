@@ -3232,32 +3232,39 @@ class CQCLocationsData:
         ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
     ]
     classify_specialisms_rows = [
+        ("loc 1", [Specialisms.dementia]),
         (
-            "loc 1",
+            "loc 2",
             [
                 Specialisms.dementia,
                 Specialisms.eating_disorders,
                 Specialisms.mental_health,
-            ],
+            ]
         ),
-        ("loc 2", [Specialisms.dementia]),
-        ("loc 3", [Specialisms.mental_health]),
-        ("loc 4", [Specialisms.learning_disabilities]),
-        ("loc 5", [Specialisms.eating_disorders]),
+        ("loc 3", [Specialisms.learning_disabilities]),
+        ("loc 4", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
+        ("loc 5", [Specialisms.mental_health]),
         (
             "loc 6",
             [
                 Specialisms.mental_health,
                 Specialisms.sensory_impairment,
                 Specialisms.children,
-            ],
+            ]
         ),
-        ("loc 7", [Specialisms.learning_disabilities, Specialisms.sensory_impairment]),
+        ("loc 7", [Specialisms.eating_disorders]),
     ]
 
     expected_classify_specialisms_rows = [
         (
             "loc 1",
+            [Specialisms.dementia],
+            SpecialistGeneralistOther.specialist,
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.other,
+        ),
+        (
+            "loc 2",
             [
                 Specialisms.dementia,
                 Specialisms.eating_disorders,
@@ -3268,32 +3275,25 @@ class CQCLocationsData:
             SpecialistGeneralistOther.generalist,
         ),
         (
-            "loc 2",
-            [Specialisms.dementia],
-            SpecialistGeneralistOther.specialist,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
-        ),
-        (
             "loc 3",
-            [Specialisms.mental_health],
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.specialist,
-        ),
-        (
-            "loc 4",
             [Specialisms.learning_disabilities],
             SpecialistGeneralistOther.other,
             SpecialistGeneralistOther.specialist,
             SpecialistGeneralistOther.other,
         ),
         (
+            "loc 4",
+            [Specialisms.learning_disabilities, Specialisms.sensory_impairment],
+            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
+        ),
+        (
             "loc 5",
-            [Specialisms.eating_disorders],
+            [Specialisms.mental_health],
             SpecialistGeneralistOther.other,
             SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.other,
+            SpecialistGeneralistOther.specialist,
         ),
         (
             "loc 6",
@@ -3308,9 +3308,9 @@ class CQCLocationsData:
         ),
         (
             "loc 7",
-            [Specialisms.learning_disabilities, Specialisms.sensory_impairment],
+            [Specialisms.eating_disorders],
             SpecialistGeneralistOther.other,
-            SpecialistGeneralistOther.generalist,
+            SpecialistGeneralistOther.other,
             SpecialistGeneralistOther.other,
         ),
     ]
