@@ -1,7 +1,7 @@
 {
-  "StartAt": "DeltaDownloadFromCQCApi",
+  "StartAt": "DeltaDownloadFromCqcApi",
   "States": {
-    "DeltaDownloadFromCQCApi": {
+    "DeltaDownloadFromCqcApi": {
       "Type": "Parallel",
       "Branches": [
         {
