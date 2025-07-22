@@ -261,7 +261,7 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - path-filtering/filter:
-          name: check-dataset-rebuild-updated
+          name: check-containers-updated
           mapping: |
             lambdas/check_dataset_equality/.* run-check-dataset-equality true .circleci/build-check-dataset-equality-config.yml
             lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true .circleci/build-dataset-rebuild-config.yml
@@ -285,8 +285,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-            - check-dataset-rebuild-updated
-            - check-dataset-equality-updated
+            - check-containers-updated
             - lint-terraform
       - terraform-apply:
           requires:
