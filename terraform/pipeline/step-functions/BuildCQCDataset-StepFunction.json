@@ -23,7 +23,7 @@
                 "Payload": {
                     "left.$": "States.Format('${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                     "right.$": "States.Format('sfc-main-datasets/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                    "drop_cols.$": "States.Format('{}.', 'mainPhoneNumber')"
+                    "drop_cols": "mainPhoneNumber"
                 }
             },
             "End": true
