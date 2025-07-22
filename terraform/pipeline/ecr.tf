@@ -17,13 +17,13 @@ resource "aws_ecr_repository" "check_datasets_equal" {
   }
 }
 
-# # Get the latest image digests for this branch
-# data "aws_ecr_image" "create_dataset_snapshot" {
-#   repository_name = aws_ecr_repository.create_dataset_snapshot.name
-#   image_tag       = "latest"
-# }
-#
-# data "aws_ecr_image" "check_datasets_equal" {
-#   repository_name = aws_ecr_repository.check_datasets_equal.name
-#   image_tag       = "latest"
-# }
+# Get the latest image digests for this branch
+data "aws_ecr_image" "create_dataset_snapshot" {
+  repository_name = aws_ecr_repository.create_dataset_snapshot.name
+  image_tag       = local.workspace_prefix
+}
+
+data "aws_ecr_image" "check_datasets_equal" {
+  repository_name = aws_ecr_repository.check_datasets_equal.name
+  image_tag       = local.workspace_prefix
+}
