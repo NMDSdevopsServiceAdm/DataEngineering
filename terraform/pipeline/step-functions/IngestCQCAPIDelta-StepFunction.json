@@ -1,34 +1,80 @@
 {
-  "StartAt": "GetLatestSuccessfulGlueJobRun",
+  "StartAt": "DeltaDownloadFromCQCApi",
   "States": {
-    "GetLatestSuccessfulGlueJobRun": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
-      "Parameters": {
-        "JobName": "${bulk_cqc_providers_download_job_name}"
-      },
-      "Next": "GetLatestSuccessRun"
-    },
-    "GetLatestSuccessRun": {
-      "Type": "Pass",
-      "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
-      "Assign": {
-        "startDate.$": "States.ArrayGetItem($, 0)"
-      },
-      "Next": "RunDeltaCqcProvidersDownloadJob"
-    },
-    "RunDeltaCqcProvidersDownloadJob": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-      "Parameters": {
-        "JobName": "${delta_cqc_providers_download_job_name}",
-        "Arguments": {
-          "--destination_prefix": "${dataset_bucket_uri}",
-          "--start_timestamp.$": "$startDate",
-          "--end_timestamp.$": "$$.State.EnteredTime",
-          "--additional-python-modules": "ratelimit==2.2.1,"
+    "DeltaDownloadFromCQCApi": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "GetProvidersJobRuns",
+          "States": {
+            "GetProvidersJobRuns": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+              "Parameters": {
+                "JobName": "${bulk_cqc_providers_download_job_name}"
+              },
+              "Next": "GetLastProvidersRun"
+            },
+            "GetLastProvidersRun": {
+              "Type": "Pass",
+              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
+              "Assign": {
+                "startDate.$": "States.ArrayGetItem($, 0)"
+              },
+              "Next": "RunDeltaCqcProvidersDownloadJob"
+            },
+            "RunDeltaCqcProvidersDownloadJob": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${delta_cqc_providers_download_job_name}",
+                "Arguments": {
+                  "--destination_prefix": "${dataset_bucket_uri}",
+                  "--start_timestamp.$": "$startDate",
+                  "--end_timestamp.$": "$$.State.EnteredTime",
+                  "--additional-python-modules": "ratelimit==2.2.1,"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "GetLocationsJobRuns",
+          "States": {
+            "GetLocationsJobRuns": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+              "Parameters": {
+                "JobName": "${bulk_cqc_locations_download_job_name}"
+              },
+              "Next": "GetLastLocationsRun"
+            },
+            "GetLastLocationsRun": {
+              "Type": "Pass",
+              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
+              "Assign": {
+                "startDate.$": "States.ArrayGetItem($, 0)"
+              },
+              "Next": "RunDeltaCqcLocationsDownloadJob"
+            },
+            "RunDeltaCqcLocationsDownloadJob": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${delta_cqc_providers_download_job_name}",
+                "Arguments": {
+                  "--destination_prefix": "${dataset_bucket_uri}",
+                  "--start_timestamp.$": "$startDate",
+                  "--end_timestamp.$": "$$.State.EnteredTime",
+                  "--additional-python-modules": "ratelimit==2.2.1,"
+                }
+              },
+              "End": true
+            }
+          }
         }
-      },
+      ],
       "Next": "BronzeValidation"
     },
     "BronzeValidation": {

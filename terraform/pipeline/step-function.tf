@@ -112,6 +112,8 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
     bulk_cqc_providers_download_job_name      = "main-bulk_download_cqc_providers_job"
     delta_cqc_providers_download_job_name     = module.delta_cqc_providers_download_job.job_name
+    bulk_cqc_locations_download_job_name      = "main-bulk_download_cqc_locations_job"
+    delta_cqc_locations_download_job_name     = module.delta_cqc_locations_download_job.job_name
     delta_bronze_validation_state_machine_arn = aws_sfn_state_machine.delta_bronze_validation_state_machine.arn
   })
 
@@ -313,6 +315,7 @@ resource "aws_sfn_state_machine" "delta_bronze_validation_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/ValidationBronzeDelta-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
+    validate_locations_api_raw_delta_data_job_name = module.validate_locations_api_raw_delta_data_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
   })
 
