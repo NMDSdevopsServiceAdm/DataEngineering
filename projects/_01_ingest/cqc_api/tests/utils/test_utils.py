@@ -41,10 +41,8 @@ class TestClassifySpecialisms(unittest.TestCase):
             IndCQC.specialist_generalist_other_mh,
             Specialisms.mental_health,
         )
-        returned_df.show()
         expected_df = self.spark.createDataFrame(
             Data.expected_classify_specialisms_rows,
             Schemas.expected_classify_specialisms_schema,
         )
-        expected_df.show()
         self.assertEqual(returned_df.collect(), expected_df.collect())
