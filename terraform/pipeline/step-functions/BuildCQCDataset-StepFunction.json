@@ -18,7 +18,7 @@
         "CheckEquality": {
             "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
             "Parameters": {
-                "FunctionName": "${check_datasets_equal}:${image_tag}",
+                "FunctionName": "${check_equal_lambda_arn}:${image_tag}",
                 "Payload": {
                     "left.$": "States.Format('${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                     "right.$": "States.Format('sfc-main-datasets/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
