@@ -226,7 +226,7 @@ class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
             )
 
 
-class InvalidPostCodesTests(PostcodeMatcherTests):
+class AmendInvalidPostcodesTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
