@@ -16,6 +16,7 @@
             "Next": "CheckEquality"
         },
         "CheckEquality": {
+            "Type": "Task",
             "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
             "Parameters": {
                 "FunctionName": "${check_equal_lambda_arn}:${image_tag}",

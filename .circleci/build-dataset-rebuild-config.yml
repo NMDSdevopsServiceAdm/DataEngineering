@@ -10,6 +10,7 @@ orbs:
   aws-cli: circleci/aws-cli@5.4.1
   path-filtering: circleci/path-filtering@2.0.1
 
+
 jobs:
   build-dataset-rebuild:
     docker:
@@ -33,9 +34,8 @@ jobs:
             docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
             docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
 
-
 workflows:
   build:
+    when: << pipeline.parameters.run-build-dataset-rebuild >>
     jobs:
-    - build-dataset-rebuild:
-        when: << pipeline.parameters.run-build-dataset-rebuild >>
+      - build-dataset-rebuild

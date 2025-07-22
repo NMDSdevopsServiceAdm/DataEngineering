@@ -28,16 +28,13 @@ jobs:
           command: |
             # Authenticate Docker to ECR
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
-            
+
             # Push the image
             docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
             docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
 
-
-
-  workflows:
-    build:
-      jobs:
-        - build-check-equality:
-            when: << pipeline.parameters.run-check-dataset-equality >>
-
+workflows:
+  build:
+    when: << pipeline.parameters.run-check-dataset-equality >>
+    jobs:
+      - build-check-equality
