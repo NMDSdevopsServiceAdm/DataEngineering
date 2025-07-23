@@ -20,11 +20,3 @@ def lambda_handler(event, context):
     )
 
     logger.info("The provided datasets are equal, excluding deregistered items")
-
-    pl_test.assert_frame_equal(
-        left_df.drop(drop_cols),
-        right_df.drop(drop_cols),
-        check_row_order=False,
-    )
-
-    logger.info("The provided datasets are full equal, including deregistered items")

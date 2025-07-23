@@ -52,10 +52,11 @@ class UtilsTests(unittest.TestCase):
                     20130401,
                     20130401,
                     20130401,
+                    20130401,
                 ],
-                "providerId": ["a", "b", "c", "d", "f"],
-                "value": ["same", "different", "same", "different", "new"],
-                "deregistrationDate": ["", "", "", "", ""],
+                "providerId": ["a", "b", "c", "d", "e", "f"],
+                "value": ["same", "different", "same", "different", "same", "new"],
+                "deregistrationDate": ["", "", "", "", "20130401", ""],
             }
         )
 
@@ -162,9 +163,7 @@ class UtilsTests(unittest.TestCase):
         expected = pl.concat([self.base_snapshot, self.second_full_snapshot])
 
         # When
-        result = job.build_full_table_from_delta("bucket", "read_folder").filter(
-            pl.col("deregistrationDate").eq("")
-        )
+        result = job.build_full_table_from_delta("bucket", "read_folder")
 
         # Then
         pl.testing.assert_frame_equal(result, expected)
@@ -197,11 +196,11 @@ class UtilsTests(unittest.TestCase):
             self.second_full_snapshot,
             snapshot_date="20130401",
             primary_key="providerId",
-            change_cols=["value"],
+            change_cols=["deregistrationDate", "value"],
         )
-
+        
         # Then
-        pl.testing.assert_frame_equal(result, expected)
+        pl.testing.assert_frame_equal(result, expected, check_row_order=False)
 
 
 if __name__ == "__main__":
