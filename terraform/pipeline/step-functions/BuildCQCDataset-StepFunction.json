@@ -8,7 +8,7 @@
             "Parameters": {
                 "FunctionName": "${create_snapshot_lambda_arn}",
                 "Payload": {
-                    "input_uri": "s3://${dataset_bucket_name}/domain=CQC/dataset=providers_api/version=3.0.0/",
+                    "input_uri": "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=3.0.0/",
                     "output_uri.$": "States.Format('s3://${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                     "snapshot_date.$": "$$.State.EnteredTime"
                 }

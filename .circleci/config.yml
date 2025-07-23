@@ -28,6 +28,60 @@ orbs:
   path-filtering: circleci/path-filtering@2.0.1
 
 jobs:
+  lambda-function-containerisation:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Conditionally Build Docker Image
+          command: |
+            if ! git diff --quiet HEAD -- "lambdas/create_dataset_snapshot"; then
+              echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/create_dataset_snapshot
+              
+              # Authenticate Docker to ECR
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+              
+              # Push the image
+              docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+              docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+            else
+              echo "There are no changes in the create dataset snapshot container. Skipping."
+            fi
+            
+            if ! git diff --quiet HEAD -- "lambdas/check_dataset_equality"; then
+              echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/check_dataset_equality
+
+              # Authenticate Docker to ECR
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+
+              # Push the image
+              docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+              docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+            else
+              echo "There are no changes in the check dataset equality container. Skipping."
+            fi
+
+  build-check-equality:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Conditionally Build Docker Image
+          command: |
+            
+
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -260,13 +314,7 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-#      - path-filtering/filter:
-#          name: check-containers-updated
-#          mapping: |
-#            lambdas/check_dataset_equality/.* run-check-dataset-equality true
-#            lambdas/create_dataset_snapshot/.* run-build-dataset-rebuild true
-#          base-revision: main
-#          config-path: .circleci/build-container-config.yml
+      - lambda-function-containerisation
 #      - test:
 #          filters:
 #            branches:
@@ -286,7 +334,7 @@ workflows:
       - terraform-plan:
           requires:
 #            - test
-#            - check-containers-updated
+            - lambda-function-containerisation
             - lint-terraform
       - terraform-apply:
           requires:

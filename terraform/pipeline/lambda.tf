@@ -100,7 +100,7 @@ resource "aws_iam_role" "create_snapshot_lambda" {
 
 resource "aws_iam_role" "check_datasets_equal" {
   name               = "${local.workspace_prefix}-check-datasets-equal"
-  assume_role_policy = data.aws_iam_policy_document.create_snapshot_lambda_assume_role.json
+  assume_role_policy = data.aws_iam_policy_document.check_datasets_equal_assume_role.json
 }
 
 

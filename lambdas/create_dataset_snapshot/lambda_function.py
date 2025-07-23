@@ -106,9 +106,13 @@ def main(input_uri, output_uri, snapshot_date):
 
     logger.debug("Snapshot df has been read in")
 
+    output_uri += f"import_date={date_int}/file.parquet"
+
     fs = s3fs.S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
-        snapshot_df.write_parquet(destination, compression="snappy")
+        snapshot_df.drop(["year", "month", "day"]).write_parquet(
+            destination, compression="snappy"
+        )
 
 
 def lambda_handler(event, context):
