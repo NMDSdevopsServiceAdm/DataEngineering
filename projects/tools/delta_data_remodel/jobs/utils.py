@@ -105,7 +105,7 @@ def snapshots(
             )
             changed = delta_data.filter(
                 pl.col("providerId").is_in(previous_ss["providerId"])
-            ).remove(pl.col("deregistrationDate").ne(""))
+            )
             new = delta_data.remove(
                 pl.col("providerId").is_in(previous_ss["providerId"])
             )
