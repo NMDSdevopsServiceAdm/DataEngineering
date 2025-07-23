@@ -71,14 +71,14 @@ def build_snapshot_table_from_delta(
 
 
 def snapshots(
-    bucket: str, read_folder: str, schema: pl.Schema = None
+    bucket: str, read_folder: str, schema: Optional[pl.Schema] = None
 ) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
     Args:
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
-        schema(Optional(pl.Schema)): Optional schema of the dataset
+        schema(Optional[pl.Schema]): Optional schema of the dataset
 
     Yields:
         pl.DataFrame: Generator of snapshots

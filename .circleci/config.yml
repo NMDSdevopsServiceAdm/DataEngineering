@@ -289,6 +289,10 @@ workflows:
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              only: main
       - test:
           filters:
             branches:
@@ -296,6 +300,7 @@ workflows:
       - terraform-plan:
           requires:
             - test
+            - lambda-function-containerisation
       - plan-approval:
           type: approval
           requires:
@@ -311,26 +316,29 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - lambda-function-containerisation
-#      - test:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-python:
-#          filters:
-#            branches:
-#              ignore: main
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
+      - lint-python:
+          filters:
+            branches:
+              ignore: main
       - lint-terraform:
           filters:
             branches:
               ignore: main
-#      - lint-docstrings:
-#          filters:
-#            branches:
-#              ignore: main
+      - lint-docstrings:
+          filters:
+            branches:
+              ignore: main
       - terraform-plan:
           requires:
-#            - test
+            - test
             - lambda-function-containerisation
             - lint-terraform
       - terraform-apply:
