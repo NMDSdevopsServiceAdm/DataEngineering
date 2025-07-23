@@ -2,10 +2,8 @@ import json
 import logging
 
 from re import match
-from typing import Optional, Generator
 from datetime import datetime
 
-import polars as pl
 import s3fs
 
 from utils import build_snapshot_table_from_delta, snapshots

@@ -1,9 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.11
 
 # Install the function's dependencies using file requirements.txt
-# from your project folder.
-#WORKDIR /sfc_lambda
-
 COPY lambdas/create_dataset_snapshot/requirements.txt ${LAMBDA_TASK_ROOT}
 RUN pip install -r requirements.txt
 

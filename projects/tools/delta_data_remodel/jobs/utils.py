@@ -5,10 +5,6 @@ import boto3
 import polars as pl
 import polars.testing as pl_testing
 
-from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
-    raw_providers_schema,
-)
-
 
 def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
     """
@@ -74,12 +70,15 @@ def build_snapshot_table_from_delta(
         return None
 
 
-def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, None]:
+def snapshots(
+    bucket: str, read_folder: str, schema: pl.Schema = None
+) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
     Args:
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
+        schema(Optional(pl.Schema)): Optional schema of the dataset
 
     Yields:
         pl.DataFrame: Generator of snapshots
@@ -87,7 +86,7 @@ def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, No
     """
     delta_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
-        schema=raw_providers_schema,
+        schema=schema,
     )
 
     previous_ss = None
