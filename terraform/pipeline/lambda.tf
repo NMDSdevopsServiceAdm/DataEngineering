@@ -42,7 +42,7 @@ resource "aws_lambda_function" "check_datasets_equal" {
   function_name = "${local.workspace_prefix}-check-datasets-equal"
   package_type  = "Image"
   image_uri     = "${aws_ecr_repository.check_datasets_equal.repository_url}@${data.aws_ecr_image.check_datasets_equal.image_digest}"
-  memory_size   = 512
+  memory_size   = 2048
   timeout       = 60
 }
 
