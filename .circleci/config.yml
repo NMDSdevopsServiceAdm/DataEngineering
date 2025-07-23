@@ -42,7 +42,7 @@ jobs:
           command: |
             if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot"; then
               echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
-              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/create_dataset_snapshot
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
               
               # Authenticate Docker to ECR
               docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
