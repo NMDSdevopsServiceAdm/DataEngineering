@@ -104,7 +104,7 @@ def main(input_uri, output_uri, snapshot_date):
         timepoint=date_int,
     )
 
-    logger.debug("Snapshot df has been read in")
+    logger.debug(f"Snapshot of date {date_int} has been read in")
 
     output_uri += f"import_date={date_int}/file.parquet"
 
@@ -113,6 +113,8 @@ def main(input_uri, output_uri, snapshot_date):
         snapshot_df.drop(["year", "month", "day"]).write_parquet(
             destination, compression="snappy"
         )
+
+    logger.debug(f"File has been written to: {output_uri}")
 
 
 def lambda_handler(event, context):
