@@ -50,7 +50,11 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     services_offered: str = "services_offered"
     specialisms_offered: str = "specialisms_offered"
     specialist_generalist_other_dementia: str = "specialist_generalist_other_dementia"
-    specialist_generalist_other_lda: str = "specialist_generalist_other_lda"
-    specialist_generalist_other_mh: str = "specialist_generalist_other_mh"
+    specialist_generalist_other_lda: str = (
+        "specialist_generalist_other_learning_disabilities"
+    )
+    specialist_generalist_other_mh: str = (
+        "specialist_generalist_other_mental_health_conditions"
+    )
     time_registered: str = "time_registered"
     time_since_dormant: str = "time_since_dormant"
