@@ -21,7 +21,7 @@
             "Parameters": {
                 "FunctionName": "${check_equal_lambda_arn}",
                 "Payload": {
-                    "left.$": "s3://${dataset_bucket_name}/domain=CQC/dataset=providers_api/latest_snapshot/",
+                    "left": "s3://${dataset_bucket_name}/domain=CQC/dataset=providers_api/latest_snapshot/",
                     "right.$": "States.Format('s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                     "drop_cols": "mainPhoneNumber"
                 }
