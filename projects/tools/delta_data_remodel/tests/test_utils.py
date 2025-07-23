@@ -198,7 +198,7 @@ class UtilsTests(unittest.TestCase):
             primary_key="providerId",
             change_cols=["deregistrationDate", "value"],
         )
-        
+
         # Then
         pl.testing.assert_frame_equal(result, expected, check_row_order=False)
 
