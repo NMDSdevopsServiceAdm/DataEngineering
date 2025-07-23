@@ -32,6 +32,9 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
             IndCqcColumns.ascwds_filtering_rule,
+            IndCqcColumns.specialist_generalist_other_dementia,
+            IndCqcColumns.specialist_generalist_other_lda,
+            IndCqcColumns.specialist_generalist_other_mh,
         ],
         RuleName.index_columns: [
             IndCqcColumns.location_id,
@@ -65,6 +68,9 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.categorical_values,
             IndCqcColumns.ascwds_filtering_rule: CatValues.ascwds_filtering_rule_column_values.categorical_values,
             IndCqcColumns.related_location: CatValues.related_location_column_values.categorical_values,
+            IndCqcColumns.specialist_generalist_other_dementia: CatValues.specialist_generalist_other_dementia_column_values.categorical_values,
+            IndCqcColumns.specialist_generalist_other_lda: CatValues.specialist_generalist_other_lda_column_values.categorical_values,
+            IndCqcColumns.specialist_generalist_other_mh: CatValues.specialist_generalist_other_mh_column_values.categorical_values,
         },
         RuleName.distinct_values: {
             IndCqcColumns.care_home: CatValues.care_home_column_values.count_of_categorical_values,
@@ -80,6 +86,9 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.ascwds_filled_posts_source: CatValues.ascwds_filled_posts_source_column_values.count_of_categorical_values,
             IndCqcColumns.ascwds_filtering_rule: CatValues.ascwds_filtering_rule_column_values.count_of_categorical_values,
             IndCqcColumns.related_location: CatValues.related_location_column_values.count_of_categorical_values,
+            IndCqcColumns.specialist_generalist_other_dementia: CatValues.specialist_generalist_other_dementia_column_values.count_of_categorical_values,
+            IndCqcColumns.specialist_generalist_other_lda: CatValues.specialist_generalist_other_lda_column_values.count_of_categorical_values,
+            IndCqcColumns.specialist_generalist_other_mh: CatValues.specialist_generalist_other_mh_column_values.count_of_categorical_values,
         },
         RuleName.custom_type: CustomValidationRules.care_home_and_primary_service_type,
     }

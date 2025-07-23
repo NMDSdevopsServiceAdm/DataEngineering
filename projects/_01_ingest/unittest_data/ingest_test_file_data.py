@@ -17,6 +17,8 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Sector,
     Services,
+    Specialisms,
+    SpecialistGeneralistOther,
 )
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
@@ -3228,6 +3230,40 @@ class CQCLocationsData:
         ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
         ("1-001", date(2025, 9, 1), None, 4),
         ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
+    ]
+    classify_specialisms_rows = [
+        ("loc 1", [Specialisms.dementia]),
+        (
+            "loc 2",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+        ),
+        ("loc 3", [Specialisms.eating_disorders]),
+    ]
+
+    expected_classify_specialisms_rows = [
+        (
+            "loc 1",
+            [Specialisms.dementia],
+            SpecialistGeneralistOther.specialist,
+        ),
+        (
+            "loc 2",
+            [
+                Specialisms.dementia,
+                Specialisms.eating_disorders,
+                Specialisms.mental_health,
+            ],
+            SpecialistGeneralistOther.generalist,
+        ),
+        (
+            "loc 3",
+            [Specialisms.eating_disorders],
+            SpecialistGeneralistOther.other,
+        ),
     ]
 
 
