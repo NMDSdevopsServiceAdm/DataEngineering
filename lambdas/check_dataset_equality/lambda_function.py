@@ -14,8 +14,8 @@ def lambda_handler(event, context):
     drop_cols = event["drop_cols"].split(",")
 
     pl_test.assert_frame_equal(
-        left_df.filter(pl.col("deregistrationDate").is_null()).drop(drop_cols),
-        right_df.filter(pl.col("deregistrationDate").is_null()).drop(drop_cols),
+        left_df,
+        right_df,
         check_row_order=False,
     )
 
