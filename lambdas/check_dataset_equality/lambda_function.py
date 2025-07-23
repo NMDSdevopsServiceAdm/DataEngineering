@@ -27,4 +27,4 @@ def lambda_handler(event, context):
         check_row_order=False,
     )
 
-    logger.info("The provided datasets are full equal")
+    logger.info("The provided datasets are full equal, including deregistered items")
