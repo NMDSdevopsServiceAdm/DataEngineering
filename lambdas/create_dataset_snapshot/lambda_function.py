@@ -105,6 +105,7 @@ def main(input_uri, output_uri, snapshot_date):
     )
 
     logger.debug(f"Snapshot of date {date_int} has been read in")
+    logger.debug(f"Snapshot shape: {snapshot_df.shape}")
 
     output_uri += f"import_date={date_int}/file.parquet"
 

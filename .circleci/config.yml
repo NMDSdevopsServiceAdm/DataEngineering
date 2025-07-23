@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Conditionally Build Docker Image
           command: |
-            if ! git diff --quiet HEAD-1 -- "lambdas/create_dataset_snapshot"; then
+            if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot"; then
               echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/create_dataset_snapshot
               
@@ -54,7 +54,7 @@ jobs:
               echo "There are no changes in the create dataset snapshot container. Skipping."
             fi
             
-            if ! git diff --quiet HEAD-1 -- "lambdas/check_dataset_equality"; then
+            if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality"; then
               echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/check_dataset_equality
 
