@@ -328,7 +328,7 @@ module "prepare_dpr_external_data_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2025.02/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
   }
 }
 
@@ -342,7 +342,7 @@ module "prepare_dpr_survey_data_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2025.02/"
-    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/"
+    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
   }
 }
 
@@ -355,9 +355,9 @@ module "merge_dpr_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/"
-    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/"
-    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/"
+    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
+    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
+    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
   }
 }
 
@@ -370,9 +370,9 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/"
-    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/"
-    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2025.02/"
+    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
+    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
+    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2025.02/"
   }
 }
 
@@ -386,8 +386,8 @@ module "split_pa_filled_posts_into_icb_areas_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2025.02/"
+    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2025.02/"
   }
 }
 
@@ -986,13 +986,6 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-}
-
-module "data_engineering_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "data_engineering"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
