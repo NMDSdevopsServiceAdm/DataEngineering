@@ -81,15 +81,11 @@
       },
       "Next": "Run data engineering crawler"
     },
-    "Run data engineering crawler": {
+    "Run DPR crawler": {
       "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Parameters": {
-        "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
-        "Input": {
-          "crawler_name": "${data_engineering_crawler_name}",
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-        }
+        "Name": "${dpr_crawler_name}"
       },
       "End": true
     }
