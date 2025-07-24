@@ -39,8 +39,6 @@ def main(input_uri, output_uri, snapshot_date):
             destination, compression="snappy"
         )
 
-    logger.info(f"File has been written to: {output_uri}")
-
 
 def lambda_handler(event, context):
     main(event["input_uri"], event["output_uri"], event["snapshot_date"])
