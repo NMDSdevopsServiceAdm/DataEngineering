@@ -79,7 +79,7 @@
           "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2025.02/"
         }
       },
-      "Next": "Run data engineering crawler"
+      "Next": "Run DPR crawler"
     },
     "Run DPR crawler": {
       "Type": "Task",
