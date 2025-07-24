@@ -42,11 +42,11 @@ jobs:
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
               
               # Authenticate Docker to ECR
-              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
               
               # Push the image
-              docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
-              docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the create dataset snapshot container. Skipping."
             fi
@@ -56,11 +56,11 @@ jobs:
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/check_dataset_equality
 
               # Authenticate Docker to ECR
-              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) 344210435447.dkr.ecr.eu-west-2.amazonaws.com
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
 
               # Push the image
-              docker tag latest 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
-              docker push 344210435447.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the check dataset equality container. Skipping."
             fi

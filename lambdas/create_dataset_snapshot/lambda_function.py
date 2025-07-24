@@ -10,7 +10,7 @@ from utils import build_snapshot_table_from_delta, snapshots
 
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def main(input_uri, output_uri, snapshot_date):
@@ -21,18 +21,15 @@ def main(input_uri, output_uri, snapshot_date):
     date_int = int(
         datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
     )
-    logger.debug(
+    logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
-    logger.debug(f"{date_int=}")
 
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
         timepoint=date_int,
     )
-
-    logger.debug(f"Snapshot shape: {snapshot_df.shape}")
 
     output_uri += f"import_date={date_int}/file.parquet"
 
@@ -42,11 +39,10 @@ def main(input_uri, output_uri, snapshot_date):
             destination, compression="snappy"
         )
 
-    logger.debug(f"File has been written to: {output_uri}")
+    logger.info(f"File has been written to: {output_uri}")
 
 
 def lambda_handler(event, context):
-    logger.debug("Received event: " + json.dumps(event, indent=2))
     main(event["input_uri"], event["output_uri"], event["snapshot_date"])
     logger.info(
         f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
