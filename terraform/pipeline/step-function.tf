@@ -1,3 +1,26 @@
+resource "aws_sfn_state_machine" "master_ingest_state_machine" {
+  name     = "${local.workspace_prefix}-Master-Ingest"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
+    dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
+    ingest_cqc_state_machine_arn              = aws_sfn_state_machine.delta_download_cqc_api_state_machine.arn
+    delta_cqc_providers_download_job_name     = module.delta_cqc_providers_download_job.job_name
+    delta_bronze_validation_state_machine_arn = aws_sfn_state_machine.delta_bronze_validation_state_machine.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   name     = "${local.workspace_prefix}-Clean-And-Validate"
   role_arn = aws_iam_role.step_function_iam_role.arn

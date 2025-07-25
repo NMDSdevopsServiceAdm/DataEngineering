@@ -1,0 +1,154 @@
+{
+  "Comment": "A state machine to manage the weekly ingestion of CQC API and ASC-WDS data",
+  "StartAt": "IngestCqcAndAscWDS",
+  "States": {
+    "IngestCqcAndAscWDS": {
+      "Type": "Parallel",
+      "Next": "TriggerPipelines",
+      "Branches": [
+        {
+          "StartAt": "IngestCqcApi",
+          "States": {
+            "IngestCqcApi": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${delta_bronze_validation_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "IngestWorkerAndWorkplace",
+          "States": {
+            "IngestWorkerAndWorkplace": {
+              "Type": "Parallel",
+              "Parameters": {
+                "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
+                "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
+                "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
+              },
+              "Next": "AscWdsCleaning",
+              "Branches": [
+                {"StartAt": "CheckWorker",
+                 "States": {
+                   "CheckWorker": {
+                     "Type": "Task",
+                     "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                     "Parameters": {
+                       "Prefix": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
+                       "Bucket": "${dataset_bucket_uri}",
+                       "StartAfter": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                    },
+                    "Next": "WorkerReady"
+                   },
+                   "WorkerReady": {
+                     "Type": "Choice",
+                     "Choices": [
+                       {
+                         "Variable": "$.KeyCount",
+                         "NumericGreaterThanEquals": 1,
+                         "End": true
+                       },
+                       {
+                         "Variable": "$.KeyCount",
+                         "NumericEquals": 0,
+                         "Next": "WaitForWorker"
+                       }
+                       ]
+                   },
+                   "WaitForWorker": {
+                     "Type": "Wait",
+                     "Seconds": 10,
+                     "Next": "CheckWorker"
+                   }
+                 }
+                },
+                {"StartAt": "CheckWorkplace",
+                 "States": {
+                   "CheckWorker": {
+                     "Type": "Task",
+                     "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                     "Parameters": {
+                       "Prefix": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
+                       "Bucket": "sfc-${workspace}-datasets",
+                       "StartAfter": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                    },
+                    "Next": "WorkerReady"
+                   },
+                   "WorkerReady": {
+                     "Type": "Choice",
+                     "Choices": [
+                       {
+                         "Variable": "$.KeyCount",
+                         "NumericGreaterThanEquals": 1,
+                         "End": true
+                       },
+                       {
+                         "Variable": "$.KeyCount",
+                         "NumericEquals": 0,
+                         "Next": "WaitForWorker"
+                       }
+                       ]
+                   },
+                   "WaitForWorker": {
+                     "Type": "Wait",
+                     "Seconds": 10,
+                     "Next": "CheckWorker"
+                   }
+                 }
+                }
+              ]
+            },
+            "AscWdsCleaning": {
+
+            }
+          }
+        }
+
+      ]
+    },
+    "TriggerPipelines": {
+        "Type": "Parallel",
+        "Next": "Success",
+        "Branches": [
+          {
+            "StartAt": "TriggerSfCCoveragePipeline",
+            "States": {
+              "TriggerSfCCoveragePipeline": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::states:startExecution",
+                "Parameters": {
+                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "TriggerIndCQCPipeline",
+            "States": {
+              "TriggerIndCQCPipeline": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::states:startExecution",
+                "Parameters": {
+                  "StateMachineArn": "${trigger_ind_cqc_filled_post_estimates_pipeline_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ]
+      }
+  }
+}
