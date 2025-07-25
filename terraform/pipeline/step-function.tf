@@ -132,6 +132,7 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/CqcApiPipeline-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                            = module.dataset_bucket.bucket_name
     bulk_cqc_providers_download_job_name           = "main-bulk_download_cqc_providers_job" #  TODO: remove and point to delta
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     bulk_cqc_locations_download_job_name           = "main-bulk_download_cqc_locations_job" #  TODO: remove and point to delta
