@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 import sys
 
 import polars as pl
@@ -11,6 +11,9 @@ mock_utils_module = MagicMock()
 sys.modules["utils"] = mock_utils_module
 
 from lambda_function import lambda_handler
+import projects.tools.delta_data_remodel.jobs.utils as job
+
+PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 
 
 class TestLambdaFunction(unittest.TestCase):
@@ -42,9 +45,6 @@ class TestLambdaFunction(unittest.TestCase):
         mock_s3fs,
         mock_build_snapshot_table_from_delta,
     ):
-        # mock_utils_module.build_snapshot_table_from_delta.return_value = (
-        #     self.snapshot_df
-        # )
         mock_build_snapshot_table_from_delta.return_value = self.snapshot_df
 
         mock_file_dest = MagicMock()
@@ -69,3 +69,39 @@ class TestLambdaFunction(unittest.TestCase):
             "output_uri/import_date=20250723/file.parquet", mode="wb"
         )
         mock_write_parquet.assert_called_once()
+
+
+class TestUtilDependencies(unittest.TestCase):
+    def setUp(self):
+        self.base_snapshot = pl.DataFrame(
+            {
+                "import_date": [
+                    20130301,
+                    20130301,
+                    20130301,
+                    20130301,
+                    20130301,
+                ],
+                "providerId": ["a", "b", "c", "d", "e"],
+                "value": ["same", "same", "same", "same", "same"],
+                "deregistrationDate": ["", "", "", "", ""],
+            }
+        )
+
+    @patch(f"{PATCH_PATH}.snapshots")
+    def test_build_snapshot_table_from_delta(self, mock_snapshots: Mock):
+        # Given
+        mock_snapshots.return_value = [
+            self.base_snapshot,
+        ]
+
+        expected = self.base_snapshot
+
+        # When
+        result = job.build_snapshot_table_from_delta(
+            "bucket", "read_folder", timepoint=20130301
+        )
+
+        # Then
+        pl.testing.assert_frame_equal(result, expected)
+        mock_snapshots.assert_called_once()
