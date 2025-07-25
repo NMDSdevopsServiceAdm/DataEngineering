@@ -132,6 +132,7 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/CqcApiPipeline-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                            = module.datasets_bucket.bucket_name
     bulk_cqc_providers_download_job_name           = "main-bulk_download_cqc_providers_job" #  TODO: remove and point to delta
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     bulk_cqc_locations_download_job_name           = "main-bulk_download_cqc_locations_job" #  TODO: remove and point to delta
@@ -511,7 +512,11 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Action" : [
           "lambda:InvokeFunction"
         ],
-        "Resource" : "${aws_lambda_function.error_notification_lambda.arn}*"
+        "Resource" : [
+          "${aws_lambda_function.error_notification_lambda.arn}*",
+          "${aws_lambda_function.create_snapshot_lambda.arn}*",
+          "${aws_lambda_function.check_datasets_equal.arn}*"
+        ]
       },
       {
         "Effect" : "Allow",
