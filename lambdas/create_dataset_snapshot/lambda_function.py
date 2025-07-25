@@ -4,22 +4,24 @@ import logging
 from re import match
 from datetime import datetime
 
-import s3fs
+from s3fs import S3FileSystem
 
-from utils import build_snapshot_table_from_delta, snapshots
+from utils import build_snapshot_table_from_delta
 
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def main(input_uri, output_uri, snapshot_date):
+def lambda_handler(event, context):
     input_parse = match(
-        "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", input_uri
+        "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
 
     date_int = int(
-        datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
+        datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+            "%Y%m%d"
+        )
     )
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
@@ -31,17 +33,13 @@ def main(input_uri, output_uri, snapshot_date):
         timepoint=date_int,
     )
 
-    output_uri += f"import_date={date_int}/file.parquet"
+    output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
-    fs = s3fs.S3FileSystem()
+    fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
         snapshot_df.drop(["year", "month", "day"]).write_parquet(
             destination, compression="snappy"
         )
-
-
-def lambda_handler(event, context):
-    main(event["input_uri"], event["output_uri"], event["snapshot_date"])
     logger.info(
         f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
     )
