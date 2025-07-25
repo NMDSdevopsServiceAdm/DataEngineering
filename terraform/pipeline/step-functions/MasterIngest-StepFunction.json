@@ -13,7 +13,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
-                "StateMachineArn": "${delta_bronze_validation_state_machine_arn}",
+                "StateMachineArn": "${ingest_cqc_api_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
@@ -34,78 +34,81 @@
               },
               "Next": "AscWdsCleaning",
               "Branches": [
-                {"StartAt": "CheckWorker",
-                 "States": {
-                   "CheckWorker": {
-                     "Type": "Task",
-                     "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
-                     "Parameters": {
-                       "Prefix": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
-                       "Bucket": "${dataset_bucket_uri}",
-                       "StartAfter": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                {
+                  "StartAt": "CheckWorker",
+                  "States": {
+                    "CheckWorker": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
+                        "Bucket": "${dataset_bucket_uri}",
+                        "StartAfter": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                     },
+                      "Next": "WorkerReady"
                     },
-                    "Next": "WorkerReady"
-                   },
-                   "WorkerReady": {
-                     "Type": "Choice",
-                     "Choices": [
-                       {
-                         "Variable": "$.KeyCount",
-                         "NumericGreaterThanEquals": 1,
-                         "End": true
-                       },
-                       {
-                         "Variable": "$.KeyCount",
-                         "NumericEquals": 0,
-                         "Next": "WaitForWorker"
-                       }
-                       ]
-                   },
-                   "WaitForWorker": {
-                     "Type": "Wait",
-                     "Seconds": 10,
-                     "Next": "CheckWorker"
+                    "WorkerReady": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "End": true
+                        },
+                        {
+                          "Variable": "$.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "WaitForWorker"
+                        }
+                        ]
+                    },
+                    "WaitForWorker": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "CheckWorker"
                    }
                  }
                 },
-                {"StartAt": "CheckWorkplace",
-                 "States": {
-                   "CheckWorker": {
-                     "Type": "Task",
-                     "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
-                     "Parameters": {
-                       "Prefix": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
-                       "Bucket": "sfc-${workspace}-datasets",
-                       "StartAfter": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                {
+                  "StartAt": "CheckWorkplace",
+                  "States": {
+                    "CheckWorker": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
+                        "Bucket": "sfc-${workspace}-datasets",
+                        "StartAfter": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                     },
+                     "Next": "WorkplaceReady"
                     },
-                    "Next": "WorkerReady"
-                   },
-                   "WorkerReady": {
-                     "Type": "Choice",
-                     "Choices": [
-                       {
-                         "Variable": "$.KeyCount",
-                         "NumericGreaterThanEquals": 1,
-                         "End": true
-                       },
-                       {
-                         "Variable": "$.KeyCount",
-                         "NumericEquals": 0,
-                         "Next": "WaitForWorker"
-                       }
-                       ]
-                   },
-                   "WaitForWorker": {
-                     "Type": "Wait",
-                     "Seconds": 10,
-                     "Next": "CheckWorker"
-                   }
-                 }
+                    "WorkplaceReady": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "End": true
+                        },
+                        {
+                          "Variable": "$.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "WaitForWorkplace"
+                        }
+                        ]
+                    },
+                    "WaitForWorkplace": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "CheckWorkplace"
+                    }
+                  }
                 }
               ]
             },
             "AscWdsCleaning": {
-
+              "Type": "Pass",
+              "Comment": "Placeholder for state machine provided by cqc"
             }
           }
         }

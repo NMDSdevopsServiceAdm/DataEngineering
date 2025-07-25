@@ -4,7 +4,7 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
-    ingest_cqc_state_machine_arn              = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
+    ingest_cqc_api_state_machine_arn          = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
     delta_cqc_providers_download_job_name     = module.delta_cqc_providers_download_job.job_name
   })
 
