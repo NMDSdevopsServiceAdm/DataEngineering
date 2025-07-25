@@ -26,7 +26,7 @@ def main():
         schema=raw_providers_schema,
     )
 
-    base_df.write_parquet(
+    base_df.drop(["import_date"]).write_parquet(
         f"s3://{write_bucket}/{write_folder}/",
         compression="snappy",
         partition_chunk_size_bytes=220000,
@@ -66,7 +66,7 @@ def main():
 
                 base_df = snapshot_df
 
-                changed_entries.write_parquet(
+                changed_entries.drop(["import_date"]).write_parquet(
                     f"s3://{write_bucket}/{write_folder}file.parquet",
                     compression="snappy",
                 )
