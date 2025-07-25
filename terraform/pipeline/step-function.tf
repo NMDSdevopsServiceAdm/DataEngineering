@@ -129,6 +129,28 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
+  name     = "${local.workspace_prefix}-Build-Full-CQC-Dataset"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/BuildCQCDataset-StepFunction.json", {
+    dataset_bucket_uri                = module.datasets_bucket.bucket_uri
+    create_snapshot_lambda_lambda_arn = aws_lambda_function.create_snapshot_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
+
 resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-Direct-Payment-Recipients"
   role_arn = aws_iam_role.step_function_iam_role.arn
