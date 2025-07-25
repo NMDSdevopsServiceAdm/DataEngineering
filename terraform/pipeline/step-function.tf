@@ -512,7 +512,11 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Action" : [
           "lambda:InvokeFunction"
         ],
-        "Resource" : "${aws_lambda_function.error_notification_lambda.arn}*"
+        "Resource" : [
+          "${aws_lambda_function.error_notification_lambda.arn}*",
+          "${aws_lambda_function.create_snapshot_lambda.arn}*",
+          "${aws_lambda_function.check_datasets_equal.arn}*"
+        ]
       },
       {
         "Effect" : "Allow",
