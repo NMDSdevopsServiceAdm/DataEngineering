@@ -28,7 +28,30 @@ resource "aws_lambda_function" "error_notification_lambda" {
   }
 }
 
+# resource "aws_lambda_function" "create_snapshot_lambda" {
+#   role          = aws_iam_role.create_snapshot_lambda.arn
+#   function_name = "${local.workspace_prefix}-create-full-snapshot"
+#   package_type  = "Image"
+#   image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}:latest"
+#   memory_size   = 3072
+#   timeout       = 60
+# }
+
 data "aws_iam_policy_document" "error_notification_lambda_assume_role" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      identifiers = [
+        "lambda.amazonaws.com"
+      ]
+      type = "Service"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "create_snapshot_lambda_assume_role" {
   statement {
     actions = [
       "sts:AssumeRole"
@@ -45,6 +68,54 @@ data "aws_iam_policy_document" "error_notification_lambda_assume_role" {
 resource "aws_iam_role" "error_notification_lambda" {
   name               = "${local.workspace_prefix}-error-notification-lambda"
   assume_role_policy = data.aws_iam_policy_document.error_notification_lambda_assume_role.json
+}
+
+resource "aws_iam_role" "create_snapshot_lambda" {
+  name               = "${local.workspace_prefix}-create-snapshot-lambda"
+  assume_role_policy = data.aws_iam_policy_document.create_snapshot_lambda_assume_role.json
+}
+
+data "aws_iam_policy_document" "create_snapshot_lambda" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "states:SendTaskSuccess",
+      "states:SendTaskFailure"
+    ]
+    effect = "Allow"
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+      "s3:Describe*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "s3:Put*"
+    ]
+    effect    = "Allow"
+    resources = ["arn:aws:s3:::${local.workspace_prefix}-datasets/domain=CQC/dataset=providers_api/version=3.0.0/"]
+  }
 }
 
 data "aws_iam_policy_document" "error_notification_lambda" {
@@ -98,8 +169,17 @@ resource "aws_iam_policy" "error_notification_lambda" {
   policy = data.aws_iam_policy_document.error_notification_lambda.json
 }
 
+resource "aws_iam_policy" "create_snapshot_lambda" {
+  name   = "${local.workspace_prefix}-create-snapshot-lambda"
+  policy = data.aws_iam_policy_document.create_snapshot_lambda.json
+}
+
 resource "aws_iam_role_policy_attachment" "error_notification_lambda" {
   role       = aws_iam_role.error_notification_lambda.name
   policy_arn = aws_iam_policy.error_notification_lambda.arn
 }
 
+resource "aws_iam_role_policy_attachment" "create_snapshot_lambda" {
+  role       = aws_iam_role.create_snapshot_lambda.name
+  policy_arn = aws_iam_policy.create_snapshot_lambda.arn
+}
