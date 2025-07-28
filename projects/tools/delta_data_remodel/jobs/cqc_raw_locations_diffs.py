@@ -68,7 +68,7 @@ def main():
 
                 base_df = snapshot_df
 
-                changed_entries.write_parquet(
+                changed_entries.drop(["import_date"]).write_parquet(
                     f"s3://{write_bucket}/{write_folder}file.parquet",
                     compression="snappy",
                 )

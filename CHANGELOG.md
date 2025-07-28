@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added tool to create delta datasets from full datasets (where we store full snapshots for every timepoint)
+  - Added support for CQC Providers API
+  - Added support for CQC Locations API
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
