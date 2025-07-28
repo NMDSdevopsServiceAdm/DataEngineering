@@ -112,6 +112,8 @@ resource "aws_sfn_state_machine" "delta_download_cqc_api_state_machine" {
     dataset_bucket_uri                        = module.datasets_bucket.bucket_uri
     bulk_cqc_providers_download_job_name      = "main-bulk_download_cqc_providers_job"
     delta_cqc_providers_download_job_name     = module.delta_cqc_providers_download_job.job_name
+    bulk_cqc_locations_download_job_name      = "main-bulk_download_cqc_locations_job"
+    delta_cqc_locations_download_job_name     = module.delta_cqc_locations_download_job.job_name
     delta_bronze_validation_state_machine_arn = aws_sfn_state_machine.delta_bronze_validation_state_machine.arn
   })
 
@@ -160,7 +162,7 @@ resource "aws_sfn_state_machine" "direct_payments_state_machine" {
     merge_dpr_data_job_name                       = module.merge_dpr_data_job.job_name
     estimate_direct_payments_job_name             = module.estimate_direct_payments_job.job_name
     split_pa_filled_posts_into_icb_areas_job_name = module.split_pa_filled_posts_into_icb_areas_job.job_name
-    data_engineering_crawler_name                 = module.data_engineering_crawler.crawler_name
+    dpr_crawler_name                              = module.dpr_crawler.crawler_name
     dataset_bucket_uri                            = module.datasets_bucket.bucket_uri
     run_crawler_state_machine_arn                 = aws_sfn_state_machine.run_crawler.arn
   })
@@ -336,6 +338,7 @@ resource "aws_sfn_state_machine" "delta_bronze_validation_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/ValidationBronzeDelta-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
+    validate_locations_api_raw_delta_data_job_name = module.validate_locations_api_raw_delta_data_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
   })
 
@@ -536,7 +539,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "glue:GetJobRuns"
         ],
         "Resource" : [
-          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job"
+          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job",
+          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_locations_job"
         ]
       }
     ]

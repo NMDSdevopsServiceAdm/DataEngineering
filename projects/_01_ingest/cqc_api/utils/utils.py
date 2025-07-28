@@ -26,6 +26,7 @@ def classify_specialisms(
 
     """
     new_column_name: str = f"specialist_generalist_other_{specialism}"
+    new_column_name = new_column_name.replace(" ", "_").lower()
     df = df.withColumn(
         new_column_name,
         F.when(

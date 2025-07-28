@@ -16,7 +16,7 @@
                 "JobName": "${prepare_dpr_survey_job_name}",
                 "Arguments": {
                   "--survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2025.02/",
-                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/"
+                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
                 }
               },
               "End": true
@@ -33,7 +33,7 @@
                 "JobName": "${prepare_dpr_external_job_name}",
                 "Arguments": {
                   "--direct_payments_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2025.02/",
-                  "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/"
+                  "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
                 }
               },
               "End": true
@@ -48,9 +48,9 @@
       "Parameters": {
         "JobName": "${merge_dpr_data_job_name}",
         "Arguments": {
-          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/",
-          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/"
+          "--direct_payments_external_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/",
+          "--direct_payments_survey_data_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/",
+          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
         }
       },
       "Next": "estimate direct payments"
@@ -61,9 +61,9 @@
       "Parameters": {
         "JobName": "${estimate_direct_payments_job_name}",
         "Arguments": {
-          "--direct_payments_merged_source": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/",
-          "--summary_destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2025.02/"
+          "--direct_payments_merged_source": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/",
+          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/",
+          "--summary_destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2025.02/"
         }
       },
       "Next": "Split pa estimates into hybrid areas"
@@ -75,21 +75,17 @@
         "JobName": "${split_pa_filled_posts_into_icb_areas_job_name}",
         "Arguments":{
           "--postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/",
-          "--destination": "${dataset_bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2025.02/"
+          "--pa_filled_posts_souce": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/",
+          "--destination": "${dataset_bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2025.02/"
         }
       },
-      "Next": "Run data engineering crawler"
+      "Next": "Run DPR crawler"
     },
-    "Run data engineering crawler": {
+    "Run DPR crawler": {
       "Type": "Task",
-      "Resource": "arn:aws:states:::states:startExecution.sync:2",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Parameters": {
-        "StateMachineArn": "arn:aws:states:eu-west-2:344210435447:stateMachine:main-RunCrawler",
-        "Input": {
-          "crawler_name": "${data_engineering_crawler_name}",
-          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-        }
+        "Name": "${dpr_crawler_name}"
       },
       "End": true
     }
