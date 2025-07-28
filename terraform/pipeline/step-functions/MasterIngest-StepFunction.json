@@ -53,7 +53,7 @@
                         {
                           "Variable": "$.KeyCount",
                           "NumericGreaterThanEquals": 1,
-                          "End": true
+                          "Next": "MarkWorkerReady"
                         },
                         {
                           "Variable": "$.KeyCount",
@@ -66,13 +66,17 @@
                       "Type": "Wait",
                       "Seconds": 10,
                       "Next": "CheckWorker"
-                   }
+                   },
+                    "MarkWorkerReady": {
+                      "Type": "Pass",
+                      "End": true
+                    }
                  }
                 },
                 {
                   "StartAt": "CheckWorkplace",
                   "States": {
-                    "CheckWorker": {
+                    "CheckWorkplace": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
@@ -88,7 +92,7 @@
                         {
                           "Variable": "$.KeyCount",
                           "NumericGreaterThanEquals": 1,
-                          "End": true
+                          "Next": "MarkWorkplaceReady"
                         },
                         {
                           "Variable": "$.KeyCount",
@@ -101,6 +105,10 @@
                       "Type": "Wait",
                       "Seconds": 10,
                       "Next": "CheckWorkplace"
+                    },
+                    "MarkWorkplaceReady": {
+                      "Type": "Pass",
+                      "End": true
                     }
                   }
                 }
@@ -108,7 +116,8 @@
             },
             "AscWdsCleaning": {
               "Type": "Pass",
-              "Comment": "Placeholder for state machine provided by cqc"
+              "Comment": "Placeholder for state machine provided by cqc",
+              "End": true
             }
           }
         }
@@ -152,6 +161,10 @@
             }
           }
         ]
-      }
+      },
+    "Success": {
+      "Type": "Pass",
+      "End": true
+    }
   }
 }
