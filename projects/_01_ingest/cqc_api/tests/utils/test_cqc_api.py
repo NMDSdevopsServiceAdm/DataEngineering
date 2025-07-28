@@ -225,8 +225,8 @@ class GetUpdatedObjectsTests(CqcApiTests):
             object_type="any",
             organisation_type="any_org_type",
             cqc_api_primary_key="cqc_api_primary_key",
-            start="2023-01-01T00:00:00Z",
-            end="2023-01-02T00:00:00Z",
+            start_timestamp="2023-01-01T00:00:00Z",
+            end_timestamp="2023-01-02T00:00:00Z",
         )
         # Then
         self.assertTrue(isinstance(results, Generator))
@@ -247,8 +247,8 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
         result = cqc.get_changes_within_timeframe(
             organisation_type="mock_organisations",
             cqc_api_primary_key="cqc_api_primary_key",
-            start="2000-01-01T00:00:00Z",
-            end="2000-01-02T00:00:00Z",
+            start_timestamp="2000-01-01T00:00:00Z",
+            end_timestamp="2000-01-02T00:00:00Z",
             page_number=5,
             per_page=100,
         )

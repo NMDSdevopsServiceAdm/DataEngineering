@@ -7,8 +7,8 @@ os.environ["SPARK_VERSION"] = "3.3"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.validation.validation_rules.providers_api_raw_validation_rules import (
-    ProvidersAPIRawValidationRules as Rules,
+from utils.validation.validation_rules.locations_api_raw_validation_rules import (
+    LocationsAPIRawValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
     validate_dataset,
@@ -20,15 +20,15 @@ logger.setLevel(logging.INFO)
 
 
 def main(
-    raw_cqc_provider_source: str,
+    raw_cqc_location_source: str,
     report_destination: str,
 ):
-    raw_provider_df = utils.read_from_parquet(
-        raw_cqc_provider_source,
+    raw_location_df = utils.read_from_parquet(
+        raw_cqc_location_source,
     )
     rules = Rules.rules_to_check
 
-    check_result_df = validate_dataset(raw_provider_df, rules)
+    check_result_df = validate_dataset(raw_location_df, rules)
 
     utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
 
@@ -37,16 +37,16 @@ def main(
 
 
 if __name__ == "__main__":
-    logger.info("Spark job 'validate_providers_api_raw_data' starting...")
+    logger.info("Spark job 'validate_locations_api_raw_data' starting...")
     logger.info(f"Job parameters: {sys.argv}")
 
     (
-        raw_cqc_provider_source,
+        raw_cqc_location_source,
         report_destination,
     ) = utils.collect_arguments(
         (
-            "--raw_cqc_provider_source",
-            "Source s3 directory for parquet providers api dataset",
+            "--raw_cqc_location_source",
+            "Source s3 directory for parquet locations api dataset",
         ),
         (
             "--report_destination",
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     )
     try:
         main(
-            raw_cqc_provider_source,
+            raw_cqc_location_source,
             report_destination,
         )
     finally:
@@ -64,4 +64,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    logger.info("Spark job 'validate_providers_api_raw_data' complete")
+    logger.info("Spark job 'validate_locations_api_raw_data' complete")
