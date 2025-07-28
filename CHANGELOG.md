@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a lambda function to check if two datasets are equal
+
+- Added a lambda function to create a full snapshot from a delta dataset
+
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
