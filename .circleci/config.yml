@@ -45,22 +45,22 @@ jobs:
               docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
               
               # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the create dataset snapshot container. Skipping."
             fi
             
             if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality"; then
               echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
-              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull lambdas/check_dataset_equality
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
 
               # Authenticate Docker to ECR
               docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
 
               # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the check dataset equality container. Skipping."
             fi

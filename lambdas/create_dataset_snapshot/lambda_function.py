@@ -8,12 +8,17 @@ from s3fs import S3FileSystem
 
 from utils import build_snapshot_table_from_delta
 
+from ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
+    logger.info("Received event: \n" + json.dumps(event, indent=2))
+
     input_parse = match(
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
@@ -37,7 +42,7 @@ def lambda_handler(event, context):
 
     fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
-        snapshot_df.drop(["year", "month", "day"]).write_parquet(
+        snapshot_df.drop([Keys.year, Keys.month, Keys.day]).write_parquet(
             destination, compression="snappy"
         )
     logger.info(
