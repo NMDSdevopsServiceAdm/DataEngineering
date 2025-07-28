@@ -156,7 +156,7 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   name     = "${local.workspace_prefix}-CQC-API-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CqcApiPipeline-StepFunction.json", {
+  definition = templatefile("step-functions/CQC-API-Pipeline.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
     bulk_cqc_providers_download_job_name           = "main-bulk_download_cqc_providers_job" #  TODO: remove and point to delta
