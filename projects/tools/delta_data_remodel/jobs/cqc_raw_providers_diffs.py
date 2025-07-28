@@ -60,7 +60,7 @@ def main():
                     base_df,
                     snapshot_df,
                     snapshot_date=f"{year}{month:02}{day:02}",
-                    primary_key="providerId",
+                    primary_key=CQCP.provider_id,
                     change_cols=dataset_cols,
                 )
 

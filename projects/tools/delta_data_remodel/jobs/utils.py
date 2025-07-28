@@ -5,10 +5,6 @@ import boto3
 import polars as pl
 import polars.testing as pl_testing
 
-from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
-    raw_providers_schema,
-)
-
 
 def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
     """
@@ -27,13 +23,14 @@ def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
 
 
 def build_full_table_from_delta(
-    bucket: str, read_folder: str, timepoint_limit: int = None
+    bucket: str, read_folder: str, primary_key: str, timepoint_limit: int = None
 ) -> pl.DataFrame:
     """
     Builds full dataset from delta dataset
     Args:
         bucket (str): bucket name
         read_folder (str): file path (excluding bucket name)
+        primary_key (str): primary key to join the dataset on
         timepoint_limit (int): date before which you want the full dataset (e.g. 20141231) inclusive
 
     Returns:
@@ -54,7 +51,7 @@ def build_full_table_from_delta(
 
 
 def build_snapshot_table_from_delta(
-    bucket: str, read_folder: str, timepoint: int
+    bucket: str, read_folder: str, timepoint: int, primary_key: str
 ) -> Optional[pl.DataFrame]:
     """
     Gets full snapshot of data at a given timepoint
@@ -62,32 +59,34 @@ def build_snapshot_table_from_delta(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         timepoint (int): timepoint to get data for (yyyymmdd)
+        primary_key (str): primary key to join the dataset on
 
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
 
     """
-    for snapshot in snapshots(bucket, read_folder):
+    for snapshot in snapshots(bucket, read_folder, primary_key):
         if snapshot.item(1, "import_date") == timepoint:
             return snapshot
     else:
         return None
 
 
-def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, None]:
+def snapshots(
+    bucket: str, read_folder: str, primary_key: str
+) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
     Args:
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
-
+        primary_key (str): primary key to join the dataset on
     Yields:
         pl.DataFrame: Generator of snapshots
 
     """
     delta_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
-        schema=raw_providers_schema,
     )
 
     previous_ss = None
@@ -102,14 +101,12 @@ def snapshots(bucket: str, read_folder: str) -> Generator[pl.DataFrame, None, No
             previous_ss = delta_data
         else:
             unchanged = previous_ss.remove(
-                pl.col("providerId").is_in(delta_data["providerId"])
+                pl.col(primary_key).is_in(delta_data[primary_key])
             )
             changed = delta_data.filter(
-                pl.col("providerId").is_in(previous_ss["providerId"])
+                pl.col(primary_key).is_in(previous_ss[primary_key])
             ).remove(pl.col("deregistrationDate").ne(""))
-            new = delta_data.remove(
-                pl.col("providerId").is_in(previous_ss["providerId"])
-            )
+            new = delta_data.remove(pl.col(primary_key).is_in(previous_ss[primary_key]))
 
             previous_ss = pl.concat([unchanged, changed, new])
             previous_ss = previous_ss.with_columns(

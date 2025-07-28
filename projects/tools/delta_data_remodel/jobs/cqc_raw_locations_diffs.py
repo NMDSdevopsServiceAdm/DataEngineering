@@ -16,13 +16,16 @@ def main():
 
     read_bucket = "sfc-main-datasets"
     write_bucket = "sfc-delta-locations-dataset-datasets"
-    read_folder = Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/import_date=20130301/"
+    read_folder = (
+        Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/"
+    )
     write_folder = Rf"domain=CQC/dataset=locations_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
 
-    base_df = pl.read_parquet(
+    base_df = pl.scan_parquet(
         f"s3://{read_bucket}/{read_folder}",
         schema=raw_locations_schema,
-    )
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+    ).collect()
 
     base_df.drop(["import_date"]).write_parquet(
         f"s3://{write_bucket}/{write_folder}/",
@@ -49,10 +52,11 @@ def main():
                 print(f"Starting {day}-{month}-{year}")
                 write_folder = Rf"domain=CQC/dataset=locations_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
 
-                snapshot_df = pl.read_parquet(
+                snapshot_df = pl.scan_parquet(
                     f"s3://{read_bucket}/{read_folder}/",
                     schema=raw_locations_schema,
-                )
+                    cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+                ).collect()  # as of 01/03/2022 there is a removed field in regulatedActivities of 'col3', so using scan to take advantage of cast options
 
                 changed_entries = get_diffs(
                     base_df,
