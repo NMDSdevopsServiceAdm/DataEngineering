@@ -17,6 +17,8 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
+    logger.info("Received event: \n" + json.dumps(event, indent=2))
+
     input_parse = match(
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
