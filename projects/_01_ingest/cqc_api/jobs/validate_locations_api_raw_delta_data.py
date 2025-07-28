@@ -1,5 +1,6 @@
 import os
 import sys
+import logging
 
 os.environ["SPARK_VERSION"] = "3.3"
 
@@ -13,6 +14,9 @@ from utils.validation.validation_utils import (
     validate_dataset,
     raise_exception_if_any_checks_failed,
 )
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def main(
@@ -33,8 +37,8 @@ def main(
 
 
 if __name__ == "__main__":
-    print("Spark job 'validate_locations_api_raw_data' starting...")
-    print(f"Job parameters: {sys.argv}")
+    logger.info("Spark job 'validate_locations_api_raw_data' starting...")
+    logger.info(f"Job parameters: {sys.argv}")
 
     (
         raw_cqc_location_source,
@@ -60,4 +64,4 @@ if __name__ == "__main__":
             spark.sparkContext._gateway.shutdown_callback_server()
         spark.stop()
 
-    print("Spark job 'validate_locations_api_raw_data' complete")
+    logger.info("Spark job 'validate_locations_api_raw_data' complete")

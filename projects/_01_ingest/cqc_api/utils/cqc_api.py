@@ -5,7 +5,6 @@ from typing import Generator, Iterable, List
 import requests
 from ratelimit import limits, sleep_and_retry
 
-
 CQC_API_VERSION = "v1"
 RATE_LIMIT = 2000
 ONE_MINUTE = 60
@@ -127,8 +126,8 @@ def get_updated_objects(
     object_type: str,
     organisation_type: str,
     cqc_api_primary_key: str,
-    start: str,
-    end: str,
+    start_timestamp: str,
+    end_timestamp: str,
     per_page: int = DEFAULT_PAGE_SIZE,
 ) -> Generator[dict, None, None]:
     """Gets all objects of a given type that have been updated within a specified timeframe.
@@ -137,8 +136,8 @@ def get_updated_objects(
         object_type (str): the type of object to retrive: one of 'providers', 'locations'
         organisation_type (str): the URL organisationType key for the object, e.g. 'provider' or 'location'
         cqc_api_primary_key (str): the CQC API key
-        start (str): the start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
-        end (str): the end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
+        start_timestamp (str): the start datetime for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
+        end_timestamp (str): the end datetime for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
         per_page (int): the number of organisation objects to fetch per page, defaults to `DEFAULT_PAGE_SIZE`
 
     Yields:
@@ -150,8 +149,8 @@ def get_updated_objects(
         changes_by_page = get_changes_within_timeframe(
             organisation_type=organisation_type,
             cqc_api_primary_key=cqc_api_primary_key,
-            start=start,
-            end=end,
+            start_timestamp=start_timestamp,
+            end_timestamp=end_timestamp,
             page_number=page_number,
             per_page=per_page,
         )
@@ -163,7 +162,9 @@ def get_updated_objects(
             logger.info(f"Total pages to search for changes: {total_pages}")
 
         if total_pages == 0:
-            logger.info(f"No {organisation_type}s updated between {start} and {end}")
+            logger.info(
+                f"No {organisation_type}s updated between {start_timestamp} and {end_timestamp}"
+            )
             return
 
         for id in changes_by_page["changes"]:
@@ -186,8 +187,8 @@ def get_updated_objects(
 def get_changes_within_timeframe(
     organisation_type: str,
     cqc_api_primary_key: str,
-    start: str,
-    end: str,
+    start_timestamp: str,
+    end_timestamp: str,
     page_number: int,
     per_page: int,
 ) -> dict:
@@ -196,8 +197,8 @@ def get_changes_within_timeframe(
     Args:
         organisation_type (str): the type of object to retrive: one of 'provider', 'location'
         cqc_api_primary_key (str): the CQC API key
-        start (str): _start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
-        end (str): _end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
+        start_timestamp (str): _start date for the timeframe in ISO 8601 format (e.g. '2023-01-01T00:00:00Z')
+        end_timestamp (str): _end date for the timeframe in ISO 8601 format (e.g. '2023-01-02T00:00:00Z')
         page_number (int): the page number to fetch from the API
         per_page (int, optional): the page number from CQC's full page list. Defaults to DEFAULT_PAGE_SIZE.
 
@@ -210,8 +211,8 @@ def get_changes_within_timeframe(
     response = call_api(
         url,
         query_params={
-            "startTimestamp": start,
-            "endTimestamp": end,
+            "startTimestamp": start_timestamp,
+            "endTimestamp": end_timestamp,
             "page": page_number,
             "perPage": per_page,
         },
