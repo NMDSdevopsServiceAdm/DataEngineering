@@ -1,5 +1,6 @@
 # ECR Repositories to store the Docker images
 resource "aws_ecr_repository" "create_dataset_snapshot" {
+  count                = terraform.workspace == "main" ? 1 : 0
   name                 = "create-snapshot-lambda-repo"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
@@ -9,6 +10,7 @@ resource "aws_ecr_repository" "create_dataset_snapshot" {
 }
 
 resource "aws_ecr_repository" "check_datasets_equal" {
+  count                = terraform.workspace == "main" ? 1 : 0
   name                 = "check-datasets-equal-repo"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
