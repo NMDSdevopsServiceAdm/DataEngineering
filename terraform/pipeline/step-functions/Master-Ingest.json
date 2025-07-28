@@ -81,7 +81,7 @@
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
                         "Prefix": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
-                        "Bucket": "sfc-${workspace}-datasets",
+                        "Bucket": "${dataset_bucket_name}",
                         "StartAfter": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
                      },
                      "Next": "WorkplaceReady"

@@ -4,6 +4,7 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/Master-Ingest.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                        = module.datasets_bucket.bucket_name
     ingest_cqc_api_state_machine_arn           = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
     asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
