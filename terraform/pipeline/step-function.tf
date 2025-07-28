@@ -57,6 +57,32 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
+  name     = "${local.workspace_prefix}-ASC-WDS-Validation"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/ASC-WDS-Validation.json", {
+    dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
+    validate_ascwds_workplace_raw_data_job_name     = module.validate_ascwds_workplace_raw_data_job.job_name
+    validate_ascwds_worker_raw_data_job_name        = module.validate_ascwds_worker_raw_data_job.job_name
+    clean_ascwds_workplace_job_name                 = module.clean_ascwds_workplace_job.job_name
+    clean_ascwds_worker_job_name                    = module.clean_ascwds_worker_job.job_name
+    validate_ascwds_workplace_cleaned_data_job_name = module.validate_ascwds_workplace_cleaned_data_job.job_name
+    validate_ascwds_worker_cleaned_data_job_name    = module.validate_ascwds_worker_cleaned_data_job.job_name
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "ind_cqc_filled_post_estimates_pipeline_state_machine" {
   name     = "${local.workspace_prefix}-Ind-CQC-Filled-Post-Estimates"
   role_arn = aws_iam_role.step_function_iam_role.arn
