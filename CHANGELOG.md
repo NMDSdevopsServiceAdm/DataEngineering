@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Created a `STYLEGUIDE.md` file with guidance on code organisation, folder structure, naming conventions, utility function locations and unit test conventions.
 
+### Changed
+-   Update the version of CQC ratings data
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
