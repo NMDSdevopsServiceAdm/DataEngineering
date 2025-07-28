@@ -2,7 +2,7 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   name     = "${local.workspace_prefix}-Master-Ingest"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
+  definition = templatefile("step-functions/Master-Ingest.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     ingest_cqc_api_state_machine_arn           = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
     asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
