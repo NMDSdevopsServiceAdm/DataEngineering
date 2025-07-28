@@ -45,8 +45,8 @@ jobs:
               docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
               
               # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/create-snapshot-lambda-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the create dataset snapshot container. Skipping."
             fi
@@ -59,8 +59,8 @@ jobs:
               docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
 
               # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/check-datasets-equal-repo:${CIRCLE_BRANCH}
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
             else
               echo "There are no changes in the check dataset equality container. Skipping."
             fi
@@ -289,10 +289,10 @@ workflows:
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-#      - lambda-function-containerisation:
-#          filters:
-#            branches:
-#              only: main
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              only: main
       - test:
           filters:
             branches:
@@ -300,7 +300,7 @@ workflows:
       - terraform-plan:
           requires:
             - test
-#            - lambda-function-containerisation
+            - lambda-function-containerisation
       - plan-approval:
           type: approval
           requires:
@@ -316,10 +316,10 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-#      - lambda-function-containerisation:
-#          filters:
-#            branches:
-#              ignore: main
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              ignore: main
       - test:
           filters:
             branches:
@@ -339,7 +339,7 @@ workflows:
       - terraform-plan:
           requires:
             - test
-#            - lambda-function-containerisation
+            - lambda-function-containerisation
             - lint-terraform
       - terraform-apply:
           requires:

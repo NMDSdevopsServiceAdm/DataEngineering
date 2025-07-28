@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    logger.info("Received event: " + json.dumps(event, indent=2))
+    logger.info("Received event: \n" + json.dumps(event, indent=2))
     left_df = pl.read_parquet(event["left"])
     right_df = pl.read_parquet(event["right"])
 
