@@ -1,15 +1,14 @@
 import json
-from datetime import date, datetime
 import logging
+from datetime import date, datetime
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
-
-from schemas.cqc_location_schema import LOCATION_SCHEMA
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -36,8 +35,8 @@ def main(destination: str, start: str, end: str, cqc_api_primary_key_value: str 
         object_type="locations",
         organisation_type="location",
         cqc_api_primary_key=cqc_api_primary_key_value,
-        start=f"{start_dt.isoformat(timespec='seconds')}Z",
-        end=f"{end_dt.isoformat(timespec='seconds')}Z",
+        start_timestamp=f"{start_dt.isoformat(timespec='seconds')}Z",
+        end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
     )
 
     df = spark.createDataFrame(generator, LOCATION_SCHEMA)
