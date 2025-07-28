@@ -5,6 +5,9 @@ from projects.tools.delta_data_remodel.jobs.utils import list_bucket_objects, ge
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCP,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 
 def main():
@@ -27,7 +30,7 @@ def main():
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
     ).collect()
 
-    base_df.drop(["import_date"]).write_parquet(
+    base_df.drop([Keys.import_date]).write_parquet(
         f"s3://{write_bucket}/{write_folder}/",
         compression="snappy",
         partition_chunk_size_bytes=220000,
@@ -68,7 +71,7 @@ def main():
 
                 base_df = snapshot_df
 
-                changed_entries.drop(["import_date"]).write_parquet(
+                changed_entries.drop([Keys.import_date]).write_parquet(
                     f"s3://{write_bucket}/{write_folder}file.parquet",
                     compression="snappy",
                 )
