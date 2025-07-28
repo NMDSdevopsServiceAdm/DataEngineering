@@ -16,7 +16,7 @@ from raw_locations_schema import (
 )
 
 
-# @unittest.skip("should be run manually")
+@unittest.skip("should be run manually")
 def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(
@@ -47,7 +47,7 @@ def test_rebuilt_dataset_equality():
     )
 
 
-# @unittest.skip("should be run manually")
+@unittest.skip("should be run manually")
 def test_snapshot_equality():
     for delta_snapshot in snapshots(
         bucket="sfc-delta-locations-dataset-datasets",
