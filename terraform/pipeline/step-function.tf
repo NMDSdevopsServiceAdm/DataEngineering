@@ -5,7 +5,7 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     ingest_cqc_api_state_machine_arn           = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
-    delta_cqc_providers_download_job_name      = module.delta_cqc_providers_download_job.job_name
+    asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
   })

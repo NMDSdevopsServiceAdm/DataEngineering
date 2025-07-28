@@ -32,7 +32,7 @@
                 "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
                 "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
               },
-              "Next": "AscWdsCleaning",
+              "Next": "AscWdsValidation",
               "Branches": [
                 {
                   "StartAt": "CheckWorker",
@@ -114,9 +114,15 @@
                 }
               ]
             },
-            "AscWdsCleaning": {
-              "Type": "Pass",
-              "Comment": "Placeholder for state machine provided by cqc",
+            "AscWdsValidation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+                "Parameters": {
+                  "StateMachineArn": "${asc_wds_validation_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
               "End": true
             }
           }
