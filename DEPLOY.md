@@ -6,6 +6,12 @@ AWS CLI is a prerequisite of Terraform.
 2. Request access to the AWS Console
 3. Once this access is granted, follow the steps here to [setup your access and secret key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
 
+## Resource Dependencies
+Some resources have been created outside of terraform. The extra resources you would need to create are:
+- An ECR repository called "lambda/create-snapshot"
+- An ECR repository called "lambda/check-datasets-equal"
+
+
 ## Deploying Terraform
 
 1. Set up your AWS crendentials as terraform variables

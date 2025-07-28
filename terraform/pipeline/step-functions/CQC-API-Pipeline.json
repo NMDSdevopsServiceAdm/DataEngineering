@@ -57,11 +57,11 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "input_uri.$": "States.Format('{}/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', ${dataset_bucket_name}, States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                      "output_uri.$": "${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/",
+                      "output_uri": "${dataset_bucket_name}/full/domain=CQC/dataset=providers_api/version=3.0.0/",
                       "snapshot_date.$": "$startDate"
                   }
               },
-              "End": "CleanCqcProviderData"
+              "Next": "CleanCqcProviderData"
             },
             "CleanCqcProviderData": {
               "Type": "Task",
@@ -129,7 +129,7 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "input_uri.$": "States.Format('{}/domain=CQC/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', ${dataset_bucket_name}, States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                      "output_uri.$": "${dataset_bucket_name}/full/domain=CQC/dataset=locations_api/version=3.0.0/",
+                      "output_uri": "${dataset_bucket_name}/full/domain=CQC/dataset=locations_api/version=3.0.0/",
                       "snapshot_date.$": "$startDate"
                   }
               },

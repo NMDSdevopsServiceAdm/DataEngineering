@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Added a lambda function to check if two datasets are equal
+
+- Added a lambda function to create a full snapshot from a delta dataset
+
+- Created a `STYLEGUIDE.md` file with guidance on code organisation, folder structure, naming conventions, utility function locations and unit test conventions.
+
 ### Changed
 -   Update the version of CQC ratings data
 

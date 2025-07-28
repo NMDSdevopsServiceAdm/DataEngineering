@@ -55,11 +55,11 @@
         ],
         "Next": "ValidateCleanedAscWds"
       },
-      "ValidateCleanedWorkplaceData": {
+      "ValidateCleanedAscWds": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "ValidateCleanedWorkplaceData",
+            "StartAt": "ValidateWorkplace",
             "States": {
               "ValidateWorkplace": {
                 "Type": "Task",
