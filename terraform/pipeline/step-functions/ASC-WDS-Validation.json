@@ -6,16 +6,16 @@
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "ValidateWorkplaceData",
+            "StartAt": "ValidateWorkplaceRaw",
             "States": {
-              "ValidateWorkplace": {
+              "ValidateWorkplaceRaw": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+                    "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
                   }
                 },
                 "Next": "CleanWorkplaceData"
@@ -36,16 +36,16 @@
             }
           },
           {
-            "StartAt": "ValidateWorkerData",
+            "StartAt": "ValidateWorkerRaw",
             "States": {
-              "Run validate ascwds worker cleaned job": {
+              "ValidateWorkerRaw": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
-                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "JobName": "${validate_ascwds_worker_raw_data_job_name}",
                   "Arguments": {
-                    "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
-                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+                    "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
                   }
                 },
                 "End": true
