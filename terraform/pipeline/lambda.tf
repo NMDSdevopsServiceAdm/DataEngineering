@@ -28,7 +28,53 @@ resource "aws_lambda_function" "error_notification_lambda" {
   }
 }
 
+resource "aws_lambda_function" "create_snapshot_lambda" {
+  role          = aws_iam_role.create_snapshot_lambda.arn
+  function_name = "${local.workspace_prefix}-create-full-snapshot"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.create_dataset_snapshot.repository_url}@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
+  memory_size   = 3072
+  timeout       = 60
+}
+
+resource "aws_lambda_function" "check_datasets_equal" {
+  role          = aws_iam_role.check_datasets_equal.arn
+  function_name = "${local.workspace_prefix}-check-datasets-equal"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.check_datasets_equal.repository_url}@${data.aws_ecr_image.check_datasets_equal.image_digest}"
+  memory_size   = 2048
+  timeout       = 60
+}
+
 data "aws_iam_policy_document" "error_notification_lambda_assume_role" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      identifiers = [
+        "lambda.amazonaws.com"
+      ]
+      type = "Service"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "create_snapshot_lambda_assume_role" {
+  statement {
+    actions = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      identifiers = [
+        "lambda.amazonaws.com"
+      ]
+      type = "Service"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "check_datasets_equal_assume_role" {
   statement {
     actions = [
       "sts:AssumeRole"
@@ -46,6 +92,97 @@ resource "aws_iam_role" "error_notification_lambda" {
   name               = "${local.workspace_prefix}-error-notification-lambda"
   assume_role_policy = data.aws_iam_policy_document.error_notification_lambda_assume_role.json
 }
+
+resource "aws_iam_role" "create_snapshot_lambda" {
+  name               = "${local.workspace_prefix}-create-snapshot-lambda"
+  assume_role_policy = data.aws_iam_policy_document.create_snapshot_lambda_assume_role.json
+}
+
+resource "aws_iam_role" "check_datasets_equal" {
+  name               = "${local.workspace_prefix}-check-datasets-equal"
+  assume_role_policy = data.aws_iam_policy_document.check_datasets_equal_assume_role.json
+}
+
+
+data "aws_iam_policy_document" "create_snapshot_lambda" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "states:SendTaskSuccess",
+      "states:SendTaskFailure"
+    ]
+    effect = "Allow"
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+      "s3:Describe*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "s3:Put*"
+    ]
+    effect    = "Allow"
+    resources = ["arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC/dataset=providers_api/version=3.0.0/*"]
+  }
+}
+
+
+data "aws_iam_policy_document" "check_datasets_equal" {
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    ]
+    effect = "Allow"
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "states:SendTaskSuccess",
+      "states:SendTaskFailure"
+    ]
+    effect = "Allow"
+    resources = [
+      "*"
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+      "s3:Describe*"
+    ]
+    effect    = "Allow"
+    resources = ["*"]
+  }
+}
+
 
 data "aws_iam_policy_document" "error_notification_lambda" {
   statement {
@@ -98,8 +235,27 @@ resource "aws_iam_policy" "error_notification_lambda" {
   policy = data.aws_iam_policy_document.error_notification_lambda.json
 }
 
+resource "aws_iam_policy" "create_snapshot_lambda" {
+  name   = "${local.workspace_prefix}-create-snapshot-lambda"
+  policy = data.aws_iam_policy_document.create_snapshot_lambda.json
+}
+
+resource "aws_iam_policy" "check_datasets_equal" {
+  name   = "${local.workspace_prefix}-check-datasets-equal"
+  policy = data.aws_iam_policy_document.check_datasets_equal.json
+}
+
 resource "aws_iam_role_policy_attachment" "error_notification_lambda" {
   role       = aws_iam_role.error_notification_lambda.name
   policy_arn = aws_iam_policy.error_notification_lambda.arn
 }
 
+resource "aws_iam_role_policy_attachment" "create_snapshot_lambda" {
+  role       = aws_iam_role.create_snapshot_lambda.name
+  policy_arn = aws_iam_policy.create_snapshot_lambda.arn
+}
+
+resource "aws_iam_role_policy_attachment" "check_datasets_equal" {
+  role       = aws_iam_role.check_datasets_equal.name
+  policy_arn = aws_iam_policy.check_datasets_equal.arn
+}

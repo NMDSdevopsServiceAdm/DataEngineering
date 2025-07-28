@@ -5,6 +5,9 @@ from projects.tools.delta_data_remodel.jobs.utils import list_bucket_objects, ge
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 
 def main():
@@ -26,7 +29,7 @@ def main():
         schema=raw_providers_schema,
     )
 
-    base_df.write_parquet(
+    base_df.drop([Keys.import_date]).write_parquet(
         f"s3://{write_bucket}/{write_folder}/",
         compression="snappy",
         partition_chunk_size_bytes=220000,
@@ -60,13 +63,13 @@ def main():
                     base_df,
                     snapshot_df,
                     snapshot_date=f"{year}{month:02}{day:02}",
-                    primary_key="providerId",
+                    primary_key=CQCP.provider_id,
                     change_cols=dataset_cols,
                 )
 
                 base_df = snapshot_df
 
-                changed_entries.write_parquet(
+                changed_entries.drop([Keys.import_date]).write_parquet(
                     f"s3://{write_bucket}/{write_folder}file.parquet",
                     compression="snappy",
                 )
