@@ -1,0 +1,112 @@
+{
+    "Comment": "State machine for validating and cleaning ASCWDS data",
+    "StartAt": "ValidateAscWds",
+    "States": {
+      "ValidateAscWds": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "ValidateWorkplaceData",
+            "States": {
+              "ValidateWorkplace": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+                  }
+                },
+                "Next": "CleanWorkplaceData"
+              },
+              "CleanWorkplaceData": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${clean_ascwds_workplace_job_name}",
+                  "Arguments": {
+                    "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                    "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "ValidateWorkerData",
+            "States": {
+              "Run validate ascwds worker cleaned job": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "ValidateCleanedAscWds"
+      },
+      "ValidateCleanedWorkplaceData": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "ValidateCleanedWorkplaceData",
+            "States": {
+              "ValidateWorkplace": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "CleanWorkerData",
+            "States": {
+              "CleanWorkerData": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${clean_ascwds_worker_job_name}",
+                  "Arguments": {
+                    "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                    "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                    "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+                  }
+                },
+                "Next": "ValidateCleanedWorkerData"
+              },
+              "ValidateCleanedWorkerData": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "End": true
+      }
+    }
+  }
