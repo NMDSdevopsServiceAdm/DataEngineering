@@ -419,8 +419,8 @@ module "flatten_cqc_ratings_job" {
   job_parameters = {
     "--cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
     "--ascwds_workplace_source"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/"
+    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/"
+    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
   }
 }
 
@@ -507,7 +507,7 @@ module "merge_coverage_data_job" {
   job_parameters = {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
+    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
