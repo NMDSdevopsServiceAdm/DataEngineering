@@ -41,7 +41,7 @@ def build_full_table_from_delta(
     if not timepoint_limit:
         timepoint_limit = 300000000
 
-    for t in snapshots(bucket, read_folder):
+    for t in snapshots(bucket, read_folder, primary_key):
         if t.item(1, "import_date") > timepoint_limit:
             break
         ss.append(t)
@@ -51,7 +51,7 @@ def build_full_table_from_delta(
 
 
 def build_snapshot_table_from_delta(
-    bucket: str, read_folder: str, timepoint: int, primary_key: str
+    bucket: str, read_folder: str, primary_key: str, timepoint: int
 ) -> Optional[pl.DataFrame]:
     """
     Gets full snapshot of data at a given timepoint
