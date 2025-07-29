@@ -23,16 +23,15 @@
           }
         },
         {
-          "StartAt": "IngestWorkerAndWorkplace",
+          "StartAt": "CheckAscWdsIngest",
           "States": {
-            "IngestWorkerAndWorkplace": {
+            "CheckAscWdsIngest": {
               "Type": "Parallel",
               "Parameters": {
                 "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
                 "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
                 "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
               },
-              "Next": "AscWdsValidation",
               "Branches": [
                 {
                   "StartAt": "CheckWorker",
@@ -60,7 +59,7 @@
                           "NumericEquals": 0,
                           "Next": "WaitForWorker"
                         }
-                        ]
+                      ]
                     },
                     "WaitForWorker": {
                       "Type": "Wait",
@@ -112,7 +111,8 @@
                     }
                   }
                 }
-              ]
+              ],
+              "Next": "AscWdsValidation"
             },
             "AscWdsValidation": {
               "Type": "Task",
@@ -132,12 +132,11 @@
     },
     "TriggerPipelines": {
         "Type": "Parallel",
-        "Next": "Success",
         "Branches": [
           {
-            "StartAt": "TriggerSfCCoveragePipeline",
+            "StartAt": "SfCCoveragePipeline",
             "States": {
-              "TriggerSfCCoveragePipeline": {
+              "SfCCoveragePipeline": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::states:startExecution",
                 "Parameters": {
@@ -151,9 +150,9 @@
             }
           },
           {
-            "StartAt": "TriggerIndCQCPipeline",
+            "StartAt": "IndCQCPipeline",
             "States": {
-              "TriggerIndCQCPipeline": {
+              "IndCQCPipeline": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::states:startExecution",
                 "Parameters": {
@@ -166,7 +165,8 @@
               }
             }
           }
-        ]
+        ],
+        "Next": "Success"
       },
     "Success": {
       "Type": "Pass",
