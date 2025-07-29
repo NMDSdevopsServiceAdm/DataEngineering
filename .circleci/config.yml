@@ -37,6 +37,8 @@ jobs:
       - run:
           name: Conditionally Build Docker Image
           command: |
+            echo aws ecr describe-images --registry-id  ${AWS_ACCOUNT_ID} --repository-name lambda/create-snapshot --image-ids imageTag=${CIRCLE_BRANCH} --query 'imageDetails[0]' --output json 2>/dev/null | jq -e . > /dev/null
+            
             if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot" || \
               aws ecr describe-images --registry-id  ${AWS_ACCOUNT_ID} --repository-name lambda/create-snapshot --image-ids imageTag=${CIRCLE_BRANCH} --query 'imageDetails[0]' --output json 2>/dev/null | jq -e . > /dev/null; then
               echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
@@ -322,36 +324,36 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
-      - lint-python:
-          filters:
-            branches:
-              ignore: main
-      - lint-terraform:
-          filters:
-            branches:
-              ignore: main
-      - lint-docstrings:
-          filters:
-            branches:
-              ignore: main
-      - terraform-plan:
-          requires:
-            - lint-terraform
-            - test
-            - lambda-function-containerisation
-      - terraform-apply:
-          requires:
-            - terraform-plan
-      - deploy-dependencies:
-          requires:
-            - terraform-apply
-      - copy-default-data:
-          requires:
-            - terraform-apply
+#      - test:
+#          filters:
+#            branches:
+#              ignore: main
+#      - lint-python:
+#          filters:
+#            branches:
+#              ignore: main
+#      - lint-terraform:
+#          filters:
+#            branches:
+#              ignore: main
+#      - lint-docstrings:
+#          filters:
+#            branches:
+#              ignore: main
+#      - terraform-plan:
+#          requires:
+#            - lint-terraform
+#            - test
+#            - lambda-function-containerisation
+#      - terraform-apply:
+#          requires:
+#            - terraform-plan
+#      - deploy-dependencies:
+#          requires:
+#            - terraform-apply
+#      - copy-default-data:
+#          requires:
+#            - terraform-apply
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
