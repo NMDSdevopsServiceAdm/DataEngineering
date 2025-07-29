@@ -560,13 +560,13 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action": [
-            "s3:GetObject",
-            "s3:GetBucketLocation",
-            "s3:ListBucket"
+          "s3:GetObject",
+          "s3:GetBucketLocation",
+          "s3:ListBucket"
         ],
         "Resource": [
-            "${module.datasets_bucket.arn}/*",
-            "${module.datasets_bucket.arn}"
+          "${module.datasets_bucket.bucket_arn}/*",
+          module.datasets_bucket.bucket_arn
         ]
       }
     ]
