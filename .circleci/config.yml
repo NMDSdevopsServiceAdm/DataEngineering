@@ -13,12 +13,6 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
-  run-build-dataset-rebuild:
-    type: boolean
-    default: false
-  run-check-dataset-equality:
-    type: boolean
-    default: false
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
@@ -320,36 +314,36 @@ workflows:
           filters:
             branches:
               ignore: main
-#      - test:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-python:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-terraform:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-docstrings:
-#          filters:
-#            branches:
-#              ignore: main
-#      - terraform-plan:
-#          requires:
-#            - lint-terraform
-#            - test
-#            - lambda-function-containerisation
-#      - terraform-apply:
-#          requires:
-#            - terraform-plan
-#      - deploy-dependencies:
-#          requires:
-#            - terraform-apply
-#      - copy-default-data:
-#          requires:
-#            - terraform-apply
+     - test:
+         filters:
+           branches:
+             ignore: main
+     - lint-python:
+         filters:
+           branches:
+             ignore: main
+     - lint-terraform:
+         filters:
+           branches:
+             ignore: main
+     - lint-docstrings:
+         filters:
+           branches:
+             ignore: main
+     - terraform-plan:
+         requires:
+           - lint-terraform
+           - test
+           - lambda-function-containerisation
+     - terraform-apply:
+         requires:
+           - terraform-plan
+     - deploy-dependencies:
+         requires:
+           - terraform-apply
+     - copy-default-data:
+         requires:
+           - terraform-apply
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
