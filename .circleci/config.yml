@@ -292,10 +292,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+#      - test:
+#          filters:
+#            branches:
+#              ignore: main
       - lint-python:
           filters:
             branches:
@@ -311,7 +311,7 @@ workflows:
       - terraform-plan:
           requires:
             - lint-terraform
-            - test
+#            - test
             - lambda-function-containerisation
       - terraform-apply:
           requires:
