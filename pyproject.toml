@@ -1,2 +1,45 @@
+[project]
+name = ""
+version = "0.0.1"
+requires-python = "==3.9.6"
+dependencies = [
+    "boto3",
+    "mock",
+    "requests",
+    "ratelimit",
+    "urllib3",
+    "black",
+    "openpyxl",
+    "pydeequ",
+    "pyspark",
+    "pydoclint",
+    "pandas",
+    "numpy",
+    "polars",
+]
+
 [tool.pydoclint]
 style = 'google'
+
+[dependency-groups]
+dev = [
+    "pylint",
+    "autopep8",
+    "pandas",
+    "pytest-watch",
+    "ipykernel",
+    "sphinx-basic-ng",
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinxcontrib-mermaid",
+    "myst-parser",
+    "furo",
+    "pre-commit",
+]
+
+[tool.uv]
+package = false
+
+[[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.python.org/simple"
