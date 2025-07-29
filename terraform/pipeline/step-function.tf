@@ -556,6 +556,18 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job",
           "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_locations_job"
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action": [
+            "s3:GetObject",
+            "s3:GetBucketLocation",
+            "s3:ListBucket"
+        ],
+        "Resource": [
+            "${module.datasets_bucket.arn}/*",
+            "${module.datasets_bucket.arn}"
+        ]
       }
     ]
   })
