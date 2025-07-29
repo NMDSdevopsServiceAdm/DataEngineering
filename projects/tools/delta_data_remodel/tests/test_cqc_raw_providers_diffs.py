@@ -9,8 +9,8 @@ import json
 from projects.tools.delta_data_remodel.jobs.utils import (
     build_full_table_from_delta,
     list_bucket_objects,
-    snapshots,
 )
+from lambdas.utils.snapshots import get_snapshots
 from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
     raw_providers_schema,
 )
@@ -22,6 +22,7 @@ def test_rebuilt_dataset_equality():
         build_full_table_from_delta(
             bucket="sfc-test-diff-datasets",
             read_folder="domain=CQC/dataset=providers_api/",
+            organisation_type="providers",
             timepoint_limit=20131231,
         )
         .drop(["mainPhoneNumber", "year"])
@@ -46,9 +47,10 @@ def test_rebuilt_dataset_equality():
 
 @unittest.skip("should be run manually")
 def test_snapshot_equality():
-    for delta_snapshot in snapshots(
+    for delta_snapshot in get_snapshots(
         bucket="sfc-test-diff-datasets",
         read_folder="domain=CQC/dataset=providers_api/",
+        organisation_type="providers",
         schema=raw_providers_schema,
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")

@@ -6,12 +6,12 @@ import polars as pl
 import requests
 import json
 
-from utils import (
+from projects.tools.delta_data_remodel.jobs.utils import (
     build_full_table_from_delta,
     list_bucket_objects,
-    snapshots,
 )
-from raw_locations_schema import (
+from lambdas.utils.snapshots import get_snapshots
+from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
     raw_locations_schema,
 )
 
@@ -22,7 +22,7 @@ def test_rebuilt_dataset_equality():
         build_full_table_from_delta(
             bucket="sfc-delta-locations-dataset-datasets",
             read_folder="domain=CQC/dataset=locations_api/version=3.0.0/",
-            primary_key="locationId",
+            organisation_type="locations",
             timepoint_limit=20131231,
         )
         .drop(["mainPhoneNumber", "year"])
@@ -49,10 +49,10 @@ def test_rebuilt_dataset_equality():
 
 @unittest.skip("should be run manually")
 def test_snapshot_equality():
-    for delta_snapshot in snapshots(
+    for delta_snapshot in get_snapshots(
         bucket="sfc-delta-locations-dataset-datasets",
         read_folder="domain=CQC/dataset=locations_api/version=3.0.0/",
-        primary_key="locationId",
+        organisation_type="locations",
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
@@ -99,7 +99,7 @@ def evaluate_dataset_changes():
         )
 
     joined_df = df_b.join(
-        df_a, on="providerId", how="left", suffix="_base", maintain_order="right"
+        df_a, on="locationId", how="left", suffix="_base", maintain_order="right"
     )
 
     rows_with_changes = joined_df.remove(unchanged_conditions)
