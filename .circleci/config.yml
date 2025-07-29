@@ -13,12 +13,6 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
-  run-build-dataset-rebuild:
-    type: boolean
-    default: false
-  run-check-dataset-equality:
-    type: boolean
-    default: false
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
@@ -35,49 +29,27 @@ jobs:
       - aws-cli/setup:
           region: "eu-west-2"
       - run:
-          name: Conditionally Build Docker Image
+          name: Build Docker Images
           command: |
-            if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot"; then
-              echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
-              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
-              
-              # Authenticate Docker to ECR
-              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
-              
-              # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
-            else
-              echo "There are no changes in the create dataset snapshot container. Skipping."
-            fi
+            echo "Rebuilding create dataset snapshot container and pushing to ECR."
+            docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
             
-            if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality"; then
-              echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
-              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
-
-              # Authenticate Docker to ECR
-              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
-
-              # Push the image
-              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
-              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
-            else
-              echo "There are no changes in the check dataset equality container. Skipping."
-            fi
-
-  build-check-equality:
-    docker:
-      - image: docker:latest
-    steps:
-      - checkout
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - aws-cli/setup:
-          region: "eu-west-2"
-      - run:
-          name: Conditionally Build Docker Image
-          command: |
+            # Authenticate Docker to ECR
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             
+            # Push the image
+            docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+          
+            echo "Rebuilding check dataset equality container and pushing to ECR."
+            docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
+
+            # Authenticate Docker to ECR
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+
+            # Push the image
+            docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
+            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
 
   test:
     docker:
@@ -320,10 +292,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      # - test:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
@@ -338,9 +310,9 @@ workflows:
               ignore: main
       - terraform-plan:
           requires:
-            # - test
-            - lambda-function-containerisation
             - lint-terraform
+            - test
+            - lambda-function-containerisation
       - terraform-apply:
           requires:
             - terraform-plan
