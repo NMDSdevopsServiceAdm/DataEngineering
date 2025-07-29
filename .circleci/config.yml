@@ -341,7 +341,6 @@ workflows:
             - lint-terraform
             - test
             - lambda-function-containerisation
-            - lint-terraform
       - terraform-apply:
           requires:
             - terraform-plan
