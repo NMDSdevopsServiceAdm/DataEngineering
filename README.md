@@ -60,6 +60,7 @@ terraform fmt -recursive  # Terraform
 - For collaboration or more information, contact us at [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
 ## Further Reading
+- [Published outputs using this data](https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/Workforce-intelligence/publications/Data-and-publications.aspx)
 - [CHANGELOG.md](./CHANGELOG.md) - notable changes to this project over time
 - [DEPLOY.md](./DEPLOY.md) - Terraform deployment guide
 - [GUIDES.md](./GUIDES.md) - general guidance and information
