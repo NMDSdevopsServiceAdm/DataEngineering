@@ -37,7 +37,8 @@ jobs:
       - run:
           name: Conditionally Build Docker Image
           command: |
-            if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot"; then
+            if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot" || \
+              aws ecr describe-images --registry-id  ${AWS_ACCOUNT_ID} --repository-name lambda/create-snapshot --image-ids imageTag=${CIRCLE_BRANCH} --query 'imageDetails[0]' --output json 2>/dev/null | jq -e . > /dev/null; then
               echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
               
@@ -51,7 +52,8 @@ jobs:
               echo "There are no changes in the create dataset snapshot container. Skipping."
             fi
             
-            if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality"; then
+            if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality" || \
+              aws ecr describe-images --registry-id  ${AWS_ACCOUNT_ID} --repository-name lambda/check-datasets-equal --image-ids imageTag=${CIRCLE_BRANCH} --query 'imageDetails[0]' --output json 2>/dev/null | jq -e . > /dev/null; then
               echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
               docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
 
