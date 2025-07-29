@@ -32,3 +32,11 @@ class TestUtils(unittest.TestCase):
             utils.write_to_parquet(df, destination, self.logger)
         self.assertTrue(Path(destination).exists())
         self.assertTrue(f'Parquet written to {destination}' in cm.output[0])
+
+    def test_write_parquet_handles_bad_output_path(self):
+        df: pl.DataFrame = pl.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6]})
+        destination: str = os.path.join('no_dir', 'test.parquet')
+        with self.assertLogs(self.logger, level=logging.ERROR) as cm:
+            utils.write_to_parquet(df, destination, self.logger)
+        self.assertFalse(Path(destination).exists())
+        self.assertTrue(f'The destination path is invalid' in cm.output[0])
