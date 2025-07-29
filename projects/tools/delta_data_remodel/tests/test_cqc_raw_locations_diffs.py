@@ -11,8 +11,8 @@ from projects.tools.delta_data_remodel.jobs.utils import (
     list_bucket_objects,
 )
 from lambdas.utils.snapshots import get_snapshots
-from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
-    raw_providers_schema,
+from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
+    raw_locations_schema,
 )
 
 
@@ -20,9 +20,9 @@ from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
 def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(
-            bucket="sfc-test-diff-datasets",
-            read_folder="domain=CQC/dataset=providers_api/",
-            organisation_type="providers",
+            bucket="sfc-delta-locations-dataset-datasets",
+            read_folder="domain=CQC/dataset=locations_api/version=3.0.0/",
+            organisation_type="locations",
             timepoint_limit=20131231,
         )
         .drop(["mainPhoneNumber", "year"])
@@ -30,10 +30,12 @@ def test_rebuilt_dataset_equality():
     )
 
     original_format = (
-        pl.read_parquet(
-            "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year=2013/",
-            schema=raw_providers_schema,
+        pl.scan_parquet(
+            "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.1/year=2013/",
+            schema=raw_locations_schema,
+            cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
         )
+        .collect()
         .drop(["mainPhoneNumber"])
         .remove(pl.col("deregistrationDate").ne(""))
     )
@@ -48,19 +50,23 @@ def test_rebuilt_dataset_equality():
 @unittest.skip("should be run manually")
 def test_snapshot_equality():
     for delta_snapshot in get_snapshots(
-        bucket="sfc-test-diff-datasets",
-        read_folder="domain=CQC/dataset=providers_api/",
-        organisation_type="providers",
-        schema=raw_providers_schema,
+        bucket="sfc-delta-locations-dataset-datasets",
+        read_folder="domain=CQC/dataset=locations_api/version=3.0.0/",
+        organisation_type="locations",
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
         t = match(date_pattern, f"{timepoint_int}")
 
-        old_snapshot = pl.read_parquet(
-            f"s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year={t.group('year')}/month={t.group('month')}/day={t.group('day')}/",
-            schema=raw_providers_schema,
-        ).filter(pl.col("deregistrationDate").is_null())
+        old_snapshot = (
+            pl.scan_parquet(
+                f"s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.1/year={t.group('year')}/month={t.group('month')}/day={t.group('day')}/",
+                schema=raw_locations_schema,
+                cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+            )
+            .collect()
+            .filter(pl.col("deregistrationDate").is_null())
+        )
 
         pl.testing.assert_frame_equal(
             delta_snapshot.drop(["year", "month", "day", "mainPhoneNumber"]).filter(
@@ -74,49 +80,11 @@ def test_snapshot_equality():
 
 @unittest.skip("should be run manually")
 def evaluate_dataset_changes():
-    dataset_cols = [
-        "locationIds",
-        "organisationType",
-        "ownershipType",
-        "type",
-        "name",
-        "brandId",
-        "brandName",
-        "odsCode",
-        "registrationStatus",
-        "registrationDate",
-        "companiesHouseNumber",
-        "charityNumber",
-        "website",
-        "postalAddressLine1",
-        "postalAddressLine2",
-        "postalAddressTownCity",
-        "postalAddressCounty",
-        "region",
-        "postalCode",
-        "alsoKnownAs",
-        "deregistrationDate",
-        "uprn",
-        "onspdLatitude",
-        "onspdLongitude",
-        "onspdIcbCode",
-        "onspdIcbName",
-        "inspectionDirectorate",
-        "constituency",
-        "localAuthority",
-        "lastInspection",
-        "lastReport",
-        "contacts",
-        "relationships",
-        "regulatedActivities",
-        "inspectionCategories",
-        "inspectionAreas",
-        "currentRatings",
-        "historicRatings",
-        "reports",
-        "unpublishedReports",
-    ]
-
+    dataset_cols = raw_locations_schema.names()
+    dataset_cols.remove("locationId")  # primary key
+    dataset_cols.remove(
+        "mainPhoneNumber"
+    )  # don't check for changes in phone number as sometimes in exponential format
     df_a = pl.read_parquet(
         "s3://sfc-main-datasets/domain=CQC/dataset=providers_api/version=2.0.0/year=2024/month=04/day=08/import_date=20240408/"
     )
@@ -131,7 +99,7 @@ def evaluate_dataset_changes():
         )
 
     joined_df = df_b.join(
-        df_a, on="providerId", how="left", suffix="_base", maintain_order="right"
+        df_a, on="locationId", how="left", suffix="_base", maintain_order="right"
     )
 
     rows_with_changes = joined_df.remove(unchanged_conditions)
@@ -143,7 +111,7 @@ def evaluate_dataset_changes():
 
 @unittest.skip("should be run manually")
 def test_delta_matches_changes_api():
-    bucket = "sfc-test-diff-datasets"
+    bucket = "sfc-delta-locations-dataset-datasets"
     prev_year = 2024
     prev_month = 12
     prev_day = 23
@@ -152,11 +120,13 @@ def test_delta_matches_changes_api():
             if year == 2025 and month >= 8:
                 break
 
-            print(f"domain=CQC/dataset=providers_api/year={year}/month={month:02}")
+            print(
+                f"domain=CQC/dataset=locations_api/version=3.0.0/year={year}/month={month:02}"
+            )
 
             day_folders = list_bucket_objects(
                 bucket,
-                f"domain=CQC/dataset=providers_api/year={year}/month={month:02}",
+                f"domain=CQC/dataset=locations_api/version=3.0.0/year={year}/month={month:02}",
             )
 
             for day in [1, 8, 15, 23]:
