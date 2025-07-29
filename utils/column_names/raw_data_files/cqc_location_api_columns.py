@@ -5,7 +5,9 @@ from dataclasses import dataclass
 class NewCqcLocationApiColumns:
     age_group: str = "ageGroup"
     also_known_as: str = "alsoKnownAs"
+    asg_ratings: str = "asgRatings"
     assessment: str = "assessment"
+    assessment_plan_published_date_time: str = "assessmentPlanPublishedDateTime"
     brand_id: str = "brandId"
     brand_name: str = "brandName"
     care_home: str = "careHome"
