@@ -87,36 +87,40 @@ jobs:
     steps:
       - checkout
 
-      - restore_cache:
-          keys:
-            - v1.1-deps-{{ checksum "Pipfile.lock" }}
+      # - restore_cache:
+      #     keys:
+      #       - v1.1-deps-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: Install system packages
           command: |
             sudo apt-get update
             sudo apt-get install -y default-jre-headless
+      
+      # - python/install-packages:
+      #     pkg-manager: uv
 
       - run:
           name: install dependencies
           command: |
-            sudo pip install pipenv
-            pipenv install --dev
+            sudo pip install uv
+            uv venv
+            uv sync --frozen
 
-      - save_cache:
-          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ~/.local/share/virtualenvs
+      # - save_cache:
+      #     key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+      #     paths:
+      #       - ~/.local/share/virtualenvs
 
       - run:
           name: run unit tests
           command: |
-            pipenv run python -m unittest discover -s . -p "test_*.py"
+            un run python -m unittest discover -s . -p "test_*.py"
 
       - run:
           name: run integration tests
           command: |
-            pipenv run python -m unittest discover tests/integration
+            un run python -m unittest discover tests/integration
 
 
 
