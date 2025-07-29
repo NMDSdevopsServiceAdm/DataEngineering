@@ -13,11 +13,72 @@ parameters:
   GHA_Meta:
     type: string
     default: ""
+  run-build-dataset-rebuild:
+    type: boolean
+    default: false
+  run-check-dataset-equality:
+    type: boolean
+    default: false
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
+  aws-cli: circleci/aws-cli@5.4.1
 
 jobs:
+  lambda-function-containerisation:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Conditionally Build Docker Image
+          command: |
+            if ! git diff --quiet HEAD~1 -- "lambdas/create_dataset_snapshot"; then
+              echo "There are changes in the create dataset snapshot container. Rebuilding and pushing to ECR."
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
+              
+              # Authenticate Docker to ECR
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+              
+              # Push the image
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
+            else
+              echo "There are no changes in the create dataset snapshot container. Skipping."
+            fi
+            
+            if ! git diff --quiet HEAD~1 -- "lambdas/check_dataset_equality"; then
+              echo "There are changes in the check dataset equality container. Rebuilding and pushing to ECR."
+              docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
+
+              # Authenticate Docker to ECR
+              docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+
+              # Push the image
+              docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
+              docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
+            else
+              echo "There are no changes in the check dataset equality container. Skipping."
+            fi
+
+  build-check-equality:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Conditionally Build Docker Image
+          command: |
+            
+
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -57,6 +118,8 @@ jobs:
           command: |
             pipenv run python -m unittest discover tests/integration
 
+
+
   lint-python:
     docker:
       - image: circleci/python:3.9.6
@@ -93,7 +156,6 @@ jobs:
           name: Check terraform fomatting
           command: terraform fmt -check -recursive -diff
 
-
   terraform-plan:
     working_directory: /tmp/project
     docker:
@@ -122,6 +184,7 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
+      - checkout
       - attach_workspace:
           at: .
 
@@ -219,11 +282,17 @@ jobs:
             terraform workspace select default
             terraform workspace delete << pipeline.parameters.GHA_Meta >>
 
+
 workflows:
   version: 2
+
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              only: main
       - test:
           filters:
             branches:
@@ -231,6 +300,7 @@ workflows:
       - terraform-plan:
           requires:
             - test
+            - lambda-function-containerisation
       - plan-approval:
           type: approval
           requires:
@@ -246,6 +316,10 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - lambda-function-containerisation:
+          filters:
+            branches:
+              ignore: main
       - test:
           filters:
             branches:
@@ -266,6 +340,8 @@ workflows:
           requires:
             - lint-terraform
             - test
+            - lambda-function-containerisation
+            - lint-terraform
       - terraform-apply:
           requires:
             - terraform-plan

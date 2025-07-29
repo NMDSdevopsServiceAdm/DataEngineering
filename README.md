@@ -60,12 +60,14 @@ terraform fmt -recursive  # Terraform
 - For collaboration or more information, contact us at [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
 ## Further Reading
-- [CHANGELOG.md](./CHANGELOG.md)
-- [DEPLOY.md](./DEPLOY.md)
-- [GUIDES.md](./GUIDES.md)
-- [LICENSE.md](./LICENSE.md)
-- [NOTEBOOKS.md](./NOTEBOOKS.md)
-- [SETUP.md](./SETUP.md)
+- [CHANGELOG.md](./CHANGELOG.md) - notable changes to this project over time
+- [DEPLOY.md](./DEPLOY.md) - Terraform deployment guide
+- [GUIDES.md](./GUIDES.md) - general guidance and information
+- [LICENSE.md](./LICENSE.md) - license information
+- [NOTEBOOKS.md](./NOTEBOOKS.md) - Jupyter notebooks on AWS EMR
+- [SETUP.md](./SETUP.md) - local environment and project setup
+- [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
+- [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows
 
 ## License
 This repository is published for transparency and public interest only. It is **not licensed for reuse**.

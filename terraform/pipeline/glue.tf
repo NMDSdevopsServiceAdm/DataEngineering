@@ -287,6 +287,23 @@ module "bulk_cqc_locations_download_job" {
   }
 }
 
+module "delta_cqc_locations_download_job" {
+  source          = "../modules/glue-job"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
+  script_name     = "delta_download_cqc_locations.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "3.0"
+
+  job_parameters = {
+    "--destination_prefix"        = "${module.datasets_bucket.bucket_uri}"
+    "--start_timestamp"           = "",
+    "--end_timestamp"             = "",
+    "--additional-python-modules" = "ratelimit==2.2.1,"
+  }
+}
+
 
 module "ingest_dpr_external_data_job" {
   source          = "../modules/glue-job"
@@ -328,7 +345,7 @@ module "prepare_dpr_external_data_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2025.02/"
-    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/"
+    "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
   }
 }
 
@@ -342,7 +359,7 @@ module "prepare_dpr_survey_data_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2025.02/"
-    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/"
+    "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
   }
 }
 
@@ -355,9 +372,9 @@ module "merge_dpr_data_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_external_prepared/version=2025.02/"
-    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_survey_prepared/version=2025.02/"
-    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/"
+    "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
+    "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
+    "--destination"                          = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
   }
 }
 
@@ -370,9 +387,9 @@ module "estimate_direct_payments_job" {
   datasets_bucket = module.datasets_bucket
   glue_version    = "3.0"
   job_parameters = {
-    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_merged/version=2025.02/"
-    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/"
-    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_summary/version=2025.02/"
+    "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
+    "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
+    "--summary_destination"           = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates_summary/version=2025.02/"
   }
 }
 
@@ -386,8 +403,8 @@ module "split_pa_filled_posts_into_icb_areas_job" {
   glue_version    = "3.0"
   job_parameters = {
     "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
-    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates/version=2025.02/"
-    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=data_engineering/dataset=direct_payments_estimates_by_icb/version=2025.02/"
+    "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
+    "--destination"               = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates_by_icb/version=2025.02/"
   }
 }
 
@@ -402,8 +419,8 @@ module "flatten_cqc_ratings_job" {
   job_parameters = {
     "--cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
     "--ascwds_workplace_source"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/"
+    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/"
+    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
   }
 }
 
@@ -490,7 +507,7 @@ module "merge_coverage_data_job" {
   job_parameters = {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
     "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
+    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/"
     "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
@@ -783,6 +800,21 @@ module "validate_locations_api_raw_data_job" {
   }
 }
 
+module "validate_locations_api_raw_delta_data_job" {
+  source          = "../modules/glue-job"
+  script_dir      = "projects/_01_ingest/cqc_api/jobs"
+  script_name     = "validate_locations_api_raw_delta_data.py"
+  glue_role       = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket = module.pipeline_resources
+  datasets_bucket = module.datasets_bucket
+  glue_version    = "4.0"
+
+  job_parameters = {
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/"
+    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
+  }
+}
+
 module "validate_providers_api_raw_data_job" {
   source          = "../modules/glue-job"
   script_dir      = "projects/_01_ingest/cqc_api/jobs"
@@ -986,13 +1018,6 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
 module "ascwds_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "ASCWDS"
-  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
-  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
-}
-
-module "data_engineering_crawler" {
-  source                       = "../modules/glue-crawler"
-  dataset_for_crawler          = "data_engineering"
   glue_role                    = aws_iam_role.sfc_glue_service_iam_role
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }

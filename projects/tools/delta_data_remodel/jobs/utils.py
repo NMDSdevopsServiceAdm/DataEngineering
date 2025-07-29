@@ -73,7 +73,7 @@ def build_snapshot_table_from_delta(
 
 
 def snapshots(
-    bucket: str, read_folder: str, primary_key: str
+    bucket: str, read_folder: str, primary_key: str, schema: Optional[pl.Schema] = None
 ) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
@@ -81,12 +81,15 @@ def snapshots(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         primary_key (str): primary key to join the dataset on
+        schema(Optional[pl.Schema]): Optional schema of the dataset
+
     Yields:
         pl.DataFrame: Generator of snapshots
 
     """
     delta_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
+        schema=schema,
     )
 
     previous_ss = None

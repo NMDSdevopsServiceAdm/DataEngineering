@@ -6,10 +6,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added a lambda function to check if two datasets are equal
+
+- Added a lambda function to create a full snapshot from a delta dataset
+
+- Created a `STYLEGUIDE.md` file with guidance on code organisation, folder structure, naming conventions, utility function locations and unit test conventions.
 
 - Added tool to create delta datasets from full datasets (where we store full snapshots for every timepoint)
   - Added support for CQC Providers API
   - Added support for CQC Locations API
+
+### Changed
+-   Update the version of CQC ratings data
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
