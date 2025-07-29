@@ -6,9 +6,9 @@ from datetime import datetime
 
 from s3fs import S3FileSystem
 
-from snapshots import build_snapshot_table_from_delta
+from utils.snapshots import build_snapshot_table_from_delta
 
-from ind_cqc_pipeline_columns import (
+from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
