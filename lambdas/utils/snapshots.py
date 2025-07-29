@@ -56,6 +56,9 @@ def get_snapshots(
     Yields:
         pl.DataFrame: Generator of snapshots
 
+    Raises:
+        ValueError: If the organisation_type is not supported
+
     """
     delta_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
@@ -66,7 +69,6 @@ def get_snapshots(
         primary_key = CqcLocations.location_id
     elif organisation_type == "providers":
         primary_key = CqcProviders.provider_id
-
     else:
         raise ValueError(
             f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
