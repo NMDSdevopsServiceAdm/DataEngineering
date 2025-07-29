@@ -40,9 +40,9 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
-                        "Prefix": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
-                        "Bucket": "${dataset_bucket_uri}",
-                        "StartAfter": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
+                        "Bucket": "${dataset_bucket_name}",
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
                      },
                       "Next": "WorkerReady"
                     },
@@ -79,9 +79,9 @@
                       "Type": "Task",
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
-                        "Prefix": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/', $.year, $.month, $day)",
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
                         "Bucket": "${dataset_bucket_name}",
-                        "StartAfter": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}}/import_date={}{}{}', $.year, $.month, $day, $.year, $.month, $day)"
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
                      },
                      "Next": "WorkplaceReady"
                     },
