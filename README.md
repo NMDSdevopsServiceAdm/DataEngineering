@@ -60,7 +60,6 @@ terraform fmt -recursive  # Terraform
 - For collaboration or more information, contact us at [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
 
 ## Further Reading
-- [Published outputs using this data](https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/Workforce-intelligence/publications/Data-and-publications.aspx)
 - [CHANGELOG.md](./CHANGELOG.md) - notable changes to this project over time
 - [DEPLOY.md](./DEPLOY.md) - Terraform deployment guide
 - [GUIDES.md](./GUIDES.md) - general guidance and information
@@ -69,6 +68,10 @@ terraform fmt -recursive  # Terraform
 - [SETUP.md](./SETUP.md) - local environment and project setup
 - [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
 - [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows
+
+## Publications and Outputs
+The data and models produced by this repository feed into various reports, dashboards and monthly trackers and are available at:
+[Skills for Care data and publications](https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/Workforce-intelligence/publications/Data-and-publications.aspx)
 
 ## License
 This repository is published for transparency and public interest only. It is **not licensed for reuse**.
