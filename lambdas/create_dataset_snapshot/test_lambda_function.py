@@ -11,7 +11,7 @@ mock_utils_module = MagicMock()
 sys.modules["utils"] = mock_utils_module
 
 from lambda_function import lambda_handler
-import projects.tools.delta_data_remodel.jobs.utils as job
+import lambdas.utils.snapshots as job
 
 PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 
@@ -99,7 +99,7 @@ class TestUtilDependencies(unittest.TestCase):
 
         # When
         result = job.build_snapshot_table_from_delta(
-            "bucket", "read_folder", timepoint=20130301
+            "bucket", "read_folder", organisation_type="providers", timepoint=20130301
         )
 
         # Then

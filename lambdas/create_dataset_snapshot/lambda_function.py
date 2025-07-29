@@ -6,7 +6,7 @@ from datetime import datetime
 
 from s3fs import S3FileSystem
 
-from utils import build_snapshot_table_from_delta
+from snapshots import build_snapshot_table_from_delta
 
 from ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -35,6 +35,7 @@ def lambda_handler(event, context):
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
+        organisation_type=event["organisation_type"],
         timepoint=date_int,
     )
 

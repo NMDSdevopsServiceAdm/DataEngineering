@@ -1,9 +1,8 @@
-from re import match
-from typing import Generator, Optional
-
 import boto3
 import polars as pl
 import polars.testing as pl_testing
+
+from lambdas.utils import snapshots
 
 
 def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
@@ -23,14 +22,14 @@ def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
 
 
 def build_full_table_from_delta(
-    bucket: str, read_folder: str, primary_key: str, timepoint_limit: int = None
+    bucket: str, read_folder: str, organisation_type: str, timepoint_limit: int = None
 ) -> pl.DataFrame:
     """
     Builds full dataset from delta dataset
     Args:
         bucket (str): bucket name
         read_folder (str): file path (excluding bucket name)
-        primary_key (str): primary key to join the dataset on
+        organisation_type (str): CQC organisation type (locations or providers)
         timepoint_limit (int): date before which you want the full dataset (e.g. 20141231) inclusive
 
     Returns:
@@ -41,84 +40,15 @@ def build_full_table_from_delta(
     if not timepoint_limit:
         timepoint_limit = 300000000
 
-    for t in snapshots(bucket, read_folder, primary_key):
+    for t in snapshots.get_snapshots(
+        bucket, read_folder, organisation_type=organisation_type
+    ):
         if t.item(1, "import_date") > timepoint_limit:
             break
         ss.append(t)
 
     full_df = pl.concat(ss)
     return full_df
-
-
-def build_snapshot_table_from_delta(
-    bucket: str, read_folder: str, primary_key: str, timepoint: int
-) -> Optional[pl.DataFrame]:
-    """
-    Gets full snapshot of data at a given timepoint
-    Args:
-        bucket (str): delta dataset bucket
-        read_folder (str): delta dataset folder
-        timepoint (int): timepoint to get data for (yyyymmdd)
-        primary_key (str): primary key to join the dataset on
-
-    Returns:
-        Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
-
-    """
-    for snapshot in snapshots(bucket, read_folder, primary_key):
-        if snapshot.item(1, "import_date") == timepoint:
-            return snapshot
-    else:
-        return None
-
-
-def snapshots(
-    bucket: str, read_folder: str, primary_key: str, schema: Optional[pl.Schema] = None
-) -> Generator[pl.DataFrame, None, None]:
-    """
-    Generator for all snapshots, in order
-    Args:
-        bucket (str): delta dataset bucket
-        read_folder (str): delta dataset folder
-        primary_key (str): primary key to join the dataset on
-        schema(Optional[pl.Schema]): Optional schema of the dataset
-
-    Yields:
-        pl.DataFrame: Generator of snapshots
-
-    """
-    delta_df = pl.read_parquet(
-        f"s3://{bucket}/{read_folder}",
-        schema=schema,
-    )
-
-    previous_ss = None
-
-    for import_date, delta_data in delta_df.group_by(
-        "import_date", maintain_order=True
-    ):
-        date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
-        date = match(date_pattern, f"{import_date[0]}")
-
-        if import_date[0] == 20130301:
-            previous_ss = delta_data
-        else:
-            unchanged = previous_ss.remove(
-                pl.col(primary_key).is_in(delta_data[primary_key])
-            )
-            changed = delta_data.filter(
-                pl.col(primary_key).is_in(previous_ss[primary_key])
-            ).remove(pl.col("deregistrationDate").ne(""))
-            new = delta_data.remove(pl.col(primary_key).is_in(previous_ss[primary_key]))
-
-            previous_ss = pl.concat([unchanged, changed, new])
-            previous_ss = previous_ss.with_columns(
-                pl.lit(date.group("year")).alias("year").cast(pl.Int64),
-                pl.lit(date.group("month")).alias("month").cast(pl.Int64),
-                pl.lit(date.group("day")).alias("day").cast(pl.Int64),
-                pl.lit(import_date[0]).alias("import_date").cast(pl.Int64),
-            )
-        yield previous_ss
 
 
 def get_diffs(
