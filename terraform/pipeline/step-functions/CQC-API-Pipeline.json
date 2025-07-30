@@ -186,7 +186,7 @@
           }
         },
         {
-          "StartAt": "CleanCqcLocationData",
+          "StartAt": "ValidateLocationsCleaned",
           "States": {
             "ValidateLocationsCleaned": {
               "Type": "Task",
