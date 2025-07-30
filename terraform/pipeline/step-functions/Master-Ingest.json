@@ -43,19 +43,20 @@
                         "Prefix.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
                         "Bucket": "${dataset_bucket_name}",
                         "StartAfter.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
-                     },
+                      },
+                      "ResultPath": "$.workerfile",
                       "Next": "WorkerReady"
                     },
                     "WorkerReady": {
                       "Type": "Choice",
                       "Choices": [
                         {
-                          "Variable": "$.KeyCount",
+                          "Variable": "$.workerfile.KeyCount",
                           "NumericGreaterThanEquals": 1,
                           "Next": "MarkWorkerReady"
                         },
                         {
-                          "Variable": "$.KeyCount",
+                          "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
                           "Next": "WaitForWorker"
                         }
@@ -82,19 +83,20 @@
                         "Prefix.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
                         "Bucket": "${dataset_bucket_name}",
                         "StartAfter.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
-                     },
-                     "Next": "WorkplaceReady"
+                      },
+                      "ResultPath": "$.workerfile",
+                      "Next": "WorkplaceReady"
                     },
                     "WorkplaceReady": {
                       "Type": "Choice",
                       "Choices": [
                         {
-                          "Variable": "$.KeyCount",
+                          "Variable": "$.workerfile.KeyCount",
                           "NumericGreaterThanEquals": 1,
                           "Next": "MarkWorkplaceReady"
                         },
                         {
-                          "Variable": "$.KeyCount",
+                          "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
                           "Next": "WaitForWorkplace"
                         }
