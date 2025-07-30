@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Master-Ingest StepFunction to manage overall system flow for new delta pipeline
+- Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
+- Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
+
+### Changed
+- Lamdba functions to work with locations or providers
+
+
+## [Unreleased]
+
+### Added
 - Added a lambda function to check if two datasets are equal
 
 - Added a lambda function to create a full snapshot from a delta dataset
