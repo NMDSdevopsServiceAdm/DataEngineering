@@ -146,19 +146,19 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
         ].alias(CQCRatings.overall_rating),
         cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
             CQCL.key_question_ratings
-        ][3][CQCL.rating].alias(CQCRatings.safe_rating),
-        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
-            CQCL.key_question_ratings
-        ][4][CQCL.rating].alias(CQCRatings.well_led_rating),
-        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
-            CQCL.key_question_ratings
         ][0][CQCL.rating].alias(CQCRatings.caring_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][1][CQCL.rating].alias(CQCRatings.effective_rating),
         cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
             CQCL.key_question_ratings
         ][2][CQCL.rating].alias(CQCRatings.responsive_rating),
         cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
             CQCL.key_question_ratings
-        ][1][CQCL.rating].alias(CQCRatings.effective_rating),
+        ][3][CQCL.rating].alias(CQCRatings.safe_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][4][CQCL.rating].alias(CQCRatings.well_led_rating),
     )
     return current_ratings_df
 

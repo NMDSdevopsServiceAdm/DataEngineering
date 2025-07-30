@@ -953,11 +953,11 @@ class FlattenCQCRatings:
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCRatings.caring_rating, StringType(), True),
+            StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
-            StructField(CQCRatings.caring_rating, StringType(), True),
-            StructField(CQCRatings.responsive_rating, StringType(), True),
-            StructField(CQCRatings.effective_rating, StringType(), True),
         ]
     )
 

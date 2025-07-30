@@ -681,11 +681,11 @@ class FlattenCQCRatings:
             "registered",
             "report_date",
             "Overall rating Excellent",
+            "Caring rating Good",
+            "Effective rating Good",
+            "Responsive rating Good",
             "Safe rating Good",
             "Well-led rating Good",
-            "Caring rating Good",
-            "Responsive rating Good",
-            "Effective rating Good",
         )
     ]
     recode_unknown_to_null_rows = [
