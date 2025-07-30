@@ -4,14 +4,12 @@ from utils.column_values.categorical_column_values import (
     ASCWDSFilledPostsSource as Source,
 )
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.utils import (
-    ascwds_filled_posts_is_null,
-    selected_column_is_at_least_the_min_permitted_value,
-    absolute_difference_between_total_staff_and_worker_records_below_cut_off,
-    percentage_difference_between_total_staff_and_worker_records_below_cut_off,
-    average_of_two_columns,
-)
-from utils.ind_cqc_filled_posts_utils.utils import (
     add_source_description_to_source_column,
+    absolute_difference_between_total_staff_and_worker_records_below_cut_off,
+    ascwds_filled_posts_is_null,
+    average_of_two_columns,
+    percentage_difference_between_total_staff_and_worker_records_below_cut_off,
+    selected_column_is_at_least_the_min_permitted_value,
 )
 
 ascwds_filled_posts_difference_within_range_source_description = (

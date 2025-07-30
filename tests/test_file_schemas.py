@@ -535,14 +535,6 @@ class IndCQCDataUtils:
         ]
     )
 
-    estimated_source_description_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-
     get_selected_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -578,6 +570,17 @@ class IndCQCDataUtils:
         [
             *allocate_primary_service_type_second_level_schema,
             StructField(IndCQC.primary_service_type_second_level, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class CalculateAscwdsFilledPostsUtilsSchemas:
+    estimated_source_description_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
+            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
         ]
     )
 

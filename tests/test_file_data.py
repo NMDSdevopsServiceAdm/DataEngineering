@@ -884,18 +884,6 @@ class IndCQCDataUtils:
     ]
     # fmt: on
 
-    source_missing_rows = [
-        ("1-000001", 8.0, None),
-        ("1-000002", None, None),
-        ("1-000003", 4.0, "already_populated"),
-    ]
-
-    expected_source_added_rows = [
-        ("1-000001", 8.0, "model_name"),
-        ("1-000002", None, None),
-        ("1-000003", 4.0, "already_populated"),
-    ]
-
     test_first_selection_rows = [
         ("loc 1", 1, None, 100.0),
         ("loc 1", 2, 2.0, 50.0),
@@ -1163,6 +1151,21 @@ class IndCQCDataUtils:
             ],
             PrimaryServiceTypeSecondLevel.other_non_residential,
         ),
+    ]
+
+
+@dataclass
+class CalculateAscwdsFilledPostsUtilsData:
+    source_missing_rows = [
+        ("1-000001", 8.0, None),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
+    ]
+
+    expected_source_added_rows = [
+        ("1-000001", 8.0, "model_name"),
+        ("1-000002", None, None),
+        ("1-000003", 4.0, "already_populated"),
     ]
 
 
