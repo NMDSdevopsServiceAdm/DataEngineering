@@ -1,8 +1,8 @@
 {
   "Comment": "State machine for CQC data pipeline",
-  "StartAt": "CqcIngestBuildValidate",
+  "StartAt": "CqcIngest",
   "States": {
-    "CqcIngestBuildValidate": {
+    "CqcIngest": {
       "Type": "Parallel",
       "Branches": [
         {
@@ -34,53 +34,6 @@
                   "--start_timestamp.$": "$startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
-                }
-              },
-              "Next": "ValidateProvidersApiRaw"
-            },
-            "ValidateProvidersApiRaw": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-              "JobName": "${validate_providers_api_raw_delta_data_job_name}",
-              "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
-                }
-              },
-              "Next": "BuildProvidersDataset",
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "PublishErrorNotification",
-                  "ResultPath": "$.error"
-                }
-              ]
-            },
-            "BuildProvidersDataset": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::lambda:invoke",
-              "Parameters": {
-                  "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
-                  "Payload": {
-                      "organisation_type": "providers",
-                      "input_uri": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
-                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                      "snapshot_date.$": "$$.State.EnteredTime"
-                  }
-              },
-              "Next": "CleanCqcProviderData"
-            },
-            "CleanCqcProviderData": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_cqc_provider_data_job_name}",
-                "Arguments": {
-                  "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
-                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
                 }
               },
               "End": true
@@ -118,8 +71,36 @@
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
               },
-              "Next": "ValidateLocationsApiRaw"
-            },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "CqcValidate"
+    },
+    "CqcValidate": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "ValidateProvidersApiRaw",
+          "States": {
+            "ValidateProvidersApiRaw": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+              "JobName": "${validate_providers_api_raw_delta_data_job_name}",
+              "Arguments": {
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "ValidateLocationsApiRaw",
+          "States": {
             "ValidateLocationsApiRaw": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
@@ -130,17 +111,59 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
                 }
               },
-              "Next": "BuildLocationsDataset",
-              "Catch": [
-                {
-                  "ErrorEquals": [
-                    "States.ALL"
-                  ],
-                  "Next": "PublishErrorNotification",
-                  "ResultPath": "$.error"
-                }
-              ]
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "CqcBuild",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "PublishErrorNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "CqcBuild": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "BuildProvidersDataset",
+          "States": {
+            "BuildProvidersDataset": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                  "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                  "Payload": {
+                      "organisation_type": "providers",
+                      "input_uri": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
+                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                      "snapshot_date.$": "$$.State.EnteredTime"
+                  }
+              },
+              "Next": "CleanCqcProviderData"
             },
+            "CleanCqcProviderData": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_cqc_provider_data_job_name}",
+                "Arguments": {
+                  "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
+                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "BuildLocationsDataset",
+          "States": {
             "BuildLocationsDataset": {
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke",
