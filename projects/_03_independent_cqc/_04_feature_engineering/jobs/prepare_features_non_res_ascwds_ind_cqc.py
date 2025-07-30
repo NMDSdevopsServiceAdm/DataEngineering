@@ -7,21 +7,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from utils.feature_engineering_resources.feature_engineering_region import (
-    FeatureEngineeringValueLabelsRegion as RegionFeatures,
-)
-from utils.feature_engineering_resources.feature_engineering_related_location import (
-    FeatureEngineeringValueLabelsRelatedLocation as RelatedLocationFeatures,
-)
-from utils.feature_engineering_resources.feature_engineering_rural_urban import (
-    FeatureEngineeringValueLabelsRuralUrban as RuralUrbanFeatures,
-)
-from utils.feature_engineering_resources.feature_engineering_services import (
-    FeatureEngineeringValueLabelsServices as ServicesFeatures,
-)
-from utils.feature_engineering_resources.feature_engineering_specialisms import (
-    FeatureEngineeringValueLabelsSpecialisms as SpecialismsFeatures,
-)
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_array_column_count,
     add_date_index_column,
@@ -31,6 +16,13 @@ from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     filter_without_dormancy_features_to_pre_2025,
     group_rural_urban_sparse_categories,
     vectorise_dataframe,
+)
+from projects._03_independent_cqc._04_feature_engineering.utils.value_labels import (
+    RegionLabels,
+    RelatedLocationLabels,
+    RuralUrbanLabels,
+    ServicesLabels,
+    SpecialismsLabels,
 )
 
 
@@ -70,14 +62,14 @@ def main(
     features_df, service_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.services_offered,
-        ServicesFeatures.non_res_labels_dict,
+        ServicesLabels.non_res_labels_dict,
         is_array_col=True,
     )
 
     features_df, specialisms_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.specialisms_offered,
-        SpecialismsFeatures.labels_dict,
+        SpecialismsLabels.labels_dict,
         is_array_col=True,
     )
 
@@ -85,21 +77,21 @@ def main(
     features_df, rui_indicators_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_rural_urban_indicator_2011_for_non_res_model,
-        RuralUrbanFeatures.non_res_labels_dict,
+        RuralUrbanLabels.non_res_labels_dict,
         is_array_col=False,
     )
 
     features_df, region_list = expand_encode_and_extract_features(
         features_df,
         IndCQC.current_region,
-        RegionFeatures.labels_dict,
+        RegionLabels.labels_dict,
         is_array_col=False,
     )
 
     features_df, related_location = expand_encode_and_extract_features(
         features_df,
         IndCQC.related_location,
-        RelatedLocationFeatures.labels_dict,
+        RelatedLocationLabels.labels_dict,
         is_array_col=False,
     )
 
