@@ -48,7 +48,16 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
                 }
               },
-              "Next": "BuildProvidersDataset"
+              "Next": "BuildProvidersDataset",
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "PublishErrorNotification",
+                  "ResultPath": "$.error"
+                }
+              ]
             },
             "BuildProvidersDataset": {
               "Type": "Task",
@@ -121,7 +130,16 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
                 }
               },
-              "Next": "BuildLocationsDataset"
+              "Next": "BuildLocationsDataset",
+              "Catch": [
+                {
+                  "ErrorEquals": [
+                    "States.ALL"
+                  ],
+                  "Next": "PublishErrorNotification",
+                  "ResultPath": "$.error"
+                }
+              ]
             },
             "BuildLocationsDataset": {
               "Type": "Task",

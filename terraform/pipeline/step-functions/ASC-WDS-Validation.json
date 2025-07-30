@@ -18,19 +18,6 @@
                     "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
                   }
                 },
-                "Next": "CleanWorkplaceData"
-              },
-              "CleanWorkplaceData": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${clean_ascwds_workplace_job_name}",
-                  "Arguments": {
-                    "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                    "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                    "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-                  }
-                },
                 "End": true
               }
             }
@@ -53,6 +40,28 @@
             }
           }
         ],
+        "Next": "CleanWorkplaceData",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "PublishErrorNotification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "CleanWorkplaceData": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "${clean_ascwds_workplace_job_name}",
+          "Arguments": {
+            "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+            "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+            "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+          }
+        },
         "Next": "CleanWorkerData"
       },
       "CleanWorkerData": {
