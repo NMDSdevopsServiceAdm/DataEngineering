@@ -52,7 +52,7 @@
             },
             "BuildProvidersDataset": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
@@ -125,7 +125,7 @@
             },
             "BuildLocationsDataset": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
