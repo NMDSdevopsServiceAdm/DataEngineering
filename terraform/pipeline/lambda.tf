@@ -142,7 +142,7 @@ data "aws_iam_policy_document" "create_snapshot_lambda" {
     actions = [
       "s3:Put*"
     ]
-    effect    = "Allow"
+    effect = "Allow"
     resources = [
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC/dataset=providers_api/version=3.0.0/*",
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC/dataset=locations_api/version=3.0.0/*"
