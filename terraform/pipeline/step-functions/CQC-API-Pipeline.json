@@ -57,8 +57,8 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "organisation_type": "providers",
-                      "input_uri.$": "${dataset_bucket_uri}/full/domain=CQC/dataset=providers_api/version=3.0.0/",
-                      "output_uri": "States.Format('${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                      "input_uri": "${dataset_bucket_uri}/full/domain=CQC/dataset=providers_api/version=3.0.0/",
+                      "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                       "snapshot_date.$": "$startDate"
                   }
               },
@@ -130,8 +130,8 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "organisation_type": "locations",
-                      "input_uri.$": "${dataset_bucket_uri}/full/domain=CQC/dataset=locations_api/version=3.0.0/",
-                      "output_uri": "States.Format('${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                      "input_uri": "${dataset_bucket_uri}/full/domain=CQC/dataset=locations_api/version=3.0.0/",
+                      "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                       "snapshot_date.$": "$startDate"
                   }
               },
