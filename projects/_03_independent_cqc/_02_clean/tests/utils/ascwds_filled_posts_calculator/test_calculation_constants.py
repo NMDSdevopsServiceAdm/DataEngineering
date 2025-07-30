@@ -1,7 +1,7 @@
 import unittest
 from dataclasses import asdict
 
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
+from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.calculation_constants import (
     ASCWDSFilledPostCalculationConstants,
 )
 

@@ -1,10 +1,10 @@
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql import DataFrame, functions as F
 
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_difference_within_range import (
+from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.difference_within_range import (
     calculate_ascwds_filled_posts_difference_within_range,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff import (
+from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     calculate_ascwds_filled_posts_totalstaff_equal_wkrrecs,
 )
 

@@ -1,15 +1,11 @@
 import unittest
 import warnings
 
+import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator as job
 from tests.test_file_data import CalculateAscwdsFilledPostsData as Data
 from tests.test_file_schemas import CalculateAscwdsFilledPostsSchemas as Schemas
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-
-import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestAscwdsFilledPostsCalculator(unittest.TestCase):
