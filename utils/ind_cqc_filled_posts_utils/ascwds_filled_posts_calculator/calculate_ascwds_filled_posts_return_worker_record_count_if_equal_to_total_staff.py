@@ -3,7 +3,7 @@ from pyspark.sql import DataFrame, functions as F
 from utils.column_values.categorical_column_values import (
     ASCWDSFilledPostsSource as Source,
 )
-from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks import (
+from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.utils import (
     ascwds_filled_posts_is_null,
     two_cols_are_equal_and_at_least_minimum_permitted_value,
 )

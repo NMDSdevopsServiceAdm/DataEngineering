@@ -3,9 +3,7 @@ import pyspark.sql.functions as F
 from utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculation_constants import (
     ASCWDSFilledPostCalculationConstants as calculation_constant,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 absolute_difference: str = "absolute_difference"
 

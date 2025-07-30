@@ -11,10 +11,8 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.utils as job
 
 
 class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
