@@ -810,7 +810,7 @@ module "validate_locations_api_raw_delta_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/"
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
   }
 }
@@ -840,7 +840,7 @@ module "validate_providers_api_raw_delta_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
-    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/"
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
   }
 }

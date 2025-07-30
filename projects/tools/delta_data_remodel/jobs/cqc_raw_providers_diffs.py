@@ -22,7 +22,7 @@ def main():
     read_folder = (
         Rf"domain=CQC/dataset=providers_api/version=2.0.0/year=2013/month=03/day=01/"
     )
-    write_folder = Rf"domain=CQC/dataset=providers_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
+    write_folder = Rf"domain=CQC_delta/dataset=providers_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
 
     base_df = pl.read_parquet(
         f"s3://{bucket}/{read_folder}",
@@ -52,7 +52,7 @@ def main():
             for read_folder in sorted(day_folders):
                 day = int(read_folder[-2:])
                 print(f"Starting {day}-{month}-{year}")
-                write_folder = Rf"domain=CQC/dataset=providers_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
+                write_folder = Rf"domain=CQC_delta/dataset=providers_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
 
                 snapshot_df = pl.read_parquet(
                     f"s3://{bucket}/{read_folder}/",

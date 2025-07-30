@@ -4,7 +4,7 @@
   "States": {
     "IngestCqcAndAscWDS": {
       "Type": "Parallel",
-      "Next": "TriggerPipelines",
+      "Next": "DownstreamPlaceholder",
       "Branches": [
         {
           "StartAt": "IngestCqcApi",
@@ -132,21 +132,14 @@
 
       ]
     },
-    "TriggerPipelines": {
+    "DownstreamPlaceholder": {
         "Type": "Parallel",
         "Branches": [
           {
             "StartAt": "SfCCoveragePipeline",
             "States": {
               "SfCCoveragePipeline": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution",
-                "Parameters": {
-                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
+                "Type": "Pass",
                 "End": true
               }
             }
@@ -155,14 +148,7 @@
             "StartAt": "IndCQCPipeline",
             "States": {
               "IndCQCPipeline": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution",
-                "Parameters": {
-                  "StateMachineArn": "${trigger_ind_cqc_pipeline_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
+                "Type": "Pass",
                 "End": true
               }
             }

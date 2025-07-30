@@ -90,7 +90,7 @@
               "Parameters": {
               "JobName": "${validate_providers_api_raw_delta_data_job_name}",
               "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
                 }
               },
@@ -107,7 +107,7 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_raw_delta_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/",
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
                 }
               },
@@ -140,8 +140,8 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "organisation_type": "providers",
-                      "input_uri": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=3.0.0/",
-                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                      "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/",
+                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                       "snapshot_date.$": "$$.State.EnteredTime"
                   }
               },
@@ -171,8 +171,8 @@
                   "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                   "Payload": {
                       "organisation_type": "locations",
-                      "input_uri": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=3.0.0/",
-                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                      "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/",
+                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                       "snapshot_date.$": "$$.State.EnteredTime"
                   }
               },
