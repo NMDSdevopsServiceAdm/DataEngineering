@@ -140,6 +140,28 @@
           }
         }
       ],
+      "Next": "CleanCqcLocationData"
+    },
+    "CleanCqcLocationData": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${clean_cqc_location_data_job_name}",
+        "Arguments": {
+          "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1",
+          "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
+          "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+          "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+        }
+      },
+      "Next": "CrawlCqc"
+    },
+    "CrawlCqc": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Parameters": {
+        "Name": "${cqc_crawler_name}"
+      },
       "Next": "ValidateCleaned"
     },
     "ValidateCleaned": {
@@ -166,20 +188,6 @@
         {
           "StartAt": "CleanCqcLocationData",
           "States": {
-            "CleanCqcLocationData": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${clean_cqc_location_data_job_name}",
-                "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1",
-                  "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
-                }
-              },
-              "Next": "ValidateLocationsCleaned"
-            },
             "ValidateLocationsCleaned": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
@@ -196,7 +204,54 @@
           }
         }
       ],
-      "End": true
+      "Next": "CrawlWhenSuccessful",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "PublishErrorNotification",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "CrawlWhenSuccessful": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "PublishErrorNotification": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+        "Payload": {
+          "Error.$": "$.error.Cause",
+          "ExecutionId.$": "$$.Execution.Id",
+          "StateMachineName.$": "$$.StateMachine.Name",
+          "StateMachineId.$": "$$.StateMachine.Id",
+          "ExecutionStartTime.$": "$$.Execution.StartTime",
+          "CallbackToken.$": "$$.Task.Token"
+        }
+      },
+      "Next": "CrawlWhenFailed"
+    },
+    "CrawlWhenFailed": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Fail"
+    },
+    "Fail": {
+      "Type": "Fail"
     }
   }
 }

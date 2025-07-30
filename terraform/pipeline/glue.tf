@@ -1043,6 +1043,13 @@ module "cqc_crawler" {
   workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
 }
 
+module "cqc_crawler_delta" {
+  source                       = "../modules/glue-crawler"
+  dataset_for_crawler          = "CQC_delta"
+  glue_role                    = aws_iam_role.sfc_glue_service_iam_role
+  workspace_glue_database_name = "${local.workspace_prefix}-${var.glue_database_name}"
+}
+
 module "sfc_crawler" {
   source                       = "../modules/glue-crawler"
   dataset_for_crawler          = "SfC"

@@ -53,15 +53,36 @@
             }
           }
         ],
+        "Next": "CleanWorkerData"
+      },
+      "CleanWorkerData": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "${clean_ascwds_worker_job_name}",
+          "Arguments": {
+            "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+            "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+            "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+          }
+        },
+        "Next": "CrawlAscWds"
+      },
+      "CrawlAscWds": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Parameters": {
+          "Name": "${ascwds_crawler_name}"
+        },
         "Next": "ValidateCleanedAscWds"
       },
       "ValidateCleanedAscWds": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "ValidateWorkplace",
+            "StartAt": "ValidateCleanedWorkplace",
             "States": {
-              "ValidateWorkplace": {
+              "ValidateCleanedWorkplace": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -76,22 +97,9 @@
             }
           },
           {
-            "StartAt": "CleanWorkerData",
+            "StartAt": "ValidateCleanedWorker",
             "States": {
-              "CleanWorkerData": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                "Parameters": {
-                  "JobName": "${clean_ascwds_worker_job_name}",
-                  "Arguments": {
-                    "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
-                    "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
-                    "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
-                  }
-                },
-                "Next": "ValidateCleanedWorkerData"
-              },
-              "ValidateCleanedWorkerData": {
+              "ValidateCleanedWorker": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -106,7 +114,54 @@
             }
           }
         ],
-        "End": true
+        "Next": "CrawlWhenSuccessful",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "PublishErrorNotification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "CrawlWhenSuccessful": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Success"
+      },
+      "Success": {
+        "Type": "Succeed"
+      },
+      "PublishErrorNotification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+        "Parameters": {
+          "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+          "Payload": {
+            "Error.$": "$.error.Cause",
+            "ExecutionId.$": "$$.Execution.Id",
+            "StateMachineName.$": "$$.StateMachine.Name",
+            "StateMachineId.$": "$$.StateMachine.Id",
+            "ExecutionStartTime.$": "$$.Execution.StartTime",
+            "CallbackToken.$": "$$.Task.Token"
+          }
+        },
+        "Next": "CrawlWhenFailed"
+      },
+      "CrawlWhenFailed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Fail"
+      },
+      "Fail": {
+        "Type": "Fail"
       }
     }
-  }
+}
