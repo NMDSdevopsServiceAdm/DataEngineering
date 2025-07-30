@@ -296,32 +296,32 @@ workflows:
 #          filters:
 #            branches:
 #              ignore: main
-#      - lint-python:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-terraform:
-#          filters:
-#            branches:
-#              ignore: main
-#      - lint-docstrings:
-#          filters:
-#            branches:
-#              ignore: main
-#      - terraform-plan:
-#          requires:
-#            - lint-terraform
-##            - test
-#            - lambda-function-containerisation
-#      - terraform-apply:
-#          requires:
-#            - terraform-plan
-#      - deploy-dependencies:
-#          requires:
-#            - terraform-apply
-#      - copy-default-data:
-#          requires:
-#            - terraform-apply
+      - lint-python:
+          filters:
+            branches:
+              ignore: main
+      - lint-terraform:
+          filters:
+            branches:
+              ignore: main
+      - lint-docstrings:
+          filters:
+            branches:
+              ignore: main
+      - terraform-plan:
+          requires:
+            - lint-terraform
+#            - test
+            - lambda-function-containerisation
+      - terraform-apply:
+          requires:
+            - terraform-plan
+      - deploy-dependencies:
+          requires:
+            - terraform-apply
+      - copy-default-data:
+          requires:
+            - terraform-apply
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
