@@ -51,7 +51,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
-        polars_utils.write_to_parquet(df_unique, destination)
+        polars_utils.write_to_parquet(df_unique, destination, logger=logger)
         return None
     except ValueError as e:
         logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")
