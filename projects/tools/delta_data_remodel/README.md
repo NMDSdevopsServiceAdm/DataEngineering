@@ -8,6 +8,7 @@ More information can be found here: https://skillsforcare.atlassian.net/wiki/x/P
 
 It is currently able to remodel:
 - CQC raw providers dataset
+- CQC raw locations dataset
 
 ## How To Use
 
