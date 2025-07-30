@@ -69,6 +69,10 @@ terraform fmt -recursive  # Terraform
 - [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
 - [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows
 
+## Publications and Outputs
+The data and models produced by this repository feed into various reports, dashboards and monthly trackers and are available at:
+[Skills for Care data and publications](https://www.skillsforcare.org.uk/Adult-Social-Care-Workforce-Data/Workforce-intelligence/publications/Data-and-publications.aspx)
+
 ## License
 This repository is published for transparency and public interest only. It is **not licensed for reuse**.
 
