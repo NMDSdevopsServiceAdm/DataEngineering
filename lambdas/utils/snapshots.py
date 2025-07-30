@@ -60,10 +60,11 @@ def get_snapshots(
         ValueError: If the organisation_type is not supported
 
     """
-    delta_df = pl.read_parquet(
+    delta_df = pl.scan_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=schema,
-    )
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+    ).collect()
 
     if organisation_type == "locations":
         primary_key = CqcLocations.location_id
