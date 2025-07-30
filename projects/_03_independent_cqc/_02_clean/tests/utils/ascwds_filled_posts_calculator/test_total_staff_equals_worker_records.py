@@ -2,10 +2,10 @@ import unittest
 import warnings
 
 import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records as job
-from tests.test_file_data import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData as Data,
 )
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas as Schemas,
 )
 from utils import utils

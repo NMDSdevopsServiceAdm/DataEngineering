@@ -2,8 +2,10 @@ import unittest
 import warnings
 
 import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.difference_within_range as job
-from tests.test_file_data import CalculateAscwdsFilledPostsDifferenceInRangeData as Data
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CalculateAscwdsFilledPostsDifferenceInRangeData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsDifferenceInRangeSchemas as Schemas,
 )
 from utils import utils
