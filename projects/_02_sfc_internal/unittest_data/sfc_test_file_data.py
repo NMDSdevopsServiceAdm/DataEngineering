@@ -569,80 +569,58 @@ class FlattenCQCRatings:
         (
             "loc_1",
             "registered",
-            {
-                CQCL.assessment: {
+            [
+                {
                     CQCL.ratings: {
-                        CQCL.asg_ratings: {
-                            CQCL.organisation_id: None,
-                            CQCL.assessment_date: "assessment_date",
-                            CQCL.rating: "Overall rating Excellent",
-                            CQCL.report_date: "report_date",
-                            CQCL.report_link_id: None,
-                            CQCL.use_of_resources: {
+                        CQCL.asg_ratings: [
+                            {
                                 CQCL.organisation_id: None,
-                                CQCL.summary: None,
-                                CQCL.use_of_resources_rating: None,
-                                CQCL.combined_quality_summary: None,
-                                CQCL.combined_quality_rating: None,
-                                CQCL.report_date: None,
+                                CQCL.assessment_date: "report_date",
+                                CQCL.rating: "Overall rating Excellent",
+                                CQCL.report_date: "report_date",
                                 CQCL.report_link_id: None,
-                            },
-                            CQCL.key_question_ratings: [
-                                {
-                                    CQCL.name: "Caring",
-                                    CQCL.rating: "Caring rating Good",
-                                    CQCL.report_date: None,
-                                    CQCL.organisation_id: None,
-                                    CQCL.report_link_id: None,
-                                },
-                                {
-                                    CQCL.name: "Effective",
-                                    CQCL.rating: "Effective rating Good",
-                                    CQCL.report_date: None,
-                                    CQCL.organisation_id: None,
-                                    CQCL.report_link_id: None,
-                                },
-                                {
-                                    CQCL.name: "Responsive",
-                                    CQCL.rating: "Responsive rating Good",
-                                    CQCL.report_date: None,
-                                    CQCL.organisation_id: None,
-                                    CQCL.report_link_id: None,
-                                },
-                                {
-                                    CQCL.name: "Safe",
-                                    CQCL.rating: "Safe rating Good",
-                                    CQCL.report_date: None,
-                                    CQCL.organisation_id: None,
-                                    CQCL.report_link_id: None,
-                                },
-                                {
-                                    CQCL.name: "Well-led",
-                                    CQCL.rating: "Well-led rating Good",
-                                    CQCL.report_date: None,
-                                    CQCL.organisation_id: None,
-                                    CQCL.report_link_id: None,
-                                },
-                            ],
-                        },
-                    },
-                    CQCL.service_ratings: [
-                        {
-                            CQCL.name: None,
-                            CQCL.rating: None,
-                            CQCL.report_date: None,
-                            CQCL.organisation_id: None,
-                            CQCL.report_link_id: None,
-                            CQCL.key_question_ratings: [
-                                {
-                                    CQCL.name: None,
-                                    CQCL.rating: None,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
+                                CQCL.key_question_ratings: [
+                                    {
+                                        CQCL.name: "Caring",
+                                        CQCL.rating: "Caring rating Good",
+                                        CQCL.report_date: None,
+                                        CQCL.organisation_id: None,
+                                        CQCL.report_link_id: None,
+                                    },
+                                    {
+                                        CQCL.name: "Effective",
+                                        CQCL.rating: "Effective rating Good",
+                                        CQCL.report_date: None,
+                                        CQCL.organisation_id: None,
+                                        CQCL.report_link_id: None,
+                                    },
+                                    {
+                                        CQCL.name: "Responsive",
+                                        CQCL.rating: "Responsive rating Good",
+                                        CQCL.report_date: None,
+                                        CQCL.organisation_id: None,
+                                        CQCL.report_link_id: None,
+                                    },
+                                    {
+                                        CQCL.name: "Safe",
+                                        CQCL.rating: "Safe rating Good",
+                                        CQCL.report_date: None,
+                                        CQCL.organisation_id: None,
+                                        CQCL.report_link_id: None,
+                                    },
+                                    {
+                                        CQCL.name: "Well-led",
+                                        CQCL.rating: "Well-led rating Good",
+                                        CQCL.report_date: None,
+                                        CQCL.organisation_id: None,
+                                        CQCL.report_link_id: None,
+                                    },
+                                ],
+                            }
+                        ]
+                    }
+                }
+            ],
         ),
     ]
 

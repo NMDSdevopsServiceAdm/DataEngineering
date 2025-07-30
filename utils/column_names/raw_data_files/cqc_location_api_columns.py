@@ -36,7 +36,6 @@ class NewCqcLocationApiColumns:
     inspection_categories: str = "inspectionCategories"
     inspection_directorate: str = "inspectionDirectorate"
     inspection_id: str = "inspectionId"
-    key_question_name:str = "key_question_name"
     key_question_ratings: str = "keyQuestionRatings"
     last_inspection: str = "lastInspection"
     last_report: str = "lastReport"

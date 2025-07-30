@@ -135,34 +135,32 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
-    # Explode the asg_ratings array from the nested path
-    exploded_df = (
-        cqc_location_df
-        .withColumn(CQCL.asg_ratings, F.explode(F.col(f"{CQCL.assessment}.{CQCL.ratings}.{CQCL.asg_ratings}")))
-        .withColumn(CQCL.key_question_ratings, F.explode(F.col(f"{CQCL.asg_ratings}.{CQCL.key_question_ratings}")))
+    current_ratings_df = cqc_location_df.select(
+        cqc_location_df[CQCL.location_id],
+        cqc_location_df[CQCL.registration_status],
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.assessment_date
+        ].alias(CQCRatings.date),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.rating
+        ].alias(CQCRatings.overall_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][3][CQCL.rating].alias(CQCRatings.safe_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][4][CQCL.rating].alias(CQCRatings.well_led_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][0][CQCL.rating].alias(CQCRatings.caring_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][2][CQCL.rating].alias(CQCRatings.responsive_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][1][CQCL.rating].alias(CQCRatings.effective_rating),
     )
-
-    # Select necessary columns with consistent naming and aliasing
-    result_df = (
-        exploded_df
-        .select(
-            F.col(CQCL.location_id).alias(CQCL.location_id),
-            F.col(CQCL.registration_status).alias(CQCL.registration_status),
-            F.col(f"{CQCL.asg_ratings}.{CQCL.assessment_date}").alias(CQCRatings.date),
-            F.col(f"{CQCL.asg_ratings}.{CQCL.rating}").alias(CQCRatings.overall_rating),
-            F.col(f"{CQCL.key_question_ratings}.{CQCL.name}").alias("key_question_name"),
-            F.col(f"{CQCL.key_question_ratings}.{CQCL.rating}").alias("key_question_rating"),
-        )
-        .groupBy(CQCL.location_id, CQCL.registration_status, CQCRatings.date, CQCRatings.overall_rating)
-        .agg(
-            F.first(F.when(F.col(CQCL.key_question_name) == "Caring", F.col("key_question_rating"))).alias(CQCRatings.caring_rating),
-            F.first(F.when(F.col(CQCL.key_question_name) == "Effective", F.col("key_question_rating"))).alias(CQCRatings.effective_rating),
-            F.first(F.when(F.col(CQCL.key_question_name) == "Responsive", F.col("key_question_rating"))).alias(CQCRatings.responsive_rating),
-            F.first(F.when(F.col(CQCL.key_question_name) == "Safe", F.col("key_question_rating"))).alias(CQCRatings.safe_rating),
-            F.first(F.when(F.col(CQCL.key_question_name) == "Well-led", F.col("key_question_rating"))).alias(CQCRatings.well_led_rating),
-    )
-    )
-    return result_df
+    return current_ratings_df
 
 
 def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:

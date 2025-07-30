@@ -744,149 +744,25 @@ class FlattenCQCRatings:
             StructField(CQCL.registration_status, StringType(), True),
             StructField(
                 CQCL.assessment,
-                StructType(
-                    [
-                        StructField(
-                            CQCL.ratings,
-                            StructType(
-                                [
-                                    StructField(
-                                        CQCL.asg_ratings,
-                                        ArrayType(
-                                            StructType(
-                                                [
-                                                    StructField(
-                                                        CQCL.organisation_id,
-                                                        StringType(),
-                                                        True,
-                                                    ),
-                                                    StructField(
-                                                        CQCL.assessment_date,
-                                                        StringType(),
-                                                        True,
-                                                    ),
-                                                    StructField(
-                                                        CQCL.rating, StringType(), True
-                                                    ),
-                                                    StructField(
-                                                        CQCL.report_date,
-                                                        StringType(),
-                                                        True,
-                                                    ),
-                                                    StructField(
-                                                        CQCL.report_link_id,
-                                                        StringType(),
-                                                        True,
-                                                    ),
-                                                    StructField(
-                                                        CQCL.use_of_resources,
-                                                        StructType(
-                                                            [
-                                                                StructField(
-                                                                    CQCL.organisation_id,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.summary,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.use_of_resources_rating,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.combined_quality_summary,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.combined_quality_rating,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.report_date,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                                StructField(
-                                                                    CQCL.report_link_id,
-                                                                    StringType(),
-                                                                    True,
-                                                                ),
-                                                            ]
-                                                        ),
-                                                        True,
-                                                    ),
-                                                    StructField(
-                                                        CQCL.key_question_ratings,
-                                                        ArrayType(
-                                                            StructType(
-                                                                [
-                                                                    StructField(
-                                                                        CQCL.name,
-                                                                        StringType(),
-                                                                        True,
-                                                                    ),
-                                                                    StructField(
-                                                                        CQCL.rating,
-                                                                        StringType(),
-                                                                        True,
-                                                                    ),
-                                                                    StructField(
-                                                                        CQCL.report_date,
-                                                                        StringType(),
-                                                                        True,
-                                                                    ),
-                                                                    StructField(
-                                                                        CQCL.organisation_id,
-                                                                        StringType(),
-                                                                        True,
-                                                                    ),
-                                                                    StructField(
-                                                                        CQCL.report_link_id,
-                                                                        StringType(),
-                                                                        True,
-                                                                    ),
-                                                                ]
-                                                            ),
-                                                            True,
-                                                        ),
-                                                        True,
-                                                    ),
-                                                ]
-                                            ),
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        ),
-                        StructField(
-                            CQCL.service_ratings,
-                            ArrayType(
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(
+                                CQCL.ratings,
                                 StructType(
                                     [
-                                        StructField(CQCL.name, StringType(), True),
-                                        StructField(CQCL.rating, StringType(), True),
                                         StructField(
-                                            CQCL.report_date, StringType(), True
-                                        ),
-                                        StructField(
-                                            CQCL.organisation_id, StringType(), True
-                                        ),
-                                        StructField(
-                                            CQCL.report_link_id, StringType(), True
-                                        ),
-                                        StructField(
-                                            CQCL.key_question_ratings,
+                                            CQCL.asg_ratings,
                                             ArrayType(
                                                 StructType(
                                                     [
                                                         StructField(
-                                                            CQCL.name,
+                                                            CQCL.organisation_id,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.assessment_date,
                                                             StringType(),
                                                             True,
                                                         ),
@@ -895,20 +771,64 @@ class FlattenCQCRatings:
                                                             StringType(),
                                                             True,
                                                         ),
+                                                        StructField(
+                                                            CQCL.report_date,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.report_link_id,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.key_question_ratings,
+                                                            ArrayType(
+                                                                StructType(
+                                                                    [
+                                                                        StructField(
+                                                                            CQCL.name,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.rating,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.report_date,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.organisation_id,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.report_link_id,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ),
+                                                            True,
+                                                        ),
                                                     ]
-                                                ),
-                                                True,
+                                                )
                                             ),
                                             True,
-                                        ),
+                                        )
                                     ]
                                 ),
                                 True,
                             ),
-                            True,
-                        ),
-                    ]
+                        ]
+                    )
                 ),
+                True,
             ),
         ]
     )
