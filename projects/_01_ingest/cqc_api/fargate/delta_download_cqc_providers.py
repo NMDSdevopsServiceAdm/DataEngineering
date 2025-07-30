@@ -1,3 +1,4 @@
+"""Retrieves Provider data from the CQC API."""
 from utils.aws_secrets_manager_utilities import get_secret
 import os
 import json
@@ -29,6 +30,37 @@ CQC_ORG_TYPE = "provider"
 
 
 def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
+    """Orchestrates the retrieval of updated CQC provider data and writes it to Parquet.
+
+        This function performs the following steps:
+        1. Validates the provided start and end timestamps.
+        2. Retrieves the CQC API subscription key from AWS Secrets Manager.
+        3. Calls the CQC API to fetch updated provider objects within the specified
+           time range.
+        4. Converts the retrieved data into a Polars DataFrame, applying a predefined
+           schema.
+        5. Removes duplicate provider entries, keeping only unique providers.
+        6. Writes the unique provider data to a Parquet file at the specified
+           destination path, typically an S3 location.
+
+        Args:
+            destination (str): The S3 path or local file path where the processed
+                Parquet file will be written.
+            start_timestamp (str): The ISO 8601 formatted string representing the
+                start of the data retrieval period (e.g., '2023-01-01T00:00:00Z').
+            end_timestamp (str): The ISO 8601 formatted string representing the
+                end of the data retrieval period (e.g., '2023-01-31T23:59:59Z').
+
+        Return:
+            None.
+
+        Raises:
+            ValueError: If `start_timestamp` is after `end_timestamp`.
+            FileNotFoundError: If the function is unable to write the Parquet
+                file to the specified `destination`.
+            Exception: For any other unspecified errors that occur during API
+                calls, secret retrieval, or data processing.
+        """
     try:
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
