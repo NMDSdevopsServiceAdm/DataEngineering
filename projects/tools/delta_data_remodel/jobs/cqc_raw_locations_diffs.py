@@ -1,12 +1,12 @@
 import polars as pl
-
 from raw_locations_schema import raw_locations_schema
-from projects.tools.delta_data_remodel.jobs.utils import list_bucket_objects, get_diffs
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCP,
-)
+
+from projects.tools.delta_data_remodel.jobs.utils import get_diffs, list_bucket_objects
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCP,
 )
 
 
@@ -20,9 +20,9 @@ def main():
     read_bucket = "sfc-main-datasets"
     write_bucket = "sfc-delta-locations-dataset-datasets"
     read_folder = (
-        Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/"
+        R"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/"
     )
-    write_folder = Rf"domain=CQC_delta/dataset=locations_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
+    write_folder = R"domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
 
     base_df = pl.scan_parquet(
         f"s3://{read_bucket}/{read_folder}",
@@ -53,7 +53,7 @@ def main():
             for read_folder in sorted(day_folders):
                 day = int(read_folder[-2:])
                 print(f"Starting {day}-{month}-{year}")
-                write_folder = Rf"domain=CQC_delta/dataset=locations_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
+                write_folder = Rf"domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
 
                 snapshot_df = pl.scan_parquet(
                     f"s3://{read_bucket}/{read_folder}/",

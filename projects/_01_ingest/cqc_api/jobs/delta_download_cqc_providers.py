@@ -68,7 +68,7 @@ if __name__ == "__main__":
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC_delta",
-        dataset="providers_api",
+        dataset="delta_providers_api",
         date=todays_date,
         version="3.0.0",
     )

@@ -1,18 +1,18 @@
+import json
 import os
 import unittest
 from re import match
 
 import polars as pl
 import requests
-import json
 
-from projects.tools.delta_data_remodel.jobs.utils import (
-    build_full_table_from_delta,
-    list_bucket_objects,
-)
 from lambdas.utils.snapshots import get_snapshots
 from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
     raw_locations_schema,
+)
+from projects.tools.delta_data_remodel.jobs.utils import (
+    build_full_table_from_delta,
+    list_bucket_objects,
 )
 
 
@@ -21,7 +21,7 @@ def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(
             bucket="sfc-delta-locations-dataset-datasets",
-            read_folder="domain=CQC_delta/dataset=locations_api/version=3.0.0/",
+            read_folder="domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
             organisation_type="locations",
             timepoint_limit=20131231,
         )
@@ -51,7 +51,7 @@ def test_rebuilt_dataset_equality():
 def test_snapshot_equality():
     for delta_snapshot in get_snapshots(
         bucket="sfc-delta-locations-dataset-datasets",
-        read_folder="domain=CQC_delta/dataset=locations_api/version=3.0.0/",
+        read_folder="domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
         organisation_type="locations",
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")
@@ -121,16 +121,16 @@ def test_delta_matches_changes_api():
                 break
 
             print(
-                f"domain=CQC_delta/dataset=locations_api/version=3.0.0/year={year}/month={month:02}"
+                f"domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year={year}/month={month:02}"
             )
 
             day_folders = list_bucket_objects(
                 bucket,
-                f"domain=CQC_delta/dataset=locations_api/version=3.0.0/year={year}/month={month:02}",
+                f"domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year={year}/month={month:02}",
             )
 
             for day in [1, 8, 15, 23]:
-                read_folder = Rf"domain=CQC/dataset=providers_api/year={year}/month={month:02}/day={day:02}"
+                read_folder = Rf"domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year={year}/month={month:02}/day={day:02}"
                 if read_folder not in day_folders:
                     continue
 
