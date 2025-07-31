@@ -24,8 +24,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Update the version of CQC ratings data
 
-- Lamdba functions to work with locations or providers
-
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
 

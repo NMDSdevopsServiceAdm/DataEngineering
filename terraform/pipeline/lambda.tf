@@ -50,7 +50,7 @@ resource "aws_lambda_function" "create_snapshot_lambda" {
   package_type  = "Image"
   image_uri     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
   memory_size   = 10240
-  timeout       = 60
+  timeout       = 300
 }
 
 resource "aws_lambda_function" "check_datasets_equal" {
