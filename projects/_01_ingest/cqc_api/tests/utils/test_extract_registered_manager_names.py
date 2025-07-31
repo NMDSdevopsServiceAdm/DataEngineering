@@ -2,8 +2,12 @@ import unittest
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.utils.extract_registered_manager_names as job
-from tests.test_file_data import ExtractRegisteredManagerNamesData as Data
-from tests.test_file_schemas import ExtractRegisteredManagerNamesSchema as Schemas
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    ExtractRegisteredManagerNamesData as Data,
+)
+from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
+    ExtractRegisteredManagerNamesSchema as Schemas,
+)
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
