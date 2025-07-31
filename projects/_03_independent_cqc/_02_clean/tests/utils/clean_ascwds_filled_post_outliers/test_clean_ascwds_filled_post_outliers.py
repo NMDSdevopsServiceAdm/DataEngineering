@@ -2,10 +2,16 @@ import unittest
 from unittest.mock import Mock, patch
 import warnings
 
-from tests.test_file_data import CleanAscwdsFilledPostOutliersData as Data
-from tests.test_file_schemas import CleanAscwdsFilledPostOutliersSchema as Schemas
 import projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CleanAscwdsFilledPostOutliersData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    CleanAscwdsFilledPostOutliersSchema as Schemas,
+)
 from utils import utils
+
+PATCH_PATH: str = "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers"
 
 
 class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
@@ -18,18 +24,12 @@ class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):
 
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
+    @patch(f"{PATCH_PATH}.add_filtering_rule_column")
     @patch(
-        "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers.add_filtering_rule_column"
+        f"{PATCH_PATH}.null_filled_posts_where_locations_use_invalid_missing_data_code"
     )
-    @patch(
-        "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers.null_filled_posts_where_locations_use_invalid_missing_data_code"
-    )
-    @patch(
-        "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers.null_grouped_providers"
-    )
-    @patch(
-        "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers.winsorize_care_home_filled_posts_per_bed_ratio_outliers"
-    )
+    @patch(f"{PATCH_PATH}.null_grouped_providers")
+    @patch(f"{PATCH_PATH}.winsorize_care_home_filled_posts_per_bed_ratio_outliers")
     def test_functions_are_called(
         self,
         winsorize_care_home_filled_posts_per_bed_ratio_outliers_mock: Mock,

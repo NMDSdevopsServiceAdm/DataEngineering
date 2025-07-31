@@ -1,18 +1,18 @@
 import unittest
 import warnings
 
-from tests.test_file_data import (
+from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
+    ascwds_filtering_utils as job,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     ASCWDSFilteringUtilsData as Data,
 )
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ASCWDSFilteringUtilsSchemas as Schemas,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import AscwdsFilteringRule
-from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
-    ascwds_filtering_utils as job,
-)
 
 
 class ASCWDSFilteringUtilsTests(unittest.TestCase):

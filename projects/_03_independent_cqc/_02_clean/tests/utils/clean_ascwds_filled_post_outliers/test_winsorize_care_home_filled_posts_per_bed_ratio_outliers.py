@@ -14,10 +14,10 @@ from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
-from tests.test_file_data import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersData as Data,
 )
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
 
