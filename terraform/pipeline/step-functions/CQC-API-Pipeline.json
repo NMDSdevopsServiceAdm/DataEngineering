@@ -89,9 +89,9 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
-              "JobName": "${validate_providers_api_raw_delta_data_job_name}",
-              "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/",
+                "JobName": "${validate_providers_api_raw_delta_data_job_name}",
+                "Arguments": {
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
                 }
               },
@@ -108,7 +108,7 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_raw_delta_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/",
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
                 }
               },
@@ -138,13 +138,13 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
-                  "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
-                  "Payload": {
-                      "organisation_type": "providers",
-                      "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/",
-                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                      "snapshot_date.$": "$$.State.EnteredTime"
-                  }
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "organisation_type": "providers",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
+                }
               },
               "Next": "CleanCqcProviderData"
             },
@@ -154,8 +154,8 @@
               "Parameters": {
                 "JobName": "${clean_cqc_provider_data_job_name}",
                 "Arguments": {
-                  "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
-                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
+                  "--cqc_provider_source": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_providers_api_cleaned/"
                 }
               },
               "End": true
@@ -169,13 +169,13 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
-                  "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
-                  "Payload": {
-                      "organisation_type": "locations",
-                      "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/",
-                      "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                      "snapshot_date.$": "$$.State.EnteredTime"
-                  }
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "organisation_type": "locations",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
+                }
               },
               "End": true
             }
@@ -190,10 +190,10 @@
       "Parameters": {
         "JobName": "${clean_cqc_location_data_job_name}",
         "Arguments": {
-          "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1",
-          "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
+          "--cqc_location_source": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+          "--cleaned_cqc_provider_source": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_providers_api_cleaned/",
           "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-          "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+          "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
         }
       },
       "Next": "CrawlCqc"
@@ -218,9 +218,9 @@
               "Parameters": {
                 "JobName": "${validate_providers_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/",
-                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC/dataset=providers_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_providers_api_cleaned/"
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_providers_api_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_cleaned/"
                 }
               },
               "End": true
@@ -236,9 +236,9 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
-                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_cleaned/"
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/full/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
                 }
               },
               "End": true

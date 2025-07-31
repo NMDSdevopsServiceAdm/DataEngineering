@@ -21,7 +21,7 @@ def test_rebuilt_dataset_equality():
     full_from_delta = (
         build_full_table_from_delta(
             bucket="sfc-test-diff-datasets",
-            read_folder="domain=CQC/dataset=providers_api/",
+            read_folder="domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
             organisation_type="providers",
             timepoint_limit=20131231,
         )
@@ -49,7 +49,7 @@ def test_rebuilt_dataset_equality():
 def test_snapshot_equality():
     for delta_snapshot in get_snapshots(
         bucket="sfc-test-diff-datasets",
-        read_folder="domain=CQC/dataset=providers_api/",
+        read_folder="domain=CQC_delta/dataset=delta_providers_api/",
         organisation_type="providers",
         schema=raw_providers_schema,
     ):
@@ -152,15 +152,15 @@ def test_delta_matches_changes_api():
             if year == 2025 and month >= 8:
                 break
 
-            print(f"domain=CQC/dataset=providers_api/year={year}/month={month:02}")
+            print(f"domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={year}/month={month:02}")
 
             day_folders = list_bucket_objects(
                 bucket,
-                f"domain=CQC/dataset=providers_api/year={year}/month={month:02}",
+                f"domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={year}/month={month:02}",
             )
 
             for day in [1, 8, 15, 23]:
-                read_folder = Rf"domain=CQC/dataset=providers_api/year={year}/month={month:02}/day={day:02}"
+                read_folder = Rf"domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={year}/month={month:02}/day={day:02}"
                 if read_folder not in day_folders:
                     continue
 

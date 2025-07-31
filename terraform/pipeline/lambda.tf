@@ -160,8 +160,8 @@ data "aws_iam_policy_document" "create_snapshot_lambda" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=providers_api/version=3.0.0/*",
-      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=locations_api/version=3.0.0/*"
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/*",
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/*"
     ]
   }
 }
