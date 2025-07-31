@@ -10,14 +10,18 @@ from pyspark.sql.types import (
     DoubleType,
 )
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
+import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.utils as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CalculateAscwdsFilledPostsUtilsData as Data,
 )
-import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.common_checks as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    CalculateAscwdsFilledPostsUtilsSchemas as Schemas,
+)
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
-class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
+class TestAscwdsFilledPostsCalculatorUtils(unittest.TestCase):
     common_checks_rows = [("1-000000001", 9, 2, None), ("1-000000002", 2, 2, 2.0)]
     common_checks_schema = StructType(
         [
@@ -157,3 +161,29 @@ class TestAscwdsFilledPostsCalculatorCommonChecks(unittest.TestCase):
         result_df = result.sort(IndCQC.location_id).collect()
         self.assertEqual(result_df[0]["result"], 5.5)
         self.assertEqual(result_df[1]["result"], 2.0)
+
+
+class TestSourceDescriptionAdded(TestAscwdsFilledPostsCalculatorUtils):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_add_source_description_added_to_source_column_when_required(self):
+        input_df = self.spark.createDataFrame(
+            Data.source_missing_rows, Schemas.estimated_source_description_schema
+        )
+
+        returned_df = job.add_source_description_to_source_column(
+            input_df,
+            IndCQC.estimate_filled_posts,
+            IndCQC.estimate_filled_posts_source,
+            "model_name",
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_source_added_rows, Schemas.estimated_source_description_schema
+        )
+
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.sort(IndCQC.location_id).collect()
+
+        self.assertEqual(returned_df.count(), expected_df.count())
+        self.assertEqual(expected_data, returned_data)

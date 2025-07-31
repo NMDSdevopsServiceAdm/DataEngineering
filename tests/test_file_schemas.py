@@ -13,10 +13,6 @@ from pyspark.sql.types import (
     MapType,
 )
 
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -26,7 +22,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
@@ -535,14 +530,6 @@ class IndCQCDataUtils:
         ]
     )
 
-    estimated_source_description_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-
     get_selected_value_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), False),
@@ -578,45 +565,6 @@ class IndCQCDataUtils:
         [
             *allocate_primary_service_type_second_level_schema,
             StructField(IndCQC.primary_service_type_second_level, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsSchemas:
-    calculate_ascwds_filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas:
-    calculate_ascwds_filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class CalculateAscwdsFilledPostsDifferenceInRangeSchemas:
-    calculate_ascwds_filled_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.total_staff_bounded, IntegerType(), True),
-            StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-            StructField(IndCQC.ascwds_filled_posts, DoubleType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
         ]
     )
 

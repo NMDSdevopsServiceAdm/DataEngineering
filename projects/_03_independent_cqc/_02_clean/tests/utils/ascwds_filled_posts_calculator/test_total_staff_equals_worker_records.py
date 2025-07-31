@@ -1,19 +1,15 @@
 import unittest
 import warnings
 
-from tests.test_file_data import (
+import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records as job
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsData as Data,
 )
-from tests.test_file_schemas import (
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     CalculateAscwdsFilledPostsTotalStaffEqualWorkerRecordsSchemas as Schemas,
 )
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-
-import utils.ind_cqc_filled_posts_utils.ascwds_filled_posts_calculator.calculate_ascwds_filled_posts_return_worker_record_count_if_equal_to_total_staff as job
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class TestAscwdsFilledPostsWorkerRecordsEqualsTotalStaff(unittest.TestCase):
