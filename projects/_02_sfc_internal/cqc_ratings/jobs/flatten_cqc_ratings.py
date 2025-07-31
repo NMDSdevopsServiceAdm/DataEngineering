@@ -38,6 +38,7 @@ cqc_location_columns = [
     Keys.day,
     CQCL.current_ratings,
     CQCL.historic_ratings,
+    CQCL.assessment,
     CQCL.registration_status,
     CQCL.type,
 ]
@@ -137,27 +138,27 @@ def flatten_current_ratings(cqc_location_df: DataFrame) -> DataFrame:
     current_ratings_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
         cqc_location_df[CQCL.registration_status],
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.report_date].alias(
-            CQCRatings.date
-        ),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.rating].alias(
-            CQCRatings.overall_rating
-        ),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][
-            0
-        ][CQCL.rating].alias(CQCRatings.safe_rating),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][
-            1
-        ][CQCL.rating].alias(CQCRatings.well_led_rating),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][
-            2
-        ][CQCL.rating].alias(CQCRatings.caring_rating),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][
-            3
-        ][CQCL.rating].alias(CQCRatings.responsive_rating),
-        cqc_location_df[CQCL.current_ratings][CQCL.overall][CQCL.key_question_ratings][
-            4
-        ][CQCL.rating].alias(CQCRatings.effective_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.assessment_date
+        ].alias(CQCRatings.date),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.rating
+        ].alias(CQCRatings.overall_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][0][CQCL.rating].alias(CQCRatings.caring_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][1][CQCL.rating].alias(CQCRatings.effective_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][2][CQCL.rating].alias(CQCRatings.responsive_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][3][CQCL.rating].alias(CQCRatings.safe_rating),
+        cqc_location_df[CQCL.assessment][0][CQCL.ratings][CQCL.asg_ratings][0][
+            CQCL.key_question_ratings
+        ][4][CQCL.rating].alias(CQCRatings.well_led_rating),
     )
     return current_ratings_df
 
@@ -191,7 +192,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
         historic_ratings_df[CQCL.key_question_ratings][CQCL.name].alias(CQCL.name),
         historic_ratings_df[CQCL.key_question_ratings][CQCL.rating].alias(CQCL.rating),
     )
-    ratings_columns = ["Safe", "Well-led", "Caring", "Responsive", "Effective"]
+    ratings_columns = ["Caring", "Effective", "Responsive", "Safe", "Well-led"]
     cleaned_historic_ratings_df = historic_ratings_df.select(
         CQCL.location_id,
         CQCL.registration_status,
