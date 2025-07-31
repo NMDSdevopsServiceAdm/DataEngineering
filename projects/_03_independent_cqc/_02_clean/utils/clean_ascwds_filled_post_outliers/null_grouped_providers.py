@@ -8,7 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
 )
 from utils.column_values.categorical_column_values import AscwdsFilteringRule, CareHome
-from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
+from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.ascwds_filtering_utils import (
     update_filtering_rule,
 )
 from projects.utils.utils.utils import calculate_windowed_column

@@ -6,9 +6,9 @@ from pyspark.sql import DataFrame
 
 from tests.test_file_data import NullGroupedProvidersData as Data
 from tests.test_file_schemas import NullGroupedProvidersSchema as Schemas
+import projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-import utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers as job
 
 PATCH_PATH: str = "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers"
 

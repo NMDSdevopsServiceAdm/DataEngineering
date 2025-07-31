@@ -10,10 +10,8 @@ from pyspark.sql.types import (
 )
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
 from tests.test_file_data import (

@@ -4,9 +4,8 @@ import warnings
 
 from tests.test_file_data import CleanAscwdsFilledPostOutliersData as Data
 from tests.test_file_schemas import CleanAscwdsFilledPostOutliersSchema as Schemas
-
+import projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers as job
 from utils import utils
-import utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers as job
 
 
 class CleanAscwdsFilledPostOutliersTests(unittest.TestCase):

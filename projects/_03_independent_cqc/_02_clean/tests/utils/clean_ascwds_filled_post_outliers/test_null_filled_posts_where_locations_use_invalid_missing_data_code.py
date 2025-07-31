@@ -1,6 +1,9 @@
 import unittest
 import warnings
 
+from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
+    null_filled_posts_where_locations_use_invalid_missing_data_code as job,
+)
 from tests.test_file_data import (
     NullFilledPostsUsingInvalidMissingDataCodeData as Data,
 )
@@ -8,12 +11,7 @@ from tests.test_file_schemas import (
     NullFilledPostsUsingInvalidMissingDataCodeSchema as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers import (
-    null_filled_posts_where_locations_use_invalid_missing_data_code as job,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class NullFilledPostsUsingInvalidMissingDataCodeTests(unittest.TestCase):
