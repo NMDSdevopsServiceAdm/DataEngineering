@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import utils.cqc_location_utils.extract_registered_manager_names as job
+import projects._01_ingest.cqc_api.utils.extract_registered_manager_names as job
 from tests.test_file_data import ExtractRegisteredManagerNamesData as Data
 from tests.test_file_schemas import ExtractRegisteredManagerNamesSchema as Schemas
 from utils import utils
@@ -9,13 +9,15 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
 
+PATCH_PATH: str = "projects._01_ingest.cqc_api.utils.extract_registered_manager_names"
+
 
 class ExtractRegisteredManagerNamesTests(unittest.TestCase):
     def setUp(self) -> None:
         self.spark = utils.get_spark()
 
 
-class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
+class MainTests(ExtractRegisteredManagerNamesTests):
     def setUp(self) -> None:
         super().setUp()
 
@@ -24,18 +26,10 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
             Schemas.extract_registered_manager_schema,
         )
 
-    @patch(
-        "utils.cqc_location_utils.extract_registered_manager_names.join_names_column_into_original_df"
-    )
-    @patch(
-        "utils.cqc_location_utils.extract_registered_manager_names.group_and_collect_names"
-    )
-    @patch(
-        "utils.cqc_location_utils.extract_registered_manager_names.select_and_create_full_name"
-    )
-    @patch(
-        "utils.cqc_location_utils.extract_registered_manager_names.extract_contacts_information"
-    )
+    @patch(f"{PATCH_PATH}.join_names_column_into_original_df")
+    @patch(f"{PATCH_PATH}.group_and_collect_names")
+    @patch(f"{PATCH_PATH}.select_and_create_full_name")
+    @patch(f"{PATCH_PATH}.extract_contacts_information")
     def test_extract_registered_manager_names_calls_all_functions(
         self,
         extract_contacts_information_mock: Mock,
@@ -43,9 +37,7 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
         group_and_collect_names_mock: Mock,
         join_names_column_into_original_df_mock: Mock,
     ):
-        job.extract_registered_manager_names_from_imputed_regulated_activities_column(
-            self.extract_registered_manager_df
-        )
+        job.extract_registered_manager_names(self.extract_registered_manager_df)
 
         extract_contacts_information_mock.assert_called_once()
         select_and_create_full_name_mock.assert_called_once()
@@ -53,7 +45,7 @@ class ExtractRegisteredManagerNamesTests(ExtractRegisteredManagerNamesTests):
         join_names_column_into_original_df_mock.assert_called_once()
 
     def test_extract_registered_manager_names_returns_the_same_number_of_rows(self):
-        returned_df = job.extract_registered_manager_names_from_imputed_regulated_activities_column(
+        returned_df = job.extract_registered_manager_names(
             self.extract_registered_manager_df
         )
         self.assertEqual(

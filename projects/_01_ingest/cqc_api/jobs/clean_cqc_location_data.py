@@ -32,8 +32,8 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
-from utils.cqc_location_utils.extract_registered_manager_names import (
-    extract_registered_manager_names_from_imputed_regulated_activities_column,
+from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
+    extract_registered_manager_names,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
 from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
@@ -160,11 +160,7 @@ def main(
     registered_locations_df = realign_carehome_column_with_primary_service(
         registered_locations_df
     )
-    registered_locations_df = (
-        extract_registered_manager_names_from_imputed_regulated_activities_column(
-            registered_locations_df
-        )
-    )
+    registered_locations_df = extract_registered_manager_names(registered_locations_df)
 
     registered_locations_df = add_related_location_column(registered_locations_df)
 
