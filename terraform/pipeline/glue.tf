@@ -810,8 +810,13 @@ module "validate_locations_api_raw_delta_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
+<<<<<<< HEAD
     "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
+=======
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=locations_api/version=3.0.0/"
+    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_raw/"
+>>>>>>> 847b8bcb6970e83882bb6c44afe4cc2b51e51a2a
   }
 }
 
@@ -840,8 +845,13 @@ module "validate_providers_api_raw_delta_data_job" {
   glue_version    = "4.0"
 
   job_parameters = {
+<<<<<<< HEAD
     "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
+=======
+    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=providers_api/version=3.0.0/"
+    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_raw/"
+>>>>>>> 847b8bcb6970e83882bb6c44afe4cc2b51e51a2a
   }
 }
 
