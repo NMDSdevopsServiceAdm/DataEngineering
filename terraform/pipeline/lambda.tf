@@ -49,7 +49,7 @@ resource "aws_lambda_function" "create_snapshot_lambda" {
   function_name = "${local.workspace_prefix}-create-full-snapshot"
   package_type  = "Image"
   image_uri     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
-  memory_size   = 3072
+  memory_size   = 5120
   timeout       = 60
 }
 
