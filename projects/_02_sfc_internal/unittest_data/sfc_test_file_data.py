@@ -654,19 +654,19 @@ class FlattenCQCRatings:
                             CQCL.use_of_resources_summary: None,
                         },
                         CQCL.key_question_ratings: [
-                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
-                            {
-                                CQCL.name: "Well-led",
-                                CQCL.rating: "Well-led rating Good",
-                            },
                             {CQCL.name: "Caring", CQCL.rating: "Caring rating Good"},
+                            {
+                                CQCL.name: "Effective",
+                                CQCL.rating: "Effective rating Good",
+                            },
                             {
                                 CQCL.name: "Responsive",
                                 CQCL.rating: "Responsive rating Good",
                             },
+                            {CQCL.name: "Safe", CQCL.rating: "Safe rating Good"},
                             {
-                                CQCL.name: "Effective",
-                                CQCL.rating: "Effective rating Good",
+                                CQCL.name: "Well-led",
+                                CQCL.rating: "Well-led rating Good",
                             },
                         ],
                     },

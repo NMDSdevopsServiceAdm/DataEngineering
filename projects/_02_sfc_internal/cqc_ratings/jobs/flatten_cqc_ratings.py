@@ -192,7 +192,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
         historic_ratings_df[CQCL.key_question_ratings][CQCL.name].alias(CQCL.name),
         historic_ratings_df[CQCL.key_question_ratings][CQCL.rating].alias(CQCL.rating),
     )
-    ratings_columns = ["Safe", "Well-led", "Caring", "Responsive", "Effective"]
+    ratings_columns = ["Caring", "Effective", "Responsive", "Safe", "Well-led"]
     cleaned_historic_ratings_df = historic_ratings_df.select(
         CQCL.location_id,
         CQCL.registration_status,
