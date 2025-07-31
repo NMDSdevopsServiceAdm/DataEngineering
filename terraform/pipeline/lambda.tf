@@ -49,7 +49,7 @@ resource "aws_lambda_function" "create_snapshot_lambda" {
   function_name = "${local.workspace_prefix}-create-full-snapshot"
   package_type  = "Image"
   image_uri     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
-  memory_size   = 5120
+  memory_size   = 10240
   timeout       = 60
 }
 
@@ -160,7 +160,6 @@ data "aws_iam_policy_document" "create_snapshot_lambda" {
     ]
     effect = "Allow"
     resources = [
-      
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=providers_api/version=3.0.0/*",
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC_delta/dataset=locations_api/version=3.0.0/*"
     ]
