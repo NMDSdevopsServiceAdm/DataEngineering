@@ -14,7 +14,7 @@ import projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_out
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
-PATCH_PATH: str = "utils.ind_cqc_filled_posts_utils.clean_ascwds_filled_post_outliers.null_grouped_providers"
+PATCH_PATH: str = "projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.null_grouped_providers"
 
 
 class NullGroupedProvidersTests(unittest.TestCase):
