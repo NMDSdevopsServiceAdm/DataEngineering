@@ -2,18 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-
-## [Unreleased]
-
-### Added
-- Master-Ingest StepFunction to manage overall system flow for new delta pipeline
-- Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
-- Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
-
-### Changed
-- Lamdba functions to work with locations or providers
-
-
+  
 ## [Unreleased]
 
 ### Added
@@ -27,8 +16,15 @@ All notable changes to this project will be documented in this file.
   - Added support for CQC Providers API
   - Added support for CQC Locations API
 
+- Parallel data ingestion, cleaning and validation pipeline from Delta model:
+  - Master-Ingest StepFunction to manage overall system flow for new delta pipeline
+  - Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
+  - Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
+
 ### Changed
--   Update the version of CQC ratings data
+- Update the version of CQC ratings data
+
+- Lamdba functions to work with locations or providers
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.

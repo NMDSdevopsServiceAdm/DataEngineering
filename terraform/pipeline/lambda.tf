@@ -244,7 +244,8 @@ data "aws_iam_policy_document" "error_notification_lambda" {
     ]
     effect = "Allow"
     resources = [
-      aws_sns_topic.pipeline_failures.arn
+      aws_sns_topic.pipeline_failures.arn,
+      aws_sns_topic.pipeline_failures_delta.arn
     ]
   }
 }
