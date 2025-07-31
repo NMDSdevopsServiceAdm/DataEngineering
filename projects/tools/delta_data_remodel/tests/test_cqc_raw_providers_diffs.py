@@ -152,7 +152,9 @@ def test_delta_matches_changes_api():
             if year == 2025 and month >= 8:
                 break
 
-            print(f"domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={year}/month={month:02}")
+            print(
+                f"domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/year={year}/month={month:02}"
+            )
 
             day_folders = list_bucket_objects(
                 bucket,
