@@ -34,4 +34,3 @@ class TestUtils(unittest.TestCase):
             utils.write_to_parquet(df, destination, self.logger)
         self.assertTrue(Path(destination).exists())
         self.assertTrue(f"Parquet written to {destination}" in cm.output[0])
-
