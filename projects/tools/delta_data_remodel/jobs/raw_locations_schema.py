@@ -1,6 +1,6 @@
 import polars as pl
 
-raw_schema = pl.Schema(
+raw_locations_schema = pl.Schema(
     [
         ("locationId", pl.String()),
         ("providerId", pl.String()),

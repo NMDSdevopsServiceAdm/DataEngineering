@@ -1,143 +1,80 @@
-"""
-PLEASE NOTE: THIS FILE IS NOT PRODUCTION READY AND MAY NOT RUN
-"""
-
-from polars import read_parquet, concat, col
 import polars as pl
-from polars.testing import assert_frame_equal
 
-from diff_creator import get_diffs
-from raw_locations_schema import raw_schema
+from raw_locations_schema import raw_locations_schema
+from projects.tools.delta_data_remodel.jobs.utils import list_bucket_objects, get_diffs
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCP,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 
 
 def main():
-    dataset_cols = [
-        "providerId",
-        "organisationType",
-        "type",
-        "name",
-        "brandId",
-        "brandName",
-        "onspdCcgCode",
-        "onspdCcgName",
-        "odsCcgCode",
-        "odsCcgName",
-        "onspdIcbCode",
-        "onspdIcbName",
-        "odsCode",
-        "registrationStatus",
-        "registrationDate",
-        "deregistrationDate",
-        "dormancy",
-        "dormancyStartDate",
-        "dormancyEndDate",
-        "alsoKnownAs",
-        "onspdLatitude",
-        "onspdLongitude",
-        "careHome",
-        "inspectionDirectorate",
-        "website",
-        "postalAddressLine1",
-        "postalAddressLine2",
-        "postalAddressTownCity",
-        "postalAddressCounty",
-        "region",
-        "postalCode",
-        "uprn",
-        "registeredManagerAbsentDate",
-        "numberOfBeds",
-        "constituency",
-        "localAuthority",
-        "lastInspection",
-        "lastReport",
-        "relationships",
-        "locationTypes",
-        "regulatedActivities",
-        "gacServiceTypes",
-        "specialisms",
-        "inspectionCategories",
-        "inspectionAreas",
-        "currentRatings",
-        "historicRatings",
-        "reports",
-        "unpublishedReports",
-        "providerInspectionAreas",
-        "specialism",
-        "ageGroup",
-        "settingServices",
-    ]
+    dataset_cols = raw_locations_schema.names()
+    dataset_cols.remove(CQCP.location_id)  # primary key
+    dataset_cols.remove(
+        CQCP.main_phone_number
+    )  # don't check for changes in phone number as sometimes in exponential format
 
-    bucket = "sfc-main-datasets"
-    write_bucket = "sfc-test-diff-datasets"
-    read_folder = Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/import_date=20130301/"
-    write_folder = Rf"domain=CQC/dataset=locations_api/year=2013/month=03/import_date=20130301/file.parquet"
-
-    base_df = read_parquet(
-        f"s3://{bucket}/{read_folder}",
-        schema=raw_schema,
+    read_bucket = "sfc-main-datasets"
+    write_bucket = "sfc-delta-locations-dataset-datasets"
+    read_folder = (
+        Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month=03/day=01/"
     )
-    print(base_df.schema)
+    write_folder = Rf"domain=CQC/dataset=locations_api/version=3.0.0/year=2013/month=03/day=01/import_date=20130301/file.parquet"
 
-    base_df = base_df.with_columns(
-        pl.lit("20130301").alias("last_updated"),
-        pl.lit(False).alias("db_delete"),
+    base_df = pl.scan_parquet(
+        f"s3://{read_bucket}/{read_folder}",
+        schema=raw_locations_schema,
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+    ).collect()
+
+    base_df.drop([Keys.import_date]).write_parquet(
+        f"s3://{write_bucket}/{write_folder}/",
+        compression="snappy",
+        partition_chunk_size_bytes=220000,
     )
-    # base_df.write_parquet(
-    #     f"s3://{write_bucket}/{write_folder}/",
-    #     compression="snappy",
-    #     partition_chunk_size_bytes=220000,
-    # )
 
-    # print(f"Original entries: {base_df.shape}")
+    print(f"Original entries: {base_df.shape}")
 
-    for month in range(4, 12):
-        print(f"Starting month {month}")
+    for year in range(2013, 2026):
+        for month in range(1, 13):
+            if year == 2013 and month <= 3:
+                continue
+            elif year == 2025 and month > 7:
+                break
 
-        write_folder = Rf"domain=CQC/dataset=locations_api/year=2013/month={month:02}/import_date=2013{month:02}01/file.parquet"
-        read_folder = Rf"domain=CQC/dataset=locations_api/version=2.1.1/year=2013/month={month:02}/day=01/import_date=2013{month:02}01/"
-
-        print(f"Reading from {read_folder}")
-        snapshot_df = read_parquet(
-            f"s3://{bucket}/{read_folder}",
-            schema=raw_schema,
-        )
-
-        print(
-            f"Unique Last Updated before join: {base_df['last_updated'].value_counts()}"
-        )
-
-        base_df, changed_entries = get_diffs(
-            base_df,
-            snapshot_df,
-            snapshot_date=f"2013{month:02}01",
-            primary_key="locationId",
-            change_cols=dataset_cols,
-        )
-
-        old_entries = base_df.filter(
-            col("locationId").is_in(changed_entries.head()["locationId"].to_list())
-        )
-
-        print(
-            assert_frame_equal(
-                changed_entries[dataset_cols].head(), old_entries[dataset_cols]
+            day_folders = list_bucket_objects(
+                "sfc-main-datasets",
+                f"domain=CQC/dataset=locations_api/version=2.1.1/year={year}/month={month:02}",
             )
-        )
 
-        print(changed_entries[dataset_cols].head())
-        print(old_entries[dataset_cols])
+            for read_folder in sorted(day_folders):
+                day = int(read_folder[-2:])
+                print(f"Starting {day}-{month}-{year}")
+                write_folder = Rf"domain=CQC/dataset=locations_api/version=3.0.0/year={year}/month={month:02}/day={day:02}/import_date={year}{month:02}{day:02}/"
 
-        print(
-            f"Unique Last Updated after join: {base_df['last_updated'].value_counts()}"
-        )
+                snapshot_df = pl.scan_parquet(
+                    f"s3://{read_bucket}/{read_folder}/",
+                    schema=raw_locations_schema,
+                    cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+                ).collect()  # as of 01/03/2022 there is a removed field in regulatedActivities of 'col3', so using scan to take advantage of cast options
 
-        # changed_entries.write_parquet(
-        #     f"s3://{write_bucket}/{write_folder}/",
-        #     compression="snappy",
-        #     use_pyarrow=True,
-        #     pyarrow_options={"partition_cols": ["last_updated"]},
-        #     partition_chunk_size_bytes=220000,
-        # )
+                changed_entries = get_diffs(
+                    base_df,
+                    snapshot_df,
+                    snapshot_date=f"{year}{month:02}{day:02}",
+                    primary_key=CQCP.location_id,
+                    change_cols=dataset_cols,
+                )
+
+                base_df = snapshot_df
+
+                changed_entries.drop([Keys.import_date]).write_parquet(
+                    f"s3://{write_bucket}/{write_folder}file.parquet",
+                    compression="snappy",
+                )
 
 
 if __name__ == "__main__":

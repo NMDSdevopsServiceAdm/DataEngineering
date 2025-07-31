@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 
 - Created a `STYLEGUIDE.md` file with guidance on code organisation, folder structure, naming conventions, utility function locations and unit test conventions.
 
+- Added tool to create delta datasets from full datasets (where we store full snapshots for every timepoint)
+  - Added support for CQC Providers API
+  - Added support for CQC Locations API
+
 ### Changed
 -   Update the version of CQC ratings data
 
