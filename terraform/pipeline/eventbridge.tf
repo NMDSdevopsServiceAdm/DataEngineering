@@ -289,9 +289,12 @@ resource "aws_iam_policy" "scheduler" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = ["states:StartExecution"]
-        Resource = [aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn]
+        Effect = "Allow",
+        Action = ["states:StartExecution"]
+        Resource = [
+          aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn,
+          aws_sfn_state_machine.master_ingest_state_machine.arn
+        ]
       },
     ]
   })
@@ -311,6 +314,24 @@ resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
 
   target {
     arn      = aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn
+    role_arn = aws_iam_role.scheduler.arn
+  }
+}
+
+resource "aws_scheduler_schedule" "delta_download_cqc_api_schedule" {
+  name        = "${local.workspace_prefix}-CqcApiSchedule-Delta"
+  state       = "ENABLED"
+  description = "Regular scheduling of the CQC API delta download pipeline on the first, eighth, fifteenth and twenty third of each month."
+
+  flexible_time_window {
+    mode = "OFF"
+  }
+
+  schedule_expression          = "cron(00 01 01,08,15,23 * ? *)"
+  schedule_expression_timezone = "Europe/London"
+
+  target {
+    arn      = aws_sfn_state_machine.master_ingest_state_machine.arn
     role_arn = aws_iam_role.scheduler.arn
   }
 }
