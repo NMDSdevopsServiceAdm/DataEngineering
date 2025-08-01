@@ -23,3 +23,7 @@ variable "secret_name" {
   default = "cqc_api_primary_key"
 }
 
+variable "cluster_arn" {
+  type = string
+}
+

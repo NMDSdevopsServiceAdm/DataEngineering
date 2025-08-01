@@ -1,4 +1,4 @@
-resource "aws_ecs_task_definition" "polars_task_definition" {
+resource "aws_ecs_task_definition" "polars_task" {
   family                   = "${local.workspace_prefix}-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
@@ -14,7 +14,7 @@ resource "aws_ecs_task_definition" "polars_task_definition" {
 
   container_definitions = jsonencode([
     {
-      name      = "${local.workspace_prefix}-container",
+      name      = "${var.task_name}-container",
       image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:latest",
       essential = true,
       cpu       = 4096,

@@ -8,7 +8,7 @@ resource "aws_ecs_cluster" "polars_cluster" {
 }
 
 module "cqc-provider-api" {
-  source    = "../modules/fargate-task"
-  task_name = "cqc-api-providers-ingest"
-
+  source      = "../modules/fargate-task"
+  task_name   = "cqc-api-providers-ingest"
+  cluster_arn = aws_ecs_cluster.polars_cluster.arn
 }
