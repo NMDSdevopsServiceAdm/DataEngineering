@@ -13,6 +13,11 @@ variable "ecr_repo_name" {
   default = "869-dev/cqc"
 }
 
+variable "secret_arn" {
+  type    = string
+  default = "arn:aws:secretsmanager:eu-west-2:344210435447:secret:cqc_api_primary_key-mK4hzZ"
+}
+
 variable "secret_name" {
   type    = string
   default = "cqc_api_primary_key"
