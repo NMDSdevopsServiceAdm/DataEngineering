@@ -71,3 +71,26 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
         result = pl.read_parquet(dest)
         self.assertEqual(result.height, 3)
+
+    @patch(f"{PATCH_PATH}.get_secret")
+    @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
+    @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
+    @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
+    def test_main_copes_with_malformed_destination(self, mock_objects, mock_get_secret):
+        mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
+        mock_objects.return_value = [
+            {"providerId": 1},
+            {"providerId": 2},
+            {"providerId": 3},
+        ]
+        dest = f"{self.temp_dir}/new_path/data.parquet"
+        start = "2025-07-20T15:40:23Z"
+        end = "2025-07-25T14:23:40Z"
+        new_path = f'{self.temp_dir}/new_path'
+        os.mkdir(new_path)
+        main(new_path, start, end)
+        self.assertTrue(pathlib.Path(dest).exists())
+        self.assertTrue(pathlib.Path(dest).is_file())
+        self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
+        result = pl.read_parquet(dest)
+        self.assertEqual(result.height, 3)
