@@ -51,44 +51,44 @@ jobs:
             docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
             docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
 
-#  test:
-#    docker:
-#      - image: circleci/python:3.9.6
-#    resource_class: small
-#
-#    steps:
-#      - checkout
-#
-#      - restore_cache:
-#          keys:
-#            - v1.1-deps-{{ checksum "Pipfile.lock" }}
-#
-#      - run:
-#          name: Install system packages
-#          command: |
-#            sudo apt-get update
-#            sudo apt-get install -y default-jre-headless
-#
-#      - run:
-#          name: install dependencies
-#          command: |
-#            sudo pip install pipenv
-#            pipenv install --dev
-#
-#      - save_cache:
-#          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
-#          paths:
-#            - ~/.local/share/virtualenvs
-#
-#      - run:
-#          name: run unit tests
-#          command: |
-#            pipenv run python -m unittest discover -s . -p "test_*.py"
-#
-#      - run:
-#          name: run integration tests
-#          command: |
-#            pipenv run python -m unittest discover tests/integration
+  test:
+    docker:
+      - image: circleci/python:3.9.6
+    resource_class: small
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1.1-deps-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: Install system packages
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y default-jre-headless
+
+      - run:
+          name: install dependencies
+          command: |
+            sudo pip install pipenv
+            pipenv install --dev
+
+      - save_cache:
+          key: v1.1-deps-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ~/.local/share/virtualenvs
+
+      - run:
+          name: run unit tests
+          command: |
+            pipenv run python -m unittest discover -s . -p "test_*.py"
+
+      - run:
+          name: run integration tests
+          command: |
+            pipenv run python -m unittest discover tests/integration
 
 
 
@@ -265,13 +265,13 @@ workflows:
           filters:
             branches:
               only: main
-#      - test:
-#          filters:
-#            branches:
-#              only: main
+      - test:
+          filters:
+            branches:
+              only: main
       - terraform-plan:
           requires:
-#            - test
+            - test
             - lambda-function-containerisation
       - plan-approval:
           type: approval
@@ -292,10 +292,10 @@ workflows:
           filters:
             branches:
               ignore: main
-#      - test:
-#          filters:
-#            branches:
-#              ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
@@ -311,7 +311,7 @@ workflows:
       - terraform-plan:
           requires:
             - lint-terraform
-#            - test
+            - test
             - lambda-function-containerisation
       - terraform-apply:
           requires:
