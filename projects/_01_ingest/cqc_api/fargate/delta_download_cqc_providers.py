@@ -19,6 +19,10 @@ import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -64,22 +68,22 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         Exception: For any other unspecified errors that occur during API
             calls, secret retrieval, or data processing.
     """
-    print("Starting Execution")
+    logger.info("Starting Execution")
     try:
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
-        print("Validating start and end timestamps")
+        logger.info("Validating start and end timestamps")
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "Start timestamp is after end timestamp"
             )
 
-        print(f'Getting SecretID "{SECRET_ID}"')
+        logger.info(f'Getting SecretID "{SECRET_ID}"')
         secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
-        print("Collecting providers with changes from API")
+        logger.info("Collecting providers with changes from API")
 
         generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
@@ -89,7 +93,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             end_timestamp=f"{end_dt.isoformat(timespec='seconds')}Z",
         )
 
-        print("Creating dataframe and writing to Parquet")
+        logger.info("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
         output_file_path = f"{destination}data.parquet"
@@ -127,7 +131,7 @@ if __name__ == "__main__":
             ("--start_timestamp", "Start timestamp for provider changes", True),
             ("--end_timestamp", "End timestamp for provider changes", True),
         )
-        print(f"Running job from {start_timestamp} to {end_timestamp}")
+        logger.info(f"Running job from {start_timestamp} to {end_timestamp}")
 
         todays_date = date.today()
         destination = utils.generate_s3_datasets_dir_date_path(
