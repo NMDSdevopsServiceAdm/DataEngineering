@@ -38,7 +38,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 
 
-resource "aws_iam_role_policy_attachment" "ecs_task_role_policy" {
+resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_attach_s3" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.s3_read_write_policy.arn
 }
@@ -82,6 +82,11 @@ resource "aws_iam_policy" "secretsmanager_read_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_secr" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.s3_read_write_policy.arn
 }
 
 
