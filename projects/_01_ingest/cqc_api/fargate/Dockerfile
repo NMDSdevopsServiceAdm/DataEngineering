@@ -8,6 +8,7 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
+COPY utils /app/utils
 COPY polars_utils /app/polars_utils
 COPY projects/_01_ingest/cqc_api/utils /app/projects/_01_ingest/cqc_api/utils
 COPY schemas/cqc_provider_schema_polars.py /app/schemas/cqc_provider_schema_polars.py
