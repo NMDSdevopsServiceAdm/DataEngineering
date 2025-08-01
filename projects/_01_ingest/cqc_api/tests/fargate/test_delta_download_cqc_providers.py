@@ -1,6 +1,6 @@
 import tempfile
 import shutil
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import main
+from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import main, InvalidTimestampArgumentError
 import unittest
 from unittest.mock import patch
 import os
@@ -45,7 +45,7 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         dest = os.path.join(self.temp_dir, "test.parquet")
         start = "2025-07-25T15:40:23Z"
         end = "2025-07-20T14:23:40Z"
-        with self.assertRaises(ValueError):
+        with self.assertRaises(InvalidTimestampArgumentError):
             main(dest, start, end)
 
     @patch(f"{PATCH_PATH}.get_secret")
