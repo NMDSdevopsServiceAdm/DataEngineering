@@ -64,20 +64,22 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         Exception: For any other unspecified errors that occur during API
             calls, secret retrieval, or data processing.
     """
+    print("Starting Execution")
     try:
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
+        print("Validating start and end timestamps")
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
                 "Start timestamp is after end timestamp"
             )
 
-        logger.info(f'Getting SecretID "{SECRET_ID}"')
+        print(f'Getting SecretID "{SECRET_ID}"')
         secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
-        logger.info("Collecting providers with changes from API")
+        print("Collecting providers with changes from API")
 
         generator: Generator[dict, None, None] = cqc.get_updated_objects(
             object_type=CQC_OBJECT_TYPE,
@@ -123,7 +125,7 @@ if __name__ == "__main__":
             ("--start_timestamp", "Start timestamp for provider changes", True),
             ("--end_timestamp", "End timestamp for provider changes", True),
         )
-        logger.info(f"Running job from {start_timestamp} to {end_timestamp}")
+        print(f"Running job from {start_timestamp} to {end_timestamp}")
 
         todays_date = date.today()
         destination = utils.generate_s3_datasets_dir_date_path(
