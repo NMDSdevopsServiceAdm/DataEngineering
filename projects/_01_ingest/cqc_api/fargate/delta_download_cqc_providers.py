@@ -11,8 +11,7 @@ from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
-from polars_utils import utils as polars_utils
-from utils import utils as utils
+from polars_utils import utils
 from typing import Generator
 from argparse import ArgumentError, ArgumentTypeError
 import sys
@@ -27,6 +26,9 @@ SECRET_ID = os.environ.get("CQC_SECRET_NAME", "")
 AWS_REGION = os.environ.get("AWS_REGION", "")
 CQC_OBJECT_TYPE = "providers"
 CQC_ORG_TYPE = "provider"
+
+class InvalidTimestampArgumentError(Exception):
+    pass
 
 
 def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
@@ -55,7 +57,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         None.
 
     Raises:
-        ValueError: If `start_timestamp` is after `end_timestamp`.
+        InvalidTimestampArgumentError: If `start_timestamp` is after `end_timestamp`.
         FileNotFoundError: If the function is unable to write the Parquet
             file to the specified `destination`.
         Exception: For any other unspecified errors that occur during API
@@ -66,8 +68,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
-            raise ValueError("Start timestamp is after end timestamp")
+            raise InvalidTimestampArgumentError("Start timestamp is after end timestamp")
 
+        logger.info(f'Getting SecretID "{SECRET_ID}"')
         secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
@@ -83,9 +86,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
-        polars_utils.write_to_parquet(df_unique, destination, logger=logger)
+        utils.write_to_parquet(df_unique, destination, logger=logger)
         return None
-    except ValueError as e:
+    except InvalidTimestampArgumentError as e:
         logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
     except FileNotFoundError as e:

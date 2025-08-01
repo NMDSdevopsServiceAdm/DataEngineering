@@ -18,4 +18,4 @@ COPY projects/_01_ingest/cqc_api/fargate/delta_download_cqc_providers.py /app/de
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "delta_download_cqc_providers.py", "--destination_prefix", "s3://spike-polars-data", \
-    "--start_timestamp", "2025-07-15:T01:30Z", "--end_timestamp", "2025-07-23:T01:30Z"]
+    "--start_timestamp", "2025-07-23T00:30:31.321Z", "--end_timestamp", "2025-07-31T19:24:38.823Z"]
