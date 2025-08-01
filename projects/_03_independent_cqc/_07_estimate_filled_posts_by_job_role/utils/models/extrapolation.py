@@ -5,7 +5,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.extrapo
     define_window_specs,
     calculate_first_and_final_submission_dates,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 
 
 def extrapolate_job_role_ratios(df: DataFrame) -> DataFrame:
