@@ -291,7 +291,10 @@ resource "aws_iam_policy" "scheduler" {
       {
         Effect   = "Allow",
         Action   = ["states:StartExecution"]
-        Resource = [aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn]
+        Resource = [
+          aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn,
+          aws_sfn_state_machine.master_ingest_state_machine.arn
+        ]
       },
     ]
   })
