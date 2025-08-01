@@ -1,6 +1,9 @@
 import tempfile
 import shutil
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import main, InvalidTimestampArgumentError
+from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
+    main,
+    InvalidTimestampArgumentError,
+)
 import unittest
 from unittest.mock import patch
 import os
