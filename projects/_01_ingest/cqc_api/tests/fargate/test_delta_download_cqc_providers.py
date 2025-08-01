@@ -65,7 +65,7 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         dest = f"{self.temp_dir}/data.parquet"
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        main(self.temp_dir+ '/', start, end)
+        main(self.temp_dir + "/", start, end)
         self.assertTrue(pathlib.Path(dest).exists())
         self.assertTrue(pathlib.Path(dest).is_file())
         self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
