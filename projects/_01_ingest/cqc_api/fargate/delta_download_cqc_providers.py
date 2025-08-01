@@ -70,7 +70,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     """
     logger.info("Starting Execution")
     try:
-        destination = destination if destination[-1] == '/' else f'{destination}/'
+        destination = destination if destination[-1] == "/" else f"{destination}/"
 
         start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))

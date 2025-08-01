@@ -31,6 +31,7 @@ resource "aws_ecs_task_definition" "polars_task_definition" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+      command = ["default"]
     }
   ])
 

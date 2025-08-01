@@ -86,7 +86,7 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         dest = f"{self.temp_dir}/new_path/data.parquet"
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
-        new_path = f'{self.temp_dir}/new_path'
+        new_path = f"{self.temp_dir}/new_path"
         os.mkdir(new_path)
         main(new_path, start, end)
         self.assertTrue(pathlib.Path(dest).exists())

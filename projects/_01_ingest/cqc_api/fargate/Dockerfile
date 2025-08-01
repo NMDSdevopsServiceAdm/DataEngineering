@@ -8,7 +8,6 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
-COPY utils /app/utils
 COPY polars_utils /app/polars_utils
 COPY projects/_01_ingest/cqc_api/utils /app/projects/_01_ingest/cqc_api/utils
 COPY schemas/cqc_provider_schema_polars.py /app/schemas/cqc_provider_schema_polars.py
@@ -17,5 +16,4 @@ COPY projects/_01_ingest/cqc_api/fargate/delta_download_cqc_providers.py /app/de
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD ["python", "delta_download_cqc_providers.py", "--destination_prefix", "s3://spike-polars-data", \
-    "--start_timestamp", "2025-07-23T00:30:31.321Z", "--end_timestamp", "2025-07-31T19:24:38.823Z"]
+ENTRYPOINT ["python", "delta_download_cqc_providers.py"]
