@@ -1,16 +1,11 @@
 from pyspark.sql import DataFrame, functions as F
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
 
-def extract_registered_manager_names_from_imputed_regulated_activities_column(
-    df: DataFrame,
-) -> DataFrame:
+def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     Extracts registered manager names from the regulated activities column.
 
@@ -48,7 +43,7 @@ def extract_contacts_information(
         DataFrame: DataFrame with exploded contacts information.
     """
     df = df.select(
-        CQCL.location_id,
+        CQCLClean.location_id,
         CQCLClean.cqc_location_import_date,
         CQCLClean.imputed_regulated_activities,
     )
@@ -60,7 +55,7 @@ def extract_contacts_information(
         CQCLClean.contacts_exploded,
         F.explode(
             exploded_activities_df[CQCLClean.imputed_regulated_activities_exploded][
-                CQCL.contacts
+                CQCLClean.contacts
             ]
         ),
     )
@@ -80,12 +75,12 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: DataFrame with selected columns and full name column.
     """
-    given_name: str = df[CQCLClean.contacts_exploded][CQCL.person_given_name]
-    family_name: str = df[CQCLClean.contacts_exploded][CQCL.person_family_name]
+    given_name: str = df[CQCLClean.contacts_exploded][CQCLClean.person_given_name]
+    family_name: str = df[CQCLClean.contacts_exploded][CQCLClean.person_family_name]
     full_name: str = CQCLClean.contacts_full_name
 
     df = df.select(
-        df[CQCL.location_id],
+        df[CQCLClean.location_id],
         df[CQCLClean.cqc_location_import_date],
         F.concat(given_name, F.lit(" "), family_name).alias(full_name),
     )
@@ -102,7 +97,7 @@ def group_and_collect_names(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: Grouped DataFrame with unique registered manager names at each location and time period.
     """
-    df = df.groupBy(CQCL.location_id, CQCLClean.cqc_location_import_date).agg(
+    df = df.groupBy(CQCLClean.location_id, CQCLClean.cqc_location_import_date).agg(
         F.collect_set(CQCLClean.contacts_full_name).alias(
             CQCLClean.registered_manager_names
         )
@@ -125,7 +120,7 @@ def join_names_column_into_original_df(
     """
     df = df.join(
         registered_manager_names_df,
-        [CQCL.location_id, CQCLClean.cqc_location_import_date],
+        [CQCLClean.location_id, CQCLClean.cqc_location_import_date],
         "left",
     )
     return df
