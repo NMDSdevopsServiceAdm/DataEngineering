@@ -27,6 +27,7 @@ AWS_REGION = os.environ.get("AWS_REGION", "")
 CQC_OBJECT_TYPE = "providers"
 CQC_ORG_TYPE = "provider"
 
+
 class InvalidTimestampArgumentError(Exception):
     pass
 
@@ -68,7 +69,9 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
-            raise InvalidTimestampArgumentError("Start timestamp is after end timestamp")
+            raise InvalidTimestampArgumentError(
+                "Start timestamp is after end timestamp"
+            )
 
         logger.info(f'Getting SecretID "{SECRET_ID}"')
         secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
