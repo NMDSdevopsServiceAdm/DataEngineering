@@ -1,6 +1,6 @@
 import tempfile
 import shutil
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
+from projects._01_ingest.cqc_api.fargate.providers.delta_download_cqc_providers import (
     main,
     InvalidTimestampArgumentError,
 )
@@ -10,7 +10,9 @@ import os
 import pathlib
 import polars as pl
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers"
+PATCH_PATH = (
+    "projects._01_ingest.cqc_api.fargate.providers.delta_download_cqc_providers"
+)
 
 
 class TestDeltaDownloadCQCProviders(unittest.TestCase):
