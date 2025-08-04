@@ -218,7 +218,7 @@
               "Parameters": {
                 "JobName": "${validate_providers_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/",
                   "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_cleaned/"
                 }
@@ -236,7 +236,7 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/",
                   "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
                 }
