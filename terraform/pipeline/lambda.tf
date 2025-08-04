@@ -28,13 +28,29 @@ resource "aws_lambda_function" "error_notification_lambda" {
   }
 }
 
+resource "aws_lambda_function" "error_notification_delta_lambda" {
+  role             = aws_iam_role.error_notification_lambda.arn
+  handler          = "error_notifications.main"
+  runtime          = "python3.9"
+  function_name    = "${local.workspace_prefix}-glue-failure-notification-delta"
+  s3_bucket        = module.pipeline_resources.bucket_name
+  s3_key           = aws_s3_object.error_notification_lambda.key
+  source_code_hash = data.archive_file.error_notification_lambda.output_base64sha256
+
+  environment {
+    variables = {
+      SNS_TOPIC_ARN = aws_sns_topic.pipeline_failures_delta.arn
+    }
+  }
+}
+
 resource "aws_lambda_function" "create_snapshot_lambda" {
   role          = aws_iam_role.create_snapshot_lambda.arn
   function_name = "${local.workspace_prefix}-create-full-snapshot"
   package_type  = "Image"
   image_uri     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot@${data.aws_ecr_image.create_dataset_snapshot.image_digest}"
-  memory_size   = 3072
-  timeout       = 60
+  memory_size   = 10240
+  timeout       = 300
 }
 
 resource "aws_lambda_function" "check_datasets_equal" {
@@ -142,8 +158,11 @@ data "aws_iam_policy_document" "create_snapshot_lambda" {
     actions = [
       "s3:Put*"
     ]
-    effect    = "Allow"
-    resources = ["arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/full/domain=CQC/dataset=providers_api/version=3.0.0/*"]
+    effect = "Allow"
+    resources = [
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/*",
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/*"
+    ]
   }
 }
 
@@ -225,7 +244,8 @@ data "aws_iam_policy_document" "error_notification_lambda" {
     ]
     effect = "Allow"
     resources = [
-      aws_sns_topic.pipeline_failures.arn
+      aws_sns_topic.pipeline_failures.arn,
+      aws_sns_topic.pipeline_failures_delta.arn
     ]
   }
 }

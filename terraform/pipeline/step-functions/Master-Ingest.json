@@ -1,0 +1,164 @@
+{
+  "Comment": "A state machine to manage the weekly ingestion of CQC API and ASC-WDS data",
+  "StartAt": "IngestCqcAndAscWDS",
+  "States": {
+    "IngestCqcAndAscWDS": {
+      "Type": "Parallel",
+      "Next": "DownstreamPlaceholder",
+      "Branches": [
+        {
+          "StartAt": "IngestCqcApi",
+          "States": {
+            "IngestCqcApi": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${ingest_cqc_api_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CheckAscWdsIngest",
+          "States": {
+            "CheckAscWdsIngest": {
+              "Type": "Parallel",
+              "Parameters": {
+                "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
+                "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
+                "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
+              },
+              "Branches": [
+                {
+                  "StartAt": "CheckWorker",
+                  "States": {
+                    "CheckWorker": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
+                        "Bucket": "${dataset_bucket_name}",
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
+                      },
+                      "ResultPath": "$.workerfile",
+                      "Next": "WorkerReady"
+                    },
+                    "WorkerReady": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "Next": "MarkWorkerReady"
+                        },
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "WaitForWorker"
+                        }
+                      ]
+                    },
+                    "WaitForWorker": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "CheckWorker"
+                   },
+                    "MarkWorkerReady": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                 }
+                },
+                {
+                  "StartAt": "CheckWorkplace",
+                  "States": {
+                    "CheckWorkplace": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
+                        "Bucket": "${dataset_bucket_name}",
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
+                      },
+                      "ResultPath": "$.workerfile",
+                      "Next": "WorkplaceReady"
+                    },
+                    "WorkplaceReady": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "Next": "MarkWorkplaceReady"
+                        },
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "WaitForWorkplace"
+                        }
+                        ]
+                    },
+                    "WaitForWorkplace": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "CheckWorkplace"
+                    },
+                    "MarkWorkplaceReady": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "AscWdsValidation"
+            },
+            "AscWdsValidation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+                "Parameters": {
+                  "StateMachineArn": "${asc_wds_validation_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
+              "End": true
+            }
+          }
+        }
+
+      ]
+    },
+    "DownstreamPlaceholder": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "SfCCoveragePipeline",
+            "States": {
+              "SfCCoveragePipeline": {
+                "Type": "Pass",
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "IndCQCPipeline",
+            "States": {
+              "IndCQCPipeline": {
+                "Type": "Pass",
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "Success"
+      },
+    "Success": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

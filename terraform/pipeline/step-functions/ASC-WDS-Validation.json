@@ -1,0 +1,176 @@
+{
+    "Comment": "State machine for validating and cleaning ASCWDS data",
+    "StartAt": "ValidateAscWds",
+    "States": {
+      "ValidateAscWds": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "ValidateWorkplaceRaw",
+            "States": {
+              "ValidateWorkplaceRaw": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_workplace_raw_data_job_name}",
+                  "Arguments": {
+                    "--raw_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_raw/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "ValidateWorkerRaw",
+            "States": {
+              "ValidateWorkerRaw": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_worker_raw_data_job_name}",
+                  "Arguments": {
+                    "--raw_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_raw/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "CleanWorkplaceData",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "PublishErrorNotification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "CleanWorkplaceData": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "${clean_ascwds_workplace_job_name}",
+          "Arguments": {
+            "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+            "--cleaned_ascwds_workplace_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+            "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+          }
+        },
+        "Next": "CleanWorkerData"
+      },
+      "CleanWorkerData": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "${clean_ascwds_worker_job_name}",
+          "Arguments": {
+            "--ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker/",
+            "--ascwds_workplace_cleaned_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+            "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
+          }
+        },
+        "Next": "CrawlAscWds"
+      },
+      "CrawlAscWds": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Parameters": {
+          "Name": "${ascwds_crawler_name}"
+        },
+        "Next": "ValidateCleanedAscWds"
+      },
+      "ValidateCleanedAscWds": {
+        "Type": "Parallel",
+        "Branches": [
+          {
+            "StartAt": "ValidateCleanedWorkplace",
+            "States": {
+              "ValidateCleanedWorkplace": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_workplace_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
+                  }
+                },
+                "End": true
+              }
+            }
+          },
+          {
+            "StartAt": "ValidateCleanedWorker",
+            "States": {
+              "ValidateCleanedWorker": {
+                "Type": "Task",
+                "Resource": "arn:aws:states:::glue:startJobRun.sync",
+                "Parameters": {
+                  "JobName": "${validate_ascwds_worker_cleaned_data_job_name}",
+                  "Arguments": {
+                    "--cleaned_ascwds_worker_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                    "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_worker_cleaned/"
+                  }
+                },
+                "End": true
+              }
+            }
+          }
+        ],
+        "Next": "CrawlWhenSuccessful",
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "PublishErrorNotification",
+            "ResultPath": "$.error"
+          }
+        ]
+      },
+      "CrawlWhenSuccessful": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Success"
+      },
+      "Success": {
+        "Type": "Succeed"
+      },
+      "PublishErrorNotification": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+        "Parameters": {
+          "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+          "Payload": {
+            "Error.$": "$.error.Cause",
+            "ExecutionId.$": "$$.Execution.Id",
+            "StateMachineName.$": "$$.StateMachine.Name",
+            "StateMachineId.$": "$$.StateMachine.Id",
+            "ExecutionStartTime.$": "$$.Execution.StartTime",
+            "CallbackToken.$": "$$.Task.Token"
+          }
+        },
+        "Next": "CrawlWhenFailed"
+      },
+      "CrawlWhenFailed": {
+        "Type": "Task",
+        "Parameters": {
+          "Name": "${data_validation_reports_crawler_name}"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+        "Next": "Fail"
+      },
+      "Fail": {
+        "Type": "Fail"
+      }
+    }
+}
