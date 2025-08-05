@@ -22,7 +22,18 @@ class NoProviderOrLocationException(Exception):
 
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
-def call_api(url, query_params=None, headers_dict=None) -> dict:
+def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> dict:
+    """
+    Calls an API and returns the json response
+    Args:
+        url (str): the api url
+        query_params (dict): the parameters to pass to the api
+        headers_dict (dict): headers to pass to the api
+
+    Returns:
+        dict: the json response
+
+    """
     response = requests.get(url, query_params, headers=headers_dict)
 
     while response.status_code == 429:
@@ -53,7 +64,7 @@ def get_all_objects(
     object_type: str,
     object_identifier: str,
     cqc_api_primary_key: str,
-    per_page=DEFAULT_PAGE_SIZE,
+    per_page: int = DEFAULT_PAGE_SIZE,
 ) -> Iterable[List[dict]]:
     url = f"{CQC_API_BASE_URL}/public/{CQC_API_VERSION}/{object_type}"
 
