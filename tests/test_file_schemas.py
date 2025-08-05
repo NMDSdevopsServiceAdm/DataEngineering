@@ -6,7 +6,6 @@ from pyspark.sql.types import (
     DoubleType,
     FloatType,
     IntegerType,
-    MapType,
     StringType,
     StructField,
     StructType,
@@ -241,114 +240,6 @@ class FilterCleanedValuesSchema:
             StructField("month", StringType(), True),
             StructField("day", StringType(), True),
             StructField("import_date", StringType(), True),
-        ]
-    )
-
-
-@dataclass
-class IndCQCDataUtils:
-    input_schema_for_adding_estimate_filled_posts_and_source = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField("model_name_1", DoubleType(), True),
-            StructField("model_name_2", DoubleType(), True),
-            StructField("model_name_3", DoubleType(), True),
-        ]
-    )
-
-    expected_schema_with_estimate_filled_posts_and_source = StructType(
-        [
-            *input_schema_for_adding_estimate_filled_posts_and_source,
-            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.estimate_filled_posts_source, StringType(), True),
-        ]
-    )
-
-    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes_schema = (
-        StructType(
-            [
-                StructField(IndCQC.location_id, StringType(), True),
-                StructField(IndCQC.care_home_model, DoubleType(), True),
-                StructField(
-                    IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType())
-                ),
-            ]
-        )
-    )
-
-    merge_columns_in_order_when_columns_are_datatype_string_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
-            ),
-        ]
-    )
-
-    merge_columns_in_order_using_map_columns_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ascwds_job_role_ratios, MapType(StringType(), DoubleType()), True
-            ),
-            StructField(
-                IndCQC.ascwds_job_role_rolling_ratio,
-                MapType(StringType(), DoubleType()),
-                True,
-            ),
-        ]
-    )
-
-    expected_merge_columns_in_order_using_map_columns_schema = StructType(
-        [
-            *merge_columns_in_order_using_map_columns_schema,
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged,
-                MapType(StringType(), DoubleType()),
-                True,
-            ),
-            StructField(
-                IndCQC.ascwds_job_role_ratios_merged_source, StringType(), True
-            ),
-        ]
-    )
-
-    get_selected_value_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.unix_time, IntegerType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, FloatType(), True),
-            StructField(IndCQC.posts_rolling_average_model, FloatType(), True),
-        ]
-    )
-    expected_get_selected_value_schema = StructType(
-        [
-            *get_selected_value_schema,
-            StructField("new_column", FloatType(), True),
-        ]
-    )
-
-    allocate_primary_service_type_second_level_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(
-                CQCLClean.imputed_gac_service_types,
-                ArrayType(
-                    StructType(
-                        [
-                            StructField(CQCL.name, StringType(), True),
-                            StructField(CQCL.description, StringType(), True),
-                        ]
-                    )
-                ),
-            ),
-        ]
-    )
-    expected_allocate_primary_service_type_second_level_schema = StructType(
-        [
-            *allocate_primary_service_type_second_level_schema,
-            StructField(IndCQC.primary_service_type_second_level, StringType(), True),
         ]
     )
 

@@ -13,7 +13,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils i
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     vectorise_dataframe,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 
 
 @dataclass
