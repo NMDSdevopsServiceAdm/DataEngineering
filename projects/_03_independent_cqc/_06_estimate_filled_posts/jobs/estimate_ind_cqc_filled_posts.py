@@ -22,7 +22,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.ind_cqc_filled_posts_utils.utils import (
+from projects._03_independent_cqc.utils.utils.utils import (
     merge_columns_in_order,
     allocate_primary_service_type_second_level,
 )

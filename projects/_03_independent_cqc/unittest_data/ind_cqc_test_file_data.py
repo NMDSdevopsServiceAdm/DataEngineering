@@ -26,6 +26,7 @@ from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
     RelatedLocation,
@@ -5799,3 +5800,399 @@ class DiagnosticsUtilsData:
         (PrimaryServiceType.care_home_with_nursing, EstimateFilledPostsSource.imputed_posts_care_home_model, 3.0, 4.0, 5.0, 6.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0),
     ]
     # fmt: on
+
+
+@dataclass
+class IndCQCDataUtils:
+    input_rows_for_adding_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0),
+        ("1-000002", None, 30.0, 50.0),
+        ("1-000003", 20.0, 70.0, 60.0),
+        ("1-000004", None, None, 40.0),
+        ("1-000005", None, 0.5, 40.0),
+        ("1-000006", -1.0, 10.0, 30.0),
+    ]
+
+    expected_rows_with_estimate_filled_posts_and_source = [
+        ("1-000001", 10.0, None, 80.0, 10.0, "model_name_1"),
+        ("1-000002", None, 30.0, 50.0, 30.0, "model_name_2"),
+        ("1-000003", 20.0, 70.0, 60.0, 20.0, "model_name_1"),
+        ("1-000004", None, None, 40.0, 40.0, "model_name_3"),
+        ("1-000005", None, 0.5, 40.0, 40.0, "model_name_3"),
+        ("1-000006", -1.0, 10.0, 30.0, 10.0, "model_name_2"),
+    ]
+
+    merge_columns_in_order_when_df_has_columns_of_multiple_datatypes = [
+        (
+            "1-000001",
+            10.0,
+            {
+                MainJobRoleLabels.care_worker: 0.5,
+                MainJobRoleLabels.registered_nurse: 0.5,
+            },
+        )
+    ]
+
+    merge_columns_in_order_when_columns_are_datatype_string = [
+        ("1-000001", "string", "string")
+    ]
+
+    list_of_map_columns_to_be_merged = [
+        IndCQC.ascwds_job_role_ratios,
+        IndCQC.ascwds_job_role_rolling_ratio,
+    ]
+
+    # fmt: off
+    merge_map_columns_in_order_when_only_ascwds_known = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None)
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_only_ascwds_known = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         None,
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    # fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_only_primary_service_known = [
+        ("1-001",
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_only_primary_service_known = [
+        ("1-001",
+         None,
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         IndCQC.ascwds_job_role_rolling_ratio)
+    ]
+    # fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_both_map_columns_populated = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4})
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_both_map_columns_populated = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    # fmt: on
+
+    merge_map_columns_in_order_when_both_null = [("1-001", None, None)]
+    expected_merge_map_columns_in_order_when_both_null = [
+        ("1-001", None, None, None, None)
+    ]
+    # fmt: on
+
+    # fmt: off
+    merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4}),
+        ("1-002",
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2})
+    ]
+    # fmt: on
+
+    # fmt: off
+    expected_merge_map_columns_in_order_when_both_map_columns_populated_at_multiple_locations = [
+        ("1-001",
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         {MainJobRoleLabels.care_worker: 0.6, MainJobRoleLabels.registered_nurse: 0.4},
+         {MainJobRoleLabels.care_worker: 0.5, MainJobRoleLabels.registered_nurse: 0.5},
+         IndCQC.ascwds_job_role_ratios),
+        ("1-002",
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         {MainJobRoleLabels.care_worker: 0.8, MainJobRoleLabels.registered_nurse: 0.2},
+         {MainJobRoleLabels.care_worker: 0.7, MainJobRoleLabels.registered_nurse: 0.3},
+         IndCQC.ascwds_job_role_ratios)
+    ]
+    # fmt: on
+
+    test_first_selection_rows = [
+        ("loc 1", 1, None, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, 3.0, 25.0),
+    ]
+    expected_test_first_selection_rows = [
+        ("loc 1", 1, None, 100.0, 50.0),
+        ("loc 1", 2, 2.0, 50.0, 50.0),
+        ("loc 1", 3, 3.0, 25.0, 50.0),
+    ]
+    test_last_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0),
+        ("loc 1", 2, 2.0, 50.0),
+        ("loc 1", 3, None, 25.0),
+    ]
+    expected_test_last_selection_rows = [
+        ("loc 1", 1, 1.0, 100.0, 50.0),
+        ("loc 1", 2, 2.0, 50.0, 50.0),
+        ("loc 1", 3, None, 25.0, 50.0),
+    ]
+
+    allocate_primary_service_type_second_level_rows = [
+        (
+            "1-001",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+        ),
+        (
+            "1-002",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+        ),
+        (
+            "1-003",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+            ],
+        ),
+        (
+            "1-004",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            "1-005",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Community health care services - Nurses Agency only",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+            ],
+        ),
+        (
+            "1-006",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Extra Care housing services",
+                },
+            ],
+        ),
+        (
+            "1-007",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Hospice services",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+            ],
+        ),
+        (
+            "1-008",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Rehabilitation services",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Acute services with overnight beds",
+                },
+            ],
+        ),
+        (
+            "1-009",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Rehabilitation services",
+                },
+            ],
+        ),
+    ]
+    expected_allocate_primary_service_type_second_level_rows = [
+        (
+            "1-001",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.shared_lives,
+        ),
+        (
+            "1-002",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Shared Lives",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.shared_lives,
+        ),
+        (
+            "1-003",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service with nursing",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.care_home_with_nursing,
+        ),
+        (
+            "1-004",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.care_home_only,
+        ),
+        (
+            "1-005",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Community health care services - Nurses Agency only",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Domiciliary care service",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-006",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Extra Care housing services",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.non_residential,
+        ),
+        (
+            "1-007",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Hospice services",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Residential substance misuse treatment and/or rehabilitation service",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_residential,
+        ),
+        (
+            "1-008",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Rehabilitation services",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Acute services with overnight beds",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_residential,
+        ),
+        (
+            "1-009",
+            [
+                {
+                    "name": "Any given name",
+                    "description": "Some other service type",
+                },
+                {
+                    "name": "Any given name",
+                    "description": "Rehabilitation services",
+                },
+            ],
+            PrimaryServiceTypeSecondLevel.other_non_residential,
+        ),
+    ]
