@@ -80,6 +80,7 @@ def generate_s3_datasets_dir_date_path(
     date,
     version="1.0.0",
 ):
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
@@ -116,6 +117,7 @@ def read_from_parquet(
 def write_to_parquet(
     df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
 ):
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
@@ -203,6 +205,7 @@ def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
     >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
     """
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     parser = argparse.ArgumentParser()
     for arg in args:
         parser.add_argument(
