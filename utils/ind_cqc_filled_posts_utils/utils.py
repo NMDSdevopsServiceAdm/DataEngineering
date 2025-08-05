@@ -14,24 +14,6 @@ from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import
 )
 
 
-def add_source_description_to_source_column(
-    input_df: DataFrame,
-    populated_column_name: str,
-    source_column_name: str,
-    source_description: str,
-) -> DataFrame:
-    return input_df.withColumn(
-        source_column_name,
-        F.when(
-            (
-                F.col(populated_column_name).isNotNull()
-                & F.col(source_column_name).isNull()
-            ),
-            source_description,
-        ).otherwise(F.col(source_column_name)),
-    )
-
-
 def merge_columns_in_order(
     df: DataFrame,
     ordered_list_of_columns_to_be_merged: List,

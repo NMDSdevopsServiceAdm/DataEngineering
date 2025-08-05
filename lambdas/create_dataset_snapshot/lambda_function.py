@@ -6,9 +6,9 @@ from datetime import datetime
 
 from s3fs import S3FileSystem
 
-from snapshots import build_snapshot_table_from_delta
+from utils.snapshots import build_snapshot_table_from_delta
 
-from ind_cqc_pipeline_columns import (
+from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
@@ -43,9 +43,9 @@ def lambda_handler(event, context):
 
     fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
-        snapshot_df.drop([Keys.year, Keys.month, Keys.day]).write_parquet(
-            destination, compression="snappy"
-        )
+        snapshot_df.drop(
+            [Keys.year, Keys.month, Keys.day, Keys.import_date]
+        ).write_parquet(destination, compression="snappy")
     logger.info(
         f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
     )

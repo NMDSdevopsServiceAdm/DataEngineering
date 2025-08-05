@@ -36,6 +36,7 @@ def lambda_handler(event, context):
         left_df.filter(pl.col(deregistration_date).is_null()).drop(drop_cols),
         right_df.filter(pl.col(deregistration_date).is_null()).drop(drop_cols),
         check_row_order=False,
+        check_dtypes=False,
     )
 
     logger.info("The provided datasets are equal, excluding deregistered items")

@@ -59,9 +59,7 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.impute_missing_data_from_provider_dataset")
     @patch(f"{PATCH_PATH}.join_cqc_provider_data")
     @patch(f"{PATCH_PATH}.add_related_location_column")
-    @patch(
-        f"{PATCH_PATH}.extract_registered_manager_names_from_imputed_regulated_activities_column"
-    )
+    @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.allocate_primary_service_type")
     @patch(f"{PATCH_PATH}.remove_specialist_colleges")
@@ -100,7 +98,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_specialist_colleges_mock: Mock,
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
-        extract_registered_manager_names_from_imputed_regulated_activities_column_mock: Mock,
+        extract_registered_manager_names_mock: Mock,
         add_related_location_column_mock: Mock,
         join_cqc_provider_data_mock: Mock,
         impute_missing_data_from_provider_dataset_mock: Mock,
@@ -138,7 +136,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_specialist_colleges_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
-        extract_registered_manager_names_from_imputed_regulated_activities_column_mock.assert_called_once()
+        extract_registered_manager_names_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
         join_cqc_provider_data_mock.assert_called_once()
         self.assertEqual(impute_missing_data_from_provider_dataset_mock.call_count, 2)

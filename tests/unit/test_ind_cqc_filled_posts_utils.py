@@ -223,32 +223,6 @@ class TestMergeColumnsInOrder(TestIndCqcFilledPostUtils):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class TestSourceDescriptionAdded(TestIndCqcFilledPostUtils):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_add_source_description_added_to_source_column_when_required(self):
-        input_df = self.spark.createDataFrame(
-            Data.source_missing_rows, Schemas.estimated_source_description_schema
-        )
-
-        returned_df = job.add_source_description_to_source_column(
-            input_df,
-            IndCQC.estimate_filled_posts,
-            IndCQC.estimate_filled_posts_source,
-            "model_name",
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_source_added_rows, Schemas.estimated_source_description_schema
-        )
-
-        returned_data = returned_df.sort(IndCQC.location_id).collect()
-        expected_data = expected_df.sort(IndCQC.location_id).collect()
-
-        self.assertEqual(returned_df.count(), expected_df.count())
-        self.assertEqual(expected_data, returned_data)
-
-
 class GetSelectedValueFunctionTests(TestIndCqcFilledPostUtils):
     def setUp(self):
         super().setUp()
