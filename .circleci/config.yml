@@ -34,26 +34,8 @@ jobs:
             # Authenticate Docker to ECR
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
             
-            echo "Rebuilding create dataset snapshot container and pushing to ECR."
-            docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/create_dataset_snapshot/Dockerfile .
-            
-            # Push the image
-            docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/create-snapshot:${CIRCLE_BRANCH}
-          
-            echo "Rebuilding check dataset equality container and pushing to ECR."
-            docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f lambdas/check_dataset_equality/Dockerfile .
-
-            # Push the image
-            docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/lambda/check-datasets-equal:${CIRCLE_BRANCH}
-            
-            echo "Building the CQC Providers job and push to ECR."
-            docker buildx build  --platform linux/amd64 -t latest --no-cache --pull -f projects/_01_ingest/cqc_api/fargate/providers/Dockerfile .
-
-            # Push the image
-            docker tag latest ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/ingest/cqc/providers:${CIRCLE_BRANCH}
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/ingest/cqc/providers:${CIRCLE_BRANCH}
+            echo "Rebuilding lambdas and pushing to ECR."
+            docker buildx bake all --push
 
   test:
     docker:
