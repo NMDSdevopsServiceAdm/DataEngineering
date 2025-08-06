@@ -10,7 +10,7 @@ variable "region" {
 
 variable "ecr_repo_name" {
   type    = string
-  default = "869-dev/cqc"
+  default = "898-dev/cqc"
 }
 
 variable "secret_arn" {
