@@ -7,14 +7,8 @@ resource "aws_ecs_cluster" "polars_cluster" {
   }
 }
 
-module "cqc-provider-api" {
+module "cqc-api" {
   source      = "../modules/fargate-task"
-  task_name   = "delta_download_cqc_providers"
-  cluster_arn = aws_ecs_cluster.polars_cluster.arn
-}
-
-module "cqc-location-api" {
-  source      = "../modules/fargate-task"
-  task_name   = "delta_download_cqc_locations"
+  task_name   = "cqc-api"
   cluster_arn = aws_ecs_cluster.polars_cluster.arn
 }

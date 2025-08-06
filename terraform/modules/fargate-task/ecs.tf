@@ -1,5 +1,5 @@
 resource "aws_ecs_task_definition" "polars_task" {
-  family                   = "${local.workspace_prefix}-task"
+  family                   = "${local.workspace_prefix}-${var.task_name}-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = "4096"
@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "polars_task" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-      command = ["${var.task_name}.py"]
+      command = ["default"]
     }
   ])
 
