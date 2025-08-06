@@ -94,7 +94,7 @@ def get_snapshots(
             )
             new = delta_data.remove(pl.col(primary_key).is_in(previous_ss[primary_key]))
 
-            previous_ss = pl.concat([unchanged, changed, new])
+            previous_ss = pl.concat([unchanged, changed, new], how="diagonal")
             previous_ss = previous_ss.with_columns(
                 pl.lit(date.group("year")).alias(Keys.year).cast(pl.Int64),
                 pl.lit(date.group("month")).alias(Keys.month).cast(pl.Int64),
