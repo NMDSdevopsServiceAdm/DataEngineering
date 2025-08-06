@@ -11,11 +11,11 @@ variable "CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc_providers"]
+  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc"]
 }
 
 # group "ingest" {
-#   targets = ["delta_cqc_providers"]
+#   targets = ["delta_cqc"]
 # }
 
 target "create_dataset_snapshot" {
