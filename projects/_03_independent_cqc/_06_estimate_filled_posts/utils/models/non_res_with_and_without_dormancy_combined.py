@@ -10,7 +10,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils i
     insert_predictions_into_pipeline,
     set_min_value,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 
 
 def combine_non_res_with_and_without_dormancy_models(

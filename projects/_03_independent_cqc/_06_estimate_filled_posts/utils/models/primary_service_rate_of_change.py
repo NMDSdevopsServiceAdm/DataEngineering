@@ -10,7 +10,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.interpolation import (
     model_interpolation,
 )
-from utils.ind_cqc_filled_posts_utils.utils import get_selected_value
+from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.utils import convert_days_to_unix_time
 from projects.utils.utils.utils import calculate_windowed_column
 
