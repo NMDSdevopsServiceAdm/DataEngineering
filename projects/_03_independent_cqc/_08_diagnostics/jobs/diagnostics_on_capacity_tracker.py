@@ -17,7 +17,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
-from utils.ind_cqc_filled_posts_utils.utils import merge_columns_in_order
+from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [

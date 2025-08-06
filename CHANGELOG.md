@@ -21,6 +21,9 @@ All notable changes to this project will be documented in this file.
   - Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
   - Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
 
+- Refactor ingestion jobs to use Polars:
+  -  CQC Delta Providers
+
 ### Changed
 - Update the version of CQC ratings data
 
