@@ -31,7 +31,7 @@ resource "aws_ecs_task_definition" "polars_task" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
-      command = ["default"]
+      command = ["${var.task_name}.py"]
     }
   ])
 

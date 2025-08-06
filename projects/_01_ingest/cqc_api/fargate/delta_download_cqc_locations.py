@@ -1,20 +1,20 @@
 """Retrieves Location data from the CQC API."""
-from argparse import ArgumentError, ArgumentTypeError
-from datetime import date, datetime
-import json
-import logging
-import os
-import sys
-
-import polars as pl
-
-from polars_utils import utils
-from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.aws_secrets_manager_utilities import get_secret
+import os
+import json
+from datetime import datetime as dt
+from datetime import date
+import logging
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+import polars as pl
+from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
+from polars_utils import utils
+from typing import Generator
+from argparse import ArgumentError, ArgumentTypeError
+import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -36,7 +36,7 @@ CQC_OBJECT_TYPE = "locations"
 CQC_ORG_TYPE = "location"
 
 
-def main(destination: str, start_timestamp: str, end_timestamp: str):
+def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
     """
     This function performs the following steps:
     1. Validates the provided start and end timestamps.
@@ -68,8 +68,10 @@ def main(destination: str, start_timestamp: str, end_timestamp: str):
             calls, secret retrieval, or data processing.
     """
     try:
-        start_dt = datetime.fromisoformat(start_timestamp.replace("Z", ""))
-        end_dt = datetime.fromisoformat(end_timestamp.replace("Z", ""))
+        destination = destination if destination[-1] == "/" else f"{destination}/"
+
+        start_dt = dt.fromisoformat(start_timestamp.replace("Z", ""))
+        end_dt = dt.fromisoformat(end_timestamp.replace("Z", ""))
 
         if start_dt > end_dt:
             raise InvalidTimestampArgumentError(
@@ -91,7 +93,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str):
 
         logger.info("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_LOCATION_SCHEMA)
-        df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
+        df_unique: pl.DataFrame = df.unique(subset=[ColNames.location_id])
 
         output_file_path = f"{destination}data.parquet"
         utils.write_to_parquet(df_unique, output_file_path, logger=logger)

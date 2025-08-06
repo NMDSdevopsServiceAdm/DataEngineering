@@ -23,7 +23,7 @@ resource "aws_sfn_state_machine" "polars_task_step_function" {
           Overrides = {
             ContainerOverrides = [
               {
-                Name        = "${var.task_name}-container",
+                Name        = "cqc-api-container",
                 "Command.$" = "$.arguments"
               }
             ]

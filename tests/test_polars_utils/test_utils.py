@@ -7,6 +7,10 @@ from pathlib import Path
 import logging
 import os
 from datetime import datetime
+from glob import glob
+import time
+
+from polars_utils.utils import write_to_parquet
 
 
 class TestUtils(unittest.TestCase):
@@ -35,6 +39,20 @@ class TestUtils(unittest.TestCase):
             utils.write_to_parquet(df, destination, self.logger)
         self.assertTrue(Path(destination).exists())
         self.assertTrue(f"Parquet written to {destination}" in cm.output[0])
+
+    def test_write_parquet_writes_with_append(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        destination: str = self.temp_dir
+        write_to_parquet(df, destination, self.logger, append=True)
+        write_to_parquet(df, destination, self.logger, append=True)
+        self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
+
+    def test_write_parquet_writes_with_overwrite(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        destination: str = os.path.join(self.temp_dir, "test.parquet")
+        write_to_parquet(df, destination, self.logger, append=False)
+        write_to_parquet(df, destination, self.logger, append=False)
+        self.assertEqual(len(glob(destination + "/**", recursive=True)), 1)
 
     def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
         self,

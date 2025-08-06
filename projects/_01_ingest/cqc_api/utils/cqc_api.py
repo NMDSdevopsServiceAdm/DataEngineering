@@ -33,6 +33,9 @@ def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> 
     Returns:
         dict: the json response
 
+    Raises:
+        NoProviderOrLocationException: if the api is unavailable
+        Exception: if the api returns an unexpected code
     """
     response = requests.get(url, query_params, headers=headers_dict)
 

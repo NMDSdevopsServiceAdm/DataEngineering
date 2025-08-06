@@ -1,6 +1,6 @@
 import tempfile
 import shutil
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
+from projects._01_ingest.cqc_api.fargate.delta_download_cqc_locations import (
     main,
     InvalidTimestampArgumentError,
 )
@@ -10,10 +10,10 @@ import os
 import pathlib
 import polars as pl
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_download_cqc_locations"
 
 
-class TestDeltaDownloadCQCProviders(unittest.TestCase):
+class TestDeltaDownloadCQCLocations(unittest.TestCase):
     original_environ = {}
     test_environ = {"CQC_SECRET_NAME": "cqc-secret-name", "AWS_REGION": "us-east-1"}
 
@@ -58,14 +58,15 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
     def test_main_writes_parquet(self, mock_objects, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
-            {"providerId": 1},
-            {"providerId": 2},
-            {"providerId": 3},
+            {"locationId": 1},
+            {"locationId": 2},
+            {"locationId": 3},
         ]
         dest = f"{self.temp_dir}/data.parquet"
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         main(self.temp_dir + "/", start, end)
+        mock_objects.assert_called_once()
         self.assertTrue(pathlib.Path(dest).exists())
         self.assertTrue(pathlib.Path(dest).is_file())
         self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
@@ -79,9 +80,9 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
     def test_main_copes_with_malformed_destination(self, mock_objects, mock_get_secret):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
-            {"providerId": 1},
-            {"providerId": 2},
-            {"providerId": 3},
+            {"locationId": 1},
+            {"locationId": 2},
+            {"locationId": 3},
         ]
         dest = f"{self.temp_dir}/new_path/data.parquet"
         start = "2025-07-20T15:40:23Z"
