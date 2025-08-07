@@ -30,7 +30,15 @@ resource "aws_sfn_state_machine" "polars_task_step_function" {
                     ContainerOverrides = [
                       {
                         Name        = "cqc-api-container",
-                        "Command.$" = "States.Format('delta_download_cqc_providers.py --destination_prefix s3://spike-polars-data --start_timestamp 2025-08-01T00:30:31.301Z --end_timestamp {}', $$.State.EnteredTime)"
+                        "Command" =  [
+                          "delta_download_cqc_providers.py",
+                          "--destination_prefix",
+                          "s3://spike-polars-data",
+                          "--start_timestamp",
+                          "2025-08-01T00:30:31.301Z",
+                          "--end_timestamp",
+                          "2025-08-08T00:00:31.301Z"
+                        ]
                       }
                     ]
                   }
@@ -59,8 +67,16 @@ resource "aws_sfn_state_machine" "polars_task_step_function" {
                   Overrides = {
                     ContainerOverrides = [
                       {
-                        Name        = "cqc-api-container",
-                        "Command.$" = "States.Format('delta_download_cqc_locations.py --destination_prefix s3://spike-polars-data --start_timestamp 2025-08-01T00:30:31.301Z --end_timestamp {}', $$.State.EnteredTime)"
+                        Name = "cqc-api-container",
+                        "Command" = [
+                          "delta_download_cqc_locations.py",
+                          "--destination_prefix",
+                          "s3://spike-polars-data",
+                          "--start_timestamp",
+                          "2025-08-01T00:30:31.301Z",
+                          "--end_timestamp",
+                          "2025-08-08T00:00:31.301Z"
+                        ]
                       }
                     ]
                   }
