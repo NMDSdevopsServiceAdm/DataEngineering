@@ -65,7 +65,7 @@ def get_snapshots(
         schema=schema,
         allow_missing_columns=True,
         missing_columns="insert",
-        extra_columns="ignore",
+        # extra_columns="ignore",
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
     ).collect()
 
