@@ -261,7 +261,7 @@ raw_locations_schema = pl.Schema(
             ),
         ),
         (
-            "assessment",  # new column
+            "assessment",
             pl.List(
                 pl.Struct(
                     {
