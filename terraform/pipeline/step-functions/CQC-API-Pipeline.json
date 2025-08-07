@@ -20,7 +20,7 @@
               "Type": "Pass",
               "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
               "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+                "startDate": "2025-08-05T10:41:50.919Z"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -55,7 +55,7 @@
               "Type": "Pass",
               "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
               "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+                "startDate": "2025-08-05T10:41:50.919Z"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
