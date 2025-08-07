@@ -63,6 +63,8 @@ def get_snapshots(
     delta_df = pl.scan_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=schema,
+        allow_missing_columns=True,
+        missing_columns="insert",
         extra_columns="ignore",
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
     ).collect()
