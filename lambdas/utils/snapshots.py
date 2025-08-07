@@ -1,9 +1,7 @@
 from re import match
 from typing import Generator, Optional
-import logging
 
 import polars as pl
-import boto3
 
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
@@ -15,26 +13,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-s3 = boto3.client("s3")
-
-
-def _get_prefixes(bucket: str, prefix: str) -> list[str]:
-    """Recursively get all folder prefixes under given S3 prefix."""
-    response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter="/")
-    prefixes = response.get("CommonPrefixes", [])
-
-    if not prefixes:
-        return [prefix]
-
-    all_folders = []
-    for p in prefixes:
-        sub_prefixes = _get_prefixes(bucket, p["Prefix"])
-        all_folders.extend(sub_prefixes)
-
-    return all_folders
-
 
 def build_snapshot_table_from_delta(
     bucket: str,
@@ -43,7 +21,16 @@ def build_snapshot_table_from_delta(
     timepoint: int,
 ) -> Optional[pl.DataFrame]:
     """
-    Gets full snapshot of data at a given timepoint.
+    Gets full snapshot of data at a given timepoint
+    Args:
+        bucket (str): delta dataset bucket
+        read_folder (str): delta dataset folder
+        organisation_type (str): CQC organisation type (locations or providers)
+        timepoint (int): timepoint to get data for (yyyymmdd)
+
+    Returns:
+        Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
+
     """
     for snapshot in get_snapshots(bucket, read_folder, organisation_type):
         if snapshot.item(1, Keys.import_date) == timepoint:
@@ -59,7 +46,19 @@ def get_snapshots(
     schema: Optional[pl.Schema] = None,
 ) -> Generator[pl.DataFrame, None, None]:
     """
-    Generator for all snapshots, safely reading mismatched schema Parquet files.
+    Generator for all snapshots, in order
+    Args:
+        bucket (str): delta dataset bucket
+        read_folder (str): delta dataset folder
+        organisation_type (str): CQC organisation type (locations or providers)
+        schema(Optional[pl.Schema]): Optional schema of the dataset
+
+    Yields:
+        pl.DataFrame: Generator of snapshots
+
+    Raises:
+        ValueError: If the organisation_type is not supported
+
     """
 
     if organisation_type == "locations":
@@ -71,25 +70,11 @@ def get_snapshots(
             f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
         )
 
-    # Gather all partition folders recursively
-    all_folders = _get_prefixes(bucket, read_folder)
-
-    # Lazy scan each folder individually
-    all_scans = [
-        pl.scan_parquet(
-            f"s3://{bucket}/{folder}*.parquet",
-            schema=schema,
-            glob=True,
-            missing_columns="insert",
-            cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-        )
-        for folder in all_folders
-    ]
-
-    # Concatenate all scans while allowing schema mismatches
-    delta_df = pl.concat(all_scans, how="diagonal").collect()
-
-    logger.info(f"The schema for delta_df is: {delta_df.collect_schema().names()}")
+    delta_df = pl.scan_parquet(
+        f"s3://{bucket}/{read_folder}",
+        schema=schema,
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+    ).collect()
 
     previous_ss = None
 
@@ -101,10 +86,6 @@ def get_snapshots(
 
         if import_date[0] == 20130301:
             previous_ss = delta_data
-            logger.info(
-                f"The schema for previous is: {previous_ss.collect_schema().names()}"
-            )
-
         else:
             unchanged = previous_ss.remove(
                 pl.col(primary_key).is_in(delta_data[primary_key])
@@ -114,13 +95,11 @@ def get_snapshots(
             )
             new = delta_data.remove(pl.col(primary_key).is_in(previous_ss[primary_key]))
 
-            previous_ss = pl.concat(
-                [unchanged, changed, new], how="diagonal"
-            ).with_columns(
+            previous_ss = pl.concat([unchanged, changed, new], how="diagonal")
+            previous_ss = previous_ss.with_columns(
                 pl.lit(date.group("year")).alias(Keys.year).cast(pl.Int64),
                 pl.lit(date.group("month")).alias(Keys.month).cast(pl.Int64),
                 pl.lit(date.group("day")).alias(Keys.day).cast(pl.Int64),
                 pl.lit(import_date[0]).alias(Keys.import_date).cast(pl.Int64),
             )
-
         yield previous_ss
