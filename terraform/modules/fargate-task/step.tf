@@ -29,8 +29,8 @@ resource "aws_sfn_state_machine" "polars_task_step_function" {
                   Overrides = {
                     ContainerOverrides = [
                       {
-                        Name        = "cqc-api-container",
-                        "Command" =  [
+                        Name = "cqc-api-container",
+                        "Command" = [
                           "delta_download_cqc_providers.py",
                           "--destination_prefix",
                           "s3://spike-polars-data",
