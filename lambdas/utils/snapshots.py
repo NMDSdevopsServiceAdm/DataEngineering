@@ -102,7 +102,7 @@ def get_snapshots(
         if import_date[0] == 20130301:
             previous_ss = delta_data
             logger.info(
-                f"The schema for previous is: {delta_df.collect_schema().names()}"
+                f"The schema for previous is: {previous_ss.collect_schema().names()}"
             )
 
         else:
