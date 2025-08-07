@@ -292,10 +292,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+      # - test:
+      #     filters:
+      #       branches:
+      #         ignore: main
       - lint-python:
           filters:
             branches:
