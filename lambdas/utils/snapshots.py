@@ -9,6 +9,12 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CqcLocations,
 )
+from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
+    raw_locations_schema,
+)
+from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
+    raw_providers_schema,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
@@ -60,23 +66,26 @@ def get_snapshots(
         ValueError: If the organisation_type is not supported
 
     """
+
+    if organisation_type == "locations":
+        primary_key = CqcLocations.location_id
+        schema = raw_locations_schema
+    elif organisation_type == "providers":
+        primary_key = CqcProviders.provider_id
+        schema = raw_providers_schema
+    else:
+        raise ValueError(
+            f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
+        )
+
     delta_df = pl.scan_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=schema,
         allow_missing_columns=True,
         missing_columns="insert",
-        extra_columns="ignore",
+        # extra_columns="ignore",
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
     ).collect()
-
-    if organisation_type == "locations":
-        primary_key = CqcLocations.location_id
-    elif organisation_type == "providers":
-        primary_key = CqcProviders.provider_id
-    else:
-        raise ValueError(
-            f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
-        )
 
     previous_ss = None
 
