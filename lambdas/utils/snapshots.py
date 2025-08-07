@@ -89,7 +89,7 @@ def get_snapshots(
     # Concatenate all scans while allowing schema mismatches
     delta_df = pl.concat(all_scans, how="diagonal").collect()
 
-    logger.info(f"The schema for delta_df is: {delta_df.schema}")
+    logger.info(f"The schema for delta_df is: {delta_df.collect_schema().names()}")
 
     previous_ss = None
 
@@ -101,6 +101,10 @@ def get_snapshots(
 
         if import_date[0] == 20130301:
             previous_ss = delta_data
+            logger.info(
+                f"The schema for previous is: {delta_df.collect_schema().names()}"
+            )
+
         else:
             unchanged = previous_ss.remove(
                 pl.col(primary_key).is_in(delta_data[primary_key])
