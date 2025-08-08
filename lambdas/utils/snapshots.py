@@ -3,11 +3,9 @@ from typing import Generator, Optional
 
 import polars as pl
 
-from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
-    raw_locations_schema as LocationSchema,
-)
-from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
-    raw_providers_schema as ProviderSchema,
+from projects.tools.delta_data_remodel.jobs import (
+    raw_locations_schema as LocationsSchema,
+    raw_providers_schema as ProvidersSchema,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
@@ -69,10 +67,10 @@ def get_snapshots(
 
     if organisation_type == "locations":
         primary_key = CqcLocations.location_id
-        schema = LocationSchema
+        schema = LocationsSchema.raw_locations_schema
     elif organisation_type == "providers":
         primary_key = CqcProviders.provider_id
-        schema = ProviderSchema
+        schema = ProvidersSchema.raw_providers_schema
     else:
         raise ValueError(
             f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
