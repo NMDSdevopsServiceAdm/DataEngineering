@@ -22,7 +22,7 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
-from utils.ind_cqc_filled_posts_utils.utils import (
+from projects._03_independent_cqc.utils.utils.utils import (
     merge_columns_in_order,
     allocate_primary_service_type_second_level,
 )
@@ -51,8 +51,10 @@ ind_cqc_columns = [
     IndCQC.registered_manager_names,
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
+    IndCQC.ct_non_res_care_workers_employed_dedup,
     IndCQC.ct_care_home_import_date,
     IndCQC.ct_care_home_total_employed,
+    IndCQC.ct_care_home_total_employed_dedup,
     IndCQC.cqc_pir_import_date,
     IndCQC.pir_people_directly_employed_dedup,
     IndCQC.pir_filled_posts_model,

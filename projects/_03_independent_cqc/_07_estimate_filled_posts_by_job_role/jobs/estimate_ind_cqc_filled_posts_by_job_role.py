@@ -18,7 +18,7 @@ from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.mo
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.extrapolation import (
     extrapolate_job_role_ratios,
 )
-from utils.ind_cqc_filled_posts_utils import utils as FPutils
+from projects._03_independent_cqc.utils.utils import utils as FPutils
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup as JobGroupDicts,
 )

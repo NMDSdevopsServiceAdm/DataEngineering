@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-  
+
 ## [Unreleased]
 
 ### Added
@@ -21,10 +21,17 @@ All notable changes to this project will be documented in this file.
   - Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
   - Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
 
+- Refactor ingestion jobs to use Polars:
+  -  CQC Delta Providers
+
 ### Changed
 - Update the version of CQC ratings data
 
 - Updated the CQC locations schema to include a new assessment field for storing the latest CQC ratings. Modified the function that builds the full locations dataset from the delta dataset to use this updated schema, ensuring the newly added column is included.
+
+### Improved
+- Deduplicated Capacity Tracker data so it's more in line with the ASC-WDS and PIR process
+
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
