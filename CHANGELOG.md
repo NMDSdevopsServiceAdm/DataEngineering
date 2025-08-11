@@ -30,6 +30,8 @@ All notable changes to this project will be documented in this file.
 ### Improved
 - Deduplicated Capacity Tracker data so it's more in line with the ASC-WDS and PIR process
 
+-   Refactored the flatten_cqc_ratings function to include the new ratings column (assessment) instead of old column 
+
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
 
