@@ -51,7 +51,6 @@ def test_snapshot_equality():
         bucket="sfc-test-diff-datasets",
         read_folder="domain=CQC_delta/dataset=delta_providers_api/",
         organisation_type="providers",
-        schema=raw_providers_schema,
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"

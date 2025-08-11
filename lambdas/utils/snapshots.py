@@ -47,7 +47,6 @@ def get_snapshots(
     bucket: str,
     read_folder: str,
     organisation_type: str,
-    schema: Optional[pl.Schema] = None,
 ) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
@@ -55,7 +54,6 @@ def get_snapshots(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         organisation_type (str): CQC organisation type (locations or providers)
-        schema(Optional[pl.Schema]): Optional schema of the dataset
 
     Yields:
         pl.DataFrame: Generator of snapshots
