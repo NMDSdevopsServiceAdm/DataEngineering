@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 - Refactor ingestion jobs to use Polars:
   -  CQC Delta Providers
+  -  CQC Delta Locations
 
 ### Changed
 - Update the version of CQC ratings data
