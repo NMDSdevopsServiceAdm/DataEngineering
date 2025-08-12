@@ -60,6 +60,7 @@ jobs:
           command: |
             sudo pip install pipenv
             pipenv install --dev
+            pipenv run pip install coverage
 
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
@@ -69,13 +70,24 @@ jobs:
       - run:
           name: run unit tests
           command: |
-            pipenv run python -m unittest discover -s . -p "test_*.py"
+            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
 
       - run:
           name: run integration tests
           command: |
-            pipenv run python -m unittest discover tests/integration
+            pipenv run coverage run --append --source=. -m unittest discover tests/integration
+      - run:
+          name: Generate coverage report
+          command: |
+            pipenv run coverage report
+            pipenv run coverage xml
+            pipenv run coverage html
 
+      - store_artifacts:
+          path: htmlcov
+
+      - store_test_results:
+          path: test-results
 
 
   lint-python:
