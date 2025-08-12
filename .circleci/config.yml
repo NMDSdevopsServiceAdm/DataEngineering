@@ -71,17 +71,18 @@ jobs:
           name: run unit tests
           command: |
             pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
-
-      - run:
-          name: run integration tests
-          command: |
-            pipenv run coverage run --append --source=. -m unittest discover tests/integration
+      
       - run:
           name: Generate coverage report
           command: |
             pipenv run coverage report
             pipenv run coverage xml
             pipenv run coverage html
+
+      - run:
+          name: run integration tests
+          command: |
+            pipenv run python -m unittest discover tests/integration
 
       - store_artifacts:
           path: htmlcov
