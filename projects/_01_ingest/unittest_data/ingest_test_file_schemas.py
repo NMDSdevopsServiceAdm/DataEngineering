@@ -1914,6 +1914,20 @@ class CQCLocationsSchema:
         ]
     )
 
+    rows_without_cqc_sector_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
+        ]
+    )
+    expected_rows_with_cqc_sector_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField("some_data", StringType(), True),
+            StructField(CQCPClean.cqc_sector, StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class CQCProviderSchema:
