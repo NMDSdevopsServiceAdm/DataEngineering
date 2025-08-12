@@ -37,7 +37,7 @@ target "check_dataset_equality" {
 target "delta_cqc" {
   context = "."
   dockerfile = "./projects/_01_ingest/cqc_api/fargate/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/898-dev/cqc:${CIRCLE_BRANCH}"]
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/cqc:${CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
 }
