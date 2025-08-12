@@ -10,7 +10,7 @@ variable "region" {
 
 variable "ecr_repo_name" {
   type    = string
-  default = "main/cqc/provider/delta"
+  default = "fargate/cqc"
 }
 
 variable "secret_arn" {

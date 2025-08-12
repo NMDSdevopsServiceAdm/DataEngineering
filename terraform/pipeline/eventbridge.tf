@@ -320,7 +320,7 @@ resource "aws_scheduler_schedule" "bulk_download_cqc_api_schedule" {
 
 resource "aws_scheduler_schedule" "delta_download_cqc_api_schedule" {
   name        = "${local.workspace_prefix}-CqcApiSchedule-Delta"
-  state       = "ENABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API delta download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {

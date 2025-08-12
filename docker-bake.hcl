@@ -11,11 +11,11 @@ variable "CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc_providers"]
+  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc"]
 }
 
 # group "ingest" {
-#   targets = ["delta_cqc_providers"]
+#   targets = ["delta_cqc"]
 # }
 
 target "create_dataset_snapshot" {
@@ -34,10 +34,11 @@ target "check_dataset_equality" {
   no-cache = true
 }
 
-target "delta_cqc_providers" {
+target "delta_cqc" {
   context = "."
-  dockerfile = "./projects/_01_ingest/cqc_api/fargate/providers/Dockerfile"
-  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/869-dev/cqc:${CIRCLE_BRANCH}"]
+  dockerfile = "./projects/_01_ingest/cqc_api/fargate/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/cqc:${CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
 }
+
