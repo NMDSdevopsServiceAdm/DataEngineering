@@ -3,6 +3,10 @@ from typing import Generator, Optional
 
 import polars as pl
 
+from projects.tools.delta_data_remodel.jobs import (
+    raw_locations_schema as LocationsSchema,
+    raw_providers_schema as ProvidersSchema,
+)
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
 )
@@ -43,7 +47,6 @@ def get_snapshots(
     bucket: str,
     read_folder: str,
     organisation_type: str,
-    schema: Optional[pl.Schema] = None,
 ) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
@@ -51,7 +54,6 @@ def get_snapshots(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         organisation_type (str): CQC organisation type (locations or providers)
-        schema(Optional[pl.Schema]): Optional schema of the dataset
 
     Yields:
         pl.DataFrame: Generator of snapshots
@@ -60,20 +62,24 @@ def get_snapshots(
         ValueError: If the organisation_type is not supported
 
     """
-    delta_df = pl.scan_parquet(
-        f"s3://{bucket}/{read_folder}",
-        schema=schema,
-        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-    ).collect()
 
     if organisation_type == "locations":
         primary_key = CqcLocations.location_id
+        schema = LocationsSchema.raw_locations_schema
     elif organisation_type == "providers":
         primary_key = CqcProviders.provider_id
+        schema = ProvidersSchema.raw_providers_schema
     else:
         raise ValueError(
             f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
         )
+
+    delta_df = pl.scan_parquet(
+        f"s3://{bucket}/{read_folder}",
+        schema=schema,
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+        missing_columns="insert",
+    ).collect()
 
     previous_ss = None
 
@@ -94,7 +100,7 @@ def get_snapshots(
             )
             new = delta_data.remove(pl.col(primary_key).is_in(previous_ss[primary_key]))
 
-            previous_ss = pl.concat([unchanged, changed, new])
+            previous_ss = pl.concat([unchanged, changed, new], how="diagonal")
             previous_ss = previous_ss.with_columns(
                 pl.lit(date.group("year")).alias(Keys.year).cast(pl.Int64),
                 pl.lit(date.group("month")).alias(Keys.month).cast(pl.Int64),

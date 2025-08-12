@@ -260,5 +260,41 @@ raw_locations_schema = pl.Schema(
                 )
             ),
         ),
+        (
+            "assessment",
+            pl.List(
+                pl.Struct(
+                    {
+                        "assessmentPlanPublishedDateTime": pl.String(),
+                        "ratings": pl.Struct(
+                            {
+                                "asgRatings": pl.List(
+                                    pl.Struct(
+                                        {
+                                            "assessmentPlanId": pl.String(),
+                                            "title": pl.String(),
+                                            "assessmentDate": pl.String(),
+                                            "name": pl.String(),
+                                            "rating": pl.String(),
+                                            "status": pl.String(),
+                                            "keyQuestionRatings": pl.List(
+                                                pl.Struct(
+                                                    {
+                                                        "name": pl.String(),
+                                                        "rating": pl.String(),
+                                                        "status": pl.String(),
+                                                        "percentageScore": pl.String(),
+                                                    }
+                                                )
+                                            ),
+                                        }
+                                    )
+                                )
+                            }
+                        ),
+                    }
+                )
+            ),
+        ),
     ]
 )
