@@ -257,7 +257,7 @@ workflows:
               only: main
       - terraform-plan:
           requires:
-#            - test
+            - test
             - task-containerisation
       - plan-approval:
           type: approval
