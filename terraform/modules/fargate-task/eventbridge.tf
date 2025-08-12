@@ -37,7 +37,7 @@ resource "aws_iam_role_policy_attachment" "scheduler_fg" {
 
 resource "aws_scheduler_schedule" "polars_download_cqc_api_schedule" {
   name        = "${local.workspace_prefix}-CqcApiSchedule-Polars"
-  state       = "ENABLED"
+  state       = terraform.workspace == "main" ? "ENABLED" : "DISABLED"
   description = "Regular scheduling of the CQC API polars download pipeline on the first, eighth, fifteenth and twenty third of each month."
 
   flexible_time_window {
