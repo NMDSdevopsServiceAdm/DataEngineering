@@ -86,10 +86,6 @@ jobs:
       - store_artifacts:
           path: htmlcov
 
-      - store_test_results:
-          path: test-results
-
-
   lint-python:
     docker:
       - image: circleci/python:3.9.6
