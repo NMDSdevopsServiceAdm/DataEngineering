@@ -166,9 +166,13 @@ def main(
     # )
 
     known_la_providerids = LocalAuthorityProviderIds.known_ids
-    registered_locations_df = add_cqc_sector_column_to_cqc_locations_dataframe(
-        registered_locations_df, known_la_providerids
-    ).withColumn(CQCLClean.provider_name, F.lit(""))
+    registered_locations_df = (
+        add_cqc_sector_column_to_cqc_locations_dataframe(
+            registered_locations_df, known_la_providerids
+        )
+        .withColumn(CQCLClean.provider_name, F.lit(""))
+        .withColumn(CQCLClean.cqc_provider_import_date, F.lit(None))
+    )
 
     registered_locations_df = impute_missing_data_from_provider_dataset(
         registered_locations_df, CQCLClean.provider_name
@@ -741,6 +745,36 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     return df
 
 
+def add_cqc_sector_column_to_cqc_locations_dataframe(
+    cqc_location_df: DataFrame, la_providerids: list
+):
+    cqc_location_with_sector_column = cqc_location_df.join(
+        create_dataframe_from_la_cqc_location_list(la_providerids),
+        CQCL.provider_id,
+        "left",
+    )
+
+    cqc_location_with_sector_column = cqc_location_with_sector_column.fillna(
+        Sector.independent, subset=CQCLClean.cqc_sector
+    )
+
+    return cqc_location_with_sector_column
+
+
+def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFrame:
+    spark = utils.get_spark()
+
+    la_locations_dataframe = spark.createDataFrame(
+        la_providerids, StringType()
+    ).withColumnRenamed("value", CQCL.provider_id)
+
+    la_providers_dataframe = la_locations_dataframe.withColumn(
+        CQCLClean.cqc_sector, F.lit(Sector.local_authority).cast(StringType())
+    )
+
+    return la_providers_dataframe
+
+
 if __name__ == "__main__":
     print("Spark job 'clean_cqc_location_data' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -776,33 +810,3 @@ if __name__ == "__main__":
     )
 
     print("Spark job 'clean_cqc_location_data' complete")
-
-
-def add_cqc_sector_column_to_cqc_locations_dataframe(
-    cqc_location_df: DataFrame, la_providerids: list
-):
-    cqc_location_with_sector_column = cqc_location_df.join(
-        create_dataframe_from_la_cqc_location_list(la_providerids),
-        CQCL.provider_id,
-        "left",
-    )
-
-    cqc_location_with_sector_column = cqc_location_with_sector_column.fillna(
-        Sector.independent, subset=CQCLClean.cqc_sector
-    )
-
-    return cqc_location_with_sector_column
-
-
-def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFrame:
-    spark = utils.get_spark()
-
-    la_locations_dataframe = spark.createDataFrame(
-        la_providerids, StringType()
-    ).withColumnRenamed("value", CQCL.provider_id)
-
-    la_providers_dataframe = la_locations_dataframe.withColumn(
-        CQCLClean.cqc_sector, F.lit(Sector.local_authority).cast(StringType())
-    )
-
-    return la_providers_dataframe

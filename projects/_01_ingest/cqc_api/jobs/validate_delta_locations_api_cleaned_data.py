@@ -57,6 +57,7 @@ def main(
     )
     rules = Rules.rules_to_check
     rules["complete_columns"].remove(CQCLClean.provider_name)
+    rules["complete_columns"].remove(CQCLClean.cqc_provider_import_date)
 
     rules[
         RuleName.size_of_dataset
