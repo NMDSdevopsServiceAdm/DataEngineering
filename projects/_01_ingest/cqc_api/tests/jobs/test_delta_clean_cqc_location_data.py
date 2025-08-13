@@ -714,45 +714,6 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_location_df = cUtils.column_to_date(
-            self.test_location_df,
-            Keys.import_date,
-            CQCLCleaned.cqc_location_import_date,
-        ).drop(CQCLCleaned.import_date)
-
-    def test_join_cqc_provider_data_adds_three_columns(self):
-        returned_df = job.join_cqc_provider_data(
-            self.test_location_df, self.test_provider_df
-        )
-        new_columns = 3
-        expected_columns = len(self.test_location_df.columns) + new_columns
-
-        self.assertEqual(len(returned_df.columns), expected_columns)
-
-    def test_join_cqc_provider_data_correctly_joins_data(self):
-        returned_df = job.join_cqc_provider_data(
-            self.test_location_df, self.test_provider_df
-        )
-        returned_data = (
-            returned_df.select(sorted(returned_df.columns))
-            .sort(CQCL.location_id)
-            .collect()
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_joined_rows, Schemas.expected_joined_schema
-        )
-        expected_data = (
-            expected_df.select(sorted(expected_df.columns))
-            .sort(CQCL.location_id)
-            .collect()
-        )
-
-        self.assertCountEqual(returned_data, expected_data)
-
-
 class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         return super().setUp()

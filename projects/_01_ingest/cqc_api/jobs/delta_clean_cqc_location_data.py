@@ -168,7 +168,7 @@ def main(
     known_la_providerids = LocalAuthorityProviderIds.known_ids
     registered_locations_df = add_cqc_sector_column_to_cqc_locations_dataframe(
         registered_locations_df, known_la_providerids
-    )
+    ).withColumn(CQCLClean.provider_name, F.lit(""))
 
     registered_locations_df = impute_missing_data_from_provider_dataset(
         registered_locations_df, CQCLClean.provider_name
