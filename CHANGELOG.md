@@ -25,6 +25,8 @@ All notable changes to this project will be documented in this file.
   -  CQC Delta Providers
   -  CQC Delta Locations
 
+- Added unit test coverage
+
 ### Changed
 - Update the version of CQC ratings data
 
