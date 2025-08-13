@@ -15,9 +15,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
+
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -78,12 +76,6 @@ ons_cols_to_import = [
     *contemporary_geography_columns,
     *current_geography_columns,
 ]
-cqc_provider_cols_to_import = [
-    CQCPClean.provider_id,
-    CQCPClean.name,
-    CQCPClean.cqc_sector,
-    CQCPClean.cqc_provider_import_date,
-]
 
 
 def main(
@@ -95,9 +87,7 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
-    cqc_provider_df = utils.read_from_parquet(
-        cleaned_cqc_provider_source, selected_columns=cqc_provider_cols_to_import
-    )
+
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
     )
@@ -676,29 +666,6 @@ def impute_missing_data_from_provider_dataset(
     return locations_df
 
 
-def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
-    locations_df = cUtils.add_aligned_date_column(
-        locations_df,
-        provider_df,
-        CQCLClean.cqc_location_import_date,
-        CQCPClean.cqc_provider_import_date,
-    )
-
-    provider_data_to_join_df = provider_df.withColumnRenamed(
-        CQCPClean.provider_id, CQCLClean.provider_id
-    )
-    provider_data_to_join_df = provider_data_to_join_df.withColumnRenamed(
-        CQCPClean.name, CQCLClean.provider_name
-    )
-
-    joined_df = locations_df.join(
-        provider_data_to_join_df,
-        [CQCLClean.provider_id, CQCPClean.cqc_provider_import_date],
-        how="left",
-    )
-    return joined_df
-
-
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
@@ -821,7 +788,7 @@ def add_cqc_sector_column_to_cqc_locations_dataframe(
     )
 
     cqc_location_with_sector_column = cqc_location_with_sector_column.fillna(
-        Sector.independent, subset=CQCPClean.cqc_sector
+        Sector.independent, subset=CQCLClean.cqc_sector
     )
 
     return cqc_location_with_sector_column
@@ -835,7 +802,7 @@ def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFram
     ).withColumnRenamed("value", CQCL.provider_id)
 
     la_providers_dataframe = la_locations_dataframe.withColumn(
-        CQCPClean.cqc_sector, F.lit(Sector.local_authority).cast(StringType())
+        CQCLClean.cqc_sector, F.lit(Sector.local_authority).cast(StringType())
     )
 
     return la_providers_dataframe
