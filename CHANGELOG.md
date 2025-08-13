@@ -29,6 +29,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated the CQC locations schema to include a new assessment field for storing the latest CQC ratings. Modified the function that builds the full locations dataset from the delta dataset to use this updated schema, ensuring the newly added column is included.
 
+- Moved evaluation of CQC Sector into Location cleaning script to remove unnecessary dependency.
+
 ### Improved
 - Deduplicated Capacity Tracker data so it's more in line with the ASC-WDS and PIR process
 
