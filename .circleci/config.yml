@@ -60,7 +60,6 @@ jobs:
           command: |
             sudo pip install pipenv
             pipenv install --dev
-            pipenv run pip install coverage
 
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
