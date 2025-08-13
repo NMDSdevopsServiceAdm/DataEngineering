@@ -171,7 +171,7 @@ def main(
             registered_locations_df, known_la_providerids
         )
         .withColumn(CQCLClean.provider_name, F.lit(""))
-        .withColumn(CQCLClean.cqc_provider_import_date, F.lit(None))
+        .withColumn(CQCLClean.cqc_provider_import_date, F.lit(""))
     )
 
     registered_locations_df = impute_missing_data_from_provider_dataset(
