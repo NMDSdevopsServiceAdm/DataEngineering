@@ -13,5 +13,6 @@ Trello ticket [#number](add link)
 ## Checklist (delete if not relevant)
 - [ ] Unit tests added/amended
 - [ ] Docstrings added/updated
+- [ ] Migration to polars - added comment to pyspark functions which have been migrated
 - [ ] Updated CHANGELOG
 - [ ] Moved Trello ticket to PR column
