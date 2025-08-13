@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Improved
+
+
+## [v2025.07.0] - 13/08/2025
+
+### Added
 - Added a lambda function to check if two datasets are equal
 
 - Added a lambda function to create a full snapshot from a delta dataset
