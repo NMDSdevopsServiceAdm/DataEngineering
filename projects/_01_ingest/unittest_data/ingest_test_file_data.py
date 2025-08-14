@@ -3628,6 +3628,25 @@ class CQCLocationsData:
         ),
     ]
 
+    sector_rows = [
+        "1-10000000002",
+        "1-10000000003",
+        "1-10000000004",
+        "1-10000000005",
+    ]
+
+    rows_without_cqc_sector = [
+        ("1-10000000001", "data"),
+        ("1-10000000002", None),
+        ("1-10000000003", "data"),
+    ]
+
+    expected_rows_with_cqc_sector = [
+        ("1-10000000001", "data", Sector.independent),
+        ("1-10000000002", None, Sector.local_authority),
+        ("1-10000000003", "data", Sector.local_authority),
+    ]
+
 
 @dataclass
 class CQCProviderData:
