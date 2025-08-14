@@ -38,6 +38,7 @@ cqc_location_columns = [
     Keys.day,
     CQCL.current_ratings,
     CQCL.historic_ratings,
+    CQCL.assessment,
     CQCL.registration_status,
     CQCL.type,
 ]
@@ -57,6 +58,7 @@ def main(
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
+    cqc_assessment_ratings_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
     ascwds_workplace_df = utils.read_from_parquet(
@@ -74,6 +76,7 @@ def main(
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
+    assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
@@ -99,6 +102,12 @@ def main(
     utils.write_to_parquet(
         benchmark_ratings_df,
         benchmark_ratings_destination,
+        mode="overwrite",
+    )
+
+    utils.write_to_parquet(
+        assessment_ratings_df,
+        cqc_assessment_ratings_destination,
         mode="overwrite",
     )
 
@@ -130,6 +139,15 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = add_current_or_historic_column(
         ratings_df, CQCCurrentOrHistoricValues.historic
     )
+    return ratings_df
+
+
+def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    ratings_df = flatten_assessment_ratings(cqc_location_df)
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
+    # ratings_df = add_current_or_historic_column(
+    #     ratings_df, CQCCurrentOrHistoricValues.current
+    # )
     return ratings_df
 
 
@@ -219,6 +237,116 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
             "outer",
         )
     return cleaned_historic_ratings_df
+
+
+def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    # Step 1: Explode top-level assessment array
+    assessment_df = cqc_location_df.select(
+        cqc_location_df[CQCL.location_id],
+        cqc_location_df[CQCL.registration_status],
+        F.explode(cqc_location_df["assessment"]).alias("assessment"),
+    )
+
+    # Step 2: Extract base assessment fields
+    assessment_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        F.col("assessment.assessmentPlanPublishedDateTime").alias(
+            "assessment_plan_published_datetime"
+        ),
+        F.col("assessment.ratings").alias("ratings"),
+    )
+
+    # ---- PROCESS OVERALL RATINGS ----
+    overall_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        F.explode(F.col("ratings.overall")).alias("overall"),
+    )
+
+    overall_df = overall_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        F.col("overall.rating").alias("rating"),
+        F.col("overall.status").alias("status"),
+        F.lit(None).cast("string").alias("assessment_plan_id"),
+        F.lit(None).cast("string").alias("title"),
+        F.lit(None).cast("string").alias("assessment_date"),
+        F.lit(None).cast("string").alias("assessment_plan_status"),
+        F.lit(None).cast("string").alias("name"),
+        F.explode(F.col("overall.keyQuestionRatings")).alias("key_question"),
+    )
+
+    overall_df = overall_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        "assessment_plan_id",
+        "title",
+        "assessment_date",
+        "assessment_plan_status",
+        "name",
+        "rating",
+        "status",
+        F.col("key_question.name").alias("key_question_name"),
+        F.col("key_question.rating").alias("key_question_rating"),
+        F.col("key_question.status").alias("key_question_status"),
+        F.lit(None).cast("string").alias("key_question_percentage_score"),
+        F.lit("overall").alias("rating_type"),
+        F.lit("assessment.ratings.overall").alias(
+            "source_path"
+        ),  # explicit source path
+    )
+
+    # ---- PROCESS ASG RATINGS ----
+    asg_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        F.explode(F.col("ratings.asgRatings")).alias("asg"),
+    )
+
+    asg_df = asg_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        F.col("asg.assessmentPlanId").alias("assessment_plan_id"),
+        F.col("asg.title").alias("title"),
+        F.col("asg.assessmentDate").alias("assessment_date"),
+        F.col("asg.assessmentPlanStatus").alias("assessment_plan_status"),
+        F.col("asg.name").alias("name"),
+        F.col("asg.rating").alias("rating"),
+        F.col("asg.status").alias("status"),
+        F.explode(F.col("asg.keyQuestionRatings")).alias("key_question"),
+    )
+
+    asg_df = asg_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        "assessment_plan_published_datetime",
+        "assessment_plan_id",
+        "title",
+        "assessment_date",
+        "assessment_plan_status",
+        "name",
+        "rating",
+        "status",
+        F.col("key_question.name").alias("key_question_name"),
+        F.col("key_question.rating").alias("key_question_rating"),
+        F.col("key_question.status").alias("key_question_status"),
+        F.col("key_question.percentageScore").alias("key_question_percentage_score"),
+        F.lit("asg").alias("rating_type"),
+        F.lit("assessment.ratings.asgRatings").alias(
+            "source_path"
+        ),  # explicit source path
+    )
+
+    # ---- Combine with unionByName ----
+    final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
+
+    return final_df
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
@@ -422,6 +550,7 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        cqc_assessment_ratings_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -439,12 +568,17 @@ if __name__ == "__main__":
             "--benchmark_ratings_destination",
             "Destination s3 directory for cleaned parquet benchmark ratings dataset",
         ),
+        (
+            "--cqc_assessment_ratings_destination",
+            "Destination s3 directory for cleaned parquet CQC assessment ratings dataset",
+        ),
     )
     main(
         cqc_location_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        cqc_assessment_ratings_destination,
     )
 
     print("Spark job 'flatten_cqc_ratings' complete")
