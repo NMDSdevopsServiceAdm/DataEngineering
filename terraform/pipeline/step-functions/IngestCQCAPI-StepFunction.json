@@ -68,7 +68,7 @@
                             "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                             "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
                             "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/",
-                            "--cqc_assessment_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_assessment_ratings_for_data_requests/version=2.0.0/"
+                            "--ass_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_assessment_ratings_for_data_requests/version=2.0.0/"
                           }
                         },
                         "Next": "Run crawlers"
