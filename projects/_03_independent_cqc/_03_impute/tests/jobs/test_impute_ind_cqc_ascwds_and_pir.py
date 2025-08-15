@@ -41,8 +41,6 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
-    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(
         f"{PATCH_PATH}.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values"
     )
