@@ -56,6 +56,7 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.add_latest_rating_flag_column")
     @patch(f"{PATCH_PATH}.add_rating_sequence_column")
     @patch(f"{PATCH_PATH}.remove_blank_and_duplicate_rows")
+    @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
@@ -68,6 +69,7 @@ class MainTests(FlattenCQCRatingsTests):
         select_rows_with_value_mock: Mock,
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
+        prepare_assessment_ratings_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
         add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
@@ -98,6 +100,7 @@ class MainTests(FlattenCQCRatingsTests):
         select_rows_with_value_mock.assert_called_once()
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
+        prepare_assessment_ratings_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
         self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
         add_latest_rating_flag_column_mock.assert_called_once()
@@ -121,11 +124,11 @@ class MainTests(FlattenCQCRatingsTests):
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
-            # call(
-            #     ANY,
-            #     self.TEST_ASS_RATINGS_DESTINATION,
-            #     mode="overwrite",
-            # ),
+            call(
+                ANY,
+                self.TEST_ASS_RATINGS_DESTINATION,
+                mode="overwrite",
+            ),
         ]
         write_to_parquet_mock.assert_has_calls(
             expected_write_to_parquet_calls,
