@@ -41,6 +41,8 @@ class ImputeIndCqcAscwdsAndPirTests(unittest.TestCase):
 
 class MainTests(ImputeIndCqcAscwdsAndPirTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
+    @patch(f"{PATCH_PATH}.model_primary_service_rate_of_change_trendline")
     @patch(
         f"{PATCH_PATH}.convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values"
     )
@@ -78,11 +80,13 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
         combine_care_home_ratios_and_non_res_posts_mock.assert_called_once()
-        model_primary_service_rate_of_change_trendline_mock.assert_called_once()
+        self.assertEqual(
+            model_primary_service_rate_of_change_trendline_mock.call_count, 3
+        )
         model_pir_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
         self.assertEqual(
-            model_imputation_with_extrapolation_and_interpolation_mock.call_count, 2
+            model_imputation_with_extrapolation_and_interpolation_mock.call_count, 4
         )
         self.assertEqual(model_calculate_rolling_average_mock.call_count, 2)
         create_banded_bed_count_column_mock.assert_called_once()
