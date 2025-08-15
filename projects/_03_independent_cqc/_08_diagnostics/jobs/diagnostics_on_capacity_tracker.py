@@ -8,12 +8,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
-    model_imputation_with_extrapolation_and_interpolation,
-)
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change_trendline import (
-    model_primary_service_rate_of_change_trendline,
-)
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
@@ -52,8 +46,6 @@ estimate_filled_posts_columns: list = [
 absolute_value_cutoff: float = 10.0
 percentage_value_cutoff: float = 0.25
 standardised_value_cutoff: float = 1.0
-number_of_days_in_window: int = 95  # Note: using 95 as a proxy for 3 months
-max_number_of_days_to_interpolate_between: int = 185  # proxy for 6 months
 
 
 def main(
@@ -116,20 +108,6 @@ def run_diagnostics_for_care_homes(filled_posts_df: DataFrame) -> DataFrame:
     care_home_diagnostics_df = utils.select_rows_with_value(
         filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.care_home
     )
-    care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_dedup,
-        number_of_days_in_window,
-        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
-        max_number_of_days_to_interpolate_between,
-    )
-    care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_dedup,
-        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
-        IndCQC.ct_care_home_total_employed_imputed,
-        care_home=True,
-    )
     list_of_models = dUtils.create_list_of_models()
     care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         care_home_diagnostics_df,
@@ -171,20 +149,6 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
     """
     non_res_diagnostics_df = utils.select_rows_with_value(
         filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
-    )
-    non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
-        non_res_diagnostics_df,
-        IndCQC.ct_non_res_care_workers_employed_dedup,
-        number_of_days_in_window,
-        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
-        max_number_of_days_to_interpolate_between,
-    )
-    non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
-        non_res_diagnostics_df,
-        IndCQC.ct_non_res_care_workers_employed_dedup,
-        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
-        IndCQC.ct_non_res_care_workers_employed_imputed,
-        care_home=False,
     )
     care_worker_ratio = calculate_care_worker_ratio(
         non_res_diagnostics_df,

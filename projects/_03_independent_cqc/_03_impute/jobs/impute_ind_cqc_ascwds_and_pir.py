@@ -115,6 +115,36 @@ def main(
         IndCQC.posts_rolling_average_model,
     )
 
+    care_home_diagnostics_df = model_primary_service_rate_of_change_trendline(
+        care_home_diagnostics_df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
+        NumericalValues.max_number_of_days_to_interpolate_between,
+    )
+    care_home_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        care_home_diagnostics_df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+    )
+
+    non_res_diagnostics_df = model_primary_service_rate_of_change_trendline(
+        non_res_diagnostics_df,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
+        NumericalValues.max_number_of_days_to_interpolate_between,
+    )
+    non_res_diagnostics_df = model_imputation_with_extrapolation_and_interpolation(
+        non_res_diagnostics_df,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+        care_home=False,
+    )
+
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")
 
     utils.write_to_parquet(
