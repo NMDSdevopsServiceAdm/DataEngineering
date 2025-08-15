@@ -111,7 +111,7 @@ class MainTests(FlattenCQCRatingsTests):
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
         create_benchmark_ratings_dataset_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_mock.call_count, 2)
+        self.assertEqual(write_to_parquet_mock.call_count, 3)
 
         expected_write_to_parquet_calls = [
             call(
