@@ -117,6 +117,8 @@ def main(
         IndCQC.posts_rolling_average_model,
     )
 
+    df = df.persist()
+
     df = combine_care_home_and_non_res_values_into_single_column(
         df,
         IndCQC.ct_care_home_total_employed_dedup,
