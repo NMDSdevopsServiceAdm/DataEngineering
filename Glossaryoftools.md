@@ -36,7 +36,7 @@ You are charged $5 per terabyte scanned by your queries so it is best practice t
 
 ## Jupyter Notebook via Amazon Elastic MapReduce (EMR)
 ### Amazon Elastic MapReduce (EMR)
-Amazon Elastic MapReduce (EMR) allows you to spin up a cluster of computers to process big data frameworks, such as Apache Spark, on Amazon Web Services, to process and analyse vast amounts of data quickly.
+EMR allows you to spin up a cluster of computers to process big data frameworks, such as Apache Spark, on Amazon Web Services, to process and analyse vast amounts of data quickly.
 When you spin up a cluster, you can choose how many master and worker nodes (computers) you would like to do the work.
 Master nodes interpret code provided and divide it up between the workers. For this project you typically want 1 master and 3 workers machines when spinning up a cluster.
 We use the below master and worker instance types, including pricing per DPU (data processing unit) hour:
