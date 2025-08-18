@@ -4,7 +4,7 @@
   "States": {
     "IngestCqcAndAscWDS": {
       "Type": "Parallel",
-      "Next": "TriggerCleanCqcAndAscWds",
+      "Next": "TriggerMasterPipeline",
       "Branches": [
         {
           "StartAt": "IngestCqcApi",
@@ -121,7 +121,7 @@
 
       ]
     },
-    "TriggerCleanCqcAndAscWds": {
+    "TriggerMasterPipeline": {
       "Type": "Task",
       "Resource": "arn:aws:states:::states:startExecution",
       "Parameters": {
