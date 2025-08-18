@@ -39,8 +39,10 @@ def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> 
     """
     response = requests.get(url, query_params, headers=headers_dict)
 
-    while response.status_code == 429:
-        logger.info("Sleeping for ten seconds due to rate limiting")
+    while response.status_code in (429, 503, 500):
+        logger.info(
+            f"Sleeping for ten seconds due to rate limiting or server error (status code: {response.status_code})"
+        )
         time.sleep(10)
         response = requests.get(url, query_params, headers=headers_dict)
 
