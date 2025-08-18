@@ -388,7 +388,7 @@ class CombineCareHomeAndNonResValuesIntoSingleColumnTests(TestIndCqcFilledPostUt
             .collect()
         )
         expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCQC.care_home) != IndCQC.care_home
+            F.col(IndCQC.care_home) != CareHome.care_home
         ).collect()
 
         for i in range(len(returned_not_care_home_data)):
