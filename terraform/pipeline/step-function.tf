@@ -557,8 +557,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "glue:GetJobRuns"
         ],
         "Resource" : [
-          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job",
-          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_locations_job"
+          module.delta_cqc_locations_download_job.job_arn,
+          module.delta_cqc_providers_download_job.job_arn
         ]
       },
       {
