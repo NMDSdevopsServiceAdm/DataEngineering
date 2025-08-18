@@ -29,6 +29,7 @@ resource "aws_sfn_state_machine" "master_clean_state_machine" {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
     asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
+    clean_cqc_data_state_machine_arn           = aws_sfn_state_machine.clean_cqc_data_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
   })
@@ -81,10 +82,10 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
-  name     = "${local.workspace_prefix}-ASC-WDS-Validation"
+  name     = "${local.workspace_prefix}-CleanAscWds"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/ASC-WDS-Validation.json", {
+  definition = templatefile("step-functions/CleanAscWds-StepFunction.json", {
     dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
     validate_ascwds_workplace_raw_data_job_name     = module.validate_ascwds_workplace_raw_data_job.job_name
     validate_ascwds_worker_raw_data_job_name        = module.validate_ascwds_worker_raw_data_job.job_name
