@@ -77,9 +77,11 @@ class MainTests(ImputeIndCqcAscwdsAndPirTests):
 
         read_from_parquet_patch.assert_called_once()
         create_unix_timestamp_variable_from_date_column_mock.assert_called_once()
-        combine_care_home_and_non_res_values_into_single_column_mock.assert_called_once()
         self.assertEqual(
-            model_primary_service_rate_of_change_trendline_mock.call_count, 3
+            combine_care_home_and_non_res_values_into_single_column_mock.call_count, 2
+        )
+        self.assertEqual(
+            model_primary_service_rate_of_change_trendline_mock.call_count, 2
         )
         model_pir_filled_posts_mock.assert_called_once()
         merge_ascwds_and_pir_filled_post_submissions_mock.assert_called_once()
