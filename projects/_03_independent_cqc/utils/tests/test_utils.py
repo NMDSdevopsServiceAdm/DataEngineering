@@ -353,7 +353,7 @@ class CombineCareHomeAndNonResValuesIntoSingleColumnTests(TestIndCqcFilledPostUt
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_combine_care_home_and_non_res_values_into_single_column_rows,
-            Schemas.combine_care_home_and_non_res_values_into_single_column_schema,
+            Schemas.expected_combine_care_home_and_non_res_values_into_single_column_schema,
         )
 
     def test_combine_care_home_and_non_res_values_into_single_column_returns_expected_columns(
