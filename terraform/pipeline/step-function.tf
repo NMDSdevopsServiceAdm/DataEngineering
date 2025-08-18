@@ -1,5 +1,5 @@
 resource "aws_sfn_state_machine" "NameTBC_state_machine" {
-  name     = "${local.workspace_prefix}-NameTBC"
+  name     = "${local.workspace_prefix}-Name-TBC"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/NameTBC.json", {
@@ -22,7 +22,7 @@ resource "aws_sfn_state_machine" "NameTBC_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "master_state_machine" {
-  name     = "${local.workspace_prefix}-Master"
+  name     = "${local.workspace_prefix}-Master-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/Master-StepFunction.json", {
@@ -82,7 +82,7 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
-  name     = "${local.workspace_prefix}-TransformASCWDSData"
+  name     = "${local.workspace_prefix}-Transform-ASCWDS-Data"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/TransformASCWDSData-StepFunction.json", {
@@ -182,7 +182,7 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
-  name     = "${local.workspace_prefix}-IngestCQCAPIDelta-StepFunction"
+  name     = "${local.workspace_prefix}-Ingest-CQC-API-Delta"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
@@ -212,7 +212,7 @@ resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
 }
 
 resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
-  name     = "${local.workspace_prefix}-TransformCQCData-StepFunction"
+  name     = "${local.workspace_prefix}-Transform-CQC-Data"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/TransformCQCData-StepFunction.json", {
