@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 ### Changed
+- Moved the deduplication and imputation of Capacity Tracker data from diagnostics_on_capacity_tracker to impute_ind_cqc_ascwds_and_pir.
 
 ### Improved
 
