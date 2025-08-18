@@ -190,7 +190,7 @@ def combine_care_home_and_non_res_values_into_single_column(
     df: DataFrame, care_home_column: str, non_res_column: str, new_column_name: str
 ) -> DataFrame:
     """
-    Creates one column which has the care_home_column values if the location is a care home and the non_res_column values if not.
+    Adds a new column which has the care_home_column values if the location is a care home and the non_res_column values if not.
 
     Args:
         df (DataFrame): The input DataFrame.
