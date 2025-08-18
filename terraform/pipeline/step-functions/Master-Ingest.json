@@ -4,7 +4,7 @@
   "States": {
     "IngestCqcAndAscWDS": {
       "Type": "Parallel",
-      "Next": "CleanCqcAndAscWds",
+      "Next": "TriggerCleanCqcAndAscWds",
       "Branches": [
         {
           "StartAt": "IngestCqcApi",
