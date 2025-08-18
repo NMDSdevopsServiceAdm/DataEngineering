@@ -5,7 +5,7 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   definition = templatefile("step-functions/Master-Ingest.json", {
     dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
     dataset_bucket_name                    = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn       = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
+    ingest_cqc_api_state_machine_arn       = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
     trigger_master_clean_state_machine_arn = aws_sfn_state_machine.master_clean_state_machine.arn
   })
 
@@ -180,11 +180,11 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
-  name     = "${local.workspace_prefix}-CQC-API-Pipeline"
+resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
+  name     = "${local.workspace_prefix}-IngestCQCAPIDelta-StepFunction"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CQC-API-Pipeline.json", {
+  definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
     bulk_cqc_providers_download_job_name           = "main-bulk_download_cqc_providers_job" # TODO: remove and point to delta
