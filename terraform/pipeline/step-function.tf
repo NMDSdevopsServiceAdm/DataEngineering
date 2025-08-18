@@ -194,8 +194,6 @@ resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
     validate_locations_api_raw_delta_data_job_name = module.validate_locations_api_raw_delta_data_job.job_name
-    validate_locations_api_cleaned_data_job_name   = module.validate_delta_locations_api_cleaned_data_job.job_name
-    validate_providers_api_cleaned_data_job_name   = module.validate_providers_api_cleaned_data_job.job_name
     cqc_crawler_name                               = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
     data_validation_reports_crawler_name           = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn           = aws_lambda_function.error_notification_delta_lambda.arn
