@@ -117,32 +117,33 @@ def main(
         IndCQC.posts_rolling_average_model,
     )
 
-    df = model_primary_service_rate_of_change_trendline(
+    df = combine_care_home_and_non_res_values_into_single_column(
         df,
         IndCQC.ct_care_home_total_employed_dedup,
-        NumericalValues.number_of_days_in_window,
-        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
-        NumericalValues.max_number_of_days_to_interpolate_between,
-    )
-    df = model_imputation_with_extrapolation_and_interpolation(
-        df,
-        IndCQC.ct_care_home_total_employed_dedup,
-        IndCQC.ct_care_home_total_employed_rate_of_change_trendline,
-        IndCQC.ct_care_home_total_employed_imputed,
-        care_home=True,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_dedup,
     )
 
     df = model_primary_service_rate_of_change_trendline(
         df,
-        IndCQC.ct_non_res_care_workers_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_dedup,
         NumericalValues.number_of_days_in_window,
-        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
         NumericalValues.max_number_of_days_to_interpolate_between,
     )
+
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+    )
+
     df = model_imputation_with_extrapolation_and_interpolation(
         df,
         IndCQC.ct_non_res_care_workers_employed_dedup,
-        IndCQC.ct_non_res_care_workers_employed_rate_of_change_trendline,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
         IndCQC.ct_non_res_care_workers_employed_imputed,
         care_home=False,
     )
