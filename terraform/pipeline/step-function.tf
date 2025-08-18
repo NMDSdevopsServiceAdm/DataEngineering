@@ -3,9 +3,31 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/Master-Ingest.json", {
+    dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                    = module.datasets_bucket.bucket_name
+    ingest_cqc_api_state_machine_arn       = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
+    trigger_master_clean_state_machine_arn = aws_sfn_state_machine.master_clean_state_machine.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
+resource "aws_sfn_state_machine" "master_clean_state_machine" {
+  name     = "${local.workspace_prefix}-Master-Clean"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/Master-Clean.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn           = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
     asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
