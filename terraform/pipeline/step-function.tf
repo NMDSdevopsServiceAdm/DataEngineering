@@ -1,4 +1,4 @@
-resource "aws_sfn_state_machine" "ingest_cqc_and_ascwds_state_machine" {
+resource "aws_sfn_state_machine" "NameTBC_state_machine" {
   name     = "${local.workspace_prefix}-NameTBC"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
@@ -28,8 +28,8 @@ resource "aws_sfn_state_machine" "master_state_machine" {
   definition = templatefile("step-functions/Master-StepFunction.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
-    asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
-    clean_cqc_data_state_machine_arn           = aws_sfn_state_machine.clean_cqc_data_state_machine.arn
+    transform_ascwds_state_machine_arn         = aws_sfn_state_machine.transform_ascwds_state_machine.arn
+    transform_cqc_data_state_machine_arn       = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
   })
@@ -81,11 +81,11 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
-  name     = "${local.workspace_prefix}-CleanAscWds"
+resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-TransformASCWDSData"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CleanAscWds-StepFunction.json", {
+  definition = templatefile("step-functions/TransformASCWDSData-StepFunction.json", {
     dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
     validate_ascwds_workplace_raw_data_job_name     = module.validate_ascwds_workplace_raw_data_job.job_name
     validate_ascwds_worker_raw_data_job_name        = module.validate_ascwds_worker_raw_data_job.job_name
@@ -211,11 +211,11 @@ resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "clean_cqc_data_state_machine" {
-  name     = "${local.workspace_prefix}-CleanCQC-StepFunction"
+resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
+  name     = "${local.workspace_prefix}-TransformCQCData-StepFunction"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CleanCQC-StepFunction.json", {
+  definition = templatefile("step-functions/TransformCQCData-StepFunction.json", {
     dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
     dataset_bucket_name                          = module.datasets_bucket.bucket_name
     create_snapshot_lambda_lambda_arn            = aws_lambda_function.create_snapshot_lambda.arn

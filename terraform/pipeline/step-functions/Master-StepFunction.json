@@ -13,7 +13,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
-                "StateMachineArn": "${clean_cqc_data_state_machine_arn}",
+                "StateMachineArn": "${transform_cqc_data_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
@@ -29,7 +29,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
-                "StateMachineArn": "${clean_cqc_data_state_machine_arn}",
+                "StateMachineArn": "${transform_ascwds_state_machine_arn}",
                 "Input": {
                   "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
                 }
