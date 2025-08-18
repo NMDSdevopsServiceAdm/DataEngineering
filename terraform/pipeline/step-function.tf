@@ -1,8 +1,8 @@
-resource "aws_sfn_state_machine" "master_ingest_state_machine" {
-  name     = "${local.workspace_prefix}-Master-Ingest"
+resource "aws_sfn_state_machine" "ingest_cqc_and_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-NameTBC"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/Master-Ingest.json", {
+  definition = templatefile("step-functions/NameTBC.json", {
     dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
     dataset_bucket_name                    = module.datasets_bucket.bucket_name
     ingest_cqc_api_state_machine_arn       = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
