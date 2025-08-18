@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 ### Improved
+- Expanded acronyms in documentation.
 
 
 ## [v2025.07.0] - 13/08/2025
