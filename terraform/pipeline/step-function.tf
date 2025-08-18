@@ -6,7 +6,7 @@ resource "aws_sfn_state_machine" "ingest_cqc_and_ascwds_state_machine" {
     dataset_bucket_uri                     = module.datasets_bucket.bucket_uri
     dataset_bucket_name                    = module.datasets_bucket.bucket_name
     ingest_cqc_api_state_machine_arn       = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
-    trigger_master_clean_state_machine_arn = aws_sfn_state_machine.master_clean_state_machine.arn
+    trigger_master_state_machine_arn = aws_sfn_state_machine.master_state_machine.arn
   })
 
   logging_configuration {
@@ -21,11 +21,11 @@ resource "aws_sfn_state_machine" "ingest_cqc_and_ascwds_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "master_clean_state_machine" {
-  name     = "${local.workspace_prefix}-Master-Clean"
+resource "aws_sfn_state_machine" "master_state_machine" {
+  name     = "${local.workspace_prefix}-Master"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/Master-Clean.json", {
+  definition = templatefile("step-functions/Master-StepFunction.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
     asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
