@@ -1,0 +1,72 @@
+{
+  "Comment": "A state machine to clean the weekly ingestion of CQC API and ASC-WDS data",
+  "StartAt": "CleanCqcAndAscWDS",
+  "States": {
+    "CleanCqcAndAscWDS": {
+      "Type": "Parallel",
+      "Next": "DownstreamPlaceholder",
+      "Branches": [
+        {
+          "StartAt": "CleanCqcApi",
+          "States": {
+            "CleanCqcApi": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${clean_cqc_data_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "CleanAscWds",
+          "States": {
+            "CleanAscWds": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${clean_cqc_data_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "DownstreamPlaceholder": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "SfCCoveragePipeline",
+          "States": {
+            "SfCCoveragePipeline": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "IndCQCPipeline",
+          "States": {
+            "IndCQCPipeline": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}
