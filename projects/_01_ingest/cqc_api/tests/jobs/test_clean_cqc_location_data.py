@@ -108,7 +108,7 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        self.assertEqual(read_from_parquet_mock.call_count, 2)
         create_cleaned_registration_date_column_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 2)
         clean_provider_id_column_mock.assert_called_once()
