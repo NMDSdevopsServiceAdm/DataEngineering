@@ -106,7 +106,7 @@ def read_from_parquet(
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    df = spark_session.read.parquet(data_source)
+    df = spark_session.read.option("mergeSchema", "true").parquet(data_source)
 
     if selected_columns:
         df = df.select(selected_columns)
