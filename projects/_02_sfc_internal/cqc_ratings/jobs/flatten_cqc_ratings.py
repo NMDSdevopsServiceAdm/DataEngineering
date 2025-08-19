@@ -262,7 +262,11 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.location_id,
         CQCL.registration_status,
         "assessment_plan_published_datetime",
-        F.explode(F.col("ratings.overall")).alias("overall"),
+        F.explode(
+            F.when(
+                F.col("ratings.overall").isNotNull(), F.col("ratings.overall")
+            ).otherwise(F.array())
+        ).alias("overall"),
     )
 
     overall_df = overall_df.select(
