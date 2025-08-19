@@ -1,8 +1,8 @@
-resource "aws_sfn_state_machine" "NameTBC_state_machine" {
-  name     = "${local.workspace_prefix}-Name-TBC"
+resource "aws_sfn_state_machine" "align_cqc_and_ascwds_ingestion_state_machine" {
+  name     = "${local.workspace_prefix}-Align_CQC-API-And-ASCWDS-Ingestion"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/NameTBC.json", {
+  definition = templatefile("step-functions/AlignCQCAPIAndASCWDSIngestion-StepFunction.json", {
     dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
     dataset_bucket_name                              = module.datasets_bucket.bucket_name
     ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
