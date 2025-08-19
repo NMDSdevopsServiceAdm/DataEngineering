@@ -597,6 +597,16 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "${module.datasets_bucket.bucket_arn}/*",
           module.datasets_bucket.bucket_arn
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask"
+        ],
+        "Resource" : [
+          module.cqc-api.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
+        ]
       }
     ]
   })
