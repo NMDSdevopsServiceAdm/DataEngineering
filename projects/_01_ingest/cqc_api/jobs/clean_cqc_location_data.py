@@ -103,8 +103,8 @@ def main(
     )
 
     known_la_providerids = LocalAuthorityProviderIds.known_ids
-    registered_locations_df = add_cqc_sector_column_to_cqc_locations_dataframe(
-        registered_locations_df, known_la_providerids
+    cqc_location_df = add_cqc_sector_column_to_cqc_locations_dataframe(
+        cqc_location_df, known_la_providerids
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
