@@ -1,13 +1,13 @@
 {
   "Comment": "Runs the CQC API Provider ingestion task and waits for it to complete.",
   "StartAt": "RunCQCIngestion",
-  "End": "true",
   "States": {
     "RunCQCIngestion": {
       "Type": "Parallel",
       "Parameters": {
         "test_subnets": ${public_subnet_ids}
       },
+      "End": "true",
       "Branches": [
         {
           "StartAt": "RunProviders",
