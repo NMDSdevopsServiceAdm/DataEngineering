@@ -7,7 +7,7 @@
       "Type": "Parallel",
       "Parameters": {
         "test_subnets": ${public_subnet_ids}
-        "test_subnets2": ${json_decode(public_subnet_ids)}
+        "test_subnets2": ${jsondecode(public_subnet_ids)}
       },
       "Branches": [
         {
