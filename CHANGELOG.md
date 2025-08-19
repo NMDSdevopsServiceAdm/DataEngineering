@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Expanded acronyms in documentation.
+- Separated Master-Ingest step function so that ingestion jobs are separate to transform and processing (now all contained in `WorkforceIntelligence-StepFunction`)
 
 ### Improved
 
