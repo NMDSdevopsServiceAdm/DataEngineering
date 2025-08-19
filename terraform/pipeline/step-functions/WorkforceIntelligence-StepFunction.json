@@ -44,18 +44,18 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "SfC Coverage Pipeline",
+          "StartAt": "SfC Flatten ratings -> Coverage  -> Reconciliation",
           "States": {
-            "SfC Coverage Pipeline": {
+            "SfC Flatten ratings -> Coverage  -> Reconciliation": {
               "Type": "Pass",
               "End": true
             }
           }
         },
         {
-          "StartAt": "Ind CQC Pipeline",
+          "StartAt": "Ind CQC Filled Posts Pipeline",
           "States": {
-            "Ind CQC Pipeline": {
+            "Ind CQC Filled Posts Pipeline": {
               "Type": "Pass",
               "End": true
             }
