@@ -2,9 +2,7 @@ import sys
 import warnings
 
 from pyspark.sql import DataFrame, Window, functions as F
-from pyspark.sql.types import (
-    StringType,
-)
+from pyspark.sql.types import StringType
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -15,7 +13,6 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -26,6 +23,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     RegistrationStatus,
     RelatedLocation,
+    Sector,
     Services,
     Specialisms,
 )
@@ -39,13 +37,7 @@ from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
 from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
-
-from projects._01_ingest.cqc_api.utils.utils import (
-    classify_specialisms,
-)
-from utils.column_values.categorical_column_values import (
-    Sector,
-)
+from projects._01_ingest.cqc_api.utils.utils import classify_specialisms
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
