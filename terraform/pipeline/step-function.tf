@@ -607,6 +607,45 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.cqc-api.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
+      },
+      {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          module.cqc-api.task_exc_role_arn,
+          module.cqc-api.task_role_arn
+        ],
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = [
+              "ecs-tasks.amazonaws.com",
+              "events.amazonaws.com"
+            ]
+          }
+        }
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "events:PutTargets",
+          "events:PutRule",
+          "events:DescribeRule"
+        ],
+        Resource = [
+          "arn:aws:events:${var.region}:${data.aws_caller_identity.current.account_id}:rule/*"
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "states:StartExecution",
+          "states:StopExecution",
+          "states:DescribeExecution",
+          "states:ListExecutions"
+        ],
+        Resource = [
+          "*"
+        ]
       }
     ]
   })
