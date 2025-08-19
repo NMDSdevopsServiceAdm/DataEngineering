@@ -5,7 +5,8 @@
     "RunCQCIngestion": {
       "Type": "Parallel",
       "Parameters": {
-        "test_subnets": "States.Array(${public_subnet_ids})"
+        "test_subnets": "States.Array(${public_subnet_ids})",
+        "test_secgroup": ["${security_group_id}"]
       },
       "Branches": [
         {
@@ -58,7 +59,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ["${public_subnet_ids}"],
+                    "Subnets": "States.Array(${public_subnet_ids})",
                     "SecurityGroups": ["${security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
