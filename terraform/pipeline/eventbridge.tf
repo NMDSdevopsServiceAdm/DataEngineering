@@ -293,7 +293,7 @@ resource "aws_iam_policy" "scheduler" {
         Action = ["states:StartExecution"]
         Resource = [
           aws_sfn_state_machine.bulk_download_cqc_api_state_machine.arn,
-          aws_sfn_state_machine.align_cqc_and_ascwds_ingestion_state_machine.arn
+          aws_sfn_state_machine.ingest_cqc_api_and_check_for_new_ascwds_state_machine.arn
         ]
       },
     ]
@@ -331,7 +331,7 @@ resource "aws_scheduler_schedule" "delta_download_cqc_api_schedule" {
   schedule_expression_timezone = "Europe/London"
 
   target {
-    arn      = aws_sfn_state_machine.align_cqc_and_ascwds_ingestion_state_machine.arn
+    arn      = aws_sfn_state_machine.ingest_cqc_api_and_check_for_new_ascwds_state_machine.arn
     role_arn = aws_iam_role.scheduler.arn
   }
 }
