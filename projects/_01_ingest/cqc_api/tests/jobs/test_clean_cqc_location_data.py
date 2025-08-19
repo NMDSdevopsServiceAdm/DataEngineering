@@ -52,8 +52,6 @@ class MainTests(CleanCQCLocationDatasetTests):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.run_postcode_matching")
-    @patch(f"{PATCH_PATH}.impute_missing_data_from_provider_dataset")
-    @patch(f"{PATCH_PATH}.join_cqc_provider_data")
     @patch(f"{PATCH_PATH}.add_related_location_column")
     @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
@@ -96,8 +94,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         realign_carehome_column_with_primary_service_mock: Mock,
         extract_registered_manager_names_mock: Mock,
         add_related_location_column_mock: Mock,
-        join_cqc_provider_data_mock: Mock,
-        impute_missing_data_from_provider_dataset_mock: Mock,
         run_postcode_matching_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -132,8 +128,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
-        join_cqc_provider_data_mock.assert_called_once()
-        self.assertEqual(impute_missing_data_from_provider_dataset_mock.call_count, 2)
         run_postcode_matching_mock.assert_called_once()
         write_to_parquet_mock.assert_called_once_with(
             ANY,
