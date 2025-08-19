@@ -1,20 +1,20 @@
 # Terraform Deployment Guide
 
-## Installing AWS CLI
-AWS CLI is a prerequisite of Terraform.
-1. [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-2. Request access to the AWS Console
+## Installing AWS Command Line Interface
+Amazon Web Services Command Line Interface is a prerequisite of Terraform.
+1. [Install Amazon Web Services Command Line Interface](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+2. Request access to the Amazon Web Services Console
 3. Once this access is granted, follow the steps here to [setup your access and secret key](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html)
 
 ## Resource Dependencies
 Some resources have been created outside of terraform. The extra resources you would need to create are:
-- An ECR repository called "lambda/create-snapshot"
-- An ECR repository called "lambda/check-datasets-equal"
+- An Elastic Container Registry repository called "lambda/create-snapshot"
+- An Elastic Container Registry repository called "lambda/check-datasets-equal"
 
 
 ## Deploying Terraform
 
-1. Set up your AWS crendentials as terraform variables
+1. Set up your Amazon Web Services crendentials as terraform variables
 
 Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
 
