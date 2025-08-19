@@ -282,10 +282,10 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
-      - task-containerisation:
-          filters:
-            branches:
-              ignore: main
+#      - task-containerisation:
+#          filters:
+#            branches:
+#              ignore: main
 #      - test:
 #          filters:
 #            branches:
@@ -306,7 +306,7 @@ workflows:
           requires:
             - lint-terraform
 #            - test
-            - task-containerisation
+#            - task-containerisation
       - terraform-apply:
           requires:
             - terraform-plan
