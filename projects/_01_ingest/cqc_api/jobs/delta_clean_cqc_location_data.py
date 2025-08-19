@@ -80,7 +80,6 @@ ons_cols_to_import = [
 
 def main(
     cqc_location_source: str,
-    cleaned_cqc_provider_source: str,
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
 ):
@@ -100,6 +99,11 @@ def main(
     cqc_location_df = clean_provider_id_column(cqc_location_df)
     cqc_location_df = utils.select_rows_with_non_null_value(
         cqc_location_df, CQCL.provider_id
+    )
+
+    known_la_providerids = LocalAuthorityProviderIds.known_ids
+    registered_locations_df = add_cqc_sector_column_to_cqc_locations_dataframe(
+        registered_locations_df, known_la_providerids
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
@@ -160,26 +164,6 @@ def main(
     registered_locations_df = extract_registered_manager_names(registered_locations_df)
 
     registered_locations_df = add_related_location_column(registered_locations_df)
-
-    # registered_locations_df = join_cqc_provider_data(
-    #     registered_locations_df, cqc_provider_df
-    # )
-
-    known_la_providerids = LocalAuthorityProviderIds.known_ids
-    registered_locations_df = (
-        add_cqc_sector_column_to_cqc_locations_dataframe(
-            registered_locations_df, known_la_providerids
-        )
-        .withColumn(CQCLClean.provider_name, F.lit(""))
-        .withColumn(CQCLClean.cqc_provider_import_date, F.lit(""))
-    )
-
-    registered_locations_df = impute_missing_data_from_provider_dataset(
-        registered_locations_df, CQCLClean.provider_name
-    )
-    registered_locations_df = impute_missing_data_from_provider_dataset(
-        registered_locations_df, CQCLClean.cqc_sector
-    )
 
     registered_locations_df = run_postcode_matching(
         registered_locations_df, ons_postcode_directory_df
@@ -650,24 +634,6 @@ def remove_specialist_colleges(df: DataFrame) -> DataFrame:
         | (df[CQCLClean.services_offered].isNull())
     )
     return df
-
-
-def impute_missing_data_from_provider_dataset(
-    locations_df: DataFrame, column_name: str
-) -> DataFrame:
-    w = (
-        Window.partitionBy(CQCL.provider_id)
-        .orderBy(CQCLClean.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    )
-    locations_df = locations_df.withColumn(
-        column_name,
-        F.when(
-            locations_df[column_name].isNull(),
-            F.first(column_name, ignorenulls=True).over(w),
-        ).otherwise(locations_df[column_name]),
-    )
-    return locations_df
 
 
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
