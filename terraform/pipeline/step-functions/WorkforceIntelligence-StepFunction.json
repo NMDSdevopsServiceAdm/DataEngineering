@@ -1,15 +1,15 @@
 {
-  "Comment": "A state machine to clean the weekly ingestion of CQC API and ASC-WDS data",
-  "StartAt": "CleanCqcAndAscWDS",
+  "Comment": "A state machine to transform the CQC API and ASC-WDS data and trigger all downstream processes.",
+  "StartAt": "Transform CQC and ASCWDS",
   "States": {
-    "CleanCqcAndAscWDS": {
+    "Transform CQC and ASCWDS": {
       "Type": "Parallel",
       "Next": "DownstreamPlaceholder",
       "Branches": [
         {
-          "StartAt": "CleanCqcApi",
+          "StartAt": "Transform CQC data",
           "States": {
-            "CleanCqcApi": {
+            "Transform CQC data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
@@ -23,9 +23,9 @@
           }
         },
         {
-          "StartAt": "CleanAscWds",
+          "StartAt": "Transform ASCWDS data",
           "States": {
-            "CleanAscWds": {
+            "Transform ASCWDS data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
@@ -44,18 +44,18 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "SfCCoveragePipeline",
+          "StartAt": "SfC Coverage Pipeline",
           "States": {
-            "SfCCoveragePipeline": {
+            "SfC Coverage Pipeline": {
               "Type": "Pass",
               "End": true
             }
           }
         },
         {
-          "StartAt": "IndCQCPipeline",
+          "StartAt": "Ind CQC Pipeline",
           "States": {
-            "IndCQCPipeline": {
+            "Ind CQC Pipeline": {
               "Type": "Pass",
               "End": true
             }
