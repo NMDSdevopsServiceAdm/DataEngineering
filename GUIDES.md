@@ -9,5 +9,5 @@
 - Delete the "delete marker" to restore a file
 
 ## Confluence Use
-- ADRs, decision logs, guidance not suitable for public GitHub
+- Architectural decision records (ADRs), decision logs, guidance not suitable for public GitHub
 - For access or more information, please contact [analysis@skillsforcare.org.uk](mailto:analysis@skillsforcare.org.uk)
