@@ -29,7 +29,6 @@ PATCH_PATH = "projects._01_ingest.cqc_api.jobs.clean_cqc_location_data"
 
 class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
-    TEST_PROV_SOURCE = "some/other/directory"
     TEST_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -41,9 +40,6 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
         )
         self.test_location_df = self.spark.createDataFrame(
             Data.small_location_rows, Schemas.small_location_schema
-        )
-        self.test_provider_df = self.spark.createDataFrame(
-            Data.join_provider_rows, Schemas.join_provider_schema
         )
         self.test_ons_postcode_directory_df = self.spark.createDataFrame(
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
@@ -107,13 +103,11 @@ class MainTests(CleanCQCLocationDatasetTests):
     ):
         read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
-            self.test_provider_df,
             self.test_ons_postcode_directory_df,
         ]
 
         job.main(
             self.TEST_LOC_SOURCE,
-            self.TEST_PROV_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
             self.TEST_DESTINATION,
         )
@@ -707,45 +701,6 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
         self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
-class JoinCqcProviderDataTests(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.test_location_df = cUtils.column_to_date(
-            self.test_location_df,
-            Keys.import_date,
-            CQCLCleaned.cqc_location_import_date,
-        ).drop(CQCLCleaned.import_date)
-
-    def test_join_cqc_provider_data_adds_three_columns(self):
-        returned_df = job.join_cqc_provider_data(
-            self.test_location_df, self.test_provider_df
-        )
-        new_columns = 3
-        expected_columns = len(self.test_location_df.columns) + new_columns
-
-        self.assertEqual(len(returned_df.columns), expected_columns)
-
-    def test_join_cqc_provider_data_correctly_joins_data(self):
-        returned_df = job.join_cqc_provider_data(
-            self.test_location_df, self.test_provider_df
-        )
-        returned_data = (
-            returned_df.select(sorted(returned_df.columns))
-            .sort(CQCL.location_id)
-            .collect()
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_joined_rows, Schemas.expected_joined_schema
-        )
-        expected_data = (
-            expected_df.select(sorted(expected_df.columns))
-            .sort(CQCL.location_id)
-            .collect()
-        )
-
-        self.assertCountEqual(returned_data, expected_data)
-
-
 class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         return super().setUp()
@@ -832,44 +787,6 @@ class CleanProviderIdColumn(CleanCQCLocationDatasetTests):
             Schemas.clean_provider_id_column_schema,
         )
         returned_df = job.fill_missing_provider_ids_from_other_rows(test_df)
-        self.assertEqual(expected_df.collect(), returned_df.collect())
-
-
-class ImputeMissingDataFromProviderDataset(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.column_to_impute = CQCLCleaned.cqc_sector
-
-    def test_impute_missing_data_from_provider_dataset_returns_correct_values_when_column_has_the_same_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.impute_missing_data_from_provider_dataset_single_value_rows,
-            Schemas.impute_missing_data_from_provider_dataset_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_impute_missing_data_from_provider_dataset_rows,
-            Schemas.impute_missing_data_from_provider_dataset_schema,
-        )
-        returned_df = job.impute_missing_data_from_provider_dataset(
-            test_df, self.column_to_impute
-        )
-        self.assertEqual(expected_df.collect(), returned_df.collect())
-
-    def test_impute_missing_data_from_provider_dataset_returns_correct_values_when_column_values_change_over_time(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.impute_missing_data_from_provider_dataset_multiple_values_rows,
-            Schemas.impute_missing_data_from_provider_dataset_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_impute_missing_data_from_provider_dataset_multiple_values_rows,
-            Schemas.impute_missing_data_from_provider_dataset_schema,
-        ).sort(CQCLCleaned.cqc_location_import_date)
-        returned_df = job.impute_missing_data_from_provider_dataset(
-            test_df, self.column_to_impute
-        ).sort(CQCLCleaned.cqc_location_import_date)
         self.assertEqual(expected_df.collect(), returned_df.collect())
 
 

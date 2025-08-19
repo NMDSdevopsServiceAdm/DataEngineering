@@ -2,6 +2,7 @@ import sys
 import warnings
 
 from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import StringType
 
 from utils import utils
 import utils.cleaning_utils as cUtils
@@ -24,6 +25,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     RegistrationStatus,
     RelatedLocation,
+    Sector,
     Services,
     Specialisms,
 )
@@ -32,15 +34,14 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
 )
 from utils.raw_data_adjustments import remove_records_from_locations_data
 from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
 
-from projects._01_ingest.cqc_api.utils.utils import (
-    classify_specialisms,
-)
+from projects._01_ingest.cqc_api.utils.utils import classify_specialisms
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -81,15 +82,11 @@ cqc_provider_cols_to_import = [
 
 def main(
     cqc_location_source: str,
-    cleaned_cqc_provider_source: str,
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
-    )
-    cqc_provider_df = utils.read_from_parquet(
-        cleaned_cqc_provider_source, selected_columns=cqc_provider_cols_to_import
     )
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
@@ -103,6 +100,11 @@ def main(
     cqc_location_df = clean_provider_id_column(cqc_location_df)
     cqc_location_df = utils.select_rows_with_non_null_value(
         cqc_location_df, CQCL.provider_id
+    )
+
+    known_la_providerids = LocalAuthorityProviderIds.known_ids
+    registered_locations_df = add_cqc_sector_column_to_cqc_locations_dataframe(
+        registered_locations_df, known_la_providerids
     )
 
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
@@ -164,17 +166,6 @@ def main(
 
     registered_locations_df = add_related_location_column(registered_locations_df)
 
-    registered_locations_df = join_cqc_provider_data(
-        registered_locations_df, cqc_provider_df
-    )
-
-    registered_locations_df = impute_missing_data_from_provider_dataset(
-        registered_locations_df, CQCLClean.provider_name
-    )
-    registered_locations_df = impute_missing_data_from_provider_dataset(
-        registered_locations_df, CQCLClean.cqc_sector
-    )
-
     registered_locations_df = run_postcode_matching(
         registered_locations_df, ons_postcode_directory_df
     )
@@ -191,6 +182,36 @@ def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
     cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
     cqc_df = fill_missing_provider_ids_from_other_rows(cqc_df)
     return cqc_df
+
+
+def add_cqc_sector_column_to_cqc_locations_dataframe(
+    cqc_location_df: DataFrame, la_providerids: list
+):
+    cqc_location_with_sector_column = cqc_location_df.join(
+        create_dataframe_from_la_cqc_location_list(la_providerids),
+        CQCL.provider_id,
+        "left",
+    )
+
+    cqc_location_with_sector_column = cqc_location_with_sector_column.fillna(
+        Sector.independent, subset=CQCLClean.cqc_sector
+    )
+
+    return cqc_location_with_sector_column
+
+
+def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFrame:
+    spark = utils.get_spark()
+
+    la_locations_dataframe = spark.createDataFrame(
+        la_providerids, StringType()
+    ).withColumnRenamed("value", CQCL.provider_id)
+
+    la_providers_dataframe = la_locations_dataframe.withColumn(
+        CQCLClean.cqc_sector, F.lit(Sector.local_authority).cast(StringType())
+    )
+
+    return la_providers_dataframe
 
 
 def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame:
@@ -646,47 +667,6 @@ def remove_specialist_colleges(df: DataFrame) -> DataFrame:
     return df
 
 
-def impute_missing_data_from_provider_dataset(
-    locations_df: DataFrame, column_name: str
-) -> DataFrame:
-    w = (
-        Window.partitionBy(CQCL.provider_id)
-        .orderBy(CQCLClean.cqc_location_import_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    )
-    locations_df = locations_df.withColumn(
-        column_name,
-        F.when(
-            locations_df[column_name].isNull(),
-            F.first(column_name, ignorenulls=True).over(w),
-        ).otherwise(locations_df[column_name]),
-    )
-    return locations_df
-
-
-def join_cqc_provider_data(locations_df: DataFrame, provider_df: DataFrame):
-    locations_df = cUtils.add_aligned_date_column(
-        locations_df,
-        provider_df,
-        CQCLClean.cqc_location_import_date,
-        CQCPClean.cqc_provider_import_date,
-    )
-
-    provider_data_to_join_df = provider_df.withColumnRenamed(
-        CQCPClean.provider_id, CQCLClean.provider_id
-    )
-    provider_data_to_join_df = provider_data_to_join_df.withColumnRenamed(
-        CQCPClean.name, CQCLClean.provider_name
-    )
-
-    joined_df = locations_df.join(
-        provider_data_to_join_df,
-        [CQCLClean.provider_id, CQCPClean.cqc_provider_import_date],
-        how="left",
-    )
-    return joined_df
-
-
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
@@ -768,17 +748,12 @@ if __name__ == "__main__":
 
     (
         cqc_location_source,
-        cleaned_cqc_provider_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
             "Source s3 directory for parquet CQC locations dataset",
-        ),
-        (
-            "--cleaned_cqc_provider_source",
-            "Source s3 directory for cleaned parquet CQC provider dataset",
         ),
         (
             "--cleaned_ons_postcode_directory_source",
@@ -791,7 +766,6 @@ if __name__ == "__main__":
     )
     main(
         cqc_location_source,
-        cleaned_cqc_provider_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
     )
