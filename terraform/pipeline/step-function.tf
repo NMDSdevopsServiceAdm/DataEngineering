@@ -30,7 +30,7 @@ resource "aws_sfn_state_machine" "demo_polars_state_machine" {
   definition = templatefile("step-functions/Demo-Polars.json", {
     cluster_arn       = aws_ecs_cluster.polars_cluster.arn
     task_arn          = module.demo-polars.task_arn
-    public_subnet_ids = module.demo-polars.subnet_ids
+    public_subnet_ids = jsonencode(module.demo-polars.subnet_ids)
     security_group_id = module.demo-polars.security_group_id
   })
 
