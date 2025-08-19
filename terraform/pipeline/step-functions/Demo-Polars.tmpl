@@ -17,7 +17,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ["${public_subnet_ids}"],
+                    "Subnets": ${public_subnet_ids},
                     "SecurityGroups": ["${security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
