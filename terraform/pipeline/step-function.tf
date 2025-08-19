@@ -29,9 +29,9 @@ resource "aws_sfn_state_machine" "demo_polars_state_machine" {
   type     = "STANDARD"
   definition = templatefile("step-functions/Demo-Polars.tftpl", {
     cluster_arn       = aws_ecs_cluster.polars_cluster.arn
-    task_arn          = module.demo-polars.task_arn
-    public_subnet_ids = module.demo-polars.subnet_ids
-    security_group_id = module.demo-polars.security_group_id
+    task_arn          = module.cqc-api.task_arn
+    public_subnet_ids = module.cqc-api.subnet_ids
+    security_group_id = module.cqc-api.security_group_id
   })
 
   logging_configuration {

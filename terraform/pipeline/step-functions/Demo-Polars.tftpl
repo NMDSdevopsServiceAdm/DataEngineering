@@ -7,7 +7,7 @@
       "Type": "Parallel",
       "Parameters": {
         "test_subnets": ${public_subnet_ids},
-        "test_subnets2": ${jsonencode(module.demo-polars.subnet_ids)}
+        "test_subnets2": ${jsonencode(public_subnet_ids)}
       },
       "Branches": [
         {
@@ -22,7 +22,7 @@
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${jsonencode(module.demo-polars.subnet_ids)},
+                    "Subnets": ${jsonencode(public_subnet_ids)},
                     "SecurityGroups": ["${security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
