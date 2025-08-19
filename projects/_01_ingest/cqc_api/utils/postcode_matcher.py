@@ -88,7 +88,7 @@ def run_postcode_matching(
     )
 
     # Step 5 - Raise an error and abort pipeline to manually investigate any unmatched postcodes.
-    # raise_error_if_unmatched(unmatched_truncated_locations_df)
+    raise_error_if_unmatched(unmatched_truncated_locations_df)
 
     # Step 6 - Create a final DataFrame with all matched postcodes.
     final_matched_df = combine_matched_dataframes(
