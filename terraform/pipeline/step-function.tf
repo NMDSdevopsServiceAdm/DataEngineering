@@ -23,6 +23,29 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "demo_polars_state_machine" {
+  name     = "${local.workspace_prefix}-demo-polars"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/Demo-Polars.json", {
+    cluster_arn       = aws_ecs_cluster.polars_cluster.arn
+    task_arn          = module.demo-polars.task_arn
+    public_subnet_ids = module.demo-polars.subnet_ids
+    security_group_id = module.demo-polars.security_group_id
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+
 resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   name     = "${local.workspace_prefix}-Clean-And-Validate"
   role_arn = aws_iam_role.step_function_iam_role.arn
