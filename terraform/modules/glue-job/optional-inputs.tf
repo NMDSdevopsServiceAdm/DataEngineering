@@ -3,6 +3,12 @@ variable "job_parameters" {
   type        = map(any)
 }
 
+variable "extra_conf" {
+  description = "Extra configuration arguments to pass to Spark"
+  type        = string
+  default     = ""
+}
+
 variable "trigger" {
   description = "Should a trigger be added to this job?"
   type        = bool
