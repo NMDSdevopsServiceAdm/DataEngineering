@@ -27,7 +27,7 @@ resource "aws_sfn_state_machine" "demo_polars_state_machine" {
   name     = "${local.workspace_prefix}-demo-polars"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/Demo-Polars.tmpl", {
+  definition = templatefile("step-functions/Demo-Polars.json", {
     cluster_arn       = aws_ecs_cluster.polars_cluster.arn
     task_arn          = module.demo-polars.task_arn
     public_subnet_ids = jsonencode(module.demo-polars.subnet_ids)
