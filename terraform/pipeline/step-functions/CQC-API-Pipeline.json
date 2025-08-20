@@ -6,21 +6,15 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "GetProvidersJobRuns",
+          "StartAt": "ReadLastProvidersRun",
           "States": {
-            "GetProvidersJobRuns": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+            "ReadLastProvidersRun": {
               "Parameters": {
-                "JobName": "${bulk_cqc_providers_download_job_name}"
+                "Names": ["${last_providers_run_param_name}"]
               },
-              "Next": "GetLastProvidersRun"
-            },
-            "GetLastProvidersRun": {
-              "Type": "Pass",
-              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
-              "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
+              "ResultSelector": {
+                "startDate.$": "$.Parameters"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -36,26 +30,33 @@
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
               },
+              "ResultsSelector": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
+              "ResultsPath": "$.providerResult",
+              "Next": "WriteLastProvidersRun"
+            },
+            "WriteLastProvidersRun": {
+              "Parameters": {
+                "Name": "${last_providers_run_param_name}",
+                "Value": "$.providerResult.endDate",
+                "Overwrite": true
+              },
+              "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
             }
           }
         },
         {
-          "StartAt": "GetLocationsJobRuns",
+          "StartAt": "ReadLastLocationsRun",
           "States": {
-            "GetLocationsJobRuns": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+            "ReadLastLocationsRun": {
               "Parameters": {
-                "JobName": "${bulk_cqc_locations_download_job_name}"
+                "Names": ["${last_locations_run_param_name}"]
               },
-              "Next": "GetLastLocationsRun"
-            },
-            "GetLastLocationsRun": {
-              "Type": "Pass",
-              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
-              "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
+              "ResultSelector": {
+                "startDate.$": "$.Parameters"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
@@ -69,8 +70,21 @@
                   "--start_timestamp.$": "$startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
-                }
+                },
+                "ResultsSelector": {
+                "endDate.$": "$$.State.EnteredTime"
               },
+              "ResultsPath": "$.locationResult"
+              },
+              "Next": "WriteLastLocationsRun"
+            },
+            "WriteLastLocationsRun": {
+              "Parameters": {
+                "Name": "${last_locations_run_param_name}",
+                "Value": "$.locationResult.endDate",
+                "Overwrite": true
+              },
+              "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
             }
           }
