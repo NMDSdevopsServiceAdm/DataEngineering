@@ -15,7 +15,7 @@
                 "Name": "${last_providers_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameters.Value"
+                "startDate.$": "$.Parameter.Value"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -26,7 +26,7 @@
                 "JobName": "${delta_cqc_providers_download_job_name}",
                 "Arguments": {
                   "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$.Parameters.startDate",
+                  "--start_timestamp.$": "$.startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
@@ -60,7 +60,7 @@
                 "Name": "${last_locations_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameters.Value"
+                "startDate.$": "$.Parameter.Value"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
@@ -71,7 +71,7 @@
                 "JobName": "${delta_cqc_locations_download_job_name}",
                 "Arguments": {
                   "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$.Parameters.startDate",
+                  "--start_timestamp.$": "$.startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
