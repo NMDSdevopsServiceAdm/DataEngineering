@@ -30,17 +30,18 @@
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
               },
-              "ResultsSelector": {
+              "ResultSelector": {
                 "endDate.$": "$$.State.EnteredTime"
               },
-              "ResultsPath": "$.providerResult",
+              "ResultPath": "$.providerResult",
               "Next": "WriteLastProvidersRun"
             },
             "WriteLastProvidersRun": {
               "Parameters": {
                 "Name": "${last_providers_run_param_name}",
                 "Value": "$.providerResult.endDate",
-                "Overwrite": true
+                "Overwrite": true,
+                "Type": "String"
               },
               "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
@@ -71,10 +72,10 @@
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 },
-                "ResultsSelector": {
+                "ResultSelector": {
                 "endDate.$": "$$.State.EnteredTime"
               },
-              "ResultsPath": "$.locationResult"
+              "ResultPath": "$.locationResult"
               },
               "Next": "WriteLastLocationsRun"
             },
@@ -82,7 +83,8 @@
               "Parameters": {
                 "Name": "${last_locations_run_param_name}",
                 "Value": "$.locationResult.endDate",
-                "Overwrite": true
+                "Overwrite": true,
+                "Type": "String"
               },
               "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
