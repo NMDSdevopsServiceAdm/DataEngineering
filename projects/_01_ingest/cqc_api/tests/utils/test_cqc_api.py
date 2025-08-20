@@ -235,10 +235,7 @@ class CallApiTests(CqcApiTests):
             )
             # Then
             self.assertIsNone(result)
-            self.assertTrue(
-                "Max retries exceeded"
-                in str(context.exception)
-            )
+            self.assertTrue("Max retries exceeded" in str(context.exception))
 
         # only 4 successful calls as 5th should fail
         assert getconn_mock.return_value.request.mock_calls == [
