@@ -2,7 +2,8 @@ import logging
 from typing import Generator, Iterable, List
 
 import requests
-from requests.adapters import HTTPAdapter, Retry
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from ratelimit import limits, sleep_and_retry
 
 CQC_API_VERSION = "v1"
@@ -24,7 +25,6 @@ RETRY_STRATEGY = Retry(
     total=8,
     backoff_factor=0.25,
     status_forcelist=[429, 500, 502, 503, 504],
-    allowed_methods=["GET"],
 )
 CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 
