@@ -94,7 +94,7 @@ def generate_s3_datasets_dir_date_path(
 def read_from_parquet(
     data_source: str,
     selected_columns: List[str] = None,
-    schema: StructType[StructType] = None,
+    schema: Optional[StructType] = None,
 ) -> DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
@@ -102,7 +102,7 @@ def read_from_parquet(
     Args:
         data_source (str): Path to the Parquet file.
         selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
-        schema (StructType[StructType]): Optional - schema to use when reading parquet. Defaults to None.
+        schema (Optional[StructType]): Optional - schema to use when reading parquet. Defaults to None.
 
     Returns:
         DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
