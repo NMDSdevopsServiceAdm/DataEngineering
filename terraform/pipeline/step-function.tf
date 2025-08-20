@@ -574,6 +574,17 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "${module.datasets_bucket.bucket_arn}/*",
           module.datasets_bucket.bucket_arn
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ssm:PutParameter",
+          "ssm:GetParameters",
+        ],
+        "Resource" : [
+          aws_ssm_parameter.providers_last_run.arn,
+          aws_ssm_parameter.locations_last_run.arn
+        ]
       }
     ]
   })
