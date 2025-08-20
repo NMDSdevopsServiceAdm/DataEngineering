@@ -27,7 +27,7 @@
           "States": {
             "Transform ASCWDS data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
                 "StateMachineArn": "${transform_ascwds_state_machine_arn}",
                 "Input": {
