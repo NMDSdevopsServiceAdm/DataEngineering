@@ -1,6 +1,7 @@
 import unittest
+from http.client import HTTPMessage
 from typing import Generator
-from unittest.mock import Mock, call, patch
+from unittest.mock import ANY, Mock, call, patch
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 
@@ -107,33 +108,37 @@ class GetPageObjectsTests(CqcApiTests):
 
 
 class CallApiTests(CqcApiTests):
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_200(self, get_mock: Mock):
         test_response = TestResponse(200, {})
         get_mock.return_value = test_response
 
         response_json = cqc.call_api(
-            "test_url", {"test": "body"}, headers_dict={"some": "header"}
+            self.test_url, {"test": "body"}, headers_dict={"some": "header"}
         )
         self.assertEqual(response_json, {})
 
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_500(self, get_mock: Mock):
         test_response = TestResponse(500, {})
         get_mock.return_value = test_response
 
         with self.assertRaisesRegex(Exception, "^API response: 500 -.*"):
-            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+            cqc.call_api(
+                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+            )
 
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_400(self, get_mock: Mock):
         test_response = TestResponse(400, {})
         get_mock.return_value = test_response
 
         with self.assertRaisesRegex(Exception, "^API response: 400 -.*"):
-            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+            cqc.call_api(
+                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+            )
 
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_404(self, get_mock: Mock):
         test_response = TestResponse(404, {})
         get_mock.return_value = test_response
@@ -141,44 +146,32 @@ class CallApiTests(CqcApiTests):
         with self.assertRaisesRegex(
             cqc.NoProviderOrLocationException, "^API response: 404 -.*"
         ):
-            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+            cqc.call_api(
+                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+            )
 
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_403_with_headers(self, get_mock: Mock):
         test_response = TestResponse(403, {})
         get_mock.return_value = test_response
 
         with self.assertRaisesRegex(Exception, "^API response: 403 -.*"):
-            cqc.call_api("test_url", {"test": "body"}, headers_dict={"some": "header"})
+            cqc.call_api(
+                self.test_url, {"test": "body"}, headers_dict={"some": "header"}
+            )
 
-    @patch("requests.get")
+    @patch("requests.Session.get")
     def test_call_api_handles_403_without_headers(self, get_mock: Mock):
         test_response = TestResponse(403, {})
         get_mock.return_value = test_response
 
         with self.assertRaises(Exception) as context:
-            cqc.call_api("test_url", {"test": "body"}, headers_dict=None)
+            cqc.call_api(self.test_url, {"test": "body"}, headers_dict=None)
 
         self.assertTrue(
             "API response: 403, ensure you have set a User-Agent header"
             in str(context.exception)
         )
-
-    @patch("time.sleep", return_value=None)
-    @patch("requests.get")
-    def test_call_api_handles_429_without_headers(
-        self, get_mock: Mock, sleep_mock: Mock
-    ):
-        test_response_timeout = TestResponse(429, {})
-        test_response_success = TestResponse(200, {})
-        get_mock.side_effect = [test_response_timeout, test_response_success]
-
-        response_json = cqc.call_api(
-            "test_url", {"test": "body"}, headers_dict={"some": "header"}
-        )
-
-        sleep_mock.assert_called_once()
-        self.assertEqual(response_json, {})
 
 
 class GetAllObjectsTests(CqcApiTests):
@@ -267,6 +260,35 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
             },
         )
         self.assertEqual(result, {"changes": ["1", "2", "3"]})
+
+    @patch("requests.models.Response.json")
+    @patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
+    def test_retry_on_server_error(self, getconn_mock, mock_response):
+        # Given
+        getconn_mock.return_value.getresponse.side_effect = [
+            Mock(status=500, msg=HTTPMessage()),
+            Mock(status=429, msg=HTTPMessage()),
+            Mock(
+                status=200, msg=HTTPMessage()
+            ),  # this response should return successfully
+            Mock(status=502, msg=HTTPMessage()),
+        ]
+        mock_response.return_value = {"data": "success"}
+
+        # When
+        result = cqc.call_api(
+            url="https://api.service.cqc.org.uk/test",
+            query_params={"param": "value"},
+        )
+
+        # Then
+        assert result == {"data": "success"}
+        # only 3 calls implies that 200 status succeeded
+        assert getconn_mock.return_value.request.mock_calls == [
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+        ]
 
 
 if __name__ == "__main__":
