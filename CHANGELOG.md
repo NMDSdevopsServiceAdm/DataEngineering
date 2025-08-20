@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - Expanded acronyms in documentation.
+- Removed providers dataset from clean locations job as it's no longer used.
 
 ### Improved
 
