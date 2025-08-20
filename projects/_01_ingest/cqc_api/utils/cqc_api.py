@@ -1,10 +1,11 @@
 import logging
-from typing import Generator, Iterable, List
-
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+
 from ratelimit import limits, sleep_and_retry
+from requests.adapters import HTTPAdapter
+from typing import Generator, Iterable, List
+from urllib3.exceptions import MaxRetryError, ResponseError
+from urllib3.util.retry import Retry
 
 CQC_API_VERSION = "v1"
 RATE_LIMIT = 2000
@@ -47,8 +48,11 @@ def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> 
         Exception: if the api returns an unexpected code
     """
     with requests.Session() as session:
-        session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
-        response = session.get(url, params=query_params, headers=headers_dict)
+        try:
+            session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
+            response = session.get(url, params=query_params, headers=headers_dict)
+        except (MaxRetryError, ResponseError) as e:
+            raise Exception("Max retries exceeded: {}".format(e))
 
     if (response.status_code == 403) & (headers_dict is None):
         raise Exception(

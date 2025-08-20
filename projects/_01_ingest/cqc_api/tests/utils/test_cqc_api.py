@@ -1,11 +1,22 @@
 import unittest
+
 from http.client import HTTPMessage
+from requests.adapters import HTTPAdapter
 from typing import Generator
 from unittest.mock import ANY, Mock, call, patch
+from urllib3.util.retry import Retry
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 
 PATCH_PATH = "projects._01_ingest.cqc_api.utils.cqc_api"
+
+PATCHED_CQC_ADAPTER = HTTPAdapter(
+    max_retries=Retry(
+        total=3,
+        backoff_factor=0.1,
+        status_forcelist=[429, 500, 502, 503, 504],
+    )
+)
 
 
 class CqcApiTests(unittest.TestCase):
@@ -173,6 +184,70 @@ class CallApiTests(CqcApiTests):
             in str(context.exception)
         )
 
+    @patch("requests.models.Response.json")
+    @patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
+    def test_retry_on_server_error(self, getconn_mock, response_mock):
+        # Given
+        getconn_mock.return_value.getresponse.side_effect = [
+            Mock(status=500, msg=HTTPMessage()),
+            Mock(status=429, msg=HTTPMessage()),
+            Mock(
+                status=200, msg=HTTPMessage()
+            ),  # this response should return successfully
+            Mock(status=502, msg=HTTPMessage()),
+        ]
+        response_mock.return_value = {"data": "success"}
+
+        # When
+        result = cqc.call_api(
+            url="https://api.service.cqc.org.uk/test",
+            query_params={"param": "value"},
+        )
+
+        # Then
+        assert result == {"data": "success"}
+        # only 3 calls implies that 200 status succeeded
+        assert getconn_mock.return_value.request.mock_calls == [
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+        ]
+
+    @patch(f"{PATCH_PATH}.CQC_ADAPTER", PATCHED_CQC_ADAPTER)
+    @patch("requests.models.Response.json")
+    @patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
+    def test_max_retries_on_server_error(self, getconn_mock, response_mock):
+        # Given
+        getconn_mock.return_value.getresponse.side_effect = [
+            Mock(status=500, msg=HTTPMessage()),
+            Mock(status=500, msg=HTTPMessage()),
+            Mock(status=500, msg=HTTPMessage()),
+            Mock(status=500, msg=HTTPMessage()),  # should fail after 4 attemps
+            Mock(status=200, msg=HTTPMessage()),
+        ]
+        response_mock.return_value = {"data": "success"}
+
+        # When
+        with self.assertRaises(Exception) as context:
+            result = cqc.call_api(
+                url="https://api.service.cqc.org.uk/test",
+                query_params={"param": "value"},
+            )
+            # Then
+            self.assertIsNone(result)
+            self.assertTrue(
+                "Max retries exceeded"
+                in str(context.exception)
+            )
+
+        # only 4 successful calls as 5th should fail
+        assert getconn_mock.return_value.request.mock_calls == [
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+            call("GET", "/test?param=value", body=None, headers=ANY),
+        ]
+
 
 class GetAllObjectsTests(CqcApiTests):
     @patch(f"{PATCH_PATH}.get_page_objects")
@@ -260,35 +335,6 @@ class GetChangesWithinTimeframeTests(CqcApiTests):
             },
         )
         self.assertEqual(result, {"changes": ["1", "2", "3"]})
-
-    @patch("requests.models.Response.json")
-    @patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
-    def test_retry_on_server_error(self, getconn_mock, mock_response):
-        # Given
-        getconn_mock.return_value.getresponse.side_effect = [
-            Mock(status=500, msg=HTTPMessage()),
-            Mock(status=429, msg=HTTPMessage()),
-            Mock(
-                status=200, msg=HTTPMessage()
-            ),  # this response should return successfully
-            Mock(status=502, msg=HTTPMessage()),
-        ]
-        mock_response.return_value = {"data": "success"}
-
-        # When
-        result = cqc.call_api(
-            url="https://api.service.cqc.org.uk/test",
-            query_params={"param": "value"},
-        )
-
-        # Then
-        assert result == {"data": "success"}
-        # only 3 calls implies that 200 status succeeded
-        assert getconn_mock.return_value.request.mock_calls == [
-            call("GET", "/test?param=value", body=None, headers=ANY),
-            call("GET", "/test?param=value", body=None, headers=ANY),
-            call("GET", "/test?param=value", body=None, headers=ANY),
-        ]
 
 
 if __name__ == "__main__":
