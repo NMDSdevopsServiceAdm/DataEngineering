@@ -579,7 +579,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Effect" : "Allow",
         "Action" : [
           "ssm:PutParameter",
-          "ssm:GetParameters",
+          "ssm:GetParameter",
         ],
         "Resource" : [
           aws_ssm_parameter.providers_last_run.arn,

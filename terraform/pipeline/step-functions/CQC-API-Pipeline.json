@@ -10,12 +10,12 @@
           "States": {
             "ReadLastProvidersRun": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
-                "Names": ["${last_providers_run_param_name}"]
+                "Name": "${last_providers_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameters"
+                "startDate.$": "$.Parameters.Value"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -55,12 +55,12 @@
           "States": {
             "ReadLastLocationsRun": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
-                "Names": ["${last_locations_run_param_name}"]
+                "Name": "${last_locations_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameters"
+                "startDate.$": "$.Parameters.Value"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
