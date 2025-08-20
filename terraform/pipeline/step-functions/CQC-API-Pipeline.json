@@ -10,10 +10,10 @@
           "States": {
             "ReadLastProvidersRun": {
               "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
               "Parameters": {
                 "Names": ["${last_providers_run_param_name}"]
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
               "ResultSelector": {
                 "startDate.$": "$.Parameters"
               },
@@ -39,13 +39,13 @@
             },
             "WriteLastProvidersRun": {
               "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
                 "Name": "${last_providers_run_param_name}",
                 "Value": "$.providerResult.endDate",
                 "Overwrite": true,
                 "Type": "String"
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
             }
           }
@@ -55,10 +55,10 @@
           "States": {
             "ReadLastLocationsRun": {
               "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
               "Parameters": {
                 "Names": ["${last_locations_run_param_name}"]
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameters",
               "ResultSelector": {
                 "startDate.$": "$.Parameters"
               },
@@ -84,13 +84,13 @@
             },
             "WriteLastLocationsRun": {
               "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
                 "Name": "${last_locations_run_param_name}",
                 "Value": "$.locationResult.endDate",
                 "Overwrite": true,
                 "Type": "String"
               },
-              "Resource": "arn:aws:states:::aws-sdk:ssm:PutParameter",
               "End": true
             }
           }
