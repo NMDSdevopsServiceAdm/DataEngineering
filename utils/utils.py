@@ -103,8 +103,7 @@ def read_from_parquet(
         data_source (str): Path to the Parquet file.
         selected_columns (List[str], optional): List of column names to select.
             Defaults to None (all columns).
-        schema (StructType, optional): Explicit schema to apply when reading.
-            Defaults to None (schema inferred from parquet).
+        schema (StructType | None): Optional schema to use when reading parquet. Defaults to None.
 
     Returns:
         DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
