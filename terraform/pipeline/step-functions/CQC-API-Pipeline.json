@@ -9,6 +9,7 @@
           "StartAt": "ReadLastProvidersRun",
           "States": {
             "ReadLastProvidersRun": {
+              "Type": "Task",
               "Parameters": {
                 "Names": ["${last_providers_run_param_name}"]
               },
@@ -37,6 +38,7 @@
               "Next": "WriteLastProvidersRun"
             },
             "WriteLastProvidersRun": {
+              "Type": "Task",
               "Parameters": {
                 "Name": "${last_providers_run_param_name}",
                 "Value": "$.providerResult.endDate",
@@ -52,6 +54,7 @@
           "StartAt": "ReadLastLocationsRun",
           "States": {
             "ReadLastLocationsRun": {
+              "Type": "Task",
               "Parameters": {
                 "Names": ["${last_locations_run_param_name}"]
               },
@@ -80,6 +83,7 @@
               "Next": "WriteLastLocationsRun"
             },
             "WriteLastLocationsRun": {
+              "Type": "Task",
               "Parameters": {
                 "Name": "${last_locations_run_param_name}",
                 "Value": "$.locationResult.endDate",
