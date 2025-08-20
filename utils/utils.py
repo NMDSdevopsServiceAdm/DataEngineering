@@ -2,9 +2,10 @@ import os
 import re
 import csv
 import argparse
-from typing import List, Any, Generator
+from typing import List, Any, Generator, Optional
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
+from pyspark.sql.types import StructType
 from pyspark.sql.utils import AnalysisException
 
 
@@ -91,14 +92,19 @@ def generate_s3_datasets_dir_date_path(
 
 
 def read_from_parquet(
-    data_source: str, selected_columns: List[str] = None
+    data_source: str,
+    selected_columns: List[str] = None,
+    schema: Optional[StructType] = None,
 ) -> DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
 
     Args:
         data_source (str): Path to the Parquet file.
-        selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
+        selected_columns (List[str], optional): List of column names to select.
+            Defaults to None (all columns).
+        schema (StructType, optional): Explicit schema to apply when reading.
+            Defaults to None (schema inferred from parquet).
 
     Returns:
         DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
@@ -106,8 +112,15 @@ def read_from_parquet(
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    df = spark_session.read.option("mergeSchema", "true").parquet(data_source)
+    reader = spark_session.read.option("mergeSchema", "true")
 
+    # If schema is provided, apply it explicitly
+    if schema:
+        df = reader.schema(schema).parquet(data_source)
+    else:
+        df = reader.parquet(data_source)
+
+    # Select only required columns if specified
     if selected_columns:
         df = df.select(selected_columns)
 

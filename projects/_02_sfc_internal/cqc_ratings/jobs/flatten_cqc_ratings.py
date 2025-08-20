@@ -6,6 +6,8 @@ from pyspark.sql import (
     Window,
 )
 
+from schemas.cqc_location_schema import LOCATION_SCHEMA
+
 from utils import (
     utils,
     cleaning_utils as cUtils,
@@ -60,7 +62,9 @@ def main(
     benchmark_ratings_destination: str,
     ass_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+    )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
@@ -254,7 +258,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         F.col("assessment.assessmentPlanPublishedDateTime").alias(
             "assessment_plan_published_datetime"
         ),
-        F.col("assessment.ratings").alias("ratings"),
+        F.col("assessment.ratings").alias("assessments_ratings"),
     )
 
     # ---- PROCESS OVERALL RATINGS ----
@@ -264,7 +268,8 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         "assessment_plan_published_datetime",
         F.explode(
             F.when(
-                F.col("ratings.overall").isNotNull(), F.col("ratings.overall")
+                F.col("assessments_ratings.overall").isNotNull(),
+                F.col("assessments_ratings.overall"),
             ).otherwise(F.array())
         ).alias("overall"),
     )
@@ -309,7 +314,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.location_id,
         CQCL.registration_status,
         "assessment_plan_published_datetime",
-        F.explode(F.col("ratings.asgRatings")).alias("asg"),
+        F.explode(F.col("assessments_ratings.asgRatings")).alias("asg"),
     )
 
     asg_df = asg_df.select(
