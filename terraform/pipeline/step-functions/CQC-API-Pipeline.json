@@ -238,7 +238,6 @@
               "End": true
             }
           }
-          }
         }
       ],
       "Next": "CrawlWhenSuccessful",
