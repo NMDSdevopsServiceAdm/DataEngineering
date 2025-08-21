@@ -265,7 +265,7 @@ module "delta_cqc_providers_download_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--destination_prefix"        = "${module.datasets_bucket.bucket_uri}"
+    "--destination_prefix"        = module.datasets_bucket.bucket_uri
     "--start_timestamp"           = "",
     "--end_timestamp"             = "",
     "--additional-python-modules" = "ratelimit==2.2.1,"
@@ -453,7 +453,6 @@ module "clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
@@ -471,10 +470,10 @@ module "delta_clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
+  extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
 }
 
 module "reconciliation_job" {

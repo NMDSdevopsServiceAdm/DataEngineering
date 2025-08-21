@@ -5,7 +5,7 @@
 ## Welcome
 This repository contains:
 - Spark jobs for data transformation and feature extraction
-- Terraform code for AWS deployment
+- Terraform code for Amazon Web Services deployment
 
 Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngineering/wiki) for more info!
 
@@ -19,7 +19,7 @@ Skills for Care, as the leading source of adult social care workforce intelligen
 We’re commissioned by the Department of Health and Social Care (DHSC) to collect data on adult social care providers and their workforce via the Adult Social Care Workforce Data Set (ASC-WDS) (previously named National Minimum Data Set for Social Care (NMDS-SC)). For over 15 years we’ve turned this data into intelligence and insight that's relied upon by the Government and across our sector.
 
 ### What This Project Does
-This project builds reproducible data pipelines in AWS to:
+This project builds reproducible data pipelines in Amazon Web Services to:
 - Improve modelling accuracy and frequency
 - Use more complex modelling techniques than previously possible
 - Make our estimation methods transparent and repeatable
@@ -64,7 +64,7 @@ terraform fmt -recursive  # Terraform
 - [DEPLOY.md](./DEPLOY.md) - Terraform deployment guide
 - [GUIDES.md](./GUIDES.md) - general guidance and information
 - [LICENSE.md](./LICENSE.md) - license information
-- [NOTEBOOKS.md](./NOTEBOOKS.md) - Jupyter notebooks on AWS EMR
+- [NOTEBOOKS.md](./NOTEBOOKS.md) - Jupyter notebooks on Amazon Web Services EMR
 - [SETUP.md](./SETUP.md) - local environment and project setup
 - [STYLEGUIDE.md](./STYLEGUIDE.md) — naming, test writing, and docstring conventions
 - [WINDOWSSETUP.md](./WINDOWSSETUP.md) — instructions for setting up the project on Windows

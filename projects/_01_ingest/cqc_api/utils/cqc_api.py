@@ -1,9 +1,11 @@
 import logging
-import time
-from typing import Generator, Iterable, List
-
 import requests
+
 from ratelimit import limits, sleep_and_retry
+from requests.adapters import HTTPAdapter
+from typing import Generator, Iterable, List
+from urllib3.exceptions import MaxRetryError, ResponseError
+from urllib3.util.retry import Retry
 
 CQC_API_VERSION = "v1"
 RATE_LIMIT = 2000
@@ -18,6 +20,14 @@ logger.setLevel(logging.INFO)
 
 class NoProviderOrLocationException(Exception):
     pass
+
+
+RETRY_STRATEGY = Retry(
+    total=8,
+    backoff_factor=0.25,
+    status_forcelist=[429, 500, 502, 503, 504],
+)
+CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 
 
 @sleep_and_retry
@@ -37,12 +47,12 @@ def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> 
         NoProviderOrLocationException: if the api is unavailable
         Exception: if the api returns an unexpected code
     """
-    response = requests.get(url, query_params, headers=headers_dict)
-
-    while response.status_code == 429:
-        logger.info("Sleeping for ten seconds due to rate limiting")
-        time.sleep(10)
-        response = requests.get(url, query_params, headers=headers_dict)
+    with requests.Session() as session:
+        try:
+            session.mount(CQC_API_BASE_URL, CQC_ADAPTER)
+            response = session.get(url, params=query_params, headers=headers_dict)
+        except (MaxRetryError, ResponseError) as e:
+            raise Exception("Max retries exceeded: {}".format(e))
 
     if (response.status_code == 403) & (headers_dict is None):
         raise Exception(

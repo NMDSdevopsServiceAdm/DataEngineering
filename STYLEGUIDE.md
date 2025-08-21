@@ -167,8 +167,8 @@ class MainTest:
 
 
 ## Code reviews
-- Each PR should have and be linked to a corresponding Trello card
-- Explain the intent of your PRs clearly
+- Each pull request (PR) should have and be linked to a corresponding Trello card
+- Explain the intent of your pull requests clearly
 - Small, focused commits are better than large, sweeping ones
 - Always include test updates with logic changes
 
