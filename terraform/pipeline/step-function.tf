@@ -532,6 +532,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Effect" : "Allow",
         "Action" : [
           "glue:StartCrawler",
+          "glue:GetCrawler",
           "glue:StartJobRun",
           "glue:GetJobRun"
         ],
