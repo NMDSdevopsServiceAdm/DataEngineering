@@ -6,8 +6,6 @@ from pyspark.sql import (
     Window,
 )
 
-from schemas.cqc_location_schema import LOCATION_SCHEMA
-
 from utils import (
     utils,
     cleaning_utils as cUtils,
@@ -61,7 +59,7 @@ def main(
     benchmark_ratings_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
-        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+        cqc_location_source, cqc_location_columns
     )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
