@@ -29,7 +29,7 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
-    TEST_ASS_RATINGS_DESTINATION = "some/other/directory"
+    TEST_ASSESSMENT_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -92,7 +92,7 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
-            self.TEST_ASS_RATINGS_DESTINATION,
+            self.TEST_ASSESSMENT_RATINGS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -126,7 +126,7 @@ class MainTests(FlattenCQCRatingsTests):
             ),
             call(
                 ANY,
-                self.TEST_ASS_RATINGS_DESTINATION,
+                self.TEST_ASSESSMENT_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
         ]

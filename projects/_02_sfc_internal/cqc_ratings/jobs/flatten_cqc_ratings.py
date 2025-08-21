@@ -60,7 +60,7 @@ def main(
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
-    ass_ratings_destination: str,
+    assessment_ratings_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
@@ -111,7 +111,7 @@ def main(
 
     utils.write_to_parquet(
         assessment_ratings_df,
-        ass_ratings_destination,
+        assessment_ratings_destination,
         mode="overwrite",
     )
 
@@ -551,7 +551,7 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
-        ass_ratings_destination,
+        assessment_ratings_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -570,7 +570,7 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet benchmark ratings dataset",
         ),
         (
-            "--ass_ratings_destination",
+            "--assessment_ratings_destination",
             "Destination s3 directory for cleaned parquet CQC assessment ratings dataset",
         ),
     )
@@ -579,7 +579,7 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
-        ass_ratings_destination,
+        assessment_ratings_destination,
     )
 
     print("Spark job 'flatten_cqc_ratings' complete")
