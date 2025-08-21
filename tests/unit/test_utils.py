@@ -546,7 +546,7 @@ class GeneralUtilsTests(UtilsTests):
 
         self.assertCountEqual(df.columns, column_list)
 
-    def test_read_from_parquet_with_schema_extra_column_not_in_parquet(self):
+    def test_read_from_parquet_with_schema_extra_column_not_in_parquet_ignored(self):
         schema = StructType(
             [
                 StructField(CQCColNames.name, StringType(), True),
@@ -560,7 +560,7 @@ class GeneralUtilsTests(UtilsTests):
         null_count = df.filter(df["extra_col"].isNotNull()).count()
         self.assertEqual(null_count, 0)
 
-    def test_read_from_parquet_with_empty_schema(self):
+    def test_read_from_parquet_with_empty_schema_imports_all_columns(self):
         schema = StructType([])
 
         df = utils.read_from_parquet(self.example_parquet_path, schema=schema)
