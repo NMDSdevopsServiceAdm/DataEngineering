@@ -149,9 +149,6 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_assessment_ratings(cqc_location_df)
     ratings_df = recode_unknown_codes_to_null(ratings_df)
-    # ratings_df = add_current_or_historic_column(
-    #     ratings_df, CQCCurrentOrHistoricValues.current
-    # )
     return ratings_df
 
 
@@ -244,14 +241,12 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
-    # Step 1: Explode top-level assessment array
     assessment_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
         cqc_location_df[CQCL.registration_status],
         F.explode(cqc_location_df["assessment"]).alias("assessment"),
     )
 
-    # Step 2: Extract base assessment fields
     assessment_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
@@ -261,7 +256,6 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         F.col("assessment.ratings").alias("assessments_ratings"),
     )
 
-    # ---- PROCESS OVERALL RATINGS ----
     overall_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
@@ -306,10 +300,9 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         F.lit("overall").alias("rating_type"),
         F.lit("assessment.ratings.overall").alias(
             "source_path"
-        ),  # explicit source path
+        ),
     )
 
-    # ---- PROCESS ASG RATINGS ----
     asg_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
@@ -349,10 +342,9 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         F.lit("asg").alias("rating_type"),
         F.lit("assessment.ratings.asgRatings").alias(
             "source_path"
-        ),  # explicit source path
+        ),
     )
 
-    # ---- Combine with unionByName ----
     final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
 
     return final_df

@@ -705,6 +705,320 @@ class FlattenCQCRatings:
             "Effective rating Good",
         )
     ]
+    flatten_assessment_ratings_rows = [
+        (
+            {
+                CQCL.location_id: "loc_1",
+                CQCL.registration_status: "registered",
+                CQCL.assessment: [
+                    {
+                        CQCL.assessment_plan_published_datetime: "assessment_plan_published_datetime",
+                        CQCL.ratings: {
+                            CQCL.overall: [
+                                {
+                                    CQCL.rating: "Good",
+                                    CQCL.status: "Current",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                                {
+                                    CQCL.rating: "Requires Improvement",
+                                    CQCL.status: "Historic",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                            ],
+                            CQCL.asg_ratings: [
+                                {
+                                    CQCL.assessment_plan_id: "AP001",
+                                    CQCL.title: "title",
+                                    CQCL.assessment_date: "assessment_date_historic",
+                                    CQCL.assessment_plan_status: "Assessed",
+                                    CQCL.name: "Care Homes",
+                                    CQCL.rating: "Good",
+                                    CQCL.status: "Historic",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                                {
+                                    CQCL.assessment_plan_id: "AP002",
+                                    CQCL.title: "title",
+                                    CQCL.assessment_date: "assessment_date_historic",
+                                    CQCL.assessment_plan_status: "Assessed",
+                                    CQCL.name: "Care Homes",
+                                    CQCL.rating: "Good",
+                                    CQCL.status: "Historic",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                                {
+                                    CQCL.assessment_plan_id: "AP003",
+                                    CQCL.title: "title",
+                                    CQCL.assessment_date: "assessment_date_current",
+                                    CQCL.assessment_plan_status: "Assessed",
+                                    CQCL.name: "Care Homes",
+                                    CQCL.rating: "Good",
+                                    CQCL.status: "Current",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                                {
+                                    CQCL.assessment_plan_id: "AP004",
+                                    CQCL.title: "title",
+                                    CQCL.assessment_date: "assessment_date_current",
+                                    CQCL.assessment_plan_status: "Assessed",
+                                    CQCL.name: "Supported Living",
+                                    CQCL.rating: "Requires Improvement",
+                                    CQCL.status: "Current",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                                {
+                                    CQCL.assessment_plan_id: "AP005",
+                                    CQCL.title: "title",
+                                    CQCL.assessment_date: "assessment_date_historic",
+                                    CQCL.assessment_plan_status: "Assessed",
+                                    CQCL.name: "Supported Living",
+                                    CQCL.rating: "Requires Improvement",
+                                    CQCL.status: "Historic",
+                                    CQCL.key_question_ratings: [
+                                        {
+                                            CQCL.name: "Safe",
+                                            CQCL.rating: "Safe rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Well-led",
+                                            CQCL.rating: "Well-led rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Caring",
+                                            CQCL.rating: "Caring rating Requires Improvement",
+                                        },
+                                        {
+                                            CQCL.name: "Responsive",
+                                            CQCL.rating: "Responsive rating Good",
+                                        },
+                                        {
+                                            CQCL.name: "Effective",
+                                            CQCL.rating: "Effective rating Good",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    }
+                ],
+            },
+        )
+    ]
+    expected_flatten_assessment_ratings_rows = [
+        (
+            "loc_1",
+            "registered",
+            "assessment_plan_published_datetime",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Good",
+            "Current",
+            "Safe",
+            "Safe rating Good",
+            "",
+            "",
+            "overall",
+            "assessment.ratings.overall",
+        )(
+            "loc_1",
+            "registered",
+            "assessment_plan_published_datetime",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Good",
+            "Current",
+            "Well-led",
+            "Well-led rating Good",
+            "",
+            "",
+            "overall",
+            "assessment.ratings.overall",
+        )(
+            "loc_1",
+            "registered",
+            "assessment_plan_published_datetime",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Good",
+            "Current",
+            "Caring",
+            "Caring rating Good",
+            "",
+            "",
+            "overall",
+            "assessment.ratings.overall",
+        )(
+            "loc_1",
+            "registered",
+            "assessment_plan_published_datetime",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Good",
+            "Current",
+            "Safe",
+            "Safe rating Good",
+            "",
+            "",
+            "overall",
+            "assessment.ratings.overall",
+        )(
+            "loc_1",
+            "registered",
+            "assessment_plan_published_datetime",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "Good",
+            "Current",
+            "Safe",
+            "Safe rating Good",
+            "",
+            "",
+            "overall",
+            "assessment.ratings.overall",
+        )
+    ]
     recode_unknown_to_null_rows = [
         (
             "loc_1",
