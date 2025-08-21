@@ -145,7 +145,32 @@
       "Parameters": {
         "Name": "${cqc_crawler_name}"
       },
-      "Next": "CrawlValidationWhenSuccessful"
+      "Next": "CheckValidationCrawler"
+    },
+    "CheckValidationCrawler": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "ResultPath": "$.crawler",
+      "Next": "IsValidationCrawlerRunning"
+    },
+    "IsValidationCrawlerRunning": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.crawler.Crawler.State",
+          "StringEquals": "RUNNING",
+          "Next": "WaitForValidationCrawler"
+        }
+      ],
+      "Default": "CrawlValidationWhenSuccessful"
+    },
+    "WaitForValidationCrawler": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "CheckValidationCrawler"
     },
     "CrawlValidationWhenSuccessful": {
       "Type": "Task",
@@ -180,7 +205,32 @@
       "Parameters": {
         "Name": "${cqc_crawler_name}"
       },
-      "Next": "CrawlValidationWhenFailed"
+      "Next": "CheckValidationCrawlerWhenFailed"
+    },
+    "CheckValidationCrawlerWhenFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:getCrawler",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "ResultPath": "$.crawler",
+      "Next": "IsValidationCrawlerRunningWhenFailed"
+    },
+    "IsValidationCrawlerRunningWhenFailed": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.crawler.Crawler.State",
+          "StringEquals": "RUNNING",
+          "Next": "WaitForValidationCrawlerWhenFailed"
+        }
+      ],
+      "Default": "CrawlValidationWhenFailed"
+    },
+    "WaitForValidationCrawlerWhenFailed": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "CheckValidationCrawler"
     },
     "CrawlValidationWhenFailed": {
       "Type": "Task",
