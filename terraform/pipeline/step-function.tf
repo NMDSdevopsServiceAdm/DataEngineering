@@ -165,6 +165,8 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   definition = templatefile("step-functions/CQC-API-Pipeline.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
+    last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
+    last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
@@ -571,6 +573,17 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Resource" : [
           "${module.datasets_bucket.bucket_arn}/*",
           module.datasets_bucket.bucket_arn
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ssm:PutParameter",
+          "ssm:GetParameter",
+        ],
+        "Resource" : [
+          aws_ssm_parameter.providers_last_run.arn,
+          aws_ssm_parameter.locations_last_run.arn
         ]
       }
     ]
