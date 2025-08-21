@@ -209,7 +209,7 @@
       "WaitForValidationCrawlerWhenFailed": {
         "Type": "Wait",
         "Seconds": 30,
-        "Next": "CheckValidationCrawler"
+        "Next": "CheckValidationCrawlerWhenFailed"
       },
       "CrawlValidationWhenFailed": {
         "Type": "Task",
