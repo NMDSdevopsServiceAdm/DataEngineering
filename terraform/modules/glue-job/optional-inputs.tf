@@ -4,7 +4,7 @@ variable "job_parameters" {
 }
 
 variable "extra_conf" {
-  description = "Extra configuration arguments to pass to Spark"
+  description = "Extra configuration to pass - must be prefixed with  --conf "
   type        = string
   default     = ""
 }
