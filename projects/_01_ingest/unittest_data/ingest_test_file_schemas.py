@@ -1747,26 +1747,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    join_provider_schema = StructType(
-        [
-            StructField(CQCPClean.provider_id, StringType(), True),
-            StructField(CQCPClean.name, StringType(), True),
-            StructField(CQCPClean.cqc_sector, StringType(), True),
-            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
-        ]
-    )
-
-    expected_joined_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCLClean.provider_name, StringType(), True),
-            StructField(CQCPClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
-        ]
-    )
-
     registration_status_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1836,14 +1816,6 @@ class CQCLocationsSchema:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.provider_id, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    impute_missing_data_from_provider_dataset_schema = StructType(
-        [
-            StructField(CQCL.provider_id, StringType(), True),
-            StructField(CQCLClean.cqc_sector, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
         ]
     )
 

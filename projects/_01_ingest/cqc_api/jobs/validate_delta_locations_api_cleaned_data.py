@@ -9,7 +9,6 @@ from pyspark.sql.types import ArrayType
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
-    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -56,8 +55,6 @@ def main(
         cleaned_cqc_locations_source,
     )
     rules = Rules.rules_to_check
-    rules["complete_columns"].remove(CQCLClean.provider_name)
-    rules["complete_columns"].remove(CQCLClean.cqc_provider_import_date)
 
     rules[
         RuleName.size_of_dataset
