@@ -244,105 +244,105 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     assessment_df = cqc_location_df.select(
         cqc_location_df[CQCL.location_id],
         cqc_location_df[CQCL.registration_status],
-        F.explode(cqc_location_df["assessment"]).alias("assessment"),
+        F.explode(cqc_location_df[CQCL.assessment]).alias(CQCL.assessment),
     )
 
     assessment_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        F.col("assessment.assessmentPlanPublishedDateTime").alias(
-            "assessment_plan_published_datetime"
+        F.col(f"{CQCL.assessment}.{CQCL.assessment_plan_published_datetime}").alias(
+            CQCL.assessment_plan_published_datetime
         ),
-        F.col("assessment.ratings").alias("assessments_ratings"),
+        F.col(f"{CQCL.assessment}.{CQCL.ratings}").alias(CQCL.assessments_ratings),
     )
 
     overall_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        "assessment_plan_published_datetime",
+        CQCL.assessment_plan_published_datetime,
         F.explode(
             F.when(
-                F.col("assessments_ratings.overall").isNotNull(),
-                F.col("assessments_ratings.overall"),
+                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}").isNotNull(),
+                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}"),
             ).otherwise(F.array())
-        ).alias("overall"),
+        ).alias(CQCL.overall),
     )
 
     overall_df = overall_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        "assessment_plan_published_datetime",
-        F.col("overall.rating").alias("rating"),
-        F.col("overall.status").alias("status"),
-        F.lit(None).cast("string").alias("assessment_plan_id"),
-        F.lit(None).cast("string").alias("title"),
-        F.lit(None).cast("string").alias("assessment_date"),
-        F.lit(None).cast("string").alias("assessment_plan_status"),
-        F.lit(None).cast("string").alias("name"),
-        F.explode(F.col("overall.keyQuestionRatings")).alias("key_question"),
-    )
-
-    overall_df = overall_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        "assessment_plan_published_datetime",
-        "assessment_plan_id",
-        "title",
-        "assessment_date",
-        "assessment_plan_status",
-        "name",
-        "rating",
-        "status",
-        F.col("key_question.name").alias("key_question_name"),
-        F.col("key_question.rating").alias("key_question_rating"),
-        F.col("key_question.status").alias("key_question_status"),
-        F.lit(None).cast("string").alias("key_question_percentage_score"),
-        F.lit("overall").alias("rating_type"),
-        F.lit("assessment.ratings.overall").alias(
-            "source_path"
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.overall}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.overall}.{CQCL.status}").alias(CQCL.status),
+        F.lit(None).cast("string").alias(CQCL.assessment_plan_id),
+        F.lit(None).cast("string").alias(CQCL.title),
+        F.lit(None).cast("string").alias(CQCL.assessment_date),
+        F.lit(None).cast("string").alias(CQCL.assessment_plan_status),
+        F.lit(None).cast("string").alias(CQCL.name),
+        F.explode(F.col(f"{CQCL.overall}.{CQCL.key_question_ratings}")).alias(
+            CQCL.key_question
         ),
+    )
+
+    overall_df = overall_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
+        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
+        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
+        F.lit(None).cast("string").alias(CQCL.key_question_percentage_score),
+        F.lit("overall").alias(CQCL.rating_type),
+        F.lit("assessment.ratings.overall").alias(CQCL.source_path),
     )
 
     asg_df = assessment_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        "assessment_plan_published_datetime",
-        F.explode(F.col("assessments_ratings.asgRatings")).alias("asg"),
+        CQCL.assessment_plan_published_datetime,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")).alias("asg"),
     )
 
     asg_df = asg_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        "assessment_plan_published_datetime",
-        F.col("asg.assessmentPlanId").alias("assessment_plan_id"),
-        F.col("asg.title").alias("title"),
-        F.col("asg.assessmentDate").alias("assessment_date"),
-        F.col("asg.assessmentPlanStatus").alias("assessment_plan_status"),
-        F.col("asg.name").alias("name"),
-        F.col("asg.rating").alias("rating"),
-        F.col("asg.status").alias("status"),
-        F.explode(F.col("asg.keyQuestionRatings")).alias("key_question"),
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"asg.{CQCL.assessment_plan_id}").alias(CQCL.assessment_plan_id),
+        F.col(f"asg.{CQCL.title}").alias(CQCL.title),
+        F.col(f"asg.{CQCL.assessment_date}").alias(CQCL.assessment_date),
+        F.col(f"asg.{CQCL.assessment_plan_status}").alias(CQCL.assessment_plan_status),
+        F.col(f"asg.{CQCL.name}").alias(CQCL.name),
+        F.col(f"asg.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"asg.{CQCL.status}").alias(CQCL.status),
+        F.explode(F.col(f"asg.{CQCL.key_question_ratings}")).alias(CQCL.key_question),
     )
 
     asg_df = asg_df.select(
         CQCL.location_id,
         CQCL.registration_status,
-        "assessment_plan_published_datetime",
-        "assessment_plan_id",
-        "title",
-        "assessment_date",
-        "assessment_plan_status",
-        "name",
-        "rating",
-        "status",
-        F.col("key_question.name").alias("key_question_name"),
-        F.col("key_question.rating").alias("key_question_rating"),
-        F.col("key_question.status").alias("key_question_status"),
-        F.col("key_question.percentageScore").alias("key_question_percentage_score"),
-        F.lit("asg").alias("rating_type"),
-        F.lit("assessment.ratings.asgRatings").alias(
-            "source_path"
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
+        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
+        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
+        F.col(f"{CQCL.key_question}.{CQCL.percentage_score}").alias(
+            CQCL.key_question_percentage_score
         ),
+        F.lit("asg").alias(CQCL.rating_type),
+        F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
     )
 
     final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
