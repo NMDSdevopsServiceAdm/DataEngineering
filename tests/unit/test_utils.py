@@ -509,6 +509,90 @@ class GeneralUtilsTests(UtilsTests):
             ],
         )
 
+    def test_read_from_parquet_applies_provided_schema(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.provider_id, StringType(), True),
+                StructField(CQCColNames.name, StringType(), True),
+                StructField(CQCColNames.postal_code, StringType(), True),
+            ]
+        )
+        df = utils.read_from_parquet(
+            self.example_parquet_path,
+            schema=schema,
+        )
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.provider_id,
+                CQCColNames.name,
+                CQCColNames.postal_code,
+            ],
+        )
+
+    def test_read_from_parquet_with_schema_and_column_list(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.name, StringType(), True),
+                StructField(CQCColNames.provider_id, StringType(), True),
+                StructField(CQCColNames.region, StringType(), True),
+            ]
+        )
+        column_list = [CQCColNames.name, CQCColNames.region]
+
+        df = utils.read_from_parquet(
+            self.example_parquet_path, selected_columns=column_list, schema=schema
+        )
+
+        self.assertCountEqual(df.columns, column_list)
+
+    def test_read_from_parquet_with_schema_extra_column_not_in_parquet(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.name, StringType(), True),
+                StructField("extra_col", StringType(), True),
+            ]
+        )
+
+        df = utils.read_from_parquet(self.example_parquet_path, schema=schema)
+
+        self.assertCountEqual(df.columns, [CQCColNames.name, "extra_col"])
+        null_count = df.filter(df["extra_col"].isNotNull()).count()
+        self.assertEqual(null_count, 0)
+
+    def test_read_from_parquet_with_empty_schema(self):
+        schema = StructType([])
+
+        df = utils.read_from_parquet(self.example_parquet_path, schema=schema)
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.postal_address_line1,
+                CQCColNames.companies_house_number,
+                CQCColNames.constituency,
+                CQCColNames.postal_address_county,
+                CQCColNames.deregistration_date,
+                CQCColNames.inspection_directorate,
+                CQCColNames.onspd_latitude,
+                CQCColNames.local_authority,
+                CQCColNames.location_ids,
+                CQCColNames.onspd_longitude,
+                CQCColNames.name,
+                CQCColNames.organisation_type,
+                CQCColNames.ownership_type,
+                CQCColNames.main_phone_number,
+                CQCColNames.postal_code,
+                CQCColNames.provider_id,
+                CQCColNames.region,
+                CQCColNames.registration_date,
+                CQCColNames.registration_status,
+                CQCColNames.postal_address_town_city,
+                CQCColNames.type,
+                CQCColNames.uprn,
+            ],
+        )
+
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
         utils.write_to_parquet(df, self.tmp_dir)
