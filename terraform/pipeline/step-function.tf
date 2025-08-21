@@ -165,9 +165,7 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   definition = templatefile("step-functions/CQC-API-Pipeline.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
-    bulk_cqc_providers_download_job_name           = "main-bulk_download_cqc_providers_job" # TODO: remove and point to delta
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
-    bulk_cqc_locations_download_job_name           = "main-bulk_download_cqc_locations_job" # TODO: remove and point to delta
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
     validate_locations_api_raw_delta_data_job_name = module.validate_locations_api_raw_delta_data_job.job_name
@@ -559,8 +557,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "glue:GetJobRuns"
         ],
         "Resource" : [
-          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_providers_job",
-          "arn:aws:glue:eu-west-2:344210435447:job/main-bulk_download_cqc_locations_job"
+          module.delta_cqc_locations_download_job.job_arn,
+          module.delta_cqc_providers_download_job.job_arn
         ]
       },
       {
