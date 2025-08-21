@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data. 
 
 ### Changed
 - Expanded acronyms in documentation.
