@@ -23,6 +23,29 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "polars_cqc_ingestion_state_machine" {
+  name     = "${local.workspace_prefix}-polars-cqc-ingestion"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/Polars-CQC-Ingestion.json", {
+    cluster_arn       = aws_ecs_cluster.polars_cluster.arn
+    task_arn          = module.cqc-api.task_arn
+    public_subnet_ids = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id = module.cqc-api.security_group_id
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+
 resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   name     = "${local.workspace_prefix}-Clean-And-Validate"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -510,7 +533,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "states:StartExecution"
+          "states:StartExecution",
+          "states:ListExecutions"
         ],
         "Resource" : [
           "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
@@ -585,6 +609,32 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           aws_ssm_parameter.providers_last_run.arn,
           aws_ssm_parameter.locations_last_run.arn
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask"
+        ],
+        "Resource" : [
+          module.cqc-api.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          module.cqc-api.task_exc_role_arn,
+          module.cqc-api.task_role_arn
+        ],
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = [
+              "ecs-tasks.amazonaws.com",
+              "events.amazonaws.com"
+            ]
+          }
+        }
       }
     ]
   })

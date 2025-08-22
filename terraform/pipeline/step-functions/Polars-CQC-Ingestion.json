@@ -1,0 +1,88 @@
+{
+  "Comment": "Runs the CQC API Provider ingestion task and waits for it to complete.",
+  "StartAt": "RunCQCIngestion",
+  "States": {
+    "RunCQCIngestion": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "RunProviders",
+          "States": {
+            "RunProviders": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "delta_download_cqc_providers.py",
+                        "--destination_prefix",
+                        "s3://spike-polars-data",
+                        "--start_timestamp",
+                        "2025-08-01T00:30:31.301Z",
+                        "--end_timestamp",
+                        "2025-08-08T00:00:31.301Z"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "RunLocations",
+          "States": {
+            "RunLocations": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "delta_download_cqc_locations.py",
+                        "--destination_prefix",
+                        "s3://spike-polars-data",
+                        "--start_timestamp",
+                        "2025-08-01T00:30:31.301Z",
+                        "--end_timestamp",
+                        "2025-08-08T00:00:31.301Z"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
+    }
+  }
+}
