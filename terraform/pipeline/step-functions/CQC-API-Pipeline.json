@@ -15,7 +15,13 @@
                 "Name": "${last_providers_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameter.Value"
+                "script": "delta_download_cqc_providers.py",
+                "dest_arg": "--destination_prefix",
+                "dest_value": "${dataset_bucket_uri}",
+                "start_arg": "--start_timestamp",
+                "start_value.$": "$.Parameter.Value",
+                "end_arg": "--end_timestamp",
+                "end_value.$": "$$.State.EnteredTime"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -37,21 +43,13 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command": [
-                        "delta_download_cqc_providers.py",
-                        "--destination_prefix",
-                        "${dataset_bucket_uri}",
-                        "--start_timestamp",
-                        "$.startDate",
-                        "--end_timestamp",
-                        "$$.State.EnteredTime"
-                      ]
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
                     }
                   ]
                 }
               },
               "ResultSelector": {
-                "endDate.$": "$$.State.EnteredTime"
+                "endDate.$": "$.end_value"
               },
               "ResultPath": "$.providerResult",
               "Next": "WriteLastProvidersRun"
@@ -79,7 +77,13 @@
                 "Name": "${last_locations_run_param_name}"
               },
               "ResultSelector": {
-                "startDate.$": "$.Parameter.Value"
+                "script": "delta_download_cqc_locations.py",
+                "dest_arg": "--destination_prefix",
+                "dest_value": "${dataset_bucket_uri}",
+                "start_arg": "--start_timestamp",
+                "start_value.$": "$.Parameter.Value",
+                "end_arg": "--end_timestamp",
+                "end_value.$": "$$.State.EnteredTime"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
@@ -101,21 +105,13 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command": [
-                        "delta_download_cqc_locations.py",
-                        "--destination_prefix",
-                        "${dataset_bucket_uri}",
-                        "--start_timestamp",
-                        "$.startDate",
-                        "--end_timestamp",
-                        "$$.State.EnteredTime"
-                      ]
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
                     }
                   ]
                 }
               },
               "ResultSelector": {
-                "endDate.$": "$$.State.EnteredTime"
+                "endDate.$": "$.end_value"
               },
               "ResultPath": "$.locationResult",
               "Next": "WriteLastLocationsRun"
