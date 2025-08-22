@@ -268,12 +268,30 @@ raw_locations_schema = pl.Schema(
                         "assessmentPlanPublishedDateTime": pl.String(),
                         "ratings": pl.Struct(
                             {
+                                "overall": pl.List(
+                                    pl.Struct(
+                                        {
+                                            "rating": pl.String(),
+                                            "status": pl.String(),
+                                            "keyQuestionRatings": pl.List(
+                                                pl.Struct(
+                                                    {
+                                                        "name": pl.String(),
+                                                        "rating": pl.String(),
+                                                        "status": pl.String(),
+                                                    }
+                                                )
+                                            ),
+                                        }
+                                    )
+                                ),
                                 "asgRatings": pl.List(
                                     pl.Struct(
                                         {
                                             "assessmentPlanId": pl.String(),
                                             "title": pl.String(),
                                             "assessmentDate": pl.String(),
+                                            "assessmentPlanStatus": pl.String(),
                                             "name": pl.String(),
                                             "rating": pl.String(),
                                             "status": pl.String(),
@@ -289,7 +307,7 @@ raw_locations_schema = pl.Schema(
                                             ),
                                         }
                                     )
-                                )
+                                ),
                             }
                         ),
                     }

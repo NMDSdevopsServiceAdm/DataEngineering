@@ -593,6 +593,51 @@ LOCATION_SCHEMA = StructType(
                             StructType(
                                 [
                                     StructField(
+                                        NewColNames.overall,
+                                        ArrayType(
+                                            StructType(
+                                                [
+                                                    StructField(
+                                                        NewColNames.rating,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        NewColNames.status,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        NewColNames.key_question_ratings,
+                                                        ArrayType(
+                                                            StructType(
+                                                                [
+                                                                    StructField(
+                                                                        NewColNames.name,
+                                                                        StringType(),
+                                                                        True,
+                                                                    ),
+                                                                    StructField(
+                                                                        NewColNames.rating,
+                                                                        StringType(),
+                                                                        True,
+                                                                    ),
+                                                                    StructField(
+                                                                        NewColNames.status,
+                                                                        StringType(),
+                                                                        True,
+                                                                    ),
+                                                                ]
+                                                            )
+                                                        ),
+                                                        True,
+                                                    ),
+                                                ]
+                                            )
+                                        ),
+                                        True,
+                                    ),
+                                    StructField(
                                         NewColNames.asg_ratings,
                                         ArrayType(
                                             StructType(
@@ -609,6 +654,11 @@ LOCATION_SCHEMA = StructType(
                                                     ),
                                                     StructField(
                                                         NewColNames.assessment_date,
+                                                        StringType(),
+                                                        True,
+                                                    ),
+                                                    StructField(
+                                                        NewColNames.assessment_plan_status,
                                                         StringType(),
                                                         True,
                                                     ),
@@ -661,7 +711,7 @@ LOCATION_SCHEMA = StructType(
                                             )
                                         ),
                                         True,
-                                    )
+                                    ),
                                 ]
                             ),
                             True,

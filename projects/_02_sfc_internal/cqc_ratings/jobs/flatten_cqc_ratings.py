@@ -6,6 +6,8 @@ from pyspark.sql import (
     Window,
 )
 
+from schemas.cqc_location_schema import LOCATION_SCHEMA
+
 from utils import (
     utils,
     cleaning_utils as cUtils,
@@ -38,6 +40,7 @@ cqc_location_columns = [
     Keys.day,
     CQCL.current_ratings,
     CQCL.historic_ratings,
+    CQCL.assessment,
     CQCL.registration_status,
     CQCL.type,
 ]
@@ -57,8 +60,11 @@ def main(
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
+    assessment_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+    )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
@@ -74,6 +80,7 @@ def main(
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
+    assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
@@ -99,6 +106,12 @@ def main(
     utils.write_to_parquet(
         benchmark_ratings_df,
         benchmark_ratings_destination,
+        mode="overwrite",
+    )
+
+    utils.write_to_parquet(
+        assessment_ratings_df,
+        assessment_ratings_destination,
         mode="overwrite",
     )
 
@@ -130,6 +143,12 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = add_current_or_historic_column(
         ratings_df, CQCCurrentOrHistoricValues.historic
     )
+    return ratings_df
+
+
+def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    ratings_df = flatten_assessment_ratings(cqc_location_df)
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
     return ratings_df
 
 
@@ -219,6 +238,116 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
             "outer",
         )
     return cleaned_historic_ratings_df
+
+
+def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    assessment_df = cqc_location_df.select(
+        cqc_location_df[CQCL.location_id],
+        cqc_location_df[CQCL.registration_status],
+        F.explode(cqc_location_df[CQCL.assessment]).alias(CQCL.assessment),
+    )
+
+    assessment_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        F.col(f"{CQCL.assessment}.{CQCL.assessment_plan_published_datetime}").alias(
+            CQCL.assessment_plan_published_datetime
+        ),
+        F.col(f"{CQCL.assessment}.{CQCL.ratings}").alias(CQCL.assessments_ratings),
+    )
+
+    overall_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.explode(
+            F.when(
+                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}").isNotNull(),
+                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}"),
+            ).otherwise(F.array())
+        ).alias(CQCL.overall),
+    )
+
+    overall_df = overall_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.overall}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.overall}.{CQCL.status}").alias(CQCL.status),
+        F.lit(None).cast("string").alias(CQCL.assessment_plan_id),
+        F.lit(None).cast("string").alias(CQCL.title),
+        F.lit(None).cast("string").alias(CQCL.assessment_date),
+        F.lit(None).cast("string").alias(CQCL.assessment_plan_status),
+        F.lit(None).cast("string").alias(CQCL.name),
+        F.explode(F.col(f"{CQCL.overall}.{CQCL.key_question_ratings}")).alias(
+            CQCL.key_question
+        ),
+    )
+
+    overall_df = overall_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
+        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
+        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
+        F.lit(None).cast("string").alias(CQCL.key_question_percentage_score),
+        F.lit("overall").alias(CQCL.rating_type),
+        F.lit("assessment.ratings.overall").alias(CQCL.source_path),
+    )
+
+    asg_df = assessment_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")).alias("asg"),
+    )
+
+    asg_df = asg_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"asg.{CQCL.assessment_plan_id}").alias(CQCL.assessment_plan_id),
+        F.col(f"asg.{CQCL.title}").alias(CQCL.title),
+        F.col(f"asg.{CQCL.assessment_date}").alias(CQCL.assessment_date),
+        F.col(f"asg.{CQCL.assessment_plan_status}").alias(CQCL.assessment_plan_status),
+        F.col(f"asg.{CQCL.name}").alias(CQCL.name),
+        F.col(f"asg.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"asg.{CQCL.status}").alias(CQCL.status),
+        F.explode(F.col(f"asg.{CQCL.key_question_ratings}")).alias(CQCL.key_question),
+    )
+
+    asg_df = asg_df.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
+        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
+        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
+        F.col(f"{CQCL.key_question}.{CQCL.percentage_score}").alias(
+            CQCL.key_question_percentage_score
+        ),
+        F.lit("asg").alias(CQCL.rating_type),
+        F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
+    )
+
+    final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
+
+    return final_df
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
@@ -422,6 +551,7 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        assessment_ratings_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -439,12 +569,17 @@ if __name__ == "__main__":
             "--benchmark_ratings_destination",
             "Destination s3 directory for cleaned parquet benchmark ratings dataset",
         ),
+        (
+            "--assessment_ratings_destination",
+            "Destination s3 directory for cleaned parquet CQC assessment ratings dataset",
+        ),
     )
     main(
         cqc_location_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        assessment_ratings_destination,
     )
 
     print("Spark job 'flatten_cqc_ratings' complete")

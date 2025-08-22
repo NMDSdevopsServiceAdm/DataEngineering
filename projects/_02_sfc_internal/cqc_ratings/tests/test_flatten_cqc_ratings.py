@@ -29,6 +29,7 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
+    TEST_ASSESSMENT_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -55,6 +56,7 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.add_latest_rating_flag_column")
     @patch(f"{PATCH_PATH}.add_rating_sequence_column")
     @patch(f"{PATCH_PATH}.remove_blank_and_duplicate_rows")
+    @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
@@ -67,6 +69,7 @@ class MainTests(FlattenCQCRatingsTests):
         select_rows_with_value_mock: Mock,
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
+        prepare_assessment_ratings_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
         add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
@@ -89,6 +92,7 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
+            self.TEST_ASSESSMENT_RATINGS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -96,6 +100,7 @@ class MainTests(FlattenCQCRatingsTests):
         select_rows_with_value_mock.assert_called_once()
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
+        prepare_assessment_ratings_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
         self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
         add_latest_rating_flag_column_mock.assert_called_once()
@@ -106,7 +111,7 @@ class MainTests(FlattenCQCRatingsTests):
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
         create_benchmark_ratings_dataset_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_mock.call_count, 2)
+        self.assertEqual(write_to_parquet_mock.call_count, 3)
 
         expected_write_to_parquet_calls = [
             call(
@@ -117,6 +122,11 @@ class MainTests(FlattenCQCRatingsTests):
             call(
                 ANY,
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
+                mode="overwrite",
+            ),
+            call(
+                ANY,
+                self.TEST_ASSESSMENT_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
         ]
@@ -228,6 +238,37 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_rows, expected_rows)
 
     def test_flatten_historic_ratings_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class FlattenAssessmentRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_assessment_ratings_df = self.spark.createDataFrame(
+            Data.flatten_assessment_ratings_rows,
+            Schema.flatten_assessment_ratings_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_flatten_assessment_ratings_rows,
+            Schema.expected_flatten_assessment_ratings_schema,
+        )
+        self.returned_df = job.flatten_assessment_ratings(
+            self.test_assessment_ratings_df
+        )
+
+    def test_flatten_assessment_ratings_returns_correct_columns(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.expected_df.columns)
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_flatten_assessment_ratings_returns_correct_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_flatten_assessment_ratings_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
