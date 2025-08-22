@@ -1,10 +1,9 @@
 {
   "Comment": "A state machine to transform the CQC API and ASC-WDS data and trigger all downstream processes.",
-  "StartAt": "Transform CQC and ASCWDS",
+  "StartAt": "Run Transforms",
   "States": {
-    "Transform CQC and ASCWDS": {
+    "Run Transforms": {
       "Type": "Parallel",
-      "Next": "DownstreamPlaceholder",
       "Branches": [
         {
           "StartAt": "Transform CQC data",
@@ -38,7 +37,38 @@
             }
           }
         }
-      ]
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.transform_error",
+          "Next": "Run Validation Crawler"
+        }
+      ],
+      "Next": "Run Validation Crawler"
+    },
+    "Run Validation Crawler": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Check For Transform Errors"
+    },
+    "Check For Transform Errors": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transform_error",
+          "IsPresent": true,
+          "Next": "FailPipeline"
+        }
+      ],
+      "Default": "DownstreamPlaceholder"
+    },
+    "FailPipeline": {
+      "Type": "Fail",
+      "Cause": "One or more transforms failed."
     },
     "DownstreamPlaceholder": {
       "Type": "Parallel",
