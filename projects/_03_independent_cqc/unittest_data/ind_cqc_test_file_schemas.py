@@ -139,6 +139,7 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.current_lsoa21, StringType(), True),
             StructField(
                 IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
             ),
@@ -310,6 +311,7 @@ class ValidateImputedIndCqcAscwdsAndPir:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.current_lsoa21, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
             StructField(IndCQC.ascwds_filled_posts_source, StringType(), True),
@@ -1649,6 +1651,7 @@ class ValidateCleanedIndCqcData:
             StructField(IndCQC.current_cssr, StringType(), True),
             StructField(IndCQC.current_region, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.current_lsoa21, StringType(), True),
             StructField(
                 IndCQC.pir_people_directly_employed_cleaned, IntegerType(), True
             ),

@@ -31,6 +31,7 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
+            IndCqcColumns.current_lsoa21,
             IndCqcColumns.ascwds_filtering_rule,
             IndCqcColumns.specialist_generalist_other_dementia,
             IndCqcColumns.specialist_generalist_other_lda,
