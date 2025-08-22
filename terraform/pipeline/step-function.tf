@@ -1,12 +1,36 @@
-resource "aws_sfn_state_machine" "master_ingest_state_machine" {
-  name     = "${local.workspace_prefix}-Master-Ingest"
+resource "aws_sfn_state_machine" "ingest_cqc_api_and_check_for_new_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-Ingest-CQC-API-And-Check-For-New-ASCWDS"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/Master-Ingest.json", {
+  definition = templatefile("step-functions/IngestCQCAPIAndCheckForNewASCWDS-StepFunction.json", {
+    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                              = module.datasets_bucket.bucket_name
+    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
+    trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
+resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
+  name     = "${local.workspace_prefix}-Workforce-Intelligence-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/WorkforceIntelligence-StepFunction.json", {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn           = aws_sfn_state_machine.cqc_api_pipeline_state_machine.arn
-    asc_wds_validation_state_machine_arn       = aws_sfn_state_machine.ascwds_validation_state_machine.arn
+    data_validation_reports_crawler_name       = module.data_validation_reports_crawler.crawler_name
+    transform_ascwds_state_machine_arn         = aws_sfn_state_machine.transform_ascwds_state_machine.arn
+    transform_cqc_data_state_machine_arn       = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
     trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
   })
@@ -81,11 +105,11 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
-  name     = "${local.workspace_prefix}-ASC-WDS-Validation"
+resource "aws_sfn_state_machine" "transform_ascwds_state_machine" {
+  name     = "${local.workspace_prefix}-Transform-ASCWDS-Data"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/ASC-WDS-Validation.json", {
+  definition = templatefile("step-functions/TransformASCWDSData-StepFunction.json", {
     dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
     validate_ascwds_workplace_raw_data_job_name     = module.validate_ascwds_workplace_raw_data_job.job_name
     validate_ascwds_worker_raw_data_job_name        = module.validate_ascwds_worker_raw_data_job.job_name
@@ -94,7 +118,6 @@ resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
     validate_ascwds_workplace_cleaned_data_job_name = module.validate_ascwds_workplace_cleaned_data_job.job_name
     validate_ascwds_worker_cleaned_data_job_name    = module.validate_ascwds_worker_cleaned_data_job.job_name
     ascwds_crawler_name                             = module.ascwds_crawler.crawler_name
-    data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_delta_lambda.arn
   })
 
@@ -181,27 +204,51 @@ resource "aws_sfn_state_machine" "bulk_download_cqc_api_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
-  name     = "${local.workspace_prefix}-CQC-API-Pipeline"
+resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
+  name     = "${local.workspace_prefix}-Ingest-CQC-API-Delta"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
-  definition = templatefile("step-functions/CQC-API-Pipeline.json", {
+  definition = templatefile("step-functions/IngestCQCAPIDelta-StepFunction.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
+    create_snapshot_lambda_lambda_arn              = aws_lambda_function.create_snapshot_lambda.arn
     last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
     last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
     validate_locations_api_raw_delta_data_job_name = module.validate_locations_api_raw_delta_data_job.job_name
-    create_snapshot_lambda_lambda_arn              = aws_lambda_function.create_snapshot_lambda.arn
-    clean_cqc_provider_data_job_name               = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name               = module.delta_clean_cqc_location_data_job.job_name
-    validate_locations_api_cleaned_data_job_name   = module.validate_delta_locations_api_cleaned_data_job.job_name
-    validate_providers_api_cleaned_data_job_name   = module.validate_providers_api_cleaned_data_job.job_name
     cqc_crawler_name                               = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
     data_validation_reports_crawler_name           = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn           = aws_lambda_function.error_notification_delta_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
+resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
+  name     = "${local.workspace_prefix}-Transform-CQC-Data"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/TransformCQCData-StepFunction.json", {
+    dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                          = module.datasets_bucket.bucket_name
+    clean_cqc_provider_data_job_name             = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name             = module.delta_clean_cqc_location_data_job.job_name
+    validate_locations_api_cleaned_data_job_name = module.validate_delta_locations_api_cleaned_data_job.job_name
+    validate_providers_api_cleaned_data_job_name = module.validate_providers_api_cleaned_data_job.job_name
+    cqc_crawler_name                             = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
+    data_validation_reports_crawler_name         = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn         = aws_lambda_function.error_notification_delta_lambda.arn
   })
 
   logging_configuration {

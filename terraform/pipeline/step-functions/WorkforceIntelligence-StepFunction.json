@@ -1,0 +1,102 @@
+{
+  "Comment": "A state machine to transform the CQC API and ASC-WDS data and trigger all downstream processes.",
+  "StartAt": "Run Transforms",
+  "States": {
+    "Run Transforms": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Transform CQC data",
+          "States": {
+            "Transform CQC data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${transform_cqc_data_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Transform ASCWDS data",
+          "States": {
+            "Transform ASCWDS data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${transform_ascwds_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.transform_error",
+          "Next": "Run Validation Crawler"
+        }
+      ],
+      "Next": "Run Validation Crawler"
+    },
+    "Run Validation Crawler": {
+      "Type": "Task",
+      "Parameters": {
+        "Name": "${data_validation_reports_crawler_name}"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+      "Next": "Check For Transform Errors"
+    },
+    "Check For Transform Errors": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transform_error",
+          "IsPresent": true,
+          "Next": "FailPipeline"
+        }
+      ],
+      "Default": "DownstreamPlaceholder"
+    },
+    "FailPipeline": {
+      "Type": "Fail",
+      "Cause": "One or more transforms failed."
+    },
+    "DownstreamPlaceholder": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "SfC Flatten ratings -> Coverage  -> Reconciliation",
+          "States": {
+            "SfC Flatten ratings -> Coverage  -> Reconciliation": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Ind CQC Filled Posts Pipeline",
+          "States": {
+            "Ind CQC Filled Posts Pipeline": {
+              "Type": "Pass",
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

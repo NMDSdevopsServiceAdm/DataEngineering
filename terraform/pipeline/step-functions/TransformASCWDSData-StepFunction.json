@@ -123,7 +123,7 @@
             }
           }
         ],
-        "Next": "CrawlWhenSuccessful",
+        "Next": "Success",
         "Catch": [
           {
             "ErrorEquals": [
@@ -133,14 +133,6 @@
             "ResultPath": "$.error"
           }
         ]
-      },
-      "CrawlWhenSuccessful": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${data_validation_reports_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-        "Next": "Success"
       },
       "Success": {
         "Type": "Succeed"
@@ -159,14 +151,6 @@
             "CallbackToken.$": "$$.Task.Token"
           }
         },
-        "Next": "CrawlWhenFailed"
-      },
-      "CrawlWhenFailed": {
-        "Type": "Task",
-        "Parameters": {
-          "Name": "${data_validation_reports_crawler_name}"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Next": "Fail"
       },
       "Fail": {
