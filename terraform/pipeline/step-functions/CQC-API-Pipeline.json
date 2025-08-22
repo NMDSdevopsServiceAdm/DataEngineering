@@ -21,14 +21,33 @@
             },
             "RunDeltaCqcProvidersDownloadJob": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${delta_cqc_providers_download_job_name}",
-                "Arguments": {
-                  "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$.startDate",
-                  "--end_timestamp.$": "$$.State.EnteredTime",
-                  "--additional-python-modules": "ratelimit==2.2.1,"
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "delta_download_cqc_providers.py",
+                        "--destination_prefix",
+                        "${dataset_bucket_uri}",
+                        "--start_timestamp",
+                        "$.startDate",
+                        "--end_timestamp",
+                        "$$.State.EnteredTime"
+                      ]
+                    }
+                  ]
                 }
               },
               "ResultSelector": {
@@ -66,14 +85,33 @@
             },
             "RunDeltaCqcLocationsDownloadJob": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${delta_cqc_locations_download_job_name}",
-                "Arguments": {
-                  "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$.startDate",
-                  "--end_timestamp.$": "$$.State.EnteredTime",
-                  "--additional-python-modules": "ratelimit==2.2.1,"
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command": [
+                        "delta_download_cqc_locations.py",
+                        "--destination_prefix",
+                        "${dataset_bucket_uri}",
+                        "--start_timestamp",
+                        "$.startDate",
+                        "--end_timestamp",
+                        "$$.State.EnteredTime"
+                      ]
+                    }
+                  ]
                 }
               },
               "ResultSelector": {
