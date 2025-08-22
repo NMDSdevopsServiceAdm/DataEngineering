@@ -139,7 +139,7 @@
         {
           "StartAt": "TriggerSfcCoveragePipeline",
           "States": {
-            "Trigger SfC coverage pipeline": {
+            "TriggerSfcCoveragePipeline": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
@@ -155,7 +155,7 @@
         {
           "StartAt": "TriggerIndCqcPipeline",
           "States": {
-            "Trigger Ind CQC pipeline": {
+            "TriggerIndCqcPipeline": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution",
               "Parameters": {
