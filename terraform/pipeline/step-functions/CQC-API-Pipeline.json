@@ -14,6 +14,9 @@
               "Parameters": {
                 "Name": "${last_providers_run_param_name}"
               },
+              "Assign": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
               "ResultSelector": {
                 "script": "delta_download_cqc_providers.py",
                 "dest_arg": "--destination_prefix",
@@ -48,9 +51,6 @@
                   ]
                 }
               },
-              "ResultSelector": {
-                "endDate.$": "$.end_value"
-              },
               "ResultPath": "$.providerResult",
               "Next": "WriteLastProvidersRun"
             },
@@ -59,7 +59,7 @@
               "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
                 "Name": "${last_providers_run_param_name}",
-                "Value.$": "$.providerResult.endDate",
+                "Value.$": "$endDate",
                 "Overwrite": true,
                 "Type": "String"
               },
@@ -75,6 +75,9 @@
               "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
                 "Name": "${last_locations_run_param_name}"
+              },
+              "Assign": {
+                "endDate.$": "$$.State.EnteredTime"
               },
               "ResultSelector": {
                 "script": "delta_download_cqc_locations.py",
@@ -110,9 +113,6 @@
                   ]
                 }
               },
-              "ResultSelector": {
-                "endDate.$": "$.end_value"
-              },
               "ResultPath": "$.locationResult",
               "Next": "WriteLastLocationsRun"
             },
@@ -121,7 +121,7 @@
               "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
                 "Name": "${last_locations_run_param_name}",
-                "Value.$": "$.locationResult.endDate",
+                "Value.$": "$endDate",
                 "Overwrite": true,
                 "Type": "String"
               },
