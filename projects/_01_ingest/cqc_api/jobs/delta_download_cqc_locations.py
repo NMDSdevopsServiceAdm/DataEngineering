@@ -59,12 +59,12 @@ if __name__ == "__main__":
     )
     logger.info(f"Running job from {start} to {end}")
 
-    todays_date = date.today()
+    output_date = datetime.fromisoformat(end.replace("Z", ""))
     destination = utils.generate_s3_datasets_dir_date_path(
         destination_prefix=destination_prefix,
         domain="CQC_delta",
         dataset="delta_locations_api",
-        date=todays_date,
+        date=output_date,
         version="3.0.0",
     )
 
