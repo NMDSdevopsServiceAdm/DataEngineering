@@ -189,6 +189,8 @@ resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
     create_snapshot_lambda_lambda_arn              = aws_lambda_function.create_snapshot_lambda.arn
+    last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
+    last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name

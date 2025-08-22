@@ -6,21 +6,16 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "GetProvidersJobRuns",
+          "StartAt": "ReadLastProvidersRun",
           "States": {
-            "GetProvidersJobRuns": {
+            "ReadLastProvidersRun": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
-                "JobName": "${delta_cqc_providers_download_job_name}"
+                "Name": "${last_providers_run_param_name}"
               },
-              "Next": "GetLastProvidersRun"
-            },
-            "GetLastProvidersRun": {
-              "Type": "Pass",
-              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
-              "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+              "ResultSelector": {
+                "startDate.$": "$.Parameter.Value"
               },
               "Next": "RunDeltaCqcProvidersDownloadJob"
             },
@@ -31,10 +26,25 @@
                 "JobName": "${delta_cqc_providers_download_job_name}",
                 "Arguments": {
                   "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$startDate",
+                  "--start_timestamp.$": "$.startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
+              },
+              "ResultSelector": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
+              "ResultPath": "$.providerResult",
+              "Next": "WriteLastProvidersRun"
+            },
+            "WriteLastProvidersRun": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+              "Parameters": {
+                "Name": "${last_providers_run_param_name}",
+                "Value.$": "$.providerResult.endDate",
+                "Overwrite": true,
+                "Type": "String"
               },
               "Next": "ValidateProvidersApiRaw"
             },
@@ -67,21 +77,16 @@
           }
         },
         {
-          "StartAt": "GetLocationsJobRuns",
+          "StartAt": "ReadLastLocationsRun",
           "States": {
-            "GetLocationsJobRuns": {
+            "ReadLastLocationsRun": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:getJobRuns",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
-                "JobName": "${delta_cqc_locations_download_job_name}"
+                "Name": "${last_locations_run_param_name}"
               },
-              "Next": "GetLastLocationsRun"
-            },
-            "GetLastLocationsRun": {
-              "Type": "Pass",
-              "InputPath": "$.JobRuns[?(@.JobRunState=='SUCCEEDED')].StartedOn",
-              "Assign": {
-                "startDate.$": "States.ArrayGetItem($, 0)"
+              "ResultSelector": {
+                "startDate.$": "$.Parameter.Value"
               },
               "Next": "RunDeltaCqcLocationsDownloadJob"
             },
@@ -92,10 +97,25 @@
                 "JobName": "${delta_cqc_locations_download_job_name}",
                 "Arguments": {
                   "--destination_prefix": "${dataset_bucket_uri}",
-                  "--start_timestamp.$": "$startDate",
+                  "--start_timestamp.$": "$.startDate",
                   "--end_timestamp.$": "$$.State.EnteredTime",
                   "--additional-python-modules": "ratelimit==2.2.1,"
                 }
+              },
+              "ResultSelector": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
+              "ResultPath": "$.locationResult",
+              "Next": "WriteLastLocationsRun"
+            },
+            "WriteLastLocationsRun": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+              "Parameters": {
+                "Name": "${last_locations_run_param_name}",
+                "Value.$": "$.locationResult.endDate",
+                "Overwrite": true,
+                "Type": "String"
               },
               "Next": "ValidateLocationsApiRaw"
             },
@@ -128,35 +148,41 @@
           }
         }
       ],
-      "Next": "CrawlCqcWhenSuccessful",
       "Catch": [
         {
-          "ErrorEquals": [
-            "States.ALL"
-          ],
-          "Next": "PublishErrorNotification",
-          "ResultPath": "$.error"
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "RunCqcCrawler"
         }
-      ]
+      ],
+      "Next": "RunCqcCrawler"
     },
-    "CrawlCqcWhenSuccessful": {
+    "RunCqcCrawler": {
       "Type": "Task",
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Parameters": {
         "Name": "${cqc_crawler_name}"
       },
-      "Next": "CrawlValidationWhenSuccessful"
+      "Next": "RunValidationCrawler"
     },
-    "CrawlValidationWhenSuccessful": {
+    "RunValidationCrawler": {
       "Type": "Task",
+      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Parameters": {
         "Name": "${data_validation_reports_crawler_name}"
       },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Success"
+      "Next": "CheckForErrors"
     },
-    "Success": {
-      "Type": "Succeed"
+    "CheckForErrors": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.error",
+          "IsPresent": true,
+          "Next": "PublishErrorNotification"
+        }
+      ],
+      "Default": "Success"
     },
     "PublishErrorNotification": {
       "Type": "Task",
@@ -172,23 +198,10 @@
           "CallbackToken.$": "$$.Task.Token"
         }
       },
-      "Next": "CrawlCqcWhenFailed"
-    },
-    "CrawlCqcWhenFailed": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Parameters": {
-        "Name": "${cqc_crawler_name}"
-      },
-      "Next": "CrawlValidationWhenFailed"
-    },
-    "CrawlValidationWhenFailed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Next": "Fail"
+    },
+    "Success": {
+      "Type": "Succeed"
     },
     "Fail": {
       "Type": "Fail"
