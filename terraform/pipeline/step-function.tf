@@ -32,7 +32,6 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     transform_ascwds_state_machine_arn         = aws_sfn_state_machine.transform_ascwds_state_machine.arn
     transform_cqc_data_state_machine_arn       = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
-    trigger_coverage_state_machine_arn         = aws_sfn_state_machine.coverage_state_machine.arn
   })
 
   logging_configuration {
