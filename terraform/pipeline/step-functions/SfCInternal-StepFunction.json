@@ -1,6 +1,6 @@
 {
   "Comment": "A state machine for running internal Skills for Care jobs",
-  "StartAt": "Skills for Care internal jobs",
+  "StartAt": "Run flatten cqc ratings job",
   "States": {
     "Run flatten cqc ratings job": {
       "Type": "Task",
