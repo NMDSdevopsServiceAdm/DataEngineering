@@ -23,29 +23,6 @@ resource "aws_sfn_state_machine" "master_ingest_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "polars_cqc_ingestion_state_machine" {
-  name     = "${local.workspace_prefix}-polars-cqc-ingestion"
-  role_arn = aws_iam_role.step_function_iam_role.arn
-  type     = "STANDARD"
-  definition = templatefile("step-functions/Polars-CQC-Ingestion.json", {
-    cluster_arn       = aws_ecs_cluster.polars_cluster.arn
-    task_arn          = module.cqc-api.task_arn
-    public_subnet_ids = jsonencode(module.cqc-api.subnet_ids)
-    security_group_id = module.cqc-api.security_group_id
-  })
-
-  logging_configuration {
-    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
-    include_execution_data = true
-    level                  = "ERROR"
-  }
-
-  depends_on = [
-    aws_iam_policy.step_function_iam_policy
-  ]
-}
-
-
 resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
   name     = "${local.workspace_prefix}-Clean-And-Validate"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -190,6 +167,10 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
     last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
     last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
+    cluster_arn                                    = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                       = module.cqc-api.task_arn
+    public_subnet_ids                              = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                              = module.cqc-api.security_group_id
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name

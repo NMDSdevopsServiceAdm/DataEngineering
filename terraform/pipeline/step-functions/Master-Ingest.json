@@ -4,7 +4,7 @@
   "States": {
     "IngestCqcAndAscWDS": {
       "Type": "Parallel",
-      "Next": "DownstreamPlaceholder",
+      "Next": "SfcIndCqcDownstreamProcessing",
       "Branches": [
         {
           "StartAt": "IngestCqcApi",
@@ -118,7 +118,7 @@
             },
             "AscWdsValidation": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::states:startExecution",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
                 "Parameters": {
                   "StateMachineArn": "${asc_wds_validation_state_machine_arn}",
                   "Input": {
@@ -132,33 +132,43 @@
 
       ]
     },
-    "DownstreamPlaceholder": {
-        "Type": "Parallel",
-        "Branches": [
-          {
-            "StartAt": "SfCCoveragePipeline",
-            "States": {
-              "SfCCoveragePipeline": {
-                "Type": "Pass",
-                "End": true
-              }
-            }
-          },
-          {
-            "StartAt": "IndCQCPipeline",
-            "States": {
-              "IndCQCPipeline": {
-                "Type": "Pass",
-                "End": true
-              }
+    "SfcIndCqcDownstreamProcessing": {
+      "Type": "Parallel",
+      "End": true,
+      "Branches": [
+        {
+          "StartAt": "TriggerSfcCoveragePipeline",
+          "States": {
+            "TriggerSfcCoveragePipeline": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${trigger_coverage_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
             }
           }
-        ],
-        "Next": "Success"
-      },
-    "Success": {
-      "Type": "Pass",
-      "End": true
+        },
+        {
+          "StartAt": "TriggerIndCqcPipeline",
+          "States": {
+            "TriggerIndCqcPipeline": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${trigger_ind_cqc_pipeline_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ]
     }
   }
 }

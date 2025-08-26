@@ -58,8 +58,8 @@ resource "aws_iam_policy" "s3_read_write_policy" {
           "s3:ListObjects"
         ],
         Resource = [
-          "arn:aws:s3:::spike-polars-data/*",
-          "arn:aws:s3:::spike-polars-data"
+          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/*",
+          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets"
         ]
       }
     ]
@@ -125,6 +125,7 @@ resource "aws_iam_policy" "sfn_ecs_policy" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
+          aws_iam_role.ecs_task_execution_role.arn,
           aws_iam_role.ecs_task_execution_role.arn,
           aws_iam_role.ecs_task_role.arn
         ],
