@@ -35,7 +35,6 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.location_id,
     IndCQC.name,
     IndCQC.provider_id,
-    IndCQC.provider_name,
     IndCQC.services_offered,
     IndCQC.primary_service_type,
     IndCQC.care_home,
