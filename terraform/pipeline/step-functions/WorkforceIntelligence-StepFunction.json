@@ -61,16 +61,16 @@
         {
           "Variable": "$.transform_error",
           "IsPresent": true,
-          "Next": "FailPipeline"
+          "Next": "Fail Pipeline"
         }
       ],
-      "Default": "DownstreamPlaceholder"
+      "Default": "Downstream Pipelines"
     },
-    "FailPipeline": {
+    "Fail Pipeline": {
       "Type": "Fail",
       "Cause": "One or more transforms failed."
     },
-    "DownstreamPlaceholder": {
+    "Downstream Pipelines": {
       "Type": "Parallel",
       "Branches": [
         {
@@ -98,7 +98,8 @@
             }
           }
         }
-      ]
+      ],
+      "End": true
     }
   }
 }
