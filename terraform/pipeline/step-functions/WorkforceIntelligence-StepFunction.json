@@ -86,17 +86,19 @@
           "StartAt": "Ind CQC Filled Posts Pipeline",
           "States": {
             "Ind CQC Filled Posts Pipeline": {
-              "Type": "Pass",
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${trigger_ind_cqc_pipeline_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
               "End": true
             }
           }
         }
-      ],
-      "Next": "Success"
-    },
-    "Success": {
-      "Type": "Pass",
-      "End": true
+      ]
     }
   }
 }
