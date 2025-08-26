@@ -2,78 +2,67 @@
   "Comment": "A state machine for running internal Skills for Care jobs",
   "StartAt": "Skills for Care internal jobs",
   "States": {
-    "Skills for Care internal jobs": {
-      "Type": "Parallel",
-      "Branches": [
-        {
-          "StartAt": "Run flatten cqc ratings job",
-          "States": {
-            "Run flatten cqc ratings job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${flatten_cqc_ratings_job_name}",
-                "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
-                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
-                  "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
-                  "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
-                }
-              },
-              "Next": "Run merge coverage data job"
-            },
-            "Run merge coverage data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${merge_coverage_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
-                  "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
-                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
-                  "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
-                }
-              },
-              "Next": "Run validate merge coverage data job"
-            },
-            "Run validate merge coverage data job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${validate_merge_coverage_data_job_name}",
-                "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                  "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
-                }
-              },
-              "Next": "SfC reconciliation job"
-            },
-            "SfC reconciliation job": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
-              "Parameters": {
-                "JobName": "${reconciliation_job_name}",
-                "Arguments": {
-                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
-                  "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
-                  "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
-                  "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
-                }
-              },
-              "End": true
-            }
-          }
+    "Run flatten cqc ratings job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${flatten_cqc_ratings_job_name}",
+        "Arguments": {
+          "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+          "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+          "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
+          "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
         }
-      ],
+      },
+      "Next": "Run merge coverage data job",
       "Catch": [
         {
           "ErrorEquals": ["States.ALL"],
           "ResultPath": "$.error",
           "Next": "Run crawlers"
         }
-      ],
+      ]
+    },
+    "Run merge coverage data job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${merge_coverage_data_job_name}",
+        "Arguments": {
+          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+          "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
+          "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
+          "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+          "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
+        }
+      },
+      "Next": "Run validate merge coverage data job"
+    },
+    "Run validate merge coverage data job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${validate_merge_coverage_data_job_name}",
+        "Arguments": {
+          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+          "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
+        }
+      },
+      "Next": "SfC reconciliation job"
+    },
+    "SfC reconciliation job": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${reconciliation_job_name}",
+        "Arguments": {
+          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+          "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
+          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
+          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
+        }
+      },
       "Next": "Run crawlers"
     },
     "Run crawlers": {
