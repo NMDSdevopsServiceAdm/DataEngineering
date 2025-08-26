@@ -67,18 +67,19 @@
           }
         }
       ],
+      "Next": "Handle Error and Run Crawlers",
       "Catch": [
         {
-          "ErrorEquals": ["States.ALL"],
+          "ErrorEquals": [
+            "States.ALL"
+          ],
           "ResultPath": "$.error",
-          "Next": "Run crawlers"
+          "Next": "Handle Error and Run Crawlers"
         }
-      ],
-      "Next": "Run crawlers"
+      ]
     },
-    "Run crawlers": {
+    "Handle Error and Run Crawlers": {
       "Type": "Parallel",
-      "Next": "Check For Errors",
       "Branches": [
         {
           "StartAt": "Run SfC Crawler",
@@ -105,42 +106,44 @@
               "End": true
             }
           }
-        }
-      ],
-      "ResultPath": "$.crawlers_output"
-    },
-    "Check For Errors": {
-      "Type": "Choice",
-      "Choices": [
+        },
         {
-          "Variable": "$.error",
-          "IsPresent": true,
-          "Next": "Publish Error Notification"
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "End": true
+            },
+            "No Error": {
+              "Type": "Succeed"
+            }
+          }
         }
       ],
-      "Default": "Success"
-    },
-    "Publish Error Notification": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Parameters": {
-        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-        "Payload": {
-          "Error.$": "$.error.Cause",
-          "ExecutionId.$": "$$.Execution.Id",
-          "StateMachineName.$": "$$.StateMachine.Name",
-          "StateMachineId.$": "$$.StateMachine.Id",
-          "ExecutionStartTime.$": "$$.Execution.StartTime",
-          "CallbackToken.$": "$$.Task.Token"
-        }
-      },
-      "Next": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
-    },
-    "Fail": {
-      "Type": "Fail"
+      "End": true
     }
   }
 }
