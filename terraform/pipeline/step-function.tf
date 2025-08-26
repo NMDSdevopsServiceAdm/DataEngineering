@@ -191,6 +191,10 @@ resource "aws_sfn_state_machine" "cqc_api_delta_state_machine" {
     create_snapshot_lambda_lambda_arn              = aws_lambda_function.create_snapshot_lambda.arn
     last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
     last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
+    cluster_arn                                    = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                       = module.cqc-api.task_arn
+    public_subnet_ids                              = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                              = module.cqc-api.security_group_id
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
@@ -557,7 +561,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "states:StartExecution"
+          "states:StartExecution",
+          "states:ListExecutions"
         ],
         "Resource" : [
           "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
@@ -632,6 +637,32 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           aws_ssm_parameter.providers_last_run.arn,
           aws_ssm_parameter.locations_last_run.arn
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask"
+        ],
+        "Resource" : [
+          module.cqc-api.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          module.cqc-api.task_exc_role_arn,
+          module.cqc-api.task_role_arn
+        ],
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = [
+              "ecs-tasks.amazonaws.com",
+              "events.amazonaws.com"
+            ]
+          }
+        }
       }
     ]
   })

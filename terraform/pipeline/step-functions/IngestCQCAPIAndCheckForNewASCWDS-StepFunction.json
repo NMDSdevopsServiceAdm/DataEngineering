@@ -114,6 +114,17 @@
                   }
                 }
               ],
+              "Next": "AscWdsValidation"
+            },
+            "AscWdsValidation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+                "Parameters": {
+                  "StateMachineArn": "${asc_wds_validation_state_machine_arn}",
+                  "Input": {
+                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                  }
+                },
               "End": true
             }
           }

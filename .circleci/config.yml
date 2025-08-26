@@ -288,8 +288,8 @@ workflows:
               ignore: main
       - test:
           filters:
-            branches:
-              ignore: main
+             branches:
+               ignore: main
       - lint-python:
           filters:
             branches:
