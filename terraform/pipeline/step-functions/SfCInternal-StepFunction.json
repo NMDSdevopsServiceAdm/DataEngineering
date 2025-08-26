@@ -87,18 +87,42 @@
         {
           "ErrorEquals": ["States.ALL"],
           "ResultPath": "$.error",
-          "Next": "Run SfC Crawler"
+          "Next": "Run crawlers"
         }
       ],
-      "Next": "Run SfC Crawler"
+      "Next": "Run crawlers"
     },
-    "Run SfC Crawler": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Parameters": {
-        "Name": "${sfc_crawler_name}"
-      },
-      "Next": "Check For Errors"
+    "Run crawlers": {
+      "Type": "Parallel",
+      "Next": "Check For Errors",
+      "Branches": [
+        {
+          "StartAt": "Run SfC Crawler",
+          "States": {
+            "Run SfC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Run Validation Crawler",
+          "States": {
+            "Run Validation Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${data_validation_reports_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        }
+      ]
     },
     "Check For Errors": {
       "Type": "Choice",
