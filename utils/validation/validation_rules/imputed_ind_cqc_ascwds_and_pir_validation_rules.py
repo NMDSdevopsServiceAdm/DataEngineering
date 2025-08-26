@@ -32,7 +32,6 @@ class ImputedIndCqcAscwdsAndPirValidationRules:
             IndCqcColumns.current_cssr,
             IndCqcColumns.current_region,
             IndCqcColumns.current_rural_urban_indicator_2011,
-            IndCqcColumns.current_lsoa21,
             IndCqcColumns.ascwds_filtering_rule,
             IndCqcColumns.unix_time,
         ],
