@@ -67,7 +67,7 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
             ),
         ),
         (
-            CleanedColNames.specialism,
+            CleanedColNames.specialisms,
             pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
         ),
         (CleanedColNames.imputed_registration_date, pl.Date()),
