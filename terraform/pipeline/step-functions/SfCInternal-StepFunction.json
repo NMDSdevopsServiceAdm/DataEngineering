@@ -135,10 +135,13 @@
                   "CallbackToken.$": "$$.Task.Token"
                 }
               },
-              "End": true
+              "Next": "Fail"
             },
             "No Error": {
               "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
             }
           }
         }
