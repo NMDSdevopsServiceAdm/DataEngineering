@@ -35,49 +35,33 @@
                   "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
                 }
               },
-              "Next": "Parallel"
+              "Next": "Run validate merge coverage data job"
             },
-            "Parallel": {
-              "Type": "Parallel",
-              "Branches": [
-                {
-                  "StartAt": "Run validate merge coverage data job",
-                  "States": {
-                    "Run validate merge coverage data job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${validate_merge_coverage_data_job_name}",
-                        "Arguments": {
-                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
-                          "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
-                          "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
-                },
-                {
-                  "StartAt": "SfC reconciliation job",
-                  "States": {
-                    "SfC reconciliation job": {
-                      "Type": "Task",
-                      "Resource": "arn:aws:states:::glue:startJobRun.sync",
-                      "Parameters": {
-                        "JobName": "${reconciliation_job_name}",
-                        "Arguments": {
-                          "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
-                          "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
-                          "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
-                          "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
-                        }
-                      },
-                      "End": true
-                    }
-                  }
+            "Run validate merge coverage data job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_merge_coverage_data_job_name}",
+                "Arguments": {
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
                 }
-              ],
+              },
+              "Next": "SfC reconciliation job"
+            },
+            "SfC reconciliation job": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${reconciliation_job_name}",
+                "Arguments": {
+                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+                  "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
+                  "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
+                  "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
+                }
+              },
               "End": true
             }
           }
