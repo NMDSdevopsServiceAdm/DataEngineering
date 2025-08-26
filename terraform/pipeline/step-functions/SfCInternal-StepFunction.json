@@ -4,7 +4,6 @@
   "States": {
     "Skills for Care internal jobs": {
       "Type": "Parallel",
-      "Next": "Run sfc crawler",
       "Branches": [
         {
           "StartAt": "Run flatten cqc ratings job",
@@ -88,30 +87,31 @@
         {
           "ErrorEquals": ["States.ALL"],
           "ResultPath": "$.error",
-          "Next": "RunSfcCrawler"
+          "Next": "Run SfC Crawler"
         }
-      ]
+      ],
+      "Next": "Run SfC Crawler"
     },
-    "RunSfcCrawler": {
+    "Run SfC Crawler": {
       "Type": "Task",
       "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
       "Parameters": {
         "Name": "${sfc_crawler_name}"
       },
-      "Next": "CheckForErrors"
+      "Next": "Check For Errors"
     },
-    "CheckForErrors": {
+    "Check For Errors": {
       "Type": "Choice",
       "Choices": [
         {
           "Variable": "$.error",
           "IsPresent": true,
-          "Next": "PublishErrorNotification"
+          "Next": "Publish Error Notification"
         }
       ],
       "Default": "Success"
     },
-    "PublishErrorNotification": {
+    "Publish Error Notification": {
       "Type": "Task",
       "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
       "Parameters": {
