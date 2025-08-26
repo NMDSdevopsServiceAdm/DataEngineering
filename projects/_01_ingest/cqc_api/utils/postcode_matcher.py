@@ -319,7 +319,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     Raises:
         TypeError: If unmatched postcodes exist.
     """
-    if not unmatched_df.head(1):
+    if unmatched_df.head(1):
         rows = (
             unmatched_df.select(
                 CQCL.location_id,
