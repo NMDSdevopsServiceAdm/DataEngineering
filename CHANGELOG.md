@@ -18,7 +18,8 @@ All notable changes to this project will be documented in this file.
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
-- Updated [Error Notification lambda](lambdas/error_notifications/error_notifications.py) to handle ECS task failures
+- Created an `SfC-Internal` step function which contains all the internal Skills for Care jobs in one pipeline.
+- Updated [Error Notification lambda](lambdas/error_notifications/error_notifications.py) to handle ECS task failures.
 
 ### Improved
 

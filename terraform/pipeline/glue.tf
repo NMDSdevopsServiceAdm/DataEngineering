@@ -455,6 +455,7 @@ module "clean_cqc_location_data_job" {
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
+  extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
 }
 
 module "delta_clean_cqc_location_data_job" {
