@@ -380,10 +380,7 @@
             "States.ALL"
           ],
           "Next": "Publish error notification",
-          "ResultPath": "$.error",
-          "ResultSelector": {
-            "error.Type": "Glue"
-          }
+          "ResultPath": "$.error"
         }
       ]
     },
