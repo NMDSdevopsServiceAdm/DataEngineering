@@ -73,6 +73,7 @@ ind_cqc_columns = [
     IndCQC.current_region,
     IndCQC.current_icb,
     IndCQC.current_rural_urban_indicator_2011,
+    IndCQC.current_lsoa21,
     IndCQC.contemporary_cssr,
     IndCQC.contemporary_region,
     IndCQC.contemporary_sub_icb,

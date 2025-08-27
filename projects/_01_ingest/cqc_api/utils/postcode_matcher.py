@@ -319,28 +319,30 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     Raises:
         TypeError: If unmatched postcodes exist.
     """
-    if not unmatched_df.rdd.isEmpty():
-        rows = (
-            unmatched_df.select(
-                CQCL.location_id,
-                CQCL.name,
-                CQCL.postal_address_line1,
-                CQCLClean.postcode_cleaned,
-            )
-            .distinct()
-            .sort(CQCLClean.postcode_cleaned)
-            .collect()
+    if unmatched_df.limit(1).count() == 0:
+        return
+
+    rows = (
+        unmatched_df.select(
+            CQCL.location_id,
+            CQCL.name,
+            CQCL.postal_address_line1,
+            CQCLClean.postcode_cleaned,
         )
-        errors = [
-            (
-                r[CQCL.location_id],
-                r[CQCL.name],
-                r[CQCL.postal_address_line1],
-                r[CQCLClean.postcode_cleaned],
-            )
-            for r in rows
-        ]
-        raise TypeError(f"Unmatched postcodes found: {errors}")
+        .distinct()
+        .orderBy(CQCLClean.postcode_cleaned)
+        .collect()
+    )
+    errors = [
+        (
+            r[CQCL.location_id],
+            r[CQCL.name],
+            r[CQCL.postal_address_line1],
+            r[CQCLClean.postcode_cleaned],
+        )
+        for r in rows
+    ]
+    raise TypeError(f"Unmatched postcodes found: {errors}")
 
 
 def combine_matched_dataframes(dataframes: List[DataFrame]) -> DataFrame:
