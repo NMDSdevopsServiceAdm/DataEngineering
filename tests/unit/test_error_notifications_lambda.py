@@ -25,6 +25,7 @@ EXAMPLE_GENERIC_FAILURE_PAYLOAD = {
     "CallbackToken": "jfoieruhggiubergiube",
 }
 
+
 class TestJobType(unittest.TestCase):
     def test_job_type_from_glue_error(self):
         # Given

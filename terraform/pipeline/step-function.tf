@@ -72,7 +72,7 @@ resource "aws_sfn_state_machine" "ascwds_validation_state_machine" {
     validate_ascwds_worker_cleaned_data_job_name    = module.validate_ascwds_worker_cleaned_data_job.job_name
     ascwds_crawler_name                             = module.ascwds_crawler.crawler_name
     data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_delta_lambda.arn
+    pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
@@ -182,7 +182,7 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
     validate_providers_api_cleaned_data_job_name   = module.validate_providers_api_cleaned_data_job.job_name
     cqc_crawler_name                               = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
     data_validation_reports_crawler_name           = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn           = aws_lambda_function.error_notification_delta_lambda.arn
+    pipeline_failure_lambda_function_arn           = aws_lambda_function.error_notification_lambda.arn
   })
 
   logging_configuration {
