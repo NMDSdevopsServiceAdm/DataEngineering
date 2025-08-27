@@ -1,0 +1,152 @@
+{
+  "Comment": "A state machine for running internal Skills for Care jobs",
+  "StartAt": "Skills for Care internal jobs",
+  "States": {
+    "Skills for Care internal jobs": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Flatten CQC Ratings",
+          "States": {
+            "Flatten CQC Ratings": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${flatten_cqc_ratings_job_name}",
+                "Arguments": {
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+                  "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
+                  "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
+                  "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
+                }
+              },
+              "Next": "Merge Coverage Data"
+            },
+            "Merge Coverage Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${merge_coverage_data_job_name}",
+                "Arguments": {
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--workplace_for_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
+                  "--cqc_ratings_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
+                  "--merged_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+                  "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
+                }
+              },
+              "Next": "Validate Merge Coverage Data"
+            },
+            "Validate Merge Coverage Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_merge_coverage_data_job_name}",
+                "Arguments": {
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api_cleaned/",
+                  "--merged_coverage_data_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
+                }
+              },
+              "Next": "Reconciliation"
+            },
+            "Reconciliation": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${reconciliation_job_name}",
+                "Arguments": {
+                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+                  "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
+                  "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
+                  "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Handle Error and Run Crawlers",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawlers"
+        }
+      ]
+    },
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "SfC Crawler",
+          "States": {
+            "SfC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${sfc_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Validation Crawler",
+          "States": {
+            "Validation Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${data_validation_reports_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        }
+      ],
+      "End": true
+    }
+  }
+}
