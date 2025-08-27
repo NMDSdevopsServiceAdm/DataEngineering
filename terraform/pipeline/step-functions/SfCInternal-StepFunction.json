@@ -20,7 +20,7 @@
                   "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
                 }
               },
-              "Next": "Merge coverage data"
+              "Next": "Merge Coverage Data"
             },
             "Merge Coverage Data": {
               "Type": "Task",
