@@ -6,9 +6,9 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Run flatten cqc ratings job",
+          "StartAt": "Flatten CQC Ratings",
           "States": {
-            "Run flatten cqc ratings job": {
+            "Flatten CQC Ratings": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -20,9 +20,9 @@
                   "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
                 }
               },
-              "Next": "Run merge coverage data job"
+              "Next": "Merge coverage data"
             },
-            "Run merge coverage data job": {
+            "Merge Coverage Data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -35,9 +35,9 @@
                   "--reduced_coverage_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
                 }
               },
-              "Next": "Run validate merge coverage data job"
+              "Next": "Validate Merge Coverage Data"
             },
-            "Run validate merge coverage data job": {
+            "Validate Merge Coverage Data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -48,9 +48,9 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
                 }
               },
-              "Next": "SfC reconciliation job"
+              "Next": "Reconciliation"
             },
-            "SfC reconciliation job": {
+            "Reconciliation": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -82,9 +82,9 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "Run SfC Crawler",
+          "StartAt": "SfC Crawler",
           "States": {
-            "Run SfC Crawler": {
+            "SfC Crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
@@ -95,9 +95,9 @@
           }
         },
         {
-          "StartAt": "Run Validation Crawler",
+          "StartAt": "Validation Crawler",
           "States": {
-            "Run Validation Crawler": {
+            "Validation Crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
