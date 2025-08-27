@@ -108,8 +108,8 @@ def main(
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
-    cqc_location_df = calculate_time_registered_for(cqc_location_df)
-    cqc_location_df = calculate_time_since_dormant(cqc_location_df)
+    # cqc_location_df = calculate_time_registered_for(cqc_location_df)
+    # cqc_location_df = calculate_time_since_dormant(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)

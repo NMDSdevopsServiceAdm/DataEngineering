@@ -56,5 +56,5 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     specialist_generalist_other_mh: str = (
         "specialist_generalist_other_mental_health_conditions"
     )
-    time_registered: str = "time_registered"
-    time_since_dormant: str = "time_since_dormant"
+    # time_registered: str = "time_registered"
+    # time_since_dormant: str = "time_since_dormant"
