@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 ### Changed
 - Expanded acronyms in documentation.
@@ -17,6 +18,7 @@ All notable changes to this project will be documented in this file.
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
+- Created an `SfC-Internal` step function which contains all the internal Skills for Care jobs in one pipeline.
 - Split the Master-Ingest step function so that ingestion jobs are separate to transform and downstream processing.
 
 ### Improved

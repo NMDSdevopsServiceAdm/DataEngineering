@@ -477,6 +477,33 @@ resource "aws_sfn_state_machine" "coverage_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "sfc_internal_state_machine" {
+  name     = "${local.workspace_prefix}-SfC-Internal"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/SfCInternal-StepFunction.json", {
+    dataset_bucket_uri                    = module.datasets_bucket.bucket_uri
+    flatten_cqc_ratings_job_name          = module.flatten_cqc_ratings_job.job_name
+    merge_coverage_data_job_name          = module.merge_coverage_data_job.job_name
+    validate_merge_coverage_data_job_name = module.validate_merge_coverage_data_job.job_name
+    reconciliation_job_name               = module.reconciliation_job.job_name
+    sfc_crawler_name                      = module.sfc_crawler.crawler_name
+    data_validation_reports_crawler_name  = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn  = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn

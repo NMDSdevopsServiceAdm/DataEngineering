@@ -261,6 +261,7 @@ class EstimateIndCQCFilledPostsSchemas:
             StructField(IndCQC.care_home, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
             StructField(IndCQC.current_rural_urban_indicator_2011, StringType(), True),
+            StructField(IndCQC.current_lsoa21, StringType(), True),
             StructField(
                 IndCQC.contemporary_rural_urban_indicator_2011, StringType(), True
             ),
