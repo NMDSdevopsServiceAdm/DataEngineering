@@ -17,7 +17,7 @@ resource "aws_lambda_function" "error_notification_lambda" {
   handler          = "error_notifications.main"
   runtime          = "python3.9"
   timeout          = 15
-  function_name    = "${local.workspace_prefix}-glue-failure-notification"
+  function_name    = "${local.workspace_prefix}-job-failure-notification"
   s3_bucket        = module.pipeline_resources.bucket_name
   s3_key           = aws_s3_object.error_notification_lambda.key
   source_code_hash = data.archive_file.error_notification_lambda.output_base64sha256
@@ -33,7 +33,8 @@ resource "aws_lambda_function" "error_notification_delta_lambda" {
   role             = aws_iam_role.error_notification_lambda.arn
   handler          = "error_notifications.main"
   runtime          = "python3.9"
-  function_name    = "${local.workspace_prefix}-glue-failure-notification-delta"
+  timeout          = 15
+  function_name    = "${local.workspace_prefix}-job-failure-notification-delta"
   s3_bucket        = module.pipeline_resources.bucket_name
   s3_key           = aws_s3_object.error_notification_lambda.key
   source_code_hash = data.archive_file.error_notification_lambda.output_base64sha256
