@@ -109,6 +109,7 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_when_successfully_published_calls_successful_callback(self):
+        os.environ["SNS_TOPIC_ARN"] = "test"
         self.mock_sns_publish()
 
         self.mock_task_success(
@@ -164,3 +165,16 @@ class ErrorNotifications(unittest.TestCase):
             "publish", {"MessageId": MessageIdResponse}, exepcted_params
         )
         self.sns_stubber.activate()
+
+    def test_missing_topic_throws_error(self):
+        if "SNS_TOPIC_ARN" in os.environ:
+            del os.environ["SNS_TOPIC_ARN"]
+
+        with self.assertRaises(AttributeError) as context:
+            error_notifications.main(
+                EXAMPLE_GENERIC_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            )
+
+        self.assertEqual(
+            str(context.exception), "SNS_TOPIC_ARN environment variable not set"
+        )
