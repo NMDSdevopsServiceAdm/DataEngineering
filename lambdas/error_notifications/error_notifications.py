@@ -1,8 +1,10 @@
-from typing import Any
-import os
 import json
+import os
 from enum import Enum
 from json.decoder import JSONDecodeError
+from typing import Any
+
+import boto3
 
 
 class JobType(Enum):
@@ -19,7 +21,9 @@ class JobType(Enum):
             return None
 
 
-def ecs_job_failure_message(statemachine_name: str, execution_details_url: str, error_json: dict) -> str:
+def ecs_job_failure_message(
+    statemachine_name: str, execution_details_url: str, error_json: dict
+) -> str:
     """Generates a readable failure message from an ECS error.
 
     Args:
@@ -47,7 +51,9 @@ def ecs_job_failure_message(statemachine_name: str, execution_details_url: str, 
     )
 
 
-def glue_job_failure_message(statemachine_name: str, execution_details_url: str, error_json: dict) -> str:
+def glue_job_failure_message(
+    statemachine_name: str, execution_details_url: str, error_json: dict
+) -> str:
     """Generates a readable failure message from a Glue error.
 
     Args:
@@ -72,7 +78,9 @@ def glue_job_failure_message(statemachine_name: str, execution_details_url: str,
     )
 
 
-def generic_failure_message(statemachine_name: str, execution_details_url: str, error: str) -> str:
+def generic_failure_message(
+    statemachine_name: str, execution_details_url: str, error: str
+) -> str:
     """Generates a generic failure message.
 
     Args:
@@ -90,7 +98,9 @@ def generic_failure_message(statemachine_name: str, execution_details_url: str, 
     )
 
 
-def send_sns_notification(sns_client: Any, sns_topic_arn: str, message_params: dict) -> dict:
+def send_sns_notification(
+    sns_client: Any, sns_topic_arn: str, message_params: dict
+) -> dict:
     """Sends an SNS message to a topic using a failure message.
 
     Args:
@@ -108,18 +118,17 @@ def send_sns_notification(sns_client: Any, sns_topic_arn: str, message_params: d
     try:
         error_json = json.loads(error)
         job_type = JobType.from_error(error_json)
-        match job_type:
-            case JobType.ECS:
-                message = ecs_job_failure_message(
-                    statemachine_name, execution_details_url, error_json
-                )
-            case JobType.GLUE:
-                message = glue_job_failure_message(
-                    statemachine_name, execution_details_url, error_json
-                )
-            case _:
-                raise ValueError(f"Unknown job type: {job_type}")
-    except JSONDecodeError | ValueError:
+        if job_type == JobType.ECS:
+            message = ecs_job_failure_message(
+                statemachine_name, execution_details_url, error_json
+            )
+        elif job_type == JobType.GLUE:
+            message = glue_job_failure_message(
+                statemachine_name, execution_details_url, error_json
+            )
+        else:
+            raise ValueError(f"Unknown job type: {job_type}")
+    except (JSONDecodeError, ValueError):
         message = generic_failure_message(
             statemachine_name, execution_details_url, error
         )
@@ -145,6 +154,10 @@ def main(event, _, sns_client=None, sf_client=None):
 
     try:
         sns_response = send_sns_notification(sns_client, sns_topic_arn, event)
-        sf_client.send_task_success(taskToken=callback_token, output=json.dumps(sns_response))
+        sf_client.send_task_success(
+            taskToken=callback_token, output=json.dumps(sns_response)
+        )
     except Exception as err:
-        sf_client.send_task_failure(taskToken=callback_token, error=f"{type(err)}", cause=err)
+        sf_client.send_task_failure(
+            taskToken=callback_token, error=f"{type(err)}", cause=err
+        )
