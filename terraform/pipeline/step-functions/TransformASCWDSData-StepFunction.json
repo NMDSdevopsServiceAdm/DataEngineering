@@ -46,7 +46,7 @@
             "ErrorEquals": [
               "States.ALL"
             ],
-            "Next": "PublishErrorNotification",
+            "Next": "Publish Error Notification",
             "ResultPath": "$.error"
           }
         ]
@@ -106,7 +106,7 @@
             }
           },
           {
-            "StartAt": "ValidateCleanedWorker",
+            "StartAt": "Validate Cleaned Worker",
             "States": {
               "Validate Cleaned Worker": {
                 "Type": "Task",
