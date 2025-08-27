@@ -1,14 +1,14 @@
 {
     "Comment": "State machine for validating and cleaning ASCWDS data",
-    "StartAt": "ValidateAscWds",
+    "StartAt": "Validate ASCWDS",
     "States": {
-      "ValidateAscWds": {
+      "Validate ASCWDS": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "ValidateWorkplaceRaw",
+            "StartAt": "Validate Workplace Raw",
             "States": {
-              "ValidateWorkplaceRaw": {
+              "Validate Workplace Raw": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -23,9 +23,9 @@
             }
           },
           {
-            "StartAt": "ValidateWorkerRaw",
+            "StartAt": "Validate Worker Raw",
             "States": {
-              "ValidateWorkerRaw": {
+              "Validate Worker Raw": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -40,7 +40,7 @@
             }
           }
         ],
-        "Next": "CleanWorkplaceData",
+        "Next": "Clean Workplace Data",
         "Catch": [
           {
             "ErrorEquals": [
@@ -51,7 +51,7 @@
           }
         ]
       },
-      "CleanWorkplaceData": {
+      "Clean Workplace Data": {
         "Type": "Task",
         "Resource": "arn:aws:states:::glue:startJobRun.sync",
         "Parameters": {
@@ -62,9 +62,9 @@
             "--workplace_for_reconciliation_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
           }
         },
-        "Next": "CleanWorkerData"
+        "Next": "Clean Worker Data"
       },
-      "CleanWorkerData": {
+      "Clean Worker Data": {
         "Type": "Task",
         "Resource": "arn:aws:states:::glue:startJobRun.sync",
         "Parameters": {
@@ -75,23 +75,23 @@
             "--ascwds_worker_destination": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
           }
         },
-        "Next": "CrawlAscWds"
+        "Next": "Crawl ASCWDS"
       },
-      "CrawlAscWds": {
+      "Crawl ASCWDS": {
         "Type": "Task",
         "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
         "Parameters": {
           "Name": "${ascwds_crawler_name}"
         },
-        "Next": "ValidateCleanedAscWds"
+        "Next": "Validate Cleaned ASCWDS"
       },
-      "ValidateCleanedAscWds": {
+      "Validate Cleaned ASCWDS": {
         "Type": "Parallel",
         "Branches": [
           {
-            "StartAt": "ValidateCleanedWorkplace",
+            "StartAt": "Validate Cleaned Workplace",
             "States": {
-              "ValidateCleanedWorkplace": {
+              "Validate Cleaned Workplace": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -108,7 +108,7 @@
           {
             "StartAt": "ValidateCleanedWorker",
             "States": {
-              "ValidateCleanedWorker": {
+              "Validate Cleaned Worker": {
                 "Type": "Task",
                 "Resource": "arn:aws:states:::glue:startJobRun.sync",
                 "Parameters": {
@@ -129,7 +129,7 @@
             "ErrorEquals": [
               "States.ALL"
             ],
-            "Next": "PublishErrorNotification",
+            "Next": "Publish Error Notification",
             "ResultPath": "$.error"
           }
         ]
@@ -137,7 +137,7 @@
       "Success": {
         "Type": "Succeed"
       },
-      "PublishErrorNotification": {
+      "Publish Error Notification": {
         "Type": "Task",
         "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
         "Parameters": {
