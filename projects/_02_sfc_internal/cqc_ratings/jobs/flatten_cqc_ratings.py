@@ -239,6 +239,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
         )
     return cleaned_historic_ratings_df
 
+
 def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     assessment_df = extract_assessment_base(cqc_location_df)
     overall_df = extract_overall(assessment_df)
@@ -265,7 +266,6 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         .orderBy(CQCL.assessment_date)
     )
 
-
     desired_column_order = [
         CQCL.location_id,
         CQCL.registration_status,
@@ -287,6 +287,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
     return reshaped_df.select(*desired_column_order)
 
+
 def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
     assessment_base_df = cqc_location_df.withColumn(
         CQCL.assessment_exploded, F.explode(CQCL.assessment)
@@ -301,6 +302,7 @@ def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
         ),
     )
     return assessment_base_df
+
 
 def extract_overall(assessment_df: DataFrame) -> DataFrame:
     exploded = assessment_df.withColumn(
