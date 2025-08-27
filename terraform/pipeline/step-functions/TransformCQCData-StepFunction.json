@@ -1,14 +1,14 @@
 {
   "Comment": "State machine for cleaning and validating CQC data",
-  "StartAt": "CleanAndValidateCQCData",
+  "StartAt": "Clean And Validate CQC Data",
   "States": {
-    "CleanAndValidateCQCData": {
+    "Clean And Validate CQC Data": {
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "CleanCqcProviderData",
+          "StartAt": "Clean CQC Provider Data",
           "States": {
-            "CleanCqcProviderData": {
+            "Clean CQC Provider Data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -18,9 +18,9 @@
                   "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
                 }
               },
-              "Next": "ValidateProvidersCleaned"
+              "Next": "Validate Providers Cleaned"
             },
-            "ValidateProvidersCleaned": {
+            "Validate Providers Cleaned": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -36,9 +36,9 @@
           }
         },
         {
-          "StartAt": "CleanCqcLocationData",
+          "StartAt": "Clean CQC Location Data",
           "States": {
-            "CleanCqcLocationData": {
+            "Clean CQC Location Data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -49,9 +49,9 @@
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
                 }
               },
-              "Next": "ValidateLocationsCleaned"
+              "Next": "Validate Locations Cleaned"
             },
-            "ValidateLocationsCleaned": {
+            "Validate Locations Cleaned": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
