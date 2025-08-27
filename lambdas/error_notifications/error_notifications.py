@@ -86,7 +86,7 @@ def generic_failure_message(
     Args:
         statemachine_name (str): the name of the calling state machine
         execution_details_url (str): the URL of the state machine execution
-        error_json (dict): the error as a raw string
+        error (str): the error as a raw string
 
     Returns:
         str: a failure message with the simple details of the failure
@@ -106,10 +106,13 @@ def send_sns_notification(
     Args:
         sns_client (Any): the SNS client to use for publishing
         sns_topic_arn (str): the name of the SNS topic to which this should publish
-        message_params (str): the message parameters from the caller
+        message_params (dict): the message parameters from the caller
+
+    Raises:
+        ValueError: in case of an unknown job type
 
     Returns:
-        dict: _description_
+        dict: the repsonse from the SNS Client
     """
     error = message_params["Error"]
     statemachine_name = message_params["StateMachineName"]
