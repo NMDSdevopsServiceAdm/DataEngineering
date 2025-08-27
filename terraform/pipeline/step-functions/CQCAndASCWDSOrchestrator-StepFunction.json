@@ -1,15 +1,15 @@
 {
   "Comment": "A state machine to manage the weekly ingestion of CQC API and ASC-WDS data",
-  "StartAt": "IngestCqcAndAscWDS",
+  "StartAt": "Ingest CQC And ASCWDS",
   "States": {
-    "IngestCqcAndAscWDS": {
+    "Ingest CQC And ASCWDS": {
       "Type": "Parallel",
-      "Next": "TriggerWorkforceIntelligencePipeline",
+      "Next": "Trigger Workforce Intelligence Pipeline",
       "Branches": [
         {
-          "StartAt": "IngestCqcApi",
+          "StartAt": "Ingest CQC API",
           "States": {
-            "IngestCqcApi": {
+            "Ingest CQC API": {
               "Type": "Task",
               "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
@@ -23,9 +23,9 @@
           }
         },
         {
-          "StartAt": "CheckAscWdsIngest",
+          "StartAt": "Check ASCWDS Ingest",
           "States": {
-            "CheckAscWdsIngest": {
+            "Check ASCWDS Ingest": {
               "Type": "Parallel",
               "Parameters": {
                 "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
@@ -34,9 +34,9 @@
               },
               "Branches": [
                 {
-                  "StartAt": "CheckWorker",
+                  "StartAt": "Check Worker",
                   "States": {
-                    "CheckWorker": {
+                    "Check Worker": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
@@ -45,38 +45,38 @@
                         "StartAfter.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
                       },
                       "ResultPath": "$.workerfile",
-                      "Next": "WorkerReady"
+                      "Next": "Worker Ready"
                     },
-                    "WorkerReady": {
+                    "Worker Ready": {
                       "Type": "Choice",
                       "Choices": [
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericGreaterThanEquals": 1,
-                          "Next": "MarkWorkerReady"
+                          "Next": "Mark Worker Ready"
                         },
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
-                          "Next": "WaitForWorker"
+                          "Next": "Wait For Worker"
                         }
                       ]
                     },
-                    "WaitForWorker": {
+                    "Wait For Worker": {
                       "Type": "Wait",
                       "Seconds": 10,
-                      "Next": "CheckWorker"
+                      "Next": "Check Worker"
                    },
-                    "MarkWorkerReady": {
+                    "Mark Worker Ready": {
                       "Type": "Pass",
                       "End": true
                     }
                  }
                 },
                 {
-                  "StartAt": "CheckWorkplace",
+                  "StartAt": "Check Workplace",
                   "States": {
-                    "CheckWorkplace": {
+                    "Check Workplace": {
                       "Type": "Task",
                       "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
                       "Parameters": {
@@ -85,29 +85,29 @@
                         "StartAfter.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
                       },
                       "ResultPath": "$.workerfile",
-                      "Next": "WorkplaceReady"
+                      "Next": "Workplace Ready"
                     },
-                    "WorkplaceReady": {
+                    "Workplace Ready": {
                       "Type": "Choice",
                       "Choices": [
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericGreaterThanEquals": 1,
-                          "Next": "MarkWorkplaceReady"
+                          "Next": "Mark Workplace Ready"
                         },
                         {
                           "Variable": "$.workerfile.KeyCount",
                           "NumericEquals": 0,
-                          "Next": "WaitForWorkplace"
+                          "Next": "Wait For Workplace"
                         }
                         ]
                     },
-                    "WaitForWorkplace": {
+                    "Wait For Workplace": {
                       "Type": "Wait",
                       "Seconds": 10,
-                      "Next": "CheckWorkplace"
+                      "Next": "Check Workplace"
                     },
-                    "MarkWorkplaceReady": {
+                    "Mark Workplace Ready": {
                       "Type": "Pass",
                       "End": true
                     }
@@ -120,7 +120,7 @@
         }
       ]
     },
-    "TriggerWorkforceIntelligencePipeline": {
+    "Trigger Workforce Intelligence Pipeline": {
       "Type": "Task",
       "Resource": "arn:aws:states:::states:startExecution",
       "Parameters": {
