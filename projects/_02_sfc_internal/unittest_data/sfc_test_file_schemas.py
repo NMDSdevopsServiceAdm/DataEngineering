@@ -1173,15 +1173,15 @@ class FlattenCQCRatings:
             StructField(CQCL.title, StringType(), True),
             StructField(CQCL.assessment_date, StringType(), True),
             StructField(CQCL.assessment_plan_status, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCL.name, StringType(), True),
-            StructField(CQCL.rating, StringType(), True),
             StructField(CQCL.status, StringType(), True),
-            StructField(CQCL.key_question_name, StringType(), True),
-            StructField(CQCL.key_question_rating, StringType(), True),
-            StructField(CQCL.key_question_status, StringType(), True),
-            StructField(CQCL.key_question_percentage_score, StringType(), True),
-            StructField(CQCL.rating_type, StringType(), True),
-            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.rating, StringType(), True),
+            StructField("Safe", StringType(), True),
+            StructField("Effective", StringType(), True),
+            StructField("Caring", StringType(), True),
+            StructField("Responsive", StringType(), True),
+            StructField("Well-led", StringType(), True),
         ]
     )
     add_current_or_historic_schema = StructType(

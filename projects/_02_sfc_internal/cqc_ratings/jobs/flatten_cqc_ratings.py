@@ -239,115 +239,166 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
         )
     return cleaned_historic_ratings_df
 
-
 def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
-    assessment_df = cqc_location_df.select(
-        cqc_location_df[CQCL.location_id],
-        cqc_location_df[CQCL.registration_status],
-        F.explode(cqc_location_df[CQCL.assessment]).alias(CQCL.assessment),
-    )
-
-    assessment_df = assessment_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        F.col(f"{CQCL.assessment}.{CQCL.assessment_plan_published_datetime}").alias(
-            CQCL.assessment_plan_published_datetime
-        ),
-        F.col(f"{CQCL.assessment}.{CQCL.ratings}").alias(CQCL.assessments_ratings),
-    )
-
-    overall_df = assessment_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        F.explode(
-            F.when(
-                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}").isNotNull(),
-                F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}"),
-            ).otherwise(F.array())
-        ).alias(CQCL.overall),
-    )
-
-    overall_df = overall_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        F.col(f"{CQCL.overall}.{CQCL.rating}").alias(CQCL.rating),
-        F.col(f"{CQCL.overall}.{CQCL.status}").alias(CQCL.status),
-        F.lit(None).cast("string").alias(CQCL.assessment_plan_id),
-        F.lit(None).cast("string").alias(CQCL.title),
-        F.lit(None).cast("string").alias(CQCL.assessment_date),
-        F.lit(None).cast("string").alias(CQCL.assessment_plan_status),
-        F.lit(None).cast("string").alias(CQCL.name),
-        F.explode(F.col(f"{CQCL.overall}.{CQCL.key_question_ratings}")).alias(
-            CQCL.key_question
-        ),
-    )
-
-    overall_df = overall_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        CQCL.assessment_plan_id,
-        CQCL.title,
-        CQCL.assessment_date,
-        CQCL.assessment_plan_status,
-        CQCL.name,
-        CQCL.rating,
-        CQCL.status,
-        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
-        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
-        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
-        F.lit(None).cast("string").alias(CQCL.key_question_percentage_score),
-        F.lit("overall").alias(CQCL.rating_type),
-        F.lit("assessment.ratings.overall").alias(CQCL.source_path),
-    )
-
-    asg_df = assessment_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")).alias("asg"),
-    )
-
-    asg_df = asg_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        F.col(f"asg.{CQCL.assessment_plan_id}").alias(CQCL.assessment_plan_id),
-        F.col(f"asg.{CQCL.title}").alias(CQCL.title),
-        F.col(f"asg.{CQCL.assessment_date}").alias(CQCL.assessment_date),
-        F.col(f"asg.{CQCL.assessment_plan_status}").alias(CQCL.assessment_plan_status),
-        F.col(f"asg.{CQCL.name}").alias(CQCL.name),
-        F.col(f"asg.{CQCL.rating}").alias(CQCL.rating),
-        F.col(f"asg.{CQCL.status}").alias(CQCL.status),
-        F.explode(F.col(f"asg.{CQCL.key_question_ratings}")).alias(CQCL.key_question),
-    )
-
-    asg_df = asg_df.select(
-        CQCL.location_id,
-        CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
-        CQCL.assessment_plan_id,
-        CQCL.title,
-        CQCL.assessment_date,
-        CQCL.assessment_plan_status,
-        CQCL.name,
-        CQCL.rating,
-        CQCL.status,
-        F.col(f"{CQCL.key_question}.{CQCL.name}").alias(CQCL.key_question_name),
-        F.col(f"{CQCL.key_question}.{CQCL.rating}").alias(CQCL.key_question_rating),
-        F.col(f"{CQCL.key_question}.{CQCL.status}").alias(CQCL.key_question_status),
-        F.col(f"{CQCL.key_question}.{CQCL.percentage_score}").alias(
-            CQCL.key_question_percentage_score
-        ),
-        F.lit("asg").alias(CQCL.rating_type),
-        F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
-    )
+    assessment_df = extract_assessment_base(cqc_location_df)
+    overall_df = extract_overall(assessment_df)
+    asg_df = extract_asg(assessment_df)
 
     final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
 
-    return final_df
+    reshaped_df = (
+        final_df.groupBy(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment_plan_published_datetime,
+            CQCL.assessment_plan_id,
+            CQCL.title,
+            CQCL.assessment_date,
+            CQCL.assessment_plan_status,
+            CQCL.dataset,
+            CQCL.name,
+            CQCL.status,
+            CQCL.rating,
+        )
+        .pivot(CQCL.key_question_name)
+        .agg(F.first(CQCL.key_question_rating))
+        .orderBy(CQCL.assessment_date)
+    )
+
+
+    desired_column_order = [
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.dataset,
+        CQCL.name,
+        CQCL.status,
+        CQCL.rating,
+        "Safe",
+        "Effective",
+        "Caring",
+        "Responsive",
+        "Well-led",
+    ]
+
+    return reshaped_df.select(*desired_column_order)
+
+def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
+    assessment_base_df = cqc_location_df.withColumn(
+        CQCL.assessment_exploded, F.explode(CQCL.assessment)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        F.col(
+            f"{CQCL.assessment_exploded}.{CQCL.assessment_plan_published_datetime}"
+        ).alias(CQCL.assessment_plan_published_datetime),
+        F.col(f"{CQCL.assessment_exploded}.{CQCL.ratings}").alias(
+            CQCL.assessments_ratings
+        ),
+    )
+    return assessment_base_df
+
+def extract_overall(assessment_df: DataFrame) -> DataFrame:
+    exploded = assessment_df.withColumn(
+        CQCL.overall_exploded,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}")),
+    )
+
+    flattened_df = exploded.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.overall_exploded}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.overall_exploded}.{CQCL.status}").alias(CQCL.status),
+        F.col(f"{CQCL.overall_exploded}.{CQCL.key_question_ratings}").alias(
+            CQCL.key_question_ratings
+        ),
+    )
+
+    overall_df = flattened_df.withColumn(
+        CQCL.overall_key_questions_exploded, F.explode(CQCL.key_question_ratings)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.name}").alias(
+            CQCL.key_question_name
+        ),
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.rating}").alias(
+            CQCL.key_question_rating
+        ),
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.status}").alias(
+            CQCL.key_question_status
+        ),
+        F.lit("SAF").alias(CQCL.dataset),
+        F.lit("assessment.ratings.overall").alias(CQCL.source_path),
+    )
+    return overall_df
+
+
+def extract_asg(assessment_df: DataFrame) -> DataFrame:
+    exploded = assessment_df.withColumn(
+        CQCL.asg_exploded,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")),
+    )
+
+    flattened = exploded.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_plan_id}").alias(
+            CQCL.assessment_plan_id
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.title}").alias(CQCL.title),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_date}").alias(
+            CQCL.assessment_date
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_plan_status}").alias(
+            CQCL.assessment_plan_status
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.name}").alias(CQCL.name),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.status}").alias(CQCL.status),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.key_question_ratings}").alias(
+            CQCL.key_question_ratings
+        ),
+    )
+
+    asg_df = flattened.withColumn(
+        CQCL.asg_key_questions_exploded, F.explode(CQCL.key_question_ratings)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.name}").alias(
+            CQCL.key_question_name
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.rating}").alias(
+            CQCL.key_question_rating
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.status}").alias(
+            CQCL.key_question_status
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.percentage_score}").alias(
+            CQCL.key_question_percentage_score
+        ),
+        F.lit("SAF").alias(CQCL.dataset),
+        F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
+    )
+    return asg_df
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
