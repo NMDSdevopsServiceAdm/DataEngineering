@@ -72,12 +72,6 @@ ons_cols_to_import = [
     *contemporary_geography_columns,
     *current_geography_columns,
 ]
-cqc_provider_cols_to_import = [
-    CQCPClean.provider_id,
-    CQCPClean.name,
-    CQCPClean.cqc_sector,
-    CQCPClean.cqc_provider_import_date,
-]
 
 
 def main(

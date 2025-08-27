@@ -165,6 +165,12 @@ resource "aws_sfn_state_machine" "cqc_api_pipeline_state_machine" {
   definition = templatefile("step-functions/CQC-API-Pipeline.json", {
     dataset_bucket_uri                             = module.datasets_bucket.bucket_uri
     dataset_bucket_name                            = module.datasets_bucket.bucket_name
+    last_providers_run_param_name                  = aws_ssm_parameter.providers_last_run.name
+    last_locations_run_param_name                  = aws_ssm_parameter.locations_last_run.name
+    cluster_arn                                    = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                       = module.cqc-api.task_arn
+    public_subnet_ids                              = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                              = module.cqc-api.security_group_id
     delta_cqc_providers_download_job_name          = module.delta_cqc_providers_download_job.job_name
     delta_cqc_locations_download_job_name          = module.delta_cqc_locations_download_job.job_name
     validate_providers_api_raw_delta_data_job_name = module.validate_providers_api_raw_delta_data_job.job_name
@@ -423,6 +429,33 @@ resource "aws_sfn_state_machine" "coverage_state_machine" {
   ]
 }
 
+resource "aws_sfn_state_machine" "sfc_internal_state_machine" {
+  name     = "${local.workspace_prefix}-SfC-Internal"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/SfCInternal-StepFunction.json", {
+    dataset_bucket_uri                    = module.datasets_bucket.bucket_uri
+    flatten_cqc_ratings_job_name          = module.flatten_cqc_ratings_job.job_name
+    merge_coverage_data_job_name          = module.merge_coverage_data_job.job_name
+    validate_merge_coverage_data_job_name = module.validate_merge_coverage_data_job.job_name
+    reconciliation_job_name               = module.reconciliation_job.job_name
+    sfc_crawler_name                      = module.sfc_crawler.crawler_name
+    data_validation_reports_crawler_name  = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn  = aws_lambda_function.error_notification_lambda.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
@@ -508,7 +541,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "states:StartExecution"
+          "states:StartExecution",
+          "states:ListExecutions"
         ],
         "Resource" : [
           "arn:aws:states:eu-west-2:${data.aws_caller_identity.current.account_id}:stateMachine:*"
@@ -572,6 +606,43 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           "${module.datasets_bucket.bucket_arn}/*",
           module.datasets_bucket.bucket_arn
         ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ssm:PutParameter",
+          "ssm:GetParameter",
+        ],
+        "Resource" : [
+          aws_ssm_parameter.providers_last_run.arn,
+          aws_ssm_parameter.locations_last_run.arn
+        ]
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask"
+        ],
+        "Resource" : [
+          module.cqc-api.task_arn,
+          aws_ecs_cluster.polars_cluster.arn
+        ]
+      },
+      {
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          module.cqc-api.task_exc_role_arn,
+          module.cqc-api.task_role_arn
+        ],
+        Condition = {
+          StringLike = {
+            "iam:PassedToService" = [
+              "ecs-tasks.amazonaws.com",
+              "events.amazonaws.com"
+            ]
+          }
+        }
       }
     ]
   })

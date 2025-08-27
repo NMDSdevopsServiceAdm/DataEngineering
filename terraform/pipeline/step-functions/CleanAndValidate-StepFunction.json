@@ -169,7 +169,7 @@
             "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
           }
         },
-        "Next": "Trigger pipelines",
+        "Next": "Success",
         "Catch": [
           {
             "ErrorEquals": [
@@ -177,44 +177,6 @@
             ],
             "Next": "Publish error notification",
             "ResultPath": "$.error"
-          }
-        ]
-      },
-      "Trigger pipelines": {
-        "Type": "Parallel",
-        "Next": "Success",
-        "Branches": [
-          {
-            "StartAt": "Trigger SfC coverage pipeline",
-            "States": {
-              "Trigger SfC coverage pipeline": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution",
-                "Parameters": {
-                  "StateMachineArn": "${trigger_coverage_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
-                "End": true
-              }
-            }
-          },
-          {
-            "StartAt": "Trigger Ind CQC pipeline",
-            "States": {
-              "Trigger Ind CQC pipeline": {
-                "Type": "Task",
-                "Resource": "arn:aws:states:::states:startExecution",
-                "Parameters": {
-                  "StateMachineArn": "${trigger_ind_cqc_filled_post_estimates_pipeline_state_machine_arn}",
-                  "Input": {
-                    "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
-                  }
-                },
-                "End": true
-              }
-            }
           }
         ]
       },
