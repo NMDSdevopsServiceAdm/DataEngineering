@@ -11,14 +11,15 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Expanded acronyms in documentation.
 - Removed providers dataset from clean locations job as it's no longer used.
-- Updated read_from_parquet() function with a new optional schema parameter.
-- Refactored CQC API pipeline to use delta model in Polars, including:
+- Updated [read_from_parquet()](utils/utils.py) function with a new optional schema parameter.
+- Refactored [CQC API pipeline](terraform/pipeline/step-functions/CQC-API-Pipeline.json) to use delta model in Polars, including:
   - delta download tasks using CQC changes API
   - tasks for download written in Polars within ECS tasks
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
 - Created an `SfC-Internal` step function which contains all the internal Skills for Care jobs in one pipeline.
+- Updated [Error Notification lambda](lambdas/error_notifications/error_notifications.py) to handle ECS task failures.
 
 ### Improved
 
