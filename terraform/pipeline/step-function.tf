@@ -29,6 +29,7 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     dataset_bucket_uri                         = module.datasets_bucket.bucket_uri
     dataset_bucket_name                        = module.datasets_bucket.bucket_name
     data_validation_reports_crawler_name       = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn       = aws_lambda_function.error_notification_lambda.arn
     transform_ascwds_state_machine_arn         = aws_sfn_state_machine.transform_ascwds_state_machine.arn
     transform_cqc_data_state_machine_arn       = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
     trigger_ind_cqc_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
