@@ -1,14 +1,14 @@
 {
   "Comment": "State machine for CQC API ingestion data pipeline",
-  "StartAt": "CqcIngest",
+  "StartAt": "CQC API Ingestion",
   "States": {
-    "CqcIngest": {
+    "CQC API Ingestion": {
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "ReadLastProvidersRun",
+          "StartAt": "Read Last Providers Run",
           "States": {
-            "ReadLastProvidersRun": {
+            "Read Last Providers Run": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
@@ -26,9 +26,9 @@
                 "end_arg": "--end_timestamp",
                 "end_value.$": "$$.State.EnteredTime"
               },
-              "Next": "RunDeltaCqcProvidersDownloadJob"
+              "Next": "Run Delta CQC Providers Download"
             },
-            "RunDeltaCqcProvidersDownloadJob": {
+            "Run Delta CQC Providers Download": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -52,9 +52,9 @@
                 }
               },
               "ResultPath": "$.providerResult",
-              "Next": "WriteLastProvidersRun"
+              "Next": "Write Last Providers Run"
             },
-            "WriteLastProvidersRun": {
+            "Write Last Providers Run": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
@@ -63,9 +63,9 @@
                 "Overwrite": true,
                 "Type": "String"
               },
-              "Next": "ValidateProvidersApiRaw"
+              "Next": "Validate Providers API Raw"
             },
-            "ValidateProvidersApiRaw": {
+            "Validate Providers API Raw": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -75,9 +75,9 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
                 }
               },
-              "Next": "BuildProvidersDataset"
+              "Next": "Build Providers Dataset"
             },
-            "BuildProvidersDataset": {
+            "Build Providers Dataset": {
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
@@ -94,9 +94,9 @@
           }
         },
         {
-          "StartAt": "ReadLastLocationsRun",
+          "StartAt": "Read Last Locations Run",
           "States": {
-            "ReadLastLocationsRun": {
+            "Read Last Locations Run": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
               "Parameters": {
@@ -114,9 +114,9 @@
                 "end_arg": "--end_timestamp",
                 "end_value.$": "$$.State.EnteredTime"
               },
-              "Next": "RunDeltaCqcLocationsDownloadJob"
+              "Next": "Run Delta CQC Locations Download"
             },
-            "RunDeltaCqcLocationsDownloadJob": {
+            "Run Delta CQC Locations Download": {
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
@@ -140,9 +140,9 @@
                 }
               },
               "ResultPath": "$.locationResult",
-              "Next": "WriteLastLocationsRun"
+              "Next": "Write Last Locations Run"
             },
-            "WriteLastLocationsRun": {
+            "Write Last Locations Run": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
               "Parameters": {
@@ -151,9 +151,9 @@
                 "Overwrite": true,
                 "Type": "String"
               },
-              "Next": "ValidateLocationsApiRaw"
+              "Next": "Validate Locations Api Raw"
             },
-            "ValidateLocationsApiRaw": {
+            "Validate Locations Api Raw": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
@@ -163,9 +163,9 @@
                   "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
                 }
               },
-              "Next": "BuildLocationsDataset"
+              "Next": "Build Locations Dataset"
             },
-            "BuildLocationsDataset": {
+            "Build Locations Dataset": {
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
