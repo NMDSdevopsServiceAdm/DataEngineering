@@ -38,45 +38,82 @@
           }
         }
       ],
+      "Next": "Handle Error and Run Crawler",
       "Catch": [
         {
-          "ErrorEquals": ["States.ALL"],
-          "ResultPath": "$.transform_error",
-          "Next": "Run Validation Crawler"
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawler"
         }
-      ],
-      "Next": "Run Validation Crawler"
+      ]
     },
-    "Run Validation Crawler": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Check For Transform Errors"
-    },
-    "Check For Transform Errors": {
-      "Type": "Choice",
-      "Choices": [
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
         {
-          "Variable": "$.transform_error",
-          "IsPresent": true,
-          "Next": "Fail Pipeline"
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "No Error": {
+              "Type": "Pass",
+              "End": true
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run Validation Crawler",
+          "States": {
+            "Run Validation Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${data_validation_reports_crawler_name}"
+              },
+              "End": true
+            }
+          }
         }
       ],
-      "Default": "Downstream Pipelines"
-    },
-    "Fail Pipeline": {
-      "Type": "Fail",
-      "Cause": "One or more transforms failed."
+      "Next": "Downstream Pipelines"
     },
     "Downstream Pipelines": {
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "SfC Flatten ratings -> Coverage  -> Reconciliation",
+          "StartAt": "SfC Internal Placeholder",
           "States": {
-            "SfC Flatten ratings -> Coverage  -> Reconciliation": {
+            "SfC Internal Placeholder": {
               "Type": "Pass",
               "End": true
             }
