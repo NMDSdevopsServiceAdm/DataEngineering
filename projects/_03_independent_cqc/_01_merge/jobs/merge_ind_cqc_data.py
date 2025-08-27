@@ -1,6 +1,6 @@
 import sys
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window, functions as F
 from typing import Optional
 
 from utils import utils
@@ -22,7 +22,7 @@ from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
-from utils.column_values.categorical_column_values import Sector
+from utils.column_values.categorical_column_values import Sector, Dormancy
 
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -37,8 +37,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
-    CQCLClean.time_registered,
-    CQCLClean.time_since_dormant,
     CQCLClean.dormancy,
     CQCLClean.care_home,
     CQCLClean.number_of_beds,
@@ -116,6 +114,8 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
+    cqc_location_df = calculate_time_registered_for(cqc_location_df)
+    cqc_location_df = calculate_time_since_dormant(cqc_location_df)
 
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
@@ -271,3 +271,88 @@ if __name__ == "__main__":
     )
 
     print("Spark job 'merge_ind_cqc_data' complete")
+
+
+def calculate_time_registered_for(df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
+
+    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
+    imputed registration date and the cqc location import date.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with the new time_registered column added.
+    """
+    df = df.withColumn(
+        CQCLClean.time_registered,
+        F.floor(
+            F.months_between(
+                F.col(CQCLClean.cqc_location_import_date),
+                F.col(CQCLClean.imputed_registration_date),
+            )
+        )
+        + 1,
+    )
+
+    return df
+
+
+def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the number of months since the location was last dormant.
+
+    This function calculates the number of months since the last time a location was marked as dormant.
+    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
+    the number of months since that date for each location.
+
+    'time_since_dormant' values before the first instance of dormancy are null.
+    If the location has never been dormant then 'time_since_dormant' is null.
+
+    Args:
+        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
+
+    Returns:
+        DataFrame: A dataframe with an additional column 'time_since_dormant'.
+    """
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+
+    df = df.withColumn(
+        CQCLClean.dormant_date,
+        F.when(
+            F.col(CQCLClean.dormancy) == Dormancy.dormant,
+            F.col(CQCLClean.cqc_location_import_date),
+        ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.last_dormant_date,
+        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
+    )
+
+    df = df.withColumn(
+        CQCLClean.time_since_dormant,
+        F.when(
+            F.col(CQCLClean.last_dormant_date).isNotNull(),
+            F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+                F.floor(
+                    F.months_between(
+                        F.col(CQCLClean.cqc_location_import_date),
+                        F.col(CQCLClean.last_dormant_date),
+                    )
+                )
+                + 1,
+            ),
+        ),
+    )
+
+    df = df.drop(
+        CQCLClean.dormant_date,
+        CQCLClean.last_dormant_date,
+    )
+
+    return df
