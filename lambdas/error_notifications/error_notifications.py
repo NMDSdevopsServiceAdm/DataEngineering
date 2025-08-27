@@ -9,7 +9,7 @@ import boto3
 
 class JobType(Enum):
     ECS = "ECS"
-    GLUE = "GLUE"
+    GLUE = "Glue"
 
     @classmethod
     def from_error(cls, error):
@@ -162,5 +162,5 @@ def main(event, _, sns_client=None, sf_client=None):
         )
     except Exception as err:
         sf_client.send_task_failure(
-            taskToken=callback_token, error=f"{type(err)}", cause=err
+            taskToken=callback_token, error=f"{type(err)}", cause=str(err)
         )
