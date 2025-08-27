@@ -111,10 +111,17 @@
       "Type": "Parallel",
       "Branches": [
         {
-          "StartAt": "SfC Internal Placeholder",
+          "StartAt": "SfC Internal Pipeline",
           "States": {
-            "SfC Internal Placeholder": {
-              "Type": "Pass",
+            "SfC Internal Pipeline": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution",
+              "Parameters": {
+                "StateMachineArn": "${trigger_sfc_internal_pipeline_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
               "End": true
             }
           }
