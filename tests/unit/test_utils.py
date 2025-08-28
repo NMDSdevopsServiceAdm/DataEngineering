@@ -17,8 +17,8 @@ from pyspark.sql.types import (
 import boto3
 from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import UtilsData, CQCPirCleanedData
-from tests.test_file_schemas import UtilsSchema, CQCPIRCleanSchema
+from tests.test_file_data import UtilsData
+from tests.test_file_schemas import UtilsSchema
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
@@ -105,8 +105,8 @@ class UtilsTests(unittest.TestCase):
             self.example_csv_for_schema_tests_extra_column, header=True
         )
         self.pir_cleaned_test_df: DataFrame = self.spark.createDataFrame(
-            data=CQCPirCleanedData.subset_for_latest_submission_date_before_filter,
-            schema=CQCPIRCleanSchema.clean_subset_for_grouping_by,
+            data=UtilsData.cqc_pir_rows,
+            schema=UtilsSchema.cqc_pir_schema,
         )
         self.test_grouping_list = [
             F.col(CqcPIRCleanedColumns.location_id),
@@ -509,6 +509,90 @@ class GeneralUtilsTests(UtilsTests):
             ],
         )
 
+    def test_read_from_parquet_applies_provided_schema(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.provider_id, StringType(), True),
+                StructField(CQCColNames.name, StringType(), True),
+                StructField(CQCColNames.postal_code, StringType(), True),
+            ]
+        )
+        df = utils.read_from_parquet(
+            self.example_parquet_path,
+            schema=schema,
+        )
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.provider_id,
+                CQCColNames.name,
+                CQCColNames.postal_code,
+            ],
+        )
+
+    def test_read_from_parquet_with_schema_and_column_list(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.name, StringType(), True),
+                StructField(CQCColNames.provider_id, StringType(), True),
+                StructField(CQCColNames.region, StringType(), True),
+            ]
+        )
+        column_list = [CQCColNames.name, CQCColNames.region]
+
+        df = utils.read_from_parquet(
+            self.example_parquet_path, selected_columns=column_list, schema=schema
+        )
+
+        self.assertCountEqual(df.columns, column_list)
+
+    def test_read_from_parquet_with_schema_extra_column_not_in_parquet_ignored(self):
+        schema = StructType(
+            [
+                StructField(CQCColNames.name, StringType(), True),
+                StructField("extra_col", StringType(), True),
+            ]
+        )
+
+        df = utils.read_from_parquet(self.example_parquet_path, schema=schema)
+
+        self.assertCountEqual(df.columns, [CQCColNames.name, "extra_col"])
+        null_count = df.filter(df["extra_col"].isNotNull()).count()
+        self.assertEqual(null_count, 0)
+
+    def test_read_from_parquet_with_empty_schema_imports_all_columns(self):
+        schema = StructType([])
+
+        df = utils.read_from_parquet(self.example_parquet_path, schema=schema)
+
+        self.assertCountEqual(
+            df.columns,
+            [
+                CQCColNames.postal_address_line1,
+                CQCColNames.companies_house_number,
+                CQCColNames.constituency,
+                CQCColNames.postal_address_county,
+                CQCColNames.deregistration_date,
+                CQCColNames.inspection_directorate,
+                CQCColNames.onspd_latitude,
+                CQCColNames.local_authority,
+                CQCColNames.location_ids,
+                CQCColNames.onspd_longitude,
+                CQCColNames.name,
+                CQCColNames.organisation_type,
+                CQCColNames.ownership_type,
+                CQCColNames.main_phone_number,
+                CQCColNames.postal_code,
+                CQCColNames.provider_id,
+                CQCColNames.region,
+                CQCColNames.registration_date,
+                CQCColNames.registration_status,
+                CQCColNames.postal_address_town_city,
+                CQCColNames.type,
+                CQCColNames.uprn,
+            ],
+        )
+
     def test_write(self):
         df = utils.read_csv(self.test_csv_path)
         utils.write_to_parquet(df, self.tmp_dir)
@@ -705,16 +789,6 @@ class LatestDatefieldForGroupingTests(UtilsTests):
         )
         # No other rows are removed
         self.assertEqual(after_df.count(), 5)
-
-    def test_normalise_column_values(self):
-        rows = [("lower_case"), ("with spaces "), ("uppe r_ca se")]
-        test_df = self.spark.createDataFrame(rows, StringType())
-
-        returned_df = utils.normalise_column_values(test_df, "value")
-
-        self.assertEqual(returned_df.collect()[0][0], "LOWER_CASE")
-        self.assertEqual(returned_df.collect()[1][0], "WITHSPACES")
-        self.assertEqual(returned_df.collect()[2][0], "UPPER_CASE")
 
 
 class FilterDataframeToMaximumValueTests(UtilsTests):

@@ -60,51 +60,32 @@ class RemoveDuplicateWorkerTests(TestRawDataAdjustments):
         self.assertEqual(self.expected_df.collect(), returned_df.collect())
 
 
-class RemoveDuplicatePIRTests(TestRawDataAdjustments):
+class RemoveDuplicateWorkplacesTests(TestRawDataAdjustments):
     def setUp(self) -> None:
         super().setUp()
-        self.test_with_multiple_rows_to_remove_df = self.spark.createDataFrame(
-            Data.pir_data_with_multiple_rows_to_remove, Schemas.pir_data_schema
+
+        self.test_df = self.spark.createDataFrame(
+            Data.workplace_data_with_duplicates_rows, Schemas.workplace_data_schema
         )
-        self.test_with_single_row_to_remove_df = self.spark.createDataFrame(
-            Data.pir_data_with_single_row_to_remove, Schemas.pir_data_schema
-        )
-        self.test_without_rows_to_remove_df = self.spark.createDataFrame(
-            Data.pir_data_without_rows_to_remove, Schemas.pir_data_schema
+        self.returned_df = job.remove_duplicate_workplaces_in_raw_workplace_data(
+            self.test_df
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_pir_data, Schemas.pir_data_schema
+            Data.expected_workplace_data_with_duplicates_rows,
+            Schemas.workplace_data_schema,
         )
 
-    def test_remove_duplicate_record_in_pir_data_removes_multiple_rows_when_they_match_the_criteria(
+    def test_remove_duplicate_workplaces_in_raw_workplace_data_returns_original_columns(
         self,
     ):
-        returned_df = job.remove_duplicate_record_in_raw_pir_data(
-            self.test_with_multiple_rows_to_remove_df,
-        )
+        self.assertEqual(sorted(self.returned_df.columns), sorted(self.test_df.columns))
 
-        self.assertIsNotNone(returned_df)
-        self.assertEqual(self.expected_df.collect(), returned_df.collect())
-
-    def test_remove_duplicate_record_in_pir_data_removes_single_row_when_it_matches_the_criteria(
+    def test_remove_duplicate_workplaces_in_raw_workplace_data_removes_rows_identified_as_duplicates(
         self,
     ):
-        returned_df = job.remove_duplicate_record_in_raw_pir_data(
-            self.test_with_single_row_to_remove_df,
-        )
-
-        self.assertIsNotNone(returned_df)
-        self.assertEqual(self.expected_df.collect(), returned_df.collect())
-
-    def test_remove_duplicate_record_in_pir_data_does_not_remove_rows_when_they_do_not_match_the_criteria(
-        self,
-    ):
-        returned_df = job.remove_duplicate_record_in_raw_pir_data(
-            self.test_without_rows_to_remove_df,
-        )
-
-        self.assertIsNotNone(returned_df)
-        self.assertEqual(self.expected_df.collect(), returned_df.collect())
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(expected_data, returned_data)
 
 
 class RemoveRecordsFromLocationsDataTests(TestRawDataAdjustments):

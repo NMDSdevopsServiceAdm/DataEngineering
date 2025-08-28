@@ -3,6 +3,12 @@ variable "job_parameters" {
   type        = map(any)
 }
 
+variable "extra_conf" {
+  description = "Extra configuration to pass - must be prefixed with  --conf "
+  type        = string
+  default     = ""
+}
+
 variable "trigger" {
   description = "Should a trigger be added to this job?"
   type        = bool

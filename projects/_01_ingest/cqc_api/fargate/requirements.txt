@@ -1,0 +1,4 @@
+polars
+boto3==1.20.7
+requests==2.31.0
+ratelimit==2.2.1

@@ -26,6 +26,7 @@ jdk-8u....-windows-x64.exe
 
 
 ### Downloading JDBC driver to connect AWS Athena to Tableau (requires IT)
+
 1. Install JDBC driver on your pc - version JDBC 2.x with AWS SDK. The file name is AthenaJDBC42-2.1.5.1000.jar
 `https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html`
 
@@ -40,8 +41,8 @@ Field | To be filled with
 Server | athena.eu-west-2.amazonaws.com
 Port | 443
 S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
-Access Key ID | Your specific AWS access key from the AWS credentials page. Around 20 characters long.
-Secret Access Key | Your specific AWS secret key from the AWS credentials page. Around 40 characters long.
+Access Key ID | Tableau user AWS access key from the AWS credentials page. Around 20 characters long.
+Secret Access Key | Tableau user AWS secret key from the AWS credentials page. Around 40 characters long.
 
 5. Once connected select 'main-data-engineering-database' from the 'Database' dropdown in Tableau. All of the tables should now appear and are now available to analyse. Other databases can be selected.
 
@@ -79,9 +80,7 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python39
 C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
 ```
 
-# The rest of the process should not require IT assistance
-
-### Adding user variables:
+### Adding user variables (requires IT):
 1. In the search panel, type `env` and select `Edit environment variables for your account`
 
 2. Under 'user variables', select `path` and then select `edit`
@@ -106,7 +105,7 @@ PYENV_ROOT | C:\Users\_your_name_\.pyenv\pyenv-win\
 PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
-### Python install:
+### Python install (requires IT):
 1. If a version of Python which is not 3.9 is already installed on your computer then you will need to uninstall it
 
 2. Go to https://www.python.org/downloads/
@@ -119,8 +118,11 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python39`
 
+**Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
+
+# The rest of the process should not require IT assistance
 
 ### Hadoop Install:
 1. Download Hadoop Version 3.2.2 (tar.gz)

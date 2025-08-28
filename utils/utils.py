@@ -2,9 +2,10 @@ import os
 import re
 import csv
 import argparse
-from typing import List, Any, Generator
+from typing import List, Any, Generator, Optional
 
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
+from pyspark.sql.types import StructType
 from pyspark.sql.utils import AnalysisException
 
 
@@ -80,6 +81,7 @@ def generate_s3_datasets_dir_date_path(
     date,
     version="1.0.0",
 ):
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
@@ -90,7 +92,9 @@ def generate_s3_datasets_dir_date_path(
 
 
 def read_from_parquet(
-    data_source: str, selected_columns: List[str] = None
+    data_source: str,
+    selected_columns: List[str] = None,
+    schema: Optional[StructType] = None,
 ) -> DataFrame:
     """
     Reads data from a parquet file and returns a DataFrame with all/selected columns.
@@ -98,6 +102,7 @@ def read_from_parquet(
     Args:
         data_source (str): Path to the Parquet file.
         selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
+        schema (Optional[StructType]): Optional - schema to use when reading parquet. Defaults to None.
 
     Returns:
         DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
@@ -105,7 +110,10 @@ def read_from_parquet(
     spark_session = get_spark()
     print(f"Reading data from {data_source}")
 
-    df = spark_session.read.parquet(data_source)
+    if schema:
+        df = spark_session.read.schema(schema).parquet(data_source)
+    else:
+        df = spark_session.read.parquet(data_source)
 
     if selected_columns:
         df = df.select(selected_columns)
@@ -116,6 +124,7 @@ def read_from_parquet(
 def write_to_parquet(
     df: DataFrame, output_dir: str, mode: str = None, partitionKeys=[]
 ):
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     df.write.mode(mode).partitionBy(*partitionKeys).parquet(output_dir)
 
 
@@ -203,6 +212,7 @@ def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
     >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
     """
+    # A refactored version of this function, using Polars rather than PySpark, is available in polars_utils/utils.py
     parser = argparse.ArgumentParser()
     for arg in args:
         parser.add_argument(
@@ -251,10 +261,6 @@ def latest_datefield_for_grouping(
     )
 
     return latest_date_df
-
-
-def normalise_column_values(df: DataFrame, col_name: str):
-    return df.withColumn(col_name, F.upper(F.regexp_replace(F.col(col_name), " ", "")))
 
 
 def filter_df_to_maximum_value_in_column(

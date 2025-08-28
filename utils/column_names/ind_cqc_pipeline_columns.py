@@ -15,6 +15,10 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 
 
 @dataclass
@@ -52,22 +56,17 @@ class IndCqcColumns:
     ascwds_job_role_counts_filtered: str = ascwds_job_role_counts + "_filtered"
     ascwds_job_role_counts_temporary: str = "ascwds_job_role_counts_temporary"
     ascwds_job_role_counts_exploded: str = "ascwds_job_role_counts_exploded"
-    ascwds_job_role_counts_interpolated: str = ascwds_job_role_counts + "_interpolated"
-    ascwds_job_role_counts_rolling_sum: str = "ascwds_job_role_counts_rolling_sum"
     ascwds_job_role_ratios: str = "ascwds_job_role_ratios"
+    ascwds_job_role_ratios_extrapolated: str = "ascwds_job_role_ratios_extrapolated"
     ascwds_job_role_ratios_filtered: str = ascwds_job_role_ratios + "_filtered"
     ascwds_job_role_ratios_temporary: str = "ascwds_job_role_ratios_temporary"
     ascwds_job_role_ratios_interpolated: str = "ascwds_job_role_ratios_interpolated"
     ascwds_job_role_ratios_exploded: str = "ascwds_job_role_ratios_exploded"
-    ascwds_job_role_counts_by_primary_service: str = (
-        "ascwds_job_role_counts_by_primary_service"
-    )
-    ascwds_job_role_ratios_by_primary_service: str = (
-        "ascwds_job_role_ratios_by_primary_service"
-    )
+    ascwds_job_role_rolling_ratio: str = "ascwds_job_role_rolling_ratio"
+    ascwds_job_role_rolling_sum: str = "ascwds_job_role_rolling_sum"
     ascwds_job_role_ratios_merged: str = "ascwds_job_role_ratios_merged"
     ascwds_job_role_ratios_merged_source: str = "ascwds_job_role_ratios_merged_source"
-    ascwds_rate_of_change_trendline_model: str = "rolling_rate_of_change_model"
+    ascwds_rate_of_change_trendline_model: str = "ascwds_rate_of_change_trendline_model"
     ascwds_worker_import_date: str = AWKClean.ascwds_worker_import_date
     ascwds_workplace_import_date: str = AWPClean.ascwds_workplace_import_date
     average_absolute_residual: str = "average_absolute_residual"
@@ -88,7 +87,7 @@ class IndCqcColumns:
     combined_ratio_and_filled_posts: str = "combined_ratio_and_filled_posts"
     contacts: str = CQCLClean.contacts
     contemporary_ccg: str = ONSClean.contemporary_ccg
-    contemporary_constituancy: str = ONSClean.contemporary_constituancy
+    contemporary_constituency: str = ONSClean.contemporary_constituency
     contemporary_cssr: str = ONSClean.contemporary_cssr
     contemporary_icb: str = ONSClean.contemporary_icb
     contemporary_icb_region: str = ONSClean.contemporary_icb_region
@@ -109,10 +108,40 @@ class IndCqcColumns:
     cqc_location_import_date_indexed: str = (
         CQCLClean.cqc_location_import_date + "_indexed"
     )
+    cqc_location_import_date_indexed_squared: str = (
+        cqc_location_import_date_indexed + "_squared"
+    )
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
+    ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
+    ct_care_home_total_employed_dedup: str = (
+        ct_care_home_total_employed + "_deduplicated"
+    )
+    ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
+    ct_care_home_total_employed_rate_of_change_trendline: str = (
+        ct_care_home_total_employed + "_rate_of_change_trendline"
+    )
+    ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
+    ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
+    ct_non_res_care_workers_employed_dedup: str = (
+        CTNRClean.cqc_care_workers_employed + "_deduplicated"
+    )
+    ct_non_res_care_workers_employed_imputed: str = (
+        CTNRClean.cqc_care_workers_employed + "_imputed"
+    )
+    ct_non_res_care_workers_employed_rate_of_change_trendline: str = (
+        CTNRClean.cqc_care_workers_employed + "_rate_of_change_trendline"
+    )
+    ct_non_res_filled_post_estimate: str = (
+        "capacity_tracker_non_res_filled_post_estimate"
+    )
+    ct_non_res_filled_post_estimate_source: str = (
+        ct_non_res_filled_post_estimate + "_source"
+    )
+    ct_non_res_import_date: str = CTNRClean.ct_non_res_import_date
     current_ccg: str = ONSClean.current_ccg
-    current_constituancy: str = ONSClean.current_constituancy
+    current_constituency: str = ONSClean.current_constituency
     current_cssr: str = ONSClean.current_cssr
     current_icb: str = ONSClean.current_icb
     current_icb_region: str = ONSClean.current_icb_region
@@ -133,6 +162,9 @@ class IndCqcColumns:
     difference_between_estimate_and_cqc_registered_managers: str = (
         "difference_between_estimate_and_cqc_registered_managers"
     )
+    difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles: (
+        str
+    ) = "difference_between_estimate_filled_posts_and_estimate_filled_posts_from_all_job_roles"
     distribution_mean: str = "distribution_mean"
     distribution_standard_deviation: str = "distribution_standard_deviation"
     distribution_kurtosis: str = "distribution_kurtosis"
@@ -140,6 +172,9 @@ class IndCqcColumns:
     dormancy: str = CQCLClean.dormancy
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
+    estimate_filled_posts_from_all_job_roles: str = (
+        "estimate_filled_posts_from_all_job_roles"
+    )
     estimated_managerial_filled_posts_temp: str = (
         "estimated_managerial_filled_posts_temp"
     )
@@ -153,7 +188,6 @@ class IndCqcColumns:
     extrapolation_model: str = "extrapolation_model"
     extrapolation_ratio: str = "extrapolation_ratio"
     features: str = "features"
-    filled_posts: str = "filled_posts"
     filled_posts_per_bed_ratio: str = "filled_posts_per_bed_ratio"
     filled_posts_per_bed_ratio_within_std_resids: str = (
         "filled_posts_per_bed_ratio_within_std_resids"
@@ -166,6 +200,8 @@ class IndCqcColumns:
     first_submission_time: str = "first_submission_time"
     gac_service_types: str = CQCLClean.gac_service_types
     has_non_null_value: str = "has_non_null_value"
+    imputed_ascwds_job_role_counts: str = "imputed_ascwds_job_role_counts"
+    imputed_ascwds_job_role_ratios: str = "imputed_ascwds_job_role_ratios"
     imputed_gac_service_types: str = CQCLClean.imputed_gac_service_types
     imputed_pir_filled_posts_model: str = "imputed_pir_filled_posts_model"
     imputed_posts_care_home_model: str = "imputed_posts_care_home_model"
@@ -183,11 +219,6 @@ class IndCqcColumns:
     last_pir_submission: str = "last_pir_submission"
     last_rolling_average: str = "last_rolling_average"
     location_id: str = CQCLClean.location_id
-    locations_at_provider_count: str = "locations_at_provider_count"
-    locations_in_ascwds_at_provider_count: str = "locations_in_ascwds_at_provider_count"
-    locations_in_ascwds_with_data_at_provider_count: str = (
-        "locations_in_ascwds_with_data_at_provider_count"
-    )
     lower_percentile: str = "lower_percentile"
     main_job_group_labelled: str = "main_job_group_labels"
     main_job_role_clean_labelled: str = AWKClean.main_job_role_clean_labelled
@@ -206,10 +237,29 @@ class IndCqcColumns:
     non_res_combined_model: str = "non_res_combined_model"
     non_res_with_dormancy_model: str = "non_res_with_dormancy_model"
     non_res_without_dormancy_model: str = "non_res_without_dormancy_model"
+    national_percentage_care_worker_filled_posts: str = (
+        "national_percentage_care_worker_filled_posts"
+    )
+    national_percentage_direct_care_filled_posts: str = (
+        "national_percentage_direct_care_filled_posts"
+    )
+    national_percentage_managers_filled_posts: str = (
+        "national_percentage_managers_filled_posts"
+    )
+    national_percentage_regulated_professions_filled_posts: str = (
+        "national_percentage_regulated_professions_filled_posts"
+    )
+    national_percentage_other_filled_posts: str = (
+        "national_percentage_other_filled_posts"
+    )
     number_of_beds: str = CQCLClean.number_of_beds
-    number_of_beds_at_provider: str = CQCLClean.number_of_beds + "at_provider"
     number_of_beds_banded: str = "number_of_beds_banded"
-    number_of_beds_banded_cleaned: str = number_of_beds_banded + "_cleaned"
+    number_of_beds_banded_for_rate_of_change: str = (
+        number_of_beds_banded + "_for_rate_of_change"
+    )
+    number_of_beds_banded_for_rolling_avg: str = (
+        number_of_beds_banded + "_for_rolling_avg"
+    )
     organisation_id: str = AWPClean.organisation_id
     percentage_of_residuals_within_absolute_value: str = (
         "percentage_of_residuals_within_absolute_value"
@@ -229,13 +279,14 @@ class IndCqcColumns:
     person_roles: str = CQCLClean.person_roles
     person_title: str = CQCLClean.person_title
     pir_filled_posts_model: str = "pir_filled_posts_model"
-    pir_people_directly_employed: str = CQCPIRClean.pir_people_directly_employed
+    pir_people_directly_employed_cleaned: str = (
+        CQCPIRClean.pir_people_directly_employed_cleaned
+    )
     pir_people_directly_employed_dedup: str = (
-        CQCPIRClean.pir_people_directly_employed + "_deduplicated"
+        CQCPIRClean.pir_people_directly_employed_cleaned + "_deduplicated"
     )
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
-    potential_grouped_provider: str = "potential_grouped_provider"
     prediction: str = "prediction"
     prediction_within_10_posts: str = "prediction_within_10_posts"
     prediction_within_25_posts: str = "prediction_within_25_posts"
@@ -245,6 +296,9 @@ class IndCqcColumns:
     previous_value: str = "previous_value"
     previous_value_unix_time: str = "previous_value_unix_time"
     primary_service_type: str = CQCLClean.primary_service_type
+    primary_service_type_second_level: str = (
+        CQCLClean.primary_service_type + "_second_level"
+    )
     proportion_of_non_rm_managerial_estimated_filled_posts_by_role: str = (
         "map_proportion_of_non_rm_managerial_estimated_filled_posts_by_role"
     )
@@ -271,14 +325,22 @@ class IndCqcColumns:
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
+    single_period_rate_of_change = "single_period_rate_of_change"
     specialisms_offered: str = CQCLClean.specialisms_offered
+    specialist_generalist_other_dementia: str = (
+        CQCLClean.specialist_generalist_other_dementia
+    )
+    specialist_generalist_other_lda: str = CQCLClean.specialist_generalist_other_lda
+    specialist_generalist_other_mh: str = CQCLClean.specialist_generalist_other_mh
     standardised_residual: str = "standardised_residual"
+    submitted_ascwds_data: str = "submitted_ascwds_data"
     sum_non_rm_managerial_estimated_filled_posts: str = (
         "sum_non_rm_managerial_estimated_filled_posts"
     )
+    time_between_submissions: str = "time_between_submissions"
     time_registered: str = CQCLClean.time_registered
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
-    time_registered_capped_at_ten_years: str = "time_registered_capped_at_ten_years"
+    time_since_dormant: str = CQCLClean.time_since_dormant
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"
@@ -298,7 +360,6 @@ class PrimaryServiceRateOfChangeColumns:
     )
     rolling_current_period_sum: str = "rolling_current_period_sum"
     rolling_previous_period_sum: str = "rolling_previous_period_sum"
-    single_period_rate_of_change: str = "single_period_rate_of_change"
     submission_count: str = "submission_count"
 
 
@@ -318,3 +379,19 @@ class NonResWithAndWithoutDormancyCombinedColumns:
     )
     residual_at_overlap: str = "residual_at_overlap"
     time_registered_banded_and_capped: str = "time_registered_banded_and_capped"
+
+
+@dataclass
+class NullGroupedProviderColumns:
+    """The names of the temporary columns created during the null grouped providers process."""
+
+    count_of_awcwds_locations_in_provider: str = "count_of_awcwds_locations_in_provider"
+    count_of_awcwds_locations_with_data_in_provider: str = (
+        "count_of_awcwds_locations_with_data_in_provider"
+    )
+    count_of_cqc_locations_in_provider: str = "count_of_cqc_locations_in_provider"
+    location_pir_average: str = "location_pir_average"
+    number_of_beds_at_provider: str = "number_of_beds_at_provider"
+    potential_grouped_provider: str = "potential_grouped_provider"
+    provider_pir_count: str = "provider_pir_count"
+    provider_pir_sum: str = "provider_pir_sum"

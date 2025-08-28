@@ -33,6 +33,7 @@ from utils.column_values.categorical_column_values import (
     MainJobRoleID,
     MainJobRoleLabels,
     PrimaryServiceType,
+    PrimaryServiceTypeSecondLevel,
     Region,
     RegistrationStatus,
     RelatedLocation,
@@ -40,6 +41,7 @@ from utils.column_values.categorical_column_values import (
     Sector,
     Services,
     Specialisms,
+    SpecialistGeneralistOther,
 )
 
 
@@ -166,6 +168,15 @@ class CleanedIndCQCCategoricalValues:
         IndCQC.ascwds_filtering_rule
     )
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
+    specialist_generalist_other_dementia_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_dementia
+    )
+    specialist_generalist_other_lda_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_lda
+    )
+    specialist_generalist_other_mh_column_values = SpecialistGeneralistOther(
+        IndCQC.specialist_generalist_other_mh
+    )
 
 
 @dataclass
@@ -217,6 +228,9 @@ class FeatureEngineeringCategoricalValues:
 class EstimatedIndCQCFilledPostsCategoricalValues:
     care_home_column_values = CareHome(IndCQC.care_home)
     primary_service_type_column_values = PrimaryServiceType(IndCQC.primary_service_type)
+    primary_service_type_second_level_column_values = PrimaryServiceTypeSecondLevel(
+        IndCQC.primary_service_type_second_level
+    )
     current_region_column_values = Region(IndCQC.current_region)
     current_cssr_column_values = CurrentCSSR(
         IndCQC.current_cssr, value_to_remove=CurrentCSSR.isles_of_scilly

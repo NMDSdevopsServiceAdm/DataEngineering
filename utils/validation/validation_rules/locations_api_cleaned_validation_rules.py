@@ -19,7 +19,6 @@ class LocationsAPICleanedValidationRules:
         RuleName.size_of_dataset: None,
         RuleName.complete_columns: [
             CQCLClean.location_id,
-            CQCLClean.cqc_provider_import_date,
             CQCLClean.cqc_location_import_date,
             CQCLClean.care_home,
             CQCLClean.provider_id,
@@ -28,7 +27,6 @@ class LocationsAPICleanedValidationRules:
             CQCLClean.imputed_registration_date,
             CQCLClean.primary_service_type,
             CQCLClean.name,
-            CQCLClean.provider_name,
             CQCLClean.contemporary_ons_import_date,
             CQCLClean.contemporary_cssr,
             CQCLClean.contemporary_region,

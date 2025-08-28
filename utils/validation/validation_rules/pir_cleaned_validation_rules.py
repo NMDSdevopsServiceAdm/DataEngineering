@@ -24,10 +24,10 @@ class PIRCleanedValidationRules:
             CQCPIRClean.cqc_pir_import_date,
         ],
         RuleName.max_values: {
-            CQCPIRClean.pir_people_directly_employed: 10000,
+            CQCPIRClean.pir_people_directly_employed_cleaned: 1500,
         },
         RuleName.min_values: {
-            CQCPIRClean.pir_people_directly_employed: 1,
+            CQCPIRClean.pir_people_directly_employed_cleaned: 1,
         },
         RuleName.categorical_values_in_columns: {
             CQCPIRClean.care_home: CatValues.care_home_column_values.categorical_values,

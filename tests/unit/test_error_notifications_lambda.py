@@ -26,12 +26,44 @@ EXAMPLE_GENERIC_FAILURE_PAYLOAD = {
 }
 
 
+class TestJobType(unittest.TestCase):
+    def test_job_type_from_glue_error(self):
+        # Given
+        error = {"ErrorMessage": "some error message"}
+        # When
+        job_type = error_notifications.JobType.from_error(error)
+        # Then
+        assert job_type is not None
+        self.assertEqual(job_type.value, "Glue")
+
+    def test_job_type_from_ecs_error(self):
+        # Given
+        error = {"StoppedReason": "some reason", "ErrorMessage": "some error message"}
+        # When
+        job_type = error_notifications.JobType.from_error(error)
+        # Then
+        assert job_type is not None
+        self.assertEqual(job_type.value, "ECS")
+
+    def test_job_type_from_unknown_error(self):
+        # Given
+        error = {}
+        # When
+        job_type = error_notifications.JobType.from_error(error)
+        # Then
+        self.assertIsNone(job_type)
+
+
 class ErrorNotifications(unittest.TestCase):
     def setUp(self) -> None:
         self.sns_client = boto3.client("sns", region_name="eu-west-2")
         self.sns_stubber = Stubber(self.sns_client)
         self.sf_client = boto3.client("stepfunctions", region_name="eu-west-2")
         self.sf_stubber = Stubber(self.sf_client)
+
+    def tearDown(self) -> None:
+        os.environ["SNS_TOPIC_ARN"] = ""
+        return super().tearDown()
 
     def test_sns_called_with_topic_arn(self):
         topic_arn = "arn:aws:sns:eu-west-2:1234523454:my-topic"
@@ -77,6 +109,7 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_when_successfully_published_calls_successful_callback(self):
+        os.environ["SNS_TOPIC_ARN"] = "test"
         self.mock_sns_publish()
 
         self.mock_task_success(
@@ -91,6 +124,7 @@ class ErrorNotifications(unittest.TestCase):
         self.sf_stubber.assert_no_pending_responses()
 
     def test_when_it_errors_calls_failure_callback(self):
+        os.environ["SNS_TOPIC_ARN"] = "test"
         self.sns_stubber.add_client_error(
             "publish",
             service_error_code="NotFoundException",
@@ -131,3 +165,16 @@ class ErrorNotifications(unittest.TestCase):
             "publish", {"MessageId": MessageIdResponse}, exepcted_params
         )
         self.sns_stubber.activate()
+
+    def test_missing_topic_throws_error(self):
+        if "SNS_TOPIC_ARN" in os.environ:
+            del os.environ["SNS_TOPIC_ARN"]
+
+        with self.assertRaises(AttributeError) as context:
+            error_notifications.main(
+                EXAMPLE_GENERIC_FAILURE_PAYLOAD, {}, self.sns_client, self.sf_client
+            )
+
+        self.assertEqual(
+            str(context.exception), "SNS_TOPIC_ARN environment variable not set"
+        )
