@@ -706,10 +706,10 @@ class FlattenCQCRatings:
         )
     ]
     flatten_assessment_ratings_rows = [
-        {
-            CQCL.location_id: "loc_1",
-            CQCL.registration_status: "registered",
-            CQCL.assessment: [
+        (
+            "loc_1",
+            "registered",
+            [
                 {
                     CQCL.assessment_plan_published_datetime: "assessment_plan_published_datetime",
                     CQCL.ratings: {
@@ -927,7 +927,7 @@ class FlattenCQCRatings:
                     },
                 }
             ],
-        }
+        )
     ]
     expected_flatten_assessment_ratings_rows = [
         # --- Current Overall (Good, Current) ---
