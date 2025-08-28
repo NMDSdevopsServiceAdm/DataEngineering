@@ -1177,6 +1177,7 @@ class FlattenCQCRatings:
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.status, StringType(), True),
             StructField(CQCL.rating, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
             StructField(CQCL.safe, StringType(), True),
             StructField(CQCL.effective, StringType(), True),
             StructField(CQCL.caring, StringType(), True),

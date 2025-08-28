@@ -307,47 +307,47 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
             ),
         ),
         (
-            "assessment",
+            NewColNames.assessment,
             pl.List(
                 pl.Struct(
                     {
-                        "assessmentPlanPublishedDateTime": pl.String(),
-                        "ratings": pl.Struct(
+                        NewColNames.assessment_plan_published_datetime: pl.String(),
+                        NewColNames.ratings: pl.Struct(
                             {
-                                "overall": pl.List(
+                                NewColNames.overall: pl.List(
                                     pl.Struct(
                                         {
-                                            "rating": pl.String(),
-                                            "status": pl.String(),
-                                            "keyQuestionRatings": pl.List(
+                                            NewColNames.rating: pl.String(),
+                                            NewColNames.status: pl.String(),
+                                            NewColNames.key_question_ratings: pl.List(
                                                 pl.Struct(
                                                     {
-                                                        "name": pl.String(),
-                                                        "rating": pl.String(),
-                                                        "status": pl.String(),
+                                                        NewColNames.name: pl.String(),
+                                                        NewColNames.rating: pl.String(),
+                                                        NewColNames.status: pl.String(),
                                                     }
                                                 )
                                             ),
                                         }
                                     )
                                 ),
-                                "asgRatings": pl.List(
+                                NewColNames.asg_ratings: pl.List(
                                     pl.Struct(
                                         {
-                                            "assessmentPlanId": pl.String(),
-                                            "title": pl.String(),
-                                            "assessmentDate": pl.String(),
-                                            "assessmentPlanStatus": pl.String(),
-                                            "name": pl.String(),
-                                            "rating": pl.String(),
-                                            "status": pl.String(),
-                                            "keyQuestionRatings": pl.List(
+                                            NewColNames.assessment_plan_id: pl.String(),
+                                            NewColNames.title: pl.String(),
+                                            NewColNames.assessment_date: pl.String(),
+                                            NewColNames.assessment_plan_status: pl.String(),
+                                            NewColNames.name: pl.String(),
+                                            NewColNames.rating: pl.String(),
+                                            NewColNames.status: pl.String(),
+                                            NewColNames.key_question_ratings: pl.List(
                                                 pl.Struct(
                                                     {
-                                                        "name": pl.String(),
-                                                        "rating": pl.String(),
-                                                        "status": pl.String(),
-                                                        "percentageScore": pl.String(),
+                                                        NewColNames.name: pl.String(),
+                                                        NewColNames.rating: pl.String(),
+                                                        NewColNames.status: pl.String(),
+                                                        NewColNames.percentage_score: pl.String(),
                                                     }
                                                 )
                                             ),

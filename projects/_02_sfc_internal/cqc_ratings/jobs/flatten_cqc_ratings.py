@@ -241,6 +241,21 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    """
+    Flatten overall and ASG ratings within assessment field extracted from CQC location data into a unified, pivoted DataFrame.
+
+    This function:
+      1. Extracts assessment base information from the input location DataFrame.
+      2. Separately flattens overall ratings and ASG ratings into tabular form.
+      3. Unions both datasets together, aligning by schema.
+      4. Pivots key question ratings into columns (Safe, Effective, Caring, Responsive and Well-led.).
+
+    Args:
+        cqc_location_df (DataFrame): Input DataFrame containing raw CQC location data, with nested assessments and ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame where each row corresponds to a locations assessment plan, with key question ratings pivoted into individual columns.
+    """
     assessment_df = extract_assessment_base(cqc_location_df)
     overall_df = extract_overall(assessment_df)
     asg_df = extract_asg(assessment_df)
@@ -260,6 +275,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
             CQCL.name,
             CQCL.status,
             CQCL.rating,
+            CQCL.source_path,
         )
         .pivot(CQCL.key_question_name)
         .agg(F.first(CQCL.key_question_rating))
@@ -278,17 +294,27 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.name,
         CQCL.status,
         CQCL.rating,
-        "Safe",
-        "Effective",
-        "Caring",
-        "Responsive",
-        "Well-led",
+        CQCL.source_path,
+        CQCL.safe,
+        CQCL.effective,
+        CQCL.caring,
+        CQCL.responsive,
+        CQCL.well_led,
     ]
 
     return reshaped_df.select(*desired_column_order)
 
 
 def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
+    """
+    Extract and explode the base assessment data from the CQC location dataset.
+
+    Args:
+        cqc_location_df (DataFrame): Input DataFrame containing raw CQC location data with nested assessments.
+
+    Returns:
+        DataFrame: DataFrame with columns for location ID, registration status, assessment plan published datetime, and nested assessment ratings.
+    """
     assessment_base_df = cqc_location_df.withColumn(
         CQCL.assessment_exploded, F.explode(CQCL.assessment)
     ).select(
@@ -305,6 +331,19 @@ def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
 
 
 def extract_overall(assessment_df: DataFrame) -> DataFrame:
+    """
+    Extract and flatten 'overall' ratings from assessment data.
+
+    This function:
+      1. Explodes the `overall` ratings array.
+      2. Selects Explodes core fields such as rating, status, and key question ratings.
+
+    Args:
+        assessment_df (DataFrame): DataFrame produced by `extract_assessment_base`, containing assessment ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame of overall ratings, including key question ratings for each assessment.
+    """
     exploded = assessment_df.withColumn(
         CQCL.overall_exploded,
         F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}")),
@@ -345,6 +384,21 @@ def extract_overall(assessment_df: DataFrame) -> DataFrame:
 
 
 def extract_asg(assessment_df: DataFrame) -> DataFrame:
+    """
+    Extract and flatten ASG ratings from assessment data.
+
+    This function:
+      1. Explodes the `asg_ratings` array.
+      2. Selects core ASG fields such as plan ID, title, assessment date, status, and rating.
+      3. Explodes the nested key question ratings so each becomes its own row.
+      4. Adds additional fields including percentage score (if present), dataset type, and source path.
+
+    Args:
+        assessment_df (DataFrame): DataFrame produced by `extract_assessment_base`, containing assessment ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame of ASG ratings, including key question ratings and metadata for each sub assessment.
+    """
     exploded = assessment_df.withColumn(
         CQCL.asg_exploded,
         F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")),
