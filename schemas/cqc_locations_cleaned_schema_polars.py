@@ -72,8 +72,6 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
         ),
         (CleanedColNames.imputed_registration_date, pl.Date()),
         (CleanedColNames.cqc_sector, pl.String()),
-        (CleanedColNames.time_registered, pl.Int64()),
-        (CleanedColNames.time_since_dormant, pl.Int64()),
         (
             CleanedColNames.imputed_relationships,
             pl.List(
