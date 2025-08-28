@@ -59,11 +59,11 @@ resource "aws_sfn_state_machine" "clean_and_validate_state_machine" {
     clean_ascwds_workplace_job_name                                  = module.clean_ascwds_workplace_job.job_name
     clean_ascwds_worker_job_name                                     = module.clean_ascwds_worker_job.job_name
     clean_cqc_provider_data_job_name                                 = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                                 = module.clean_cqc_location_data_job.job_name
+    clean_cqc_location_data_job_name                                 = module.delta_clean_cqc_location_data_job.job_name
     clean_ons_data_job_name                                          = module.clean_ons_data_job.job_name
     reconciliation_job_name                                          = module.reconciliation_job.job_name
     ascwds_crawler_name                                              = module.ascwds_crawler.crawler_name
-    cqc_crawler_name                                                 = module.cqc_crawler.crawler_name
+    cqc_crawler_name                                                 = module.cqc_crawler_delta.crawler_name
     ons_crawler_name                                                 = module.ons_crawler.crawler_name
     trigger_coverage_state_machine_arn                               = aws_sfn_state_machine.coverage_state_machine.arn
     trigger_ind_cqc_filled_post_estimates_pipeline_state_machine_arn = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
@@ -434,7 +434,7 @@ resource "aws_sfn_state_machine" "silver_validation_state_machine" {
     dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
     validate_ascwds_worker_cleaned_data_job_name    = module.validate_ascwds_worker_cleaned_data_job.job_name
     validate_ascwds_workplace_cleaned_data_job_name = module.validate_ascwds_workplace_cleaned_data_job.job_name
-    validate_locations_api_cleaned_data_job_name    = module.validate_locations_api_cleaned_data_job.job_name
+    validate_locations_api_cleaned_data_job_name    = module.validate_delta_locations_api_cleaned_data_job.job_name
     validate_providers_api_cleaned_data_job_name    = module.validate_providers_api_cleaned_data_job.job_name
     data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
