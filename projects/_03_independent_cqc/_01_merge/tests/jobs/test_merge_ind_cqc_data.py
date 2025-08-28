@@ -58,12 +58,12 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
     def test_main_runs(
         self,
+        calculate_time_since_dormant_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
         read_from_parquet_patch: Mock,
         select_rows_with_value_mock: Mock,
         join_data_into_cqc_df_mock: Mock,
         write_to_parquet_patch: Mock,
-        calculate_time_registered_for_mock: Mock,
-        calculate_time_since_dormant_mock: Mock,
     ):
         read_from_parquet_patch.side_effect = [
             self.test_clean_cqc_location_df,
