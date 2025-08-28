@@ -1,0 +1,139 @@
+{
+  "Comment": "State machine for cleaning and validating CQC data",
+  "StartAt": "Clean And Validate CQC Data",
+  "States": {
+    "Clean And Validate CQC Data": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Clean CQC Provider Data",
+          "States": {
+            "Clean CQC Provider Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_cqc_provider_data_job_name}",
+                "Arguments": {
+                  "--cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/",
+                  "--cqc_provider_cleaned": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
+                }
+              },
+              "Next": "Validate Providers Cleaned"
+            },
+            "Validate Providers Cleaned": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_providers_api_cleaned_data_job_name}",
+                "Arguments": {
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/",
+                  "--cleaned_cqc_providers_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_providers_api_cleaned/"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Clean CQC Location Data",
+          "States": {
+            "Clean CQC Location Data": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${clean_cqc_location_data_job_name}",
+                "Arguments": {
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0",
+                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
+                }
+              },
+              "Next": "Validate Locations Cleaned"
+            },
+            "Validate Locations Cleaned": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_locations_api_cleaned_data_job_name}",
+                "Arguments": {
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/",
+                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Handle Error and Run Crawler",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawler"
+        }
+      ]
+    },
+    "Handle Error and Run Crawler": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run CQC Crawler",
+          "States": {
+            "Run CQC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${cqc_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "End": true
+    }
+  }
+}
