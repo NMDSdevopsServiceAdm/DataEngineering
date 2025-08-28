@@ -168,8 +168,6 @@ jobs:
   deploy-dependencies:
     docker:
       - image: cimg/python:3.13.5
-    docker:
-      - image: circleci/python:3.13.5
     resource_class: small
     steps:
       - attach_workspace:
