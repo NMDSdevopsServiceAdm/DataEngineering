@@ -182,11 +182,16 @@ def generate_proportion_of_predictions_within_range(
     Returns:
         float: The rounded proportion of predictions within the given range.
     """
-    metric_value = round(
-        evaluator.evaluate(predictions_df, {evaluator.metricName: metric_name}), 4
+    within_range: str = "within_range"
+    predictions_df = predictions_df.withColumn(
+        within_range,
+        (F.abs(F.col(IndCqc.residual)) <= range_cutoff).cast(IntegerType()),
     )
-    print(f"Calculating {metric_name} = {metric_value}")
-    return metric_value
+
+    in_range_count = predictions_df.agg(F.sum(within_range)).first()[0]
+    total_count = predictions_df.agg(F.count(within_range)).first()[0]
+
+    return round(in_range_count / total_count, 4)
 
 
 def combine_current_and_previous_metrics(
