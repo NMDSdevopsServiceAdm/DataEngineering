@@ -102,7 +102,7 @@ class MergeIndCQCData:
     expected_calculate_time_since_dormant_schema = StructType(
         [
             *calculate_time_since_dormant_schema,
-            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
+            StructField(IndCQC.time_since_dormant, IntegerType(), True),
         ]
     )
 
