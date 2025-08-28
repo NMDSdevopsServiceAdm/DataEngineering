@@ -20,9 +20,6 @@ orbs:
   python: circleci/python@3.13.5
 
 jobs:
-  build:
-
-jobs:
   task-containerisation:
     docker:
       - image: docker:latest
