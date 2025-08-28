@@ -12,6 +12,36 @@ util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
 
 
+def read_from_parquet(
+    data_source: str,
+    selected_columns: List[str] = None,
+    schema: Optional[StructType] = None,
+) -> DataFrame:
+    """
+    Reads data from a parquet file and returns a DataFrame with all/selected columns.
+
+    Args:
+        data_source (str): Path to the Parquet file.
+        selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
+        schema (Optional[StructType]): Optional - schema to use when reading parquet. Defaults to None.
+
+    Returns:
+        DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
+    """
+    spark_session = get_spark()
+    print(f"Reading data from {data_source}")
+
+    if schema:
+        df = spark_session.read.schema(schema).parquet(data_source)
+    else:
+        df = spark_session.read.parquet(data_source)
+
+    if selected_columns:
+        df = df.select(selected_columns)
+
+    return df
+
+
 def write_to_parquet(
     df: pl.DataFrame,
     output_path: str,

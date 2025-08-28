@@ -1,20 +1,22 @@
 """Retrieves Location data from the CQC API."""
-from utils.aws_secrets_manager_utilities import get_secret
-import os
+
 import json
-from datetime import datetime as dt
-from datetime import date
 import logging
-from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+import os
+import sys
+from argparse import ArgumentError, ArgumentTypeError
+from datetime import date
+from datetime import datetime as dt
+
 import polars as pl
+
+from polars_utils import utils
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
+from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
-from polars_utils import utils
-from typing import Generator
-from argparse import ArgumentError, ArgumentTypeError
-import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

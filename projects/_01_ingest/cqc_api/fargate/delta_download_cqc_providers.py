@@ -1,21 +1,23 @@
 """Retrieves Provider data from the CQC API."""
-from utils.aws_secrets_manager_utilities import get_secret
-import os
+
 import json
-from datetime import datetime as dt
-from datetime import date
 import logging
-from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+import os
+import sys
+from argparse import ArgumentError, ArgumentTypeError
+from datetime import date
+from datetime import datetime as dt
+from typing import Generator
+
 import polars as pl
+
+from polars_utils import utils
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
+from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
-from polars_utils import utils
-from typing import Generator
-from argparse import ArgumentError, ArgumentTypeError
-import sys
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -101,10 +103,10 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         output_file_path = f"{destination}data.parquet"
         utils.write_to_parquet(df_unique, output_file_path, logger=logger)
         return None
-    except InvalidTimestampArgumentError as e:
+    except InvalidTimestampArgumentError:
         logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.error(
             f"{sys.argv[0]} was unable to write to destination. Args: {sys.argv}"
         )
