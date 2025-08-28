@@ -85,7 +85,7 @@ jobs:
       - checkout
       - run:
           name: Install black
-          command: pip install black==23.7.0
+          command: pip install black==25.1.0
       - run:
           name: Check Python formatting
           command: black . --check
@@ -98,7 +98,7 @@ jobs:
       - checkout
       - run:
           name: Install pydoclint
-          command: pip install pydoclint==0.5.9
+          command: pip install pydoclint==0.6.10
       - run:
           name: Check docstring formatting
           command: pydoclint --style=google --quiet .
