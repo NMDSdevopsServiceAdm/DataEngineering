@@ -18,6 +18,7 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResCleanColumns as CTNRClean,
@@ -222,6 +223,91 @@ def join_data_into_cqc_df(
     )
 
     return cqc_df_with_join_data
+
+
+def calculate_time_registered_for(df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
+
+    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
+    imputed registration date and the cqc location import date.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with the new time_registered column added.
+    """
+    df = df.withColumn(
+        IndCqc.time_registered,
+        F.floor(
+            F.months_between(
+                F.col(CQCLClean.cqc_location_import_date),
+                F.col(CQCLClean.imputed_registration_date),
+            )
+        )
+        + 1,
+    )
+
+    return df
+
+
+def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the number of months since the location was last dormant.
+
+    This function calculates the number of months since the last time a location was marked as dormant.
+    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
+    the number of months since that date for each location.
+
+    'time_since_dormant' values before the first instance of dormancy are null.
+    If the location has never been dormant then 'time_since_dormant' is null.
+
+    Args:
+        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
+
+    Returns:
+        DataFrame: A dataframe with an additional column 'time_since_dormant'.
+    """
+    w = Window.partitionBy(CQCLClean.location_id).orderBy(
+        CQCLClean.cqc_location_import_date
+    )
+
+    df = df.withColumn(
+        CQCLClean.dormant_date,
+        F.when(
+            F.col(CQCLClean.dormancy) == Dormancy.dormant,
+            F.col(CQCLClean.cqc_location_import_date),
+        ),
+    )
+
+    df = df.withColumn(
+        CQCLClean.last_dormant_date,
+        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
+    )
+
+    df = df.withColumn(
+        IndCqc.time_since_dormant,
+        F.when(
+            F.col(CQCLClean.last_dormant_date).isNotNull(),
+            F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
+                F.floor(
+                    F.months_between(
+                        F.col(CQCLClean.cqc_location_import_date),
+                        F.col(CQCLClean.last_dormant_date),
+                    )
+                )
+                + 1,
+            ),
+        ),
+    )
+
+    df = df.drop(
+        CQCLClean.dormant_date,
+        CQCLClean.last_dormant_date,
+    )
+
+    return df
 
 
 if __name__ == "__main__":
