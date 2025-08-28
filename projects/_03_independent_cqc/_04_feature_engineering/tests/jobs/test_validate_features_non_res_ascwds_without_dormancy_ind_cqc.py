@@ -12,7 +12,9 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 
 from utils import utils
 
-PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data"
+)
 
 
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests(unittest.TestCase):

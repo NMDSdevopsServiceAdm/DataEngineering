@@ -76,8 +76,8 @@ C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
 C:\Users\_your_name_\.pyenv\pyenv-win\shims
-C:\Users\_your_name_\AppData\Roaming\Python\Python39
-C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.13
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\Scripts
 ```
 
 ### Adding user variables (requires IT):
@@ -90,8 +90,8 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\AppData\Roaming\Python\Python39\
-C:\Users\_your_name_\AppData\Roaming\Python\Python39\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\Scripts
 %HADOOP_HOME%\bin
 ```
 
@@ -106,19 +106,19 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
 ### Python install (requires IT):
-1. If a version of Python which is not 3.9 is already installed on your computer then you will need to uninstall it
+1. If a version of Python which is not 3.13 is already installed on your computer then you will need to uninstall it
 
 2. Go to https://www.python.org/downloads/
 
-3. Select Ctrl+F and search for `3.9.6`
+3. Select Ctrl+F and search for `3.13.5`
 
 4. Click on the `Download` button
 
 5. Scroll down and select `Windows installer (64-bit)`
 
-6. In your download folder, click on `python-3.9.6-amd64` and install Python manually (in order to change the file location to the location below)
+6. In your download folder, click on `python-3.13.5-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python39`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python3.13`
 
 **Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
 
@@ -171,15 +171,15 @@ https://github.com/cdarlint/winutils
 
 3. If you having an error on above command, try `pip install pyenv-win --target %USERPROFILE%\\.pyenv --no-user --upgrade`
 
-4. Run `pyenv install 3.9.6` to install the supported version
+4. Run `pyenv install 3.13.5` to install the supported version
 
-5. Run `pyenv global 3.9.6` to set a Python version as the global version
+5. Run `pyenv global 3.13.5` to set a Python version as the global version
 
 6. Check which Python version you are using and its path using `pyenv version`
-Output: `3.9.6 (set by C:\Users\.....\.pyenv\pyenv-win\version)`
+Output: `3.13.5 (set by C:\Users\.....\.pyenv\pyenv-win\version)`
 
 7. Check that Python is working using `python -c "import sys; print(sys.executable)"`
-Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.9.6\python.exe`
+Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.13.5\python.exe`
 
 8. Leave command prompt open for the next install
 
@@ -188,7 +188,7 @@ Output: `C:\Users\.....\.pyenv\pyenv-win\versions\3.9.6\python.exe`
 <i>Note: The following pipenv instructions are from https://www.pythontutorial.net/python-basics/install-pipenv-windows/</i>
 
 1. Before installing the pipenv tool, you need to have Python and pip installed on your computer. You can check these by entering
-`python -V` - which should return 'Python 3.9.6'
+`python -V` - which should return 'Python 3.13.5'
 `pip -V` - which should return 'pip xx.x from c:\users\.....'
 
 2. Paste `pip install pipenv` and click Enter
@@ -248,7 +248,7 @@ Python
 
 4. Point the python extension to the virtual environment by typing `Ctrl+Shift+P` to open the Command Palette
 
-5. Search for `Python: Select Interpreter` and select: `Python 3.9.6 ('DataEngineering-...')`
+5. Search for `Python: Select Interpreter` and select: `Python 3.13.5 ('DataEngineering-...')`
 
 6. You should now be able to see the Data Engineering project in VS code.
 

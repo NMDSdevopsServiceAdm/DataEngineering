@@ -1,4 +1,5 @@
 """Retrieves Provider data from the CQC API."""
+
 from utils.aws_secrets_manager_utilities import get_secret
 import os
 import json
