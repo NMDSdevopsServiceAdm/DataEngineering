@@ -1,8 +1,18 @@
-# Description
+## Description
+Trello ticket [#number](add link)
 
-# How to test
+[Describe the feature/fix/refactor being made in this PR]
 
-# Developer checklist
-- [ ] Unit test
-- [ ] Linked to Trello ticket
-- [ ] Documentation up to date
+## Testing
+- [ ] Unit tests passing
+- [ ] Successful [Step Function run](add link)
+- [ ] Outputs checked in Athena
+
+[Add any additional testing information here - add screenshot if relevant]
+
+## Checklist (delete if not relevant)
+- [ ] Unit tests added/amended
+- [ ] Docstrings added/updated
+- [ ] Migration to polars - added comment to pyspark functions which have been migrated
+- [ ] Updated CHANGELOG
+- [ ] Moved Trello ticket to PR column

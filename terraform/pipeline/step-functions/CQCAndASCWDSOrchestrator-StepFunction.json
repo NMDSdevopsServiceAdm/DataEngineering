@@ -1,0 +1,139 @@
+{
+  "Comment": "A state machine to manage the weekly ingestion of CQC API and ASC-WDS data",
+  "StartAt": "Ingest CQC And ASCWDS",
+  "States": {
+    "Ingest CQC And ASCWDS": {
+      "Type": "Parallel",
+      "Next": "Trigger Workforce Intelligence Pipeline",
+      "Branches": [
+        {
+          "StartAt": "Ingest CQC API",
+          "States": {
+            "Ingest CQC API": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
+              "Parameters": {
+                "StateMachineArn": "${ingest_cqc_api_state_machine_arn}",
+                "Input": {
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Check ASCWDS Ingest",
+          "States": {
+            "Check ASCWDS Ingest": {
+              "Type": "Parallel",
+              "Parameters": {
+                "year.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0)",
+                "month.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1)",
+                "day.$": "States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2)"
+              },
+              "Branches": [
+                {
+                  "StartAt": "Check Worker",
+                  "States": {
+                    "Check Worker": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
+                        "Bucket": "${dataset_bucket_name}",
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=worker/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
+                      },
+                      "ResultPath": "$.workerfile",
+                      "Next": "Worker Ready"
+                    },
+                    "Worker Ready": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "Next": "Mark Worker Ready"
+                        },
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "Wait For Worker"
+                        }
+                      ]
+                    },
+                    "Wait For Worker": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "Check Worker"
+                   },
+                    "Mark Worker Ready": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                 }
+                },
+                {
+                  "StartAt": "Check Workplace",
+                  "States": {
+                    "Check Workplace": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::aws-sdk:s3:listObjectsV2",
+                      "Parameters": {
+                        "Prefix.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/', $.year, $.month, $.day)",
+                        "Bucket": "${dataset_bucket_name}",
+                        "StartAfter.$": "States.Format('domain=ASCWDS/dataset=workplace/version=1.0.0/year={}/month={}/day={}/import_date={}{}{}', $.year, $.month, $.day, $.year, $.month, $.day)"
+                      },
+                      "ResultPath": "$.workerfile",
+                      "Next": "Workplace Ready"
+                    },
+                    "Workplace Ready": {
+                      "Type": "Choice",
+                      "Choices": [
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericGreaterThanEquals": 1,
+                          "Next": "Mark Workplace Ready"
+                        },
+                        {
+                          "Variable": "$.workerfile.KeyCount",
+                          "NumericEquals": 0,
+                          "Next": "Wait For Workplace"
+                        }
+                        ]
+                    },
+                    "Wait For Workplace": {
+                      "Type": "Wait",
+                      "Seconds": 10,
+                      "Next": "Check Workplace"
+                    },
+                    "Mark Workplace Ready": {
+                      "Type": "Pass",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Trigger Workforce Intelligence Pipeline": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::states:startExecution",
+      "Parameters": {
+        "StateMachineArn": "${trigger_workforce_intelligence_state_machine_arn}",
+        "Input": {
+          "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+        }
+      },
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Pass",
+      "End": true
+    }
+  }
+}

@@ -3,9 +3,11 @@ from unittest.mock import patch, Mock
 
 import projects._01_ingest.ons_pd.jobs.ingest_ons_data as job
 from utils import utils
-from projects._01_ingest.unittest_data.ingest_test_file_data import ONSData as Data
+from projects._01_ingest.unittest_data.ingest_test_file_data import (
+    IngestONSData as Data,
+)
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
-    ONSData as Schemas,
+    IngestONSData as Schemas,
 )
 
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.ingest_ons_data"

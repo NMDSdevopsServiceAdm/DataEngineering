@@ -1,0 +1,267 @@
+{
+  "Comment": "State machine for CQC API ingestion data pipeline",
+  "StartAt": "CQC API Ingestion",
+  "States": {
+    "CQC API Ingestion": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Read Last Providers Run",
+          "States": {
+            "Read Last Providers Run": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
+              "Parameters": {
+                "Name": "${last_providers_run_param_name}"
+              },
+              "Assign": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
+              "ResultSelector": {
+                "script": "delta_download_cqc_providers.py",
+                "dest_arg": "--destination_prefix",
+                "dest_value": "${dataset_bucket_uri}",
+                "start_arg": "--start_timestamp",
+                "start_value.$": "$.Parameter.Value",
+                "end_arg": "--end_timestamp",
+                "end_value.$": "$$.State.EnteredTime"
+              },
+              "Next": "Run Delta CQC Providers Download"
+            },
+            "Run Delta CQC Providers Download": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": "$.providerResult",
+              "Next": "Write Last Providers Run"
+            },
+            "Write Last Providers Run": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+              "Parameters": {
+                "Name": "${last_providers_run_param_name}",
+                "Value.$": "$endDate",
+                "Overwrite": true,
+                "Type": "String"
+              },
+              "Next": "Validate Providers API Raw"
+            },
+            "Validate Providers API Raw": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_providers_api_raw_delta_data_job_name}",
+                "Arguments": {
+                  "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
+                }
+              },
+              "Next": "Build Providers Dataset"
+            },
+            "Build Providers Dataset": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "organisation_type": "providers",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Read Last Locations Run",
+          "States": {
+            "Read Last Locations Run": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:getParameter",
+              "Parameters": {
+                "Name": "${last_locations_run_param_name}"
+              },
+              "Assign": {
+                "endDate.$": "$$.State.EnteredTime"
+              },
+              "ResultSelector": {
+                "script": "delta_download_cqc_locations.py",
+                "dest_arg": "--destination_prefix",
+                "dest_value": "${dataset_bucket_uri}",
+                "start_arg": "--start_timestamp",
+                "start_value.$": "$.Parameter.Value",
+                "end_arg": "--end_timestamp",
+                "end_value.$": "$$.State.EnteredTime"
+              },
+              "Next": "Run Delta CQC Locations Download"
+            },
+            "Run Delta CQC Locations Download": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command.$": "States.Array($.script, $.dest_arg, $.dest_value, $.start_arg, $.start_value, $.end_arg, $.end_value)"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": "$.locationResult",
+              "Next": "Write Last Locations Run"
+            },
+            "Write Last Locations Run": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:ssm:putParameter",
+              "Parameters": {
+                "Name": "${last_locations_run_param_name}",
+                "Value.$": "$endDate",
+                "Overwrite": true,
+                "Type": "String"
+              },
+              "Next": "Validate Locations Api Raw"
+            },
+            "Validate Locations Api Raw": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Parameters": {
+                "JobName": "${validate_locations_api_raw_delta_data_job_name}",
+                "Arguments": {
+                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
+                }
+              },
+              "Next": "Build Locations Dataset"
+            },
+            "Build Locations Dataset": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "organisation_type": "locations",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "Handle Error and Run Crawlers",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "Handle Error and Run Crawlers"
+        }
+      ]
+    },
+    "Handle Error and Run Crawlers": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
+        },
+        {
+          "StartAt": "Run CQC Crawler",
+          "States": {
+            "Run CQC Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${cqc_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Run Validation Crawler",
+          "States": {
+            "Run Validation Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "Name": "${data_validation_reports_crawler_name}"
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "End": true
+    }
+  }
+}

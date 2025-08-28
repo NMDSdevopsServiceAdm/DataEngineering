@@ -16,8 +16,27 @@ parameters:
 
 orbs:
   aws-s3: circleci/aws-s3@3.0
+  aws-cli: circleci/aws-cli@5.4.1
 
 jobs:
+  task-containerisation:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - aws-cli/setup:
+          region: "eu-west-2"
+      - run:
+          name: Build Docker Images
+          command: |
+            # Authenticate Docker to ECR
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+            
+            echo "Rebuilding lambdas and pushing to ECR."
+            docker buildx bake all --push
+
   test:
     docker:
       - image: circleci/python:3.9.6
@@ -50,12 +69,22 @@ jobs:
       - run:
           name: run unit tests
           command: |
-            pipenv run python -m unittest discover -s . -p "test_*.py"
+            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+      
+      - run:
+          name: Generate coverage report
+          command: |
+            pipenv run coverage report
+            pipenv run coverage xml
+            pipenv run coverage html
 
       - run:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
+
+      - store_artifacts:
+          path: htmlcov
 
   lint-python:
     docker:
@@ -67,7 +96,7 @@ jobs:
           name: Install black
           command: pip install black==23.7.0
       - run:
-          name: Check Python fomatting
+          name: Check Python formatting
           command: black . --check
 
   lint-docstrings:
@@ -80,7 +109,7 @@ jobs:
           name: Install pydoclint
           command: pip install pydoclint==0.5.9
       - run:
-          name: Check docstring fomatting
+          name: Check docstring formatting
           command: pydoclint --style=google --quiet .
 
   lint-terraform:
@@ -90,9 +119,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Check terraform fomatting
+          name: Check terraform formatting
           command: terraform fmt -check -recursive -diff
-
 
   terraform-plan:
     working_directory: /tmp/project
@@ -122,6 +150,7 @@ jobs:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
     resource_class: small
     steps:
+      - checkout
       - attach_workspace:
           at: .
 
@@ -219,11 +248,17 @@ jobs:
             terraform workspace select default
             terraform workspace delete << pipeline.parameters.GHA_Meta >>
 
+
 workflows:
   version: 2
+
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - task-containerisation:
+          filters:
+            branches:
+              only: main
       - test:
           filters:
             branches:
@@ -231,6 +266,7 @@ workflows:
       - terraform-plan:
           requires:
             - test
+            - task-containerisation
       - plan-approval:
           type: approval
           requires:
@@ -246,6 +282,10 @@ workflows:
   test-plan-and-deploy-to-dev:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
+      - task-containerisation:
+          filters:
+            branches:
+              ignore: main
       - test:
           filters:
             branches:
@@ -264,7 +304,9 @@ workflows:
               ignore: main
       - terraform-plan:
           requires:
+            - lint-terraform
             - test
+            - task-containerisation
       - terraform-apply:
           requires:
             - terraform-plan
