@@ -139,6 +139,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(returned_data, expected_data)
 
+
 class CalculateTimeRegisteredForTests(MergeIndCQCDatasetTests):
     def setUp(self) -> None:
         super().setUp()
@@ -238,9 +239,7 @@ class CalculateTimeSinceDormant(MergeIndCQCDatasetTests):
 
     def test_calculate_time_since_dormant_returns_new_column(self):
         self.assertEqual(len(self.columns_added_by_function), 1)
-        self.assertEqual(
-            self.columns_added_by_function[0], IndCqc.time_since_dormant
-        )
+        self.assertEqual(self.columns_added_by_function[0], IndCqc.time_since_dormant)
 
     def test_calculate_time_since_dormant_returns_expected_values(self):
         returned_data = self.returned_df.sort(

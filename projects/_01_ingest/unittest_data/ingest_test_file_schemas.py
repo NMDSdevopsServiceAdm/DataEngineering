@@ -1790,20 +1790,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    calculate_time_registered_for_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.imputed_registration_date, DateType(), True),
-        ]
-    )
-    expected_calculate_time_registered_for_schema = StructType(
-        [
-            *calculate_time_registered_for_schema,
-            StructField(CQCLClean.time_registered, IntegerType(), True),
-        ]
-    )
-
     remove_late_registration_dates_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1858,19 +1844,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    calculate_time_since_dormant_schema = StructType(
-        [
-            StructField(CQCLClean.location_id, StringType(), False),
-            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
-            StructField(CQCLClean.dormancy, StringType(), True),
-        ]
-    )
-    expected_calculate_time_since_dormant_schema = StructType(
-        [
-            *calculate_time_since_dormant_schema,
-            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
-        ]
-    )
     classify_specialisms_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),

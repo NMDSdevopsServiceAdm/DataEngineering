@@ -3244,40 +3244,6 @@ class CQCLocationsData:
     ]
     # fmt: on
 
-    calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
-    ]
-    expected_calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
-    ]
-
-    calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
-    ]
-    expected_calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
-    ]
-
-    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
-    ]
-    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
-    ]
-
-    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
-    ]
-    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
-    ]
-
     clean_provider_id_column_rows = [
         ("loc_1", None, "20240101"),
         ("loc_1", "123456789", "20240201"),
@@ -3442,30 +3408,6 @@ class CQCLocationsData:
         ),
     ]
 
-    calculate_time_since_dormant_rows = [
-        ("1-001", date(2025, 1, 1), None),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 3, 1), Dormancy.dormant),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant),
-        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 6, 1), Dormancy.dormant),
-        ("1-001", date(2025, 7, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 8, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 9, 1), None),
-        ("1-002", date(2025, 10, 1), Dormancy.not_dormant),
-    ]
-    expected_calculate_time_since_dormant_rows = [
-        ("1-001", date(2025, 1, 1), None, None),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, None),
-        ("1-001", date(2025, 3, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, 2),
-        ("1-001", date(2025, 6, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 7, 1), Dormancy.not_dormant, 2),
-        ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
-        ("1-001", date(2025, 9, 1), None, 4),
-        ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
-    ]
     classify_specialisms_rows = [
         ("loc 1", [Specialisms.dementia]),
         (

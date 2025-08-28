@@ -77,6 +77,35 @@ class MergeIndCQCData:
         ]
     )
 
+    calculate_time_registered_for_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.imputed_registration_date, DateType(), True),
+        ]
+    )
+
+    expected_calculate_time_registered_for_schema = StructType(
+        [
+            *calculate_time_registered_for_schema,
+            StructField(IndCQC.time_registered, IntegerType(), True),
+        ]
+    )
+
+    calculate_time_since_dormant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.dormancy, StringType(), True),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = StructType(
+        [
+            *calculate_time_since_dormant_schema,
+            StructField(CQCLClean.time_since_dormant, IntegerType(), True),
+        ]
+    )
+
     data_to_merge_with_care_home_col_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), False),
