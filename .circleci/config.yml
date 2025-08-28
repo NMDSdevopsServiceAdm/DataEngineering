@@ -17,7 +17,6 @@ parameters:
 orbs:
   aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
-  python: circleci/python@3.13.5
 
 jobs:
   task-containerisation:
@@ -39,7 +38,8 @@ jobs:
             docker buildx bake all --push
 
   test:
-    executor: python/default
+    docker:
+      - image: cimg/python:3.13.5
     resource_class: small
     steps:
       - checkout
@@ -78,7 +78,8 @@ jobs:
           path: htmlcov
 
   lint-python:
-    executor: python/default
+    docker:
+      - image: cimg/python:3.13.5
     resource_class: small
     steps:
       - checkout
@@ -90,7 +91,8 @@ jobs:
           command: black . --check
 
   lint-docstrings:
-    executor: python/default
+    docker:
+      - image: cimg/python:3.13.5
     resource_class: small
     steps:
       - checkout
@@ -164,7 +166,8 @@ jobs:
             - ./terraform/pipeline/datasets_bucket_name
 
   deploy-dependencies:
-    executor: python/default
+    docker:
+      - image: cimg/python:3.13.5
     docker:
       - image: circleci/python:3.13.5
     resource_class: small
