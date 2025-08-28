@@ -14,7 +14,7 @@
               "Parameters": {
                 "JobName": "${flatten_cqc_ratings_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
                   "--ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace/",
                   "--cqc_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/",
                   "--benchmark_ratings_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
@@ -56,7 +56,7 @@
               "Parameters": {
                 "JobName": "${reconciliation_job_name}",
                 "Arguments": {
-                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/",
+                  "--cqc_location_api_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
                   "--ascwds_reconciliation_source": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/",
                   "--reconciliation_single_and_subs_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_singles_and_subs",
                   "--reconciliation_parents_destination": "${dataset_bucket_uri}/domain=SfC/dataset=sfc_reconciliation_parents"
