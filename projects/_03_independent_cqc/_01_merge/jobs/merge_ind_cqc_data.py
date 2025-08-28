@@ -373,7 +373,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with the new time_registered column added.
     """
     df = df.withColumn(
-        CQCLClean.time_registered,
+        IndCqc.time_registered,
         F.floor(
             F.months_between(
                 F.col(CQCLClean.cqc_location_import_date),
@@ -421,7 +421,7 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     )
 
     df = df.withColumn(
-        CQCLClean.time_since_dormant,
+        IndCqc.time_since_dormant,
         F.when(
             F.col(CQCLClean.last_dormant_date).isNotNull(),
             F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
