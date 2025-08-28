@@ -17,6 +17,10 @@ parameters:
 orbs:
   aws-s3: circleci/aws-s3@3.0
   aws-cli: circleci/aws-cli@5.4.1
+  python: circleci/python@3.13.5
+
+jobs:
+  build:
 
 jobs:
   task-containerisation:
@@ -38,57 +42,46 @@ jobs:
             docker buildx bake all --push
 
   test:
-    docker:
-      - image: circleci/python:3.13.5
+    executor: python/default
     resource_class: small
-
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - v1.1-deps-{{ checksum "Pipfile.lock" }}
-
       - run:
           name: Install system packages
           command: |
             sudo apt-get update
             sudo apt-get install -y default-jre-headless
-
       - run:
           name: install dependencies
           command: |
             sudo pip install pipenv
             pipenv install --dev
-
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
           paths:
             - ~/.local/share/virtualenvs
-
       - run:
           name: run unit tests
           command: |
             pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
-      
       - run:
           name: Generate coverage report
           command: |
             pipenv run coverage report
             pipenv run coverage xml
             pipenv run coverage html
-
       - run:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
-
       - store_artifacts:
           path: htmlcov
 
   lint-python:
-    docker:
-      - image: circleci/python:3.13.5
+    executor: python/default
     resource_class: small
     steps:
       - checkout
@@ -100,8 +93,7 @@ jobs:
           command: black . --check
 
   lint-docstrings:
-    docker:
-      - image: circleci/python:3.13.5
+    executor: python/default
     resource_class: small
     steps:
       - checkout
@@ -153,25 +145,21 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-
       - run:
           name: terraform apply
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
-
       - run:
           name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
-
       - run:
           name: save datasets bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
-
       - persist_to_workspace:
           root: .
           paths:
@@ -179,23 +167,21 @@ jobs:
             - ./terraform/pipeline/datasets_bucket_name
 
   deploy-dependencies:
+    executor: python/default
     docker:
       - image: circleci/python:3.13.5
     resource_class: small
     steps:
       - attach_workspace:
           at: .
-
       - run:
           name: package utils, schemas, projects and environment
           command: |
             mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment
-
       - run:
           name: Download Deequ jar
           command: |
             wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.7-spark-3.3/deequ-2.0.7-spark-3.3.jar -O dependencies/deequ-2.0.7-spark-3.3.jar
-
       - run:
           name: Package PyDeequ
           command: |
@@ -203,7 +189,6 @@ jobs:
             cd target && zip -r pydeequ-1.4.0.zip pydeequ && cd ..
             mv target/pydeequ-1.4.0.zip dependencies/pydeequ-1.4.0.zip
             rm -rf target
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
@@ -216,12 +201,10 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
@@ -251,7 +234,6 @@ jobs:
 
 workflows:
   version: 2
-
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
