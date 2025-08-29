@@ -246,7 +246,7 @@ resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
   ]
 }
 
-resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
+resource "aws_sfn_state_machine" "legacy-transform_cqc_data_state_machine" {
   name     = "${local.workspace_prefix}-Legacy-Transform-CQC-Data"
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
