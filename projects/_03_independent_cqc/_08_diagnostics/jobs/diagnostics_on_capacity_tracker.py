@@ -43,6 +43,7 @@ estimate_filled_posts_columns: list = [
     IndCQC.ct_non_res_care_workers_employed_dedup,
     IndCQC.current_region,
     IndCQC.current_cssr,
+    IndCQC.current_lsoa21,
     IndCQC.unix_time,
     Keys.year,
     Keys.month,
