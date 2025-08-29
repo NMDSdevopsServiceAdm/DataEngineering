@@ -36,15 +36,29 @@
           }
         },
         {
-          "StartAt": "Clean CQC Location Data",
+          "StartAt": "Build Locations Raw",
           "States": {
+            "Build Locations Raw": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "organisation_type": "locations",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
+                }
+              },
+              "Next": "Clean CQC Location Data"
+            },
             "Clean CQC Location Data": {
               "Type": "Task",
               "Resource": "arn:aws:states:::glue:startJobRun.sync",
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
                 }
@@ -63,20 +77,6 @@
                 }
               },
               "Next": "Build Locations Cleaned"
-            },
-            "Build Locations Cleaned": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::lambda:invoke",
-              "Parameters": {
-                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
-                "Payload": {
-                  "organisation_type": "locations-cleaned",
-                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
-                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
-                  "snapshot_date.$": "$$.State.EnteredTime"
-                }
-              },
-              "End": true
             }
           }
         }
@@ -130,19 +130,6 @@
             },
             "Fail": {
               "Type": "Fail"
-            }
-          }
-        },
-        {
-          "StartAt": "Run CQC Crawler",
-          "States": {
-            "Run CQC Crawler": {
-              "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-              "Parameters": {
-                "Name": "${cqc_crawler_name}"
-              },
-              "End": true
             }
           }
         }
