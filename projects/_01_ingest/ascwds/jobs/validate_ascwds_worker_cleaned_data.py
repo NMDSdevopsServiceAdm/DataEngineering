@@ -3,7 +3,6 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
