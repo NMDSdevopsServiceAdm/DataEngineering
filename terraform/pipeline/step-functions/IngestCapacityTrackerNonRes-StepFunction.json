@@ -4,7 +4,6 @@
   "States": {
     "Capacity Tracker Non Residential pipeline": {
       "Type": "Parallel",
-      "Next": "Run validation crawler when success",
       "Branches": [
         {
           "StartAt": "Ingest Capacity Tracker Non Res",
@@ -50,69 +49,76 @@
           }
         }
       ],
+      "Next": "Run Crawler and Handle Error",
       "Catch": [
         {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "Publish error notification",
+          "Next": "Run Crawler and Handle Error",
           "ResultPath": "$.error"
         }
       ]
     },
-    "Run validation crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run CT crawler when success"
-    },
-    "Run CT crawler when success": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ct_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Success"
-    },
-    "Publish error notification": {
-      "Type": "Task",
-      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
-      "Parameters": {
-        "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
-        "Payload": {
-          "Error.$": "$.error.Cause",
-          "ExecutionId.$": "$$.Execution.Id",
-          "StateMachineName.$": "$$.StateMachine.Name",
-          "StateMachineId.$": "$$.StateMachine.Id",
-          "ExecutionStartTime.$": "$$.Execution.StartTime",
-          "CallbackToken.$": "$$.Task.Token"
+    "Run Crawler and Handle Error": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Run CT Crawler",
+          "States": {
+            "Run CT Crawler": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Parameters": {
+                "StateMachineArn": "${run_crawler_state_machine_arn}",
+                "Input": {
+                  "crawler_name": "${ct_crawler_name}",
+                  "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Check if Error Exists",
+          "States": {
+            "Check if Error Exists": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.error",
+                  "IsPresent": true,
+                  "Next": "Publish Error Notification"
+                }
+              ],
+              "Default": "No Error"
+            },
+            "Publish Error Notification": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+              "Parameters": {
+                "FunctionName": "${pipeline_failure_lambda_function_arn}:$LATEST",
+                "Payload": {
+                  "Error.$": "$.error.Cause",
+                  "ExecutionId.$": "$$.Execution.Id",
+                  "StateMachineName.$": "$$.StateMachine.Name",
+                  "StateMachineId.$": "$$.StateMachine.Id",
+                  "ExecutionStartTime.$": "$$.Execution.StartTime",
+                  "CallbackToken.$": "$$.Task.Token"
+                }
+              },
+              "Next": "Fail"
+            },
+            "No Error": {
+              "Type": "Succeed"
+            },
+            "Fail": {
+              "Type": "Fail"
+            }
+          }
         }
-      },
-      "Next": "Run validation crawler when failed"
-    },
-    "Run validation crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${data_validation_reports_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Run CT crawler when failed"
-    },
-    "Run CT crawler when failed": {
-      "Type": "Task",
-      "Parameters": {
-        "Name": "${ct_crawler_name}"
-      },
-      "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
-      "Next": "Fail"
-    },
-    "Fail": {
-      "Type": "Fail"
-    },
-    "Success": {
-      "Type": "Succeed"
+      ]
     }
   }
 }
