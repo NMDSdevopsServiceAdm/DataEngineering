@@ -1,9 +1,9 @@
 resource "aws_glue_job" "glue_job" {
-  name              = local.job_name
-  role_arn          = var.glue_role.arn
-  glue_version      = var.glue_version
-  worker_type       = var.worker_type
-  max_retries       = 0
+  name         = local.job_name
+  role_arn     = var.glue_role.arn
+  glue_version = var.glue_version
+  worker_type  = var.worker_type
+  max_retries  = 0
 
   execution_property {
     max_concurrent_runs = 5
