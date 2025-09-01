@@ -7,7 +7,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    CareHome,
     PrimaryServiceTypeSecondLevel as PSSL_values,
 )
 from utils.value_labels.ind_cqc_filled_posts.primary_service_type_mapping import (
@@ -183,29 +182,4 @@ def allocate_primary_service_type_second_level(df: DataFrame) -> DataFrame:
 
     df = df.withColumn(IndCQC.primary_service_type_second_level, condition)
 
-    return df
-
-
-def combine_care_home_and_non_res_values_into_single_column(
-    df: DataFrame, care_home_column: str, non_res_column: str, new_column_name: str
-) -> DataFrame:
-    """
-    Adds a new column which has the care_home_column values if the location is a care home and the non_res_column values if not.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        care_home_column (str): The name of the column containing care home values.
-        non_res_column (str): The name of the column containing non-res values.
-        new_column_name (str): The name of the new column with combined values.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
-    """
-    df = df.withColumn(
-        new_column_name,
-        F.when(
-            F.col(IndCQC.care_home) == CareHome.care_home,
-            F.col(care_home_column),
-        ).otherwise(F.col(non_res_column)),
-    )
     return df
