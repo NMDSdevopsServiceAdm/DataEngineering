@@ -39,7 +39,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.13.5
+      - image: cimg/python:3.12.10
     resource_class: small
     steps:
       - checkout
@@ -79,7 +79,7 @@ jobs:
 
   lint-python:
     docker:
-      - image: cimg/python:3.13.5
+      - image: cimg/python:3.12.10
     resource_class: small
     steps:
       - checkout
@@ -92,7 +92,7 @@ jobs:
 
   lint-docstrings:
     docker:
-      - image: cimg/python:3.13.5
+      - image: cimg/python:3.12.10
     resource_class: small
     steps:
       - checkout
@@ -167,7 +167,7 @@ jobs:
 
   deploy-dependencies:
     docker:
-      - image: cimg/python:3.13.5
+      - image: cimg/python:3.12.10
     resource_class: small
     steps:
       - attach_workspace:
