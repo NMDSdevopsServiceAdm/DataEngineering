@@ -39,7 +39,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.12.10
+      - image: cimg/python:3.11.13
     resource_class: large
     steps:
       - checkout
@@ -79,7 +79,7 @@ jobs:
 
   lint-python:
     docker:
-      - image: cimg/python:3.12.10
+      - image: cimg/python:3.11.13
     resource_class: small
     steps:
       - checkout
@@ -92,7 +92,7 @@ jobs:
 
   lint-docstrings:
     docker:
-      - image: cimg/python:3.12.10
+      - image: cimg/python:3.11.13
     resource_class: small
     steps:
       - checkout
@@ -167,7 +167,7 @@ jobs:
 
   deploy-dependencies:
     docker:
-      - image: cimg/python:3.12.10
+      - image: cimg/python:3.11.13
     resource_class: small
     steps:
       - attach_workspace:
@@ -179,7 +179,7 @@ jobs:
       - run:
           name: Download Deequ jar
           command: |
-            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.7-spark-3.3/deequ-2.0.7-spark-3.3.jar -O dependencies/deequ-2.0.7-spark-3.3.jar
+            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.8-spark-3.5/deequ-2.0.8-spark- 3.5.jar -O dependencies/deequ-2.0.8-spark-3.5.jar
       - run:
           name: Package PyDeequ
           command: |
