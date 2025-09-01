@@ -21,6 +21,7 @@ All notable changes to this project will be documented in this file.
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
+  - CQC locations cleaning uses delta model data
 
 - Created an [SfC Internal pipeline](terraform/pipeline/step-functions/SfCInternal-StepFunction.json) step function which contains all the internal Skills for Care jobs in one pipeline.
 
