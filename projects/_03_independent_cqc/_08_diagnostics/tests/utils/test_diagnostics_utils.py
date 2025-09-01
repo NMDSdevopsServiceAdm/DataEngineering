@@ -1,19 +1,19 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from pyspark.sql import WindowSpec
 
+import projects._03_independent_cqc._08_diagnostics.utils.diagnostics_utils as job
 from projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_known_filled_posts import (
     absolute_value_cutoff,
-    standardised_value_cutoff,
     percentage_value_cutoff,
-)
-import projects._03_independent_cqc._08_diagnostics.utils.diagnostics_utils as job
-from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    DiagnosticsUtilsSchemas as Schemas,
+    standardised_value_cutoff,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     DiagnosticsUtilsData as Data,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    DiagnosticsUtilsSchemas as Schemas,
 )
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

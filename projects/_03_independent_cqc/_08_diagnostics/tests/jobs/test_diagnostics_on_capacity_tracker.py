@@ -218,7 +218,7 @@ class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
         )
         returned_df = job.convert_to_all_posts_using_ratio(test_df, test_ratio)
 
-        self.assertEquals(
+        self.assertEqual(
             returned_df.sort(IndCQC.location_id).collect(),
             expected_df.collect(),
         )
