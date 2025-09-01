@@ -11,7 +11,7 @@ resource "aws_glue_job" "glue_job" {
   }
   command {
     script_location = "${var.resource_bucket.bucket_uri}/scripts/${var.script_name}"
-    python_version  = "3.11"
+    python_version  = "3"
   }
 
   default_arguments = merge(var.job_parameters,
