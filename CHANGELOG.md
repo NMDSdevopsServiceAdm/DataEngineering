@@ -6,8 +6,29 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 ### Changed
+- Expanded acronyms in documentation.
+
+- Removed providers dataset from clean locations job as it's no longer used.
+
+- Updated [read_from_parquet()](utils/utils.py) function with a new optional schema parameter.
+
+- Refactored [CQC API pipeline](terraform/pipeline/step-functions/CQC-API-Pipeline.json) to use delta model in Polars, including:
+  - delta download tasks using CQC changes API
+  - tasks for download written in Polars within ECS tasks
+  - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
+  - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
+  - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
+
+- Created an [SfC Internal pipeline](terraform/pipeline/step-functions/SfCInternal-StepFunction.json) step function which contains all the internal Skills for Care jobs in one pipeline.
+
+- Updated [Error Notification lambda](lambdas/error_notifications/error_notifications.py) to handle ECS task failures.
+
+- Split the `Master-Ingest` step function into
+  - [ingestion only orchestrator](terraform/pipeline/step-functions/CQCAndASCWDSOrchestrator-StepFunction.json) to align CQC API and ASCWDS ingestion
+  - [Workforce Intelligence](terraform/pipeline/step-functions/WorkforceIntelligence-StepFunction.json) pipeline for post-ingestion transformations
 - Moved the deduplication and imputation of Capacity Tracker data from diagnostics_on_capacity_tracker to impute_ind_cqc_ascwds_and_pir.
 
 ### Improved
@@ -23,29 +44,29 @@ All notable changes to this project will be documented in this file.
 - Created a `STYLEGUIDE.md` file with guidance on code organisation, folder structure, naming conventions, utility function locations and unit test conventions.
 
 - Added tool to create delta datasets from full datasets (where we store full snapshots for every timepoint)
-  - Added support for CQC Providers API
-  - Added support for CQC Locations API
+  - Added support for Care Quality Commission Providers application programming interface (API)
+  - Added support for Care Quality Commission Locations application programming interface (API)
 
 - Parallel data ingestion, cleaning and validation pipeline from Delta model:
   - Master-Ingest StepFunction to manage overall system flow for new delta pipeline
-  - Refactored CQC and ASC-WDS StepFunctions to include Crawlers and error handling
+  - Refactored Care Quality Commission and Adult Social Care Workforce Data Set StepFunctions to include Crawlers and error handling
   - Includes parallel EventTrigger, SNS Topic and Crawlers, operating on a parallel temporary CQC_delta dataset for reconciliation purposes
 
 - Refactor ingestion jobs to use Polars:
-  -  CQC Delta Providers
-  -  CQC Delta Locations
+  -  Care Quality Commission Delta Providers
+  -  Care Quality Commission Delta Locations
 
 - Added unit test coverage
 
 ### Changed
-- Update the version of CQC ratings data
+- Update the version of Care Quality Commission ratings data
 
-- Updated the CQC locations schema to include a new assessment field for storing the latest CQC ratings. Modified the function that builds the full locations dataset from the delta dataset to use this updated schema, ensuring the newly added column is included.
+- Updated the Care Quality Commission locations schema to include a new assessment field for storing the latest Care Quality Commission ratings. Modified the function that builds the full locations dataset from the delta dataset to use this updated schema, ensuring the newly added column is included.
 
-- Moved evaluation of CQC Sector into Location cleaning script to remove unnecessary dependency.
+- Moved evaluation of Care Quality Commission Sector into Location cleaning script to remove unnecessary dependency.
 
 ### Improved
-- Deduplicated Capacity Tracker data so it's more in line with the ASC-WDS and PIR process
+- Deduplicated Capacity Tracker data so it's more in line with the Adult Social Care Workforce Data Set and Provider Information Return process
 
 ## [v2025.05.0] - 18/06/2025
 This version marks the codebase used for the publication of the Size and Structure 2025 report.
@@ -57,7 +78,7 @@ This version marks the codebase used for the publication of the Size and Structu
 
 - Developed dataset-specific Step Functions triggered on new S3 file uploads. Each runs ingestion, validation, and cleaning in sequence for more timely error detection and fresher data availability.
 
-- Incorporated more PIR data into the non-residential dataset.
+- Incorporated more Provider Information Return data into the non-residential dataset.
 
 - A lower level of service breakdowns to include all the categories we group to in our publications.
 
@@ -79,7 +100,7 @@ This version marks the codebase used for the publication of the Size and Structu
 
 - Refined postcode matching logic. The new multi-step approach attempts: exact match, historical match, mapped replacement, and truncated match before failing, improving match rates and reducing pipeline failures.
 
-- Enhanced filtering of grouped ASCWDS submissions where providers may be submitting their entire workforce into only one of their locations. These are now identified and the larger than expected values are nulled to prevent over-exaggerating the size of the workforce.
+- Enhanced filtering of grouped Adult Social Care Workforce Data Set submissions where providers may be submitting their entire workforce into only one of their locations. These are now identified and the larger than expected values are nulled to prevent over-exaggerating the size of the workforce.
 
 
 ## [v2025.03.0] - 10/04/2025

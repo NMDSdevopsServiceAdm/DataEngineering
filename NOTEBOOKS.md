@@ -1,7 +1,7 @@
-# Jupyter Notebooks on AWS EMR
+# Jupyter Notebooks on Amazon Web Services Elastic MapReduce (EMR)
 
 ## Steps to Launch
-1. Go to [AWS EMR Console](https://eu-west-2.console.aws.amazon.com/elasticmapreduce/home?region=eu-west-2)
+1. Go to [Amazon Web Services EMR Console](https://eu-west-2.console.aws.amazon.com/elasticmapreduce/home?region=eu-west-2)
 2. Clone the most recent terminated cluster
 3. Wait for cluster to build (5–10 mins)
 4. Go to "Workspaces (Notebooks)"

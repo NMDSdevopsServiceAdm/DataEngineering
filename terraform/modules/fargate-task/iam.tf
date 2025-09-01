@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_attach_s3" {
 }
 
 resource "aws_iam_policy" "s3_read_write_policy" {
-  name        = "${local.workspace_prefix}-s3-read-write-policy"
+  name_prefix = "${local.workspace_prefix}-s3-read-write-policy-"
   description = "IAM policy for S3 read/write on specific buckets."
   policy = jsonencode({
     Version = "2012-10-17",
@@ -58,8 +58,8 @@ resource "aws_iam_policy" "s3_read_write_policy" {
           "s3:ListObjects"
         ],
         Resource = [
-          "arn:aws:s3:::spike-polars-data/*",
-          "arn:aws:s3:::spike-polars-data"
+          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/*",
+          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets"
         ]
       }
     ]
@@ -67,7 +67,7 @@ resource "aws_iam_policy" "s3_read_write_policy" {
 }
 
 resource "aws_iam_policy" "secretsmanager_read_policy" {
-  name        = "${local.workspace_prefix}-secretsmanager-read-policy"
+  name_prefix = "${local.workspace_prefix}-secretsmanager-read-policy-"
   description = "IAM policy for Secrets Manager read access to a specific secret."
   policy = jsonencode({
     Version = "2012-10-17",
@@ -125,6 +125,7 @@ resource "aws_iam_policy" "sfn_ecs_policy" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
+          aws_iam_role.ecs_task_execution_role.arn,
           aws_iam_role.ecs_task_execution_role.arn,
           aws_iam_role.ecs_task_role.arn
         ],

@@ -265,7 +265,7 @@ module "delta_cqc_providers_download_job" {
   glue_version    = "3.0"
 
   job_parameters = {
-    "--destination_prefix"        = "${module.datasets_bucket.bucket_uri}"
+    "--destination_prefix"        = module.datasets_bucket.bucket_uri
     "--start_timestamp"           = "",
     "--end_timestamp"             = "",
     "--additional-python-modules" = "ratelimit==2.2.1,"
@@ -452,10 +452,10 @@ module "clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
+  extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
 }
 
 module "delta_clean_cqc_location_data_job" {
@@ -470,10 +470,10 @@ module "delta_clean_cqc_location_data_job" {
 
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--cleaned_cqc_provider_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api_cleaned/"
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
   }
+  extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
 }
 
 module "reconciliation_job" {
@@ -514,13 +514,15 @@ module "merge_ind_cqc_data_job" {
 }
 
 module "merge_coverage_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_02_sfc_internal/cqc_coverage/jobs"
-  script_name     = "merge_coverage_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  source            = "../modules/glue-job"
+  script_dir        = "projects/_02_sfc_internal/cqc_coverage/jobs"
+  script_name       = "merge_coverage_data.py"
+  glue_role         = aws_iam_role.sfc_glue_service_iam_role
+  resource_bucket   = module.pipeline_resources
+  datasets_bucket   = module.datasets_bucket
+  glue_version      = "3.0"
+  worker_type       = "G.2X"
+  number_of_workers = 5
 
   job_parameters = {
     "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
