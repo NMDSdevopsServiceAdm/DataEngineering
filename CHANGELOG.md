@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data. 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
+
 
 ### Changed
 - Expanded acronyms in documentation.

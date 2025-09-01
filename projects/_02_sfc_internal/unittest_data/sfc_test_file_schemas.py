@@ -1014,7 +1014,177 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
         ]
     )
-
+    flatten_assessment_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(
+                CQCL.assessment,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(
+                                CQCL.assessment_plan_published_datetime,
+                                StringType(),
+                                True,
+                            ),
+                            StructField(
+                                CQCL.ratings,
+                                StructType(
+                                    [
+                                        StructField(
+                                            CQCL.overall,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.status,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.key_question_ratings,
+                                                            ArrayType(
+                                                                StructType(
+                                                                    [
+                                                                        StructField(
+                                                                            CQCL.name,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.rating,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.status,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                )
+                                            ),
+                                            True,
+                                        ),
+                                        StructField(
+                                            CQCL.asg_ratings,
+                                            ArrayType(
+                                                StructType(
+                                                    [
+                                                        StructField(
+                                                            CQCL.assessment_plan_id,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.title,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.assessment_date,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.assessment_plan_status,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.name,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.rating,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.status,
+                                                            StringType(),
+                                                            True,
+                                                        ),
+                                                        StructField(
+                                                            CQCL.key_question_ratings,
+                                                            ArrayType(
+                                                                StructType(
+                                                                    [
+                                                                        StructField(
+                                                                            CQCL.name,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.rating,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.status,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                        StructField(
+                                                                            CQCL.percentage_score,
+                                                                            StringType(),
+                                                                            True,
+                                                                        ),
+                                                                    ]
+                                                                )
+                                                            ),
+                                                            True,
+                                                        ),
+                                                    ]
+                                                )
+                                            ),
+                                            True,
+                                        ),
+                                    ]
+                                ),
+                                True,
+                            ),
+                        ]
+                    ),
+                    True,
+                ),
+                True,
+            ),
+        ]
+    )
+    expected_flatten_assessment_ratings_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.assessment_plan_published_datetime, StringType(), True),
+            StructField(CQCL.assessment_plan_id, StringType(), True),
+            StructField(CQCL.title, StringType(), True),
+            StructField(CQCL.assessment_date, StringType(), True),
+            StructField(CQCL.assessment_plan_status, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.status, StringType(), True),
+            StructField(CQCL.rating, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.safe, StringType(), True),
+            StructField(CQCL.effective, StringType(), True),
+            StructField(CQCL.caring, StringType(), True),
+            StructField(CQCL.responsive, StringType(), True),
+            StructField(CQCL.well_led, StringType(), True),
+        ]
+    )
     add_current_or_historic_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
