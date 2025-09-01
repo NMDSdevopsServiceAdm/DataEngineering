@@ -51,18 +51,21 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         with self.assertRaises(InvalidTimestampArgumentError):
             main(dest, start, end)
 
+    @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
-    def test_main_writes_parquet(self, mock_objects, mock_get_secret):
+    def test_main_writes_parquet(self, mock_objects, mock_get_secret, mock_uuid):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
             {"providerId": 1},
             {"providerId": 2},
             {"providerId": 3},
         ]
-        dest = f"{self.temp_dir}/data.parquet"
+        file_name = "abc"
+        mock_uuid.uuid4.return_value = file_name
+        dest = f"{self.temp_dir}/{file_name}.parquet"
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         main(self.temp_dir + "/", start, end)
@@ -72,18 +75,23 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         result = pl.read_parquet(dest)
         self.assertEqual(result.height, 3)
 
+    @patch(f"{PATCH_PATH}.utils.uuid")
     @patch(f"{PATCH_PATH}.get_secret")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
     @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
     @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
-    def test_main_copes_with_malformed_destination(self, mock_objects, mock_get_secret):
+    def test_main_copes_with_malformed_destination(
+        self, mock_objects, mock_get_secret, mock_uuid
+    ):
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
         mock_objects.return_value = [
             {"providerId": 1},
             {"providerId": 2},
             {"providerId": 3},
         ]
-        dest = f"{self.temp_dir}/new_path/data.parquet"
+        file_name = "abc"
+        mock_uuid.uuid4.return_value = file_name
+        dest = f"{self.temp_dir}/new_path/{file_name}.parquet"
         start = "2025-07-20T15:40:23Z"
         end = "2025-07-25T14:23:40Z"
         new_path = f"{self.temp_dir}/new_path"
@@ -94,3 +102,47 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         self.assertTrue(pathlib.Path(dest).suffix == ".parquet")
         result = pl.read_parquet(dest)
         self.assertEqual(result.height, 3)
+
+    @patch(f"{PATCH_PATH}.utils.uuid")
+    @patch(f"{PATCH_PATH}.get_secret")
+    @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
+    @patch(f"{PATCH_PATH}.SECRET_ID", new="cqc-secret-name")
+    @patch(f"{PATCH_PATH}.AWS_REGION", new="us-east-1")
+    def test_main_writes_copes_with_multiple_runs(
+        self, mock_objects, mock_get_secret, mock_uuid
+    ):
+        mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
+        mock_objects.side_effect = [
+            [
+                {"providerId": 1},
+                {"providerId": 2},
+                {"providerId": 3},
+            ],
+            [
+                {"providerId": 4},
+                {"providerId": 5},
+                {"providerId": 6},
+            ],
+        ]
+        uuids = ["abc", "def"]
+        mock_uuid.uuid4.side_effect = uuids
+        start = "2025-07-20T09:40:23Z"
+        middle = "2025-07-20T12:23:40Z"
+        end = "2025-07-20T19:40:23Z"
+
+        expected_paths = [f"{self.temp_dir}/{uuid}.parquet" for uuid in uuids]
+
+        main(self.temp_dir + "/", start, middle)
+        main(self.temp_dir + "/", middle, end)
+
+        self.assertTrue(pathlib.Path(expected_paths[0]).exists())
+        self.assertTrue(pathlib.Path(expected_paths[1]).exists())
+        self.assertTrue(pathlib.Path(expected_paths[0]).is_file())
+        self.assertTrue(pathlib.Path(expected_paths[1]).is_file())
+        self.assertTrue(pathlib.Path(expected_paths[0]).suffix == ".parquet")
+        self.assertTrue(pathlib.Path(expected_paths[1]).suffix == ".parquet")
+
+        result_a = pl.read_parquet(expected_paths[0])
+        self.assertEqual(result_a["providerId"].str.to_integer().sum(), 6)
+        result_b = pl.read_parquet(expected_paths[1])
+        self.assertEqual(result_b["providerId"].str.to_integer().sum(), 15)

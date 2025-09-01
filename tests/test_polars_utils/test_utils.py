@@ -42,7 +42,7 @@ class TestUtils(unittest.TestCase):
 
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
-        destination: str = self.temp_dir
+        destination: str = self.temp_dir + "/"
         write_to_parquet(df, destination, self.logger)
         write_to_parquet(df, destination, self.logger)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
