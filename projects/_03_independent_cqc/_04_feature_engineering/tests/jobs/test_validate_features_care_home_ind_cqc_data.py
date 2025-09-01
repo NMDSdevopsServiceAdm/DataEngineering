@@ -10,9 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from utils import utils
 
-PATCH_PATH: str = (
-    "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_care_home_ind_cqc_data"
-)
+PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_care_home_ind_cqc_data"
 
 
 class ValidateCareHomeIndCQCFeaturesDatasetTests(unittest.TestCase):
@@ -34,7 +32,6 @@ class ValidateCareHomeIndCQCFeaturesDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
-        self.spark.stop()
 
 
 class MainTests(ValidateCareHomeIndCQCFeaturesDatasetTests):

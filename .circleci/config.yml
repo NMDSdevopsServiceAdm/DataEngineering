@@ -40,7 +40,7 @@ jobs:
   test:
     docker:
       - image: cimg/python:3.12.10
-    resource_class: small
+    resource_class: large
     steps:
       - checkout
       - restore_cache:

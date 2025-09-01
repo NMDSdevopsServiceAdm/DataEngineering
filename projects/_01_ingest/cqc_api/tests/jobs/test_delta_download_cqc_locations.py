@@ -15,7 +15,6 @@ class MainTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
-        self.spark.stop()
 
     @patch(f"{PATCH_PATH}.ars.get_secret")
     @patch(f"{PATCH_PATH}.cqc.get_updated_objects")
