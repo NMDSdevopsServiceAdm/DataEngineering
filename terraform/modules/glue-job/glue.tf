@@ -3,7 +3,6 @@ resource "aws_glue_job" "glue_job" {
   role_arn          = var.glue_role.arn
   glue_version      = var.glue_version
   worker_type       = var.worker_type
-  number_of_workers = var.number_of_workers
   max_retries       = 0
 
   execution_property {

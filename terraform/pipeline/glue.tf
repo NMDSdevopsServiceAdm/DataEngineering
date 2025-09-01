@@ -104,7 +104,7 @@ module "clean_ascwds_worker_job" {
   number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
 
   job_parameters = {
     "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
