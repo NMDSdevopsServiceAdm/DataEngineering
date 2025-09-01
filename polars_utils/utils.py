@@ -16,7 +16,7 @@ def write_to_parquet(
     df: pl.DataFrame,
     output_path: str,
     logger: logging.Logger = util_logger,
-    append: bool = False,
+    append: bool = True,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
