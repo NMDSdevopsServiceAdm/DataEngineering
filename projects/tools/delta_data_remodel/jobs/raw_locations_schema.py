@@ -289,7 +289,7 @@ raw_locations_schema = pl.Schema(
                                             ),
                                         }
                                     )
-                                ),
+                                )
                             }
                         ),
                     }
