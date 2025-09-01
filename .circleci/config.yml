@@ -105,7 +105,7 @@ jobs:
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -116,7 +116,7 @@ jobs:
   terraform-plan:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -138,7 +138,7 @@ jobs:
 
   terraform-apply:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
