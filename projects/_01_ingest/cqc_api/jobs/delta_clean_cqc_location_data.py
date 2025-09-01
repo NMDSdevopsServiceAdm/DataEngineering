@@ -302,33 +302,6 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
-def calculate_time_registered_for(df: DataFrame) -> DataFrame:
-    """
-    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
-
-    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
-    imputed registration date and the cqc location import date.
-
-    Args:
-        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
-
-    Returns:
-        DataFrame: A dataframe with the new time_registered column added.
-    """
-    df = df.withColumn(
-        CQCLClean.time_registered,
-        F.floor(
-            F.months_between(
-                F.col(CQCLClean.cqc_location_import_date),
-                F.col(CQCLClean.imputed_registration_date),
-            )
-        )
-        + 1,
-    )
-
-    return df
-
-
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
