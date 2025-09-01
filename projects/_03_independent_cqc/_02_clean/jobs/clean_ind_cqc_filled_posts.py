@@ -9,7 +9,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
     IndCqcColumns as IndCQC,
 )
-from utils.column_values.categorical_column_values import CareHome
+from utils.column_values.categorical_column_values import CareHome, Dormancy
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
@@ -31,6 +31,9 @@ def main(
     locations_df = utils.read_from_parquet(merged_ind_cqc_source)
 
     locations_df = cUtils.reduce_dataset_to_earliest_file_per_month(locations_df)
+
+    locations_df = calculate_time_registered_for(locations_df)
+    locations_df = calculate_time_since_dormant(locations_df)
 
     locations_df = remove_duplicate_cqc_care_homes(locations_df)
 
@@ -269,6 +272,89 @@ def create_column_with_repeated_values_removed(
     df_without_repeated_values = df_without_repeated_values.drop(PREVIOUS_VALUE)
 
     return df_without_repeated_values
+
+
+def calculate_time_registered_for(df: DataFrame) -> DataFrame:
+    """
+    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
+
+    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
+    imputed registration date and the cqc location import date.
+
+    Args:
+        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
+
+    Returns:
+        DataFrame: A dataframe with the new time_registered column added.
+    """
+    df = df.withColumn(
+        IndCQC.time_registered,
+        F.floor(
+            F.months_between(
+                F.col(IndCQC.cqc_location_import_date),
+                F.col(IndCQC.imputed_registration_date),
+            )
+        )
+        + 1,
+    )
+
+    return df
+
+
+def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
+    """
+    Adds a column to show the number of months since the location was last dormant.
+
+    This function calculates the number of months since the last time a location was marked as dormant.
+    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
+    the number of months since that date for each location.
+
+    'time_since_dormant' values before the first instance of dormancy are null.
+    If the location has never been dormant then 'time_since_dormant' is null.
+
+    Args:
+        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
+
+    Returns:
+        DataFrame: A dataframe with an additional column 'time_since_dormant'.
+    """
+    w = Window.partitionBy(IndCQC.location_id).orderBy(IndCQC.cqc_location_import_date)
+
+    df = df.withColumn(
+        IndCQC.dormant_date,
+        F.when(
+            F.col(IndCQC.dormancy) == Dormancy.dormant,
+            F.col(IndCQC.cqc_location_import_date),
+        ),
+    )
+
+    df = df.withColumn(
+        IndCQC.last_dormant_date,
+        F.last(IndCQC.dormant_date, ignorenulls=True).over(w),
+    )
+
+    df = df.withColumn(
+        IndCQC.time_since_dormant,
+        F.when(
+            F.col(IndCQC.last_dormant_date).isNotNull(),
+            F.when(F.col(IndCQC.dormancy) == Dormancy.dormant, 1).otherwise(
+                F.floor(
+                    F.months_between(
+                        F.col(IndCQC.cqc_location_import_date),
+                        F.col(IndCQC.last_dormant_date),
+                    )
+                )
+                + 1,
+            ),
+        ),
+    )
+
+    df = df.drop(
+        IndCQC.dormant_date,
+        IndCQC.last_dormant_date,
+    )
+
+    return df
 
 
 if __name__ == "__main__":

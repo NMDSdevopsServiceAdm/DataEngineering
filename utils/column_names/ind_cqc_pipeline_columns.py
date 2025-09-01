@@ -170,6 +170,8 @@ class IndCqcColumns:
     distribution_kurtosis: str = "distribution_kurtosis"
     distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
+    dormant_date: str = "dormant_date"
+    last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_from_all_job_roles: str = (

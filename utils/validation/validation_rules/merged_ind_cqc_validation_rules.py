@@ -38,7 +38,6 @@ class MergedIndCqcValidationRules:
         ],
         RuleName.min_values: {
             IndCqcColumns.number_of_beds: 0,
-            IndCqcColumns.time_registered: 1,
             IndCqcColumns.pir_people_directly_employed_cleaned: 1,
             IndCqcColumns.total_staff_bounded: 1,
             IndCqcColumns.worker_records_bounded: 1,

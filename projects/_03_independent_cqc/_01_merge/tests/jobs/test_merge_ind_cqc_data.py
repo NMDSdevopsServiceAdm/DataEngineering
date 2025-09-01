@@ -54,12 +54,8 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
     @patch(f"{PATCH_PATH}.join_data_into_cqc_df")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
-    @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
     def test_main_runs(
         self,
-        calculate_time_since_dormant_mock: Mock,
-        calculate_time_registered_for_mock: Mock,
         read_from_parquet_patch: Mock,
         select_rows_with_value_mock: Mock,
         join_data_into_cqc_df_mock: Mock,
@@ -85,8 +81,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         self.assertEqual(read_from_parquet_patch.call_count, 5)
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(join_data_into_cqc_df_mock.call_count, 4)
-        calculate_time_registered_for_mock.assert_called_once()
-        calculate_time_since_dormant_mock.assert_called_once()
+
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
@@ -140,114 +135,6 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-class CalculateTimeRegisteredForTests(MergeIndCQCDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_same_day_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_same_day_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_exact_months_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_exact_months_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLClean.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLClean.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLClean.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-
-class CalculateTimeSinceDormant(MergeIndCQCDatasetTests):
-    def setUp(self):
-        super().setUp()
-
-        self.test_df = self.spark.createDataFrame(
-            Data.calculate_time_since_dormant_rows,
-            Schemas.calculate_time_since_dormant_schema,
-        )
-        self.returned_df = job.calculate_time_since_dormant(self.test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_since_dormant_rows,
-            Schemas.expected_calculate_time_since_dormant_schema,
-        )
-
-        self.columns_added_by_function = [
-            column
-            for column in self.returned_df.columns
-            if column not in self.test_df.columns
-        ]
-
-    def test_calculate_time_since_dormant_returns_new_column(self):
-        self.assertEqual(len(self.columns_added_by_function), 1)
-        self.assertEqual(self.columns_added_by_function[0], IndCqc.time_since_dormant)
-
-    def test_calculate_time_since_dormant_returns_expected_values(self):
-        returned_data = self.returned_df.sort(
-            CQCLClean.cqc_location_import_date
-        ).collect()
-        expected_data = self.expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
 
 
 if __name__ == "__main__":
