@@ -2,7 +2,7 @@ resource "aws_glue_job" "glue_job" {
   name         = local.job_name
   role_arn     = var.glue_role.arn
   glue_version = var.glue_version
-  worker_type  = var.worker_type 
+  worker_type  = var.worker_type
   max_retries  = 0
 
   execution_property {
