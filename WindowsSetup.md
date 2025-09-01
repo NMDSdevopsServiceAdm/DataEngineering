@@ -76,8 +76,8 @@ C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
 C:\Users\_your_name_\.pyenv\pyenv-win\shims
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.13
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.11
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
 ```
 
 ### Adding user variables (requires IT):
@@ -90,8 +90,8 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\Scripts
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.13\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\
+C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
 %HADOOP_HOME%\bin
 ```
 
@@ -106,7 +106,7 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 
 ### Python install (requires IT):
-1. If a version of Python which is not 3.13 is already installed on your computer then you will need to uninstall it
+1. If a version of Python which is not 3.11 is already installed on your computer then you will need to uninstall it
 
 2. Go to https://www.python.org/downloads/
 
@@ -118,7 +118,7 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 6. In your download folder, click on `python-3.11.12-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python3.13`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python3.11`
 
 **Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
 
