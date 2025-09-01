@@ -13,10 +13,10 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CQCLocationsSchema as Schemas,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
-    MergeIndCQCData as LegacyData,
+    CleanIndCQCData as LegacyData,
 )
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
-    MergeIndCQCData as LegacySchemas,
+    CleanIndCQCData as LegacySchemas,
 )
 from utils import utils
 import utils.cleaning_utils as cUtils
