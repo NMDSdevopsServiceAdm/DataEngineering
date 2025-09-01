@@ -10,6 +10,7 @@ class NewCqcLocationApiColumns:
     assessment_date: str = "assessmentDate"
     assessment_plan_published_datetime: str = "assessmentPlanPublishedDateTime"
     assessment_plan_id: str = "assessmentPlanId"
+    assessment_plan_status: str = "assessmentPlanStatus"
     assessment_service_group: str = "assessmentServiceGroup"
     brand_id: str = "brandId"
     brand_name: str = "brandName"
