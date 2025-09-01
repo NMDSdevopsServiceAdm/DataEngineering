@@ -3,19 +3,46 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
   description = "Database for all datasets belonging to the ${local.workspace_prefix} environment."
 }
 
-module "csv_to_parquet_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/csv_files/jobs"
-  script_name     = "csv_to_parquet.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
+# module "csv_to_parquet_job" {
+#   source          = "../modules/glue-job"
+#   script_dir      = "projects/_01_ingest/csv_files/jobs"
+#   script_name     = "csv_to_parquet.py"
+#   glue_role       = aws_iam_role.sfc_glue_service_iam_role
+#   resource_bucket = module.pipeline_resources
+#   datasets_bucket = module.datasets_bucket
+#   glue_version    = "5.0"
 
-  job_parameters = {
-    "--source"      = ""
-    "--destination" = ""
-    "--delimiter"   = ","
+#   job_parameters = {
+#     "--source"      = ""
+#     "--destination" = ""
+#     "--delimiter"   = ","
+#   }
+# }
+
+resource "aws_glue_job" "csv_to_parquet_job" {
+  name              = "969-python-upgrade-csv-to-parquet_job"
+  role_arn          = var.glue_role.arn
+  glue_version      = "5.0"
+  max_retries       = 0
+
+  execution_property {
+    max_concurrent_runs = 5
+  }
+  command {
+    script_location = "${var.resource_bucket.bucket_uri}/scripts/csv_to_parquet.py"
+    python_version  = "3"
+  }
+
+  default_arguments = {
+      "--source"      = ""
+      "--destination" = ""
+      "--delimiter"   = ","
+      "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip,${var.resource_bucket.bucket_uri}/dependencies/pydeequ-1.5.0.zip"
+      "--extra-jars"                       = "${var.resource_bucket.bucket_uri}/dependencies/deequ-2.0.8-spark-3.5.jar"
+      "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
+      "--enable-continuous-cloudwatch-log" = "true"
+      "--enable-auto-scaling"              = "true"
+      "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false"
   }
 }
 
