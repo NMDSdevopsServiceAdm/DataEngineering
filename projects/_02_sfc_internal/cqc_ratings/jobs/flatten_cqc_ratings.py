@@ -260,10 +260,10 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     overall_df = extract_overall(assessment_df)
     asg_df = extract_asg(assessment_df)
 
-    final_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
+    union_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
 
-    reshaped_df = (
-        final_df.groupBy(
+    final_df = (
+        union_df.groupBy(
             CQCL.location_id,
             CQCL.registration_status,
             CQCL.assessment_plan_published_datetime,
@@ -302,7 +302,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.well_led,
     ]
 
-    return reshaped_df.select(*desired_column_order)
+    return final_df.select(*desired_column_order)
 
 
 def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:

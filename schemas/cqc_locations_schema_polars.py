@@ -306,59 +306,5 @@ POLARS_LOCATION_SCHEMA = pl.Schema(
                 )
             ),
         ),
-        (
-            NewColNames.assessment,
-            pl.List(
-                pl.Struct(
-                    {
-                        NewColNames.assessment_plan_published_datetime: pl.String(),
-                        NewColNames.ratings: pl.Struct(
-                            {
-                                NewColNames.overall: pl.List(
-                                    pl.Struct(
-                                        {
-                                            NewColNames.rating: pl.String(),
-                                            NewColNames.status: pl.String(),
-                                            NewColNames.key_question_ratings: pl.List(
-                                                pl.Struct(
-                                                    {
-                                                        NewColNames.name: pl.String(),
-                                                        NewColNames.rating: pl.String(),
-                                                        NewColNames.status: pl.String(),
-                                                    }
-                                                )
-                                            ),
-                                        }
-                                    )
-                                ),
-                                NewColNames.asg_ratings: pl.List(
-                                    pl.Struct(
-                                        {
-                                            NewColNames.assessment_plan_id: pl.String(),
-                                            NewColNames.title: pl.String(),
-                                            NewColNames.assessment_date: pl.String(),
-                                            NewColNames.assessment_plan_status: pl.String(),
-                                            NewColNames.name: pl.String(),
-                                            NewColNames.rating: pl.String(),
-                                            NewColNames.status: pl.String(),
-                                            NewColNames.key_question_ratings: pl.List(
-                                                pl.Struct(
-                                                    {
-                                                        NewColNames.name: pl.String(),
-                                                        NewColNames.rating: pl.String(),
-                                                        NewColNames.status: pl.String(),
-                                                        NewColNames.percentage_score: pl.String(),
-                                                    }
-                                                )
-                                            ),
-                                        }
-                                    )
-                                ),
-                            }
-                        ),
-                    }
-                )
-            ),
-        ),
     ]
 )
