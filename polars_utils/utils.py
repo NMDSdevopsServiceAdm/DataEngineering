@@ -41,7 +41,7 @@ def write_to_parquet(
     else:
         if append:
             output_path += f"/{uuid.uuid4()}.parquet"
-        df.write_parquet(output_path)
+        df.write_parquet(output_path, compression="snappy")
         logger.info("Parquet written to {}".format(output_path))
 
 
