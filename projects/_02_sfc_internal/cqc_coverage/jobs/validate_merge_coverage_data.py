@@ -1,24 +1,23 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql.dataframe import DataFrame
 
-from utils import utils
 import utils.cleaning_utils as cUtils
+from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.coverage_columns import CoverageColumns
+from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_coverage_validation_rules import (
     MergedCoverageValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
-from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 def main(
