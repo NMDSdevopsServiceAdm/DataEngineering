@@ -20,10 +20,10 @@ resource "aws_glue_catalog_database" "glue_catalog_database" {
 # }
 
 resource "aws_glue_job" "csv_to_parquet_job" {
-  name              = "969-python-upgrade-csv-to-parquet_job"
-  role_arn          = var.glue_role.arn
-  glue_version      = "5.0"
-  max_retries       = 0
+  name         = "969-python-upgrade-csv-to-parquet_job"
+  role_arn     = var.glue_role.arn
+  glue_version = "5.0"
+  max_retries  = 0
 
   execution_property {
     max_concurrent_runs = 5
@@ -34,15 +34,15 @@ resource "aws_glue_job" "csv_to_parquet_job" {
   }
 
   default_arguments = {
-      "--source"      = ""
-      "--destination" = ""
-      "--delimiter"   = ","
-      "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip,${var.resource_bucket.bucket_uri}/dependencies/pydeequ-1.5.0.zip"
-      "--extra-jars"                       = "${var.resource_bucket.bucket_uri}/dependencies/deequ-2.0.8-spark-3.5.jar"
-      "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
-      "--enable-continuous-cloudwatch-log" = "true"
-      "--enable-auto-scaling"              = "true"
-      "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false"
+    "--source"                           = ""
+    "--destination"                      = ""
+    "--delimiter"                        = ","
+    "--extra-py-files"                   = "${var.resource_bucket.bucket_uri}/dependencies/dependencies.zip,${var.resource_bucket.bucket_uri}/dependencies/pydeequ-1.5.0.zip"
+    "--extra-jars"                       = "${var.resource_bucket.bucket_uri}/dependencies/deequ-2.0.8-spark-3.5.jar"
+    "--TempDir"                          = "${var.resource_bucket.bucket_uri}/temp/"
+    "--enable-continuous-cloudwatch-log" = "true"
+    "--enable-auto-scaling"              = "true"
+    "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false"
   }
 }
 
