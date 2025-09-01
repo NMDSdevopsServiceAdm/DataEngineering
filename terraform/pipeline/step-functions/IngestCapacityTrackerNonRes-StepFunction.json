@@ -28,7 +28,6 @@
                 "Arguments": {
                   "--capacity_tracker_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/",
                   "--cleaned_capacity_tracker_non_res_destination": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-
                 }
               },
               "Next": "Validate cleaned CT Non Res data"
@@ -94,6 +93,9 @@
               ],
               "Default": "No Error"
             },
+            "No Error": {
+              "Type": "Succeed"
+            },
             "Publish Error Notification": {
               "Type": "Task",
               "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
@@ -110,15 +112,16 @@
               },
               "Next": "Fail"
             },
-            "No Error": {
-              "Type": "Succeed"
-            },
             "Fail": {
               "Type": "Fail"
             }
           }
         }
-      ]
+      ],
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed"
     }
   }
 }
