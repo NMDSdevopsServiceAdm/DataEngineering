@@ -22,13 +22,13 @@ variable "trigger_schedule" {
 }
 
 variable "glue_version" {
-  description = "Version of glue to use for the job. Defaults to 3.0"
+  description = "Version of glue to use for the job. Defaults to 5.0"
   type        = string
-  default     = "3.0"
+  default     = "5.0"
 
   validation {
-    condition     = contains(["3.0", "4.0"], var.glue_version)
-    error_message = "Must be one of 3.0 or 4.0"
+    condition     = contains(["3.0", "4.0", "5.0"], var.glue_version)
+    error_message = "Must be one of 3.0, 4.0 or 5.0"
   }
 }
 
