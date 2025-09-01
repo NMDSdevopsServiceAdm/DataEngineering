@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._01_merge.jobs.validate_merged_ind_cqc_data as job
@@ -34,6 +33,7 @@ class ValidateMergedIndCQCDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateMergedIndCQCDatasetTests):

@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data as job
@@ -13,7 +12,6 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
 )
-
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.validate_locations_api_cleaned_data"
 
@@ -36,6 +34,7 @@ class ValidateLocationsAPICleanedDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateLocationsAPICleanedDatasetTests):

@@ -1,13 +1,10 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_estimated_ind_cqc_filled_posts_data as job
 from tests.test_file_data import ValidateEstimatedIndCqcFilledPostsData as Data
 from tests.test_file_schemas import ValidateEstimatedIndCqcFilledPostsData as Schemas
-
 from utils import utils
-
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.validate_estimated_ind_cqc_filled_posts_data"
 
@@ -31,6 +28,7 @@ class ValidateEstimatedIndCqcFilledPostsDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateEstimatedIndCqcFilledPostsDatasetTests):

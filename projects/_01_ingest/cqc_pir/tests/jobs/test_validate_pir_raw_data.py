@@ -26,6 +26,7 @@ class ValidatePIRRawDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidatePIRRawDatasetTests):

@@ -1,18 +1,14 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.jobs.validate_providers_api_cleaned_data as job
-
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ValidateProvidersAPICleanedData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateProvidersAPICleanedData as Schemas,
 )
-
 from utils import utils
-
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.validate_providers_api_cleaned_data"
 
@@ -35,6 +31,7 @@ class ValidateProvidersAPICleanedDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateProvidersAPICleanedDatasetTests):

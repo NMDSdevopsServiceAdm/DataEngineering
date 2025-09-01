@@ -1,16 +1,13 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.jobs.validate_locations_api_raw_data as job
-
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ValidateLocationsAPIRawData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateLocationsAPIRawData as Schemas,
 )
-
 from utils import utils
 
 
@@ -28,6 +25,7 @@ class ValidateLocationsAPIRawDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateLocationsAPIRawDatasetTests):

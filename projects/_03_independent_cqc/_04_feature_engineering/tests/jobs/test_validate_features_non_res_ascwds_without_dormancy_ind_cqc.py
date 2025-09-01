@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data as job
@@ -9,12 +8,9 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcSchema as Schemas,
 )
-
 from utils import utils
 
-PATCH_PATH: str = (
-    "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data"
-)
+PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_without_dormancy_ind_cqc_data"
 
 
 class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests(unittest.TestCase):
@@ -38,6 +34,7 @@ class ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests(unittest.Tes
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateFeaturesNonResASCWDSWithoutDormancyIndCqcDatasetTests):

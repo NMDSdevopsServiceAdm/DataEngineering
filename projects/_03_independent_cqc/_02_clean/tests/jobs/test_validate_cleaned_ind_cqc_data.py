@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.jobs.validate_cleaned_ind_cqc_data as job
@@ -9,9 +8,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateCleanedIndCqcData as Schemas,
 )
-
 from utils import utils
-
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.validate_cleaned_ind_cqc_data"
 
@@ -34,6 +31,7 @@ class ValidateCleanedIndCQCDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateCleanedIndCQCDatasetTests):

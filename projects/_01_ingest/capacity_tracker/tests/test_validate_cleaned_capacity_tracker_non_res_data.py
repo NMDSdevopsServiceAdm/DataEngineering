@@ -10,9 +10,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
 )
 from utils import utils
 
-PATCH_PATH: str = (
-    "projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_non_res_data"
-)
+PATCH_PATH: str = "projects._01_ingest.capacity_tracker.jobs.validate_cleaned_capacity_tracker_non_res_data"
 
 
 class ValidateCleanedCapacityTrackerNonResDatasetTests(unittest.TestCase):
@@ -33,6 +31,7 @@ class ValidateCleanedCapacityTrackerNonResDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidateCleanedCapacityTrackerNonResDatasetTests):

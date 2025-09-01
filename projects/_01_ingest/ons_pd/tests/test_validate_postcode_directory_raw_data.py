@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.validate_postcode_directory_raw_data as job
@@ -28,6 +27,7 @@ class ValidatePostcodeDirectoryRawDatasetTests(unittest.TestCase):
     def tearDown(self) -> None:
         if self.spark.sparkContext._gateway:
             self.spark.sparkContext._gateway.shutdown_callback_server()
+        self.spark.stop()
 
 
 class MainTests(ValidatePostcodeDirectoryRawDatasetTests):
