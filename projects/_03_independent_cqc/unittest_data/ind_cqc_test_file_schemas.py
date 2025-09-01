@@ -77,8 +77,6 @@ class MergeIndCQCData:
         ]
     )
 
-
-
     data_to_merge_with_care_home_col_schema = StructType(
         [
             StructField(CQCPIRClean.location_id, StringType(), False),

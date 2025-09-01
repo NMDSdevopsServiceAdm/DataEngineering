@@ -240,6 +240,7 @@ class MainTests(CleanIndFilledPostsTests):
         df = df.collect()
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
 
+
 class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
     def setUp(self) -> None:
         super().setUp()
@@ -342,9 +343,7 @@ class CalculateTimeSinceDormant(CleanIndFilledPostsTests):
         self.assertEqual(self.columns_added_by_function[0], IndCQC.time_since_dormant)
 
     def test_calculate_time_since_dormant_returns_expected_values(self):
-        returned_data = self.returned_df.sort(
-            IndCQC.cqc_location_import_date
-        ).collect()
+        returned_data = self.returned_df.sort(IndCQC.cqc_location_import_date).collect()
         expected_data = self.expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)

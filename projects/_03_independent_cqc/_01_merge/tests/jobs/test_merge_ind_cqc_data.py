@@ -135,7 +135,5 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         self.assertEqual(returned_data, expected_data)
 
 
-
-
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

@@ -95,8 +95,6 @@ class MergeIndCQCData:
     # fmt: on
 
 
-
-
 @dataclass
 class ValidateMergedIndCqcData:
     cqc_locations_rows = [
