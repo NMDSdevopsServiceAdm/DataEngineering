@@ -34,7 +34,7 @@ variable "glue_version" {
 
 variable "worker_type" {
   description = "Glue worker type"
-  default     = "Standard"
+  default     = "G.1X"
   type        = string
 
   validation {
