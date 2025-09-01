@@ -68,7 +68,7 @@
           "States": {
             "Run CT Crawler": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
+              "Resource": "arn:aws:states:::states:startExecution.sync:2",
               "Parameters": {
                 "StateMachineArn": "${run_crawler_state_machine_arn}",
                 "Input": {
