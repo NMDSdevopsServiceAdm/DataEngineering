@@ -13,7 +13,7 @@
             "ErrorEquals": [
               "Glue.CrawlerRunningException"
             ],
-            "Next": "Wait for 2 minutes",
+            "Next": "Wait for 1 minute",
             "Comment": "Crawler already running",
             "ResultPath": "$.response.start_crawler"
           }
@@ -33,9 +33,9 @@
         ],
         "End": true
       },
-      "Wait for 2 minutes": {
+      "Wait for 1 minute": {
         "Type": "Wait",
-        "Seconds": 120,
+        "Seconds": 60,
         "Next": "StartCrawler"
       }
     }
