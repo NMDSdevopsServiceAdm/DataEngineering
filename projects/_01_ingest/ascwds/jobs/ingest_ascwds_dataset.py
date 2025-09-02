@@ -1,10 +1,8 @@
 import argparse
-import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.5"
-
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
