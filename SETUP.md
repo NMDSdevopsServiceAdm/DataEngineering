@@ -10,7 +10,11 @@
 | Java JDK8 | https://www.java.com/en/download/ | https://www.java.com/en/download/ |
 
 ## MacOS Java Installation
-This project is using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
+This project currently uses SPARK_VERSION 3.5.4 as this is compatible with Python3.11 and Glue 5.0.
+
+For Spark installation, note that several JDKs can be used with Spark 3.5, see the guide on [Spark 3.5.4](https://spark.apache.org/docs/3.5.4/)
+
+Curently, users are using jdk8. We recommend using Brew (https://brew.sh) to install the java development kit. This project is using **jdk8**.
 ```
 brew update
 brew install adoptopenjdk8

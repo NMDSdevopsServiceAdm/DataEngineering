@@ -32,7 +32,7 @@ CQC_ADAPTER = HTTPAdapter(max_retries=RETRY_STRATEGY)
 
 @sleep_and_retry
 @limits(calls=RATE_LIMIT, period=ONE_MINUTE)
-def call_api(url: str, query_params: dict = None, headers_dict: dict = None) -> dict:
+def call_api(url: str, query_params: dict | None = None, headers_dict: dict  | None = None) -> dict:
     """
     Calls an API and returns the json response
     Args:
