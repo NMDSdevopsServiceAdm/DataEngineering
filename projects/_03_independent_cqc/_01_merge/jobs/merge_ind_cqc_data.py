@@ -1,34 +1,29 @@
-import os
 import sys
 
-os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
-
+from pyspark.sql import DataFrame
 from typing import Optional
 
-from pyspark.sql import DataFrame
-
-import utils.cleaning_utils as cUtils
 from utils import utils
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-)
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
+import utils.cleaning_utils as cUtils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
-    CqcPIRCleanedColumns as CQCPIRClean,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_values.categorical_column_values import Sector
+
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 

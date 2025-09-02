@@ -53,14 +53,3 @@ variable "number_of_workers" {
     error_message = "Must be at least 2"
   }
 }
-
-variable "spark_version" {
-  description = "Spark major.minor version to use - must be compatible with the selected glue version"
-  type        = number
-  default     = 3.5
-
-  validation {
-    condition     = var.glue_version == "5.0" ? var.spark_version == 3.5 : var.glue_version == "4.0" ? var.spark_version == 3.3 : var.spark_version == 3.1
-    error_message = "Spark ${var.spark_version} incompatible with Glue ${var.glue_version}, see: https://docs.aws.amazon.com/glue/latest/dg/release-notes.html"
-  }
-}

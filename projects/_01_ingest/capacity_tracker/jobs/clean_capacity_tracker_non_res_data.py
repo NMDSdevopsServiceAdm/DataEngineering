@@ -1,17 +1,12 @@
-import os
 import sys
-
-os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
 
 from pyspark.sql import functions as F
 
-import utils.cleaning_utils as cUtils
 from utils import utils
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
+import utils.cleaning_utils as cUtils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResColumns as CTNR,
+    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome

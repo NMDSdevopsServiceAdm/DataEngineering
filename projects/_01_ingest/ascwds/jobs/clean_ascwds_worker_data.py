@@ -1,21 +1,20 @@
-import sys
 import os
+import sys
 
-os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
+os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, Window
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F, Window
 
-import utils.cleaning_utils as cUtils
 from utils import utils
+import utils.cleaning_utils as cUtils
+from utils.raw_data_adjustments import remove_duplicate_worker_in_raw_worker_data
+from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
-from utils.raw_data_adjustments import remove_duplicate_worker_in_raw_worker_data
 from utils.value_labels.ascwds_worker.worker_label_dictionary import (
     ascwds_worker_labels_dict,
 )

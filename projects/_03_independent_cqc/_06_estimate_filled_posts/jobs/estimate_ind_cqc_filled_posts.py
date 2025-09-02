@@ -1,18 +1,14 @@
-import os
 import sys
-
-os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
 
 from pyspark.sql import DataFrame
 
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    IndCqcColumns as IndCQC,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes import (
     model_care_homes,
-)
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
-    model_imputation_with_extrapolation_and_interpolation,
-)
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
-    combine_non_res_with_and_without_dormancy_models,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
@@ -20,16 +16,15 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
+)
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
 from projects._03_independent_cqc.utils.utils.utils import (
-    allocate_primary_service_type_second_level,
     merge_columns_in_order,
-)
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
+    allocate_primary_service_type_second_level,
 )
 
 ind_cqc_columns = [

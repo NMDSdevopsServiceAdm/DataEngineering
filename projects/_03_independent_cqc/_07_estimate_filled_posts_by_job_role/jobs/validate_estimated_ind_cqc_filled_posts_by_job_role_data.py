@@ -1,6 +1,10 @@
+import os
 import sys
 
 # test push
+
+os.environ["SPARK_VERSION"] = "3.5"
+
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils

@@ -1,16 +1,18 @@
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
+
+from pyspark.sql import DataFrame, Window, functions as F
 from typing import Tuple
 
-from pyspark.sql import DataFrame, Window
-from pyspark.sql import functions as F
-
-import utils.cleaning_utils as cUtils
 from utils import utils
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
+import utils.cleaning_utils as cUtils
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys as Keys,
+)
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.raw_data_adjustments import remove_duplicate_workplaces_in_raw_workplace_data
 from utils.scale_variable_limits import AscwdsScaleVariableLimits

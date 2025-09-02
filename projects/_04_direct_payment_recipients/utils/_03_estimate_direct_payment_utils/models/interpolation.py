@@ -1,11 +1,7 @@
-import os
 import sys
 
-os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
-
-from pyspark.sql import DataFrame, Window
-from pyspark.sql import functions as F
-from pyspark.sql.types import ArrayType, FloatType, LongType
+from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql.types import ArrayType, LongType, FloatType
 
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,

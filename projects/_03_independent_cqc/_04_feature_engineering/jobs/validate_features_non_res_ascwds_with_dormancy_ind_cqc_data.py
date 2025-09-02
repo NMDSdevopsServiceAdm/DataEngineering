@@ -1,6 +1,9 @@
+import os
 import sys
 
 # SPARK_VERSION needs to be set before pydeequ is imported
+os.environ["SPARK_VERSION"] = "3.5"
+
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
