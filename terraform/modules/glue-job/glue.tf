@@ -22,6 +22,6 @@ resource "aws_glue_job" "glue_job" {
       "--enable-continuous-cloudwatch-log" = "true"
       "--enable-auto-scaling"              = var.worker_type == "Standard" ? "false" : "true"
       "--conf"                             = "spark.sql.sources.partitionColumnTypeInference.enabled=false${var.extra_conf}"
-      "—customer-executor-env-vars"        = "CUSTOMER_SPARK_VERSION=3.5"
+      "—customer-executor-env-vars"        = "CUSTOMER_SPARK_VERSION=${var.spark_version}"
   })
 }
