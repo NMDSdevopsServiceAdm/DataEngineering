@@ -1,5 +1,8 @@
+import os
 import sys
 import warnings
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, Window, functions as F
 from pyspark.sql.types import StringType
