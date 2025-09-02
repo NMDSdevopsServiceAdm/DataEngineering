@@ -1,5 +1,8 @@
 import argparse
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F

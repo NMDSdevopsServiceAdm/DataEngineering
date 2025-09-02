@@ -1,17 +1,23 @@
+import os
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+os.environ["SPARK_VERSION"] = os.environ["CUSTOMER_SPARK_VERSION"]
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
-from utils.column_values.categorical_column_values import CareHome
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
+from utils.column_values.categorical_column_values import CareHome
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
