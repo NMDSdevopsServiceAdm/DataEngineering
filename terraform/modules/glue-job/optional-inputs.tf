@@ -61,6 +61,6 @@ variable "spark_version" {
 
   validation {
     condition     = var.glue_version == "5.0" ? var.spark_version == 3.5 : var.glue_version == "4.0" ? var.spark_version == 3.3 : var.spark_version == 3.1
-    error_message = "value must be compatible with the selected glue version, see: https://docs.aws.amazon.com/glue/latest/dg/release-notes.html"
+    error_message = "Spark ${var.spark_version} incompatible with Glue ${var.glue_version}, see: https://docs.aws.amazon.com/glue/latest/dg/release-notes.html"
   }
 }

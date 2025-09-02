@@ -152,7 +152,7 @@ module "clean_ascwds_workplace_job" {
   number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
 
   job_parameters = {
     "--ascwds_workplace_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
@@ -500,7 +500,7 @@ module "merge_ind_cqc_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
   worker_type       = "G.2X"
   number_of_workers = 5
 
@@ -650,7 +650,7 @@ module "validate_merged_ind_cqc_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version      = "5.0"
   worker_type       = "G.1X"
   number_of_workers = 4
 
@@ -1025,7 +1025,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version      = "5.0"
   worker_type       = "G.1X"
   number_of_workers = 4
 
