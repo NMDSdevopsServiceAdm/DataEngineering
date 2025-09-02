@@ -6,6 +6,8 @@ from pyspark.sql import (
     Window,
 )
 
+from schemas.cqc_location_schema import LOCATION_SCHEMA
+
 from utils import (
     utils,
     cleaning_utils as cUtils,
@@ -38,6 +40,7 @@ cqc_location_columns = [
     Keys.day,
     CQCL.current_ratings,
     CQCL.historic_ratings,
+    CQCL.assessment,
     CQCL.registration_status,
     CQCL.type,
 ]
@@ -57,8 +60,11 @@ def main(
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
+    assessment_ratings_destination: str,
 ):
-    cqc_location_df = utils.read_from_parquet(cqc_location_source, cqc_location_columns)
+    cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
+    )
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
@@ -74,6 +80,7 @@ def main(
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
+    assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
     ratings_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
@@ -99,6 +106,12 @@ def main(
     utils.write_to_parquet(
         benchmark_ratings_df,
         benchmark_ratings_destination,
+        mode="overwrite",
+    )
+
+    utils.write_to_parquet(
+        assessment_ratings_df,
+        assessment_ratings_destination,
         mode="overwrite",
     )
 
@@ -130,6 +143,12 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = add_current_or_historic_column(
         ratings_df, CQCCurrentOrHistoricValues.historic
     )
+    return ratings_df
+
+
+def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    ratings_df = flatten_assessment_ratings(cqc_location_df)
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
     return ratings_df
 
 
@@ -219,6 +238,223 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
             "outer",
         )
     return cleaned_historic_ratings_df
+
+
+def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+    """
+    Flatten overall and ASG ratings within assessment field extracted from CQC location data into a unified, pivoted DataFrame.
+
+    This function:
+      1. Extracts assessment base information from the input location DataFrame.
+      2. Separately flattens overall ratings and ASG ratings into tabular form.
+      3. Unions both datasets together, aligning by schema.
+      4. Pivots key question ratings into columns (Safe, Effective, Caring, Responsive and Well-led.).
+
+    Args:
+        cqc_location_df (DataFrame): Input DataFrame containing raw CQC location data, with nested assessments and ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame where each row corresponds to a locations assessment plan, with key question ratings pivoted into individual columns.
+    """
+    assessment_df = extract_assessment_base(cqc_location_df)
+    overall_df = extract_overall(assessment_df)
+    asg_df = extract_asg(assessment_df)
+
+    union_df = overall_df.unionByName(asg_df, allowMissingColumns=True)
+
+    final_df = (
+        union_df.groupBy(
+            CQCL.location_id,
+            CQCL.registration_status,
+            CQCL.assessment_plan_published_datetime,
+            CQCL.assessment_plan_id,
+            CQCL.title,
+            CQCL.assessment_date,
+            CQCL.assessment_plan_status,
+            CQCL.dataset,
+            CQCL.name,
+            CQCL.status,
+            CQCL.rating,
+            CQCL.source_path,
+        )
+        .pivot(CQCL.key_question_name)
+        .agg(F.first(CQCL.key_question_rating))
+        .orderBy(CQCL.assessment_date)
+    )
+
+    desired_column_order = [
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.dataset,
+        CQCL.name,
+        CQCL.status,
+        CQCL.rating,
+        CQCL.source_path,
+        CQCL.safe,
+        CQCL.effective,
+        CQCL.caring,
+        CQCL.responsive,
+        CQCL.well_led,
+    ]
+
+    return final_df.select(*desired_column_order)
+
+
+def extract_assessment_base(cqc_location_df: DataFrame) -> DataFrame:
+    """
+    Extract and explode the base assessment data from the CQC location dataset.
+
+    Args:
+        cqc_location_df (DataFrame): Input DataFrame containing raw CQC location data with nested assessments.
+
+    Returns:
+        DataFrame: DataFrame with columns for location ID, registration status, assessment plan published datetime, and nested assessment ratings.
+    """
+    assessment_base_df = cqc_location_df.withColumn(
+        CQCL.assessment_exploded, F.explode(CQCL.assessment)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        F.col(
+            f"{CQCL.assessment_exploded}.{CQCL.assessment_plan_published_datetime}"
+        ).alias(CQCL.assessment_plan_published_datetime),
+        F.col(f"{CQCL.assessment_exploded}.{CQCL.ratings}").alias(
+            CQCL.assessments_ratings
+        ),
+    )
+    return assessment_base_df
+
+
+def extract_overall(assessment_df: DataFrame) -> DataFrame:
+    """
+    Extract and flatten 'overall' ratings from assessment data.
+
+    This function:
+      1. Explodes the `overall` ratings array.
+      2. Selects Explodes core fields such as rating, status, and key question ratings.
+
+    Args:
+        assessment_df (DataFrame): DataFrame produced by `extract_assessment_base`, containing assessment ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame of overall ratings, including key question ratings for each assessment.
+    """
+    exploded = assessment_df.withColumn(
+        CQCL.overall_exploded,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.overall}")),
+    )
+
+    flattened_df = exploded.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.overall_exploded}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.overall_exploded}.{CQCL.status}").alias(CQCL.status),
+        F.col(f"{CQCL.overall_exploded}.{CQCL.key_question_ratings}").alias(
+            CQCL.key_question_ratings
+        ),
+    )
+
+    overall_df = flattened_df.withColumn(
+        CQCL.overall_key_questions_exploded, F.explode(CQCL.key_question_ratings)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.name}").alias(
+            CQCL.key_question_name
+        ),
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.rating}").alias(
+            CQCL.key_question_rating
+        ),
+        F.col(f"{CQCL.overall_key_questions_exploded}.{CQCL.status}").alias(
+            CQCL.key_question_status
+        ),
+        F.lit("SAF").alias(CQCL.dataset),
+        F.lit("assessment.ratings.overall").alias(CQCL.source_path),
+    )
+    return overall_df
+
+
+def extract_asg(assessment_df: DataFrame) -> DataFrame:
+    """
+    Extract and flatten ASG ratings from assessment data.
+
+    This function:
+      1. Explodes the `asg_ratings` array.
+      2. Selects core ASG fields such as plan ID, title, assessment date, status, and rating.
+      3. Explodes the nested key question ratings so each becomes its own row.
+      4. Adds additional fields including percentage score (if present), dataset type, and source path.
+
+    Args:
+        assessment_df (DataFrame): DataFrame produced by `extract_assessment_base`, containing assessment ratings.
+
+    Returns:
+        DataFrame: Flattened DataFrame of ASG ratings, including key question ratings and metadata for each sub assessment.
+    """
+    exploded = assessment_df.withColumn(
+        CQCL.asg_exploded,
+        F.explode(F.col(f"{CQCL.assessments_ratings}.{CQCL.asg_ratings}")),
+    )
+
+    flattened = exploded.select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_plan_id}").alias(
+            CQCL.assessment_plan_id
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.title}").alias(CQCL.title),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_date}").alias(
+            CQCL.assessment_date
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.assessment_plan_status}").alias(
+            CQCL.assessment_plan_status
+        ),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.name}").alias(CQCL.name),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.rating}").alias(CQCL.rating),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.status}").alias(CQCL.status),
+        F.col(f"{CQCL.asg_exploded}.{CQCL.key_question_ratings}").alias(
+            CQCL.key_question_ratings
+        ),
+    )
+
+    asg_df = flattened.withColumn(
+        CQCL.asg_key_questions_exploded, F.explode(CQCL.key_question_ratings)
+    ).select(
+        CQCL.location_id,
+        CQCL.registration_status,
+        CQCL.assessment_plan_published_datetime,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.rating,
+        CQCL.status,
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.name}").alias(
+            CQCL.key_question_name
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.rating}").alias(
+            CQCL.key_question_rating
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.status}").alias(
+            CQCL.key_question_status
+        ),
+        F.col(f"{CQCL.asg_key_questions_exploded}.{CQCL.percentage_score}").alias(
+            CQCL.key_question_percentage_score
+        ),
+        F.lit("SAF").alias(CQCL.dataset),
+        F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
+    )
+    return asg_df
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
@@ -422,6 +658,7 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        assessment_ratings_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -439,12 +676,17 @@ if __name__ == "__main__":
             "--benchmark_ratings_destination",
             "Destination s3 directory for cleaned parquet benchmark ratings dataset",
         ),
+        (
+            "--assessment_ratings_destination",
+            "Destination s3 directory for cleaned parquet CQC assessment ratings dataset",
+        ),
     )
     main(
         cqc_location_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
+        assessment_ratings_destination,
     )
 
     print("Spark job 'flatten_cqc_ratings' complete")
