@@ -4,20 +4,32 @@ import warnings
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 from pyspark.sql.types import StringType
 
-from utils import utils
 import utils.cleaning_utils as cUtils
-from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
+from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
+    extract_registered_manager_names,
+)
+from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
+from projects._01_ingest.cqc_api.utils.utils import classify_specialisms
+from utils import utils
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    contemporary_geography_columns,
+    current_geography_columns,
+)
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
@@ -30,17 +42,8 @@ from utils.column_values.categorical_column_values import (
     Services,
     Specialisms,
 )
-from utils.column_names.cleaned_data_files.ons_cleaned import (
-    OnsCleanedColumns as ONSClean,
-    contemporary_geography_columns,
-    current_geography_columns,
-)
-from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
-    extract_registered_manager_names,
-)
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.raw_data_adjustments import remove_records_from_locations_data
-from projects._01_ingest.cqc_api.utils.postcode_matcher import run_postcode_matching
-from projects._01_ingest.cqc_api.utils.utils import classify_specialisms
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
