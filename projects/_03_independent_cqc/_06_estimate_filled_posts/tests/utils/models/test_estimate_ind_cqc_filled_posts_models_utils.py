@@ -3,13 +3,10 @@ import warnings
 from unittest.mock import ANY, MagicMock, Mock, patch
 
 from datetime import date
-from pyspark.sql import functions as F
-from pyspark.ml.linalg import Vectors
 from pyspark.ml.regression import LinearRegressionModel
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     utils as job,
@@ -146,68 +143,6 @@ class SetMinimumValueTests(EstimateFilledPostsModelsUtilsTests):
         expected_df = test_df
 
         self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
-class CombineCareHomeRatiosAndNonResPostsTests(EstimateFilledPostsModelsUtilsTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-        test_df = self.spark.createDataFrame(
-            Data.combine_care_home_ratios_and_non_res_posts_rows,
-            Schemas.combine_care_home_ratios_and_non_res_posts_schema,
-        )
-        self.returned_df = job.combine_care_home_ratios_and_non_res_posts(
-            test_df,
-            IndCqc.filled_posts_per_bed_ratio,
-            IndCqc.ascwds_filled_posts_dedup_clean,
-            IndCqc.combined_ratio_and_filled_posts,
-        )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_combine_care_home_ratios_and_non_res_posts_rows,
-            Schemas.expected_combine_care_home_ratios_and_non_res_posts_schema,
-        )
-
-    def test_create_combine_care_home_ratios_and_non_res_posts_returns_expected_columns(
-        self,
-    ):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(self.expected_df.columns),
-        )
-
-    def test_returned_column_values_match_expected_when_care_home(self):
-        returned_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) == CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        expected_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) == CareHome.care_home
-        ).collect()
-
-        for i in range(len(returned_care_home_data)):
-            self.assertEqual(
-                returned_care_home_data[i][IndCqc.combined_ratio_and_filled_posts],
-                expected_care_home_data[i][IndCqc.combined_ratio_and_filled_posts],
-                f"Returned row {i} does not match expected",
-            )
-
-    def test_returned_column_values_match_expected_when_not_care_home(self):
-        returned_not_care_home_data = (
-            self.returned_df.where(F.col(IndCqc.care_home) != CareHome.care_home)
-            .sort(IndCqc.location_id)
-            .collect()
-        )
-        expected_not_care_home_data = self.expected_df.where(
-            F.col(IndCqc.care_home) != CareHome.care_home
-        ).collect()
-
-        for i in range(len(returned_not_care_home_data)):
-            self.assertEqual(
-                returned_not_care_home_data[i][IndCqc.combined_ratio_and_filled_posts],
-                expected_not_care_home_data[i][IndCqc.combined_ratio_and_filled_posts],
-                f"Returned row {i} does not match expected",
-            )
 
 
 class ConvertCareHomeRatiosToFilledPostsAndMergeWithFilledPostValuesTests(
