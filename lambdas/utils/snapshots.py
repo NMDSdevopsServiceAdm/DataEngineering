@@ -1,5 +1,6 @@
 from re import match
 from typing import Generator, Optional
+from datetime import datetime
 
 import polars as pl
 
@@ -118,11 +119,8 @@ def get_snapshots(
             )
             if organisation_type == "locations-cleaned":
                 previous_ss = previous_ss.with_columns(
-                    pl.lit(import_date[0]).alias(
-                        CqcLocationsCleaned.cqc_location_import_date
-                    ),
+                    pl.lit(datetime.strptime(str(import_date[0]), "%Y%m%d"))
+                    .alias(CqcLocationsCleaned.cqc_location_import_date)
+                    .cast(pl.Date),
                 )
-                previous_ss[CqcLocationsCleaned.cqc_location_import_date] = previous_ss[
-                    CqcLocationsCleaned.cqc_location_import_date
-                ].str.to_date("%Y%m%d")
         yield previous_ss
