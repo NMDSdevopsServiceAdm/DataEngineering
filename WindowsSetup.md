@@ -4,6 +4,7 @@
 
 ### Uninstall any current Java installations (requires IT)
 If you have Java, it will be found in the following file paths:
+
 ```
 C:\
 C:\Program Files
