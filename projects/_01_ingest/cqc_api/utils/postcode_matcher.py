@@ -55,7 +55,6 @@ def run_postcode_matching(
         ONSClean.contemporary_ons_import_date,
     )
     print("Step 0")
-    locations_df.explain(extended=True)
     print(locations_df.count())
 
     # Step 1 - Match postcodes where there is an exact match at that point in time.
@@ -334,8 +333,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     Raises:
         TypeError: If unmatched postcodes exist.
     """
-    unmatched_df.explain(extended=True)
-    if unmatched_df.limit(1).count() == 0:
+    if unmatched_df.count() == 0:
         return
 
     rows = (
