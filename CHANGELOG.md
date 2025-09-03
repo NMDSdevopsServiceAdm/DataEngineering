@@ -6,19 +6,37 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data. 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
+
 
 ### Changed
 - Expanded acronyms in documentation.
+
 - Removed providers dataset from clean locations job as it's no longer used.
-- Updated read_from_parquet() function with a new optional schema parameter.
-- Refactored CQC API pipeline to use delta model in Polars, including:
+
+- Updated [read_from_parquet()](utils/utils.py) function with a new optional schema parameter.
+
+- Refactored [CQC API pipeline](terraform/pipeline/step-functions/CQC-API-Pipeline.json) to use delta model in Polars, including:
   - delta download tasks using CQC changes API
   - tasks for download written in Polars within ECS tasks
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
-- Created an `SfC-Internal` step function which contains all the internal Skills for Care jobs in one pipeline.
+
+- Created an [SfC Internal pipeline](terraform/pipeline/step-functions/SfCInternal-StepFunction.json) step function which contains all the internal Skills for Care jobs in one pipeline.
+
+- Updated [Error Notification lambda](lambdas/error_notifications/error_notifications.py) to handle ECS task failures.
+
+- Split the `Master-Ingest` step function into
+  - [ingestion only orchestrator](terraform/pipeline/step-functions/CQCAndASCWDSOrchestrator-StepFunction.json) to align CQC API and ASCWDS ingestion
+  - [Workforce Intelligence](terraform/pipeline/step-functions/WorkforceIntelligence-StepFunction.json) pipeline for post-ingestion transformations
+- Moved the deduplication and imputation of Capacity Tracker data from diagnostics_on_capacity_tracker to impute_ind_cqc_ascwds_and_pir.
+
+- Upgraded all Python source code to 3.11, including:
+  - resetting package versions using pipenv
+  - upgrading to PySpark 3.5
+  - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
 ### Improved
 

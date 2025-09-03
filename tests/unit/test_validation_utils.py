@@ -1,12 +1,8 @@
 import unittest
 
-from unittest.mock import Mock, patch
-
 import utils.validation.validation_utils as job
-
 from tests.test_file_data import ValidationUtils as Data
 from tests.test_file_schemas import ValidationUtils as Schemas
-
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,

@@ -1,5 +1,8 @@
-import sys
 from dataclasses import dataclass
+import os
+import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
@@ -19,12 +22,14 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.rolling
     model_calculate_rolling_average,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
-    combine_care_home_ratios_and_non_res_posts,
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values,
 )
 from projects._03_independent_cqc._03_impute.utils.model_and_merge_pir_filled_posts import (
     model_pir_filled_posts,
     merge_ascwds_and_pir_filled_post_submissions,
+)
+from projects._03_independent_cqc._03_impute.utils.utils import (
+    combine_care_home_and_non_res_values_into_single_column,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -52,7 +57,7 @@ def main(
         new_col_name=IndCQC.unix_time,
     )
 
-    df = combine_care_home_ratios_and_non_res_posts(
+    df = combine_care_home_and_non_res_values_into_single_column(
         df,
         IndCQC.filled_posts_per_bed_ratio,
         IndCQC.ascwds_filled_posts_dedup_clean,
@@ -113,6 +118,39 @@ def main(
         df,
         IndCQC.banded_bed_ratio_rolling_average_model,
         IndCQC.posts_rolling_average_model,
+    )
+
+    df = df.persist()
+
+    df = combine_care_home_and_non_res_values_into_single_column(
+        df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_dedup,
+    )
+
+    df = model_primary_service_rate_of_change_trendline(
+        df,
+        IndCQC.ct_combined_care_home_and_non_res_dedup,
+        NumericalValues.number_of_days_in_window,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        NumericalValues.max_number_of_days_to_interpolate_between,
+    )
+
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_care_home_total_employed_imputed,
+        care_home=True,
+    )
+
+    df = model_imputation_with_extrapolation_and_interpolation(
+        df,
+        IndCQC.ct_non_res_care_workers_employed_dedup,
+        IndCQC.ct_combined_care_home_and_non_res_rate_of_change_trendline,
+        IndCQC.ct_non_res_care_workers_employed_imputed,
+        care_home=False,
     )
 
     print(f"Exporting as parquet to {imputed_ind_cqc_ascwds_and_pir_destination}")

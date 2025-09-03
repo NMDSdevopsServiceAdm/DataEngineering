@@ -1,4 +1,7 @@
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 from typing import Optional
@@ -33,7 +36,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.name,
     CQCLClean.postal_code,
     CQCLClean.provider_id,
-    CQCLClean.provider_name,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,

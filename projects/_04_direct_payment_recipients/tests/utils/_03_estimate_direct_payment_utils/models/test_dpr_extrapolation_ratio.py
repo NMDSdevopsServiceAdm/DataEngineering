@@ -2,18 +2,18 @@ import unittest
 import warnings
 
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    IntegerType,
     FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
-from utils import utils
 import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_utils.models.extrapolation_ratio as job
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils import utils
 
 
 class TestExtrapolationRatio(unittest.TestCase):

@@ -8,10 +8,11 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateCareHomeIndCqcFeaturesData as Schemas,
 )
-
 from utils import utils
 
-PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_care_home_ind_cqc_data"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_care_home_ind_cqc_data"
+)
 
 
 class ValidateCareHomeIndCQCFeaturesDatasetTests(unittest.TestCase):

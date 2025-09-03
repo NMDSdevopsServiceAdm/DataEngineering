@@ -15,8 +15,9 @@ resource "aws_s3_object" "error_notification_lambda" {
 resource "aws_lambda_function" "error_notification_lambda" {
   role             = aws_iam_role.error_notification_lambda.arn
   handler          = "error_notifications.main"
-  runtime          = "python3.9"
-  function_name    = "${local.workspace_prefix}-glue-failure-notification"
+  runtime          = "python3.11"
+  timeout          = 15
+  function_name    = "${local.workspace_prefix}-job-failure-notification"
   s3_bucket        = module.pipeline_resources.bucket_name
   s3_key           = aws_s3_object.error_notification_lambda.key
   source_code_hash = data.archive_file.error_notification_lambda.output_base64sha256
@@ -24,22 +25,6 @@ resource "aws_lambda_function" "error_notification_lambda" {
   environment {
     variables = {
       SNS_TOPIC_ARN = aws_sns_topic.pipeline_failures.arn
-    }
-  }
-}
-
-resource "aws_lambda_function" "error_notification_delta_lambda" {
-  role             = aws_iam_role.error_notification_lambda.arn
-  handler          = "error_notifications.main"
-  runtime          = "python3.9"
-  function_name    = "${local.workspace_prefix}-glue-failure-notification-delta"
-  s3_bucket        = module.pipeline_resources.bucket_name
-  s3_key           = aws_s3_object.error_notification_lambda.key
-  source_code_hash = data.archive_file.error_notification_lambda.output_base64sha256
-
-  environment {
-    variables = {
-      SNS_TOPIC_ARN = aws_sns_topic.pipeline_failures_delta.arn
     }
   }
 }
@@ -244,8 +229,7 @@ data "aws_iam_policy_document" "error_notification_lambda" {
     ]
     effect = "Allow"
     resources = [
-      aws_sns_topic.pipeline_failures.arn,
-      aws_sns_topic.pipeline_failures_delta.arn
+      aws_sns_topic.pipeline_failures.arn
     ]
   }
 }

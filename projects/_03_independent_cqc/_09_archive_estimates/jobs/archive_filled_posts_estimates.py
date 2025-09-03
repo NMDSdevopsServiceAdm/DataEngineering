@@ -1,5 +1,8 @@
-import sys
 from datetime import datetime, date
+import os
+import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, functions as F
 
@@ -55,7 +58,6 @@ MONTHLY_ARCHIVE_COLUMNS = [
     IndCQC.primary_service_type,
     IndCQC.primary_service_type_second_level,
     IndCQC.provider_id,
-    IndCQC.provider_name,
     IndCQC.related_location,
     IndCQC.posts_rolling_average_model,
     IndCQC.total_staff_bounded,

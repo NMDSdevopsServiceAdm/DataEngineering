@@ -19,7 +19,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
 )
 
-PATCH_PATH: str = "projects._03_independent_cqc._09_archive_estimates.jobs.archive_filled_posts_estimates"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._09_archive_estimates.jobs.archive_filled_posts_estimates"
+)
 
 
 class ArchiveFilledPostsEstimatesTests(unittest.TestCase):

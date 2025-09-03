@@ -1,7 +1,7 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -15,14 +15,14 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 from utils.column_values.categorical_column_values import (
     Sector,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
-from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 

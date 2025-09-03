@@ -39,82 +39,73 @@ jobs:
 
   test:
     docker:
-      - image: circleci/python:3.9.6
-    resource_class: small
-
+      - image: cimg/python:3.11.12
+    resource_class: large
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - v1.1-deps-{{ checksum "Pipfile.lock" }}
-
       - run:
           name: Install system packages
           command: |
             sudo apt-get update
             sudo apt-get install -y default-jre-headless
-
       - run:
           name: install dependencies
           command: |
-            sudo pip install pipenv
+            pip install pipenv
             pipenv install --dev
-
       - save_cache:
           key: v1.1-deps-{{ checksum "Pipfile.lock" }}
           paths:
             - ~/.local/share/virtualenvs
-
       - run:
           name: run unit tests
           command: |
             pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
-      
       - run:
           name: Generate coverage report
           command: |
             pipenv run coverage report
             pipenv run coverage xml
             pipenv run coverage html
-
       - run:
           name: run integration tests
           command: |
             pipenv run python -m unittest discover tests/integration
-
       - store_artifacts:
           path: htmlcov
 
   lint-python:
     docker:
-      - image: circleci/python:3.9.6
+      - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - checkout
       - run:
           name: Install black
-          command: pip install black==23.7.0
+          command: pip install black==25.1.0
       - run:
           name: Check Python formatting
           command: black . --check
 
   lint-docstrings:
     docker:
-      - image: circleci/python:3.9.6
+      - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - checkout
       - run:
           name: Install pydoclint
-          command: pip install pydoclint==0.5.9
+          command: pip install pydoclint==0.6.10
       - run:
           name: Check docstring formatting
           command: pydoclint --style=google --quiet .
 
   lint-terraform:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -125,7 +116,7 @@ jobs:
   terraform-plan:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -147,31 +138,27 @@ jobs:
 
   terraform-apply:
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
       - attach_workspace:
           at: .
-
       - run:
           name: terraform apply
           command: |
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
-
       - run:
           name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
-
       - run:
           name: save datasets bucket name
           command: |
             cd terraform/pipeline
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
-
       - persist_to_workspace:
           root: .
           paths:
@@ -180,30 +167,26 @@ jobs:
 
   deploy-dependencies:
     docker:
-      - image: circleci/python:3.9.6
+      - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - attach_workspace:
           at: .
-
       - run:
           name: package utils, schemas, projects and environment
           command: |
             mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment
-
       - run:
           name: Download Deequ jar
           command: |
-            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.7-spark-3.3/deequ-2.0.7-spark-3.3.jar -O dependencies/deequ-2.0.7-spark-3.3.jar
-
+            wget https://repo1.maven.org/maven2/com/amazon/deequ/deequ/2.0.8-spark-3.5/deequ-2.0.8-spark-3.5.jar -O dependencies/deequ-2.0.8-spark-3.5.jar
       - run:
           name: Package PyDeequ
           command: |
-            pip install -t ./target pydeequ==1.4.0
-            cd target && zip -r pydeequ-1.4.0.zip pydeequ && cd ..
-            mv target/pydeequ-1.4.0.zip dependencies/pydeequ-1.4.0.zip
+            pip install -t ./target pydeequ==1.5.0
+            cd target && zip -r pydeequ-1.5.0.zip pydeequ && cd ..
+            mv target/pydeequ-1.5.0.zip dependencies/pydeequ-1.5.0.zip
             rm -rf target
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: dependencies
@@ -216,12 +199,10 @@ jobs:
     steps:
       - attach_workspace:
           at: .
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
-
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
@@ -230,7 +211,7 @@ jobs:
   terraform-destroy:
     working_directory: /tmp/project
     docker:
-      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.2.1
+      - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
@@ -251,7 +232,6 @@ jobs:
 
 workflows:
   version: 2
-
   test-plan-approve-and-deploy-to-main:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
@@ -288,8 +268,8 @@ workflows:
               ignore: main
       - test:
           filters:
-             branches:
-               ignore: main
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
