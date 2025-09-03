@@ -1,5 +1,8 @@
+import os
 import sys
 from typing import List
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 

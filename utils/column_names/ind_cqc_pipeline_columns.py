@@ -119,8 +119,11 @@ class IndCqcColumns:
         ct_care_home_total_employed + "_deduplicated"
     )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
-    ct_care_home_total_employed_rate_of_change_trendline: str = (
-        ct_care_home_total_employed + "_rate_of_change_trendline"
+    ct_combined_care_home_and_non_res_dedup: str = (
+        "ct_combined_care_home_and_non_res_deduplicated"
+    )
+    ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
+        ct_combined_care_home_and_non_res_dedup + "_rate_of_change_trendline"
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
@@ -129,9 +132,6 @@ class IndCqcColumns:
     )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
-    )
-    ct_non_res_care_workers_employed_rate_of_change_trendline: str = (
-        CTNRClean.cqc_care_workers_employed + "_rate_of_change_trendline"
     )
     ct_non_res_filled_post_estimate: str = (
         "capacity_tracker_non_res_filled_post_estimate"

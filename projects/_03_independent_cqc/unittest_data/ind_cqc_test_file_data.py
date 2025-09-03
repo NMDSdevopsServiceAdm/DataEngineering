@@ -314,6 +314,30 @@ class ModelAndMergePirData:
 
 
 @dataclass
+class ImputeUtilsData:
+    combine_care_home_and_non_res_values_into_single_column_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None),
+        ("1-003", CareHome.care_home, None, 1.8),
+        ("1-004", CareHome.care_home, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6),
+        ("1-006", CareHome.not_care_home, 10.0, None),
+        ("1-007", CareHome.not_care_home, None, 1.6),
+        ("1-008", CareHome.not_care_home, None, None),
+    ]
+    expected_combine_care_home_and_non_res_values_into_single_column_rows = [
+        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
+        ("1-002", CareHome.care_home, 10.0, None, None),
+        ("1-003", CareHome.care_home, None, 1.8, 1.8),
+        ("1-004", CareHome.care_home, None, None, None),
+        ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
+        ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
+        ("1-007", CareHome.not_care_home, None, 1.8, None),
+        ("1-008", CareHome.not_care_home, None, None, None),
+    ]
+
+
+@dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
     # fmt: off
     cleaned_ind_cqc_rows = [
@@ -5490,27 +5514,6 @@ class EstimateFilledPostsModelsUtils:
 
     set_min_value_when_null_rows = [
         ("1-001", None, None),
-    ]
-
-    combine_care_home_ratios_and_non_res_posts_rows = [
-        ("1-001", CareHome.care_home, 20.0, 1.6),
-        ("1-002", CareHome.care_home, 10.0, None),
-        ("1-003", CareHome.care_home, None, 1.8),
-        ("1-004", CareHome.care_home, None, None),
-        ("1-005", CareHome.not_care_home, 20.0, 1.6),
-        ("1-006", CareHome.not_care_home, 10.0, None),
-        ("1-007", CareHome.not_care_home, None, 1.6),
-        ("1-008", CareHome.not_care_home, None, None),
-    ]
-    expected_combine_care_home_ratios_and_non_res_posts_rows = [
-        ("1-001", CareHome.care_home, 20.0, 1.6, 1.6),
-        ("1-002", CareHome.care_home, 10.0, None, None),
-        ("1-003", CareHome.care_home, None, 1.8, 1.8),
-        ("1-004", CareHome.care_home, None, None, None),
-        ("1-005", CareHome.not_care_home, 20.0, 1.6, 20.0),
-        ("1-006", CareHome.not_care_home, 10.0, None, 10.0),
-        ("1-007", CareHome.not_care_home, None, 1.8, None),
-        ("1-008", CareHome.not_care_home, None, None, None),
     ]
 
     convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values_rows = [

@@ -1,7 +1,7 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -10,8 +10,8 @@ from utils.validation.validation_rules.providers_api_raw_validation_rules import
     ProvidersAPIRawValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
 
 

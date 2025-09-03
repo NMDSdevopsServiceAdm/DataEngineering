@@ -6,7 +6,9 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data. 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
+
 
 ### Changed
 - Expanded acronyms in documentation.
@@ -30,6 +32,12 @@ All notable changes to this project will be documented in this file.
 - Split the `Master-Ingest` step function into
   - [ingestion only orchestrator](terraform/pipeline/step-functions/CQCAndASCWDSOrchestrator-StepFunction.json) to align CQC API and ASCWDS ingestion
   - [Workforce Intelligence](terraform/pipeline/step-functions/WorkforceIntelligence-StepFunction.json) pipeline for post-ingestion transformations
+- Moved the deduplication and imputation of Capacity Tracker data from diagnostics_on_capacity_tracker to impute_ind_cqc_ascwds_and_pir.
+
+- Upgraded all Python source code to 3.11, including:
+  - resetting package versions using pipenv
+  - upgrading to PySpark 3.5
+  - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
 ### Improved
 

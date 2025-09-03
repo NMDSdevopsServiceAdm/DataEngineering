@@ -1,7 +1,7 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
@@ -9,14 +9,14 @@ from utils import utils
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
+from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.cleaned_capacity_tracker_care_home_validation_rules import (
     CleanedCapacityTrackerCareHomeValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
-from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 def main(
@@ -32,10 +32,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
-        care_home_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_capacity_tracker_care_home_dataset(
+            care_home_df
+        )
     )
 
     check_result_df = validate_dataset(care_home_cleaned_df, rules)

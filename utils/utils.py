@@ -1,12 +1,11 @@
 import os
-import re
 import csv
 import argparse
 from typing import List, Any, Generator, Optional
 
+import pydeequ
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.types import StructType
-from pyspark.sql.utils import AnalysisException
 
 
 import boto3
@@ -28,11 +27,12 @@ class SetupSpark(object):
     def setupSpark(self) -> SparkSession:
         spark = (
             SparkSession.builder.appName("sfc_data_engineering")
-            .config("spark.jars.packages", "com.amazon.deequ:deequ:2.0.7-spark-3.3")
+            .config("spark.jars.packages", pydeequ.deequ_maven_coord)
+            .config("spark.jars.excludes", pydeequ.f2j_maven_coord)
             .getOrCreate()
         )
-        spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInWrite=LEGACY")
-        spark.sql("set spark.sql.legacy.parquet.datetimeRebaseModeInRead=LEGACY")
+        spark.sql("set spark.sql.parquet.datetimeRebaseModeInWrite=LEGACY")
+        spark.sql("set spark.sql.parquet.datetimeRebaseModeInRead=LEGACY")
         spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
         return spark
 

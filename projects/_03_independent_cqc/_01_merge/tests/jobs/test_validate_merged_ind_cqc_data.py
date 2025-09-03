@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._01_merge.jobs.validate_merged_ind_cqc_data as job

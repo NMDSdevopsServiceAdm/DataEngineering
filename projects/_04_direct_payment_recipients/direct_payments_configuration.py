@@ -1,4 +1,7 @@
 from dataclasses import dataclass
+import os
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql.types import (
     StructType,

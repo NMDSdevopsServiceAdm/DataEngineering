@@ -1,6 +1,9 @@
+import os
 import sys
 
-from pyspark.sql import DataFrame, Window, functions as F
+os.environ["SPARK_VERSION"] = "3.5"
+
+from pyspark.sql import DataFrame
 from typing import Optional
 
 from utils import utils
