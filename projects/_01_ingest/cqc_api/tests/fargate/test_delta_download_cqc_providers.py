@@ -111,7 +111,9 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
     def test_main_writes_copes_with_multiple_runs(
         self, mock_objects, mock_get_secret, mock_uuid
     ):
+        # GIVEN
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "abc1"}'
+        #   that we yield two distinct objects
         mock_objects.side_effect = [
             [
                 {"providerId": 1},
@@ -126,23 +128,25 @@ class TestDeltaDownloadCQCProviders(unittest.TestCase):
         ]
         uuids = ["abc", "def"]
         mock_uuid.uuid4.side_effect = uuids
+
+        # WHEN
+        #   we run main twice with timepoints on the same day
         start = "2025-07-20T09:40:23Z"
         middle = "2025-07-20T12:23:40Z"
         end = "2025-07-20T19:40:23Z"
 
-        expected_paths = [f"{self.temp_dir}/{uuid}.parquet" for uuid in uuids]
-
         main(self.temp_dir + "/", start, middle)
         main(self.temp_dir + "/", middle, end)
 
+        # THEN
+        expected_paths = [f"{self.temp_dir}/{uuid}.parquet" for uuid in uuids]
+        #   both runs should have resulted in a parquet file being written
         self.assertTrue(pathlib.Path(expected_paths[0]).exists())
         self.assertTrue(pathlib.Path(expected_paths[1]).exists())
         self.assertTrue(pathlib.Path(expected_paths[0]).is_file())
         self.assertTrue(pathlib.Path(expected_paths[1]).is_file())
         self.assertTrue(pathlib.Path(expected_paths[0]).suffix == ".parquet")
         self.assertTrue(pathlib.Path(expected_paths[1]).suffix == ".parquet")
-
-        result_a = pl.read_parquet(expected_paths[0])
-        self.assertEqual(result_a["providerId"].str.to_integer().sum(), 6)
-        result_b = pl.read_parquet(expected_paths[1])
-        self.assertEqual(result_b["providerId"].str.to_integer().sum(), 15)
+        #   and reading the directory should give us one dataframe with both timepoints
+        result = pl.read_parquet(self.temp_dir)
+        self.assertEqual(result["providerId"].str.to_integer().sum(), 21)
