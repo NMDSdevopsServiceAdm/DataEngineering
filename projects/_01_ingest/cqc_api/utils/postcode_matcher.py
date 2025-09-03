@@ -57,11 +57,20 @@ def run_postcode_matching(
     print("Step 0")
     print(locations_df.count())
 
+    print("Postcode DF Plan")
+    print(postcode_df.explain(extended=True))
+    print(postcode_df.count())
+
+    print("Locations DF Plan")
+    print(locations_df.explain(extended=True))
+
     # Step 1 - Match postcodes where there is an exact match at that point in time.
     matched_locations_df, unmatched_locations_df = join_postcode_data(
         locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
     print("Step 1")
+    print("Unmatched Locations DF Plan")
+    print(unmatched_locations_df.explain(extended=True))
     print("Matched: " + str(matched_locations_df.count()))
     print("Unmatched: " + str(unmatched_locations_df.count()))
 
