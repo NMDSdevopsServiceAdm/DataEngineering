@@ -10,7 +10,9 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 )
 from utils import utils
 
-PATCH_PATH: str = "projects._03_independent_cqc._03_impute.jobs.validate_imputed_ind_cqc_ascwds_and_pir_data"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._03_impute.jobs.validate_imputed_ind_cqc_ascwds_and_pir_data"
+)
 
 
 class ValidateImputedIndCqcAscwdsAndPirsetTests(unittest.TestCase):

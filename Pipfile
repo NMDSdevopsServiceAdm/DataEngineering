@@ -21,7 +21,6 @@ ratelimit = "2.2.1"
 requests = "2.32.5"
 scikit-learn = "1.7.1"
 urllib3 = "2.5.0"
-moto = {extras = ["all"], version = "*"}
 
 [dev-packages]
 autopep8 = "2.3.2"
@@ -31,3 +30,6 @@ mock = "5.2.0"
 pre-commit = "4.3.0"
 pylint = "3.3.8"
 pytest-watch = "4.2.0"
+moto = "==5.1.11"
+pyarrow = "==21.0.0"
+s3fs = "==0.4.2"
