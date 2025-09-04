@@ -1,9 +1,14 @@
-from projects._03_independent_cqc._05a_model.train_model import get_training_data
+from projects._03_independent_cqc._05a_model.train_model import (
+    get_training_data,
+    instantiate_model,
+    ModelType,
+)
 import unittest
 import os
 import boto3
 import polars as pl
 from moto import mock_aws
+from sklearn.base import BaseEstimator
 
 DATA_BUCKET_NAME = "sfc-test-datasets"
 MODEL_BUCKET_NAME = "test_model_bucket"
@@ -56,3 +61,6 @@ class TestModelTraining(unittest.TestCase):
             "test", "sample_data/sample.parquet", s3_client=self.s3_client
         )
         self.assertEqual(lf.select(pl.len()).collect().item(), 20000)
+
+    def test_instantiate_model_returns_model(self):
+        self.assertIsInstance(instantiate_model(ModelType.SIMPLE_LINEAR), BaseEstimator)

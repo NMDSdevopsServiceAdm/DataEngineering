@@ -1,4 +1,5 @@
 import polars as pl
+from typing import Any
 
 # from sklearn.linear_model import LinearRegression
 # from sklearn.metrics import r2_score
@@ -11,6 +12,7 @@ import boto3
 # import os
 # from enum import Enum
 from sklearn.base import BaseEstimator
+from sklearn.linear_model import LinearRegression
 from io import BytesIO
 
 # from utils.version_manager import ModelVersionManager
@@ -45,7 +47,6 @@ def get_training_data(
     s3_bucket = f"sfc-{branch_name}-datasets"
 
     if s3_client is not None:
-        s3_client = boto3.client("s3")
         response = s3_client.get_object(Bucket=s3_bucket, Key=data_source)
         parquet_data = response["Body"].read()
         return pl.read_parquet(BytesIO(parquet_data)).lazy()
@@ -54,8 +55,9 @@ def get_training_data(
         return pl.scan_parquet(s3_url)
 
 
-def generate_model(model_type: ModelType) -> BaseEstimator:
-    pass
+def instantiate_model(model_type: ModelType, **kwargs: Any) -> BaseEstimator:
+    if model_type == ModelType.SIMPLE_LINEAR:
+        return LinearRegression(**kwargs)
 
 
 if __name__ == "__main__":
