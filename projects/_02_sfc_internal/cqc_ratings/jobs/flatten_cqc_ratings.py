@@ -286,7 +286,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     desired_column_order = [
         CQCL.location_id,
         CQCL.registration_status,
-        F.col(CQCL.assessment_plan_published_datetime).alias(CQCRatings.date),
+        CQCL.assessment_plan_published_datetime,
         CQCL.assessment_plan_id,
         CQCL.title,
         CQCL.assessment_date,
@@ -296,11 +296,11 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.status,
         CQCL.rating,
         CQCL.source_path,
-        F.col(CQCL.safe).alias(CQCRatings.safe_rating),
-        F.col(CQCL.effective).alias(CQCRatings.effective_rating),
-        F.col(CQCL.caring).alias(CQCRatings.caring_rating),
-        F.col(CQCL.responsive).alias(CQCRatings.responsive_rating),
-        F.col(CQCL.well_led).alias(CQCRatings.well_led_rating),
+        CQCL.safe,
+        CQCL.effective,
+        CQCL.caring,
+        CQCL.responsive,
+        CQCL.well_led,
     ]
 
     return final_df.select(*desired_column_order)
@@ -473,11 +473,64 @@ def merge_cqc_ratings(
         DataFrame: Merged DataFrame of Old CQC ratings and the new assessment ASG ratings, including key question ratings and metadata for each sub assessment.
     """
 
-    merged_df = assessment_ratings_df.unionByName(
-        standard_ratings_df, allowMissingColumns=True
+    expected_columns = [
+        CQCL.location_id,
+        CQCRatings.date,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.registration_status,
+        CQCRatings.current_or_historic,
+        CQCL.rating,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+        CQCL.dataset,
+    ]
+    standard_df = standard_ratings_df.select(
+        CQCL.location_id,
+        CQCRatings.date,
+        F.lit("Registered").alias(CQCL.registration_status),
+        CQCRatings.current_or_historic,
+        CQCRatings.overall_rating,
+        CQCRatings.safe_rating,
+        CQCRatings.well_led_rating,
+        CQCRatings.caring_rating,
+        CQCRatings.responsive_rating,
+        CQCRatings.effective_rating,
+        F.lit("Pre SAF").alias(CQCL.dataset),
+    )
+    assessment_df = assessment_ratings_df.select(
+        CQCL.location_id,
+        F.to_date(
+            F.to_timestamp(
+                CQCL.assessment_plan_published_datetime, "yyyy-MM-dd HH:mm:ss"
+            )
+        ).alias(CQCRatings.date),
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.registration_status,
+        F.col(CQCL.status).alias(CQCRatings.current_or_historic),
+        CQCL.rating,
+        F.col(CQCL.safe).alias(CQCRatings.safe_rating),
+        F.col(CQCL.well_led).alias(CQCRatings.well_led_rating),
+        F.col(CQCL.caring).alias(CQCRatings.caring_rating),
+        F.col(CQCL.responsive).alias(CQCRatings.responsive_rating),
+        F.col(CQCL.effective).alias(CQCRatings.effective_rating),
+        CQCL.dataset,
     )
 
-    return merged_df
+    merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
+
+    return merged_df.select(*expected_columns)
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:

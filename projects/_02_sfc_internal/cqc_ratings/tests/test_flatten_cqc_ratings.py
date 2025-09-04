@@ -274,6 +274,41 @@ class FlattenAssessmentRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class MergeCQCRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_assessment_ratings_df = self.spark.createDataFrame(
+            Data.final_assessment_ratings_rows,
+            Schema.final_assessment_ratings_schema,
+        )
+        self.test_standard_ratings_df = self.spark.createDataFrame(
+            Data.final_standard_ratings_rows,
+            Schema.final_standard_ratings_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merge_cqc_ratings_rows,
+            Schema.expected_merge_cqc_ratings_schema,
+        )
+        self.returned_df = job.merge_cqc_ratings(
+            self.test_assessment_ratings_df, self.test_standard_ratings_df
+        )
+
+    def test_merge_cqc_ratings_returns_correct_columns(self):
+        returned_columns = len(self.returned_df.columns)
+        expected_columns = len(self.expected_df.columns)
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_merge_cqc_ratings_returns_correct_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_merge_cqc_ratings_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
 class RecodeUnknownToNull(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
