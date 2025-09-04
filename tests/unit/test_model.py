@@ -4,7 +4,11 @@ from unittest.mock import patch
 from polars import scan_parquet, DataFrame
 from sklearn.linear_model import LinearRegression
 
-from projects._03_independent_cqc._05a_model.model import Model, ModelType
+from projects._03_independent_cqc._05a_model.model import (
+    Model,
+    ModelType,
+    ModelNotTrainedError,
+)
 
 PATCH_PATH = "projects._03_independent_cqc._05a_model.model"
 
@@ -131,3 +135,10 @@ class TestModel(unittest.TestCase):
         validation_score = model.validate(test)
         self.assertAlmostEqual(validation_score, 0.0, places=2)
         self.assertAlmostEqual(model.testing_score, 0.8350624481353132, places=3)
+
+    def test_model_validate_fails_if_not_trained(self):
+        model = self.standard_model
+        data = self.lf
+        _, test = model.create_train_and_test_datasets(data=data, seed=123)
+        with self.assertRaises(ModelNotTrainedError):
+            model.validate(test)

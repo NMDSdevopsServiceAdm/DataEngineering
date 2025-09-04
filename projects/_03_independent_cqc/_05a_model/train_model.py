@@ -1,39 +1,79 @@
+import logging
 import os
-from model_registry import model_definitions
-from model import Model
+import sys
+
+from polars.exceptions import PolarsError
+from botocore.exceptions import ClientError
+
+from projects._03_independent_cqc._05a_model.model_registry import model_definitions
+from projects._03_independent_cqc._05a_model.model import Model, ModelNotTrainedError
+from utils import utils
 from utils.version_manager import ModelVersionManager
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-MODEL_IDENTIFIER = "non_res_pir"
 
-model_definition = model_definitions[MODEL_IDENTIFIER]
+def main(model_name: str, raw_data_bucket: str):
+    try:
+        model_definition = model_definitions[model_name]
 
-model = Model(**model_definition)
+        model = Model(**model_definition)
 
-data = model.get_raw_data(bucket_name=os.environ.get("BUCKET"))
+        data = model.get_raw_data(bucket_name=raw_data_bucket)
 
-train_df, test_df = Model.create_train_and_test_datasets(data)
+        train_df, test_df = Model.create_train_and_test_datasets(data)
 
-fitted_model = model.fit(train_df)
+        fitted_model = model.fit(train_df)
 
-validation = model.validate(test_df)
+        validation = model.validate(test_df)
 
-version_manager = ModelVersionManager(
-    s3_bucket=os.environ.get("S3_BUCKET"),
-    s3_prefix=os.environ.get("PREFIX"),
-    param_store_name=model.version_parameter_location,
-    default_patch=True,
-)
+        version_manager = ModelVersionManager(
+            s3_bucket=os.environ.get("MODEL_S3_BUCKET"),
+            s3_prefix=os.environ.get("MODEL_S3_PREFIX"),
+            param_store_name=model.version_parameter_location,
+            default_patch=True,
+        )
 
-version_manager.prompt_and_save(model=fitted_model)
+        version_manager.prompt_and_save(model=fitted_model)
+
+        return {
+            "train_score": model.training_score,
+            "test_score": model.testing_score,
+            "score_difference": validation,
+        }
+    except KeyError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        raise
+    except ValueError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        logger.error(model_definitions[model_name])
+        raise
+    except PolarsError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        raise
+    except ModelNotTrainedError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        raise
+    except ClientError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        raise
+    except Exception as e:
+        logger.error(e)
+        raise
 
 
 if __name__ == "__main__":
-    (branch_name, model_name, data_source) = utils.collect_arguments(
-        (
-            "--branch_name",
-            "The name of the branch currently being used",
-        ),
+    (model_id, data_source) = utils.collect_arguments(
         (
             "--model_name",
             "The name of the model to train",
@@ -43,4 +83,4 @@ if __name__ == "__main__":
             "The prefix of the data source to use",
         ),
     )
-    main(branch_name, model_name, data_source)
+    main(model_name=model_id, raw_data_bucket=data_source)

@@ -12,7 +12,14 @@ class ModelType(Enum):
     RIDGE = "ridge"
 
 
+class ModelNotTrainedError(Exception):
+    pass
+
+
 class Model:
+    """
+    Manages training and testing of linear models using Scikit-learn.
+    """
 
     def __init__(
         self,
@@ -44,16 +51,35 @@ class Model:
                 raise ValueError("Unknown model type")
 
     def get_raw_data(self, bucket_name: str) -> pl.LazyFrame:
+        """
+        Retrieves raw data from S3 bucket.
+        Args:
+            bucket_name (str): Name of the S3 bucket where the raw data is located.
+
+        Returns:
+            pl.LazyFrame: Raw data from S3 bucket.
+
+        """
         s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}"
         return pl.scan_parquet(s3_uri)
 
     @classmethod
     def create_train_and_test_datasets(
         cls,
-        data: Union[pl.DataFrame, pl.LazyFrame],
+        data: pl.DataFrame | pl.LazyFrame,
         split_size: float = 0.7,
         seed: int = None,
     ) -> tuple[pl.DataFrame, pl.DataFrame]:
+        """
+        Creates training and testing datasets.
+        Args:
+            data (pl.DataFrame | pl.LazyFrame): Data to be split
+            split_size (float): Proportion of dataset that should be training data (eg 0.7 will mean 70% of the data is training data)
+            seed (int): Seed for sampling data
+
+        Returns:
+            tuple[pl.DataFrame, pl.DataFrame]: Train dataset, Test dataset
+        """
         if isinstance(data, pl.LazyFrame):
             data = data.collect()
 
@@ -65,6 +91,14 @@ class Model:
         return df_train, df_test
 
     def fit(self, train_df: pl.DataFrame) -> LinearRegression | Lasso | Ridge:
+        """
+        Fits the model to training data and calculates R^2 value for the training data.
+        Args:
+            train_df (pl.DataFrame): Training data to fit the model to
+
+        Returns:
+            LinearRegression | Lasso | Ridge: Fitted model
+        """
         x1 = train_df.select(self.feature_columns)
         y1 = train_df.select(self.target_column)
         self.model.fit(x1, y1)
@@ -72,6 +106,19 @@ class Model:
         return self.model
 
     def validate(self, test_df: pl.DataFrame) -> float | None:
+        """
+        Calculates the absolute difference between the R^2 score for the training data and the test data.
+        Args:
+            test_df: Test data
+
+        Returns:
+            Float: Absolute difference between the R^2 score for the training data and the test data
+
+        Raises:
+            ModelNotTrainedError: If the fit function has not been run yet
+        """
+        if self.training_score is None:
+            raise ModelNotTrainedError("Model has not been trained yet.")
         x2 = test_df.select(self.feature_columns)
         y2 = test_df.select(self.target_column)
         self.testing_score = self.model.score(x2, y2)
