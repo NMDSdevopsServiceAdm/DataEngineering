@@ -105,14 +105,14 @@ class Model:
         self.training_score = self.model.score(x1, y1)
         return self.model
 
-    def validate(self, test_df: pl.DataFrame) -> float | None:
+    def validate(self, test_df: pl.DataFrame) -> float:
         """
         Calculates the absolute difference between the R^2 score for the training data and the test data.
         Args:
-            test_df: Test data
+            test_df (pl.DataFrame): Test data
 
         Returns:
-            Float: Absolute difference between the R^2 score for the training data and the test data
+            float: Absolute difference between the R^2 score for the training data and the test data
 
         Raises:
             ModelNotTrainedError: If the fit function has not been run yet
