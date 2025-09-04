@@ -1,70 +1,79 @@
-import os
-import sys
 import logging
+import sys
+from dataclasses import dataclass
 
-# os.environ["SPARK_VERSION"] = "3.3"
-
-# from pyspark.sql.dataframe import DataFrame
+import boto3
+import pointblank as pb
 import polars as pl
 
-# from utils import utils
 from polars_utils import utils
-from utils.validation.validation_rules.locations_api_raw_validation_rules import (
-    LocationsAPIRawValidationRules as Rules,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
 )
-from utils.validation.validation_utils import (
-    validate_dataset,
-    raise_exception_if_any_checks_failed,
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
 )
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def main(
-    raw_cqc_location_source: str,
-    report_destination: str,
-):
-    raw_location_df = utils.read_from_parquet(
-        raw_cqc_location_source,
+@dataclass
+class Rules:
+    complete_columns = [
+        CQCL.location_id,
+        Keys.import_date,
+        CQCL.name,
+    ]
+    index_columns = [
+        CQCL.location_id,
+        Keys.import_date,
+    ]
+
+
+def main(bucket_name: str, dataset_source: str, report_destination: str):
+    raw_location_df = pl.scan_parquet(
+        f"s3://{bucket_name}/{dataset_source}/",
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+        extra_columns="ignore",
+    ).collect()
+
+    validation = (
+        pb.Validate(
+            raw_location_df,
+            thresholds=pb.Thresholds(warning=1),
+            actions=pb.Actions(
+                warning=logging.warning(
+                    "{LEVEL}: {type} threshold exceeded for column {col}."
+                )
+            ),
+            tbl_name="delta_locations_api",
+        )
+        .col_vals_not_null(
+            Rules.complete_columns,
+        )
+        .rows_distinct(Rules.index_columns)
+        .interrogate()
     )
-    rules = Rules.rules_to_check
+    report = validation.get_tabular_report()
 
-    check_result_df = validate_dataset(raw_location_df, rules)
-
-    utils.write_to_parquet(check_result_df, report_destination, mode="overwrite")
-
-    if isinstance(check_result_df, pl.DataFrame):
-        raise_exception_if_any_checks_failed(check_result_df)
+    s3_client = boto3.client("s3")
+    s3_client.put_object(
+        Body=report.as_raw_html(inline_css=True, make_page=True),
+        Bucket=bucket_name,
+        Key=f"{report_destination}/full_report.html",
+    )
+    validation.assert_below_threshold(level="warning")
 
 
 if __name__ == "__main__":
     logger.info("Spark job 'validate_locations_api_raw_data' starting...")
     logger.info(f"Job parameters: {sys.argv}")
 
-    (
-        raw_cqc_location_source,
-        report_destination,
-    ) = utils.collect_arguments(
-        (
-            "--raw_cqc_location_source",
-            "Source s3 directory for parquet locations api dataset",
-        ),
-        (
-            "--report_destination",
-            "Destination s3 directory for validation report parquet",
-        ),
+    args = utils.get_args(
+        ("--bucket_name", "S3 bucket name for dataset source and report destination"),
+        ("--raw_dataset_source", "Dataset source path in S3"),
+        ("--report_destination", "Destination path in S3 for the report"),
     )
-    # try:
-    main(
-        raw_cqc_location_source,
-        report_destination,
-    )
-    # finally:
-    #     spark = utils.get_spark()
-    #     if spark.sparkContext._gateway:
-    #         spark.sparkContext._gateway.shutdown_callback_server()
-    #     spark.stop()
-
-    # logger.info("Spark job 'validate_locations_api_raw_data' complete")
+    main(args.bucket_name, args.raw_dataset_source, args.report_destination)
     logger.info("ECS task 'validate_locations_api_raw_data' complete")

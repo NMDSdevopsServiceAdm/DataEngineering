@@ -1,7 +1,7 @@
 from datetime import datetime
 import polars as pl
 import logging
-from typing import Union, Any, Generator
+from typing import Optional, Union, Any, Generator
 import argparse
 import uuid
 
@@ -10,36 +10,6 @@ util_logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
-
-
-def read_from_parquet(
-    data_source: str,
-    selected_columns: List[str] = None,
-    schema: Optional[StructType] = None,
-) -> DataFrame:
-    """
-    Reads data from a parquet file and returns a DataFrame with all/selected columns.
-
-    Args:
-        data_source (str): Path to the Parquet file.
-        selected_columns (List[str]): Optional - List of column names to select. Defaults to None (all columns).
-        schema (Optional[StructType]): Optional - schema to use when reading parquet. Defaults to None.
-
-    Returns:
-        DataFrame: A dataframe of the data in the parquet file, with all or selected columns.
-    """
-    spark_session = get_spark()
-    print(f"Reading data from {data_source}")
-
-    if schema:
-        df = spark_session.read.schema(schema).parquet(data_source)
-    else:
-        df = spark_session.read.parquet(data_source)
-
-    if selected_columns:
-        df = df.select(selected_columns)
-
-    return df
 
 
 def write_to_parquet(
@@ -101,6 +71,18 @@ def collect_arguments(*args: Any) -> Generator[Any, None, None]:
     parsed_args, _ = parser.parse_known_args()
 
     return (vars(parsed_args)[arg[0][2:]] for arg in args)
+
+
+def get_args(*args):
+    parser = argparse.ArgumentParser()
+    for arg in args:
+        parser.add_argument(
+            arg[0],
+            help=arg[1],
+            required=True if len(arg) < 3 else arg[2],
+            default=arg[2] if len(arg) > 2 else None,
+        )
+    return parser.parse_args()
 
 
 def generate_s3_datasets_dir_date_path(
