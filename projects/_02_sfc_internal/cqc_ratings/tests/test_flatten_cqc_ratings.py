@@ -29,7 +29,6 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
-    TEST_ASSESSMENT_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -50,6 +49,7 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.join_establishment_ids")
     @patch(f"{PATCH_PATH}.add_good_and_outstanding_flag_column")
     @patch(f"{PATCH_PATH}.select_ratings_for_benchmarks")
+    @patch(f"{PATCH_PATH}.merge_cqc_ratings")
     @patch(f"{PATCH_PATH}.add_location_id_hash")
     @patch(f"{PATCH_PATH}.create_standard_ratings_dataset")
     @patch(f"{PATCH_PATH}.add_numerical_ratings")
@@ -76,6 +76,7 @@ class MainTests(FlattenCQCRatingsTests):
         add_numerical_ratings_mock: Mock,
         create_standard_ratings_dataset_mock: Mock,
         add_location_id_hash_mock: Mock,
+        merge_cqc_ratings_mock: Mock,
         select_ratings_for_benchmarks_mock: Mock,
         add_good_and_outstanding_flag_column_mock: Mock,
         join_establishment_ids_mock: Mock,
@@ -92,7 +93,6 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
-            self.TEST_ASSESSMENT_RATINGS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -107,11 +107,12 @@ class MainTests(FlattenCQCRatingsTests):
         add_numerical_ratings_mock.assert_called_once()
         create_standard_ratings_dataset_mock.assert_called_once()
         add_location_id_hash_mock.assert_called_once()
+        merge_cqc_ratings_mock.assert_called_once()
         select_ratings_for_benchmarks_mock.assert_called_once()
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
         create_benchmark_ratings_dataset_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_mock.call_count, 3)
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
 
         expected_write_to_parquet_calls = [
             call(
@@ -122,11 +123,6 @@ class MainTests(FlattenCQCRatingsTests):
             call(
                 ANY,
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
-                mode="overwrite",
-            ),
-            call(
-                ANY,
-                self.TEST_ASSESSMENT_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
         ]

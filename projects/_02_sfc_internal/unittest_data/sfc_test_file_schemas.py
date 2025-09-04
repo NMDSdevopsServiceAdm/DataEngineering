@@ -1218,6 +1218,14 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.rating_sequence, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, StringType(), True),
+            StructField(CQCRatings.safe_rating_value, StringType(), True),
+            StructField(CQCRatings.well_led_rating_value, StringType(), True),
+            StructField(CQCRatings.caring_rating_value, StringType(), True),
+            StructField(CQCRatings.responsive_rating_value, StringType(), True),
+            StructField(CQCRatings.effective_rating_value, StringType(), True),
+            StructField(CQCRatings.total_rating_value, StringType(), True),
         ]
     )
     expected_merge_cqc_ratings_schema = StructType(
@@ -1238,6 +1246,14 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.rating_sequence, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, StringType(), True),
+            StructField(CQCRatings.safe_rating_value, StringType(), True),
+            StructField(CQCRatings.well_led_rating_value, StringType(), True),
+            StructField(CQCRatings.caring_rating_value, StringType(), True),
+            StructField(CQCRatings.responsive_rating_value, StringType(), True),
+            StructField(CQCRatings.effective_rating_value, StringType(), True),
+            StructField(CQCRatings.total_rating_value, StringType(), True),
             StructField(CQCL.dataset, StringType(), True),
         ]
     )

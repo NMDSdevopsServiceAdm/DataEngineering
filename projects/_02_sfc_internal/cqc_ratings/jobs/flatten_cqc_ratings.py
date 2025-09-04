@@ -63,7 +63,6 @@ def main(
     ascwds_workplace_source: str,
     cqc_ratings_destination: str,
     benchmark_ratings_destination: str,
-    assessment_ratings_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, cqc_location_columns, LOCATION_SCHEMA
@@ -103,7 +102,7 @@ def main(
     benchmark_ratings_df = create_benchmark_ratings_dataset(benchmark_ratings_df)
 
     utils.write_to_parquet(
-        standard_ratings_df,
+        assessment_and_standard_ratings_merged_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -111,12 +110,6 @@ def main(
     utils.write_to_parquet(
         benchmark_ratings_df,
         benchmark_ratings_destination,
-        mode="overwrite",
-    )
-
-    utils.write_to_parquet(
-        assessment_ratings_df,
-        assessment_ratings_destination,
         mode="overwrite",
     )
 
@@ -493,6 +486,14 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
+        CQCRatings.rating_sequence,
+        CQCRatings.latest_rating_flag,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+        CQCRatings.total_rating_value,
         CQCL.dataset,
     ]
     standard_df = standard_ratings_df.select(
@@ -506,6 +507,14 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
+        CQCRatings.rating_sequence,
+        CQCRatings.latest_rating_flag,
+        CQCRatings.safe_rating_value,
+        CQCRatings.well_led_rating_value,
+        CQCRatings.caring_rating_value,
+        CQCRatings.responsive_rating_value,
+        CQCRatings.effective_rating_value,
+        CQCRatings.total_rating_value,
         F.lit("Pre SAF").alias(CQCL.dataset),
     )
     assessment_df = assessment_ratings_df.select(
@@ -737,7 +746,6 @@ if __name__ == "__main__":
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
-        assessment_ratings_destination,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -755,17 +763,12 @@ if __name__ == "__main__":
             "--benchmark_ratings_destination",
             "Destination s3 directory for cleaned parquet benchmark ratings dataset",
         ),
-        (
-            "--assessment_ratings_destination",
-            "Destination s3 directory for cleaned parquet CQC assessment ratings dataset",
-        ),
     )
     main(
         cqc_location_source,
         ascwds_workplace_source,
         cqc_ratings_destination,
         benchmark_ratings_destination,
-        assessment_ratings_destination,
     )
 
     print("Spark job 'flatten_cqc_ratings' complete")
