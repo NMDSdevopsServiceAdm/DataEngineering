@@ -48,11 +48,18 @@ class Model:
         return pl.scan_parquet(s3_uri)
 
     @classmethod
-    def create_train_and_test_datasets(cls, data: Union[pl.DataFrame, pl.LazyFrame], split_size:float=0.7, seed: int=None) -> tuple[pl.DataFrame, pl.DataFrame]:
+    def create_train_and_test_datasets(
+        cls,
+        data: Union[pl.DataFrame, pl.LazyFrame],
+        split_size: float = 0.7,
+        seed: int = None,
+    ) -> tuple[pl.DataFrame, pl.DataFrame]:
         if isinstance(data, pl.LazyFrame):
             data = data.collect()
 
-        df_train = data.sample(fraction=split_size, with_replacement=False, shuffle=True, seed=seed)
+        df_train = data.sample(
+            fraction=split_size, with_replacement=False, shuffle=True, seed=seed
+        )
         df_test = data.join(df_train, on=data.columns, how="anti")
 
         return df_train, df_test
@@ -72,6 +79,8 @@ class Model:
         return score_difference
 
     # model_registry = {
+
+
 #     "nonres_pir_linear": Model(
 #         model_type=ModelType.SIMPLE_LINEAR,
 #         model_identifier ="nonres_pir_linear",

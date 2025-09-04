@@ -1,58 +1,31 @@
-import polars as pl
-from typing import Any
-from model import ModelType
-
-# from sklearn.linear_model import LinearRegression
-# from sklearn.metrics import r2_score
-# import matplotlib.pyplot as plt
-# import pickle
-# import io
-import boto3
-
-# import re
-# import os
-# from enum import Enum
-from sklearn.base import BaseEstimator
-from sklearn.linear_model import LinearRegression
-from io import BytesIO
-
-# from utils.version_manager import ModelVersionManager
-from utils import utils
-from enum import Enum
+import os
+from model_registry import model_definitions
+from model import Model
+from utils.version_manager import ModelVersionManager
 
 
-def main(branch_name: str, model_name: str, data_source: str) -> None:
-    lf = get_training_data(branch_name, data_source)
+MODEL_IDENTIFIER = "non_res_pir"
 
-    # get model - need arg for model type, model location
-    # filter - ?
-    # filter and exclude - ?
-    # create training and test datasets - need default arg for sample size
-    # train - output r2 - pass model and training set
-    # test - output r2
-    # verify r2 - alert if not
-    # serialise using version manager
-    # alert success and serialisation result
-    pass
+model_definition = model_definitions[MODEL_IDENTIFIER]
 
+model = Model(**model_definition)
 
-def get_training_data(
-    branch_name: str, data_source: str, s3_client=None
-) -> pl.LazyFrame:
-    s3_bucket = f"sfc-{branch_name}-datasets"
+data = model.get_raw_data(bucket_name=os.environ.get("BUCKET"))
 
-    if s3_client is not None:
-        response = s3_client.get_object(Bucket=s3_bucket, Key=data_source)
-        parquet_data = response["Body"].read()
-        return pl.read_parquet(BytesIO(parquet_data)).lazy()
-    else:
-        s3_url = f"s3://{s3_bucket}/{data_source}"
-        return pl.scan_parquet(s3_url)
+train_df, test_df = Model.create_train_and_test_datasets(data)
 
+fitted_model = model.fit(train_df)
 
-def instantiate_model(model_type: ModelType, **kwargs: Any) -> BaseEstimator:
-    if model_type == ModelType.SIMPLE_LINEAR:
-        return LinearRegression(**kwargs)
+validation = model.validate(test_df)
+
+version_manager = ModelVersionManager(
+    s3_bucket=os.environ.get("S3_BUCKET"),
+    s3_prefix=os.environ.get("PREFIX"),
+    param_store_name=model.version_parameter_location,
+    default_patch=True,
+)
+
+version_manager.prompt_and_save(model=fitted_model)
 
 
 if __name__ == "__main__":

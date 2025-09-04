@@ -62,7 +62,9 @@ class TestModel(unittest.TestCase):
 
     def test_get_test_train_from_dataframe(self):
         data = self.lf.collect()
-        train, test  = self.standard_model.create_train_and_test_datasets(data=data, seed=123)
+        train, test = self.standard_model.create_train_and_test_datasets(
+            data=data, seed=123
+        )
         self.assertAlmostEqual(train.shape[0], 14000, delta=3)
         self.assertAlmostEqual(test.shape[0], 6000, delta=3)
         self.assertIsInstance(train, DataFrame)
@@ -77,7 +79,9 @@ class TestModel(unittest.TestCase):
 
     def test_get_test_train_from_lazyframe(self):
         data = self.lf
-        train, test  = self.standard_model.create_train_and_test_datasets(data=data, seed=123)
+        train, test = self.standard_model.create_train_and_test_datasets(
+            data=data, seed=123
+        )
 
         self.assertAlmostEqual(train.shape[0], 14000, delta=3)
         self.assertAlmostEqual(test.shape[0], 5920, delta=3)
@@ -107,8 +111,8 @@ class TestModel(unittest.TestCase):
         self.assertIsInstance(fitted_model, LinearRegression)
         self.assertAlmostEqual(fitted_model.coef_[0][0], 248274.01134039, places=3)
         self.assertAlmostEqual(fitted_model.intercept_[0], 38307.77491212, places=3)
-        self.assertEqual(len(fitted_model.coef_),1)
-        self.assertEqual(len(fitted_model.intercept_),1)
+        self.assertEqual(len(fitted_model.coef_), 1)
+        self.assertEqual(len(fitted_model.intercept_), 1)
         self.assertAlmostEqual(model.training_score, 0.8354809377928092, places=3)
 
     def test_model_validate(self):
