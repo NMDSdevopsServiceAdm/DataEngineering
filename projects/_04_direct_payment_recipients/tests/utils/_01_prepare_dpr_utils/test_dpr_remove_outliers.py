@@ -2,19 +2,21 @@ import unittest
 import warnings
 
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    IntegerType,
     FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
-from utils import utils
 import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.remove_outliers as job
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
+)
+from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnValues as Values,
 )
+from utils import utils
 
 
 class TestRemoveOutliers(unittest.TestCase):

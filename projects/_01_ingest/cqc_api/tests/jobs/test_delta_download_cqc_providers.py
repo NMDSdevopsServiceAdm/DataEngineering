@@ -3,7 +3,6 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import projects._01_ingest.cqc_api.jobs.delta_download_cqc_providers as job
-
 from utils import utils
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.delta_download_cqc_providers"

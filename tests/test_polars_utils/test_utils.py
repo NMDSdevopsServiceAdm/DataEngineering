@@ -8,7 +8,6 @@ import logging
 import os
 from datetime import datetime
 from glob import glob
-import time
 
 from polars_utils.utils import write_to_parquet
 
@@ -52,7 +51,9 @@ class TestUtils(unittest.TestCase):
         destination: str = os.path.join(self.temp_dir, "test.parquet")
         write_to_parquet(df, destination, self.logger, append=False)
         write_to_parquet(df, destination, self.logger, append=False)
-        self.assertEqual(len(glob(destination + "/**", recursive=True)), 1)
+
+        files = glob(os.path.join(self.temp_dir, "*.parquet"))
+        self.assertEqual(len(files), 1)
 
     def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
         self,

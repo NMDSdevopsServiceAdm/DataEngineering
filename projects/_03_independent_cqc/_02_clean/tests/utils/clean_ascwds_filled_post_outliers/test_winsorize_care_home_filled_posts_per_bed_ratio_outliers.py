@@ -2,15 +2,13 @@ import unittest
 import warnings
 
 from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
     DoubleType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers import (
     winsorize_care_home_filled_posts_per_bed_ratio_outliers as job,
 )
@@ -20,6 +18,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     WinsorizeCareHomeFilledPostsPerBedRatioOutliersSchema as Schemas,
 )
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 class WinsorizeAscwdsFilledPostsCareHomeJobsPerBedRatioOutlierTests(unittest.TestCase):
@@ -172,10 +172,10 @@ class CalculateAverageFilledPostsPerBandedBedCount(
         df = job.calculate_average_filled_posts_per_banded_bed_count(df)
 
         df = df.sort(IndCQC.number_of_beds_banded).collect()
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             df[0][IndCQC.avg_filled_posts_per_bed_ratio], 1.2468, places=3
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             df[1][IndCQC.avg_filled_posts_per_bed_ratio], 1.12346, places=3
         )
 
@@ -221,8 +221,8 @@ class CalculateExpectedFilledPostsBasedOnNumberOfBedsTests(
         )
 
         df = df.sort(IndCQC.location_id).collect()
-        self.assertAlmostEquals(df[0][IndCQC.expected_filled_posts], 7.77777, places=3)
-        self.assertAlmostEquals(df[1][IndCQC.expected_filled_posts], 75.7575, places=3)
+        self.assertAlmostEqual(df[0][IndCQC.expected_filled_posts], 7.77777, places=3)
+        self.assertAlmostEqual(df[1][IndCQC.expected_filled_posts], 75.7575, places=3)
 
 
 class CalculateFilledPostStandardisedResidualsTests(
@@ -289,42 +289,42 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
     def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_lower_percentile_values(
         self,
     ):
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[0][IndCQC.lower_percentile],
             self.expected_data[0][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[1][IndCQC.lower_percentile],
             self.expected_data[1][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[2][IndCQC.lower_percentile],
             self.expected_data[2][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[3][IndCQC.lower_percentile],
             self.expected_data[3][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[4][IndCQC.lower_percentile],
             self.expected_data[4][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[5][IndCQC.lower_percentile],
             self.expected_data[5][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[6][IndCQC.lower_percentile],
             self.expected_data[6][IndCQC.lower_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[7][IndCQC.lower_percentile],
             self.expected_data[7][IndCQC.lower_percentile],
             places=2,
@@ -333,42 +333,42 @@ class CalculateLowerAndUpperStandardisedResidualCutoffTests(
     def test_calculate_standardised_residual_percentile_cutoffs_returns_expected_upper_percentile_values(
         self,
     ):
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[0][IndCQC.upper_percentile],
             self.expected_data[0][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[1][IndCQC.upper_percentile],
             self.expected_data[1][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[2][IndCQC.upper_percentile],
             self.expected_data[2][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[3][IndCQC.upper_percentile],
             self.expected_data[3][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[4][IndCQC.upper_percentile],
             self.expected_data[4][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[5][IndCQC.upper_percentile],
             self.expected_data[5][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[6][IndCQC.upper_percentile],
             self.expected_data[6][IndCQC.upper_percentile],
             places=2,
         )
-        self.assertAlmostEquals(
+        self.assertAlmostEqual(
             self.returned_data[7][IndCQC.upper_percentile],
             self.expected_data[7][IndCQC.upper_percentile],
             places=2,

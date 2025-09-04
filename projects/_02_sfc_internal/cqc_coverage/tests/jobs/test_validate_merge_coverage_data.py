@@ -8,9 +8,7 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     ValidateMergedCoverageData as Schemas,
 )
-
 from utils import utils
-
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.validate_merge_coverage_data"
 

@@ -1,23 +1,27 @@
 import os
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pydeequ.checks import Check, CheckLevel
 from pydeequ.verification import (
+    VerificationResult,
     VerificationRunBuilder,
     VerificationSuite,
-    VerificationResult,
 )
 from pyspark.sql import (
     DataFrame,
+)
+from pyspark.sql import (
     functions as F,
 )
 
 from utils import utils
 from utils.column_names.validation_table_columns import Validation
 from utils.validation.validation_rule_names import (
-    RuleNames as RuleToCheck,
     CustomTypeArguments,
+)
+from utils.validation.validation_rule_names import (
+    RuleNames as RuleToCheck,
 )
 
 
@@ -176,7 +180,7 @@ def create_check_of_min_values(column_name: str, min_value: int) -> Check:
         Check: A check of the minimum value of a column to add to a verification run.
     """
     spark = utils.get_spark()
-    check = Check(spark, CheckLevel.Warning, f"Min value in column")
+    check = Check(spark, CheckLevel.Warning, "Min value in column")
     check = check.hasMin(
         column_name,
         lambda x: x >= min_value,

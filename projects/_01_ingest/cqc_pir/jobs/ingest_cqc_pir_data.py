@@ -1,5 +1,8 @@
-import sys
 import argparse
+import os
+import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from schemas.cqc_pir_schema import PIR_SCHEMA
 from utils import utils

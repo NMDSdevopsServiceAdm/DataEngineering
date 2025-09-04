@@ -33,6 +33,11 @@ All notable changes to this project will be documented in this file.
   - [Workforce Intelligence](terraform/pipeline/step-functions/WorkforceIntelligence-StepFunction.json) pipeline for post-ingestion transformations
 - Moved the deduplication and imputation of Capacity Tracker data from diagnostics_on_capacity_tracker to impute_ind_cqc_ascwds_and_pir.
 
+- Upgraded all Python source code to 3.11, including:
+  - resetting package versions using pipenv
+  - upgrading to PySpark 3.5
+  - upgrading Glue jobs to 5.0 (default Python version is 3.11)
+
 ### Improved
 
 

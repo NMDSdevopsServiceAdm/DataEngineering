@@ -19,7 +19,9 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 
-PATCH_PATH: str = "projects._03_independent_cqc._04_feature_engineering.jobs.prepare_features_care_home_ind_cqc"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._04_feature_engineering.jobs.prepare_features_care_home_ind_cqc"
+)
 
 
 class CareHomeFeaturesIndCqcFilledPosts(unittest.TestCase):
