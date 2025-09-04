@@ -92,7 +92,9 @@ def main(
     ratings_df = add_numerical_ratings(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
     standard_ratings_df = add_location_id_hash(standard_ratings_df)
-
+    assessment_and_standard_ratings_merged_df = merge_cqc_ratings(
+        assessment_ratings_df, standard_ratings_df
+    )
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
     benchmark_ratings_df = join_establishment_ids(
@@ -151,7 +153,6 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_assessment_ratings(cqc_location_df)
-    ratings_df = recode_unknown_codes_to_null(ratings_df)
     return ratings_df
 
 
@@ -288,7 +289,7 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     desired_column_order = [
         CQCL.location_id,
         CQCL.registration_status,
-        CQCL.assessment_plan_published_datetime,
+        F.col(CQCL.assessment_plan_published_datetime).alias(CQCRatings.date),
         CQCL.assessment_plan_id,
         CQCL.title,
         CQCL.assessment_date,
@@ -298,11 +299,11 @@ def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
         CQCL.status,
         CQCL.rating,
         CQCL.source_path,
-        CQCL.safe,
-        CQCL.effective,
-        CQCL.caring,
-        CQCL.responsive,
-        CQCL.well_led,
+        F.col(CQCL.safe).alias(CQCRatings.safe_rating),
+        F.col(CQCL.effective).alias(CQCRatings.effective_rating),
+        F.col(CQCL.caring).alias(CQCRatings.caring_rating),
+        F.col(CQCL.responsive).alias(CQCRatings.responsive_rating),
+        F.col(CQCL.well_led).alias(CQCRatings.well_led_rating),
     ]
 
     return final_df.select(*desired_column_order)
@@ -458,6 +459,28 @@ def extract_asg(assessment_df: DataFrame) -> DataFrame:
         F.lit("assessment.ratings.asg_ratings").alias(CQCL.source_path),
     )
     return asg_df
+
+
+def merge_cqc_ratings(
+    assessment_ratings_df: DataFrame,
+    standard_ratings_df: DataFrame,
+) -> DataFrame:
+    """
+    Function to merge assessment_ratings_df and standard_ratings_df to get final ratings
+
+    Args:
+        assessment_ratings_df (DataFrame): DataFrame produced by `prepare_assessment_ratings`, containing flattened assessment ratings.
+        standard_ratings_df (DataFrame): DataFrame produced by flattening standard cqc ratings df.
+
+    Returns:
+        DataFrame: Merged DataFrame of Old CQC ratings and the new assessment ASG ratings, including key question ratings and metadata for each sub assessment.
+    """
+
+    merged_df = assessment_ratings_df.unionByName(
+        standard_ratings_df, allowMissingColumns=True
+    )
+
+    return merged_df
 
 
 def recode_unknown_codes_to_null(ratings_df: DataFrame) -> DataFrame:
