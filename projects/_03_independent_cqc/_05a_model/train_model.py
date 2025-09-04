@@ -1,5 +1,6 @@
 import polars as pl
 from typing import Any
+from model import ModelType
 
 # from sklearn.linear_model import LinearRegression
 # from sklearn.metrics import r2_score
@@ -18,12 +19,6 @@ from io import BytesIO
 # from utils.version_manager import ModelVersionManager
 from utils import utils
 from enum import Enum
-
-
-class ModelType(Enum):
-    SIMPLE_LINEAR = "simple_linear"
-    LASSO = "lasso"
-    RIDGE = "ridge"
 
 
 def main(branch_name: str, model_name: str, data_source: str) -> None:
