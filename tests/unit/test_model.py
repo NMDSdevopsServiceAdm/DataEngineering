@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 
+from polars import scan_parquet, DataFrame
 from sklearn.linear_model import LinearRegression
 
 from projects._03_independent_cqc._05a_model.model import Model, ModelType
@@ -18,6 +19,10 @@ class TestModel(unittest.TestCase):
         target_column="target",
         feature_columns=["column1", "column2"],
     )
+
+    def setUp(self):
+        self.lf = scan_parquet("tests/test_data/sample_parquet/sales1.parquet")
+        self.lf = self.lf.with_row_index()
 
     def test_model_linear_regression_instantiates(self):
         self.assertEqual(self.standard_model.model_type, ModelType.SIMPLE_LINEAR)
@@ -54,3 +59,71 @@ class TestModel(unittest.TestCase):
         data = self.standard_model.get_raw_data("test_bucket")
         expected_s3_uri = "s3://test_bucket/some/prefix"
         mock_scan_parquet.assert_called_once_with(expected_s3_uri)
+
+    def test_get_test_train_from_dataframe(self):
+        data = self.lf.collect()
+        train, test  = self.standard_model.create_train_and_test_datasets(data=data, seed=123)
+        self.assertAlmostEqual(train.shape[0], 14000, delta=3)
+        self.assertAlmostEqual(test.shape[0], 6000, delta=3)
+        self.assertIsInstance(train, DataFrame)
+        self.assertIsInstance(test, DataFrame)
+        self.assertEqual(data.columns, train.columns)
+        self.assertEqual(data.columns, test.columns)
+        self.assertEqual(train["index"].n_unique(), 14000)
+        self.assertEqual(test["index"].n_unique(), 6000)
+
+        check_df = train.join(test, on="index", how="inner")
+        self.assertEqual(check_df.shape[0], 0)
+
+    def test_get_test_train_from_lazyframe(self):
+        data = self.lf
+        train, test  = self.standard_model.create_train_and_test_datasets(data=data, seed=123)
+
+        self.assertAlmostEqual(train.shape[0], 14000, delta=3)
+        self.assertAlmostEqual(test.shape[0], 5920, delta=3)
+        self.assertIsInstance(train, DataFrame)
+        self.assertIsInstance(test, DataFrame)
+        self.assertEqual(data.columns, train.columns)
+        self.assertEqual(data.columns, test.columns)
+        self.assertEqual(train["index"].n_unique(), 14000)
+        self.assertEqual(test["index"].n_unique(), 6000)
+
+        check_df = train.join(test, on="index", how="inner")
+        self.assertEqual(check_df.shape[0], 0)
+
+    def test_model_fit(self):
+        model = Model(
+            model_type=ModelType.SIMPLE_LINEAR,
+            model_identifier="test_linear_model_ice_cream",
+            model_params={},
+            version_parameter_location="/some/location",
+            data_source_prefix="some/prefix",
+            target_column="IceCreamSales",
+            feature_columns=["MeanDailyTemperature"],
+        )
+        data = self.lf
+        train, _ = model.create_train_and_test_datasets(data=data, seed=123)
+        fitted_model = model.fit(train)
+        self.assertIsInstance(fitted_model, LinearRegression)
+        self.assertAlmostEqual(fitted_model.coef_[0][0], 248274.01134039, places=3)
+        self.assertAlmostEqual(fitted_model.intercept_[0], 38307.77491212, places=3)
+        self.assertEqual(len(fitted_model.coef_),1)
+        self.assertEqual(len(fitted_model.intercept_),1)
+        self.assertAlmostEqual(model.training_score, 0.8354809377928092, places=3)
+
+    def test_model_validate(self):
+        model = Model(
+            model_type=ModelType.SIMPLE_LINEAR,
+            model_identifier="test_linear_model_ice_cream",
+            model_params={},
+            version_parameter_location="/some/location",
+            data_source_prefix="some/prefix",
+            target_column="IceCreamSales",
+            feature_columns=["MeanDailyTemperature"],
+        )
+        data = self.lf
+        train, test = model.create_train_and_test_datasets(data=data, seed=123)
+        model.fit(train)
+        validation_score = model.validate(test)
+        self.assertAlmostEqual(validation_score, 0.0, places=2)
+        self.assertAlmostEqual(model.testing_score, 0.8350624481353132, places=3)

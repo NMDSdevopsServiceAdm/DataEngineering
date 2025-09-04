@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict, Any, Union
 import polars as pl
-
+import sklearn
 
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 
@@ -47,13 +47,31 @@ class Model:
         s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}"
         return pl.scan_parquet(s3_uri)
 
-    def create_train_and_test_datasets(self, data: Union[pl.DataFrame, pl.LazyFrame], split_size=0.7) -> tuple[pl.DataFrame, pl.DataFrame]:
-        pass
+    @classmethod
+    def create_train_and_test_datasets(cls, data: Union[pl.DataFrame, pl.LazyFrame], split_size:float=0.7, seed: int=None) -> tuple[pl.DataFrame, pl.DataFrame]:
+        if isinstance(data, pl.LazyFrame):
+            data = data.collect()
 
+        df_train = data.sample(fraction=split_size, with_replacement=False, shuffle=True, seed=seed)
+        df_test = data.join(df_train, on=data.columns, how="anti")
 
+        return df_train, df_test
 
+    def fit(self, train_df: pl.DataFrame) -> LinearRegression | Lasso | Ridge:
+        x1 = train_df.select(self.feature_columns)
+        y1 = train_df.select(self.target_column)
+        self.model.fit(x1, y1)
+        self.training_score = self.model.score(x1, y1)
+        return self.model
 
-# model_registry = {
+    def validate(self, test_df: pl.DataFrame) -> float | None:
+        x2 = test_df.select(self.feature_columns)
+        y2 = test_df.select(self.target_column)
+        self.testing_score = self.model.score(x2, y2)
+        score_difference = abs(self.testing_score - self.training_score)
+        return score_difference
+
+    # model_registry = {
 #     "nonres_pir_linear": Model(
 #         model_type=ModelType.SIMPLE_LINEAR,
 #         model_identifier ="nonres_pir_linear",
