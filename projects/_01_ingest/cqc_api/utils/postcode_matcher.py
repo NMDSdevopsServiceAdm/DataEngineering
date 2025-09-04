@@ -54,25 +54,11 @@ def run_postcode_matching(
         CQCLClean.cqc_location_import_date,
         ONSClean.contemporary_ons_import_date,
     )
-    print("Step 0")
-    print(locations_df.count())
-
-    print("Postcode DF Plan")
-    print(postcode_df.explain(extended=True))
-    print(postcode_df.count())
-
-    print("Locations DF Plan")
-    print(locations_df.explain(extended=True))
 
     # Step 1 - Match postcodes where there is an exact match at that point in time.
     matched_locations_df, unmatched_locations_df = join_postcode_data(
         locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    print("Step 1")
-    print("Unmatched Locations DF Plan")
-    print(unmatched_locations_df.explain(extended=True))
-    print("Matched: " + str(matched_locations_df.count()))
-    print("Unmatched: " + str(unmatched_locations_df.count()))
 
     # Step 2 - Reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
     reassigned_locations_df = get_first_successful_postcode_match(
@@ -84,18 +70,12 @@ def run_postcode_matching(
     ) = join_postcode_data(
         reassigned_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    print("Step 2")
-    print("Matched: " + str(matched_reassigned_locations_df.count()))
-    print("Unmatched: " + str(unmatched_reassigned_locations_df.count()))
 
     # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
     amended_locations_df = amend_invalid_postcodes(unmatched_reassigned_locations_df)
     matched_amended_locations_df, unmatched_amended_locations_df = join_postcode_data(
         amended_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
-    print("Step 3")
-    print("Matched: " + str(matched_amended_locations_df.count()))
-    print("Unmatched: " + str(unmatched_amended_locations_df.count()))
 
     # Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
     truncated_postcode_df = create_truncated_postcode_df(postcode_df)
@@ -106,9 +86,6 @@ def run_postcode_matching(
     ) = join_postcode_data(
         truncated_locations_df, truncated_postcode_df, CQCLClean.postcode_truncated
     )
-    print("Step 4")
-    print("Matched: " + str(matched_truncated_locations_df.count()))
-    print("Unmatched: " + str(unmatched_truncated_locations_df.count()))
 
     # Step 5 - Raise an error and abort pipeline to manually investigate any unmatched postcodes.
     raise_error_if_unmatched(unmatched_truncated_locations_df)
@@ -342,7 +319,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     Raises:
         TypeError: If unmatched postcodes exist.
     """
-    if unmatched_df.count() == 0:
+    if unmatched_df.limit(1).count() == 0:
         return
 
     rows = (
