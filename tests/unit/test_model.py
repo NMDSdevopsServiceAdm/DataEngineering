@@ -9,26 +9,29 @@ PATCH_PATH = "projects._03_independent_cqc._05a_model.model"
 
 
 class TestModel(unittest.TestCase):
+    standard_model = Model(
+        model_type=ModelType.SIMPLE_LINEAR,
+        model_identifier="test_linear_model",
+        model_params={},
+        version_parameter_location="/some/location",
+        data_source_prefix="some/prefix",
+        target_column="target",
+        feature_columns=["column1", "column2"],
+    )
+
     def test_model_linear_regression_instantiates(self):
-        model = Model(
-            model_type=ModelType.SIMPLE_LINEAR,
-            model_identifier="test_linear_model",
-            model_params={},
-            version_parameter_location="/some/location",
-            data_source_prefix="/some/prefix",
-            target_column="target",
-            feature_columns=["column1", "column2"],
+        self.assertEqual(self.standard_model.model_type, ModelType.SIMPLE_LINEAR)
+        self.assertEqual(self.standard_model.model_identifier, "test_linear_model")
+        self.assertEqual(self.standard_model.model_params, {})
+        self.assertEqual(
+            self.standard_model.version_parameter_location, "/some/location"
         )
-        self.assertEqual(model.model_type, ModelType.SIMPLE_LINEAR)
-        self.assertEqual(model.model_identifier, "test_linear_model")
-        self.assertEqual(model.model_params, {})
-        self.assertEqual(model.version_parameter_location, "/some/location")
-        self.assertEqual(model.data_source_prefix, "/some/prefix")
-        self.assertEqual(model.target_column, "target")
-        self.assertEqual(model.feature_columns, ["column1", "column2"])
-        self.assertIsInstance(model.model, LinearRegression)
-        self.assertEqual(model.training_score, None)
-        self.assertEqual(model.testing_score, None)
+        self.assertEqual(self.standard_model.data_source_prefix, "some/prefix")
+        self.assertEqual(self.standard_model.target_column, "target")
+        self.assertEqual(self.standard_model.feature_columns, ["column1", "column2"])
+        self.assertIsInstance(self.standard_model.model, LinearRegression)
+        self.assertEqual(self.standard_model.training_score, None)
+        self.assertEqual(self.standard_model.testing_score, None)
 
     @patch(f"{PATCH_PATH}.ModelType", autospec=True)
     def test_model_linear_regression_raises_value_error_if_invalid_model_type(
@@ -41,7 +44,13 @@ class TestModel(unittest.TestCase):
                 model_identifier="test_linear_model",
                 model_params={},
                 version_parameter_location="/some/location",
-                data_source_prefix="/some/prefix",
+                data_source_prefix="some/prefix",
                 target_column="target",
                 feature_columns=["column1", "column2"],
             )
+
+    @patch(f"{PATCH_PATH}.pl.scan_parquet")
+    def test_get_raw_data_uses_correct_s3_uri(self, mock_scan_parquet):
+        data = self.standard_model.get_raw_data("test_bucket")
+        expected_s3_uri = "s3://test_bucket/some/prefix"
+        mock_scan_parquet.assert_called_once_with(expected_s3_uri)

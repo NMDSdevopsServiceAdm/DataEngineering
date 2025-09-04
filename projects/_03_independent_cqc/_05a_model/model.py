@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Dict, Any
+from typing import Dict, Any, Union
+import polars as pl
+
 
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 
@@ -40,6 +42,15 @@ class Model:
                 self.model = Ridge(**model_params)
             case _:
                 raise ValueError("Unknown model type")
+
+    def get_raw_data(self, bucket_name: str) -> pl.LazyFrame:
+        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}"
+        return pl.scan_parquet(s3_uri)
+
+    def create_train_and_test_datasets(self, data: Union[pl.DataFrame, pl.LazyFrame], split_size=0.7) -> tuple[pl.DataFrame, pl.DataFrame]:
+        pass
+
+
 
 
 # model_registry = {
