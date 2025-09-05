@@ -1,19 +1,19 @@
 import os
 import sys
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
 from utils import utils
+from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.cleaned_capacity_tracker_non_res_validation_rules import (
     CleanedCapacityTrackerNonResValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
-from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
 def main(
@@ -29,9 +29,9 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_cleaned_capacity_tracker_non_res_dataset(non_res_df)
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_cleaned_capacity_tracker_non_res_dataset(non_res_df)
+    )
 
     check_result_df = validate_dataset(non_res_cleaned_df, rules)
 

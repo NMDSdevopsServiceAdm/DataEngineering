@@ -10,7 +10,7 @@ module "csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -26,7 +26,7 @@ module "spss_csv_to_parquet_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -41,7 +41,7 @@ module "ingest_capacity_tracker_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -56,7 +56,7 @@ module "ingest_cqc_pir_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -71,7 +71,7 @@ module "clean_cqc_pir_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cqc_pir_source"              = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
@@ -86,7 +86,7 @@ module "ingest_ascwds_dataset_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -104,7 +104,7 @@ module "clean_ascwds_worker_job" {
   number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
 
   job_parameters = {
     "--ascwds_worker_source"            = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
@@ -120,7 +120,7 @@ module "clean_capacity_tracker_care_home_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--capacity_tracker_care_home_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_care_home/"
@@ -135,7 +135,7 @@ module "clean_capacity_tracker_non_res_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--capacity_tracker_non_res_source"              = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"
@@ -152,7 +152,7 @@ module "clean_ascwds_workplace_job" {
   number_of_workers = 4
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
 
   job_parameters = {
     "--ascwds_workplace_source"                  = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
@@ -169,7 +169,7 @@ module "ingest_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--source"      = ""
@@ -185,7 +185,7 @@ module "clean_ons_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--ons_source"              = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
@@ -247,7 +247,7 @@ module "bulk_cqc_providers_download_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
@@ -262,7 +262,7 @@ module "delta_cqc_providers_download_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--destination_prefix"        = module.datasets_bucket.bucket_uri
@@ -279,7 +279,7 @@ module "bulk_cqc_locations_download_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--destination_prefix" = "${module.datasets_bucket.bucket_uri}"
@@ -294,7 +294,7 @@ module "delta_cqc_locations_download_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--destination_prefix"        = "${module.datasets_bucket.bucket_uri}"
@@ -312,7 +312,7 @@ module "ingest_dpr_external_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--external_data_source"      = ""
@@ -327,7 +327,7 @@ module "ingest_dpr_survey_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--survey_data_source"      = ""
@@ -342,7 +342,7 @@ module "prepare_dpr_external_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
   job_parameters = {
     "--direct_payments_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external/version=2025.02/"
     "--destination"            = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
@@ -356,7 +356,7 @@ module "prepare_dpr_survey_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
   job_parameters = {
     "--survey_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey/version=2025.02/"
     "--destination"        = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
@@ -370,7 +370,7 @@ module "merge_dpr_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
   job_parameters = {
     "--direct_payments_external_data_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_external_prepared/version=2025.02/"
     "--direct_payments_survey_data_source"   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_survey_prepared/version=2025.02/"
@@ -385,7 +385,7 @@ module "estimate_direct_payments_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
   job_parameters = {
     "--direct_payments_merged_source" = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_merged/version=2025.02/"
     "--destination"                   = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
@@ -400,7 +400,7 @@ module "split_pa_filled_posts_into_icb_areas_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "3.0"
+  glue_version    = "5.0"
   job_parameters = {
     "--postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/"
     "--pa_filled_posts_souce"     = "${module.datasets_bucket.bucket_uri}/domain=DPR/dataset=direct_payments_estimates/version=2025.02/"
@@ -499,7 +499,7 @@ module "merge_ind_cqc_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
   worker_type       = "G.2X"
   number_of_workers = 5
 
@@ -520,7 +520,7 @@ module "merge_coverage_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "3.0"
+  glue_version      = "5.0"
   worker_type       = "G.2X"
   number_of_workers = 5
 
@@ -540,7 +540,7 @@ module "validate_locations_api_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
@@ -556,7 +556,7 @@ module "validate_delta_locations_api_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_location_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/"
@@ -572,7 +572,7 @@ module "validate_providers_api_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_provider_source"      = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
@@ -588,7 +588,7 @@ module "validate_pir_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir_cleaned/"
@@ -603,7 +603,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
@@ -618,7 +618,7 @@ module "validate_ascwds_worker_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
@@ -633,7 +633,7 @@ module "validate_postcode_directory_cleaned_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_postcode_directory_source"     = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
@@ -649,7 +649,7 @@ module "validate_merged_ind_cqc_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version      = "5.0"
   worker_type       = "G.1X"
   number_of_workers = 4
 
@@ -667,7 +667,7 @@ module "validate_merge_coverage_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
@@ -683,7 +683,7 @@ module "validate_cleaned_ind_cqc_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--merged_ind_cqc_source"  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/"
@@ -699,7 +699,7 @@ module "validate_imputed_ind_cqc_ascwds_and_pir_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -715,7 +715,7 @@ module "validate_features_care_home_ind_cqc_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -731,7 +731,7 @@ module "validate_features_non_res_ascwds_with_dormancy_ind_cqc_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                               = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -748,7 +748,7 @@ module "validate_features_non_res_ascwds_without_dormancy_ind_cqc_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                                  = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -765,7 +765,7 @@ module "validate_estimated_ind_cqc_filled_posts_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -782,7 +782,7 @@ module "validate_estimated_ind_cqc_filled_posts_by_job_role_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--cleaned_ind_cqc_source"                            = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/"
@@ -798,7 +798,7 @@ module "validate_ascwds_workplace_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
@@ -813,7 +813,7 @@ module "validate_ascwds_worker_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_ascwds_worker_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=worker/"
@@ -828,7 +828,7 @@ module "validate_locations_api_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
@@ -843,7 +843,7 @@ module "validate_locations_api_raw_delta_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
@@ -858,7 +858,7 @@ module "validate_providers_api_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=providers_api/version=2.0.0/"
@@ -873,7 +873,7 @@ module "validate_providers_api_raw_delta_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/"
@@ -888,7 +888,7 @@ module "validate_pir_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_cqc_pir_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=pir/"
@@ -903,7 +903,7 @@ module "validate_postcode_directory_raw_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--raw_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory/"
@@ -1024,7 +1024,7 @@ module "validate_cleaned_capacity_tracker_care_home_data_job" {
   glue_role         = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket   = module.pipeline_resources
   datasets_bucket   = module.datasets_bucket
-  glue_version      = "4.0"
+  glue_version      = "5.0"
   worker_type       = "G.1X"
   number_of_workers = 4
 
@@ -1042,7 +1042,7 @@ module "validate_cleaned_capacity_tracker_non_res_data_job" {
   glue_role       = aws_iam_role.sfc_glue_service_iam_role
   resource_bucket = module.pipeline_resources
   datasets_bucket = module.datasets_bucket
-  glue_version    = "4.0"
+  glue_version    = "5.0"
 
   job_parameters = {
     "--capacity_tracker_non_res_source"         = "${module.datasets_bucket.bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential/"

@@ -6,7 +6,7 @@ from pyspark.sql import DataFrame, functions as F
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
-from utils.column_values.categorical_column_values import CareHome, PrimaryServiceType
+from utils.column_values.categorical_column_values import CareHome
 from utils import utils
 
 
@@ -60,31 +60,6 @@ def set_min_value(df: DataFrame, col_name: str, min_value: float = 1.0) -> DataF
             F.greatest(F.col(col_name), F.lit(min_value)),
         ).otherwise(F.lit(None)),
     )
-
-
-def combine_care_home_ratios_and_non_res_posts(
-    df: DataFrame, ratio_column: str, posts_column: str, new_column_name: str
-) -> DataFrame:
-    """
-    Creates one column which inputs the ratio value if the location is a care home and the filled post value if not.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        ratio_column (str): The name of the filled posts per bed ratio column (for care homes only).
-        posts_column (str): The name of the filled posts column.
-        new_column_name (str): The name of the new column with combined values.
-
-    Returns:
-        DataFrame: The input DataFrame with the new column containing a single column with the relevant combined column.
-    """
-    df = df.withColumn(
-        new_column_name,
-        F.when(
-            F.col(IndCqc.care_home) == CareHome.care_home,
-            F.col(ratio_column),
-        ).otherwise(F.col(posts_column)),
-    )
-    return df
 
 
 def convert_care_home_ratios_to_filled_posts_and_merge_with_filled_post_values(

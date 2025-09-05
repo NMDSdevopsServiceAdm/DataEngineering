@@ -1,6 +1,9 @@
 import json
 import logging
-from datetime import date, datetime
+import os
+from datetime import datetime
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_location_schema import LOCATION_SCHEMA

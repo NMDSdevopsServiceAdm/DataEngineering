@@ -1,25 +1,27 @@
+import os
 import sys
 
-from pyspark.sql import DataFrame, functions as F
+os.environ["SPARK_VERSION"] = "3.5"
+
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 from pyspark.sql.types import (
     StringType,
 )
 
-from utils import utils
 import utils.cleaning_utils as cUtils
-
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
+from utils import utils
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
 )
 from utils.column_values.categorical_column_values import (
     Sector,
 )
-
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 

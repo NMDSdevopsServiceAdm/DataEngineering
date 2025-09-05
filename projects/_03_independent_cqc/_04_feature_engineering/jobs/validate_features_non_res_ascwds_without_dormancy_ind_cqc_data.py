@@ -2,25 +2,28 @@ import os
 import sys
 
 # SPARK_VERSION needs to be set before pydeequ is imported
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from datetime import date
+
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
 from utils.column_values.categorical_column_values import CareHome
+from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.features_non_res_ascwds_without_dormancy_ind_cqc_validation_rules import (
     NonResASCWDSWithoutDormancyIndCqcFeaturesValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
-from utils.validation.validation_rule_names import RuleNames as RuleName
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -48,10 +51,10 @@ def main(
     )
     rules = Rules.rules_to_check
 
-    rules[
-        RuleName.size_of_dataset
-    ] = calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
-        cleaned_ind_cqc_df
+    rules[RuleName.size_of_dataset] = (
+        calculate_expected_size_of_non_res_ascwds_without_dormancy_ind_cqc_features_dataset(
+            cleaned_ind_cqc_df
+        )
     )
 
     check_result_df = validate_dataset(

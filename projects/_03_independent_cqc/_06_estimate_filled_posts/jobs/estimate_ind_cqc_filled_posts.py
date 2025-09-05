@@ -1,4 +1,7 @@
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
@@ -51,9 +54,11 @@ ind_cqc_columns = [
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
     IndCQC.ct_non_res_care_workers_employed_dedup,
+    IndCQC.ct_non_res_care_workers_employed_imputed,
     IndCQC.ct_care_home_import_date,
     IndCQC.ct_care_home_total_employed,
     IndCQC.ct_care_home_total_employed_dedup,
+    IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.cqc_pir_import_date,
     IndCQC.pir_people_directly_employed_dedup,
     IndCQC.pir_filled_posts_model,

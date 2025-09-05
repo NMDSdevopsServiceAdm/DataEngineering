@@ -1,24 +1,30 @@
+import os
 import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
+
 from dataclasses import dataclass
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.primary_service_rolling_sum import (
-    calculate_rolling_sum_of_job_roles,
-)
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils import (
     utils as JRutils,
-)
-from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.interpolation import (
-    model_job_role_ratio_interpolation,
 )
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.extrapolation import (
     extrapolate_job_role_ratios,
 )
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.interpolation import (
+    model_job_role_ratio_interpolation,
+)
+from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.models.primary_service_rolling_sum import (
+    calculate_rolling_sum_of_job_roles,
+)
 from projects._03_independent_cqc.utils.utils import utils as FPutils
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
     AscwdsWorkerValueLabelsJobGroup as JobGroupDicts,
 )

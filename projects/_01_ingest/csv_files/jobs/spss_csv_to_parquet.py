@@ -1,5 +1,9 @@
-import sys
 import argparse
+import os
+import sys
+
+os.environ["SPARK_VERSION"] = "3.5"
+
 import pyspark.sql.functions as F
 
 from schemas.spss_job_estimates_schema import SPSS_JOBS_ESTIMATES

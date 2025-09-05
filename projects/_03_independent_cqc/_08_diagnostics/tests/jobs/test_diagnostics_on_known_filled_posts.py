@@ -11,7 +11,9 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PATCH_PATH: str = "projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_known_filled_posts"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._08_diagnostics.jobs.diagnostics_on_known_filled_posts"
+)
 
 
 class DiagnosticsOnKnownFilledPostsTests(unittest.TestCase):

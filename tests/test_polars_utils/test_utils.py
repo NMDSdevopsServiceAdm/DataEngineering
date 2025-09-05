@@ -8,7 +8,6 @@ import logging
 import os
 from datetime import datetime
 from glob import glob
-import time
 
 from polars_utils.utils import write_to_parquet
 
@@ -26,7 +25,7 @@ class TestUtils(unittest.TestCase):
         df: pl.DataFrame = pl.DataFrame({})
         destination: str = os.path.join(self.temp_dir, "test.parquet")
         with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger)
+            utils.write_to_parquet(df, destination, self.logger, append=False)
         self.assertFalse(Path(destination).exists())
         self.assertTrue(
             "The provided dataframe was empty. No data was written." in cm.output[0]
@@ -36,15 +35,15 @@ class TestUtils(unittest.TestCase):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         destination: str = os.path.join(self.temp_dir, "test.parquet")
         with self.assertLogs(self.logger) as cm:
-            utils.write_to_parquet(df, destination, self.logger)
+            utils.write_to_parquet(df, destination, self.logger, append=False)
         self.assertTrue(Path(destination).exists())
         self.assertTrue(f"Parquet written to {destination}" in cm.output[0])
 
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
-        destination: str = self.temp_dir
-        write_to_parquet(df, destination, self.logger, append=True)
-        write_to_parquet(df, destination, self.logger, append=True)
+        destination: str = self.temp_dir + "/"
+        write_to_parquet(df, destination, self.logger)
+        write_to_parquet(df, destination, self.logger)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
@@ -52,7 +51,9 @@ class TestUtils(unittest.TestCase):
         destination: str = os.path.join(self.temp_dir, "test.parquet")
         write_to_parquet(df, destination, self.logger, append=False)
         write_to_parquet(df, destination, self.logger, append=False)
-        self.assertEqual(len(glob(destination + "/**", recursive=True)), 1)
+
+        files = glob(os.path.join(self.temp_dir, "*.parquet"))
+        self.assertEqual(len(files), 1)
 
     def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
         self,

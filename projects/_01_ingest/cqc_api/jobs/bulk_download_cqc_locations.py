@@ -1,10 +1,13 @@
 import json
+import os
 from datetime import date
 
+os.environ["SPARK_VERSION"] = "3.5"
+
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils import aws_secrets_manager_utilities as ars
 from utils import utils
-from schemas.cqc_location_schema import LOCATION_SCHEMA
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )

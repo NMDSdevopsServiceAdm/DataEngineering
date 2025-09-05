@@ -1,24 +1,12 @@
 import unittest
 
-
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame
 
-
-from utils import utils
-
 import utils.cleaning_utils as job
-
-from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
 from tests.test_file_data import CleaningUtilsData as Data
-
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    PartitionKeys,
-    AscwdsWorkplaceColumns as AWP,
-)
+from tests.test_file_schemas import CleaningUtilsSchemas as Schemas
+from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -26,7 +14,12 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
 
 gender_labels: str = "gender_labels"
 nationality_labels: str = "nationality_labels"
@@ -253,13 +246,15 @@ class TestCleaningUtilsScale(unittest.TestCase):
         self,
     ):
         with self.assertRaises(ValueError) as context:
-            job.set_column_bounds(
-                self.test_scale_df,
-                "float",
-                "bound_float",
-                lower_limit=100,
-                upper_limit=1,
-            ),
+            (
+                job.set_column_bounds(
+                    self.test_scale_df,
+                    "float",
+                    "bound_float",
+                    lower_limit=100,
+                    upper_limit=1,
+                ),
+            )
 
         self.assertTrue(
             "Lower limit (100) must be lower than upper limit (1)"
@@ -332,13 +327,15 @@ class TestCleaningUtilsScale(unittest.TestCase):
 
     def test_set_bounds_for_columns_raises_error_if_columns_dont_match_names(self):
         with self.assertRaises(Exception) as context:
-            job.set_bounds_for_columns(
-                self.test_scale_df,
-                ["int", "float"],
-                ["bound_int", "bound_float", "another_column"],
-                lower_limit=1,
-                upper_limit=100,
-            ),
+            (
+                job.set_bounds_for_columns(
+                    self.test_scale_df,
+                    ["int", "float"],
+                    ["bound_int", "bound_float", "another_column"],
+                    lower_limit=1,
+                    upper_limit=100,
+                ),
+            )
 
         self.assertTrue(
             "Column list size (2) must match new column list size (3)"

@@ -1,4 +1,5 @@
 """Retrieves Provider data from the CQC API."""
+
 from utils.aws_secrets_manager_utilities import get_secret
 import os
 import json
@@ -98,8 +99,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         logger.info("Creating dataframe and writing to Parquet")
         df: pl.DataFrame = pl.DataFrame(generator, POLARS_PROVIDER_SCHEMA)
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
-        output_file_path = f"{destination}data.parquet"
-        utils.write_to_parquet(df_unique, output_file_path, logger=logger)
+        utils.write_to_parquet(df_unique, destination, logger=logger)
         return None
     except InvalidTimestampArgumentError as e:
         logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")

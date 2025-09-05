@@ -282,6 +282,26 @@ class ModelAndMergePirData:
 
 
 @dataclass
+class ImputeUtilsSchema:
+    combine_care_home_and_non_res_values_into_single_column_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
+            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
+        ]
+    )
+    expected_combine_care_home_and_non_res_values_into_single_column_schema = (
+        StructType(
+            [
+                *combine_care_home_and_non_res_values_into_single_column_schema,
+                StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
+            ]
+        )
+    )
+
+
+@dataclass
 class ValidateImputedIndCqcAscwdsAndPir:
     cleaned_ind_cqc_schema = StructType(
         [
@@ -2042,21 +2062,6 @@ class EstimateFilledPostsModelsUtils:
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.filled_posts_per_bed_ratio, FloatType(), True),
             StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    combine_care_home_ratios_and_non_res_posts_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.care_home, StringType(), False),
-            StructField(IndCQC.ascwds_filled_posts_dedup_clean, DoubleType(), True),
-            StructField(IndCQC.filled_posts_per_bed_ratio, DoubleType(), True),
-        ]
-    )
-    expected_combine_care_home_ratios_and_non_res_posts_schema = StructType(
-        [
-            *combine_care_home_ratios_and_non_res_posts_schema,
-            StructField(IndCQC.combined_ratio_and_filled_posts, DoubleType(), True),
         ]
     )
 
