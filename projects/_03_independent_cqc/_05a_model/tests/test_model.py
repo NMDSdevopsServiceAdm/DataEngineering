@@ -20,8 +20,17 @@ class TestModel(unittest.TestCase):
         model_params={},
         version_parameter_location="/some/location",
         data_source_prefix="some/prefix",
-        target_column="target",
+        target_columns=["target"],
         feature_columns=["column1", "column2"],
+    )
+    ice_cream_model = Model(
+        model_type=ModelType.SIMPLE_LINEAR,
+        model_identifier="test_linear_model_ice_cream",
+        model_params={},
+        version_parameter_location="/some/location",
+        data_source_prefix="some/prefix",
+        target_columns=["IceCreamSales"],
+        feature_columns=["MeanDailyTemperature"],
     )
 
     def setUp(self):
@@ -36,7 +45,7 @@ class TestModel(unittest.TestCase):
             self.standard_model.version_parameter_location, "/some/location"
         )
         self.assertEqual(self.standard_model.data_source_prefix, "some/prefix")
-        self.assertEqual(self.standard_model.target_column, "target")
+        self.assertEqual(self.standard_model.target_columns, ["target"])
         self.assertEqual(self.standard_model.feature_columns, ["column1", "column2"])
         self.assertIsInstance(self.standard_model.model, LinearRegression)
         self.assertEqual(self.standard_model.training_score, None)
@@ -54,7 +63,7 @@ class TestModel(unittest.TestCase):
                 model_params={},
                 version_parameter_location="/some/location",
                 data_source_prefix="some/prefix",
-                target_column="target",
+                target_columns=["target"],
                 feature_columns=["column1", "column2"],
             )
 
@@ -100,41 +109,31 @@ class TestModel(unittest.TestCase):
         self.assertEqual(check_df.shape[0], 0)
 
     def test_model_fit(self):
-        model = Model(
-            model_type=ModelType.SIMPLE_LINEAR,
-            model_identifier="test_linear_model_ice_cream",
-            model_params={},
-            version_parameter_location="/some/location",
-            data_source_prefix="some/prefix",
-            target_column="IceCreamSales",
-            feature_columns=["MeanDailyTemperature"],
-        )
         data = self.lf
-        train, _ = model.create_train_and_test_datasets(data=data, seed=123)
-        fitted_model = model.fit(train)
+        train, _ = self.ice_cream_model.create_train_and_test_datasets(
+            data=data, seed=123
+        )
+        fitted_model = self.ice_cream_model.fit(train)
         self.assertIsInstance(fitted_model, LinearRegression)
         self.assertAlmostEqual(fitted_model.coef_[0][0], 248274.01134039, places=3)
         self.assertAlmostEqual(fitted_model.intercept_[0], 38307.77491212, places=3)
         self.assertEqual(len(fitted_model.coef_), 1)
         self.assertEqual(len(fitted_model.intercept_), 1)
-        self.assertAlmostEqual(model.training_score, 0.8354809377928092, places=3)
+        self.assertAlmostEqual(
+            self.ice_cream_model.training_score, 0.8354809377928092, places=3
+        )
 
     def test_model_validate(self):
-        model = Model(
-            model_type=ModelType.SIMPLE_LINEAR,
-            model_identifier="test_linear_model_ice_cream",
-            model_params={},
-            version_parameter_location="/some/location",
-            data_source_prefix="some/prefix",
-            target_column="IceCreamSales",
-            feature_columns=["MeanDailyTemperature"],
-        )
         data = self.lf
-        train, test = model.create_train_and_test_datasets(data=data, seed=123)
-        model.fit(train)
-        validation_score = model.validate(test)
+        train, test = self.ice_cream_model.create_train_and_test_datasets(
+            data=data, seed=123
+        )
+        self.ice_cream_model.fit(train)
+        validation_score = self.ice_cream_model.validate(test)
         self.assertAlmostEqual(validation_score, 0.0, places=2)
-        self.assertAlmostEqual(model.testing_score, 0.8350624481353132, places=3)
+        self.assertAlmostEqual(
+            self.ice_cream_model.testing_score, 0.8350624481353132, places=3
+        )
 
     def test_model_validate_fails_if_not_trained(self):
         model = self.standard_model
@@ -142,3 +141,12 @@ class TestModel(unittest.TestCase):
         _, test = model.create_train_and_test_datasets(data=data, seed=123)
         with self.assertRaises(ModelNotTrainedError):
             model.validate(test)
+
+    def test_model_predict_returns_polars_dataframe(self):
+        data = self.lf
+        train, test = self.ice_cream_model.create_train_and_test_datasets(
+            data=data, seed=123
+        )
+        self.ice_cream_model.fit(train)
+        result = self.ice_cream_model.predict(test)
+        self.assertIsInstance(result, DataFrame)
