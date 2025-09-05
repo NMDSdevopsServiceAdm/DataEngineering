@@ -1,0 +1,17 @@
+# https://posit-dev.github.io/pointblank/user-guide/yaml-validation-workflows.html
+tbl: null
+df_library: polars
+tbl_name: "delta_locations_api"
+label: "Basic data quality checks"
+brief: 
+thresholds:
+    warning: 1
+actions:
+    warning: "{LEVEL}: {type} validation failed with {n_failed} records for column {col}."
+steps:
+  - rows_distinct:
+      columns_subset: [locationId, import_date]
+      brief: "Ensure all {col} values are distinct"
+  - col_vals_not_null:
+      columns: [locationId, import_date, name]
+      brief: "Ensure {col} columns are fully populated"
