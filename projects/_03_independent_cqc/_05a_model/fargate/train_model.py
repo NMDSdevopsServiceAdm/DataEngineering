@@ -12,7 +12,7 @@ from projects._03_independent_cqc._05a_model.utils.model import (
     Model,
     ModelNotTrainedError,
 )
-from utils import utils
+from polars_utils import utils
 from projects._03_independent_cqc._05a_model.utils.version_manager import (
     ModelVersionManager,
 )
