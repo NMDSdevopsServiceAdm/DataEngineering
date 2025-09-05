@@ -170,6 +170,8 @@ class IndCqcColumns:
     distribution_kurtosis: str = "distribution_kurtosis"
     distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
+    dormant_date: str = "dormant_date"
+    last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_from_all_job_roles: str = (
@@ -338,9 +340,9 @@ class IndCqcColumns:
         "sum_non_rm_managerial_estimated_filled_posts"
     )
     time_between_submissions: str = "time_between_submissions"
-    time_registered: str = CQCLClean.time_registered
+    time_registered: str = "time_registered"
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
-    time_since_dormant: str = CQCLClean.time_since_dormant
+    time_since_dormant: str = "time_since_dormant"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

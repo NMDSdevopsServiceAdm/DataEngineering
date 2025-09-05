@@ -1,17 +1,22 @@
 from re import match
 from typing import Generator, Optional
+from datetime import datetime
 
 import polars as pl
 
-from projects.tools.delta_data_remodel.jobs import (
-    raw_locations_schema as LocationsSchema,
-    raw_providers_schema as ProvidersSchema,
+from schemas import (
+    cqc_locations_schema_polars as LocationsSchema,
+    cqc_provider_schema_polars as ProvidersSchema,
+    cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CqcLocations,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CqcLocationsCleaned,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
@@ -65,19 +70,24 @@ def get_snapshots(
 
     if organisation_type == "locations":
         primary_key = CqcLocations.location_id
-        schema = LocationsSchema.raw_locations_schema
+        schema = LocationsSchema.POLARS_LOCATION_SCHEMA
     elif organisation_type == "providers":
         primary_key = CqcProviders.provider_id
-        schema = ProvidersSchema.raw_providers_schema
+        schema = ProvidersSchema.POLARS_PROVIDER_SCHEMA
+    elif organisation_type == "locations-cleaned":
+        primary_key = CqcLocations.location_id
+        schema = LocationsSchemaCleaned.POLARS_CLEANED_LOCATIONS_SCHEMA
     else:
         raise ValueError(
-            f"Unknown organisation type: {organisation_type}. Must be either locations or providers"
+            f"Unknown organisation type: {organisation_type}. Must be either locations, providers or locations-cleaned"
         )
 
     delta_df = pl.scan_parquet(
         f"s3://{bucket}/{read_folder}",
         schema=schema,
-        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert", extra_struct_fields="ignore"
+        ),
         missing_columns="insert",
     ).collect()
 
@@ -107,4 +117,10 @@ def get_snapshots(
                 pl.lit(date.group("day")).alias(Keys.day).cast(pl.Int64),
                 pl.lit(import_date[0]).alias(Keys.import_date).cast(pl.Int64),
             )
+            if organisation_type == "locations-cleaned":
+                previous_ss = previous_ss.with_columns(
+                    pl.lit(datetime.strptime(str(import_date[0]), "%Y%m%d"))
+                    .alias(CqcLocationsCleaned.cqc_location_import_date)
+                    .cast(pl.Date),
+                )
         yield previous_ss

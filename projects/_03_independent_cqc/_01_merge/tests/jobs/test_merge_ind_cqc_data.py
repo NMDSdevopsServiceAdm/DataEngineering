@@ -13,6 +13,9 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    IndCqcColumns as IndCqc,
+)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
@@ -78,6 +81,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
         self.assertEqual(read_from_parquet_patch.call_count, 5)
         select_rows_with_value_mock.assert_called_once()
         self.assertEqual(join_data_into_cqc_df_mock.call_count, 4)
+
         write_to_parquet_patch.assert_called_once_with(
             ANY,
             self.TEST_DESTINATION,
