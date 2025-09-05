@@ -95,8 +95,9 @@ def send_sns_notification(
     topic_arn: str,
     subject: str,
     message: str,
+    region_name: str = "eu-west-2",
 ) -> None:
-    sns_client = boto3.client("sns")
+    sns_client = boto3.client("sns", region_name=region_name)
     try:
         sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
     except ClientError as e:
@@ -104,3 +105,4 @@ def send_sns_notification(
         util_logger.error(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
         )
+        raise

@@ -8,8 +8,12 @@ import logging
 import os
 from datetime import datetime
 from glob import glob
+from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
+from moto import mock_aws, sns
+import boto3
+from botocore.exceptions import ClientError
 
-from polars_utils.utils import write_to_parquet
+from polars_utils.utils import write_to_parquet, send_sns_notification
 
 
 class TestUtils(unittest.TestCase):
@@ -82,4 +86,58 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(
             dir_path,
             "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
+        )
+
+    @mock_aws
+    def test_send_sns_notification_sends(self):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+
+        send_sns_notification(
+            topic_arn=topic["TopicArn"],
+            subject="Test Subject",
+            message="Test Message",
+        )
+
+        sns_backend = sns.sns_backends[DEFAULT_ACCOUNT_ID]["eu-west-2"]
+        sent_notifications = sns_backend.topics[topic["TopicArn"]].sent_notifications
+
+        assert len(sent_notifications) == 1
+        notification = sent_notifications[0]
+        assert notification[2] == "Test Subject"
+        assert notification[1] == "Test Message"
+
+    @mock_aws
+    def test_send_sns_notification_raises_clienterror_and_logs_with_wrong_arn(self):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(ClientError):
+                send_sns_notification(
+                    topic_arn="silly_arn",
+                    subject="Test Subject",
+                    message="Test Message",
+                )
+        self.assertIn(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
+            cm.output[1],
+        )
+
+    @mock_aws
+    @set_initial_no_auth_action_count(1)
+    def test_send_sns_notification_raises_clienterror_and_logs_with_no_permissions(
+        self,
+    ):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(ClientError):
+                send_sns_notification(
+                    topic_arn=topic["TopicArn"],
+                    subject="Test Subject",
+                    message="Test Message",
+                )
+        self.assertIn(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
+            cm.output[1],
         )
