@@ -24,8 +24,11 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN")
+MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET")
+MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX")
 
-def main(model_name: str, raw_data_bucket: str):
+def main(model_name: str, raw_data_bucket: str) -> None:
     try:
         model_definition = model_definitions[model_name]
 
@@ -40,19 +43,29 @@ def main(model_name: str, raw_data_bucket: str):
         validation = model.validate(test_df)
 
         version_manager = ModelVersionManager(
-            s3_bucket=os.environ.get("MODEL_S3_BUCKET"),
-            s3_prefix=os.environ.get("MODEL_S3_PREFIX"),
+            s3_bucket=MODEL_S3_BUCKET,
+            s3_prefix=MODEL_S3_PREFIX,
             param_store_name=model.version_parameter_location,
             default_patch=True,
         )
 
-        version_manager.prompt_and_save(model=fitted_model)
+        version_manager.prompt_and_save(model=model)
 
-        return {
+        scoring = {
             "train_score": model.training_score,
             "test_score": model.testing_score,
             "score_difference": validation,
         }
+
+        subject = f'Successful retraining of {model.model_identifier}.'
+        message = (
+            f"The model {model.model_identifier} was trained successfully.\n"
+            f"The R2 value in traing was {scoring['train_score']}\n"
+            f"The R2 value in testing was {scoring['test_score']}\n"
+            f"The difference is {scoring['score_difference']}.\n"
+            f"The model version is {version_manager.current_version}.\n"
+            f"The serialised model is stored at {version_manager.storage_location_uri}.")
+
     except KeyError as e:
         logger.error(e)
         logger.error(sys.argv)
@@ -94,6 +107,12 @@ def main(model_name: str, raw_data_bucket: str):
     except Exception as e:
         logger.error(e)
         raise
+    finally:
+        utils.send_sns_notification(
+            subject=subject,
+            message=message,
+            topic_arn=TOPIC_ARN,
+        )
 
 
 if __name__ == "__main__":

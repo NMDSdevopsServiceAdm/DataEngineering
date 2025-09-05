@@ -16,7 +16,7 @@ invalid_definition = {
     "model_params": dict(),
     "version_parameter_location": f"/models/test/non_res_pir",
     "data_source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
-    "target_column": "ascwds_filled_posts_deduplicated_clean",
+    "target_columns": ["ascwds_filled_posts_deduplicated_clean"],
     "feature_columns": ["pir_people_directly_employed_deduplicated"],
 }
 
@@ -51,9 +51,7 @@ class TestMain(unittest.TestCase):
         mock_model.return_value.version_parameter_location = "some_param_location"
 
         # WHEN
-        result = job.main(
-            model_name="some_model", raw_data_bucket="test_raw_data_bucket"
-        )
+        job.main(model_name="some_model", raw_data_bucket="test_raw_data_bucket")
 
         # THEN
         mock_model.assert_called_once_with(**{"some_key": "some_value"})
@@ -70,15 +68,7 @@ class TestMain(unittest.TestCase):
             default_patch=True,
         )
         mock_version_manager.return_value.prompt_and_save.assert_called_once_with(
-            model=mock_fitted_model
-        )
-        self.assertEqual(
-            {
-                "train_score": 0.456,
-                "test_score": 0.789,
-                "score_difference": 0.123,
-            },
-            result,
+            model=mock_model()
         )
 
     def test_raises_key_error_and_logs_if_unrecognised_model_name(self):

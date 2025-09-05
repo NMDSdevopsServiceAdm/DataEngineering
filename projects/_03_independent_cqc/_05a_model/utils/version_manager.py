@@ -48,6 +48,8 @@ class ModelVersionManager:
         self.s3_client = boto3.client("s3", region_name=REGION)
         self.param_store_name = param_store_name
         self.default_patch = default_patch
+        self.current_version = None
+        self.storage_location_uri = None
 
     def get_current_version(self) -> str:
         """
@@ -167,7 +169,8 @@ class ModelVersionManager:
 
         self.s3_client.upload_fileobj(buffer, self.s3_bucket, prefix)
 
-        logger.info(f"Saving model to s3://{self.s3_bucket}/{prefix}")
+        self.storage_location_uri = f"s3://{self.s3_bucket}/{prefix}"
+        logger.info(f"Saving model to {self.storage_location_uri}")
 
     def prompt_change(self, prompt_num=0) -> ChangeType:
         """Prompts user for input to give version."""
@@ -212,3 +215,4 @@ class ModelVersionManager:
         new_version = self.get_new_version(change_type)
         self.save_model(model, new_version)
         self.update_parameter_store(new_version)
+        self.current_version = new_version
