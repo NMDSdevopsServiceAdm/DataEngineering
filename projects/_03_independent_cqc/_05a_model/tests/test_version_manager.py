@@ -1,5 +1,9 @@
 from unittest.mock import Mock, patch
-from utils.version_manager import ModelVersionManager, EnumChangeType, BaseEstimator
+from projects._03_independent_cqc._05a_model.utils.version_manager import (
+    ModelVersionManager,
+    EnumChangeType,
+    BaseEstimator,
+)
 import unittest
 import os
 from moto import mock_aws
@@ -8,7 +12,9 @@ from botocore.exceptions import ClientError
 import io
 import pickle
 
-PATCH_STEM = "utils.version_manager.ModelVersionManager"
+PATCH_STEM = (
+    "projects._03_independent_cqc._05a_model.utils.version_manager.ModelVersionManager"
+)
 
 DUMMY_BUCKET_NAME = "my-model-bucket"
 

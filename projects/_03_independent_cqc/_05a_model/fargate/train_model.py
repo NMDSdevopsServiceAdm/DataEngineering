@@ -5,10 +5,17 @@ import sys
 from polars.exceptions import PolarsError
 from botocore.exceptions import ClientError
 
-from projects._03_independent_cqc._05a_model.model_registry import model_definitions
-from projects._03_independent_cqc._05a_model.model import Model, ModelNotTrainedError
+from projects._03_independent_cqc._05a_model.fargate.model_registry import (
+    model_definitions,
+)
+from projects._03_independent_cqc._05a_model.utils.model import (
+    Model,
+    ModelNotTrainedError,
+)
 from utils import utils
-from utils.version_manager import ModelVersionManager
+from projects._03_independent_cqc._05a_model.utils.version_manager import (
+    ModelVersionManager,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -49,18 +56,22 @@ def main(model_name: str, raw_data_bucket: str):
     except KeyError as e:
         logger.error(e)
         logger.error(sys.argv)
-        logger.error('Check that the model name is valid.')
+        logger.error("Check that the model name is valid.")
         raise
     except ValueError as e:
         logger.error(e)
         logger.error(sys.argv)
-        logger.error('It is likely the model failed to instantiate. Check the parameters.')
+        logger.error(
+            "It is likely the model failed to instantiate. Check the parameters."
+        )
         logger.error(model_definitions[model_name])
         raise
     except PolarsError as e:
         logger.error(e)
         logger.error(sys.argv)
-        logger.error('This error originated in Polars. Check that Polars is able to read from S3.')
+        logger.error(
+            "This error originated in Polars. Check that Polars is able to read from S3."
+        )
         raise
     except ModelNotTrainedError as e:
         logger.error(e)

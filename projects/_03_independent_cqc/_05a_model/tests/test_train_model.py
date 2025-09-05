@@ -2,9 +2,9 @@ import os
 import unittest
 from unittest.mock import patch, MagicMock
 
-import projects._03_independent_cqc._05a_model.train_model as job
+import projects._03_independent_cqc._05a_model.fargate.train_model as job
 
-PATCH_PATH = "projects._03_independent_cqc._05a_model.train_model"
+PATCH_PATH = "projects._03_independent_cqc._05a_model.fargate.train_model"
 
 
 class TestMain(unittest.TestCase):
