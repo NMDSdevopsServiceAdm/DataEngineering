@@ -4,9 +4,9 @@ from unittest.mock import ANY, patch
 import polars as pl
 import yaml
 
-from validation.src.validate_datasets import main
+from polars_utils.validate_datasets import main
 
-SRC_PATH = "validation.src.validate_datasets"
+SRC_PATH = "polars_utils.validate_datasets"
 SIMPLE_MOCK_CONFIG = {
     "datasets": {
         "my_dataset": {

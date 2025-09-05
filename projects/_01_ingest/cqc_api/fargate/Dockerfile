@@ -17,8 +17,8 @@ COPY schemas/cqc_locations_schema_polars.py schemas/cqc_locations_schema_polars.
 COPY projects/_01_ingest/cqc_api/fargate/*.py .
 
 # Validation script
-COPY validation/src/validate_datasets.py .
-COPY validation/src/config config
+COPY polars_utils/validate_datasets.py .
+COPY polars_utils/config config
 
 COPY projects/_01_ingest/cqc_api/fargate/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
