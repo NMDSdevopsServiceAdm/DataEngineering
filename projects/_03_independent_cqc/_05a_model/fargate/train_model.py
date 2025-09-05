@@ -24,9 +24,10 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN")
-MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET")
-MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX")
+TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN", default="test_retrain_model")
+MODEL_NAME = os.environ.get("MODEL_NAME", default="test_model_name")
+MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET", default="test_model_s3_bucket")
+MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefix")
 ERROR_SUBJECT = "Model Retraining Failure"
 
 
@@ -49,7 +50,7 @@ def main(model_name: str, raw_data_bucket: str) -> None:
 
         train_df, test_df = Model.create_train_and_test_datasets(data)
 
-        fitted_model = model.fit(train_df)
+        model.fit(train_df)
 
         validation = model.validate(test_df)
 

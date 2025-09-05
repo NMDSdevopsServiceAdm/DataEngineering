@@ -21,19 +21,16 @@ invalid_definition = {
 }
 
 
+@patch(f"{PATCH_PATH}.utils.send_sns_notification")
 class TestMain(unittest.TestCase):
-    def setUp(self):
-        self.original_s3_bucket = os.getenv("MODEL_S3_BUCKET")
-        os.environ["MODEL_S3_BUCKET"] = "test_bucket"
-        self.original_s3_prefix = os.getenv("MODEL_S3_PREFIX")
-        os.environ["MODEL_S3_PREFIX"] = "test_s3_prefix"
-
     @patch(f"{PATCH_PATH}.ModelVersionManager", return_value=MagicMock())
     @patch(f"{PATCH_PATH}.Model", return_value=MagicMock())
     @patch.dict(
         f"{PATCH_PATH}.model_definitions", {"some_model": {"some_key": "some_value"}}
     )
-    def test_calls_expected_functions(self, mock_model, mock_version_manager):
+    def test_calls_expected_functions(
+        self, mock_model, mock_version_manager, mock_sns_notification
+    ):
         # GIVEN
         mock_raw_data = MagicMock()
         mock_model.return_value.get_raw_data.return_value = mock_raw_data
@@ -62,23 +59,28 @@ class TestMain(unittest.TestCase):
         mock_model.return_value.fit.assert_called_once_with(mock_train_data)
         mock_model.return_value.validate.assert_called_once_with(mock_test_data)
         mock_version_manager.assert_called_once_with(
-            s3_bucket="test_bucket",
-            s3_prefix="test_s3_prefix",
+            s3_bucket="test_model_s3_bucket",
+            s3_prefix="test_model_s3_prefix",
             param_store_name="some_param_location",
             default_patch=True,
         )
         mock_version_manager.return_value.prompt_and_save.assert_called_once_with(
             model=mock_model()
         )
+        mock_sns_notification.assert_called_once()
 
-    def test_raises_key_error_and_logs_if_unrecognised_model_name(self):
+    def test_raises_key_error_and_logs_if_unrecognised_model_name(
+        self, mock_sns_notification
+    ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(KeyError):
                 job.main(model_name="silly_model", raw_data_bucket="silly_bucket")
         self.assertIn("Check that the model name is valid.", cm.output[2])
 
     @patch.dict(f"{PATCH_PATH}.model_definitions", {"some_model": invalid_definition})
-    def test_raises_value_error_and_logs_if_invalid_model_type(self):
+    def test_raises_value_error_and_logs_if_invalid_model_type(
+        self, mock_sns_notification
+    ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(ValueError):
                 job.main(model_name="some_model", raw_data_bucket="silly_bucket")
@@ -90,7 +92,9 @@ class TestMain(unittest.TestCase):
     @patch.dict(
         f"{PATCH_PATH}.model_definitions", {"some_model": {"some_key": "some_value"}}
     )
-    def test_raises_type_error_and_logs_if_invalid_model_parameters(self):
+    def test_raises_type_error_and_logs_if_invalid_model_parameters(
+        self, mock_sns_notification
+    ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(TypeError):
                 job.main(model_name="some_model", raw_data_bucket="silly_bucket")
@@ -98,14 +102,3 @@ class TestMain(unittest.TestCase):
             "It is likely the model failed to instantiate. Check the parameters.",
             cm.output[2],
         )
-
-    def tearDown(self):
-        if self.original_s3_bucket is not None:
-            os.environ["MODEL_S3_BUCKET"] = self.original_s3_bucket
-        else:
-            del os.environ["MODEL_S3_BUCKET"]
-
-        if self.original_s3_prefix is not None:
-            os.environ["MODEL_S3_PREFIX"] = self.original_s3_prefix
-        else:
-            del os.environ["MODEL_S3_PREFIX"]
