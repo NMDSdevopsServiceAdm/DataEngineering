@@ -21,7 +21,7 @@ ratelimit = "2.2.1"
 requests = "2.32.5"
 scikit-learn = "1.7.1"
 urllib3 = "2.5.0"
-css-inline = "*"
+css-inline = "0.17.0"
 
 [dev-packages]
 autopep8 = "2.3.2"
