@@ -49,15 +49,18 @@ def main(model_name: str, raw_data_bucket: str):
     except KeyError as e:
         logger.error(e)
         logger.error(sys.argv)
+        logger.error('Check that the model name is valid.')
         raise
     except ValueError as e:
         logger.error(e)
         logger.error(sys.argv)
+        logger.error('It is likely the model failed to instantiate. Check the parameters.')
         logger.error(model_definitions[model_name])
         raise
     except PolarsError as e:
         logger.error(e)
         logger.error(sys.argv)
+        logger.error('This error originated in Polars. Check that Polars is able to read from S3.')
         raise
     except ModelNotTrainedError as e:
         logger.error(e)

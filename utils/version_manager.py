@@ -7,6 +7,15 @@ import io
 import json
 from typing import Literal
 import os
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 REGION = os.environ.get("AWS_REGION", "eu-west-2")
@@ -29,7 +38,7 @@ class ModelVersionManager:
 
     def __init__(self, s3_bucket, s3_prefix, param_store_name, default_patch=False):
         if param_store_name[0] != "/":
-            print(
+            logger.info(
                 "Parameter store name must be fully-qualified, including leading slash, e.g. /my/model/version"
             )
             raise ValueError("Parameter store name must be fully-qualified")
@@ -57,7 +66,7 @@ class ModelVersionManager:
             raw_value = json.loads(response["Parameter"]["Value"])
             return raw_value["Current Version"]
         except ClientError as e:
-            print(f"Boto3 Error while retrieving parameter: {e}")
+            logger.error(f"Boto3 Error while retrieving parameter: {e}")
             raise
 
     def update_parameter_store(self, new_version: str) -> None:
@@ -79,11 +88,11 @@ class ModelVersionManager:
                 Type="String",
                 Overwrite=True,
             )
-            print(
+            logger.info(
                 f"Successfully updated Parameter Store with new version: {new_version}"
             )
         except Exception as e:
-            print(f"Error updating Parameter Store: {e}")
+            logger.error(f"Error updating Parameter Store: {e}")
             raise
 
     def increment_version(self, current_version: str, change_type: ChangeType) -> str:
@@ -135,12 +144,12 @@ class ModelVersionManager:
             new_version = self.increment_version(current_version, change_type)
             return new_version
         except (self.ssm_client.exceptions.ParameterNotFound, ClientError):
-            print(
+            logger.error(
                 f"Parameter '{self.param_store_name}' not found. Initializing to 0.1.0."
             )
             return "0.1.0"
         except ValueError as e:
-            print(f"Error getting new version: {e}")
+            logger.error(f"Error getting new version: {e}")
             raise
 
     def save_model(self, model: BaseEstimator, new_version: str):
@@ -158,7 +167,7 @@ class ModelVersionManager:
 
         self.s3_client.upload_fileobj(buffer, self.s3_bucket, prefix)
 
-        print(f"Saving model to s3://{self.s3_bucket}/{prefix}")
+        logger.info(f"Saving model to s3://{self.s3_bucket}/{prefix}")
 
     def prompt_change(self, prompt_num=0) -> ChangeType:
         """Prompts user for input to give version."""
@@ -166,11 +175,11 @@ class ModelVersionManager:
             "Is this a \n1. Major?\n2. Minor?\n3. Patch change?\n(1/2/3): "
         ).lower()
         if selection not in ["1", "2", "3"] and prompt_num == 0:
-            print("Invalid change type. Try again, choose 1, 2 or 3.")
+            logger.error("Invalid change type. Try again, choose 1, 2 or 3.")
             repeat_result = self.prompt_change(prompt_num=1)
             return repeat_result
         elif selection not in ["1", "2", "3"]:
-            print("Invalid change type. Model not saved.")
+            logger.error("Invalid change type. Model not saved.")
             raise ValueError("Invalid change type.")
         match selection:
             case "1":
@@ -196,7 +205,7 @@ class ModelVersionManager:
                 "Do you want to save this new model version? (only yes to save): "
             ).lower()
             if should_save != "yes":
-                print("Model not saved. Exiting.")
+                logger.error("Model not saved. Exiting.")
                 return
             change_type = self.prompt_change()
 
