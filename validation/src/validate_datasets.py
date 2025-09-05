@@ -27,8 +27,8 @@ class DatasetConfig:
 
 
 def main(bucket_name: str, dataset: str):
-    print(CONFIG["datasets"][dataset])
     config = DatasetConfig(**CONFIG["datasets"][dataset])
+    logging.info(f"Using dataset configuration: {config}")
     rules_yml = f"config/{dataset}.yml"
 
     source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/version={config.version}/"

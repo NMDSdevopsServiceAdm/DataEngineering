@@ -23,4 +23,7 @@ COPY validation/src/config config
 COPY projects/_01_ingest/cqc_api/fargate/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN dir
+RUN dir config/
+
 ENTRYPOINT ["python"]
