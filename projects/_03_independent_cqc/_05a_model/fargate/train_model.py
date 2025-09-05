@@ -58,11 +58,18 @@ def main(model_name: str, raw_data_bucket: str):
         logger.error(sys.argv)
         logger.error("Check that the model name is valid.")
         raise
-    except ValueError as e:
+    except TypeError as e:
         logger.error(e)
         logger.error(sys.argv)
         logger.error(
             "It is likely the model failed to instantiate. Check the parameters."
+        )
+        raise
+    except ValueError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        logger.error(
+            "Check that you specified a valid model_type in your model definition."
         )
         logger.error(model_definitions[model_name])
         raise
@@ -80,6 +87,9 @@ def main(model_name: str, raw_data_bucket: str):
     except ClientError as e:
         logger.error(e)
         logger.error(sys.argv)
+        logger.error(
+            "There was an error while serialising the model or saving the version parameter."
+        )
         raise
     except Exception as e:
         logger.error(e)
