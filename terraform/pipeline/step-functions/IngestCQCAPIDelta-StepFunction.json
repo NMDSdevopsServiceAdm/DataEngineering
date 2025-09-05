@@ -184,7 +184,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.bucket_name_arg $.bucket_name, $.domain_arg $.domain, $.dataset_arg $.dataset, $.version_arg $.version, $.report_name_arg $.report_name)"
+                      "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.domain_arg, $.domain, $.dataset_arg, $.dataset, $.version_arg, $.version, $.report_name_arg, $.report_name)"
                     }
                   ]
                 }
