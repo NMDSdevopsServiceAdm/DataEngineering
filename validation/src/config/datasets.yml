@@ -1,0 +1,11 @@
+datasets:
+  locations_raw:
+    dataset: delta_locations_api
+    domain: CQC_delta
+    version: 3.0.0
+    report_name: data_quality_report_delta_locations_api_raw
+  providers_raw:
+    dataset: delta_providers_api
+    domain: CQC_delta
+    version: 3.0.0
+    report_name: data_quality_report_delta_providers_api_raw

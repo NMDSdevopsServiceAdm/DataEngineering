@@ -4,9 +4,19 @@ from unittest.mock import ANY, patch
 import polars as pl
 import yaml
 
-from projects._01_ingest.cqc_api.fargate.validate_datasets import (
-    main,
-)
+from validation.src.validate_datasets import main
+
+SRC_PATH = "validation.src.validate_datasets"
+SIMPLE_MOCK_CONFIG = {
+    "datasets": {
+        "my_dataset": {
+            "dataset": "dataset_name_in_s3",
+            "domain": "cqc_or_other",
+            "version": "x.x.x",
+            "report_name": "data_quality_report",
+        }
+    }
+}
 
 
 class ValidateDatasetsTests(unittest.TestCase):
@@ -49,17 +59,18 @@ class ValidateDatasetsTests(unittest.TestCase):
         """
         )
 
+    @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
+    @patch("pointblank.yaml.YAMLValidator.load_config", autospec=True)
     @patch("boto3.client", autospec=True)
     @patch("polars.scan_parquet", autospec=True)
-    @patch("pointblank.yaml.YAMLValidator.load_config", autospec=True)
-    def test_distinct_rows_validation(self, mock_yaml, mock_scan, mock_s3_client):
+    def test_distinct_rows_validation(self, mock_scan, mock_s3_client, mock_yaml):
         # Given
         mock_scan.return_value.collect.return_value = self.raw_df
         mock_yaml.return_value = self.yaml
 
         # When
         with self.assertRaises(AssertionError) as context:
-            main("bucket", "domain", "dataset", "version", "report")
+            main("bucket", "my_dataset")
 
         # Then
         self.assertIn(
@@ -67,7 +78,7 @@ class ValidateDatasetsTests(unittest.TestCase):
             str(context.exception),
         )
         mock_scan.assert_called_once_with(
-            "s3://bucket/domain=domain/dataset=dataset/version=version/",
+            "s3://bucket/domain=cqc_or_other/dataset=dataset_name_in_s3/version=x.x.x/",
             cast_options=ANY,
             extra_columns=ANY,
         )

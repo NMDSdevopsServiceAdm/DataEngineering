@@ -155,14 +155,8 @@
                 "script": "validate_datasets.py",
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
-                "domain_arg": "--domain",
-                "domain": "CQC_delta",
                 "dataset_arg": "--dataset",
-                "dataset": "delta_providers_api",
-                "version_arg": "--version",
-                "version": "3.0.0",
-                "report_name_arg": "--report_name",
-                "report_name": "data_quality_report_delta_locations_api_raw"
+                "dataset": "locations_raw"
               },
               "Next": "Validate Locations Api Raw"
             },
@@ -184,7 +178,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.domain_arg, $.domain, $.dataset_arg, $.dataset, $.version_arg, $.version, $.report_name_arg, $.report_name)"
+                      "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.dataset_arg, $.dataset)"
                     }
                   ]
                 }
