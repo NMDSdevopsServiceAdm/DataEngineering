@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data. 
+- New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
+
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 
@@ -37,6 +38,8 @@ All notable changes to this project will be documented in this file.
   - resetting package versions using pipenv
   - upgrading to PySpark 3.5
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
+
+- Removed all of the old Step Functions now the newer ones are fully operational.
 
 ### Improved
 
