@@ -1,8 +1,8 @@
+import logging
 import os
 import sys
-import logging
 
-os.environ["SPARK_VERSION"] = "3.3"
+os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -11,8 +11,8 @@ from utils.validation.validation_rules.locations_api_raw_validation_rules import
     LocationsAPIRawValidationRules as Rules,
 )
 from utils.validation.validation_utils import (
-    validate_dataset,
     raise_exception_if_any_checks_failed,
+    validate_dataset,
 )
 
 logger = logging.getLogger()

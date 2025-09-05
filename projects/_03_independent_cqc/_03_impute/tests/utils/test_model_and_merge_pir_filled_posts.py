@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import Mock, patch
 import warnings
+from unittest.mock import Mock, patch
 
 from pyspark.sql import DataFrame
 

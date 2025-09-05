@@ -51,7 +51,6 @@ class MainTests(ValidateImputedIndCqcAscwdsAndPirsetTests):
             self.test_cleaned_ind_cqc_df,
             self.test_estimated_ind_cqc_filled_posts_df,
         ]
-
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CLEANED_SOURCE,

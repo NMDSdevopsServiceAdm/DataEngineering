@@ -1,16 +1,13 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._01_ingest.cqc_api.jobs.validate_locations_api_raw_delta_data as job
-
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ValidateLocationsAPIRawData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ValidateLocationsAPIRawData as Schemas,
 )
-
 from utils import utils
 
 

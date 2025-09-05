@@ -1,11 +1,15 @@
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
-    utils as mUtils,
-)
+import os
+
+os.environ["SPARK_VERSION"] = "3.5"
+
 from projects._03_independent_cqc._05_model.utils.model_metrics import (
     save_model_metrics,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
+    utils as mUtils,
+)
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 
 def main(

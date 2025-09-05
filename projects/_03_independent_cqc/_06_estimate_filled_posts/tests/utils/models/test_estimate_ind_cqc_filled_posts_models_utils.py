@@ -1,12 +1,9 @@
 import unittest
 import warnings
-from unittest.mock import ANY, MagicMock, Mock, patch
-
 from datetime import date
-from pyspark.ml.regression import LinearRegressionModel
+from unittest.mock import MagicMock, Mock, patch
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from pyspark.ml.regression import LinearRegressionModel
 
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models import (
     utils as job,
@@ -17,7 +14,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     EstimateFilledPostsModelsUtils as Schemas,
 )
-
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils"

@@ -1,5 +1,4 @@
 import unittest
-
 from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._04_feature_engineering.jobs.validate_features_non_res_ascwds_with_dormancy_ind_cqc_data as job
@@ -9,7 +8,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     ValidateFeaturesNonResASCWDSWithDormancyIndCqcSchema as Schemas,
 )
-
 from utils import utils
 
 PATCH_PATH: str = (
