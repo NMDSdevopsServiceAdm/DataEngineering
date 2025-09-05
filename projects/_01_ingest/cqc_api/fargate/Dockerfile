@@ -18,6 +18,7 @@ COPY projects/_01_ingest/cqc_api/fargate/*.py .
 
 # Validation script
 COPY validation/src/validate_datasets.py .
+COPY validation/src/config config
 
 COPY projects/_01_ingest/cqc_api/fargate/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
