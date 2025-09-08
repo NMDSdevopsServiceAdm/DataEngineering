@@ -175,12 +175,14 @@ def main(
     )
 
 
+# converted to polars
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
     cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
     cqc_df = fill_missing_provider_ids_from_other_rows(cqc_df)
     return cqc_df
 
 
+# converted to polars
 def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame:
     cqc_df = cqc_df.withColumn(
         CQCL.provider_id,
@@ -189,6 +191,7 @@ def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame
     return cqc_df
 
 
+# converted to polars
 def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     cqc_df = cqc_df.withColumn(
         CQCL.provider_id,
