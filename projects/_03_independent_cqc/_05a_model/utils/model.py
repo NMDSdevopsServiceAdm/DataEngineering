@@ -1,8 +1,6 @@
 from enum import Enum
 from typing import Dict, Any, Union
 import polars as pl
-import sklearn
-
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 
 
@@ -28,7 +26,7 @@ class Model:
         model_params: Dict[str, Any],
         version_parameter_location: str,
         data_source_prefix: str,
-        target_column: str | list[str],
+        target_columns: list[str],
         feature_columns: list[str],
     ) -> None:
         self.model_type = model_type
@@ -36,7 +34,7 @@ class Model:
         self.model_params = model_params
         self.version_parameter_location = version_parameter_location
         self.data_source_prefix = data_source_prefix
-        self.target_column = target_column
+        self.target_columns = target_columns
         self.feature_columns = feature_columns
         self.training_score: float | None = None
         self.testing_score: float | None = None
@@ -100,7 +98,7 @@ class Model:
             LinearRegression | Lasso | Ridge: Fitted model
         """
         x1 = train_df.select(self.feature_columns)
-        y1 = train_df.select(self.target_column)
+        y1 = train_df.select(self.target_columns)
         self.model.fit(x1, y1)
         self.training_score = self.model.score(x1, y1)
         return self.model
@@ -120,10 +118,23 @@ class Model:
         if self.training_score is None:
             raise ModelNotTrainedError("Model has not been trained yet.")
         x2 = test_df.select(self.feature_columns)
-        y2 = test_df.select(self.target_column)
+        y2 = test_df.select(self.target_columns)
         self.testing_score = self.model.score(x2, y2)
         score_difference = abs(self.testing_score - self.training_score)
         return score_difference
+
+    def predict(self, input_df: pl.DataFrame) -> pl.DataFrame:
+        """
+        Predicts the target column values from the model, given defined features.
+        Args:
+            input_df (pl.DataFrame): Dataframe that includes all the feature columns
+
+        Returns:
+            pl.DataFrame: Predicted target column values
+        """
+        feature_df = input_df.select(self.feature_columns)
+        predictions = self.model.predict(feature_df)
+        return pl.from_numpy(predictions, schema=self.target_columns, orient="col")
 
     # model_registry = {
 

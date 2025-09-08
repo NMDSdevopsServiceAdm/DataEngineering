@@ -27,3 +27,21 @@ variable "cluster_arn" {
   type = string
 }
 
+variable "tag_name" {
+  type = string
+}
+
+variable "cpu_size" {
+  type    = string
+  default = "4096"
+}
+
+variable "ram_size" {
+  type    = string
+  default = "16384"
+}
+
+variable "environment" {
+  type = list(map(string))
+}
+

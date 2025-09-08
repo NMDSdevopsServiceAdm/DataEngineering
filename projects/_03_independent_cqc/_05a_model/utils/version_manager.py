@@ -1,7 +1,7 @@
 from enum import Enum
 import boto3
 from botocore.exceptions import ClientError
-from sklearn.base import BaseEstimator
+from projects._03_independent_cqc._05a_model.utils.model import Model
 import pickle
 import io
 import json
@@ -48,6 +48,8 @@ class ModelVersionManager:
         self.s3_client = boto3.client("s3", region_name=REGION)
         self.param_store_name = param_store_name
         self.default_patch = default_patch
+        self.current_version = None
+        self.storage_location_uri = None
 
     def get_current_version(self) -> str:
         """
@@ -152,12 +154,12 @@ class ModelVersionManager:
             logger.error(f"Error getting new version: {e}")
             raise
 
-    def save_model(self, model: BaseEstimator, new_version: str):
+    def save_model(self, model: Model, new_version: str):
         """
         Saves the trained model to S3 with the version number in the path.
 
         Args:
-            model(BaseEstimator): The trained model object to be saved.
+            model(Model): The trained model object to be saved.
             new_version (str): The new version string.
         """
         prefix = f"{self.s3_prefix}/{new_version}/model.pkl"
@@ -167,7 +169,8 @@ class ModelVersionManager:
 
         self.s3_client.upload_fileobj(buffer, self.s3_bucket, prefix)
 
-        logger.info(f"Saving model to s3://{self.s3_bucket}/{prefix}")
+        self.storage_location_uri = f"s3://{self.s3_bucket}/{prefix}"
+        logger.info(f"Saving model to {self.storage_location_uri}")
 
     def prompt_change(self, prompt_num=0) -> ChangeType:
         """Prompts user for input to give version."""
@@ -191,12 +194,12 @@ class ModelVersionManager:
             case _:
                 raise ValueError("Invalid change type.")
 
-    def prompt_and_save(self, model: BaseEstimator) -> None:
+    def prompt_and_save(self, model: Model) -> None:
         """
         Prompts the user for a change type and handles the versioning and saving process.
 
         Args:
-            model (BaseEstimator): The trained model object.
+            model (Model): The trained model object.
         """
         if self.default_patch:
             change_type = EnumChangeType.PATCH
@@ -212,3 +215,4 @@ class ModelVersionManager:
         new_version = self.get_new_version(change_type)
         self.save_model(model, new_version)
         self.update_parameter_store(new_version)
+        self.current_version = new_version

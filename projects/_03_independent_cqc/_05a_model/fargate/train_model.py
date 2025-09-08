@@ -12,7 +12,7 @@ from projects._03_independent_cqc._05a_model.utils.model import (
     Model,
     ModelNotTrainedError,
 )
-from utils import utils
+from polars_utils import utils
 from projects._03_independent_cqc._05a_model.utils.version_manager import (
     ModelVersionManager,
 )
@@ -24,8 +24,22 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN", default="test_retrain_model")
+MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET", default="test_model_s3_bucket")
+MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefix")
+ERROR_SUBJECT = "Model Retraining Failure"
 
-def main(model_name: str, raw_data_bucket: str):
+
+def main(model_name: str, raw_data_bucket: str) -> None:
+    def get_error_notification(model_id: str, error: str) -> str:
+        return (
+            f"The training job for model {model_id} FAILED."
+            f"The error message was: {error}"
+            f"See Cloudwatch Logs for details."
+        )
+
+    subject = None
+    message = None
     try:
         model_definition = model_definitions[model_name]
 
@@ -35,36 +49,60 @@ def main(model_name: str, raw_data_bucket: str):
 
         train_df, test_df = Model.create_train_and_test_datasets(data)
 
-        fitted_model = model.fit(train_df)
+        model.fit(train_df)
 
         validation = model.validate(test_df)
 
         version_manager = ModelVersionManager(
-            s3_bucket=os.environ.get("MODEL_S3_BUCKET"),
-            s3_prefix=os.environ.get("MODEL_S3_PREFIX"),
+            s3_bucket=MODEL_S3_BUCKET,
+            s3_prefix=f"{MODEL_S3_PREFIX}/{model_name}",
             param_store_name=model.version_parameter_location,
             default_patch=True,
         )
 
-        version_manager.prompt_and_save(model=fitted_model)
+        version_manager.prompt_and_save(model=model)
 
-        return {
+        scoring = {
             "train_score": model.training_score,
             "test_score": model.testing_score,
             "score_difference": validation,
         }
+
+        subject = f"Successful retraining of {model.model_identifier}."
+        message = (
+            f"The model {model.model_identifier} was trained successfully.\n"
+            f"The R2 value in traing was {scoring['train_score']}\n"
+            f"The R2 value in testing was {scoring['test_score']}\n"
+            f"The difference is {scoring['score_difference']}.\n"
+            f"The model version is {version_manager.current_version}.\n"
+            f"The serialised model is stored at {version_manager.storage_location_uri}."
+        )
+
     except KeyError as e:
         logger.error(e)
         logger.error(sys.argv)
         logger.error("Check that the model name is valid.")
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
-    except ValueError as e:
+    except TypeError as e:
         logger.error(e)
         logger.error(sys.argv)
         logger.error(
             "It is likely the model failed to instantiate. Check the parameters."
         )
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
+        raise
+    except ValueError as e:
+        logger.error(e)
+        logger.error(sys.argv)
+        logger.error(
+            "Check that you specified a valid model_type in your model definition."
+        )
         logger.error(model_definitions[model_name])
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
     except PolarsError as e:
         logger.error(e)
@@ -72,18 +110,35 @@ def main(model_name: str, raw_data_bucket: str):
         logger.error(
             "This error originated in Polars. Check that Polars is able to read from S3."
         )
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
     except ModelNotTrainedError as e:
         logger.error(e)
         logger.error(sys.argv)
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
     except ClientError as e:
         logger.error(e)
         logger.error(sys.argv)
+        logger.error(
+            "There was an error while serialising the model or saving the version parameter."
+        )
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
     except Exception as e:
         logger.error(e)
+        subject = ERROR_SUBJECT
+        message = get_error_notification(model_name, str(e))
         raise
+    finally:
+        utils.send_sns_notification(
+            subject=subject,
+            message=message,
+            topic_arn=TOPIC_ARN,
+        )
 
 
 if __name__ == "__main__":
