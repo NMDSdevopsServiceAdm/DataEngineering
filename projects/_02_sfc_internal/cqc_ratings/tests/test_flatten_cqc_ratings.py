@@ -288,6 +288,7 @@ class MergeCQCRatings(FlattenCQCRatingsTests):
         self.returned_df = job.merge_cqc_ratings(
             self.test_assessment_ratings_df, self.test_standard_ratings_df
         )
+        self.returned_df.show()
 
     def test_merge_cqc_ratings_returns_correct_columns(self):
         returned_columns = len(self.returned_df.columns)

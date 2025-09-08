@@ -1226,6 +1226,7 @@ class FlattenCQCRatings:
             StructField(CQCRatings.responsive_rating_value, StringType(), True),
             StructField(CQCRatings.effective_rating_value, StringType(), True),
             StructField(CQCRatings.total_rating_value, StringType(), True),
+            StructField(CQCRatings.location_id_hash, StringType(), True),
         ]
     )
     expected_merge_cqc_ratings_schema = StructType(
@@ -1254,6 +1255,7 @@ class FlattenCQCRatings:
             StructField(CQCRatings.responsive_rating_value, StringType(), True),
             StructField(CQCRatings.effective_rating_value, StringType(), True),
             StructField(CQCRatings.total_rating_value, StringType(), True),
+            StructField(CQCRatings.location_id_hash, StringType(), True),
             StructField(CQCL.dataset, StringType(), True),
         ]
     )

@@ -1168,6 +1168,7 @@ class FlattenCQCRatings:
             "3",
             "3",
             "15",
+            "067b31658a0fcad5ac23",
         )
     ]
     expected_merge_cqc_ratings_rows = [
@@ -1196,6 +1197,7 @@ class FlattenCQCRatings:
             "3",
             "3",
             "15",
+            "067b31658a0fcad5ac23",
             "Pre SAF",
         ),
         (
@@ -1217,12 +1219,13 @@ class FlattenCQCRatings:
             CQCRatingsValues.good,
             None,
             None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
+            "3",
+            "3",
+            "3",
+            "3",
+            "3",
+            "15",
+            "067b31658a0fcad5ac23",
             "SAF",
         ),
     ]

@@ -494,6 +494,7 @@ def merge_cqc_ratings(
         CQCRatings.responsive_rating_value,
         CQCRatings.effective_rating_value,
         CQCRatings.total_rating_value,
+        CQCRatings.location_id_hash,
         CQCL.dataset,
     ]
     standard_df = standard_ratings_df.select(
@@ -515,6 +516,7 @@ def merge_cqc_ratings(
         CQCRatings.responsive_rating_value,
         CQCRatings.effective_rating_value,
         CQCRatings.total_rating_value,
+        CQCRatings.location_id_hash,
         F.lit("Pre SAF").alias(CQCL.dataset),
     )
     assessment_df = assessment_ratings_df.select(
@@ -539,10 +541,11 @@ def merge_cqc_ratings(
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
         CQCL.dataset,
     )
-
+    assessment_df = add_numerical_ratings(assessment_df)
+    assessment_df = add_location_id_hash(assessment_df)
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
     merged_df = recode_unknown_codes_to_null(merged_df)
-
+    merged_df = remove_blank_and_duplicate_rows(merged_df)
     return merged_df.select(*expected_columns)
 
 
