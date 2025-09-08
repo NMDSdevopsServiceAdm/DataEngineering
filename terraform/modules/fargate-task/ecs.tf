@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "polars_task" {
   container_definitions = jsonencode([
     {
       name      = "${var.task_name}-container",
-      image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${terraform.workspace}",
+      image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
       essential = true,
       cpu       = 4096,
       memory    = 16384,
