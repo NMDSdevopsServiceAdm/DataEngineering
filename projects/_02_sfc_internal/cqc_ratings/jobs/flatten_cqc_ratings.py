@@ -151,7 +151,6 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
 
 def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = flatten_assessment_ratings(cqc_location_df)
-    ratings_df = recode_unknown_codes_to_null(ratings_df)
     return ratings_df
 
 
