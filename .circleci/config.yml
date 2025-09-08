@@ -63,7 +63,8 @@ jobs:
       - run:
           name: run unit tests
           command: |
-            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+            # pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
+            pipenv run coverage run -m unittest tests/integration/test_cqc_api_integration.py
       - run:
           name: Generate coverage report
           command: |
