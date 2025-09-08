@@ -21,7 +21,7 @@ def get_secret(
         str | bytes | None: The string or binary version of the secret value (if applicable)
 
     Raises:
-        Exception: Handles Client Error responses.
+        ClientError | Exception: Handles Client Error responses.
     """
     client = boto3.client(
         "secretsmanager",
