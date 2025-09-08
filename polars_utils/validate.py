@@ -14,7 +14,7 @@ from polars_utils import utils
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
+# this is the master config for datasets specification
 DATASETS_FILE = Path(__file__).parent.resolve() / "config" / "datasets.yml"
 CONFIG = yaml.safe_load(DATASETS_FILE.read_text())
 
@@ -27,10 +27,32 @@ class DatasetConfig:
     report_name: str
 
 
-def main(bucket_name: str, dataset: str):
+def validate_dataset(bucket_name: str, dataset: str):
+    """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
+
+    NB: this validatation is config-driven so only requires additional YAML configuration to entend to various datasets.
+
+    See `config/README.md` for further details.
+
+    Args:
+        bucket_name (str): the bucket (name only) in which to source the dataset and output the report to
+            - shoud correspond to workspace / feature branch name
+        dataset (str): the dataset name as the source data to be validated
+
+    Raises:
+        ValueError: in case of a missing dataset key in the `config/datasets.yml`
+        FileNotFoundError: in case of a missing rules definition (eg. `config/dataset_name.yml`) for the dataset validation
+        AssertionError: in case of the dataset failing the validation rules
+    """
+    # each dataset validation requires a config entry in the master config file
+    if dataset not in CONFIG["datasets"]:
+        raise ValueError(f"Dataset {dataset} not found in config file")
     config = DatasetConfig(**CONFIG["datasets"][dataset])
     logging.info(f"Using dataset configuration: {config}")
+
     rules_yml = f"config/{dataset}.yml"
+    if not Path(rules_yml).exists():
+        raise FileNotFoundError(f"Rules file {rules_yml} not found")
 
     source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/version={config.version}/"
     destination = f"domain=data_validation_reports/dataset={config.report_name}"
@@ -56,11 +78,15 @@ def main(bucket_name: str, dataset: str):
     except AssertionError:
         logger.error("Data validation failed. See report for details.")
         steps = json.loads(validation.get_json_report())
+        # JSON report includes a detailed list of each validation step, including failures
+        # Note that some 'steps' result in several steps in teh execution, eg. a null check over several columns
         for step in steps:
             if not step["all_passed"]:
                 step_idx = step["i"]
                 assertion = step["assertion_type"]
-                _col_or_cols = step["column"]
+                _col_or_cols = step[
+                    "column"
+                ]  # could be a string or a list, depending on step specification
                 columns = (
                     "_".join(_col_or_cols)
                     if isinstance(_col_or_cols, list)
@@ -71,7 +97,7 @@ def main(bucket_name: str, dataset: str):
                     failed_records_df,
                     f"s3://{bucket_name}/{destination}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
                 )
-        raise
+        raise  # ensures that the task fails if any warnings / errors
 
 
 if __name__ == "__main__":
@@ -83,5 +109,5 @@ if __name__ == "__main__":
     )
     logger.info(f"Starting validation for {args.dataset}")
 
-    main(args.bucket_name, args.dataset)
+    validate_dataset(args.bucket_name, args.dataset)
     logger.info(f"Validation of {args.dataset} complete")

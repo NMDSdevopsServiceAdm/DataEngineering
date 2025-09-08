@@ -4,7 +4,7 @@ from unittest.mock import ANY, patch
 import polars as pl
 import yaml
 
-from polars_utils.validate_datasets import main
+from polars_utils.validate import validate_dataset
 
 SRC_PATH = "polars_utils.validate_datasets"
 SIMPLE_MOCK_CONFIG = {
@@ -95,7 +95,7 @@ class ValidateDatasetsTests(unittest.TestCase):
 
         # When
         with self.assertRaises(AssertionError) as context:
-            main("bucket", "my_dataset")
+            validate_dataset("bucket", "my_dataset")
 
         # Then
         self.assertIn(
