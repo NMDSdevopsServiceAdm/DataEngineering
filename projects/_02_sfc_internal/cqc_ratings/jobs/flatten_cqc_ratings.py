@@ -541,6 +541,7 @@ def merge_cqc_ratings(
     )
 
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
+    merged_df = recode_unknown_codes_to_null(merged_df)
 
     return merged_df.select(*expected_columns)
 
