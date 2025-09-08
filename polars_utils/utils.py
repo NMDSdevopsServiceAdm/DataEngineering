@@ -45,11 +45,12 @@ def write_to_parquet(
         logger.info("Parquet written to {}".format(output_path))
 
 
-def get_args(*args):
+def get_args(*args: tuple) -> argparse.Namespace:
     """Provides Args from argparse.ArgumentParser for a set of tuples.
 
-    Required format:
-        ("--arg_name", "help text", required (bool, default True), default value (optional))
+    Args:
+        *args (tuple): iterable or arguments to unpack and parse, required format for each arg:
+            ("--arg_name", "help text", required (bool, default True), default value (optional))
 
     Raises:
         argparse.ArgumentError: in case of missing, extra, or invalid args
@@ -70,7 +71,7 @@ def get_args(*args):
     except SystemExit:
         parser.print_help()
         raise argparse.ArgumentError(None, "Error parsing argument")
-  
+
 
 def generate_s3_datasets_dir_date_path(
     destination_prefix,

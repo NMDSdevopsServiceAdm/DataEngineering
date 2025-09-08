@@ -38,6 +38,9 @@ All notable changes to this project will be documented in this file.
   - upgrading to PySpark 3.5
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
+- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
+  - locations_raw
+
 ### Improved
 
 

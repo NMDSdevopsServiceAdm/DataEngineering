@@ -1,9 +1,7 @@
 # https://posit-dev.github.io/pointblank/user-guide/yaml-validation-workflows.html
 tbl: null
-df_library: polars
 tbl_name: "delta_locations_api"
 label: "Basic data quality checks"
-brief: 
 thresholds:
     warning: 1
 actions:

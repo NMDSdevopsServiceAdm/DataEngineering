@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from dataclasses import dataclass
@@ -43,7 +44,6 @@ def main(bucket_name: str, dataset: str):
     pb.validate_yaml(rules_yml)
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
-    # report.show()
 
     s3_client = boto3.client("s3")
     s3_client.put_object(
@@ -55,7 +55,23 @@ def main(bucket_name: str, dataset: str):
         validation.assert_below_threshold(level="warning")
     except AssertionError:
         logger.error("Data validation failed. See report for details.")
-        
+        steps = json.loads(validation.get_json_report())
+        for step in steps:
+            if not step["all_passed"]:
+                step_idx = step["i"]
+                assertion = step["assertion_type"]
+                _col_or_cols = step["column"]
+                columns = (
+                    "_".join(_col_or_cols)
+                    if isinstance(_col_or_cols, list)
+                    else _col_or_cols
+                )
+                failed_records_df = validation.get_data_extracts(step_idx, frame=True)
+                utils.write_to_parquet(
+                    failed_records_df,
+                    f"s3://{bucket_name}/{destination}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
+                )
+        raise
 
 
 if __name__ == "__main__":
