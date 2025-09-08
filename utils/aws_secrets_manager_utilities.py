@@ -21,7 +21,8 @@ def get_secret(
         str | bytes | None: The string or binary version of the secret value (if applicable)
 
     Raises:
-        ClientError | Exception: Handles Client Error responses.
+        ClientError: in case of Client Error responses
+        Exception: in case of unknown error
     """
     client = boto3.client(
         "secretsmanager",
@@ -45,8 +46,8 @@ def get_secret(
             ) from e
         elif e.response["Error"]["Code"] == "InternalServiceError":
             raise Exception("An error occurred on service side:", e) from e
-        # else:
-        #     raise
+        else:
+            raise
     else:
         if "SecretString" in get_secret_value_response:
             text_secret_data = get_secret_value_response["SecretString"]
