@@ -15,7 +15,7 @@
               "Parameters": {
                 "JobName": "${ingest_ons_data_job_name}",
                 "Arguments": {
-                  "--source.$": "$.jobs.ingest_ons_dataset.source",
+                  "--source.$": "$.jobs.ingest_ons_data.source",
                   "--destination": "${dataset_bucket_uri}/domain=ONS/"
                 }
               },

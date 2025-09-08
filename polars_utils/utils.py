@@ -18,7 +18,7 @@ def write_to_parquet(
     df: pl.DataFrame,
     output_path: str,
     logger: logging.Logger = util_logger,
-    append: bool = False,
+    append: bool = True,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -42,7 +42,7 @@ def write_to_parquet(
         logger.info("The provided dataframe was empty. No data was written.")
     else:
         if append:
-            output_path += f"/{uuid.uuid4()}.parquet"
+            output_path += f"{uuid.uuid4()}.parquet"
         df.write_parquet(output_path)
         logger.info("Parquet written to {}".format(output_path))
 
