@@ -1332,6 +1332,7 @@ class FlattenCQCRatings:
     expected_create_standard_ratings_dataset_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),

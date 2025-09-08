@@ -500,7 +500,7 @@ def merge_cqc_ratings(
     standard_df = standard_ratings_df.select(
         CQCL.location_id,
         CQCRatings.date,
-        F.lit("Registered").alias(CQCL.registration_status),
+        CQCL.registration_status,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -644,6 +644,7 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
     standard_ratings_df = ratings_df.select(
         CQCL.location_id,
+        CQCL.registration_status,
         CQCRatings.date,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
