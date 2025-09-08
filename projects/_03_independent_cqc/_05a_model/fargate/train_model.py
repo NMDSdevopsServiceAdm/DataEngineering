@@ -25,7 +25,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN", default="test_retrain_model")
-MODEL_NAME = os.environ.get("MODEL_NAME", default="test_model_name")
 MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET", default="test_model_s3_bucket")
 MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefix")
 ERROR_SUBJECT = "Model Retraining Failure"
@@ -56,7 +55,7 @@ def main(model_name: str, raw_data_bucket: str) -> None:
 
         version_manager = ModelVersionManager(
             s3_bucket=MODEL_S3_BUCKET,
-            s3_prefix=MODEL_S3_PREFIX,
+            s3_prefix=f"{MODEL_S3_PREFIX}/{model_name}",
             param_store_name=model.version_parameter_location,
             default_patch=True,
         )

@@ -1,8 +1,6 @@
 from enum import Enum
 from typing import Dict, Any, Union
 import polars as pl
-import sklearn
-
 from sklearn.linear_model import LinearRegression, Lasso, Ridge
 
 
