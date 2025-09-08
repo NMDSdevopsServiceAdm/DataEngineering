@@ -38,6 +38,9 @@ All notable changes to this project will be documented in this file.
   - upgrading to PySpark 3.5
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
+- Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
+
+
 ### Improved
 
 
