@@ -620,12 +620,22 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
     for rating_column, new_column_name in rating_columns_dict.items():
         df = df.withColumn(
             new_column_name,
-            F.when(F.col(rating_column) == CQCRatingsValues.outstanding, F.lit(4))
-            .when(F.col(rating_column) == CQCRatingsValues.good, F.lit(3))
-            .when(
-                F.col(rating_column) == CQCRatingsValues.requires_improvement, F.lit(2)
+            F.when(
+                F.lower(F.col(rating_column)) == CQCRatingsValues.outstanding.lower(),
+                F.lit(4),
             )
-            .when(F.col(rating_column) == CQCRatingsValues.inadequate, F.lit(1))
+            .when(
+                F.lower(F.col(rating_column)) == CQCRatingsValues.good.lower(), F.lit(3)
+            )
+            .when(
+                F.lower(F.col(rating_column))
+                == CQCRatingsValues.requires_improvement.lower(),
+                F.lit(2),
+            )
+            .when(
+                F.lower(F.col(rating_column)) == CQCRatingsValues.inadequate.lower(),
+                F.lit(1),
+            )
             .otherwise(F.lit(0)),
         )
     df = df.withColumn(
