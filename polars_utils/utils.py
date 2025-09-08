@@ -45,45 +45,32 @@ def write_to_parquet(
         logger.info("Parquet written to {}".format(output_path))
 
 
-def collect_arguments(*args: Any) -> Generator[Any, None, None]:
-    """
-    Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
-    where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
+def get_args(*args):
+    """Provides Args from argparse.ArgumentParser for a set of tuples.
 
-    Args:
-        *args (Any): This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
+    Required format:
+        ("--arg_name", "help text", required (bool, default True), default value (optional))
+
+    Raises:
+        argparse.ArgumentError: in case of missing, extra, or invalid args
 
     Returns:
-        Generator[Any, None, None]: A generator used for parsing parsed parameters.
-
-    Examples:
-    >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
-    >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
+        argparse.Namespace: the parsed args as a Namespace, accessible as attributes
     """
     parser = argparse.ArgumentParser()
-    for arg in args:
-        parser.add_argument(
-            arg[0],
-            help=arg[1],
-            required=True,
-        )
-
-    parsed_args, _ = parser.parse_known_args()
-
-    return (vars(parsed_args)[arg[0][2:]] for arg in args)
-
-
-def get_args(*args):
-    parser = argparse.ArgumentParser()
-    for arg in args:
-        parser.add_argument(
-            arg[0],
-            help=arg[1],
-            required=True if len(arg) < 3 else arg[2],
-            default=arg[2] if len(arg) > 2 else None,
-        )
-    return parser.parse_args()
-
+    try:
+        for arg in args:
+            parser.add_argument(
+                arg[0],
+                help=arg[1],
+                required=True if len(arg) < 3 else arg[2],
+                default=arg[3] if len(arg) > 3 else None,
+            )
+        return parser.parse_args()
+    except SystemExit:
+        parser.print_help()
+        raise argparse.ArgumentError(None, "Error parsing argument")
+  
 
 def generate_s3_datasets_dir_date_path(
     destination_prefix,

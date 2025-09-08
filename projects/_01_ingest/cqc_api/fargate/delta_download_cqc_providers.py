@@ -84,7 +84,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             )
 
         logger.info(f'Getting SecretID "{SECRET_ID}"')
-        secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
+        secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         logger.info("Collecting providers with changes from API")
@@ -120,33 +120,22 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
 
 if __name__ == "__main__":
-    try:
+    args = utils.get_args(
         (
-            destination_prefix,
-            start_timestamp,
-            end_timestamp,
-            *_,
-        ) = utils.collect_arguments(
-            (
-                "--destination_prefix",
-                "Source s3 directory for parquet CQC providers dataset",
-                True,
-            ),
-            ("--start_timestamp", "Start timestamp for provider changes", True),
-            ("--end_timestamp", "End timestamp for provider changes", True),
-        )
-        logger.info(f"Running job from {start_timestamp} to {end_timestamp}")
+            "--destination_prefix",
+            "Source s3 directory for parquet CQC providers dataset",
+        ),
+        ("--start_timestamp", "Start timestamp for provider changes"),
+        ("--end_timestamp", "End timestamp for provider changes"),
+    )
+    logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
-        todays_date = date.today()
-        destination = utils.generate_s3_datasets_dir_date_path(
-            destination_prefix=destination_prefix,
-            domain="CQC_delta",
-            dataset="delta_providers_api",
-            date=todays_date,
-            version="3.0.0",
-        )
-
-        main(destination, start_timestamp, end_timestamp)
-    except (ArgumentError, ArgumentTypeError) as e:
-        logger.error(f"An error occurred parsing arguments for {sys.argv}")
-        raise e
+    todays_date = date.today()
+    destination = utils.generate_s3_datasets_dir_date_path(
+        destination_prefix=args.destination_prefix,
+        domain="CQC_delta",
+        dataset="delta_providers_api",
+        date=todays_date,
+        version="3.0.0",
+    )
+    main(destination, args.start_timestamp, args.end_timestamp)

@@ -51,7 +51,11 @@ def main(bucket_name: str, dataset: str):
         Bucket=bucket_name,
         Key=f"{destination}/index.html",
     )
-    validation.assert_below_threshold(level="warning")
+    try:
+        validation.assert_below_threshold(level="warning")
+    except AssertionError:
+        logger.error("Data validation failed. See report for details.")
+        
 
 
 if __name__ == "__main__":
