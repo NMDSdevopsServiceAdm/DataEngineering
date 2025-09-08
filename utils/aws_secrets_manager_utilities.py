@@ -23,6 +23,7 @@ def get_secret(
 
     Raises:
         Exception: Handles Client Error responses.
+        ClientError: Unexpected ClientError.
     """
 
     session = boto3.session.Session()
@@ -48,6 +49,8 @@ def get_secret(
             ) from e
         elif e.response["Error"]["Code"] == "InternalServiceError":
             raise Exception("An error occurred on service side:", e) from e
+        else:
+            raise
     else:
         if "SecretString" in get_secret_value_response:
             text_secret_data = get_secret_value_response["SecretString"]
