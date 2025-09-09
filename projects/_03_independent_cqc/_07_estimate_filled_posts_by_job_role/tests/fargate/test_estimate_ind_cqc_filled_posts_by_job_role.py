@@ -1,3 +1,4 @@
+import pathlib
 import shutil
 import tempfile
 import unittest
@@ -68,3 +69,13 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
                 ),
             ]
         )
+
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.pl.read_parquet")
+    def test_main_writes_to_parquet(
+        self,
+        read_from_parquet_mock: Mock,
+        write_to_parquet_mock: Mock,
+    ):
+        job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
+        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR)
