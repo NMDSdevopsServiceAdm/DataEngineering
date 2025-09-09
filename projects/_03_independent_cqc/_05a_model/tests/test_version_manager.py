@@ -31,8 +31,16 @@ class DummyModel(BaseEstimator):
 
 class TestVersionManager(unittest.TestCase):
     make_ssm_param = True
+    current_env = {}
 
     def setUp(self):
+        self.current_env = {
+            "AWS_ACCESS_KEY_ID": os.environ.get("AWS_ACCESS_KEY_ID", None),
+            "AWS_SECRET_ACCESS_KEY": os.environ.get("AWS_SECRET_ACCESS_KEY", None),
+            "AWS_SECURITY_TOKEN": os.environ.get("AWS_SECURITY_TOKEN", None),
+            "AWS_SESSION_TOKEN": os.environ.get("AWS_SESSION_TOKEN", None),
+            "AWS_REGION": os.environ.get("AWS_REGION", None),
+        }
         os.environ["AWS_ACCESS_KEY_ID"] = "testing"
         os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
         os.environ["AWS_SECURITY_TOKEN"] = "testing"
@@ -61,6 +69,17 @@ class TestVersionManager(unittest.TestCase):
 
     def tearDown(self):
         self.mock_aws.stop()
+        self.reset_env("AWS_ACCESS_KEY_ID")
+        self.reset_env("AWS_SECRET_ACCESS_KEY")
+        self.reset_env("AWS_SECURITY_TOKEN")
+        self.reset_env("AWS_SESSION_TOKEN")
+        self.reset_env("AWS_REGION")
+
+    def reset_env(self, key):
+        if self.current_env[key] is None:
+            del os.environ[key]
+        else:
+            os.environ[key] = self.current_env[key]
 
     def test_increment_major(self):
         self.assertEqual(
