@@ -558,14 +558,11 @@ def remove_locations_that_never_had_regulated_activities(
     ).select(CQCLClean.location_id)
 
     # Filter registered location df to remove those not in the regulated_activity_delta
-    cqc_df = cqc_df.join(
-        to_remove,
-        how="anti",
+    cqc_df = cqc_df.filter(~cqc_df[CQCLClean.location_id].isin(to_remove))
+    regulated_activities_dimension = regulated_activities_dimension.filter(
+        ~regulated_activities_dimension[CQCLClean.location_id].isin(to_remove)
     )
-    regulated_activities_dimension = regulated_activities_dimension.join(
-        to_remove,
-        how="anti",
-    )
+
     return cqc_df, regulated_activities_dimension
 
 
