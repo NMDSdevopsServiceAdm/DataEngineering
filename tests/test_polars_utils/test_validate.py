@@ -1,6 +1,6 @@
 import unittest
 from pathlib import Path
-from unittest.mock import ANY, call, patch
+from unittest.mock import ANY, patch
 
 import pointblank as pb
 import polars as pl
@@ -43,25 +43,43 @@ class ValidateDatasetsTests(unittest.TestCase):
             ),
             orient="row",
         )
-        self.yaml = yaml.safe_load(
-            """
-            tbl: null
-            tbl_name: "delta_something_api"
-            label: "Basic data quality checks"
-            brief: 
-            thresholds:
-                warning: 1
-            actions:
-                warning: "{LEVEL}: {type} validation failed with {n_failed} records for column {col}."
-            steps:
-            - rows_distinct:
-                columns_subset: [someId, my_date]
-                brief: "Ensure all {col} values are distinct"
-            - col_vals_not_null:
-                columns: [someId, my_date, name]
-                brief: "Ensure {col} columns are fully populated"
-        """
+
+        TEST_CONFIG_PATH.mkdir(parents=True, exist_ok=True)
+        (TEST_CONFIG_PATH / "my_dataset.yml").write_text(
+            yaml.dump(
+                {
+                    "tbl": None,
+                    "tbl_name": "delta_something_api",
+                    "label": "Basic data quality checks",
+                    "brief": None,
+                    "thresholds": {"warning": 1},
+                    "actions": {
+                        "warning": "{LEVEL}: {type} validation failed with {n_failed} records for column {col}."
+                    },
+                    "steps": [
+                        {
+                            "rows_distinct": {
+                                "columns_subset": ["someId", "my_date"],
+                                "brief": "Ensure all {col} values are distinct",
+                            }
+                        },
+                        {
+                            "col_vals_not_null": {
+                                "columns": ["someId", "my_date", "name"],
+                                "brief": "Ensure {col} columns are fully populated",
+                            }
+                        },
+                    ],
+                }
+            )
         )
+
+    def tearDown(self) -> None:
+        try:
+            (TEST_CONFIG_PATH / "my_dataset.yml").unlink()
+        except FileNotFoundError:
+            pass
+        return super().tearDown()
 
     def test_error_on_not_in_config(self):
         # When
@@ -84,14 +102,10 @@ class ValidateDatasetsTests(unittest.TestCase):
     @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
     @patch(f"{SRC_PATH}.report_on_fail")
     @patch("boto3.client", autospec=True)
-    @patch("pointblank.yaml.YAMLValidator.load_config", autospec=True)
     @patch("polars.scan_parquet", autospec=True)
-    def test_validation_failures(
-        self, mock_scan, mock_yaml, mock_s3_client, mock_report_on_fail
-    ):
+    def test_validation_failures(self, mock_scan, mock_s3_client, mock_report_on_fail):
         # Given
-        mock_scan.return_value.collect.return_value = self.raw_df
-        mock_yaml.return_value = self.yaml
+        mock_scan.return_value.select.return_value.collect.return_value = self.raw_df
         # When
         with self.assertRaises(AssertionError) as context:
             utils.validate_dataset("bucket", "my_dataset")

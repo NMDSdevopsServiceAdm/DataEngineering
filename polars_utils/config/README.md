@@ -32,7 +32,7 @@ tbl_name: "friendly name for table in report"
 label: "Descriptive label for the validation suite"
 brief: "Optional brief description of the validation suite"
 thresholds:
-    warning: 1  # incicates a single record failure will throw a warning
+    warning: 1  # indicates a single record failure will throw a warning
 actions:
     warning: "Text to print on error"  # or python callable
 steps:
