@@ -3190,7 +3190,9 @@ class CQCLocationsData:
             [{"name": "Name B", "description": "Desc B"}],
             CareHome.not_care_home,
             "20230101",
-            "20230101",
+            "2023",
+            "01",
+            "01" "20230101",
         ),
         (
             "loc-2",
@@ -3198,6 +3200,9 @@ class CQCLocationsData:
             [{"name": "Name A", "description": "Desc A"}],
             CareHome.care_home,
             "20230101",
+            "2023",
+            "01",
+            "01",
             "20230101",
         ),
     ]
@@ -3236,6 +3241,9 @@ class CQCLocationsData:
             [{"name": "Name B", "description": "Desc B"}],
             None,
             "20230101",
+            "2024",
+            "02",
+            "01",
             "20240201",
         ),
         (
@@ -3244,6 +3252,9 @@ class CQCLocationsData:
             [{"name": "Name B", "description": "Desc B"}],
             None,
             "20240201",
+            "2024",
+            "02",
+            "01",
             "20240201",
         ),
         (
@@ -3252,7 +3263,99 @@ class CQCLocationsData:
             [{"name": "Name C", "description": "Desc C"}],
             None,
             "20240201",
+            "2024",
+            "02",
+            "01",
             "20240201",
+        ),
+    ]
+
+    postcode_matching_dimension_historic_rows = [
+        (
+            "loc1",
+            date(2024, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+        ),
+        (
+            "loc1",
+            date(2024, 2, 1),
+            "some street",
+            "AB12 XCD",
+            "AB12 3CD",
+            "2024",
+            "02",
+            "01",
+        ),
+        (
+            "loc2",
+            date(2023, 1, 1),
+            "some street",
+            "EF45 4GH",
+            "EF45 4GH",
+            "2024",
+            "01",
+            "01",
+        ),
+    ]
+
+    postcode_matching_dimension_current_rows = [
+        (
+            "loc1",
+            date(2024, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2024",
+            "01",
+            "01",
+        ),
+        (
+            "loc1",
+            date(2024, 2, 1),
+            "some street",
+            "AB12 XCD",
+            "AB12 3CD",
+            "2024",
+            "02",
+            "01",
+        ),
+        (
+            "loc2",
+            date(2023, 1, 1),
+            "some street",
+            "EF45 4GH",
+            "EF45 4YZ",
+            "2024",
+            "01",
+            "01",
+        ),
+    ]
+
+    expected_postcode_matching_dimension_rows = [
+        (
+            "loc1",
+            date(2024, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2024",
+            "01",
+            "01",
+        ),
+        (
+            "loc2",
+            date(2023, 1, 1),
+            "some street",
+            "EF45 4GH",
+            "EF45 4YZ",
+            "2024",
+            "01",
+            "01",
         ),
     ]
 

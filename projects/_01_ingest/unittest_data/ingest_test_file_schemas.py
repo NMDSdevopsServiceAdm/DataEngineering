@@ -22,6 +22,7 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 )
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
+    PartitionKeys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -1840,6 +1841,34 @@ class CQCLocationsSchema:
             StructField(CQCL.care_home, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField(DimensionKeys.last_updated, StringType(), True),
+        ]
+    )
+
+    postcode_matching_dimension_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.postal_address_line1, StringType(), True),
+            StructField(CQCLClean.postcode, StringType(), True),
+            StructField(CQCLClean.postcode_cleaned, StringType(), True),
+            StructField(DimensionKeys.year, StringType(), True),
+            StructField(DimensionKeys.month, StringType(), True),
+            StructField(DimensionKeys.day, StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
+            StructField(DimensionKeys.last_updated, StringType(), True),
+        ]
+    )
+
+    postcode_matching_dimension_input_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.postal_address_line1, DateType(), True),
+            StructField(CQCLClean.postcode, DateType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
 

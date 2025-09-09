@@ -39,6 +39,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_GAC_SERVICE_DIMENSION_SOURCE = "dimension/some/other/directory"
     TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
     TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
+    TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -123,6 +124,7 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
             self.TEST_SPECIALISM_DIMENSION_SOURCE,
+            self.TEST_POSTCODE_DIMENSION_SOURCE,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -205,6 +207,61 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             CQCLCleaned.imputed_gac_service_types,
             CQCL.care_home,
             Keys.import_date,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            expected_df.select(column_order).collect(),
+            returned_df.select(column_order).collect(),
+        )
+
+
+class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    def test_postcode_matching_dimension(self, mock_run_postcode_matching, mock_read_from_parquet):
+        # GIVEN
+        #   Historic data:
+        mock_read_from_parquet.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_historic_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+        #   Current data:
+        mock_run_postcode_matching.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_current_rows,
+            Schemas.postcode_matching_dimension_input_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_postcode_matching_dimension_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+
+        # WHEN
+        returned_df = job.create_postcode_matching_dimension(
+            cqc_df=Mock(),
+            postcode_df=Mock(),
+            dimension_location=self.TEST_POSTCODE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        mock_read_from_parquet.assert_called_once_with(
+            self.TEST_GAC_SERVICE_DIMENSION_SOURCE
+        )
+        mock_run_postcode_matching.assert_called_once()
+        self.assertEqual(len(returned_df.columns), len(expected_df.columns))
+        column_order = [
+            CQCLCleaned.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            CQCLCleaned.postal_address_line1,
+            CQCLCleaned.postcode,
+            CQCLCleaned.postcode_cleaned,
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.import_date,
             DimensionKeys.last_updated,
         ]
         self.assertEqual(

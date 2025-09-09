@@ -83,6 +83,7 @@ def main(
     gac_service_destination: str,
     regulated_activities_destination: str,
     specialisms_destination: str,
+    postcode_matching_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -184,12 +185,16 @@ def main(
 
     gac_service_delta = realign_carehome_column_with_primary_service(gac_service_delta)
 
+    # Final cleaning on fact table
     registered_locations_df = extract_registered_manager_names(registered_locations_df)
-
     registered_locations_df = add_related_location_column(registered_locations_df)
 
-    registered_locations_df = run_postcode_matching(
-        registered_locations_df, ons_postcode_directory_df
+    # Create postcode matching dimension
+    postcode_matching_delta = create_postcode_matching_dimension(
+        registered_locations_df,
+        ons_postcode_directory_df,
+        postcode_matching_destination,
+        dimension_update_date,
     )
 
     utils.write_to_parquet(
@@ -198,6 +203,46 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+    utils.write_to_parquet()
+
+
+def create_postcode_matching_dimension(
+    cqc_df, postcode_df, dimension_location, dimension_update_date
+):
+    previous_dimension = utils.read_from_parquet(dimension_location)
+
+    current_dimension = run_postcode_matching(
+        cqc_df.select(
+            CQCL.location_id,
+            CQCLClean.cqc_location_import_date,
+            CQCL.postal_address_line1,
+            CQCL.postal_code,
+        ),
+        postcode_df,
+    )
+
+    delta = (
+        current_dimension.join(
+            previous_dimension,
+            on=[
+                CQCLClean.location_id,
+                CQCLClean.postcode_cleaned,
+                CQCLClean.cqc_location_import_date,
+            ],
+            how="anti",
+        )
+        .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[5:7]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[8:10]))
+    )
+
+    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+    for col_name in missing_dim_columns:
+        delta = delta.withColumn(col_name, F.lit(None))
+
+    return delta
 
 
 def create_dimension_from_missing_struct_column(
@@ -232,16 +277,22 @@ def create_dimension_from_missing_struct_column(
         "imputed_" + missing_struct_column,
         Keys.import_date,
     )
-    delta = current_dimension.join(
-        previous_dimension,
-        on=[
-            CQCLClean.location_id,
-            missing_struct_column,
-            "imputed_" + missing_struct_column,
-            Keys.import_date,
-        ],
-        how="anti",
-    ).withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+    delta = (
+        current_dimension.join(
+            previous_dimension,
+            on=[
+                CQCLClean.location_id,
+                missing_struct_column,
+                "imputed_" + missing_struct_column,
+                Keys.import_date,
+            ],
+            how="anti",
+        )
+        .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[5:7]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[8:10]))
+    )
 
     missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
     for col_name in missing_dim_columns:
