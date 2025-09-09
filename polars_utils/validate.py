@@ -14,7 +14,7 @@ from polars_utils import utils
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# this is the master config for datasets specification
+# master config for datasets specification
 CONFIG_PATH = Path(__file__).parent.resolve() / "config"
 DATASETS_FILE = CONFIG_PATH / "datasets.yml"
 CONFIG = yaml.safe_load(DATASETS_FILE.read_text())
@@ -51,6 +51,7 @@ def validate_dataset(bucket_name: str, dataset: str):
     config = DatasetConfig(**CONFIG["datasets"][dataset])
     logging.info(f"Using dataset configuration: {config}")
 
+    # rules definition must exist in the config folder for the specified dataset
     rules_yml = CONFIG_PATH / f"{dataset}.yml"
     if not Path(rules_yml).exists():
         raise FileNotFoundError(f"Rules file {rules_yml} not found")
@@ -64,9 +65,9 @@ def validate_dataset(bucket_name: str, dataset: str):
         extra_columns="ignore",
     ).collect()
 
-    pb.validate_yaml(
-        rules_yml
-    )  # to throw a YAMLValidationError early for invalid specifiation
+    # throw a YAMLValidationError early for invalid specifiation
+    pb.validate_yaml(rules_yml)
+
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
 
@@ -107,6 +108,7 @@ def report_on_fail(
     assertion = step["assertion_type"]
     _col_or_cols = step["column"]  # could be a string or a list
     columns = "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
+
     failed_records_df = validation.get_data_extracts(step_idx, frame=True)
     utils.write_to_parquet(
         failed_records_df,  # type: ignore = frame=True returns a df
