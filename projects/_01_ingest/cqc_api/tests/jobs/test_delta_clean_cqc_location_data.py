@@ -111,6 +111,10 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.test_clean_cqc_location_df,
             self.test_ons_postcode_directory_df,
         ]
+        remove_locations_that_never_had_regulated_activities_mock.return_value = (
+            Mock(),
+            Mock(),
+        )
 
         job.main(
             self.TEST_LOC_SOURCE,
