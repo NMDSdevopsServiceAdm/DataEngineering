@@ -1,7 +1,7 @@
 from enum import Enum
 import boto3
 from botocore.exceptions import ClientError
-from projects._03_independent_cqc._05a_model.utils.model import Model
+from projects._03_independent_cqc._05_model.utils.model import Model
 import pickle
 import io
 import json

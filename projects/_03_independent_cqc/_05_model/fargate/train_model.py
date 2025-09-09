@@ -5,15 +5,15 @@ import sys
 from polars.exceptions import PolarsError
 from botocore.exceptions import ClientError
 
-from projects._03_independent_cqc._05a_model.fargate.model_registry import (
+from projects._03_independent_cqc._05_model.fargate.model_registry import (
     model_definitions,
 )
-from projects._03_independent_cqc._05a_model.utils.model import (
+from projects._03_independent_cqc._05_model.utils.model import (
     Model,
     ModelNotTrainedError,
 )
 from polars_utils import utils
-from projects._03_independent_cqc._05a_model.utils.version_manager import (
+from projects._03_independent_cqc._05_model.utils.version_manager import (
     ModelVersionManager,
 )
 

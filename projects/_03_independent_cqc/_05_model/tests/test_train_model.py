@@ -1,11 +1,11 @@
 import os
 import unittest
 from unittest.mock import patch, MagicMock
-from projects._03_independent_cqc._05a_model.utils.model import ModelType
+from projects._03_independent_cqc._05_model.utils.model import ModelType
 
-import projects._03_independent_cqc._05a_model.fargate.train_model as job
+import projects._03_independent_cqc._05_model.fargate.train_model as job
 
-PATCH_PATH = "projects._03_independent_cqc._05a_model.fargate.train_model"
+PATCH_PATH = "projects._03_independent_cqc._05_model.fargate.train_model"
 
 mock_model_type = MagicMock(spec=ModelType)
 mock_model_type.SILLY = "silly"

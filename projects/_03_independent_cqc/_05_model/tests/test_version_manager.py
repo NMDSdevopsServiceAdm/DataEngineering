@@ -1,5 +1,5 @@
 from unittest.mock import Mock, patch
-from projects._03_independent_cqc._05a_model.utils.version_manager import (
+from projects._03_independent_cqc._05_model.utils.version_manager import (
     ModelVersionManager,
     EnumChangeType,
 )
@@ -13,7 +13,7 @@ import io
 import pickle
 
 PATCH_STEM = (
-    "projects._03_independent_cqc._05a_model.utils.version_manager.ModelVersionManager"
+    "projects._03_independent_cqc._05_model.utils.version_manager.ModelVersionManager"
 )
 
 DUMMY_BUCKET_NAME = "my-model-bucket"

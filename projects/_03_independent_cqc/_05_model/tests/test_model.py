@@ -4,13 +4,13 @@ from unittest.mock import patch
 from polars import scan_parquet, DataFrame
 from sklearn.linear_model import LinearRegression
 
-from projects._03_independent_cqc._05a_model.utils.model import (
+from projects._03_independent_cqc._05_model.utils.model import (
     Model,
     ModelType,
     ModelNotTrainedError,
 )
 
-PATCH_PATH = "projects._03_independent_cqc._05a_model.utils.model"
+PATCH_PATH = "projects._03_independent_cqc._05_model.utils.model"
 
 
 class TestModel(unittest.TestCase):
