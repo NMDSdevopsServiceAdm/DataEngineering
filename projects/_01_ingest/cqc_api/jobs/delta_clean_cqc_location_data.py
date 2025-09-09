@@ -136,7 +136,7 @@ def main(
     # Create regulated activity dimension
     regulated_activity_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
-        CQCL.specialisms,
+        CQCL.regulated_activities,
         regulated_activities_destination,
         dimension_update_date,
     )
