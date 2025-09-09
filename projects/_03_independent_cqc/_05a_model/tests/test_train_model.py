@@ -60,7 +60,7 @@ class TestMain(unittest.TestCase):
         mock_model.return_value.validate.assert_called_once_with(mock_test_data)
         mock_version_manager.assert_called_once_with(
             s3_bucket="test_model_s3_bucket",
-            s3_prefix="test_model_s3_prefix",
+            s3_prefix="test_model_s3_prefix/some_model",
             param_store_name="some_param_location",
             default_patch=True,
         )
