@@ -3175,6 +3175,67 @@ class CQCLocationsData:
         ),
     ]
 
+    previous_gac_service_dimension_rows = [
+        ("loc-1", None, [{"name": "Name B", "description": "Desc B"}], "20230101"),
+        (
+            "loc-2",
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            "20230101",
+        ),
+    ]
+
+    create_gac_service_dimension_rows = [
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "20230101",
+        ),
+        (
+            "loc-1",
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "20240201",
+        ),
+        (
+            "loc-2",
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            "20230101",
+        ),
+        (
+            "loc-3",
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "20240201",
+        ),
+    ]
+
+    expected_gac_service_delta_rows = [
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-1",
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "20240201",
+            "20240201",
+        ),
+        (
+            "loc-3",
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "20240201",
+            "20240201",
+        ),
+    ]
+
     # fmt: off
     remove_time_from_date_column_rows = [
         ("loc_1", "2018-01-01", "20240101", "2018-01-01"),

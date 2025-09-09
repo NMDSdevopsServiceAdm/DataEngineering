@@ -53,7 +53,10 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
+)
 
 
 @dataclass
@@ -1770,6 +1773,66 @@ class CQCLocationsSchema:
             StructField(ONSClean.current_ons_import_date, DateType(), True),
             StructField(ONSClean.current_cssr, StringType(), True),
             StructField(ONSClean.current_region, StringType(), True),
+        ]
+    )
+    gac_service_dimension_input_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                CQCLClean.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    gac_service_dimension_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                CQCLClean.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(Keys.import_date, StringType(), True),
+            StructField(DimensionKeys.last_updated, StringType(), True),
         ]
     )
 

@@ -35,6 +35,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
+    TEST_GAC_SERVICE_DIMENSION_SOURCE = "dimension/some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -146,6 +147,48 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.assertIn(col, expected_cols)
 
 
+class CreateDimensionTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    def test_create_dimension_from_missing_struct_column(
+        self, mock_impute_missing_struct_column, mock_read_from_parquet
+    ):
+        # GIVEN
+        #   Historic data:
+        mock_read_from_parquet.return_value = self.spark.createDataFrame(
+            Data.previous_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_schema,
+        )
+        #   Current data:
+        mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
+            Data.create_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_input_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_gac_service_delta_rows,
+            Schemas.gac_service_dimension_schema,
+        )
+
+        # WHEN
+        returned_df = job.create_dimension_from_missing_struct_column(
+            df=Mock(),
+            missing_struct_column=CQCL.gac_service_types,
+            dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        mock_read_from_parquet.assert_called_once_with(
+            self.TEST_GAC_SERVICE_DIMENSION_SOURCE
+        )
+        mock_impute_missing_struct_column.assert_called_once()
+        self.assertEqual(expected_df.collect(), returned_df.collect())
+
+
+# TODO: ensure dimension update date calculates correctly
 class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()

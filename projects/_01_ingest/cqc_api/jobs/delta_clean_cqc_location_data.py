@@ -27,6 +27,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -79,6 +80,7 @@ def main(
     cqc_location_source: str,
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
+    gac_service_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -117,9 +119,18 @@ def main(
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.gac_service_types
+    dimension_update_date = registered_locations_df.agg(
+        F.max(Keys.import_date)
+    ).collect()[0][0]
+
+    # Create GAC Service dimension
+    gac_service_delta = create_dimension_from_missing_struct_column(
+        registered_locations_df,
+        CQCL.gac_service_types,
+        gac_service_destination,
+        dimension_update_date,
     )
+
     registered_locations_df = impute_missing_struct_column(
         registered_locations_df, CQCL.regulated_activities
     )
@@ -170,6 +181,52 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def create_dimension_from_missing_struct_column(
+    df: DataFrame,
+    missing_struct_column: str,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> DataFrame:
+    """
+    Creates delta dimension table for a given missing struct column.
+    Args:
+        df (DataFrame): Dataframe with column which has missing structs
+        missing_struct_column (string): Name of missing struct column
+        dimension_location (string): Path that dimension is stored in
+        dimension_update_date (string): Date that delta data will be stored in
+
+    Returns:
+        DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
+    previous_dimension = utils.read_from_parquet(dimension_location)
+
+    current_dimension = impute_missing_struct_column(
+        df.select(
+            CQCL.location_id,
+            missing_struct_column,
+            Keys.import_date,
+        ),
+        missing_struct_column,
+    ).select(
+        CQCLClean.location_id,
+        missing_struct_column,
+        "imputed_" + missing_struct_column,
+        Keys.import_date,
+    )
+    gac_service_delta = current_dimension.join(
+        previous_dimension,
+        on=[
+            CQCLClean.location_id,
+            missing_struct_column,
+            "imputed_" + missing_struct_column,
+            Keys.import_date,
+        ],
+        how="anti",
+    ).withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+
+    return gac_service_delta
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
