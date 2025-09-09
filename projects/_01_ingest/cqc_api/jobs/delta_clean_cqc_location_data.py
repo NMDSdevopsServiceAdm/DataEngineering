@@ -146,6 +146,7 @@ def main(
             registered_locations_df, regulated_activity_delta
         )
     )
+    regulated_activity_delta = extract_registered_manager_names(regulated_activity_delta)
 
     utils.write_to_parquet(
         regulated_activity_delta,
@@ -213,7 +214,6 @@ def main(
     )
 
     # Final cleaning on fact table
-    registered_locations_df = extract_registered_manager_names(registered_locations_df)
     registered_locations_df = add_related_location_column(registered_locations_df)
 
     # Create postcode matching dimension
