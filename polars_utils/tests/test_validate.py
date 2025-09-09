@@ -6,7 +6,7 @@ import yaml
 
 from polars_utils.validate import validate_dataset
 
-SRC_PATH = "polars_utils.validate_datasets"
+SRC_PATH = "polars_utils.validate"
 SIMPLE_MOCK_CONFIG = {
     "datasets": {
         "my_dataset": {
