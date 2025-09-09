@@ -857,19 +857,19 @@ if __name__ == "__main__":
             "Destination s3 directory for cleaned parquet CQC locations dataset",
         ),
         (
-            "--gac-service-destination",
+            "--gac_service_destination",
             "Destination s3 directory for GAC service dimension",
         ),
         (
-            "--regulated-activities-destination",
+            "--regulated_activities_destination",
             "Destination s3 directory for regulated activities dimension",
         ),
         (
-            "--specialisms-destination",
+            "--specialisms_destination",
             "Destination s3 directory for specialisms dimension",
         ),
         (
-            "--postcode-matching-destination",
+            "--postcode_matching_destination",
             "Destination s3 directory for postcode matching dimension",
         ),
     )
