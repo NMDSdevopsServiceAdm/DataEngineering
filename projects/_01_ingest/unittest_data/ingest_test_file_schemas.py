@@ -1839,7 +1839,10 @@ class CQCLocationsSchema:
                 ),
             ),
             StructField(CQCL.care_home, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(DimensionKeys.year, StringType(), True),
+            StructField(DimensionKeys.month, StringType(), True),
+            StructField(DimensionKeys.day, StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
             StructField(DimensionKeys.last_updated, StringType(), True),
         ]
     )

@@ -46,6 +46,13 @@ from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.raw_data_adjustments import remove_records_from_locations_data
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+dimensionPartitionKeys = [
+    DimensionKeys.year,
+    DimensionKeys.month,
+    DimensionKeys.day,
+    DimensionKeys.last_updated,
+    DimensionKeys.import_date,
+]
 
 cqc_location_api_cols_to_import = [
     CQCL.location_id,
@@ -140,6 +147,13 @@ def main(
         )
     )
 
+    utils.write_to_parquet(
+        regulated_activity_delta,
+        output_dir=regulated_activities_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
     # Create specialisms dimension
     specialisms_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
@@ -165,6 +179,12 @@ def main(
         specialisms_delta,
         Specialisms.mental_health,
     )
+    utils.write_to_parquet(
+        specialisms_delta,
+        output_dir=specialisms_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
 
     # Create GAC service dimension
     gac_service_delta = create_dimension_from_missing_struct_column(
@@ -185,6 +205,13 @@ def main(
 
     gac_service_delta = realign_carehome_column_with_primary_service(gac_service_delta)
 
+    utils.write_to_parquet(
+        gac_service_delta,
+        output_dir=gac_service_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
     # Final cleaning on fact table
     registered_locations_df = extract_registered_manager_names(registered_locations_df)
     registered_locations_df = add_related_location_column(registered_locations_df)
@@ -198,13 +225,18 @@ def main(
     )
 
     utils.write_to_parquet(
+        postcode_matching_delta,
+        output_dir=postcode_matching_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
+    utils.write_to_parquet(
         registered_locations_df,
         cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
-
-    utils.write_to_parquet()
 
 
 def create_postcode_matching_dimension(

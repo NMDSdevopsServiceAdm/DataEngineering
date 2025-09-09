@@ -60,7 +60,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.create_postcode_matching_dimension")
     @patch(f"{PATCH_PATH}.add_cqc_sector_column_to_cqc_locations_dataframe")
     @patch(f"{PATCH_PATH}.add_related_location_column")
     @patch(f"{PATCH_PATH}.extract_registered_manager_names")
@@ -105,7 +105,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         extract_registered_manager_names_mock: Mock,
         add_related_location_column_mock: Mock,
         add_cqc_sector_column_to_cqc_locations_dataframe: Mock,
-        run_postcode_matching_mock: Mock,
+        create_postcode_matching_dim_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
@@ -148,8 +148,9 @@ class MainTests(CleanCQCLocationDatasetTests):
         extract_registered_manager_names_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
         add_cqc_sector_column_to_cqc_locations_dataframe.assert_called_once()
-        run_postcode_matching_mock.assert_called_once()
-        write_to_parquet_mock.assert_called_once_with(
+        create_postcode_matching_dim_mock.assert_called_once()
+        self.assertEqual(5, write_to_parquet_mock.call_count)
+        write_to_parquet_mock.assert_called_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
@@ -221,7 +222,9 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.run_postcode_matching")
-    def test_postcode_matching_dimension(self, mock_run_postcode_matching, mock_read_from_parquet):
+    def test_postcode_matching_dimension(
+        self, mock_run_postcode_matching, mock_read_from_parquet
+    ):
         # GIVEN
         #   Historic data:
         mock_read_from_parquet.return_value = self.spark.createDataFrame(
