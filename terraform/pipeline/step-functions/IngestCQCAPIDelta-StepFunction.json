@@ -152,7 +152,7 @@
                 "Type": "String"
               },
               "ResultSelector": {
-                "script": "validate_datasets.py",
+                "script": "validate.py",
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
                 "dataset_arg": "--dataset",
