@@ -94,7 +94,7 @@ def validate_dataset(bucket_name: str, dataset: str):
                 )
                 failed_records_df = validation.get_data_extracts(step_idx, frame=True)
                 utils.write_to_parquet(
-                    failed_records_df,
+                    failed_records_df,  # type: ignore = frame=True returns a df
                     f"s3://{bucket_name}/{destination}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
                 )
         raise  # ensures that the task fails if any warnings / errors
