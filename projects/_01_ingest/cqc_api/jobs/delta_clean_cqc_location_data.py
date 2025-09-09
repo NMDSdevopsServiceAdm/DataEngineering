@@ -193,9 +193,9 @@ def create_dimension_from_missing_struct_column(
     Creates delta dimension table for a given missing struct column.
     Args:
         df (DataFrame): Dataframe with column which has missing structs
-        missing_struct_column (string): Name of missing struct column
-        dimension_location (string): Path that dimension is stored in
-        dimension_update_date (string): Date that delta data will be stored in
+        missing_struct_column (str): Name of missing struct column
+        dimension_location (str): Path that dimension is stored in
+        dimension_update_date (str): Date that delta data will be stored in
 
     Returns:
         DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
