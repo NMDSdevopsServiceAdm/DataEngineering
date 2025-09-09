@@ -1626,7 +1626,7 @@ class CQCLocationsSchema:
     )
     remove_locations_that_never_had_regulated_activities_cqc_schema = [
         StructField(CQCL.location_id, StringType(), True),
-        StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+        StructField(Keys.import_date, StringType(), True),
     ]
 
     remove_locations_that_never_had_regulated_activities_dim_schema = StructType(
@@ -1835,6 +1835,7 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            StructField(CQCL.care_home, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
             StructField(DimensionKeys.last_updated, StringType(), True),
         ]

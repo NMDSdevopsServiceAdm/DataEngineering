@@ -125,10 +125,11 @@ def main(
         F.max(Keys.import_date)
     ).collect()[0][0]
 
+    # Create regulated activity dimension
     regulated_activity_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
         CQCL.specialisms,
-        specialisms_destination,
+        regulated_activities_destination,
         dimension_update_date,
     )
 
@@ -138,43 +139,48 @@ def main(
         )
     )
 
+    # Create specialisms dimension
+    specialisms_delta = create_dimension_from_missing_struct_column(
+        registered_locations_df,
+        CQCL.specialisms,
+        specialisms_destination,
+        dimension_update_date,
+    )
+
+    specialisms_delta = extract_from_struct(
+        specialisms_delta,
+        specialisms_delta[CQCLClean.imputed_specialisms][CQCL.name],
+        CQCLClean.specialisms_offered,
+    )
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
+        Specialisms.dementia,
+    )
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
+        Specialisms.learning_disabilities,
+    )
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
+        Specialisms.mental_health,
+    )
+
+    # Create GAC service dimension
     gac_service_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
         CQCL.gac_service_types,
         gac_service_destination,
         dimension_update_date,
     )
-    regulated_activity_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
-        CQCL.regulated_activities,
-        regulated_activities_destination,
-        dimension_update_date,
-    )
 
-    registered_locations_df = extract_from_struct(
-        registered_locations_df,
-        registered_locations_df[CQCLClean.imputed_gac_service_types][CQCL.description],
+    gac_service_delta = extract_from_struct(
+        gac_service_delta,
+        gac_service_delta[CQCLClean.imputed_gac_service_types][CQCL.description],
         CQCLClean.services_offered,
     )
-    registered_locations_df = extract_from_struct(
-        registered_locations_df,
-        registered_locations_df[CQCLClean.imputed_specialisms][CQCL.name],
-        CQCLClean.specialisms_offered,
-    )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
-        Specialisms.dementia,
-    )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
-        Specialisms.learning_disabilities,
-    )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
-        Specialisms.mental_health,
-    )
-    registered_locations_df = remove_specialist_colleges(registered_locations_df)
-    registered_locations_df = allocate_primary_service_type(registered_locations_df)
+
+    gac_service_delta = remove_specialist_colleges(gac_service_delta)
+    gac_service_delta = allocate_primary_service_type(gac_service_delta)
     registered_locations_df = realign_carehome_column_with_primary_service(
         registered_locations_df
     )
@@ -226,8 +232,8 @@ def create_dimension_from_missing_struct_column(
         "imputed_" + missing_struct_column,
         Keys.import_date,
     )
-    gac_service_delta = current_dimension.join(
-        previous_dimension,
+    gac_service_delta = previous_dimension.join(
+        current_dimension,
         on=[
             CQCLClean.location_id,
             missing_struct_column,
