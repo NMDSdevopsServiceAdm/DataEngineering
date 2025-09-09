@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import polars as pl
 from pyspark.ml.linalg import VectorUDT
 from pyspark.sql.types import (
     ArrayType,
@@ -29,18 +30,24 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
-    IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
-    PartitionKeys as Keys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
     JobGroupLabels,
+    MainJobRoleLabels,
 )
 
 
@@ -492,6 +499,28 @@ class EstimateIndCQCFilledPostsByJobRoleSchemas:
             StructField(IndCQC.establishment_id, StringType(), True),
             StructField(IndCQC.ascwds_worker_import_date, DateType(), True),
             StructField(IndCQC.main_job_role_clean_labelled, StringType(), True),
+        ]
+    )
+
+    estimated_ind_cqc_filled_posts_schema_polars = pl.Schema(
+        [
+            (
+                IndCQC.location_id,
+                pl.String(),
+            ),
+            (IndCQC.cqc_location_import_date, pl.Date()),
+            (IndCQC.primary_service_type, pl.String()),
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.ascwds_workplace_import_date, pl.Date()),
+            (IndCQC.estimate_filled_posts, pl.Float64()),
+            (IndCQC.registered_manager_names, pl.List(pl.String())),
+        ]
+    )
+    cleaned_ascwds_worker_schema_polars = pl.Schema(
+        [
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.ascwds_worker_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
         ]
     )
 
@@ -3315,6 +3344,12 @@ class IndCQCDataUtils:
                     )
                 ),
             ),
+        ]
+    )
+    expected_allocate_primary_service_type_second_level_schema = StructType(
+        [
+            *allocate_primary_service_type_second_level_schema,
+            StructField(IndCQC.primary_service_type_second_level, StringType(), True),
         ]
     )
     expected_allocate_primary_service_type_second_level_schema = StructType(

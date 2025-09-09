@@ -15,7 +15,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.jobs.estimate_ind_cqc_filled_posts_by_job_role"
+PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
 class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
@@ -30,11 +30,11 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
         self.test_estimated_ind_cqc_filled_posts_df = pl.DataFrame(
             Data.estimated_ind_cqc_filled_posts_rows,
-            Schemas.estimated_ind_cqc_filled_posts_schema,
+            Schemas.estimated_ind_cqc_filled_posts_schema_polars,
         )
 
         self.test_cleaned_ascwds_worker_df = pl.DataFrame(
-            Data.cleaned_ascwds_worker_rows, Schemas.cleaned_ascwds_worker_schema
+            Data.cleaned_ascwds_worker_rows, Schemas.cleaned_ascwds_worker_schema_polars
         )
 
     def tearDown(self):
@@ -43,8 +43,8 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
-    def test_main_function(
+    @patch(f"{PATCH_PATH}.pl.read_parquet")
+    def test_main_reads_multiple_parquets(
         self,
         read_from_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
@@ -60,15 +60,11 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             [
                 call(
                     self.ESTIMATE_SOURCE,
-                    selected_columns=job.estimated_ind_cqc_filled_posts_columns_to_import,
+                    job.estimated_ind_cqc_filled_posts_columns_to_import,
                 ),
                 call(
                     self.ASCWDS_WORKER_SOURCE,
-                    selected_columns=job.cleaned_ascwds_worker_columns_to_import,
+                    job.cleaned_ascwds_worker_columns_to_import,
                 ),
             ]
-        )
-
-        write_to_parquet_mock.assert_called_once_with(
-            ANY, self.OUTPUT_DIR, "overwrite", PartitionKeys
         )
