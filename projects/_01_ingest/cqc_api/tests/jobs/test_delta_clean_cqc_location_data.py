@@ -37,6 +37,8 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
     TEST_GAC_SERVICE_DIMENSION_SOURCE = "dimension/some/other/directory"
+    TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
+    TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -115,6 +117,8 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
             self.TEST_DESTINATION,
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
+            self.TEST_SPECIALISM_DIMENSION_SOURCE,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -127,8 +131,8 @@ class MainTests(CleanCQCLocationDatasetTests):
         format_date_fields_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()
         select_registered_locations_only_mock.assert_called_once()
-        create_dimension_from_missing_struct_column_mock.assert_called_once()
-        self.assertEqual(impute_missing_struct_column_mock.call_count, 2)
+        self.assertEqual(create_dimension_from_missing_struct_column_mock.call_count, 3)
+        impute_missing_struct_column_mock.assert_not_called()
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         self.assertEqual(extract_from_struct_mock.call_count, 2)
         self.assertEqual(classify_specialisms_mock.call_count, 3)
