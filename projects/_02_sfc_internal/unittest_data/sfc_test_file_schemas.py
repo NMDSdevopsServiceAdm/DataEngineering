@@ -1185,7 +1185,7 @@ class FlattenCQCRatings:
             StructField(CQCL.well_led, StringType(), True),
         ]
     )
-    final_assessment_ratings_schema = StructType(
+    assessment_ratings_for_merging_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -1206,7 +1206,7 @@ class FlattenCQCRatings:
             StructField(CQCL.well_led, StringType(), True),
         ]
     )
-    final_standard_ratings_schema = StructType(
+    standard_ratings_for_merging_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -1218,8 +1218,6 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.rating_sequence, StringType(), True),
-            StructField(CQCRatings.latest_rating_flag, StringType(), True),
             StructField(CQCRatings.safe_rating_value, StringType(), True),
             StructField(CQCRatings.well_led_rating_value, StringType(), True),
             StructField(CQCRatings.caring_rating_value, StringType(), True),
@@ -1240,15 +1238,12 @@ class FlattenCQCRatings:
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
-            StructField(CQCL.rating, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.rating_sequence, StringType(), True),
-            StructField(CQCRatings.latest_rating_flag, StringType(), True),
             StructField(CQCRatings.safe_rating_value, StringType(), True),
             StructField(CQCRatings.well_led_rating_value, StringType(), True),
             StructField(CQCRatings.caring_rating_value, StringType(), True),

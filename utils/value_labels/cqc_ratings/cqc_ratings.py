@@ -20,4 +20,6 @@ class CQCRatingsValueLabelsUnknownCodes:
         "Inspected but not rated": None,
         "No published rating": None,
         "Insufficient evidence to rate": None,
+        "Evidence requirements partially / not yet scored": None,
+        "No Approved Rating": None,
     }

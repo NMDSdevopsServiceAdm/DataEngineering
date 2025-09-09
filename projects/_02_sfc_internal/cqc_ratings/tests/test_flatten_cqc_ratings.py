@@ -274,12 +274,12 @@ class MergeCQCRatings(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_assessment_ratings_df = self.spark.createDataFrame(
-            Data.final_assessment_ratings_rows,
-            Schema.final_assessment_ratings_schema,
+            Data.assessment_ratings_for_merging_rows,
+            Schema.assessment_ratings_for_merging_schema,
         )
         self.test_standard_ratings_df = self.spark.createDataFrame(
-            Data.final_standard_ratings_rows,
-            Schema.final_standard_ratings_schema,
+            Data.standard_ratings_for_merging_rows,
+            Schema.standard_ratings_for_merging_schema,
         )
         self.expected_df = self.spark.createDataFrame(
             Data.expected_merge_cqc_ratings_rows,
@@ -290,8 +290,8 @@ class MergeCQCRatings(FlattenCQCRatingsTests):
         )
 
     def test_merge_cqc_ratings_returns_correct_columns(self):
-        returned_columns = len(self.returned_df.columns)
-        expected_columns = len(self.expected_df.columns)
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
         self.assertEqual(returned_columns, expected_columns)
 
     def test_merge_cqc_ratings_returns_correct_rows(self):
