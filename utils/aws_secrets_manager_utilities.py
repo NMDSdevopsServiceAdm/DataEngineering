@@ -24,8 +24,9 @@ def get_secret(
         ClientError: in case of Client Error responses
         Exception: in case of unknown error
     """
-    client = boto3.client(
-        "secretsmanager",
+    session = boto3.session.Session()
+    client = session.client(
+        service_name="secretsmanager",
         region_name=region_name,
     )
 
