@@ -16,6 +16,7 @@ from utils import utils
 import utils.cleaning_utils as cUtils
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -189,7 +190,19 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE
         )
         mock_impute_missing_struct_column.assert_called_once()
-        self.assertEqual(expected_df.collect(), returned_df.collect())
+        self.assertEqual(len(returned_df.columns), len(expected_df.columns))
+        column_order = [
+            CQCL.location_id,
+            CQCL.gac_service_types,
+            CQCLCleaned.imputed_gac_service_types,
+            CQCL.care_home,
+            Keys.import_date,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            expected_df.select(column_order).collect(),
+            returned_df.select(column_order).collect(),
+        )
 
 
 # TODO: ensure dimension update date calculates correctly
