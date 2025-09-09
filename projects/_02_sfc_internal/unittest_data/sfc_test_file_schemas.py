@@ -30,6 +30,9 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
@@ -414,6 +417,21 @@ class MergeCoverageData:
             StructField(CQCRatings.overall_rating, StringType(), True),
         ]
     )
+    sample_cqc_providers_for_merge_schema = StructType(
+        [
+            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCP.name, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+    sample_merged_coverage_schema = [
+        StructField(CQCLClean.location_id, StringType(), True),
+        StructField(CQCP.provider_id, StringType(), True),
+    ]
+    expected_merged_covergae_and_provider_name_joined_schema = [
+        *sample_merged_coverage_schema,
+        StructField("providerName", StringType(), True),
+    ]
 
 
 @dataclass
