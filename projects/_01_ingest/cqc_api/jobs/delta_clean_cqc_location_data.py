@@ -181,9 +181,9 @@ def main(
 
     gac_service_delta = remove_specialist_colleges(gac_service_delta)
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
-    registered_locations_df = realign_carehome_column_with_primary_service(
-        registered_locations_df
-    )
+
+    gac_service_delta = realign_carehome_column_with_primary_service(gac_service_delta)
+
     registered_locations_df = extract_registered_manager_names(registered_locations_df)
 
     registered_locations_df = add_related_location_column(registered_locations_df)
@@ -232,8 +232,8 @@ def create_dimension_from_missing_struct_column(
         "imputed_" + missing_struct_column,
         Keys.import_date,
     )
-    gac_service_delta = previous_dimension.join(
-        current_dimension,
+    delta = current_dimension.join(
+        previous_dimension,
         on=[
             CQCLClean.location_id,
             missing_struct_column,
@@ -243,7 +243,11 @@ def create_dimension_from_missing_struct_column(
         how="anti",
     ).withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
 
-    return gac_service_delta
+    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+    for col_name in missing_dim_columns:
+        delta = delta.withColumn(col_name, F.lit(None))
+
+    return delta
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
