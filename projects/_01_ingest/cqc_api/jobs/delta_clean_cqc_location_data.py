@@ -242,7 +242,7 @@ def main(
 def create_postcode_matching_dimension(
     cqc_df, postcode_df, dimension_location, dimension_update_date
 ):
-    previous_dimension = utils.read_from_parquet(dimension_location)
+    # previous_dimension = utils.read_from_parquet(dimension_location)
 
     current_dimension = run_postcode_matching(
         cqc_df.select(
@@ -255,24 +255,25 @@ def create_postcode_matching_dimension(
     )
 
     delta = (
-        current_dimension.join(
-            previous_dimension,
-            on=[
-                CQCLClean.location_id,
-                CQCLClean.postcode_cleaned,
-                CQCLClean.cqc_location_import_date,
-            ],
-            how="anti",
-        )
+        current_dimension
+        # current_dimension.join(
+        #     previous_dimension,
+        #     on=[
+        #         CQCLClean.location_id,
+        #         CQCLClean.postcode_cleaned,
+        #         CQCLClean.cqc_location_import_date,
+        #     ],
+        #     how="anti",
+        # )
         .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
 
-    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-    for col_name in missing_dim_columns:
-        delta = delta.withColumn(col_name, F.lit(None))
+    # missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+    # for col_name in missing_dim_columns:
+    #     delta = delta.withColumn(col_name, F.lit(None))
 
     return delta
 
@@ -294,7 +295,7 @@ def create_dimension_from_missing_struct_column(
     Returns:
         DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
     """
-    previous_dimension = utils.read_from_parquet(dimension_location)
+    # previous_dimension = utils.read_from_parquet(dimension_location)
 
     current_dimension = impute_missing_struct_column(
         df.select(
@@ -310,25 +311,26 @@ def create_dimension_from_missing_struct_column(
         Keys.import_date,
     )
     delta = (
-        current_dimension.join(
-            previous_dimension,
-            on=[
-                CQCLClean.location_id,
-                missing_struct_column,
-                "imputed_" + missing_struct_column,
-                Keys.import_date,
-            ],
-            how="anti",
-        )
+        current_dimension
+        # current_dimension.join(
+        #     previous_dimension,
+        #     on=[
+        #         CQCLClean.location_id,
+        #         missing_struct_column,
+        #         "imputed_" + missing_struct_column,
+        #         Keys.import_date,
+        #     ],
+        #     how="anti",
+        # )
         .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
 
-    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-    for col_name in missing_dim_columns:
-        delta = delta.withColumn(col_name, F.lit(None))
+    # missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+    # for col_name in missing_dim_columns:
+    #     delta = delta.withColumn(col_name, F.lit(None))
 
     return delta
 
@@ -849,6 +851,22 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_location_destination",
             "Destination s3 directory for cleaned parquet CQC locations dataset",
+        ),
+        (
+            "--gac-service-destination",
+            "Destination s3 directory for GAC service dimension",
+        ),
+        (
+            "--regulated-activities-destination",
+            "Destination s3 directory for regulated activities dimension",
+        ),
+        (
+            "--specialisms-destination",
+            "Destination s3 directory for specialisms dimension",
+        ),
+        (
+            "--postcode-matching-destination",
+            "Destination s3 directory for postcode matching dimension",
         ),
     )
     main(

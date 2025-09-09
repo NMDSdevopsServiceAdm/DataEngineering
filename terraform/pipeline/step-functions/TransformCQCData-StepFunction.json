@@ -46,7 +46,11 @@
                 "Arguments": {
                   "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "--gac-service-destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+                  "--regulated-activities-destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
+                  "--specialisms-destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
+                  "--postcode-matching-destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
                 }
               },
               "Next": "Validate Locations Cleaned"
