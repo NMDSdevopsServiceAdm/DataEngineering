@@ -64,7 +64,9 @@ def validate_dataset(bucket_name: str, dataset: str):
         extra_columns="ignore",
     ).collect()
 
-    pb.validate_yaml(rules_yml)  # to throw a YAMLValidationError early for invalid specifiation
+    pb.validate_yaml(
+        rules_yml
+    )  # to throw a YAMLValidationError early for invalid specifiation
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
 
@@ -87,7 +89,9 @@ def validate_dataset(bucket_name: str, dataset: str):
         raise  # ensures that the task fails if any warnings / errors
 
 
-def report_on_fail(step: dict, validation: pb.Validate, bucket_name: str, path: str) -> None:
+def report_on_fail(
+    step: dict, validation: pb.Validate, bucket_name: str, path: str
+) -> None:
     """Checks a given pb.Validate step for failures and writes the failed records to S3 if present.
 
     Args:
@@ -98,13 +102,11 @@ def report_on_fail(step: dict, validation: pb.Validate, bucket_name: str, path: 
     """
     if step["all_passed"]:
         return
-    
+
     step_idx = step["i"]
     assertion = step["assertion_type"]
     _col_or_cols = step["column"]  # could be a string or a list
-    columns = (
-        "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
-    )
+    columns = "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
     failed_records_df = validation.get_data_extracts(step_idx, frame=True)
     utils.write_to_parquet(
         failed_records_df,  # type: ignore = frame=True returns a df
