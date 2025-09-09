@@ -251,7 +251,7 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
 
         # THEN
         mock_read_from_parquet.assert_called_once_with(
-            self.TEST_GAC_SERVICE_DIMENSION_SOURCE
+            self.TEST_POSTCODE_DIMENSION_SOURCE
         )
         mock_run_postcode_matching.assert_called_once()
         self.assertEqual(len(returned_df.columns), len(expected_df.columns))
