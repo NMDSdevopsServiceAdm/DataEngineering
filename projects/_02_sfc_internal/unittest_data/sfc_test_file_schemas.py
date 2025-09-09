@@ -432,8 +432,7 @@ class MergeCoverageData:
     )
     expected_merged_covergae_and_provider_name_joined_schema = StructType(
         [
-            StructField(CQCP.provider_id, StringType(), True),
-            StructField(CQCLClean.location_id, StringType(), True),
+            *sample_merged_coverage_schema,
             StructField(CQCLClean.provider_name, StringType(), True),
         ]
     )

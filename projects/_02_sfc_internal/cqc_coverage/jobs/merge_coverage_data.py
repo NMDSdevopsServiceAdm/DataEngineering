@@ -350,12 +350,12 @@ def join_provider_name_into_merged_covergae_df(
         Keys.import_date,
         sort_ascending=False,
     ).select(CQCP.provider_id, F.col(CQCP.name).alias(CQCLClean.provider_name))
-
+    merged_coverage_cols = merged_coverage_df.columns
     merged_coverage_with_provider_name_df = merged_coverage_df.join(
         cqc_providers_df,
         on=CQCP.provider_id,
         how="left",
-    )
+    ).select(*merged_coverage_cols, CQCLClean.provider_name)
     return merged_coverage_with_provider_name_df
 
 
