@@ -205,6 +205,7 @@ def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     """
     Adds a new column which is a cleaned and imputed copy of registrationdate.
@@ -226,6 +227,7 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars
 def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Converts a timestamp-as-string to a date-as-string.
@@ -276,6 +278,7 @@ def remove_registration_dates_that_are_later_than_import_date(
     return df
 
 
+# converted to polars
 def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     """
     Fills missing dates in the imputed_registration_date_column.
