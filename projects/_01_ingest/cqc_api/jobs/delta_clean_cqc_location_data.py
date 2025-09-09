@@ -839,6 +839,10 @@ if __name__ == "__main__":
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
+        gac_service_dest,
+        regulated_activities_dest,
+        specialisms_dest,
+        postcode_matching_dest,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -873,6 +877,10 @@ if __name__ == "__main__":
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
+        gac_service_dest,
+        regulated_activities_dest,
+        specialisms_dest,
+        postcode_matching_dest,
     )
 
     print("Spark job 'clean_cqc_location_data' complete")
