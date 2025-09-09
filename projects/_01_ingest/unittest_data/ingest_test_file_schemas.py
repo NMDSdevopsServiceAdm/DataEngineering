@@ -1866,8 +1866,8 @@ class CQCLocationsSchema:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.postal_address_line1, DateType(), True),
-            StructField(CQCLClean.postcode, DateType(), True),
+            StructField(CQCLClean.postal_address_line1, StringType(), True),
+            StructField(CQCLClean.postcode, StringType(), True),
             StructField(CQCLClean.postcode_cleaned, StringType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
