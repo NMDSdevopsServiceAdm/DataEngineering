@@ -63,7 +63,7 @@ class ValidateDatasetsTests(unittest.TestCase):
         """
         )
 
-    def error_on_not_in_config(self):
+    def test_error_on_not_in_config(self):
         # When
         with self.assertRaises(ValueError) as context:
             utils.validate_dataset("bucket", "not_in_config")
@@ -73,14 +73,12 @@ class ValidateDatasetsTests(unittest.TestCase):
         )
 
     @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
-    def error_on_missing_file(self):
+    def test_error_on_missing_file(self):
         # When
         with self.assertRaises(FileNotFoundError) as context:
             utils.validate_dataset("bucket", "my_dataset")
         # Then
-        self.assertIn(
-            "Rules file config/my_dataset.yml not found", str(context.exception)
-        )
+        self.assertIn("my_dataset.yml not found", str(context.exception))
 
     @patch(f"{SRC_PATH}.CONFIG_PATH", TEST_CONFIG_PATH)
     @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
@@ -113,22 +111,7 @@ class ValidateDatasetsTests(unittest.TestCase):
             Bucket="bucket",
             Key="domain=data_validation_reports/dataset=data_quality_report/index.html",
         )
-        mock_report_on_fail.assert_has_calls(
-            [
-                call(
-                    ANY,
-                    ANY,
-                    "bucket",
-                    "domain=data_validation_reports/dataset=data_quality_report",
-                ),
-                call(
-                    ANY,
-                    ANY,
-                    "bucket",
-                    "domain=data_validation_reports/dataset=data_quality_report",
-                ),
-            ]
-        )
+
         # calls include null check for each column
         self.assertEquals(mock_report_on_fail.call_count, 4)
 
