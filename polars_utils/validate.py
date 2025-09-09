@@ -51,22 +51,22 @@ def validate_dataset(bucket_name: str, dataset: str):
     config = DatasetConfig(**CONFIG["datasets"][dataset])
     logging.info(f"Using dataset configuration: {config}")
 
+    source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/version={config.version}/"
+    destination = f"domain=data_validation_reports/dataset={config.report_name}"
+
     # rules definition must exist in the config folder for the specified dataset
     rules_yml = CONFIG_PATH / f"{dataset}.yml"
     if not Path(rules_yml).exists():
         raise FileNotFoundError(f"Rules file {rules_yml} not found")
 
-    source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/version={config.version}/"
-    destination = f"domain=data_validation_reports/dataset={config.report_name}"
+    # throw a YAMLValidationError early for invalid specifiation
+    pb.validate_yaml(rules_yml)
 
     dataframe = pl.scan_parquet(
         source,
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
         extra_columns="ignore",
     ).collect()
-
-    # throw a YAMLValidationError early for invalid specifiation
-    pb.validate_yaml(rules_yml)
 
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
