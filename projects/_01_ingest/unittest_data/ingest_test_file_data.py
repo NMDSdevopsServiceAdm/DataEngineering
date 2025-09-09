@@ -3176,11 +3176,18 @@ class CQCLocationsData:
     ]
 
     previous_gac_service_dimension_rows = [
-        ("loc-1", None, [{"name": "Name B", "description": "Desc B"}], "20230101"),
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "20230101",
+            "20230101",
+        ),
         (
             "loc-2",
             [{"name": "Name A", "description": "Desc A"}],
             [{"name": "Name A", "description": "Desc A"}],
+            "20230101",
             "20230101",
         ),
     ]

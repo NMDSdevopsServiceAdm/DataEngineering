@@ -67,6 +67,7 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.extract_from_struct")
     @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.create_dimension_from_missing_struct_column")
     @patch(f"{PATCH_PATH}.select_registered_locations_only")
     @patch(f"{PATCH_PATH}.impute_historic_relationships")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
@@ -89,6 +90,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         format_date_fields_mock: Mock,
         impute_historic_relationships_mock: Mock,
         select_registered_locations_only_mock: Mock,
+        create_dimension_from_missing_struct_column_mock: Mock,
         impute_missing_struct_column_mock: Mock,
         remove_locations_that_never_had_regulated_activities_mock: Mock,
         extract_from_struct_mock: Mock,
@@ -111,6 +113,7 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_LOC_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
             self.TEST_DESTINATION,
+            self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -123,7 +126,8 @@ class MainTests(CleanCQCLocationDatasetTests):
         format_date_fields_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()
         select_registered_locations_only_mock.assert_called_once()
-        self.assertEqual(impute_missing_struct_column_mock.call_count, 3)
+        create_dimension_from_missing_struct_column_mock.assert_called_once()
+        self.assertEqual(impute_missing_struct_column_mock.call_count, 2)
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         self.assertEqual(extract_from_struct_mock.call_count, 2)
         self.assertEqual(classify_specialisms_mock.call_count, 3)
