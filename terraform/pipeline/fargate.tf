@@ -23,8 +23,8 @@ module "cqc-api" {
   cluster_arn   = aws_ecs_cluster.polars_cluster.arn
   tag_name      = terraform.workspace
   environment = [
-    { "AWS_REGION" : "eu-west-2" },
-    { "CQC_SECRET_NAME" : "cqc_api_primary_key" }
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" }
   ]
 }
 
@@ -37,9 +37,9 @@ module "model_retrain" {
   cpu_size      = 4096
   ram_size      = 16384
   environment = [
-    { "AWS_REGION" : "eu-west-2" },
-    { "MODEL_RETRAIN_TOPIC_ARN" : aws_sns_topic.model_retrain.arn },
-    { "MODEL_S3_BUCKET" : module.pipeline_resources.bucket_name },
-    { "MODEL_S3_PREFIX" : "models" }
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "MODEL_RETRAIN_TOPIC_ARN", "value" : aws_sns_topic.model_retrain.arn },
+    { "name" : "MODEL_S3_BUCKET", "value" : module.pipeline_resources.bucket_name },
+    { "name" : "MODEL_S3_PREFIX", "value" : "models" }
   ]
 }
