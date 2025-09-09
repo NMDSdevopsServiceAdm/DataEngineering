@@ -7,6 +7,7 @@ from pathlib import Path
 import boto3
 import pointblank as pb
 import polars as pl
+import polars.selectors as cs
 import yaml
 
 from polars_utils import utils
@@ -51,7 +52,9 @@ def validate_dataset(bucket_name: str, dataset: str):
     config = DatasetConfig(**CONFIG["datasets"][dataset])
     logging.info(f"Using dataset configuration: {config}")
 
-    source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/version={config.version}/"
+    source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/"
+    if config.version:
+        source += f"version={config.version}/"
     destination = f"domain=data_validation_reports/dataset={config.report_name}"
 
     # rules definition must exist in the config folder for the specified dataset
@@ -62,11 +65,19 @@ def validate_dataset(bucket_name: str, dataset: str):
     # throw a YAMLValidationError early for invalid specifiation
     pb.validate_yaml(rules_yml)
 
-    dataframe = pl.scan_parquet(
-        source,
-        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-        extra_columns="ignore",
-    ).collect()
+    dataframe = (
+        pl.scan_parquet(
+            source,
+            cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+            extra_columns="ignore",
+        )
+        .select(
+            ~cs.by_dtype(
+                pl.Struct, pl.List
+            )  # get_tabular_report will fail if contains nested columns
+        )
+        .collect()
+    )
 
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()

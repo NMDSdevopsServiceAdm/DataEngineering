@@ -7,9 +7,9 @@ thresholds:
 actions:
     warning: "{LEVEL}: {type} validation failed with {n_failed} records for column {col}."
 steps:
-  - rows_distinct:
-      columns_subset: [locationId, import_date]
-      brief: "Ensure all {col} values are distinct"
-  - col_vals_not_null:
-      columns: [locationId, import_date, name]
-      brief: "Ensure {col} columns are fully populated"
+    - rows_distinct:
+        columns_subset: [locationId, import_date]
+        brief: "Ensure all {col} values are distinct"
+    - col_vals_not_null:
+        columns: [locationId, import_date, name]
+        brief: "Ensure {col} columns are fully populated"
