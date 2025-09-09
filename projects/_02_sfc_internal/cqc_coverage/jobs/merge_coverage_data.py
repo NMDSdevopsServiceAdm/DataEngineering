@@ -397,6 +397,7 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
+        cqc_providers_source,
         merged_coverage_destination,
         reduced_coverage_destination,
     )
