@@ -496,25 +496,33 @@ class ImputeMissingStructColumnTests(CleanCQCLocationDatasetTests):
 class RemoveLocationsThatNeverHadRegulatedActivitesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            Data.remove_locations_that_never_had_regulated_activities_rows,
-            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        self.test_cqc_df = self.spark.createDataFrame(
+            Data.remove_locations_that_never_had_regulated_activities_cqc_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_cqc_schema,
         )
-        self.returned_df = job.remove_locations_that_never_had_regulated_activities(
-            self.test_df
+        self.test_dim_df = self.spark.createDataFrame(
+            Data.remove_locations_that_never_had_regulated_activities_dim_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_dim_schema,
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_remove_locations_that_never_had_regulated_activities_rows,
-            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        self.returned_cqc_df, self.returned_dim_df = (
+            job.remove_locations_that_never_had_regulated_activities(
+                self.test_cqc_df, self.test_dim_df
+            )
         )
-
-        self.returned_data = self.returned_df.sort(CQCL.location_id).collect()
-        self.expected_data = self.expected_df.collect()
+        self.expected_cqc_df = self.spark.createDataFrame(
+            Data.expected_remove_locations_that_never_had_regulated_activities_cqc_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_cqc_schema,
+        )
+        self.expected_dim_df = self.spark.createDataFrame(
+            Data.expected_remove_locations_that_never_had_regulated_activities_dim_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_dim_schema,
+        )
 
     def test_remove_locations_that_never_had_regulated_activities_returns_expected_data(
         self,
     ):
-        self.assertEqual(self.returned_data, self.expected_data)
+        self.assertEqual(self.expected_cqc_df.collect(), self.returned_cqc_df.collect())
+        self.assertEqual(self.expected_dim_df.collect(), self.returned_dim_df.collect())
 
 
 class ExtractFromStructTests(CleanCQCLocationDatasetTests):

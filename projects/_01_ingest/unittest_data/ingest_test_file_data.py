@@ -2676,7 +2676,11 @@ class CQCLocationsData:
     ]
     # fmt: on
 
-    remove_locations_that_never_had_regulated_activities_rows = [
+    remove_locations_that_never_had_regulated_activities_cqc_rows = [
+        ("loc 1", "20241201"),
+        ("loc 2", "20230108"),
+    ]
+    remove_locations_that_never_had_regulated_activities_dim_rows = [
         (
             "loc 1",
             [
@@ -2696,7 +2700,11 @@ class CQCLocationsData:
         ),
         ("loc 2", None),
     ]
-    expected_remove_locations_that_never_had_regulated_activities_rows = [
+    expected_remove_locations_that_never_had_regulated_activities_cqc_rows = [
+        ("loc 1", "20241201"),
+    ]
+
+    expected_remove_locations_that_never_had_regulated_activities_dim_rows = [
         (
             "loc 1",
             [

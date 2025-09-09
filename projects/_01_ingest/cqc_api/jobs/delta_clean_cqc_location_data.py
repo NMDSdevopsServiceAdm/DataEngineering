@@ -81,6 +81,8 @@ def main(
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
     gac_service_destination: str,
+    regulated_activities_destination: str,
+    specialisms_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -123,23 +125,32 @@ def main(
         F.max(Keys.import_date)
     ).collect()[0][0]
 
-    # Create GAC Service dimension
+    regulated_activity_delta = create_dimension_from_missing_struct_column(
+        registered_locations_df,
+        CQCL.specialisms,
+        specialisms_destination,
+        dimension_update_date,
+    )
+
+    registered_locations_df, regulated_activity_delta = (
+        remove_locations_that_never_had_regulated_activities(
+            registered_locations_df, regulated_activity_delta
+        )
+    )
+
     gac_service_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
         CQCL.gac_service_types,
         gac_service_destination,
         dimension_update_date,
     )
+    regulated_activity_delta = create_dimension_from_missing_struct_column(
+        registered_locations_df,
+        CQCL.regulated_activities,
+        regulated_activities_destination,
+        dimension_update_date,
+    )
 
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.regulated_activities
-    )
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.specialisms
-    )
-    registered_locations_df = remove_locations_that_never_had_regulated_activities(
-        registered_locations_df
-    )
     registered_locations_df = extract_from_struct(
         registered_locations_df,
         registered_locations_df[CQCLClean.imputed_gac_service_types][CQCL.description],
@@ -515,7 +526,9 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
-def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataFrame:
+def remove_locations_that_never_had_regulated_activities(
+    cqc_df: DataFrame, regulated_activities_dimension: DataFrame
+) -> tuple[DataFrame, DataFrame]:
     """
     Removes locations who have never submitted regulated activities data.
 
@@ -524,13 +537,26 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     from the imputed_regulatedactivities column, which are locations that have no data at any time point.
 
     Args:
-        df (DataFrame): A dataframe with imputed_regulatedactivities
+        cqc_df (DataFrame): A dataframe without imputed_regulatedactivities, but where the location_ids need to be aligned
+        regulated_activities_dimension (DataFrame): A dataframe with imputed_regulatedactivities
 
     Returns:
-        DataFrame: A dataframe where blank imputed rows are removed.
+        tuple[DataFrame, DataFrame]: cqc_df, regulated_activities_dimension with the rows removed
     """
-    df = df.where(df[CQCLClean.imputed_regulated_activities].isNotNull())
-    return df
+    to_remove = regulated_activities_dimension.where(
+        regulated_activities_dimension[CQCLClean.imputed_regulated_activities].isNull()
+    ).select(CQCLClean.location_id)
+
+    # Filter registered location df to remove those not in the regulated_activity_delta
+    cqc_df = cqc_df.join(
+        to_remove,
+        how="anti",
+    )
+    regulated_activities_dimension = regulated_activities_dimension.join(
+        to_remove,
+        how="anti",
+    )
+    return cqc_df, regulated_activities_dimension
 
 
 def extract_from_struct(
