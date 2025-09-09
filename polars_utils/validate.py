@@ -15,7 +15,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 # this is the master config for datasets specification
-DATASETS_FILE = Path(__file__).parent.resolve() / "config" / "datasets.yml"
+CONFIG_PATH = Path(__file__).parent.resolve() / "config"
+DATASETS_FILE = CONFIG_PATH / "datasets.yml"
 CONFIG = yaml.safe_load(DATASETS_FILE.read_text())
 
 
@@ -50,7 +51,7 @@ def validate_dataset(bucket_name: str, dataset: str):
     config = DatasetConfig(**CONFIG["datasets"][dataset])
     logging.info(f"Using dataset configuration: {config}")
 
-    rules_yml = f"config/{dataset}.yml"
+    rules_yml = CONFIG_PATH / f"{dataset}.yml"
     if not Path(rules_yml).exists():
         raise FileNotFoundError(f"Rules file {rules_yml} not found")
 
@@ -63,7 +64,7 @@ def validate_dataset(bucket_name: str, dataset: str):
         extra_columns="ignore",
     ).collect()
 
-    pb.validate_yaml(rules_yml)
+    pb.validate_yaml(rules_yml)  # to throw a YAMLValidationError early for invalid specifiation
     validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
 
@@ -79,25 +80,36 @@ def validate_dataset(bucket_name: str, dataset: str):
         logger.error("Data validation failed. See report for details.")
         steps = json.loads(validation.get_json_report())
         # JSON report includes a detailed list of each validation step, including failures
-        # Note that some 'steps' result in several steps in teh execution, eg. a null check over several columns
+        # Note that some 'steps' result in several steps in the execution
+        # eg. a null check over several columns
         for step in steps:
-            if not step["all_passed"]:
-                step_idx = step["i"]
-                assertion = step["assertion_type"]
-                _col_or_cols = step[
-                    "column"
-                ]  # could be a string or a list, depending on step specification
-                columns = (
-                    "_".join(_col_or_cols)
-                    if isinstance(_col_or_cols, list)
-                    else _col_or_cols
-                )
-                failed_records_df = validation.get_data_extracts(step_idx, frame=True)
-                utils.write_to_parquet(
-                    failed_records_df,  # type: ignore = frame=True returns a df
-                    f"s3://{bucket_name}/{destination}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
-                )
+            report_on_fail(step, validation, bucket_name, destination)
         raise  # ensures that the task fails if any warnings / errors
+
+
+def report_on_fail(step: dict, validation: pb.Validate, bucket_name: str, path: str) -> None:
+    """Checks a given pb.Validate step for failures and writes the failed records to S3 if present.
+
+    Args:
+        step (dict): metadata on the validation step result
+        validation (pb.Validate): the Validate object containing the resulting data
+        bucket_name (str): the bucket in which to write reports
+        path (str): the filepath in the bucket to write, should include the validation report name
+    """
+    if step["all_passed"]:
+        return
+    
+    step_idx = step["i"]
+    assertion = step["assertion_type"]
+    _col_or_cols = step["column"]  # could be a string or a list
+    columns = (
+        "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
+    )
+    failed_records_df = validation.get_data_extracts(step_idx, frame=True)
+    utils.write_to_parquet(
+        failed_records_df,  # type: ignore = frame=True returns a df
+        f"s3://{bucket_name}/{path}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
+    )
 
 
 if __name__ == "__main__":

@@ -1,10 +1,12 @@
 import unittest
-from unittest.mock import ANY, patch
+from pathlib import Path
+from unittest.mock import ANY, call, patch
 
+import pointblank as pb
 import polars as pl
 import yaml
 
-from polars_utils.validate import validate_dataset
+from polars_utils import validate as utils
 
 SRC_PATH = "polars_utils.validate"
 SIMPLE_MOCK_CONFIG = {
@@ -17,6 +19,7 @@ SIMPLE_MOCK_CONFIG = {
         }
     }
 }
+TEST_CONFIG_PATH = Path(__file__).parent.resolve() / "config"
 
 
 class ValidateDatasetsTests(unittest.TestCase):
@@ -38,6 +41,7 @@ class ValidateDatasetsTests(unittest.TestCase):
                     ("name", pl.String),
                 ]
             ),
+            orient="row",
         )
         self.yaml = yaml.safe_load(
             """
@@ -59,43 +63,40 @@ class ValidateDatasetsTests(unittest.TestCase):
         """
         )
 
+    def error_on_not_in_config(self):
+        # When
+        with self.assertRaises(ValueError) as context:
+            utils.validate_dataset("bucket", "not_in_config")
+        # Then
+        self.assertIn(
+            "Dataset not_in_config not found in config file", str(context.exception)
+        )
+
     @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
-    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    def error_on_missing_file(self):
+        # When
+        with self.assertRaises(FileNotFoundError) as context:
+            utils.validate_dataset("bucket", "my_dataset")
+        # Then
+        self.assertIn(
+            "Rules file config/my_dataset.yml not found", str(context.exception)
+        )
+
+    @patch(f"{SRC_PATH}.CONFIG_PATH", TEST_CONFIG_PATH)
+    @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
+    @patch(f"{SRC_PATH}.report_on_fail")
     @patch("boto3.client", autospec=True)
     @patch("pointblank.yaml.YAMLValidator.load_config", autospec=True)
     @patch("polars.scan_parquet", autospec=True)
     def test_validation_failures(
-        self, mock_scan, mock_yaml, mock_s3_client, mock_parquet
+        self, mock_scan, mock_yaml, mock_s3_client, mock_report_on_fail
     ):
         # Given
         mock_scan.return_value.collect.return_value = self.raw_df
         mock_yaml.return_value = self.yaml
-        failed_rows_distinct = pl.DataFrame(
-            {
-                "_row_num_": [4, 5],
-                "someId": ["1-00002", "1-00002"],
-                "my_date": ["20240201", "20240201"],
-            },
-            schema={"_row_num_": pl.UInt32, "someId": pl.String, "my_date": pl.String},
-        )
-        failed_rows_null = pl.DataFrame(
-            {
-                "_row_num_": [5],
-                "someId": ["1-00002"],
-                "my_date": ["20240201"],
-                "name": [None],
-            },
-            schema={
-                "_row_num_": pl.UInt32,
-                "someId": pl.String,
-                "my_date": pl.String,
-                "name": pl.String,
-            },
-        )
-
         # When
         with self.assertRaises(AssertionError) as context:
-            validate_dataset("bucket", "my_dataset")
+            utils.validate_dataset("bucket", "my_dataset")
 
         # Then
         self.assertIn(
@@ -112,18 +113,112 @@ class ValidateDatasetsTests(unittest.TestCase):
             Bucket="bucket",
             Key="domain=data_validation_reports/dataset=data_quality_report/index.html",
         )
-        mock_parquet_calls = mock_parquet.call_args_list
-
-        # Comparing equality of Dataframes not possible as tuple
-        self.assertTrue(mock_parquet_calls[0][0][0].equals(failed_rows_distinct))
-        self.assertEquals(
-            mock_parquet_calls[0][0][1],
-            "s3://bucket/domain=data_validation_reports/dataset=data_quality_report/failed_step_1_rows_distinct_someId_my_date.parquet",
+        mock_report_on_fail.assert_has_calls(
+            [
+                call(
+                    ANY,
+                    ANY,
+                    "bucket",
+                    "domain=data_validation_reports/dataset=data_quality_report",
+                ),
+                call(
+                    ANY,
+                    ANY,
+                    "bucket",
+                    "domain=data_validation_reports/dataset=data_quality_report",
+                ),
+            ]
         )
-        self.assertTrue(mock_parquet_calls[1][0][0].equals(failed_rows_null))
+        # calls include null check for each column
+        self.assertEquals(mock_report_on_fail.call_count, 4)
+
+        calls = mock_report_on_fail.call_args_list
+        rows_distinct_step = calls[0][0][0]
+        col_vals_not_null_someId_step = calls[1][0][0]
+        col_vals_not_null_my_date_step = calls[2][0][0]
+        col_vals_not_null_name_step = calls[3][0][0]
+
+        self.assertDictContainsSubset(
+            {
+                "i": 1,
+                "assertion_type": "rows_distinct",
+                "column": ["someId", "my_date"],
+                "all_passed": False,
+            },
+            rows_distinct_step,
+        )
+        self.assertDictContainsSubset(
+            {
+                "i": 2,
+                "assertion_type": "col_vals_not_null",
+                "column": "someId",
+                "all_passed": True,
+            },
+            col_vals_not_null_someId_step,
+        )
+        self.assertDictContainsSubset(
+            {
+                "i": 3,
+                "assertion_type": "col_vals_not_null",
+                "column": "my_date",
+                "all_passed": True,
+            },
+            col_vals_not_null_my_date_step,
+        )
+        self.assertDictContainsSubset(
+            {
+                "i": 4,
+                "assertion_type": "col_vals_not_null",
+                "column": "name",
+                "all_passed": False,
+            },
+            col_vals_not_null_name_step,
+        )
+
+    @patch("polars_utils.utils.write_to_parquet", autospec=True)
+    @patch("pointblank.Validate")
+    def test_report_when_fail(self, mock_validate, mock_write_parquet):
+        # Given
+        step = {
+            "i": 1,
+            "assertion_type": "rows_distinct",
+            "column": ["someId", "my_date"],
+            "all_passed": False,
+        }
+        mock_df = pl.DataFrame(
+            {
+                "_row_num_": [4, 5],
+                "someId": ["1-00002", "1-00002"],
+                "my_date": ["20240201", "20240201"],
+            },
+            schema={"_row_num_": pl.UInt32, "someId": pl.String, "my_date": pl.String},
+        )
+        mock_validate.return_value.get_data_extracts.return_value = mock_df
+        # When
+        utils.report_on_fail(step, pb.Validate(ANY), "bucket", "path")
+        # Then
+        mock_validate.return_value.get_data_extracts.assert_called_once_with(
+            1, frame=True
+        )
+        mock_write_parquet.assert_called_once_with(
+            mock_df,
+            "s3://bucket/path/failed_step_1_rows_distinct_someId_my_date.parquet",
+        )
+
+    @patch("pointblank.Validate")
+    def test_report_when_succeed(self, mock_validate):
+        # Given
+        step = {
+            "i": 1,
+            "assertion_type": "rows_distinct",
+            "column": ["someId", "my_date"],
+            "all_passed": True,
+        }
+        # When
+        utils.report_on_fail(step, pb.Validate(ANY), "bucket", "path")
+        # Then
         self.assertEquals(
-            mock_parquet_calls[1][0][1],
-            "s3://bucket/domain=data_validation_reports/dataset=data_quality_report/failed_step_4_col_vals_not_null_name.parquet",
+            mock_validate.return_value.get_data_extracts.call_args_list, []
         )
 
 
