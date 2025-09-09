@@ -388,12 +388,12 @@ class MergeCoverageData:
         ("loc_6", "provider_2"),
     ]
     expected_merged_covergae_and_provider_name_joined_rows = [
-        ("loc_1", "provider_1", "Provider Name A"),
-        ("loc_2", "provider_1", "Provider Name A"),
-        ("loc_3", "provider_1", "Provider Name A"),
-        ("loc_4", "provider_2", "Provider Name C"),
-        ("loc_5", "provider_2", "Provider Name C"),
-        ("loc_6", "provider_2", "Provider Name C"),
+        ("provider_1", "loc_1", "Provider Name A"),
+        ("provider_1", "loc_2", "Provider Name A"),
+        ("provider_1", "loc_3", "Provider Name A"),
+        ("provider_2", "loc_4","Provider Name C"),
+        ("provider_2", "loc_5", "Provider Name C"),
+        ("provider_2", "loc_6", "Provider Name C"),
     ]
 
 

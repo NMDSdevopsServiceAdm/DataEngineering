@@ -269,26 +269,21 @@ class JoinProviderNameIntoMergedCovergae(SetupForTests):
             Schemas.sample_merged_coverage_schema,
         )
 
-        self.returned_df = job.join_latest_cqc_rating_into_coverage_df(
+        self.returned_df = job.join_provider_name_into_merged_covergae_df(
             self.sample_merged_coverage_df, self.test_cqc_providers_df
         )
-
         self.expected_df = self.spark.createDataFrame(
             Data.expected_merged_covergae_and_provider_name_joined_rows,
             Schemas.expected_merged_covergae_and_provider_name_joined_schema,
         )
 
-    def test_join_provider_name_into_merged_covergae_df_adds_expected_columns(self):
-        self.assertEqual(len(self.returned_df.columns), len(self.expected_df.columns))
+    def test_join_provider_name_into_merged_coverage_df_adds_expected_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(sorted(returned_columns), sorted(expected_columns))
 
     def test_join_provider_name_into_merged_covergae_df_does_not_add_any_rows(self):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
-
-    def test_join_provider_name_into_merged_covergae_df_has_no_duplicate_columns(self):
-        self.assertEqual(
-            sorted(self.returned_df.columns),
-            sorted(list(set(self.returned_df.columns))),
-        )
 
     def test_join_provider_name_into_merged_covergae_df_has_expected_values(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())

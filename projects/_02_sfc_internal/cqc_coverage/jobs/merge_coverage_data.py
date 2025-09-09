@@ -346,14 +346,13 @@ def join_provider_name_into_merged_covergae_df(
     """
     cqc_providers_df = cUtils.remove_duplicates_based_on_column_order(
         cqc_providers_df,
-        [CQCP.provider_id, CQCP.name],
+        [CQCP.provider_id],
         Keys.import_date,
         sort_ascending=False,
-    )
+    ).select(CQCP.provider_id, F.col(CQCP.name).alias(CQCLClean.provider_name))
+
     merged_coverage_with_provider_name_df = merged_coverage_df.join(
-        cqc_providers_df.select(
-            CQCP.provider_id, F.col(CQCP.name).alias("providerName")
-        ),
+        cqc_providers_df,
         on=CQCP.provider_id,
         how="left",
     )
