@@ -391,7 +391,7 @@ class MergeCoverageData:
         ("provider_1", "loc_1", "Provider Name A"),
         ("provider_1", "loc_2", "Provider Name A"),
         ("provider_1", "loc_3", "Provider Name A"),
-        ("provider_2", "loc_4","Provider Name C"),
+        ("provider_2", "loc_4", "Provider Name C"),
         ("provider_2", "loc_5", "Provider Name C"),
         ("provider_2", "loc_6", "Provider Name C"),
     ]
