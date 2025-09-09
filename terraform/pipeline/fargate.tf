@@ -40,6 +40,7 @@ module "model_retrain" {
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "MODEL_RETRAIN_TOPIC_ARN", "value" : aws_sns_topic.model_retrain.arn },
     { "name" : "MODEL_S3_BUCKET", "value" : module.pipeline_resources.bucket_name },
-    { "name" : "MODEL_S3_PREFIX", "value" : "models" }
+    { "name" : "MODEL_S3_PREFIX", "value" : "models" },
+    { "name" : "ENVIRONMENT", "value" : "dev" }
   ]
 }

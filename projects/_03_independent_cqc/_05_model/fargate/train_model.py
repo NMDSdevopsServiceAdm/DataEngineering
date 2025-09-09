@@ -149,7 +149,7 @@ if __name__ == "__main__":
         ),
         (
             "--data_source",
-            "The prefix of the data source to use",
+            "The bucket of the data source to use",
         ),
     )
     main(model_name=model_id, raw_data_bucket=data_source)
