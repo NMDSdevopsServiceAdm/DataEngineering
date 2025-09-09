@@ -301,6 +301,7 @@ def create_dimension_from_missing_struct_column(
         df.select(
             CQCL.location_id,
             missing_struct_column,
+            CQCLClean.cqc_location_import_date,
             Keys.import_date,
         ),
         missing_struct_column,
@@ -308,6 +309,7 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.location_id,
         missing_struct_column,
         "imputed_" + missing_struct_column,
+        CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
     delta = (
