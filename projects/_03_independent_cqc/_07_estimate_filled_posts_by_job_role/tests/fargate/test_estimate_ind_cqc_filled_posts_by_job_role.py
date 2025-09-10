@@ -38,4 +38,4 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
             ]
         )
 
-        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR)
+        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, logger=ANY)
