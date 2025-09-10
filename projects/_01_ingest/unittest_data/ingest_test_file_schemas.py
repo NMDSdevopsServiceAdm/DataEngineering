@@ -2249,6 +2249,31 @@ class ValidateLocationsAPICleanedData:
         )
     )
 
+    join_dimension_with_simple_equivalence_cqc_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("sample_field", StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
+        ]
+    )
+
+    join_dimension_with_simple_equivalence_dim_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("dimension_field", StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
+        ]
+    )
+
+    expected_join_dimension_with_simple_equivalence_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField("sample_field", StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
+            StructField("dimension_field", StringType(), True),
+        ]
+    )
+
 
 @dataclass
 class ValidateProvidersAPICleanedData:

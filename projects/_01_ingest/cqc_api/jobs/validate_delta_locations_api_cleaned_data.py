@@ -45,6 +45,8 @@ raw_cqc_locations_columns_to_import = [
 
 def main(
     raw_cqc_location_source: str,
+    dim_gac_services_source: str,
+    dim_postcode_matching_source: str,
     cleaned_cqc_locations_source: str,
     report_destination: str,
 ):
@@ -55,6 +57,14 @@ def main(
     cleaned_cqc_locations_df = utils.read_from_parquet(
         cleaned_cqc_locations_source,
     )
+    gac_services_df = utils.read_from_parquet(dim_gac_services_source)
+    cleaned_cqc_locations_df = join_dimension(cleaned_cqc_locations_df, gac_services_df)
+
+    postcode_matching_df = utils.read_from_parquet(dim_postcode_matching_source)
+    cleaned_cqc_locations_df = join_dimension(
+        cleaned_cqc_locations_df, postcode_matching_df
+    )
+
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = (
@@ -71,6 +81,30 @@ def main(
 
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
+
+
+def join_dimension(cqc_df, dimension_df):
+    """
+    Joins the CQC dataframe to one of its dimensions on location id and import_date
+    Args:
+        cqc_df (DataFrame): CQC dataframe with location id and import date columns
+        dimension_df (DataFrame): Dimension dataframe with location id and import date columns
+
+    Returns:
+        DataFrame: Dataframe of left joined CQC data with the dimension data
+
+    """
+    window_spec_dim = Window.partitionBy("locationid", "import_date").orderBy(
+        F.col("last_updated").desc()
+    )
+    current_dimension = dimension_df.withColumn(
+        "row_num", F.row_number().over(window_spec_dim)
+    ).filter(F.col("row_num") == 1)
+
+    joined_df = cqc_df.join(
+        current_dimension, ["location_id", "import_date"], how="left"
+    )
+    return joined_df
 
 
 def calculate_expected_size_of_cleaned_cqc_locations_dataset(
@@ -162,12 +196,22 @@ if __name__ == "__main__":
 
     (
         raw_cqc_location_source,
+        gac_dimension_source,
+        postcode_dimension_source,
         cleaned_cqc_locations_source,
         report_destination,
     ) = utils.collect_arguments(
         (
             "--raw_cqc_location_source",
             "Source s3 directory for parquet locations api dataset",
+        ),
+        (
+            "--gac_dimension_source",
+            "Source of the GAC services dimension data",
+        ),
+        (
+            "--postcode_dimension_source",
+            "Source of the postcode matching dimension data",
         ),
         (
             "--cleaned_cqc_locations_source",
@@ -181,6 +225,8 @@ if __name__ == "__main__":
     try:
         main(
             raw_cqc_location_source,
+            gac_dimension_source,
+            postcode_dimension_source,
             cleaned_cqc_locations_source,
             report_destination,
         )
