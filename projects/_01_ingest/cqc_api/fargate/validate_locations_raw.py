@@ -12,8 +12,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 
 logger = get_logger(__name__)
 
-COLS_NOT_NULL = [CQCL.location_id, Keys.import_date, CQCL.name]
-ROWS_DISTINCT = [CQCL.location_id, Keys.import_date]
+COMPLETE_COLUMNS = [CQCL.location_id, Keys.import_date, CQCL.name]
+INDEX_COLUMNS = [CQCL.location_id, Keys.import_date]
 
 
 def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -29,8 +29,8 @@ def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> N
 
     validation = (
         pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
-        .col_vals_not_null(COLS_NOT_NULL)
-        .rows_distinct(ROWS_DISTINCT)
+        .col_vals_not_null(COMPLETE_COLUMNS)
+        .rows_distinct(INDEX_COLUMNS)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path.strip("/"))
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
     )
-    logger.info(f"Starting validation for {args.dataset}")
+    logger.info(f"Starting validation for {args.source_path}")
 
     validate_dataset(args.bucket_name, args.source_path, args.report_path)
-    logger.info(f"Validation of {args.dataset} complete")
+    logger.info(f"Validation of {args.source_path} complete")
