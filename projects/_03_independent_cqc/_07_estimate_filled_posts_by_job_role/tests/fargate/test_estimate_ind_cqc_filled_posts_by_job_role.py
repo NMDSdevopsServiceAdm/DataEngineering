@@ -28,12 +28,12 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         read_from_parquet_mock.assert_has_calls(
             [
                 call(
-                    self.ESTIMATE_SOURCE,
-                    job.estimated_ind_cqc_filled_posts_columns_to_import,
+                    source=self.ESTIMATE_SOURCE,
+                    columns=job.estimated_ind_cqc_filled_posts_columns_to_import,
                 ),
                 call(
-                    self.ASCWDS_WORKER_SOURCE,
-                    job.cleaned_ascwds_worker_columns_to_import,
+                    source=self.ASCWDS_WORKER_SOURCE,
+                    columns=job.cleaned_ascwds_worker_columns_to_import,
                 ),
             ]
         )
