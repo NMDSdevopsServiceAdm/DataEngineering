@@ -515,9 +515,9 @@ resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_
     pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
     estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
     cluster_arn                                        = aws_ecs_cluster.polars_cluster.arn
-    task_arn                                           = module.cqc-api.task_arn
-    public_subnet_ids                                  = jsonencode(module.cqc-api.subnet_ids)
-    security_group_id                                  = module.cqc-api.security_group_id
+    task_arn                                           = module._03_independent_cqc.task_arn
+    public_subnet_ids                                  = jsonencode(module._03_independent_cqc.subnet_ids)
+    security_group_id                                  = module._03_independent_cqc.security_group_id
   })
 
   logging_configuration {
@@ -701,6 +701,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ],
         "Resource" : [
           module.cqc-api.task_arn,
+          module._03_independent_cqc.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -709,7 +710,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Action = "iam:PassRole",
         Resource = [
           module.cqc-api.task_exc_role_arn,
-          module.cqc-api.task_role_arn
+          module._03_independent_cqc.task_exc_role_arn,
+          module.cqc-api.task_role_arn,
+          module._03_independent_cqc.task_role_arn
         ],
         Condition = {
           StringLike = {
