@@ -41,6 +41,7 @@ module "model_retrain" {
     { "name" : "MODEL_RETRAIN_TOPIC_ARN", "value" : aws_sns_topic.model_retrain.arn },
     { "name" : "MODEL_S3_BUCKET", "value" : module.pipeline_resources.bucket_name },
     { "name" : "MODEL_S3_PREFIX", "value" : "models" },
-    { "name" : "ENVIRONMENT", "value" : "dev" }
+    { "name" : "ENVIRONMENT", "value" : "dev" },
+    { "name" : "MODEL_RETRAIN_S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name }
   ]
 }

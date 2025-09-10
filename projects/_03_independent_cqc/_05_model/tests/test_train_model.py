@@ -48,7 +48,7 @@ class TestMain(unittest.TestCase):
         mock_model.return_value.version_parameter_location = "some_param_location"
 
         # WHEN
-        job.main(model_name="some_model", raw_data_bucket="test_raw_data_bucket")
+        job.main(model_name="some_model")
 
         # THEN
         mock_model.assert_called_once_with(**{"some_key": "some_value"})
@@ -74,7 +74,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(KeyError):
-                job.main(model_name="silly_model", raw_data_bucket="silly_bucket")
+                job.main(model_name="silly_model")
         self.assertIn("Check that the model name is valid.", cm.output[2])
 
     @patch.dict(f"{PATCH_PATH}.model_definitions", {"some_model": invalid_definition})
@@ -83,7 +83,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(ValueError):
-                job.main(model_name="some_model", raw_data_bucket="silly_bucket")
+                job.main(model_name="some_model")
         self.assertIn(
             "Check that you specified a valid model_type in your model definition.",
             cm.output[2],
@@ -97,7 +97,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(TypeError):
-                job.main(model_name="some_model", raw_data_bucket="silly_bucket")
+                job.main(model_name="some_model")
         self.assertIn(
             "It is likely the model failed to instantiate. Check the parameters.",
             cm.output[2],

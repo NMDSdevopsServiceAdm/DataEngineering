@@ -25,12 +25,31 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 TOPIC_ARN = os.environ.get("MODEL_RETRAIN_TOPIC_ARN", default="test_retrain_model")
+S3_DATA_SOURCE = os.environ.get(
+    "MODEL_RETRAIN_S3_SOURCE_BUCKET", default="test_raw_data_bucket"
+)
 MODEL_S3_BUCKET = os.environ.get("MODEL_S3_BUCKET", default="test_model_s3_bucket")
 MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefix")
 ERROR_SUBJECT = "Model Retraining Failure"
 
 
-def main(model_name: str, raw_data_bucket: str) -> None:
+def main(model_name: str) -> None:
+    """
+    Executes model retraining for standard predefined model.
+
+    Args:
+        model_name (str): Name of model to retrain
+
+    Raises:
+        KeyError: If model doesn't exist
+        ModelNotTrainedError: If model is not trained
+        ValueError: If the model type is invalid
+        TypeError: If the scikit-learn model failed to instantiate
+        ClientError: If there is an error originating in AWS
+        PolarsError: If there is an error originating in Polars
+        Exception: If there is an unexplained error
+    """
+
     def get_error_notification(model_id: str, error: str) -> str:
         return (
             f"The training job for model {model_id} FAILED."
@@ -45,7 +64,7 @@ def main(model_name: str, raw_data_bucket: str) -> None:
 
         model = Model(**model_definition)
 
-        data = model.get_raw_data(bucket_name=raw_data_bucket)
+        data = model.get_raw_data(bucket_name=S3_DATA_SOURCE)
 
         train_df, test_df = Model.create_train_and_test_datasets(data)
 
@@ -142,14 +161,10 @@ def main(model_name: str, raw_data_bucket: str) -> None:
 
 
 if __name__ == "__main__":
-    (model_id, data_source) = utils.collect_arguments(
+    (model_id,) = utils.collect_arguments(
         (
             "--model_name",
             "The name of the model to train",
         ),
-        (
-            "--data_source",
-            "The bucket of the data source to use",
-        ),
     )
-    main(model_name=model_id, raw_data_bucket=data_source)
+    main(model_name=model_id)
