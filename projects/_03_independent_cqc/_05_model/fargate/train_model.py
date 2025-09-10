@@ -81,18 +81,12 @@ def main(model_name: str) -> None:
 
         version_manager.prompt_and_save(model=model)
 
-        scoring = {
-            "train_score": model.training_score,
-            "test_score": model.testing_score,
-            "score_difference": validation,
-        }
-
         subject = f"Successful retraining of {model.model_identifier}."
         message = (
             f"The model {model.model_identifier} was trained successfully.\n"
-            f"The R2 value in traing was {scoring['train_score']}\n"
-            f"The R2 value in testing was {scoring['test_score']}\n"
-            f"The difference is {scoring['score_difference']}.\n"
+            f"The R2 value in training was {model.training_score}\n"
+            f"The R2 value in testing was {model.testing_score}\n"
+            f"The difference is {validation}.\n"
             f"The model version is {version_manager.current_version}.\n"
             f"The serialised model is stored at {version_manager.storage_location_uri}."
         )
