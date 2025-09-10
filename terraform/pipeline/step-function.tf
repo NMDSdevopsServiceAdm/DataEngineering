@@ -518,8 +518,8 @@ resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_
     task_arn                                               = module.cqc-api.task_arn
     public_subnet_ids                                      = jsonencode(module.cqc-api.subnet_ids)
     security_group_id                                      = module.cqc-api.security_group_id
-    estimated_ind_cqc_filled_posts_source                  = "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
-    cleaned_ascwds_worker_source                           = "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+    estimated_ind_cqc_filled_posts_source                  = "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
+    cleaned_ascwds_worker_source                           = "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/"
     estimated_ind_cqc_filled_posts_by_job_role_destination = "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/"
   })
 
