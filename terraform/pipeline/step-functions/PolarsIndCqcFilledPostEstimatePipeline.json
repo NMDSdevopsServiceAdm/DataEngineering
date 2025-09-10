@@ -20,7 +20,12 @@
                 "ContainerOverrides": [
                 {
                     "Name": "03-independent-cqc-container",
-                    "Command": "estimate_ind_cqc_filled_posts_by_job_role.py --estimated_ind_cqc_filled_posts_source ${estimated_ind_cqc_filled_posts_source} --cleaned_ascwds_worker_source ${cleaned_ascwds_worker_source} --estimated_ind_cqc_filled_posts_by_job_role_destination ${estimated_ind_cqc_filled_posts_by_job_role_destination}"
+                    "Command": [
+                        "estimate_ind_cqc_filled_posts_by_job_role.py",
+                        "--estimated_ind_cqc_filled_posts_source ${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+                        "--cleaned_ascwds_worker_source ${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+                        "--estimated_ind_cqc_filled_posts_by_job_role_destination ${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/"
+                    ]
                 }
                 ]
             }
