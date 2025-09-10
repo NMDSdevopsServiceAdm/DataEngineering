@@ -146,7 +146,9 @@ def main(
             registered_locations_df, regulated_activity_delta
         )
     )
-    regulated_activity_delta = extract_registered_manager_names(regulated_activity_delta)
+    regulated_activity_delta = extract_registered_manager_names(
+        regulated_activity_delta
+    )
 
     utils.write_to_parquet(
         regulated_activity_delta,
