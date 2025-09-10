@@ -136,6 +136,36 @@ class MainTests(FlattenCQCRatingsTests):
         )
 
 
+class ValidateAssessmentOverallIsNull(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_assessment_ratings_with_overall_values_df = (
+            self.spark.createDataFrame(
+                Data.flatten_assessment_ratings_rows,
+                Schema.flatten_assessment_ratings_schema,
+            )
+        )
+        self.test_assessment_ratings_without_overall_values_df = (
+            self.spark.createDataFrame(
+                Data.flatten_assessment_ratings_rows,
+                Schema.flatten_assessment_ratings_schema,
+            )
+        )
+
+    # def test_validate_assessment_overall_all_null_passes(self):
+    #     job.validate_assessment_overall_is_null(self.test_assessment_ratings_without_overall_values_df)
+
+    def test_validate_assessment_overall_non_null_raises(self):
+        with self.assertRaises(ValueError) as context:
+            job.validate_assessment_overall_is_null(
+                self.test_assessment_ratings_with_overall_values_df
+            )
+        self.assertIn(
+            "Validation failed: Found",
+            str(context.exception),
+        )
+
+
 class FilterToFirstImportOfMostRecentMonth(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()

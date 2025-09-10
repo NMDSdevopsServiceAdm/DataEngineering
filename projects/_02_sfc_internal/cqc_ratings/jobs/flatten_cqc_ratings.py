@@ -71,7 +71,7 @@ def main(
     ascwds_workplace_df = utils.read_from_parquet(
         ascwds_workplace_source, ascwds_workplace_columns
     )
-
+    validate_assessment_overall_is_null(cqc_location_df)
     cqc_location_df = filter_to_first_import_of_most_recent_month(cqc_location_df)
     ascwds_workplace_df = filter_to_first_import_of_most_recent_month(
         ascwds_workplace_df
@@ -117,6 +117,36 @@ def main(
         assessment_ratings_destination,
         mode="overwrite",
     )
+
+
+def validate_assessment_overall_is_null(cqc_location_df: DataFrame) -> None:
+    """
+    Validate that the 'assessment.ratings.overall' field is entirely null across all records.
+
+    This function:
+      1. Scans the nested 'assessment.ratings.overall' array field in the input DataFrame.
+      2. Checks if any record contains non-null values inside this array.
+      3. If all values are null, the function completes silently.
+      4. If any non-null values are found, raises a ValueError with the count of offending records.
+
+    Args:
+        df (DataFrame): Input DataFrame containing raw CQC location data with nested assessments.
+
+    Raises:
+        ValueError: If one or more records contain non-null data in 'assessment.ratings.overall'.
+    """
+    non_null_overall_count = cqc_location_df.filter(
+        F.exists(
+            f"{CQCL.assessment}.{CQCL.ratings}.{CQCL.overall}",
+            lambda x: x[CQCL.rating].isNotNull()
+            | (F.size(x[CQCL.key_question_ratings]) > 0),
+        )
+    ).count()
+
+    if non_null_overall_count > 0:
+        raise ValueError(
+            f"Validation failed: Found {non_null_overall_count} records with non-null data in assessment.ratings.overall."
+        )
 
 
 def filter_to_first_import_of_most_recent_month(df: DataFrame) -> DataFrame:
