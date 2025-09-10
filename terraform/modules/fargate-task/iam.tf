@@ -100,7 +100,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_secr" {
 }
 
 resource "aws_iam_policy" "ssm_parameter_store_policy" {
-  name        = "SSMParameterStorePolicyForModels"
+  name_prefix = "SSMParamStorePolicyModels-"
   path        = "/"
   description = "A broadly permissive policy for AWS Systems Manager Parameter Store."
 
@@ -140,7 +140,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_params" {
 }
 
 resource "aws_iam_policy" "sns_publish_policy" {
-  name        = "SNSPublishPolicy"
+  name_prefix = "SNSPublishPolicyModels-"
   path        = "/"
   description = "A policy allowing publication to a specific SNS topic."
 
