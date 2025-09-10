@@ -1,0 +1,31 @@
+{
+  "Comment": "State machine for polars version of ind cqc estimates pipeline",
+  "StartAt": "Run Estimate Filled Posts By Job Role",
+  "States": {
+    "Run Estimate Filled Posts By Job Role": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::ecs:runTask.sync",
+        "Parameters": {
+            "Cluster": "${cluster_arn}",
+            "TaskDefinition": "${task_arn}",
+            "LaunchType": "FARGATE",
+            "NetworkConfiguration": {
+                "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                }
+            },
+            "Overrides": {
+                "ContainerOverrides": [
+                {
+                    "Name": "03-independent-cqc-container",
+                    "Command": "estimate_ind_cqc_filled_posts_by_job_role.py --estimated_ind_cqc_filled_posts_source ${estimated_ind_cqc_filled_posts_source} --cleaned_ascwds_worker_source ${cleaned_ascwds_worker_source} --estimated_ind_cqc_filled_posts_by_job_role_destination ${estimated_ind_cqc_filled_posts_by_job_role_destination}"
+                }
+                ]
+            }
+            },
+        "End": true
+    }
+  }
+}

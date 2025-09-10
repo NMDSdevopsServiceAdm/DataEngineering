@@ -504,6 +504,37 @@ resource "aws_sfn_state_machine" "sfc_internal_state_machine" {
   ]
 }
 
+
+resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_state_machine" {
+  name     = "${local.workspace_prefix}-Polars-Ind-CQC-Filled-Post-Estimates"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/PolarsIndCqcFilledPostEstimatePipeline-StepFunction.json", {
+    dataset_bucket_name                                    = module.datasets_bucket.bucket_name
+    dataset_bucket_uri                                     = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                          = module.pipeline_resources.bucket_uri
+    estimate_ind_cqc_filled_posts_by_job_role_job_name     = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
+    cluster_arn                                            = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                               = module.cqc-api.task_arn
+    public_subnet_ids                                      = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                                      = module.cqc-api.security_group_id
+    estimated_ind_cqc_filled_posts_source                  = "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
+    cleaned_ascwds_worker_source                           = "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
+    estimated_ind_cqc_filled_posts_by_job_role_destination = "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/"
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
