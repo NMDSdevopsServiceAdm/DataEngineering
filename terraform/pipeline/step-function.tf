@@ -510,14 +510,14 @@ resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/PolarsIndCqcFilledPostEstimatePipeline-StepFunction.json", {
-    dataset_bucket_name                                    = module.datasets_bucket.bucket_name
-    dataset_bucket_uri                                     = module.datasets_bucket.bucket_uri
-    pipeline_resources_bucket_uri                          = module.pipeline_resources.bucket_uri
-    estimate_ind_cqc_filled_posts_by_job_role_job_name     = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
-    cluster_arn                                            = aws_ecs_cluster.polars_cluster.arn
-    task_arn                                               = module.cqc-api.task_arn
-    public_subnet_ids                                      = jsonencode(module.cqc-api.subnet_ids)
-    security_group_id                                      = module.cqc-api.security_group_id
+    dataset_bucket_name                                = module.datasets_bucket.bucket_name
+    dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
+    estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
+    cluster_arn                                        = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                           = module.cqc-api.task_arn
+    public_subnet_ids                                  = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                                  = module.cqc-api.security_group_id
   })
 
   logging_configuration {
