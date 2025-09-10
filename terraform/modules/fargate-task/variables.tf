@@ -45,7 +45,4 @@ variable "environment" {
   type = list(map(string))
 }
 
-variable "topic_arn" {
-  type = string
-}
 
