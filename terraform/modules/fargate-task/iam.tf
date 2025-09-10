@@ -100,7 +100,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_secr" {
 }
 
 resource "aws_iam_policy" "ssm_parameter_store_policy" {
-  name        = "SSMParameterStorePolicy"
+  name        = "SSMParameterStorePolicyForModels"
   path        = "/"
   description = "A broadly permissive policy for AWS Systems Manager Parameter Store."
 
@@ -151,7 +151,7 @@ resource "aws_iam_policy" "sns_publish_policy" {
         {
             "Sid": "PublishToSNS",
             "Effect": "Allow",
-            "Action": ["sns:Publish", "sns:GetTopicAttributes", "SetTopicAttributes", "TagResource"],
+            "Action": ["sns:Publish", "sns:GetTopicAttributes", "sns:SetTopicAttributes", "sns:TagResource"],
             "Resource": "${var.topic_arn}"
         }
     ]
