@@ -153,6 +153,8 @@ def main(model_name: str) -> None:
         message = get_error_notification(model_name, str(e))
         raise
     finally:
+        if TOPIC_ARN == "test_retrain_model":
+            logger.warning("Test topic only, no live topic set.")
         utils.send_sns_notification(
             subject=subject,
             message=message,
