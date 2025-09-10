@@ -22,7 +22,6 @@ module "cqc-api" {
   ecr_repo_name = "fargate/cqc"
   cluster_arn   = aws_ecs_cluster.polars_cluster.arn
   tag_name      = terraform.workspace
-  topic_arn     = ""
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "CQC_SECRET_NAME", "value" : "cqc_api_primary_key" }
@@ -37,7 +36,6 @@ module "model_retrain" {
   tag_name      = "latest"
   cpu_size      = 4096
   ram_size      = 16384
-  topic_arn     = aws_sns_topic.model_retrain.arn
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "MODEL_RETRAIN_TOPIC_ARN", "value" : aws_sns_topic.model_retrain.arn },

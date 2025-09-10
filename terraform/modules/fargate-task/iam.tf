@@ -152,7 +152,7 @@ resource "aws_iam_policy" "sns_publish_policy" {
             "Sid": "PublishToSNS",
             "Effect": "Allow",
             "Action": ["sns:Publish", "sns:GetTopicAttributes", "sns:SetTopicAttributes", "sns:TagResource"],
-            "Resource": "${var.topic_arn}"
+            "Resource": "*"
         }
     ]
 }
