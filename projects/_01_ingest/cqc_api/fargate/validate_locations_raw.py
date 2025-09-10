@@ -46,5 +46,5 @@ if __name__ == "__main__":
     )
     logger.info(f"Starting validation for {args.source_path}")
 
-    validate_dataset(args.bucket_name, args.source_path, args.report_path)
+    validate_dataset(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")
