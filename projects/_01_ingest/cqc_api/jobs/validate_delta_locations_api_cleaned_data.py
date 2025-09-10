@@ -83,7 +83,7 @@ def main(
         raise_exception_if_any_checks_failed(check_result_df)
 
 
-def join_dimension(cqc_df, dimension_df):
+def join_dimension(cqc_df: DataFrame, dimension_df: DataFrame) -> DataFrame:
     """
     Joins the CQC dataframe to one of its dimensions on location id and import_date
     Args:
@@ -91,7 +91,7 @@ def join_dimension(cqc_df, dimension_df):
         dimension_df (DataFrame): Dimension dataframe with location id and import date columns
 
     Returns:
-        DataFrame: Dataframe of left joined CQC data with the dimension data
+        DataFrame: left joined CQC data with the dimension data
 
     """
     window_spec_dim = Window.partitionBy("locationid", "import_date").orderBy(
