@@ -42,3 +42,10 @@ target "delta_cqc" {
   no-cache = true
 }
 
+target "_03_independent_cqc" {
+  context = "."
+  dockerfile = "./projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc:${CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}
