@@ -252,6 +252,7 @@ def create_postcode_matching_dimension(
             CQCLClean.cqc_location_import_date,
             CQCL.postal_address_line1,
             CQCL.postal_code,
+            Keys.import_date,
         ),
         postcode_df,
     )
