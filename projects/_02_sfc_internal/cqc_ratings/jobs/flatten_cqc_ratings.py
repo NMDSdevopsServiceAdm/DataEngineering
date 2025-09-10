@@ -122,7 +122,6 @@ def main(
 def validate_assessment_overall_is_null(cqc_location_df: DataFrame) -> None:
     """
     Validate that the 'assessment.ratings.overall' field is entirely null across all records.
-
     This function:
       1. Scans the nested 'assessment.ratings.overall' array field in the input DataFrame.
       2. Checks if any record contains non-null values inside this array.
@@ -130,7 +129,7 @@ def validate_assessment_overall_is_null(cqc_location_df: DataFrame) -> None:
       4. If any non-null values are found, raises a ValueError with the count of offending records.
 
     Args:
-        df (DataFrame): Input DataFrame containing raw CQC location data with nested assessments.
+        cqc_location_df (DataFrame): Input DataFrame containing raw CQC location data with nested assessments.
 
     Raises:
         ValueError: If one or more records contain non-null data in 'assessment.ratings.overall'.
