@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name_prefix = "${local.workspace_prefix}-${var.task_name}-"
+  name_prefix = "${local.workspace_prefix}-ecs-task-role-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -35,6 +35,10 @@ resource "aws_iam_role" "ecs_task_role" {
       }
     ]
   })
+
+  tags = {
+    TaskName = var.task_name
+  }
 }
 
 
@@ -69,7 +73,7 @@ resource "aws_iam_policy" "s3_read_write_policy" {
 }
 
 resource "aws_iam_policy" "secretsmanager_read_policy" {
-  name_prefix = "${local.workspace_prefix}-${var.task_name}secretsmanager-"
+  name_prefix = "${local.workspace_prefix}-secretsmanager-"
   description = "IAM policy for Secrets Manager read access to a specific secret."
   policy = jsonencode({
     Version = "2012-10-17",
@@ -84,6 +88,10 @@ resource "aws_iam_policy" "secretsmanager_read_policy" {
       }
     ]
   })
+
+  tags = {
+    TaskName = var.task_name
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_read_secr" {
@@ -157,7 +165,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_sns" {
 }
 
 resource "aws_iam_role" "sfn_execution_role" {
-  name_prefix = "${local.workspace_prefix}-${var.task_name}-sfn-"
+  name_prefix = "${local.workspace_prefix}-sfn-"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -171,6 +179,10 @@ resource "aws_iam_role" "sfn_execution_role" {
       }
     ]
   })
+
+  tags = {
+    TaskName = var.task_name
+  }
 }
 
 resource "aws_iam_policy" "sfn_ecs_policy" {
