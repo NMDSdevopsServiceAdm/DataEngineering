@@ -152,11 +152,13 @@
                 "Type": "String"
               },
               "ResultSelector": {
-                "script": "validate.py",
+                "script": "validate_locations_raw.py",
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
-                "dataset_arg": "--dataset",
-                "dataset": "locations_raw"
+                "source_path_arg": "--source_path",
+                "source_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                "reports_path_arg": "--reports_path",
+                "reports_path": "domain=data_validation_reports/dataset=delta_providers_api_raw/"
               },
               "Next": "Validate Locations Api Raw"
             },

@@ -1,7 +1,6 @@
 """Retrieves Location data from the CQC API."""
 
 import json
-import logging
 import os
 import sys
 from datetime import date
@@ -10,6 +9,7 @@ from datetime import datetime as dt
 import polars as pl
 
 from polars_utils import utils
+from polars_utils.logger import get_logger
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.aws_secrets_manager_utilities import get_secret
@@ -17,12 +17,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 

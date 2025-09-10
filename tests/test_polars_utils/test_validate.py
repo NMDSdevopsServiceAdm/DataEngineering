@@ -4,9 +4,8 @@ from unittest.mock import ANY, patch
 
 import pointblank as pb
 import polars as pl
-import yaml
 
-from polars_utils import validate as utils
+from polars_utils import validate as vl
 
 SRC_PATH = "polars_utils.validate"
 SIMPLE_MOCK_CONFIG = {
@@ -19,14 +18,25 @@ SIMPLE_MOCK_CONFIG = {
         }
     }
 }
-TEST_CONFIG_PATH = Path(__file__).parent.resolve() / "config"
+TEMP_FILE = Path(__file__).parent / "test.parquet"
 
 
-class ValidateDatasetsTests(unittest.TestCase):
+class ValidateTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.source_path = "some/directory"
-        self.destination = "some/other/other/directory"
-        self.raw_df = pl.DataFrame(
+        types_df = pl.DataFrame(
+            {
+                "foo": [1, 2, 3],
+                "bar": [None, "bak", "baz"],
+                "a_list": [
+                    [[1, 2], [1], None],
+                    [[1, 2], [2], None],
+                    [[1, 2], [3], None],
+                ],
+            }
+        ).with_columns(pl.struct(pl.all()).alias("a_struct"))
+        types_df.write_parquet(TEMP_FILE)
+
+        self.df = pl.DataFrame(
             [
                 ("1-00001", "20240101", "a"),
                 ("1-00002", "20240101", "b"),
@@ -44,86 +54,76 @@ class ValidateDatasetsTests(unittest.TestCase):
             orient="row",
         )
 
-        TEST_CONFIG_PATH.mkdir(parents=True, exist_ok=True)
-        (TEST_CONFIG_PATH / "my_dataset.yml").write_text(
-            yaml.dump(
-                {
-                    "tbl": None,
-                    "tbl_name": "delta_something_api",
-                    "label": "Basic data quality checks",
-                    "brief": None,
-                    "thresholds": {"warning": 1},
-                    "actions": {
-                        "warning": "{LEVEL}: {type} validation failed with {n_failed} records for column {col}."
-                    },
-                    "steps": [
-                        {
-                            "rows_distinct": {
-                                "columns_subset": ["someId", "my_date"],
-                                "brief": "Ensure all {col} values are distinct",
-                            }
-                        },
-                        {
-                            "col_vals_not_null": {
-                                "columns": ["someId", "my_date", "name"],
-                                "brief": "Ensure {col} columns are fully populated",
-                            }
-                        },
-                    ],
-                }
-            )
-        )
-
     def tearDown(self) -> None:
         try:
-            (TEST_CONFIG_PATH / "my_dataset.yml").unlink()
+            TEMP_FILE.unlink()
         except FileNotFoundError:
             pass
         return super().tearDown()
 
-    def test_error_on_not_in_config(self):
-        # When
-        with self.assertRaises(ValueError) as context:
-            utils.validate_dataset("bucket", "not_in_config")
-        # Then
-        self.assertIn(
-            "Dataset not_in_config not found in config file", str(context.exception)
-        )
-
-    @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
-    def test_error_on_missing_file(self):
-        # When
-        with self.assertRaises(FileNotFoundError) as context:
-            utils.validate_dataset("bucket", "my_dataset")
-        # Then
-        self.assertIn("my_dataset.yml not found", str(context.exception))
-
-    @patch(f"{SRC_PATH}.CONFIG_PATH", TEST_CONFIG_PATH)
-    @patch(f"{SRC_PATH}.CONFIG", SIMPLE_MOCK_CONFIG)
-    @patch(f"{SRC_PATH}.report_on_fail")
-    @patch("boto3.client", autospec=True)
-    @patch("polars.scan_parquet", autospec=True)
-    def test_validation_failures(self, mock_scan, mock_s3_client, mock_report_on_fail):
+    def test_read_parquet_keep_all(self):
         # Given
-        mock_scan.return_value.select.return_value.collect.return_value = self.raw_df
+        expected = pl.DataFrame(
+            {
+                "foo": [1, 2, 3],
+                "bar": [None, "bak", "baz"],
+                "a_list": [
+                    [[1, 2], [1], None],
+                    [[1, 2], [2], None],
+                    [[1, 2], [3], None],
+                ],
+                "a_struct": [
+                    {"foo": 1, "bar": None, "a_list": [[1, 2], [1], None]},
+                    {"foo": 2, "bar": "bak", "a_list": [[1, 2], [2], None]},
+                    {"foo": 3, "bar": "baz", "a_list": [[1, 2], [3], None]},
+                ],
+            }
+        )
+        # When
+        result = vl.read_parquet(TEMP_FILE)
+        # Then
+        self.assertTrue(result.equals(expected))
+
+    def test_read_parquet_exclude_complex(self):
+        # Given
+        expected = pl.DataFrame(
+            {
+                "foo": [1, 2, 3],
+                "bar": [None, "bak", "baz"],
+            }
+        )
+        # When
+        result = vl.read_parquet(TEMP_FILE, exclude_complex_types=True)
+        # Then
+        self.assertTrue(result.equals(expected))
+
+    @patch(f"{SRC_PATH}._report_on_fail")
+    @patch("boto3.client", autospec=True)
+    def test_write_reports(self, mock_s3_client, mock_report_on_fail):
+        # Given
+        validation = (
+            pb.Validate(self.df, thresholds=pb.Thresholds(warning=1))
+            .rows_distinct(["someId", "my_date"])
+            .col_vals_not_null(["someId", "my_date", "name"])
+            .interrogate()
+        )
         # When
         with self.assertRaises(AssertionError) as context:
-            utils.validate_dataset("bucket", "my_dataset")
+            vl.write_reports(validation, "bucket", "reports")
 
         # Then
         self.assertIn(
             "Expect entirely distinct rows across `someId`, `my_date`.",
             str(context.exception),
         )
-        mock_scan.assert_called_once_with(
-            "s3://bucket/domain=cqc_or_other/dataset=dataset_name_in_s3/version=x.x.x/",
-            cast_options=ANY,
-            extra_columns=ANY,
+        self.assertIn(
+            "Expect that all values in `name` should not be Null.",
+            str(context.exception),
         )
         mock_s3_client.return_value.put_object.assert_called_once_with(
             Body=ANY,
             Bucket="bucket",
-            Key="domain=data_validation_reports/dataset=data_quality_report/index.html",
+            Key="reports/index.html",
         )
 
         # calls include null check for each column
@@ -192,7 +192,7 @@ class ValidateDatasetsTests(unittest.TestCase):
         )
         mock_validate.return_value.get_data_extracts.return_value = mock_df
         # When
-        utils.report_on_fail(step, pb.Validate(ANY), "bucket", "path")
+        vl._report_on_fail(step, pb.Validate(ANY), "bucket", "path")
         # Then
         mock_validate.return_value.get_data_extracts.assert_called_once_with(
             1, frame=True
@@ -212,7 +212,7 @@ class ValidateDatasetsTests(unittest.TestCase):
             "all_passed": True,
         }
         # When
-        utils.report_on_fail(step, pb.Validate(ANY), "bucket", "path")
+        vl._report_on_fail(step, pb.Validate(ANY), "bucket", "path")
         # Then
         self.assertEquals(
             mock_validate.return_value.get_data_extracts.call_args_list, []

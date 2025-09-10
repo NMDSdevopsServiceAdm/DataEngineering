@@ -1,9 +1,8 @@
-from datetime import datetime
-import polars as pl
-import logging
-from typing import Optional, Union, Any, Generator
 import argparse
+import logging
 import uuid
+
+import polars as pl
 
 util_logger = logging.getLogger(__name__)
 util_logger.setLevel(logging.INFO)

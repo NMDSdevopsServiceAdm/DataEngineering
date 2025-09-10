@@ -1,92 +1,63 @@
 import json
-import logging
-import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 import boto3
 import pointblank as pb
 import polars as pl
 import polars.selectors as cs
-import yaml
 
 from polars_utils import utils
+from polars_utils.logger import get_logger
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-# master config for datasets specification
-CONFIG_PATH = Path(__file__).parent.resolve() / "config"
-DATASETS_FILE = CONFIG_PATH / "datasets.yml"
-CONFIG = yaml.safe_load(DATASETS_FILE.read_text())
+logger = get_logger(__name__)
 
 
-@dataclass
-class DatasetConfig:
-    dataset: str
-    domain: str
-    version: str
-    report_name: str
-
-
-def validate_dataset(bucket_name: str, dataset: str):
-    """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
-
-    NB: this validatation is config-driven so only requires additional YAML configuration to entend to various datasets.
-
-    See `config/README.md` for further details.
+def read_parquet(
+    source: str | Path, exclude_complex_types: bool = False
+) -> pl.DataFrame:
+    """Reads in a parquet in a format suitable for validating
 
     Args:
-        bucket_name (str): the bucket (name only) in which to source the dataset and output the report to
+        source (str | Path): the full path in s3 of the dataset to be validated
+        exclude_complex_types (bool, optional): whether or not to exclude types which cannot be
+            validated using pointblank (ie., Structs, Lists or similar). Defaults to False.
+
+    Returns:
+        pl.DataFrame: the raw data as a polars Dataframe
+    """
+    raw = pl.scan_parquet(
+        source,
+        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+        extra_columns="ignore",
+    )
+    if not exclude_complex_types:
+        return raw.collect()
+
+    return raw.select(~cs.by_dtype(pl.Struct, pl.List)).collect()
+
+
+def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) -> None:
+    """Writes the reports for a given `pb.Validate` object to s3, including:
+        - summary report as an HTML `pb.GT`
+        - a pl.Dataframe for each failed step (if any) including every failing record
+
+    Args:
+        validation (pb.Validate): the result of interrogating the defined validation
+        bucket_name (str): the bucket to save reports to
             - shoud correspond to workspace / feature branch name
-        dataset (str): the dataset name as the source data to be validated
+        reports_path (str): the filepath for the reports
 
     Raises:
-        ValueError: in case of a missing dataset key in the `config/datasets.yml`
-        FileNotFoundError: in case of a missing rules definition (eg. `config/dataset_name.yml`) for the dataset validation
         AssertionError: in case of the dataset failing the validation rules
     """
-    # each dataset validation requires a config entry in the master config file
-    if dataset not in CONFIG["datasets"]:
-        raise ValueError(f"Dataset {dataset} not found in config file")
-    config = DatasetConfig(**CONFIG["datasets"][dataset])
-    logging.info(f"Using dataset configuration: {config}")
 
-    source = f"s3://{bucket_name}/domain={config.domain}/dataset={config.dataset}/"
-    if config.version:
-        source += f"version={config.version}/"
-    destination = f"domain=data_validation_reports/dataset={config.report_name}"
-
-    # rules definition must exist in the config folder for the specified dataset
-    rules_yml = CONFIG_PATH / f"{dataset}.yml"
-    if not Path(rules_yml).exists():
-        raise FileNotFoundError(f"Rules file {rules_yml} not found")
-
-    # throw a YAMLValidationError early for invalid specifiation
-    pb.validate_yaml(rules_yml)
-
-    dataframe = (
-        pl.scan_parquet(
-            source,
-            cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-            extra_columns="ignore",
-        )
-        .select(
-            ~cs.by_dtype(
-                pl.Struct, pl.List
-            )  # get_tabular_report will fail if contains nested columns
-        )
-        .collect()
-    )
-
-    validation = pb.yaml_interrogate(rules_yml, set_tbl=dataframe)
     report = validation.get_tabular_report()
 
     s3_client = boto3.client("s3")
     s3_client.put_object(
         Body=report.as_raw_html(inline_css=True, make_page=True),
         Bucket=bucket_name,
-        Key=f"{destination}/index.html",
+        Key=f"{reports_path}/index.html",
     )
     try:
         validation.assert_below_threshold(level="warning")
@@ -97,11 +68,11 @@ def validate_dataset(bucket_name: str, dataset: str):
         # Note that some 'steps' result in several steps in the execution
         # eg. a null check over several columns
         for step in steps:
-            report_on_fail(step, validation, bucket_name, destination)
+            _report_on_fail(step, validation, bucket_name, reports_path)
         raise  # ensures that the task fails if any warnings / errors
 
 
-def report_on_fail(
+def _report_on_fail(
     step: dict, validation: pb.Validate, bucket_name: str, path: str
 ) -> None:
     """Checks a given pb.Validate step for failures and writes the failed records to S3 if present.
@@ -125,16 +96,3 @@ def report_on_fail(
         failed_records_df,  # type: ignore = frame=True returns a df
         f"s3://{bucket_name}/{path}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
     )
-
-
-if __name__ == "__main__":
-    logger.info(f"Validation script called with parameters: {sys.argv}")
-
-    args = utils.get_args(
-        ("--bucket_name", "S3 bucket for source dataset and validation report"),
-        ("--dataset", "The dataset to validate"),
-    )
-    logger.info(f"Starting validation for {args.dataset}")
-
-    validate_dataset(args.bucket_name, args.dataset)
-    logger.info(f"Validation of {args.dataset} complete")
