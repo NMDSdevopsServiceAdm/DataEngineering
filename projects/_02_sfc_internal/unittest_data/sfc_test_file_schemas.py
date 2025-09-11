@@ -16,6 +16,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import (
     CQCRatingsColumns as CQCRatings,
@@ -419,15 +422,15 @@ class MergeCoverageData:
     )
     sample_cqc_providers_for_merge_schema = StructType(
         [
-            StructField(CQCP.provider_id, StringType(), True),
-            StructField(CQCP.name, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
+            StructField(CQCPClean.provider_id, StringType(), True),
+            StructField(CQCPClean.name, StringType(), True),
+            StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
         ]
     )
     sample_merged_coverage_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), True),
-            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCPClean.provider_id, StringType(), True),
         ]
     )
     expected_merged_covergae_and_provider_name_joined_schema = StructType(
