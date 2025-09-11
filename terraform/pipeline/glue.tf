@@ -417,11 +417,10 @@ module "flatten_cqc_ratings_job" {
   datasets_bucket = module.datasets_bucket
 
   job_parameters = {
-    "--cqc_location_source"            = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
-    "--ascwds_workplace_source"        = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
-    "--cqc_ratings_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/version=2.0.0/"
-    "--benchmark_ratings_destination"  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
-    "--assessment_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_assessment_ratings_for_data_requests/version=2.0.0/"
+    "--cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
+    "--ascwds_workplace_source"       = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace/"
+    "--cqc_ratings_destination"       = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
+    "--benchmark_ratings_destination" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_benchmarks/version=2.0.0/"
   }
 }
 
@@ -835,21 +834,6 @@ module "validate_locations_api_raw_data_job" {
   job_parameters = {
     "--raw_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api/version=2.1.1/"
     "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_locations_api_raw/"
-  }
-}
-
-module "validate_locations_api_raw_delta_data_job" {
-  source          = "../modules/glue-job"
-  script_dir      = "projects/_01_ingest/cqc_api/jobs"
-  script_name     = "validate_locations_api_raw_delta_data.py"
-  glue_role       = aws_iam_role.sfc_glue_service_iam_role
-  resource_bucket = module.pipeline_resources
-  datasets_bucket = module.datasets_bucket
-  glue_version    = "5.0"
-
-  job_parameters = {
-    "--raw_cqc_provider_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
-    "--report_destination"      = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_raw/"
   }
 }
 
