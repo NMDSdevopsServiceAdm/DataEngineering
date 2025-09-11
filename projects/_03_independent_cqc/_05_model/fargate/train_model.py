@@ -64,14 +64,22 @@ def main(model_name: str) -> None:
 
         model = Model(**model_definition)
 
-        data = model.get_raw_data(bucket_name=S3_DATA_SOURCE)
+        logger.info(f"Training model {model_name}...")
+        logger.info(f"Model: {model_definition}")
 
+        data = model.get_raw_data(bucket_name=S3_DATA_SOURCE)
+        logger.info(f"Raw Data: {data.collect().shape}")
+
+        logger.info("Creating train and test datasets...")
         train_df, test_df = Model.create_train_and_test_datasets(data)
 
+        logger.info(f"Fitting {str(model.model)}...")
         model.fit(train_df)
 
+        logger.info("Validating model...")
         validation = model.validate(test_df)
 
+        logger.info("Saving model and version...")
         version_manager = ModelVersionManager(
             s3_bucket=MODEL_S3_BUCKET,
             s3_prefix=f"{MODEL_S3_PREFIX}/{model_name}",
