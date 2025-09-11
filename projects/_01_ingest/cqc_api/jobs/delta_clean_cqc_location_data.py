@@ -768,7 +768,9 @@ def add_related_location_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def remove_specialist_colleges(df: DataFrame) -> DataFrame:
+def remove_specialist_colleges(
+    cqc_df: DataFrame, gac_services_dimension: DataFrame
+) -> tuple[DataFrame, DataFrame]:
     """
     Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
 
@@ -776,17 +778,35 @@ def remove_specialist_colleges(df: DataFrame) -> DataFrame:
     estimates. This function identifies and removes the ones listed in the locations dataset.
 
     Args:
-        df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
+        cqc_df (DataFrame): A dataframe without services_offered, but where the location_ids need to be aligned
+        gac_services_dimension (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        DataFrame: A cleaned locations dataframe with locations which are only specialist colleges removed.
+        tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
     """
-    df = df.where(
-        (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
-        | (F.size(df[CQCLClean.services_offered]) != 1)
-        | (df[CQCLClean.services_offered].isNull())
+    # noinspection PyCallingNonCallable
+    to_remove = gac_services_dimension.where(
+        (
+            gac_services_dimension[CQCLClean.services_offered][0]
+            == Services.specialist_college_service
+        )
+        & (F.size(gac_services_dimension[CQCLClean.services_offered]) == 1)
+        & (gac_services_dimension[CQCLClean.services_offered].isNotNull())
     )
-    return df
+
+    cqc_df = cqc_df.join(
+        to_remove,
+        on=CQCLClean.location_id,
+        how="left_anti",
+    )
+
+    gac_services_dimension = gac_services_dimension.join(
+        to_remove,
+        on=CQCLClean.location_id,
+        how="left_anti",
+    )
+
+    return cqc_df, gac_services_dimension
 
 
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:

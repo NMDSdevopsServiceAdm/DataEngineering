@@ -686,6 +686,8 @@ class RealignCareHomeColumnWthPrimaryServiceTests(CleanCQCLocationDatasetTests):
 class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+        self.mock_cqc_df = Mock()
+        self.mock_cqc_df.join.return_value = Mock()
 
     def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_only_service(
         self,
@@ -694,7 +696,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -708,7 +710,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -722,7 +724,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -736,7 +738,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -750,7 +752,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
