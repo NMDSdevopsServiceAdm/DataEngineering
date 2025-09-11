@@ -4,6 +4,8 @@ import logging
 from typing import Union, Any, Generator
 import argparse
 import uuid
+import boto3
+from botocore.exceptions import ClientError
 
 util_logger = logging.getLogger(__name__)
 util_logger.setLevel(logging.INFO)
@@ -87,3 +89,20 @@ def generate_s3_datasets_dir_date_path(
     output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
+
+
+def send_sns_notification(
+    topic_arn: str,
+    subject: str,
+    message: str,
+    region_name: str = "eu-west-2",
+) -> None:
+    sns_client = boto3.client("sns", region_name=region_name)
+    try:
+        sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
+    except ClientError as e:
+        util_logger.error(e)
+        util_logger.error(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
+        )
+        raise
