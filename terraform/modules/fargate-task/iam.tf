@@ -53,9 +53,9 @@ resource "aws_iam_policy" "s3_read_write_policy" {
         Sid    = "AllowS3ReadWriteOnSpecificBuckets",
         Effect = "Allow",
         Action = [
-          "s3:GetObject*",
+          "s3:Get*",
           "s3:PutObject*",
-          "s3:ListObjects"
+          "s3:List*"
         ],
         Resource = [
           "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/*",
@@ -178,6 +178,3 @@ resource "aws_iam_role_policy_attachment" "sfn_ecs_policy_attachment" {
   role       = aws_iam_role.sfn_execution_role.name
   policy_arn = aws_iam_policy.sfn_ecs_policy.arn
 }
-
-
-
