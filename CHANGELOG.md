@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added provider name into the merged dataframe within the CQC Coverage job.
 
 ### Changed
 

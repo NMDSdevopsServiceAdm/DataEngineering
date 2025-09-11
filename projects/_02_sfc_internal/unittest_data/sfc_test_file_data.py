@@ -374,6 +374,28 @@ class MergeCoverageData:
     ]
     # fmt: on
 
+    sample_cqc_providers_for_merge_rows = [
+        ("provider_1", "Provider Name A", date(2025, 9, 1)),
+        ("provider_1", "Provider Name B", date(2025, 9, 8)),
+        ("provider_2", "Provider Name C", date(2025, 9, 8)),
+    ]
+    sample_merged_coverage_rows = [
+        ("loc_1", "provider_1"),
+        ("loc_2", "provider_1"),
+        ("loc_3", "provider_1"),
+        ("loc_4", "provider_2"),
+        ("loc_5", "provider_2"),
+        ("loc_6", "provider_2"),
+    ]
+    expected_merged_covergae_and_provider_name_joined_rows = [
+        ("loc_1", "provider_1", "Provider Name B"),
+        ("loc_2", "provider_1", "Provider Name B"),
+        ("loc_3", "provider_1", "Provider Name B"),
+        ("loc_4", "provider_2", "Provider Name C"),
+        ("loc_5", "provider_2", "Provider Name C"),
+        ("loc_6", "provider_2", "Provider Name C"),
+    ]
+
 
 @dataclass
 class ValidateMergedCoverageData:
