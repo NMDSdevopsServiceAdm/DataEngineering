@@ -22,4 +22,5 @@ class CQCRatingsValueLabelsUnknownCodes:
         "Insufficient evidence to rate": None,
         "Evidence requirements partially / not yet scored": None,
         "No Approved Rating": None,
+        "": None,
     }
