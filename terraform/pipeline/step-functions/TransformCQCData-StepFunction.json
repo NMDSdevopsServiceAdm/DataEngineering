@@ -53,6 +53,7 @@
                   "--postcode_matching_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
                 }
               },
+              "ResultSelector": {"clean_arguments.$": "$.Arguments"},
               "Next": "Validate Locations Cleaned"
             },
             "Validate Locations Cleaned": {
@@ -61,9 +62,11 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
-                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
+                  "--raw_cqc_location_source": "$.clean_arguments.--cqc_location_source",
+                  "--cleaned_cqc_locations_source": "$.clean_arguments.--cleaned_cqc_location_destination",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/",
+                  "--gac_dimension_source.$": "$.clean_arguments.--gac_service_destination",
+                  "--postcode_dimension_source.$": "$.clean_arguments.--postcode_matching_destination"
                 }
               },
               "Next": "Build Locations Cleaned"
