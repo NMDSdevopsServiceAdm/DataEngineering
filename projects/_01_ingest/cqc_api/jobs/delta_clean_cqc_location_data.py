@@ -205,7 +205,9 @@ def main(
         CQCLClean.services_offered,
     )
 
-    gac_service_delta = remove_specialist_colleges(gac_service_delta)
+    registered_locations_df, gac_service_delta = remove_specialist_colleges(
+        registered_locations_df, gac_service_delta
+    )
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
     gac_service_delta = realign_carehome_column_with_primary_service(gac_service_delta)
