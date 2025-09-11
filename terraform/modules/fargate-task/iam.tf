@@ -62,10 +62,10 @@ resource "aws_iam_policy" "s3_read_write_policy" {
           "s3:List*"
         ],
         Resource = [
-          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/*",
-          "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets",
-          "arn:aws:s3:::sfc-${local.workspace_prefix}-pipeline-resources/*",
-          "arn:aws:s3:::sfc-${local.workspace_prefix}-pipeline-resources"
+          "arn:aws:s3:::sfc-${terraform.workspace}-datasets/*",
+          "arn:aws:s3:::sfc-${terraform.workspace}-datasets",
+          "arn:aws:s3:::sfc-${terraform.workspace}-pipeline-resources/*",
+          "arn:aws:s3:::sfc-${terraform.workspace}-pipeline-resources"
         ]
       }
     ]
