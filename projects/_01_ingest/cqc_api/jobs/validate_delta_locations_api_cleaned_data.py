@@ -58,13 +58,6 @@ def main(
     cleaned_cqc_locations_df = utils.read_from_parquet(
         cleaned_cqc_locations_source,
     )
-    gac_services_df = utils.read_from_parquet(dim_gac_services_source)
-    cleaned_cqc_locations_df = join_dimension(cleaned_cqc_locations_df, gac_services_df)
-
-    postcode_matching_df = utils.read_from_parquet(dim_postcode_matching_source)
-    cleaned_cqc_locations_df = join_dimension(
-        cleaned_cqc_locations_df, postcode_matching_df
-    )
 
     rules = Rules.rules_to_check
 
