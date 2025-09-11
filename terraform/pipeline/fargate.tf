@@ -34,8 +34,8 @@ module "model_retrain" {
   ecr_repo_name = "fargate/model-retrain"
   cluster_arn   = aws_ecs_cluster.model_cluster.arn
   tag_name      = "latest"
-  cpu_size      = 4096
-  ram_size      = 16384
+  cpu_size      = 8192
+  ram_size      = 32768
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "MODEL_RETRAIN_TOPIC_ARN", "value" : aws_sns_topic.model_retrain.arn },
