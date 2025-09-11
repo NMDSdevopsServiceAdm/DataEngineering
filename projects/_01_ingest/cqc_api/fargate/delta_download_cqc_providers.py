@@ -1,29 +1,24 @@
 """Retrieves Provider data from the CQC API."""
 
-from utils.aws_secrets_manager_utilities import get_secret
-import os
 import json
-from datetime import datetime as dt
+import os
+import sys
 from datetime import date
-import logging
-from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+from datetime import datetime as dt
+from typing import Generator
+
 import polars as pl
+
+from polars_utils import utils
+from polars_utils.logger import get_logger
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_provider_schema_polars import POLARS_PROVIDER_SCHEMA
+from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as ColNames,
 )
-from polars_utils import utils
-from typing import Generator
-from argparse import ArgumentError, ArgumentTypeError
-import sys
 
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -83,7 +78,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             )
 
         logger.info(f'Getting SecretID "{SECRET_ID}"')
-        secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
+        secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         logger.info("Collecting providers with changes from API")
@@ -101,10 +96,10 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
         df_unique: pl.DataFrame = df.unique(subset=[ColNames.provider_id])
         utils.write_to_parquet(df_unique, destination, logger=logger)
         return None
-    except InvalidTimestampArgumentError as e:
+    except InvalidTimestampArgumentError:
         logger.error(f"Start timestamp is after end timestamp: Args: {sys.argv}")
         raise
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         logger.error(
             f"{sys.argv[0]} was unable to write to destination. Args: {sys.argv}"
         )
@@ -118,33 +113,22 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
 
 if __name__ == "__main__":
-    try:
+    args = utils.get_args(
         (
-            destination_prefix,
-            start_timestamp,
-            end_timestamp,
-            *_,
-        ) = utils.collect_arguments(
-            (
-                "--destination_prefix",
-                "Source s3 directory for parquet CQC providers dataset",
-                True,
-            ),
-            ("--start_timestamp", "Start timestamp for provider changes", True),
-            ("--end_timestamp", "End timestamp for provider changes", True),
-        )
-        logger.info(f"Running job from {start_timestamp} to {end_timestamp}")
+            "--destination_prefix",
+            "Source s3 directory for parquet CQC providers dataset",
+        ),
+        ("--start_timestamp", "Start timestamp for provider changes"),
+        ("--end_timestamp", "End timestamp for provider changes"),
+    )
+    logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
-        todays_date = date.today()
-        destination = utils.generate_s3_datasets_dir_date_path(
-            destination_prefix=destination_prefix,
-            domain="CQC_delta",
-            dataset="delta_providers_api",
-            date=todays_date,
-            version="3.0.0",
-        )
-
-        main(destination, start_timestamp, end_timestamp)
-    except (ArgumentError, ArgumentTypeError) as e:
-        logger.error(f"An error occurred parsing arguments for {sys.argv}")
-        raise e
+    todays_date = date.today()
+    destination = utils.generate_s3_datasets_dir_date_path(
+        destination_prefix=args.destination_prefix,
+        domain="CQC_delta",
+        dataset="delta_providers_api",
+        date=todays_date,
+        version="3.0.0",
+    )
+    main(destination, args.start_timestamp, args.end_timestamp)

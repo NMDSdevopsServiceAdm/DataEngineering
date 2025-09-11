@@ -48,6 +48,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
 
+- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
+  - locations_raw
 
 ### Improved
 
