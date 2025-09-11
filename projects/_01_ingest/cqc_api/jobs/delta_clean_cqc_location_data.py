@@ -196,6 +196,8 @@ def main(
         gac_service_destination,
         dimension_update_date,
     )
+    # Drop care home from registered location df - stored in gac service dimension
+    registered_locations_df = registered_locations_df.drop(CQCL.care_home)
 
     gac_service_delta = extract_from_struct(
         gac_service_delta,
