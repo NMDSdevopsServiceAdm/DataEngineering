@@ -332,10 +332,9 @@ def join_provider_name_into_merged_covergae_df(
     cqc_providers_df: DataFrame,
 ) -> DataFrame:
     """
-    Join clean providers df to coverage dataframe using providerid as key.
+    Adds provider name to merge_coverage_df via join on latest providerid.
 
-    Requirements that are not arguments: CQC providerid.
-    Columns (providerid and provider name) from the CQC providers dataframe are joined to the coverage dataframe using provideris.
+    The cqc_providers_df is deduplicated based on descending cqc_provider_import_date then joined to merged_coverage_df on provider_id.
 
     Args:
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
