@@ -16,29 +16,47 @@
       "Next": "Run Estimate Filled Posts By Job Role"
     },
     "Run Estimate Filled Posts By Job Role": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::ecs:runTask.sync",
-        "Parameters": {
-            "Cluster": "${cluster_arn}",
-            "TaskDefinition": "${task_arn}",
-            "LaunchType": "FARGATE",
-            "NetworkConfiguration": {
-                "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${security_group_id}"],
-                    "AssignPublicIp": "ENABLED"
-                }
-            },
-            "Overrides": {
-                "ContainerOverrides": [
-                {
-                    "Name": "_03_independent_cqc-container",
-                    "Command.$": "States.Array($.Script_name, $.estimated_ind_cqc_filled_posts_source_name, $.estimated_ind_cqc_filled_posts_source_value, $.cleaned_ascwds_worker_source_name, $.cleaned_ascwds_worker_source_value, $.estimated_ind_cqc_filled_posts_by_job_role_destination_name, $.estimated_ind_cqc_filled_posts_by_job_role_destination_value)"
-                }
-                ]
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${cluster_arn}",
+        "TaskDefinition": "${task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+              "Subnets": ${public_subnet_ids},
+              "SecurityGroups": ["${security_group_id}"],
+              "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "_03_independent_cqc-container",
+              "Command.$": "States.Array($.Script_name, $.estimated_ind_cqc_filled_posts_source_name, $.estimated_ind_cqc_filled_posts_source_value, $.cleaned_ascwds_worker_source_name, $.cleaned_ascwds_worker_source_value, $.estimated_ind_cqc_filled_posts_by_job_role_destination_name, $.estimated_ind_cqc_filled_posts_by_job_role_destination_value)"
             }
-            },
+          ]
+        }
+      },
+      "Next": "Validate estimated filled posts by job role"
+    },
+    "Validate estimated filled posts by job role": {
+      "StartAt": "Validate estimated filled posts by job role",
+      "States": {
+        "Validate estimated filled posts by job role": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::glue:startJobRun.sync",
+        "Parameters": {
+          "JobName": "${validate_estimated_ind_cqc_filled_posts_by_job_role_data_job_name}",
+          "Arguments": {
+            "--cleaned_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_cleaned_data/",
+            "--estimated_ind_cqc_filled_posts_by_job_role_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/",
+            "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_estimated_filled_posts_by_job_role/"
+          }
+        },
         "End": true
+        }
+      }
     }
   }
 }
