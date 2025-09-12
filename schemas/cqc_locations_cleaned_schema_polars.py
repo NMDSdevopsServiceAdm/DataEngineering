@@ -6,8 +6,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 
 POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
     [
-        (CleanedColNames.contemporary_ons_import_date, pl.Date()),
-        (CleanedColNames.postcode_cleaned, pl.String()),
         (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.location_id, pl.String()),
         (CleanedColNames.provider_id, pl.String()),
@@ -31,7 +29,6 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
                 )
             ),
         ),
-        (CleanedColNames.care_home, pl.String()),
         (CleanedColNames.number_of_beds, pl.Int32()),
         (CleanedColNames.dormancy, pl.String()),
         (
@@ -85,6 +82,24 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
                 )
             ),
         ),
+        (CleanedColNames.related_location, pl.String()),
+    ]
+)
+
+POLARS_GAC_SERVICES_DIMENSION_SCHEMA = pl.Schema(
+    [
+        (CleanedColNames.location_id, pl.String()),
+        (
+            CleanedColNames.gac_service_types,
+            pl.List(
+                pl.Struct(
+                    {
+                        CleanedColNames.name: pl.String(),
+                        CleanedColNames.description: pl.String(),
+                    }
+                )
+            ),
+        ),
         (
             CleanedColNames.imputed_gac_service_types,
             pl.List(
@@ -92,6 +107,37 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
                     {
                         CleanedColNames.name: pl.String(),
                         CleanedColNames.description: pl.String(),
+                    }
+                )
+            ),
+        ),
+        (CleanedColNames.cqc_location_import_date, pl.Date()),
+        (CleanedColNames.services_offered, pl.List(pl.String())),
+        (CleanedColNames.primary_service_type, pl.String()),
+        (CleanedColNames.care_home, pl.String()),
+    ]
+)
+
+POLARS_REGULATED_ACTIVITIES_DIMENSION_SCHEMA = pl.Schema(
+    [
+        (CleanedColNames.location_id, pl.String()),
+        (
+            CleanedColNames.regulated_activities,
+            pl.List(
+                pl.Struct(
+                    {
+                        CleanedColNames.name: pl.String(),
+                        CleanedColNames.code: pl.String(),
+                        CleanedColNames.contacts: pl.List(
+                            pl.Struct(
+                                {
+                                    CleanedColNames.person_family_name: pl.String(),
+                                    CleanedColNames.person_given_name: pl.String(),
+                                    CleanedColNames.person_roles: pl.List(pl.String()),
+                                    CleanedColNames.person_title: pl.String(),
+                                }
+                            )
+                        ),
                     }
                 )
             ),
@@ -117,18 +163,38 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
                 )
             ),
         ),
+        (CleanedColNames.cqc_location_import_date, pl.Date()),
+        (CleanedColNames.registered_manager_names, pl.List(pl.String())),
+    ]
+)
+
+POLARS_SPECIALISM_DIMENSION_SCHEMA = pl.Schema(
+    [
+        (CleanedColNames.location_id, pl.String()),
+        (
+            CleanedColNames.specialisms,
+            pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
+        ),
         (
             CleanedColNames.imputed_specialisms,
             pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
         ),
-        (CleanedColNames.services_offered, pl.List(pl.String())),
+        (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.specialisms_offered, pl.List(pl.String())),
         (CleanedColNames.specialist_generalist_other_dementia, pl.String()),
         (CleanedColNames.specialist_generalist_other_lda, pl.String()),
         (CleanedColNames.specialist_generalist_other_mh, pl.String()),
-        (CleanedColNames.primary_service_type, pl.String()),
-        (CleanedColNames.registered_manager_names, pl.List(pl.String())),
-        (CleanedColNames.related_location, pl.String()),
+    ]
+)
+
+POLARS_POSTCODE_MATCHING_DIMENSION_SCHEMA = pl.Schema(
+    [
+        (CleanedColNames.contemporary_ons_import_date, pl.Date()),
+        (CleanedColNames.postcode_cleaned, pl.String()),
+        (CleanedColNames.cqc_location_import_date, pl.Date()),
+        (CleanedColNames.location_id, pl.String()),
+        (CleanedColNames.postal_address_line1, pl.String()),
+        (CleanedColNames.postal_code, pl.String()),
         (CleanedColNames.contemporary_cssr, pl.String()),
         (CleanedColNames.contemporary_region, pl.String()),
         (CleanedColNames.contemporary_sub_icb, pl.String()),
