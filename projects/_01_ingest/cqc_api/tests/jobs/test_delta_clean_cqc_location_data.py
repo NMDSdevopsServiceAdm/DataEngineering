@@ -55,6 +55,9 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
+    def tearDown(self):
+        self.spark.stop()
+
 
 class MainTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
