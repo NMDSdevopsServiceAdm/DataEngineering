@@ -324,17 +324,24 @@ def join_dimension(
         "row_num", F.row_number().over(window_spec_dim)
     ).filter(F.col("row_num") == 1)
 
+    current_dimension = current_dimension.repartition(
+        primary_key, DimensionKeys.import_date
+    )
+    fact_df = fact_df.repartition(primary_key, DimensionKeys.import_date)
+
     joined_df = fact_df.join(
-        current_dimension.drop(
-            DimensionKeys.year,
-            DimensionKeys.month,
-            DimensionKeys.day,
-            DimensionKeys.last_updated,
-        ),
-        [
-            primary_key,
-            Keys.import_date,
-        ],
-        how="left",
+        F.broadcast(
+            current_dimension.drop(
+                DimensionKeys.year,
+                DimensionKeys.month,
+                DimensionKeys.day,
+                DimensionKeys.last_updated,
+            ),
+            [
+                primary_key,
+                Keys.import_date,
+            ],
+            how="left",
+        )
     )
     return joined_df
