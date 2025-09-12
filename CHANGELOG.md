@@ -7,8 +7,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
+- New function added to merge the old CQC ratings and the new assessment ratings.
 
 ### Changed
+- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
+  - locations_raw
 
 ### Improved
 
@@ -17,7 +20,6 @@ All notable changes to this project will be documented in this file.
 ### Added
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
-- New function added to merge the old CQC ratings and the new assessment ratings.
 
 
 ### Changed
@@ -49,9 +51,6 @@ All notable changes to this project will be documented in this file.
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
 - Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
-
-- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
-  - locations_raw
 
 ### Improved
 
