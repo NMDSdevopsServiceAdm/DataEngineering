@@ -894,7 +894,7 @@ class JoinDimensionTests(UtilsTests):
             Data.join_dimension_with_simple_equivalence_cqc_rows,
             Schemas.join_dimension_with_simple_equivalence_cqc_schema,
         )
-        test_dim_df = self.spark.createDataFrame(
+        test_dim_df = selxf.spark.createDataFrame(
             Data.join_dimension_with_simple_equivalence_dim_rows,
             Schemas.join_dimension_with_simple_equivalence_dim_schema,
         )
@@ -908,6 +908,8 @@ class JoinDimensionTests(UtilsTests):
         self.assertEqual(result_df.count(), expected_df.count())
         self.assertEqual(result_df, expected_df)
 
+
+x
 
 if __name__ == "__main__":
     unittest.main(warnings="ignore")

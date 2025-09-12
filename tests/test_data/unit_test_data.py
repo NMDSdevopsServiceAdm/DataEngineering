@@ -26,12 +26,12 @@ class JoinDimensionData:
     ]
 
     expected_join_dimension_with_simple_equivalence_rows = [
-        ("loc_1", "value_a1", "20200101", "dim_a1"),
-        ("loc_1", "value_a2", "20200102", "dim_a2"),
-        ("loc_1", "value_a3", "20200103", "dim_a3"),
-        ("loc_1", "value_a4", "20200104", "dim_a4"),
-        ("loc_2", "value_b1", "20200101", "dim_b1"),
-        ("loc_2", "value_b2", "20200102", "dim_b2"),
-        ("loc_2", "value_b3", "20200103", "dim_b3"),
-        ("loc_2", "value_b4", "20200104", "dim_b4"),
+        ("loc_1", "20200101", "value_a1", "dim_a1"),
+        ("loc_1", "20200102", "value_a2", "dim_a2"),
+        ("loc_1", "20200103", "value_a3", "dim_a3"),
+        ("loc_1", "20200104", "value_a4", "dim_a4"),
+        ("loc_2", "20200101", "value_b1", "dim_b1"),
+        ("loc_2", "20200102", "value_b2", "dim_b2"),
+        ("loc_2", "20200103", "value_b3", "dim_b3"),
+        ("loc_2", "20200104", "value_b4", "dim_b4"),
     ]

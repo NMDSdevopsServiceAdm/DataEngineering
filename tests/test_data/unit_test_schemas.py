@@ -41,8 +41,8 @@ class JoinDimensionSchemas:
     expected_join_dimension_with_simple_equivalence_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField("sample_field", StringType(), True),
             StructField(DimensionKeys.import_date, StringType(), True),
+            StructField("sample_field", StringType(), True),
             StructField("dimension_field", StringType(), True),
         ]
     )
