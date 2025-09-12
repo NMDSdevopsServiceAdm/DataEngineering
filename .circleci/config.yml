@@ -43,6 +43,10 @@ jobs:
     resource_class: large
     steps:
       - checkout
+      - run:
+          name: list cwd
+          command: |
+            ls .
       - restore_cache:
           keys:
             - v1.1-deps-{{ checksum "Pipfile.lock" }}

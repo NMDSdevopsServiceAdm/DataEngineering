@@ -43,20 +43,22 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
-    def setUp(self) -> None:
-        self.spark = utils.get_spark()
-        self.test_clean_cqc_location_df = self.spark.createDataFrame(
+    @classmethod
+    def setUp(cls) -> None:
+        cls.spark = utils.get_spark()
+        cls.test_clean_cqc_location_df = cls.spark.createDataFrame(
             Data.sample_rows, schema=Schemas.detailed_schema
         )
-        self.test_location_df = self.spark.createDataFrame(
+        cls.test_location_df = cls.spark.createDataFrame(
             Data.small_location_rows, Schemas.small_location_schema
         )
-        self.test_ons_postcode_directory_df = self.spark.createDataFrame(
+        cls.test_ons_postcode_directory_df = cls.spark.createDataFrame(
             Data.ons_postcode_directory_rows, Schemas.ons_postcode_directory_schema
         )
 
-    def tearDown(self):
-        self.spark.stop()
+    @classmethod
+    def tearDown(cls):
+        cls.spark.stop()
 
 
 class MainTests(CleanCQCLocationDatasetTests):
