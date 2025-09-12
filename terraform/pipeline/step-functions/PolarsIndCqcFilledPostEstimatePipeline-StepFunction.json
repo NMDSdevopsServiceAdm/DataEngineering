@@ -93,7 +93,7 @@
         {
           "StartAt": "Run Independent CQC Crawler",
           "States": {
-            "Run Independent CQC crawler": {
+            "Run Independent CQC Crawler": {
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
