@@ -338,11 +338,11 @@ def join_dimension(
                 DimensionKeys.day,
                 DimensionKeys.last_updated,
             ),
-            [
-                primary_key,
-                Keys.import_date,
-            ],
-            how="left",
-        )
+        ),
+        [
+            primary_key,
+            Keys.import_date,
+        ],
+        how="left",
     )
     return joined_df
