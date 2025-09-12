@@ -40,19 +40,38 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
-    CQCLClean.care_home,
     CQCLClean.number_of_beds,
-    CQCLClean.imputed_regulated_activities,
+    CQCLClean.related_location,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
+]
+gac_dim_columns_to_import = [
+    CQCLClean.location_id,
     CQCLClean.imputed_gac_service_types,
     CQCLClean.services_offered,
+    CQCLClean.primary_service_type,
+    CQCLClean.care_home,
+    Keys.import_date,
+]
+ra_dim_columns_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.imputed_regulated_activities,
+    CQCLClean.registered_manager_names,
+    Keys.import_date,
+]
+specialism_dim_columns_to_import = [
+    CQCLClean.location_id,
     CQCLClean.imputed_specialisms,
     CQCLClean.specialisms_offered,
     CQCLClean.specialist_generalist_other_dementia,
     CQCLClean.specialist_generalist_other_lda,
     CQCLClean.specialist_generalist_other_mh,
-    CQCLClean.related_location,
-    CQCLClean.primary_service_type,
-    CQCLClean.registered_manager_names,
+    Keys.import_date,
+]
+pcm_dim_columns_to_import = [
+    CQCLClean.location_id,
     ONSClean.contemporary_ons_import_date,
     ONSClean.contemporary_cssr,
     ONSClean.contemporary_region,
@@ -66,11 +85,9 @@ cleaned_cqc_locations_columns_to_import = [
     ONSClean.current_region,
     ONSClean.current_lsoa21,
     ONSClean.current_rural_urban_ind_11,
-    Keys.year,
-    Keys.month,
-    Keys.day,
     Keys.import_date,
 ]
+
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.location_id,
@@ -104,6 +121,10 @@ cleaned_ct_care_home_columns_to_import = [
 
 def main(
     cleaned_cqc_location_source: str,
+    gac_dim_source: str,
+    reg_act_dim_source: str,
+    spec_dim_source: str,
+    pcm_dim_source: str,
     cleaned_cqc_pir_source: str,
     cleaned_ascwds_workplace_source: str,
     cleaned_ct_non_res_source: str,
@@ -116,6 +137,34 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
+    )
+    gac_dim_df = utils.read_from_parquet(
+        gac_dim_source,
+        selected_columns=gac_dim_columns_to_import,
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, gac_dim_df, CQCLClean.location_id
+    )
+
+    reg_act_dim_df = utils.read_from_parquet(
+        reg_act_dim_source, selected_columns=ra_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, reg_act_dim_df, CQCLClean.location_id
+    )
+
+    spec_dim_df = utils.read_from_parquet(
+        spec_dim_source, selected_columns=specialism_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, spec_dim_df, CQCLClean.location_id
+    )
+
+    pcm_dim_df = utils.read_from_parquet(
+        pcm_dim_source, selected_columns=pcm_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, pcm_dim_df, CQCLClean.location_id
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
@@ -231,6 +280,10 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
+        gac_services_source,
+        regulated_activities_source,
+        specialisms_source,
+        postcode_matching_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
         cleaned_ct_non_res_source,
@@ -240,6 +293,22 @@ if __name__ == "__main__":
         (
             "--cleaned_cqc_location_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
+        ),
+        (
+            "--gac_services_dimension_source",
+            "Source s3 directory for parquet GAC services dimension",
+        ),
+        (
+            "--regulated_activities_dimension_source",
+            "Source s3 directory for parquet Regulated Activities dimension",
+        ),
+        (
+            "--specialisms_dimension_source",
+            "Source s3 directory for parquet Services dimension",
+        ),
+        (
+            "--postcode_matching_dimension_source",
+            "Source s3 directory for parquet Postcode Matching dimension",
         ),
         (
             "--cleaned_cqc_pir_source",
@@ -264,6 +333,10 @@ if __name__ == "__main__":
     )
     main(
         cleaned_cqc_location_source,
+        gac_services_source,
+        regulated_activities_source,
+        specialisms_source,
+        postcode_matching_source,
         cleaned_cqc_pir_source,
         cleaned_ascwds_workplace_source,
         cleaned_ct_non_res_source,
