@@ -1,9 +1,8 @@
-from datetime import datetime
-import polars as pl
-import logging
-from typing import Union, Any, Generator
 import argparse
+import logging
 import uuid
+
+import polars as pl
 
 util_logger = logging.getLogger(__name__)
 util_logger.setLevel(logging.INFO)
@@ -16,7 +15,7 @@ def write_to_parquet(
     df: pl.DataFrame,
     output_path: str,
     logger: logging.Logger = util_logger,
-    append: bool = False,
+    append: bool = True,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -40,37 +39,37 @@ def write_to_parquet(
         logger.info("The provided dataframe was empty. No data was written.")
     else:
         if append:
-            output_path += f"/{uuid.uuid4()}.parquet"
+            output_path += f"{uuid.uuid4()}.parquet"
         df.write_parquet(output_path)
         logger.info("Parquet written to {}".format(output_path))
 
 
-def collect_arguments(*args: Any) -> Generator[Any, None, None]:
-    """
-    Creates a new parser, and for each arg in the provided args parameter returns a Namespace object, and uses vars() function to convert the namespace to a dictionary,
-    where the keys are constructed from the symbolic names, and the values from the information about the object that each name references.
+def get_args(*args: tuple) -> argparse.Namespace:
+    """Provides Args from argparse.ArgumentParser for a set of tuples.
 
     Args:
-        *args (Any): This is intended to be used to contain parsed arguments when run at command line, and is generally to contain keys and values as a tuple.
+        *args (tuple): iterable or arguments to unpack and parse, required format for each arg:
+            ("--arg_name", "help text", required (bool, default True), default value (optional))
+
+    Raises:
+        argparse.ArgumentError: in case of missing, extra, or invalid args
 
     Returns:
-        Generator[Any, None, None]: A generator used for parsing parsed parameters.
-
-    Examples:
-    >>> single_parameter, *_ = collect_arguments(("--single_parameter","This is how you read a single parameter"))
-    >>> (parameter_1, parameter_2) = collect_arguments(("--parameter_1","parameter_1 help text"),("--parameter_2","parameter_2 help text for non-required parameter", False))
+        argparse.Namespace: the parsed args as a Namespace, accessible as attributes
     """
     parser = argparse.ArgumentParser()
-    for arg in args:
-        parser.add_argument(
-            arg[0],
-            help=arg[1],
-            required=True,
-        )
-
-    parsed_args, _ = parser.parse_known_args()
-
-    return (vars(parsed_args)[arg[0][2:]] for arg in args)
+    try:
+        for arg in args:
+            parser.add_argument(
+                arg[0],
+                help=arg[1],
+                required=True if len(arg) < 3 else arg[2],
+                default=arg[3] if len(arg) > 3 else None,
+            )
+        return parser.parse_args()
+    except SystemExit:
+        parser.print_help()
+        raise argparse.ArgumentError(None, "Error parsing argument")
 
 
 def generate_s3_datasets_dir_date_path(
