@@ -315,6 +315,7 @@ def join_dimension(
         primary_key (str): The name of the primary key column which links the two dataframes, in addition to import_date
 
     Returns:
+        DataFrame: The fact table joined with the dimension table.
 
     """
     window_spec_dim = Window.partitionBy(
