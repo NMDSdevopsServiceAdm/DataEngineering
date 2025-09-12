@@ -794,17 +794,17 @@ def remove_specialist_colleges(
         )
         & (F.size(gac_services_dimension[CQCLClean.services_offered]) == 1)
         & (gac_services_dimension[CQCLClean.services_offered].isNotNull())
-    ).select(CQCLClean.location_id)
+    ).select(CQCLClean.location_id, Keys.import_date)
 
     cqc_df = cqc_df.join(
         to_remove,
-        on=CQCLClean.location_id,
+        on=[CQCLClean.location_id, Keys.import_date],
         how="left_anti",
     )
 
     gac_services_dimension = gac_services_dimension.join(
         to_remove,
-        on=CQCLClean.location_id,
+        on=[CQCLClean.location_id, Keys.import_date],
         how="left_anti",
     )
 
