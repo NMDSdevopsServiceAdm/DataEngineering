@@ -13,6 +13,9 @@ from projects._02_sfc_internal.reconciliation.utils import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -21,9 +24,6 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
@@ -88,9 +88,9 @@ cqc_ratings_columns_to_import = [
     CQCRatingsColumns.current_or_historic,
 ]
 cleaned_cqc_providers_columns_to_import = [
-    CQCP.provider_id,
-    CQCP.name,
-    Keys.import_date,
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    CQCPClean.cqc_provider_import_date,
 ]
 
 
@@ -98,7 +98,7 @@ def main(
     cleaned_cqc_location_source: str,
     workplace_for_reconciliation_source: str,
     cqc_ratings_source: str,
-    cqc_providers_source: str,
+    cleaned_cqc_providers_source: str,
     merged_coverage_destination: str,
     reduced_coverage_destination: str,
 ):
@@ -122,7 +122,7 @@ def main(
         selected_columns=cqc_ratings_columns_to_import,
     )
     cqc_providers_df = utils.read_from_parquet(
-        cqc_providers_source,
+        cleaned_cqc_providers_source,
         selected_columns=cleaned_cqc_providers_columns_to_import,
     )
     cqc_location_df = cUtils.reduce_dataset_to_earliest_file_per_month(cqc_location_df)
@@ -329,31 +329,32 @@ def join_latest_cqc_rating_into_coverage_df(
 
 def join_provider_name_into_merged_covergae_df(
     merged_coverage_df: DataFrame,
-    cqc_providers_df: DataFrame,
+    cleaned_cqc_providers_df: DataFrame,
 ) -> DataFrame:
     """
-    Join clean providers df to coverage dataframe using providerid as key.
+    Adds provider name to merge_coverage_df via join on latest providerid.
 
-    Requirements that are not arguments: CQC providerid.
-    Columns (providerid and provider name) from the CQC providers dataframe are joined to the coverage dataframe using provideris.
+    The cleaned_cqc_providers_df is deduplicated based on descending cqc_provider_import_date then joined to merged_coverage_df on provider_id.
 
     Args:
         merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
-        cqc_providers_df (DataFrame): A dataframe of cqc providers cleaned.
+        cleaned_cqc_providers_df (DataFrame): A dataframe of cqc providers cleaned.
 
     Returns:
         DataFrame: The coverage dataframe with the provider name added to it.
     """
-    cqc_providers_df = cUtils.remove_duplicates_based_on_column_order(
-        cqc_providers_df,
-        [CQCP.provider_id],
-        Keys.import_date,
+    cleaned_cqc_providers_df = cUtils.remove_duplicates_based_on_column_order(
+        cleaned_cqc_providers_df,
+        [CQCPClean.provider_id],
+        CQCPClean.cqc_provider_import_date,
         sort_ascending=False,
-    ).select(CQCP.provider_id, F.col(CQCP.name).alias(CQCLClean.provider_name))
+    ).select(
+        CQCPClean.provider_id, F.col(CQCPClean.name).alias(CQCLClean.provider_name)
+    )
     merged_coverage_cols = merged_coverage_df.columns
     merged_coverage_with_provider_name_df = merged_coverage_df.join(
-        cqc_providers_df,
-        on=CQCP.provider_id,
+        cleaned_cqc_providers_df,
+        on=CQCPClean.provider_id,
         how="left",
     ).select(*merged_coverage_cols, CQCLClean.provider_name)
     return merged_coverage_with_provider_name_df
@@ -367,7 +368,7 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
-        cqc_providers_source,
+        cleaned_cqc_providers_source,
         merged_coverage_destination,
         reduced_coverage_destination,
     ) = utils.collect_arguments(
@@ -381,8 +382,8 @@ if __name__ == "__main__":
         ),
         ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
         (
-            "--cqc_providers_source",
-            "Source s3 directory for parquet CQC providers dataset",
+            "--cleaned_cqc_providers_source",
+            "Source s3 directory for parquet Cleaned CQC providers dataset",
         ),
         (
             "--merged_coverage_destination",
@@ -397,7 +398,7 @@ if __name__ == "__main__":
         cleaned_cqc_location_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
-        cqc_providers_source,
+        cleaned_cqc_providers_source,
         merged_coverage_destination,
         reduced_coverage_destination,
     )
