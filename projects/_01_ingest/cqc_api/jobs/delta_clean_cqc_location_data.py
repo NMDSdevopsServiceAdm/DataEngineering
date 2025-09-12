@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import warnings
@@ -6,7 +7,8 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, StructType, StructField
+from pyspark.errors import AnalysisException
 
 import utils.cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
@@ -308,7 +310,24 @@ def create_dimension_from_missing_struct_column(
     Returns:
         DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
     """
-    previous_dimension = utils.read_from_parquet(dimension_location)
+    try:
+        previous_dimension = utils.read_from_parquet(dimension_location)
+    except AnalysisException as e:
+        print(
+            f"The {missing_struct_column} dimension was not found in the {dimension_location}. A new dimension will be created."
+        )
+        spark = utils.get_spark()
+        previous_dimension = spark.createDataFrame(
+            data=[],
+            schema=StructType(
+                [
+                    StructField(CQCLClean.location_id, StringType(), True),
+                    StructField(missing_struct_column, StringType(), True),
+                    StructField("imputed_" + missing_struct_column, StringType(), True),
+                    StructField(Keys.import_date, StringType(), True),
+                ]
+            ),
+        )
 
     current_dimension = impute_missing_struct_column(
         df.select(

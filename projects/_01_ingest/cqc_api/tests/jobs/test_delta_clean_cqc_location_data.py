@@ -3,6 +3,7 @@ import warnings
 from dataclasses import asdict
 from unittest.mock import ANY, Mock, patch
 
+from pyspark.errors import AnalysisException
 from pyspark.sql import DataFrame, functions as F
 
 import projects._01_ingest.cqc_api.jobs.delta_clean_cqc_location_data as job
@@ -182,17 +183,14 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             Data.previous_gac_service_dimension_rows,
             Schemas.gac_service_dimension_schema,
         )
-        #   Current data:
+        #   Current data has some updates to old rows and a new row
         mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
             Data.create_gac_service_dimension_rows,
             Schemas.gac_service_dimension_input_schema,
         )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_gac_service_delta_rows,
-            Schemas.gac_service_dimension_schema,
-        )
 
         # WHEN
+        #   the function is run
         returned_df = job.create_dimension_from_missing_struct_column(
             df=Mock(),
             missing_struct_column=CQCL.gac_service_types,
@@ -201,6 +199,11 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
         )
 
         # THEN
+        #   The updated rows and the new row should be returned
+        expected_df = self.spark.createDataFrame(
+            Data.expected_gac_service_delta_rows,
+            Schemas.gac_service_dimension_schema,
+        )
         mock_read_from_parquet.assert_called_once_with(
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE
         )
@@ -218,6 +221,37 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             expected_df.select(column_order).collect(),
             returned_df.select(column_order).collect(),
         )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet", side_effect=AnalysisException())
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    def test_create_dimension_when_no_historic_data(
+        self, mock_impute_missing_struct_column, mock_read_from_parquet
+    ):
+        # GIVEN
+        #   Trying to read historic data creates an analysis exception
+        mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
+            Data.create_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_input_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_gac_service_delta_when_no_history_rows,
+            Schemas.gac_service_dimension_schema,
+        )
+
+        # WHEN
+        #   the function is run
+        returned_df = job.create_dimension_from_missing_struct_column(
+            df=Mock(),
+            missing_struct_column=CQCL.gac_service_types,
+            dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        #   The original data should be returned in full, with new columns for the update date
+        mock_read_from_parquet.assert_called_once()
+        mock_impute_missing_struct_column.assert_called_once()
+        self.assertEqual(returned_df.collect(), expected_df.collect())
 
 
 class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
@@ -277,7 +311,6 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
         )
 
 
-# TODO: ensure dimension update date calculates correctly
 class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
