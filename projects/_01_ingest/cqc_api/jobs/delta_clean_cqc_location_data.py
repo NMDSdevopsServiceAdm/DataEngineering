@@ -140,6 +140,7 @@ def main(
         regulated_activities_destination,
         dimension_update_date,
     )
+    registered_locations_df = registered_locations_df.drop(CQCL.regulated_activities)
 
     registered_locations_df, regulated_activity_delta = (
         remove_locations_that_never_had_regulated_activities(
@@ -164,6 +165,7 @@ def main(
         specialisms_destination,
         dimension_update_date,
     )
+    registered_locations_df = registered_locations_df.drop(CQCL.specialisms)
 
     specialisms_delta = extract_from_struct(
         specialisms_delta,
@@ -197,7 +199,9 @@ def main(
         dimension_update_date,
     )
     # Drop care home from registered location df - stored in gac service dimension
-    registered_locations_df = registered_locations_df.drop(CQCL.care_home)
+    registered_locations_df = registered_locations_df.drop(
+        CQCL.gac_service_types, CQCL.care_home
+    )
 
     gac_service_delta = extract_from_struct(
         gac_service_delta,
@@ -229,6 +233,7 @@ def main(
         postcode_matching_destination,
         dimension_update_date,
     )
+    registered_locations_df = registered_locations_df.drop(CQCL.postal_code, CQCL.postal_address_line1)
 
     utils.write_to_parquet(
         postcode_matching_delta,

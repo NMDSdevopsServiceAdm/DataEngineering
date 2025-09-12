@@ -10,8 +10,6 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
         (CleanedColNames.location_id, pl.String()),
         (CleanedColNames.provider_id, pl.String()),
         (CleanedColNames.name, pl.String()),
-        (CleanedColNames.postal_address_line1, pl.String()),
-        (CleanedColNames.postal_code, pl.String()),
         (CleanedColNames.registration_status, pl.String()),
         (CleanedColNames.registration_date, pl.Date()),
         (CleanedColNames.deregistration_date, pl.Date()),
@@ -31,42 +29,6 @@ POLARS_CLEANED_LOCATIONS_SCHEMA = pl.Schema(
         ),
         (CleanedColNames.number_of_beds, pl.Int32()),
         (CleanedColNames.dormancy, pl.String()),
-        (
-            CleanedColNames.gac_service_types,
-            pl.List(
-                pl.Struct(
-                    {
-                        CleanedColNames.name: pl.String(),
-                        CleanedColNames.description: pl.String(),
-                    }
-                )
-            ),
-        ),
-        (
-            CleanedColNames.regulated_activities,
-            pl.List(
-                pl.Struct(
-                    {
-                        CleanedColNames.name: pl.String(),
-                        CleanedColNames.code: pl.String(),
-                        CleanedColNames.contacts: pl.List(
-                            pl.Struct(
-                                {
-                                    CleanedColNames.person_family_name: pl.String(),
-                                    CleanedColNames.person_given_name: pl.String(),
-                                    CleanedColNames.person_roles: pl.List(pl.String()),
-                                    CleanedColNames.person_title: pl.String(),
-                                }
-                            )
-                        ),
-                    }
-                )
-            ),
-        ),
-        (
-            CleanedColNames.specialisms,
-            pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
-        ),
         (CleanedColNames.imputed_registration_date, pl.Date()),
         (CleanedColNames.cqc_sector, pl.String()),
         (
