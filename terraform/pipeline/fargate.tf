@@ -33,7 +33,7 @@ module "model_retrain" {
   task_name     = "model-retrain"
   ecr_repo_name = "fargate/model-retrain"
   cluster_arn   = aws_ecs_cluster.model_cluster.arn
-  tag_name      = "latest"
+  tag_name      = terraform.workspace
   cpu_size      = 8192
   ram_size      = 32768
   environment = [

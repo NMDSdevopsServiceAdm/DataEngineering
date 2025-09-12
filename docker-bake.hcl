@@ -42,3 +42,11 @@ target "delta_cqc" {
   no-cache = true
 }
 
+target "model_retrain" {
+  context = "."
+  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/model-retrain:${CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}
+
