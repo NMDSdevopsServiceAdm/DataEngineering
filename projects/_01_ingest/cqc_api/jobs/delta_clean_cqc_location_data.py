@@ -312,22 +312,11 @@ def create_dimension_from_missing_struct_column(
     """
     try:
         previous_dimension = utils.read_from_parquet(dimension_location)
-    except AnalysisException as e:
+    except AnalysisException:
         print(
             f"The {missing_struct_column} dimension was not found in the {dimension_location}. A new dimension will be created."
         )
-        spark = utils.get_spark()
-        previous_dimension = spark.createDataFrame(
-            data=[],
-            schema=StructType(
-                [
-                    StructField(CQCLClean.location_id, StringType(), True),
-                    StructField(missing_struct_column, StringType(), True),
-                    StructField("imputed_" + missing_struct_column, StringType(), True),
-                    StructField(Keys.import_date, StringType(), True),
-                ]
-            ),
-        )
+        previous_dimension = None
 
     current_dimension = impute_missing_struct_column(
         df.select(
@@ -344,8 +333,9 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
-    delta = (
-        current_dimension.join(
+
+    if previous_dimension:
+        delta = current_dimension.join(
             previous_dimension,
             on=[
                 CQCLClean.location_id,
@@ -355,15 +345,18 @@ def create_dimension_from_missing_struct_column(
             ],
             how="anti",
         )
-        .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+        for col_name in missing_dim_columns:
+            delta = delta.withColumn(col_name, F.lit(None))
+    else:
+        delta = current_dimension
+
+    delta = (
+        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
-
-    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-    for col_name in missing_dim_columns:
-        delta = delta.withColumn(col_name, F.lit(None))
 
     return delta.drop(CQCLClean.cqc_location_import_date)
 
