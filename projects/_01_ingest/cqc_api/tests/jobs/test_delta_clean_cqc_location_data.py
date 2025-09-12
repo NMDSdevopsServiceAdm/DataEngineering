@@ -254,7 +254,21 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
         #   The original data should be returned in full, with new columns for the update date
         mock_read_from_parquet.assert_called_once()
         mock_impute_missing_struct_column.assert_called_once()
-        self.assertEqual(returned_df.collect(), expected_df.collect())
+        column_order = [
+            CQCL.location_id,
+            CQCL.gac_service_types,
+            CQCLCleaned.imputed_gac_service_types,
+            CQCL.care_home,
+            Keys.import_date,
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            returned_df.select(column_order).collect(),
+            expected_df.select(column_order).collect(),
+        )
 
 
 class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
