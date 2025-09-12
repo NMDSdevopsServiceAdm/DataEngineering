@@ -1917,6 +1917,7 @@ class CQCLocationsSchema:
                     StringType(),
                 ),
             ),
+            StructField(Keys.import_date, StringType(), True),
         ]
     )
     add_related_location_column_schema = StructType(

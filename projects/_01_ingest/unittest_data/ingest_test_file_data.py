@@ -3470,14 +3470,8 @@ class CQCLocationsData:
     ]
 
     test_only_service_specialist_colleges_rows = [
-        (
-            "loc 1",
-            [Services.specialist_college_service],
-        ),
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 1", [Services.specialist_college_service], "20240101"),
+        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
     ]
     test_multiple_services_specialist_colleges_rows = [
         (
@@ -3486,6 +3480,7 @@ class CQCLocationsData:
                 Services.specialist_college_service,
                 Services.acute_services_with_overnight_beds,
             ],
+            "20240101",
         ),
         (
             "loc 3",
@@ -3493,31 +3488,20 @@ class CQCLocationsData:
                 Services.acute_services_with_overnight_beds,
                 Services.specialist_college_service,
             ],
+            "20240101",
         ),
     ]
     test_without_specialist_colleges_rows = [
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
     ]
     test_empty_array_specialist_colleges_rows = [
-        (
-            "loc 5",
-            [],
-        ),
+        ("loc 5", [], "20240101"),
     ]
     test_null_row_specialist_colleges_rows = [
-        (
-            "loc 6",
-            None,
-        ),
+        ("loc 6", None, "20240101"),
     ]
     expected_only_service_specialist_colleges_rows = [
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
     ]
     expected_multiple_services_specialist_colleges_rows = (
         test_multiple_services_specialist_colleges_rows
