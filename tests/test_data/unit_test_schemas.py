@@ -31,6 +31,11 @@ class JoinDimensionSchemas:
             StructField(CQCL.location_id, StringType(), True),
             StructField("dimension_field", StringType(), True),
             StructField(DimensionKeys.import_date, StringType(), True),
+            StructField(Keys.year, StringType(), True),
+            StructField(Keys.month, StringType(), True),
+            StructField(Keys.day, StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
+            StructField(DimensionKeys.last_updated, StringType(), True),
         ]
     )
 
