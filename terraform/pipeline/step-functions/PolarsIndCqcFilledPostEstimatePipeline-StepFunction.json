@@ -11,7 +11,7 @@
         "cleaned_ascwds_worker_source_name": "--cleaned_ascwds_worker_source",
         "cleaned_ascwds_worker_source_value": "${dataset_bucket_uri}/domain=ASCWDS/dataset=worker_cleaned/",
         "estimated_ind_cqc_filled_posts_by_job_role_destination_name": "--estimated_ind_cqc_filled_posts_by_job_role_destination",
-        "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role/"
+        "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/"
       },
       "Next": "Run Estimate Filled Posts By Job Role"
     },
