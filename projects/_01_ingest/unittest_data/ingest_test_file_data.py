@@ -2675,6 +2675,45 @@ class CQCLocationsData:
         ("1-002", date(2024, 2, 1), None, None),
     ]
     # fmt: on
+    remove_locations_that_never_had_regulated_activities_rows = [
+        (
+            "loc 1",
+            [
+                {
+                    "name": "Personal care",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+        ),
+        ("loc 2", None),
+    ]
+    expected_remove_locations_that_never_had_regulated_activities_rows = [
+        (
+            "loc 1",
+            [
+                {
+                    "name": "Personal care",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+        ),
+    ]
 
     remove_locations_that_never_had_regulated_activities_cqc_rows = [
         ("loc 1", "20241201"),

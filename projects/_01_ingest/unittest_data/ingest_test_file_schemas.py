@@ -1625,6 +1625,50 @@ class CQCLocationsSchema:
             ),
         ]
     )
+    remove_locations_that_never_had_regulated_activities_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCLClean.imputed_regulated_activities,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.code, StringType(), True),
+                            StructField(
+                                CQCL.contacts,
+                                ArrayType(
+                                    StructType(
+                                        [
+                                            StructField(
+                                                CQCL.person_family_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_given_name,
+                                                StringType(),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_roles,
+                                                ArrayType(StringType(), True),
+                                                True,
+                                            ),
+                                            StructField(
+                                                CQCL.person_title, StringType(), True
+                                            ),
+                                        ]
+                                    )
+                                ),
+                                True,
+                            ),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
     remove_locations_that_never_had_regulated_activities_cqc_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
