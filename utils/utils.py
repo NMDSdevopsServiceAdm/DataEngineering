@@ -333,6 +333,7 @@ def join_dimension(
     joined_df = fact_df.join(
         F.broadcast(
             current_dimension.drop(
+                "row_num",
                 DimensionKeys.year,
                 DimensionKeys.month,
                 DimensionKeys.day,
