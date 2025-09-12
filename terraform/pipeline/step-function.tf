@@ -510,17 +510,17 @@ resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_
   role_arn = aws_iam_role.step_function_iam_role.arn
   type     = "STANDARD"
   definition = templatefile("step-functions/PolarsIndCqcFilledPostEstimatePipeline-StepFunction.json", {
-    dataset_bucket_name                                               = module.datasets_bucket.bucket_name
-    dataset_bucket_uri                                                = module.datasets_bucket.bucket_uri
-    pipeline_resources_bucket_uri                                     = module.pipeline_resources.bucket_uri
-    estimate_ind_cqc_filled_posts_by_job_role_job_name                = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
-    ind_cqc_filled_posts_crawler_name                                 = module.ind_cqc_filled_posts_crawler.crawler_name
-    data_validation_reports_crawler_name                              = module.data_validation_reports_crawler.crawler_name
-    pipeline_failure_lambda_function_arn                              = aws_lambda_function.error_notification_lambda.arn
-    cluster_arn                                                       = aws_ecs_cluster.polars_cluster.arn
-    task_arn                                                          = module._03_independent_cqc.task_arn
-    public_subnet_ids                                                 = jsonencode(module._03_independent_cqc.subnet_ids)
-    security_group_id                                                 = module._03_independent_cqc.security_group_id
+    dataset_bucket_name                                = module.datasets_bucket.bucket_name
+    dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
+    estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
+    ind_cqc_filled_posts_crawler_name                  = module.ind_cqc_filled_posts_crawler.crawler_name
+    data_validation_reports_crawler_name               = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn               = aws_lambda_function.error_notification_lambda.arn
+    cluster_arn                                        = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                           = module._03_independent_cqc.task_arn
+    public_subnet_ids                                  = jsonencode(module._03_independent_cqc.subnet_ids)
+    security_group_id                                  = module._03_independent_cqc.security_group_id
   })
 
   logging_configuration {
