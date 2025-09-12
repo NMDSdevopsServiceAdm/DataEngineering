@@ -154,13 +154,16 @@ class ModelVersionManager:
             logger.error(f"Error getting new version: {e}")
             raise
 
-    def save_model(self, model: Model, new_version: str):
+    def save_model(self, model: Model, new_version: str) -> str:
         """
         Saves the trained model to S3 with the version number in the path.
 
         Args:
             model(Model): The trained model object to be saved.
             new_version (str): The new version string.
+
+        Returns:
+            str: The storage location of the new version.
         """
         prefix = f"{self.s3_prefix}/{new_version}/model.pkl"
         buffer = io.BytesIO()
@@ -169,8 +172,8 @@ class ModelVersionManager:
 
         self.s3_client.upload_fileobj(buffer, self.s3_bucket, prefix)
 
-        self.storage_location_uri = f"s3://{self.s3_bucket}/{prefix}"
-        logger.info(f"Saving model to {self.storage_location_uri}")
+        storage_location_uri = f"s3://{self.s3_bucket}/{prefix}"
+        return storage_location_uri
 
     def prompt_change(self, prompt_num=0) -> ChangeType:
         """Prompts user for input to give version."""
@@ -213,6 +216,8 @@ class ModelVersionManager:
             change_type = self.prompt_change()
 
         new_version = self.get_new_version(change_type)
-        self.save_model(model, new_version)
+        loc = self.save_model(model, new_version)
+        self.storage_location_uri = loc
+        logger.info(f"Saved model to {loc}")
         self.update_parameter_store(new_version)
         self.current_version = new_version

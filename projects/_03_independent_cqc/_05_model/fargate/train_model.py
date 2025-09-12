@@ -33,12 +33,16 @@ MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefi
 ERROR_SUBJECT = "Model Retraining Failure"
 
 
-def main(model_name: str) -> None:
+def main(model_name: str, seed: int = None) -> ModelVersionManager:
     """
     Executes model retraining for standard predefined model.
 
     Args:
         model_name (str): Name of model to retrain
+        seed (int): (Optional) Seed for test set generation
+
+    Returns
+        ModelVersionManager: ModelVersionManager object with stored version details
 
     Raises:
         KeyError: If model doesn't exist
@@ -71,7 +75,7 @@ def main(model_name: str) -> None:
         logger.info(f"Raw Data: {data.collect().shape}")
 
         logger.info("Creating train and test datasets...")
-        train_df, test_df = Model.create_train_and_test_datasets(data)
+        train_df, test_df = Model.create_train_and_test_datasets(data, seed=seed)
 
         logger.info(f"Fitting {str(model.model)}...")
         model.fit(train_df)
@@ -98,6 +102,7 @@ def main(model_name: str) -> None:
             f"The model version is {version_manager.current_version}.\n"
             f"The serialised model is stored at {version_manager.storage_location_uri}."
         )
+        return version_manager
 
     except KeyError as e:
         logger.error(e)
@@ -171,4 +176,4 @@ if __name__ == "__main__":
             "The name of the model to train",
         ),
     )
-    main(model_name=model_id)
+    vm = main(model_name=model_id)

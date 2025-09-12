@@ -132,18 +132,8 @@ class Model:
         Returns:
             pl.DataFrame: Predicted target column values
         """
+        num_features = len(self.feature_columns)
         feature_df = input_df.select(self.feature_columns)
-        predictions = self.model.predict(feature_df)
-        return pl.from_numpy(predictions, schema=self.target_columns, orient="col")
-
-    # model_registry = {
-
-
-#     "nonres_pir_linear": Model(
-#         model_type=ModelType.SIMPLE_LINEAR,
-#         model_identifier ="nonres_pir_linear",
-#         model_params={},
-#         data_source_prefix="domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
-#         target_column
-#     ),
-# }
+        target_values = feature_df.to_numpy().reshape(-1, num_features)
+        predictions = self.model.predict(target_values)
+        return pl.from_numpy(predictions, schema=self.target_columns, orient="row")
