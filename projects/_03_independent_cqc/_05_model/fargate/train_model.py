@@ -41,7 +41,7 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
         model_name (str): Name of model to retrain
         seed (int): (Optional) Seed for test set generation
 
-    Returns
+    Returns:
         ModelVersionManager: ModelVersionManager object with stored version details
 
     Raises:
