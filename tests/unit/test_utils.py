@@ -28,6 +28,8 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
 )
+from tests.test_data.unit_test_data import JoinDimensionData as Data
+from tests.test_data.unit_test_schemas import JoinDimensionSchemas as Schemas
 
 
 class StubberType(Enum):
@@ -881,6 +883,30 @@ class SelectRowsWithNonNullValueTests(UtilsTests):
         expected_data = expected_df.collect()
 
         self.assertEqual(returned_data, expected_data)
+
+
+class JoinDimensionTests(UtilsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_join_dimension_joins_dimension_with_simple_equivalence(self):
+        test_cqc_df = self.spark.createDataFrame(
+            Data.join_dimension_with_simple_equivalence_cqc_rows,
+            Schemas.join_dimension_with_simple_equivalence_cqc_schema,
+        )
+        test_dim_df = self.spark.createDataFrame(
+            Data.join_dimension_with_simple_equivalence_dim_rows,
+            Schemas.join_dimension_with_simple_equivalence_dim_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_join_dimension_with_simple_equivalence_rows,
+            Schemas.expected_join_dimension_with_simple_equivalence_schema,
+        )
+
+        result_df = utils.join_dimension(test_cqc_df, test_dim_df, "locationId")
+
+        self.assertEqual(result_df.count(), expected_df.count())
+        self.assertEqual(result_df, expected_df)
 
 
 if __name__ == "__main__":

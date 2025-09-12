@@ -7,8 +7,12 @@ import pydeequ
 from pyspark.sql import DataFrame, Column, Window, SparkSession, functions as F
 from pyspark.sql.types import StructType
 
-
 import boto3
+
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
+)
 
 TWO_MB = 2000000
 
@@ -298,3 +302,39 @@ def select_rows_with_non_null_value(df: DataFrame, column: str) -> DataFrame:
         DataFrame: A DataFrame containing only the rows where the specified column has non-null values.
     """
     return df.filter(F.col(column).isNotNull())
+
+
+def join_dimension(
+    fact_df: DataFrame, dimension_df: DataFrame, primary_key: str
+) -> DataFrame:
+    """
+    Joins the most up-to-date version of a dimension onto a fact table
+    Args:
+        fact_df (DataFrame): The fact table to join onto.
+        dimension_df (DataFrame): The dimension table to join.
+        primary_key (str): The name of the primary key column which links the two dataframes, in addition to import_date
+
+    Returns:
+
+    """
+    window_spec_dim = Window.partitionBy(
+        primary_key, DimensionKeys.import_date
+    ).orderBy(F.col(DimensionKeys.last_updated).desc())
+    current_dimension = dimension_df.withColumn(
+        "row_num", F.row_number().over(window_spec_dim)
+    ).filter(F.col("row_num") == 1)
+
+    joined_df = fact_df.join(
+        current_dimension.drop(
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ),
+        [
+            primary_key,
+            Keys.import_date,
+        ],
+        how="left",
+    )
+    return joined_df

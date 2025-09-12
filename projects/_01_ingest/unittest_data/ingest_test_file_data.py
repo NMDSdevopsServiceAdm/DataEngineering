@@ -3186,7 +3186,6 @@ class CQCLocationsData:
     previous_gac_service_dimension_rows = [
         (
             "loc-1",
-            date(2021, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
             CareHome.not_care_home,
@@ -3198,7 +3197,6 @@ class CQCLocationsData:
         ),
         (
             "loc-2",
-            date(2021, 1, 1),
             [{"name": "Name A", "description": "Desc A"}],
             [{"name": "Name A", "description": "Desc A"}],
             CareHome.care_home,
@@ -3244,7 +3242,6 @@ class CQCLocationsData:
     expected_gac_service_delta_rows = [
         (
             "loc-1",
-            date(2023, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
             None,
@@ -3256,7 +3253,6 @@ class CQCLocationsData:
         ),
         (
             "loc-1",
-            date(2024, 2, 1),
             [{"name": "Name B", "description": "Desc B"}],
             [{"name": "Name B", "description": "Desc B"}],
             None,
@@ -3268,7 +3264,6 @@ class CQCLocationsData:
         ),
         (
             "loc-3",
-            date(2024, 2, 1),
             [{"name": "Name C", "description": "Desc C"}],
             [{"name": "Name C", "description": "Desc C"}],
             None,
@@ -3784,39 +3779,6 @@ class ValidateLocationsAPICleanedData:
         (RecordsToRemoveInLocationsData.temp_registration, "prov_1", LocationType.social_care_identifier, RegistrationStatus.registered, None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
     ]
     # fmt: on
-
-    join_dimension_with_simple_equivalence_cqc_rows = [
-        ("loc_1", "value_a1", "20200101"),
-        ("loc_1", "value_a2", "20200102"),
-        ("loc_1", "value_a3", "20200103"),
-        ("loc_1", "value_a4", "20200104"),
-        ("loc_2", "value_b1", "20200101"),
-        ("loc_2", "value_b2", "20200102"),
-        ("loc_2", "value_b3", "20200103"),
-        ("loc_2", "value_b4", "20200104"),
-    ]
-
-    join_dimension_with_simple_equivalence_dim_rows = [
-        ("loc_1", "dim_a1", "20200101"),
-        ("loc_1", "dim_a2", "20200102"),
-        ("loc_1", "dim_a3", "20200103"),
-        ("loc_1", "dim_a4", "20200104"),
-        ("loc_2", "dim_b1", "20200101"),
-        ("loc_2", "dim_b2", "20200102"),
-        ("loc_2", "dim_b3", "20200103"),
-        ("loc_2", "dim_b4", "20200104"),
-    ]
-
-    expected_join_dimension_with_simple_equivalence_rows = [
-        ("loc_1", "value_a1", "20200101", "dim_a1"),
-        ("loc_1", "value_a2", "20200102", "dim_a2"),
-        ("loc_1", "value_a3", "20200103", "dim_a3"),
-        ("loc_1", "value_a4", "20200104", "dim_a4"),
-        ("loc_2", "value_b1", "20200101", "dim_b1"),
-        ("loc_2", "value_b2", "20200102", "dim_b2"),
-        ("loc_2", "value_b3", "20200103", "dim_b3"),
-        ("loc_2", "value_b4", "20200104", "dim_b4"),
-    ]
 
     identify_if_location_has_a_known_value_when_array_type_rows = [
         ("loc_1", []),

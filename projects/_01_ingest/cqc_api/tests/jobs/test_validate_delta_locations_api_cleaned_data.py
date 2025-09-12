@@ -73,30 +73,6 @@ class MainTests(ValidateLocationsAPICleanedDatasetTests):
             self.assertEqual(write_to_parquet_patch.call_count, 1)
 
 
-class JoinDimensionTests(ValidateLocationsAPICleanedDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_join_dimension_joins_dimension_with_simple_equivalence(self):
-        test_cqc_df = self.spark.createDataFrame(
-            Data.join_dimension_with_simple_equivalence_cqc_rows,
-            Schemas.join_dimension_with_simple_equivalence_cqc_schema,
-        )
-        test_dim_df = self.spark.createDataFrame(
-            Data.join_dimension_with_simple_equivalence_dim_rows,
-            Schemas.join_dimension_with_simple_equivalence_dim_schema,
-        )
-        expected_df = self.spark.createDataFrame(
-            Data.expected_join_dimension_with_simple_equivalence_rows,
-            Schemas.expected_join_dimension_with_simple_equivalence_schema,
-        )
-
-        result_df = job.join_dimension(test_cqc_df, test_dim_df)
-
-        self.assertEqual(result_df.count(), expected_df.count())
-        self.assertEqual(result_df, expected_df)
-
-
 class CalculateExpectedSizeofDataset(ValidateLocationsAPICleanedDatasetTests):
     def setUp(self) -> None:
         super().setUp()

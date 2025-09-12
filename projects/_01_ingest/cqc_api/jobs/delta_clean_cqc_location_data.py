@@ -233,7 +233,9 @@ def main(
         postcode_matching_destination,
         dimension_update_date,
     )
-    registered_locations_df = registered_locations_df.drop(CQCL.postal_code, CQCL.postal_address_line1)
+    registered_locations_df = registered_locations_df.drop(
+        CQCL.postal_code, CQCL.postal_address_line1
+    )
 
     utils.write_to_parquet(
         postcode_matching_delta,
@@ -344,7 +346,7 @@ def create_dimension_from_missing_struct_column(
     for col_name in missing_dim_columns:
         delta = delta.withColumn(col_name, F.lit(None))
 
-    return delta
+    return delta.drop(CQCLClean.cqc_location_import_date)
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
