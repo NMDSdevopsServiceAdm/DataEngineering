@@ -23,6 +23,10 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 
 
+class DataError(Exception):
+    pass
+
+
 def build_snapshot_table_from_delta(
     bucket: str,
     read_folder: str,
@@ -45,7 +49,7 @@ def build_snapshot_table_from_delta(
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
     else:
-        return None
+        raise DataError("No snapshot found for timepoint " + str(timepoint))
 
 
 def get_snapshots(
@@ -102,9 +106,14 @@ def get_snapshots(
         if import_date[0] == 20130301:
             previous_ss = delta_data
         else:
-            unchanged = previous_ss.remove(
-                pl.col(primary_key).is_in(delta_data[primary_key])
-            )
+            try:
+                unchanged = previous_ss.remove(
+                    pl.col(primary_key).is_in(delta_data[primary_key])
+                )
+            except AttributeError:
+                raise DataError(
+                    "There is no initial snapshot - there should be a base snapshot dated 01/03/2013"
+                )
             changed = delta_data.filter(
                 pl.col(primary_key).is_in(previous_ss[primary_key])
             )
