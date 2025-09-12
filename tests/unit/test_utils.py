@@ -894,7 +894,7 @@ class JoinDimensionTests(UtilsTests):
             Data.join_dimension_with_simple_equivalence_cqc_rows,
             Schemas.join_dimension_with_simple_equivalence_cqc_schema,
         )
-        test_dim_df = selxf.spark.createDataFrame(
+        test_dim_df = self.spark.createDataFrame(
             Data.join_dimension_with_simple_equivalence_dim_rows,
             Schemas.join_dimension_with_simple_equivalence_dim_schema,
         )
