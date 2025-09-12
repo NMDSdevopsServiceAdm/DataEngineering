@@ -73,7 +73,6 @@ POLARS_GAC_SERVICES_DIMENSION_SCHEMA = pl.Schema(
                 )
             ),
         ),
-        (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.services_offered, pl.List(pl.String())),
         (CleanedColNames.primary_service_type, pl.String()),
         (CleanedColNames.care_home, pl.String()),
@@ -125,7 +124,6 @@ POLARS_REGULATED_ACTIVITIES_DIMENSION_SCHEMA = pl.Schema(
                 )
             ),
         ),
-        (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.registered_manager_names, pl.List(pl.String())),
     ]
 )
@@ -141,7 +139,6 @@ POLARS_SPECIALISM_DIMENSION_SCHEMA = pl.Schema(
             CleanedColNames.imputed_specialisms,
             pl.List(pl.Struct({CleanedColNames.name: pl.String()})),
         ),
-        (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.specialisms_offered, pl.List(pl.String())),
         (CleanedColNames.specialist_generalist_other_dementia, pl.String()),
         (CleanedColNames.specialist_generalist_other_lda, pl.String()),
@@ -153,7 +150,6 @@ POLARS_POSTCODE_MATCHING_DIMENSION_SCHEMA = pl.Schema(
     [
         (CleanedColNames.contemporary_ons_import_date, pl.Date()),
         (CleanedColNames.postcode_cleaned, pl.String()),
-        (CleanedColNames.cqc_location_import_date, pl.Date()),
         (CleanedColNames.location_id, pl.String()),
         (CleanedColNames.postal_address_line1, pl.String()),
         (CleanedColNames.postal_code, pl.String()),

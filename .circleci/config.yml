@@ -63,7 +63,7 @@ jobs:
       - run:
           name: run unit tests
           command: |
-            pipenv run coverage run --source=. -m unittest discover -s . -p "test_delta_clean_cqc_location_data.py"
+            pipenv run coverage run --source=. -m unittest discover -s . -p "test_*.py"
       - run:
           name: Generate coverage report
           command: |

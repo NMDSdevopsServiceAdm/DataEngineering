@@ -33,6 +33,10 @@ PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data"
 
 class SetupForTests(unittest.TestCase):
     TEST_CQC_LOCATION_SOURCE = "some/directory"
+    TEST_GAC_SOURCE = "some/directory"
+    TEST_REG_ACT_SOURCE = "some/directory"
+    TEST_SPEC_SOURCE = "some/directory"
+    TEST_PCM_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
     TEST_MERGED_DESTINATION = "some/other/directory"
@@ -68,10 +72,12 @@ class MainTests(SetupForTests):
     @patch(f"{PATCH_PATH}.join_ascwds_data_into_cqc_location_df")
     @patch(f"{PATCH_PATH}.cUtils.remove_duplicates_based_on_column_order")
     @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
+    @patch(f"{PATCH_PATH}.utils.join_dimension")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
         read_from_parquet_mock: Mock,
+        join_dimension_mock: Mock,
         reduce_dataset_to_earliest_file_per_month_mock: Mock,
         remove_duplicates_based_on_column_order_mock: Mock,
         join_ascwds_data_into_cqc_location_df_mock: Mock,
@@ -84,19 +90,29 @@ class MainTests(SetupForTests):
     ):
         read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
+            self.test_clean_cqc_location_df,
+            self.test_clean_cqc_location_df,
+            self.test_clean_cqc_location_df,
+            self.test_clean_cqc_location_df,
             self.test_clean_ascwds_workplace_df,
             self.test_cqc_ratings_df,
         ]
+        join_dimension_mock.return_value = self.test_clean_cqc_location_df
 
         job.main(
             self.TEST_CQC_LOCATION_SOURCE,
+            self.TEST_GAC_SOURCE,
+            self.TEST_REG_ACT_SOURCE,
+            self.TEST_SPEC_SOURCE,
+            self.TEST_PCM_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_SOURCE,
             self.TEST_MERGED_DESTINATION,
             self.TEST_REDUCED_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_mock.call_count, 3)
+        self.assertEqual(read_from_parquet_mock.call_count, 7)
+        self.assertEqual(join_dimension_mock.call_count, 4)
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
         self.assertEqual(remove_duplicates_based_on_column_order_mock.call_count, 2)
         join_ascwds_data_into_cqc_location_df_mock.assert_called_once()
