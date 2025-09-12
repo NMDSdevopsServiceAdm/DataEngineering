@@ -239,7 +239,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
         expected_df = self.spark.createDataFrame(
             Data.expected_gac_service_delta_when_no_history_rows,
             Schemas.gac_service_dimension_schema,
-        )
+        ).drop(CQCL.care_home)
 
         # WHEN
         #   the function is run
@@ -258,7 +258,6 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             CQCL.location_id,
             CQCL.gac_service_types,
             CQCLCleaned.imputed_gac_service_types,
-            CQCL.care_home,
             Keys.import_date,
             DimensionKeys.year,
             DimensionKeys.month,
