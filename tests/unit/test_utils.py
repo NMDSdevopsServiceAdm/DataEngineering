@@ -906,7 +906,7 @@ class JoinDimensionTests(UtilsTests):
         result_df = utils.join_dimension(test_cqc_df, test_dim_df, "locationId")
 
         self.assertEqual(result_df.count(), expected_df.count())
-        self.assertEqual(result_df, expected_df)
+        self.assertEqual(result_df.collect(), expected_df.collect())
 
 
 if __name__ == "__main__":

@@ -222,13 +222,16 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             returned_df.select(column_order).collect(),
         )
 
-    @patch(f"{PATCH_PATH}.utils.read_from_parquet", side_effect=AnalysisException())
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
     def test_create_dimension_when_no_historic_data(
         self, mock_impute_missing_struct_column, mock_read_from_parquet
     ):
         # GIVEN
         #   Trying to read historic data creates an analysis exception
+        mock_read_from_parquet.side_effect = AnalysisException(
+            "The file does not exist"
+        )
         mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
             Data.create_gac_service_dimension_rows,
             Schemas.gac_service_dimension_input_schema,
