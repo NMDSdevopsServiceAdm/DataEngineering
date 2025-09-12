@@ -3317,9 +3317,9 @@ class CQCLocationsData:
     expected_gac_service_delta_when_no_history_rows = [
         (
             "loc-1",
-            date(2023, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
+            None,
             "2024",
             "02",
             "01",
@@ -3328,9 +3328,9 @@ class CQCLocationsData:
         ),
         (
             "loc-1",
-            date(2024, 2, 1),
             [{"name": "Name B", "description": "Desc B"}],
             [{"name": "Name B", "description": "Desc B"}],
+            None,
             "2024",
             "02",
             "01",
@@ -3339,9 +3339,9 @@ class CQCLocationsData:
         ),
         (
             "loc-2",
-            date(2023, 1, 1),
             [{"name": "Name A", "description": "Desc A"}],
             [{"name": "Name A", "description": "Desc A"}],
+            None,
             "2024",
             "02",
             "01",
@@ -3350,9 +3350,9 @@ class CQCLocationsData:
         ),
         (
             "loc-3",
-            date(2024, 2, 1),
             [{"name": "Name C", "description": "Desc C"}],
             [{"name": "Name C", "description": "Desc C"}],
+            None,
             "2024",
             "02",
             "01",
