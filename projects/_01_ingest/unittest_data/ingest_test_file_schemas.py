@@ -1785,6 +1785,7 @@ class CQCLocationsSchema:
     gac_service_dimension_input_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
                 CQCL.gac_service_types,
                 ArrayType(
@@ -1815,6 +1816,7 @@ class CQCLocationsSchema:
     gac_service_dimension_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
                 CQCL.gac_service_types,
                 ArrayType(
@@ -1911,13 +1913,13 @@ class CQCLocationsSchema:
     remove_specialist_colleges_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(Keys.import_date, StringType(), True),
             StructField(
                 CQCLClean.services_offered,
                 ArrayType(
                     StringType(),
                 ),
             ),
-            StructField(Keys.import_date, StringType(), True),
         ]
     )
     add_related_location_column_schema = StructType(

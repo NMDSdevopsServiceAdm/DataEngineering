@@ -116,6 +116,10 @@ class MainTests(CleanCQCLocationDatasetTests):
             Mock(),
             Mock(),
         )
+        remove_specialist_colleges_mock.return_value = (
+            Mock(),
+            Mock(),
+        )
 
         job.main(
             self.TEST_LOC_SOURCE,

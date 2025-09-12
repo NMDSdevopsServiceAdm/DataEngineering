@@ -3186,6 +3186,7 @@ class CQCLocationsData:
     previous_gac_service_dimension_rows = [
         (
             "loc-1",
+            date(2021, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
             CareHome.not_care_home,
@@ -3197,6 +3198,7 @@ class CQCLocationsData:
         ),
         (
             "loc-2",
+            date(2021, 1, 1),
             [{"name": "Name A", "description": "Desc A"}],
             [{"name": "Name A", "description": "Desc A"}],
             CareHome.care_home,
@@ -3211,24 +3213,28 @@ class CQCLocationsData:
     create_gac_service_dimension_rows = [
         (
             "loc-1",
+            date(2023, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
             "20230101",
         ),
         (
             "loc-1",
+            date(2024, 2, 1),
             [{"name": "Name B", "description": "Desc B"}],
             [{"name": "Name B", "description": "Desc B"}],
             "20240201",
         ),
         (
             "loc-2",
+            date(2023, 1, 1),
             [{"name": "Name A", "description": "Desc A"}],
             [{"name": "Name A", "description": "Desc A"}],
             "20230101",
         ),
         (
             "loc-3",
+            date(2024, 2, 1),
             [{"name": "Name C", "description": "Desc C"}],
             [{"name": "Name C", "description": "Desc C"}],
             "20240201",
@@ -3238,6 +3244,7 @@ class CQCLocationsData:
     expected_gac_service_delta_rows = [
         (
             "loc-1",
+            date(2023, 1, 1),
             None,
             [{"name": "Name B", "description": "Desc B"}],
             None,
@@ -3249,6 +3256,7 @@ class CQCLocationsData:
         ),
         (
             "loc-1",
+            date(2024, 2, 1),
             [{"name": "Name B", "description": "Desc B"}],
             [{"name": "Name B", "description": "Desc B"}],
             None,
@@ -3260,6 +3268,7 @@ class CQCLocationsData:
         ),
         (
             "loc-3",
+            date(2024, 2, 1),
             [{"name": "Name C", "description": "Desc C"}],
             [{"name": "Name C", "description": "Desc C"}],
             None,
@@ -3470,38 +3479,38 @@ class CQCLocationsData:
     ]
 
     test_only_service_specialist_colleges_rows = [
-        ("loc 1", [Services.specialist_college_service], "20240101"),
-        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
+        ("loc 1", "20240101", [Services.specialist_college_service]),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     test_multiple_services_specialist_colleges_rows = [
         (
             "loc 2",
+            "20240101",
             [
                 Services.specialist_college_service,
                 Services.acute_services_with_overnight_beds,
             ],
-            "20240101",
         ),
         (
             "loc 3",
+            "20240101",
             [
                 Services.acute_services_with_overnight_beds,
                 Services.specialist_college_service,
             ],
-            "20240101",
         ),
     ]
     test_without_specialist_colleges_rows = [
-        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     test_empty_array_specialist_colleges_rows = [
-        ("loc 5", [], "20240101"),
+        ("loc 5", "20240101", []),
     ]
     test_null_row_specialist_colleges_rows = [
-        ("loc 6", None, "20240101"),
+        ("loc 6", "20240101", None),
     ]
     expected_only_service_specialist_colleges_rows = [
-        ("loc 4", [Services.care_home_service_with_nursing], "20240101"),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     expected_multiple_services_specialist_colleges_rows = (
         test_multiple_services_specialist_colleges_rows
