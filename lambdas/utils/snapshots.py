@@ -44,6 +44,9 @@ def build_snapshot_table_from_delta(
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
 
+    Raises:
+        DataError: if no snapshot is found for the specified date
+
     """
     for snapshot in get_snapshots(bucket, read_folder, organisation_type):
         if snapshot.item(1, Keys.import_date) == timepoint:
@@ -69,6 +72,7 @@ def get_snapshots(
 
     Raises:
         ValueError: If the organisation_type is not supported
+        DataError: If the base snapshot is not found
 
     """
 
