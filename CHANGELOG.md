@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added provider name into the merged dataframe within the CQC Coverage job.
 
 ### Changed
+- Removed all of the old Step Functions now the newer ones are fully operational.
 
 ### Improved
 
