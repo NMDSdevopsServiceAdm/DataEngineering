@@ -712,7 +712,6 @@ class FlattenCQCRatings:
             ],
         ),
     ]
-
     expected_flatten_ratings_rows = [
         (
             "loc_1",
@@ -726,7 +725,8 @@ class FlattenCQCRatings:
             "Effective rating Good",
         )
     ]
-    flatten_assessment_ratings_rows = [
+
+    prepare_assessment_ratings_rows = [
         (
             "loc_1",
             "registered",
@@ -1010,7 +1010,7 @@ class FlattenCQCRatings:
             ],
         )
     ]
-    expected_flatten_assessment_ratings_rows = [
+    expected_prepare_assessment_ratings_rows = [
         # --- Current Overall (Good, Current) ---
         (
             "loc_1",
