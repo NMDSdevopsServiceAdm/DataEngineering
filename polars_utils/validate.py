@@ -32,7 +32,7 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
     s3_client.put_object(
         Body=report.as_raw_html(inline_css=True, make_page=True),
         Bucket=bucket_name,
-        Key=f"{reports_path}/index.html",
+        Key=f"""{reports_path.strip("/")}/index.html""",
     )
     try:
         validation.assert_below_threshold(level="warning")

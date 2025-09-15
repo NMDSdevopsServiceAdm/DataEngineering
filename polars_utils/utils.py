@@ -23,7 +23,7 @@ def read_parquet(
 
     Args:
         source (str | Path): the full path in s3 of the dataset to be validated
-        schema
+        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
         selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
         exclude_complex_types (bool, optional): whether or not to exclude types which

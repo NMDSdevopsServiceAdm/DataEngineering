@@ -285,7 +285,7 @@ def main(
             )
         )
     )
-    vl.write_reports(validation, bucket_name, reports_path.strip("/"))
+    vl.write_reports(validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
