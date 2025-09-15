@@ -151,7 +151,7 @@ def main(
     )
     regulated_activity_delta = extract_registered_manager_names(
         regulated_activity_delta
-    )
+    ).drop(CQCLClean.cqc_location_import_date)
 
     utils.write_to_parquet(
         regulated_activity_delta,
@@ -185,7 +185,8 @@ def main(
     specialisms_delta = classify_specialisms(
         specialisms_delta,
         Specialisms.mental_health,
-    )
+    ).drop(CQCLClean.cqc_location_import_date)
+
     utils.write_to_parquet(
         specialisms_delta,
         output_dir=specialisms_destination,
@@ -216,7 +217,9 @@ def main(
     )
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
-    gac_service_delta = realign_carehome_column_with_primary_service(gac_service_delta)
+    gac_service_delta = realign_carehome_column_with_primary_service(
+        gac_service_delta
+    ).drop(CQCLClean.cqc_location_import_date)
 
     utils.write_to_parquet(
         gac_service_delta,
@@ -235,6 +238,7 @@ def main(
         postcode_matching_destination,
         dimension_update_date,
     )
+
     registered_locations_df = registered_locations_df.drop(
         CQCL.postal_code, CQCL.postal_address_line1
     )
@@ -358,7 +362,7 @@ def create_dimension_from_missing_struct_column(
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
 
-    return delta.drop(CQCLClean.cqc_location_import_date)
+    return delta
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
