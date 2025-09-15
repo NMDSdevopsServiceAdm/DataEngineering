@@ -51,7 +51,7 @@
                 "compare_path_arg": "--compare_path",
                 "compare_path.$": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
               },
-              "Next": "Read Last Locations Run"
+              "Next": "Clean CQC Location Data"
             },
             "Clean CQC Location Data": {
               "Type": "Task",
