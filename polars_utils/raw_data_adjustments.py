@@ -11,8 +11,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
 )
 
-CONFIG = Path(__file__).parent / "adjustments.json"
-ADJUSTMENTS = json.loads(CONFIG.read_text())
+CONFIG = Path(__file__).parent / "exclusions.json"
+EXCLUSIONS = json.loads(CONFIG.read_text())
 
 
 def is_duplicated_worker_data(df: pl.DataFrame) -> pl.Expr:
@@ -27,7 +27,7 @@ def is_duplicated_worker_data(df: pl.DataFrame) -> pl.Expr:
     Returns:
         pl.Expr: an expression that shows which records are marked for exclusions
     """
-    duplicate_workers = ADJUSTMENTS["exclusions"]["worker"]
+    duplicate_workers = EXCLUSIONS["worker"]
     return (
         pl.struct(
             pl.col("workerid"),
@@ -59,10 +59,9 @@ def is_duplicated_workplace_data(df: pl.DataFrame) -> pl.Expr:
     Returns:
         pl.Expr: an expression that shows which records are marked for exclusions
     """
-    duplicates = list(
-        itertools.chain.from_iterable(ADJUSTMENTS["establishmentid"].values())
-    )
-    return pl.col(AWPClean.establishment_id).is_in(duplicates).not_()
+    duplicate_workplaces = EXCLUSIONS["workplace"]["establishmentid"]
+    duplicates = list(itertools.chain.from_iterable(duplicate_workplaces.values()))
+    return pl.col(AWPClean.establishment_id).is_in(duplicates)
 
 
 def is_invalid_location(df: pl.DataFrame) -> pl.Expr:
@@ -88,5 +87,5 @@ def is_invalid_location(df: pl.DataFrame) -> pl.Expr:
     Returns:
         pl.Expr: an expression that shows which records are marked for exclusions
     """
-    invalid_locations = ADJUSTMENTS["exclusions"]["locationId"].values()
+    invalid_locations = EXCLUSIONS["locationId"].values()
     return pl.col(CQCL.location_id).is_in(invalid_locations)

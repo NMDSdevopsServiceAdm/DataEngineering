@@ -608,7 +608,7 @@ module "validate_ascwds_workplace_cleaned_data_job" {
 
   job_parameters = {
     "--cleaned_ascwds_workplace_source" = "${module.datasets_bucket.bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/"
-    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset= vworkplace_cleaned/"
+    "--report_destination"              = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_workplace_cleaned/"
   }
 }
 
