@@ -202,7 +202,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
         #   The updated rows and the new row should be returned
         expected_df = self.spark.createDataFrame(
             Data.expected_gac_service_delta_rows,
-            Schemas.gac_service_dimension_schema,
+            Schemas.gac_service_dimension_return_schema,
         )
         mock_read_from_parquet.assert_called_once_with(
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE

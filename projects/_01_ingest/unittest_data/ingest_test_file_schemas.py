@@ -1860,6 +1860,41 @@ class CQCLocationsSchema:
     gac_service_dimension_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(
+                CQCL.gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+                True,
+            ),
+            StructField(
+                CQCLClean.imputed_gac_service_types,
+                ArrayType(
+                    StructType(
+                        [
+                            StructField(CQCL.name, StringType(), True),
+                            StructField(CQCL.description, StringType(), True),
+                        ]
+                    )
+                ),
+            ),
+            StructField(CQCL.care_home, StringType(), True),
+            StructField(DimensionKeys.year, StringType(), True),
+            StructField(DimensionKeys.month, StringType(), True),
+            StructField(DimensionKeys.day, StringType(), True),
+            StructField(DimensionKeys.import_date, StringType(), True),
+            StructField(DimensionKeys.last_updated, StringType(), True),
+        ]
+    )
+
+    gac_service_dimension_return_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
                 CQCL.gac_service_types,
