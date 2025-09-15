@@ -261,7 +261,13 @@ def main(
 def create_postcode_matching_dimension(
     cqc_df, postcode_df, dimension_location, dimension_update_date
 ):
-    previous_dimension = utils.read_from_parquet(dimension_location)
+    try:
+        previous_dimension = utils.read_from_parquet(dimension_location)
+    except AnalysisException:
+        print(
+            f"The postcode dimension was not found in {dimension_location}. A new dimension will be created."
+        )
+        previous_dimension = None
 
     current_dimension = run_postcode_matching(
         cqc_df.select(
@@ -274,8 +280,8 @@ def create_postcode_matching_dimension(
         postcode_df,
     )
 
-    delta = (
-        current_dimension.join(
+    if previous_dimension:
+        delta = current_dimension.join(
             previous_dimension,
             on=[
                 CQCLClean.location_id,
@@ -284,15 +290,19 @@ def create_postcode_matching_dimension(
             ],
             how="anti",
         )
-        .withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
+        for col_name in missing_dim_columns:
+            delta = delta.withColumn(col_name, F.lit(None))
+
+    else:
+        delta = current_dimension
+
+    delta = (
+        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
-
-    missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-    for col_name in missing_dim_columns:
-        delta = delta.withColumn(col_name, F.lit(None))
 
     return delta
 
