@@ -20,21 +20,14 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
 from utils.column_names.coverage_columns import CoverageColumns
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
 )
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
@@ -1296,6 +1289,7 @@ class FlattenCQCRatings:
     add_rating_sequence_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
         ]
     )

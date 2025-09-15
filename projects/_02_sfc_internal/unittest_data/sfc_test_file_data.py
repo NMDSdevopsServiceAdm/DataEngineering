@@ -7,7 +7,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCRatingsValues,
-    CQCCurrentOrHistoricValues,
     IsParent,
     LocationType,
     ParentsOrSinglesAndSubs,
@@ -1529,28 +1528,34 @@ class FlattenCQCRatings:
     ]
 
     add_rating_sequence_rows = [
-        ("loc_1", "2024-01-01"),
-        ("loc_1", "2024-01-02"),
-        ("loc_2", "2024-01-01"),
-        ("loc_2", "2024-02-01"),
-        ("loc_3", "2023-01-01"),
-        ("loc_3", "2024-01-01"),
+        ("loc_1", "Care Homes", "2024-01-01"),
+        ("loc_1", "Care Homes", "2024-01-02"),
+        ("loc_2", "Care Homes", "2024-01-01"),
+        ("loc_2", "Care Homes", "2024-02-01"),
+        ("loc_3", "Care Homes", "2023-01-01"),
+        ("loc_3", "Other Service", "2024-01-01"),
+        ("loc_4", "Care Homes", "2024-01-01"),
+        ("loc_4", "Other Service", "2024-01-01"),
     ]
     expected_add_rating_sequence_rows = [
-        ("loc_1", "2024-01-02", 2),
-        ("loc_2", "2024-01-01", 1),
-        ("loc_2", "2024-02-01", 2),
-        ("loc_1", "2024-01-01", 1),
-        ("loc_3", "2023-01-01", 1),
-        ("loc_3", "2024-01-01", 2),
+        ("loc_1", "Care Homes", "2024-01-02", 2),
+        ("loc_2", "Care Homes", "2024-01-01", 1),
+        ("loc_2", "Care Homes", "2024-02-01", 2),
+        ("loc_1", "Care Homes", "2024-01-01", 1),
+        ("loc_3", "Care Homes", "2023-01-01", 1),
+        ("loc_3", "Other Service", "2024-01-01", 2),
+        ("loc_4", "Care Homes", "2024-01-01", 1),
+        ("loc_4", "Other Service", "2024-01-01", 1),
     ]
     expected_reversed_add_rating_sequence_rows = [
-        ("loc_1", "2024-01-02", 1),
-        ("loc_2", "2024-01-01", 2),
-        ("loc_2", "2024-02-01", 1),
-        ("loc_1", "2024-01-01", 2),
-        ("loc_3", "2023-01-01", 2),
-        ("loc_3", "2024-01-01", 1),
+        ("loc_1", "Care Homes", "2024-01-02", 1),
+        ("loc_2", "Care Homes", "2024-01-01", 2),
+        ("loc_2", "Care Homes", "2024-02-01", 1),
+        ("loc_1", "Care Homes", "2024-01-01", 2),
+        ("loc_3", "Care Homes", "2023-01-01", 2),
+        ("loc_3", "Other Service", "2024-01-01", 1),
+        ("loc_4", "Care Homes", "2024-01-01", 1),
+        ("loc_4", "Other Service", "2024-01-01", 1),
     ]
 
     add_latest_rating_flag_rows = [
