@@ -64,6 +64,7 @@
                   "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
                 }
               },
+              "ResultPath": "$.cleanLocationResult",
               "Next": "Validate Locations Cleaned"
             },
             "Validate Locations Cleaned": {
