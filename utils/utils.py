@@ -359,8 +359,12 @@ def join_dimension(
         for c in current_dimension.columns
         if c not in [primary_key, DimensionKeys.import_date]
     ]:
+        print(dim_col)
+        print(joined_df.filter(F.col(dim_col).isNull()).count())
+
         joined_df = joined_df.withColumn(
             dim_col, F.last(dim_col, ignorenulls=True).over(window_spec)
         )
+        print(joined_df.filter(F.col(dim_col).isNull()).count())
 
     return joined_df
