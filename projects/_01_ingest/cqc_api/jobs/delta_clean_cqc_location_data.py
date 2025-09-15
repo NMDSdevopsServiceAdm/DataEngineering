@@ -359,9 +359,6 @@ def create_dimension_from_missing_struct_column(
             ],
             how="anti",
         )
-        missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-        for col_name in missing_dim_columns:
-            delta = delta.withColumn(col_name, F.lit(None))
     else:
         delta = current_dimension
 
