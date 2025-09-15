@@ -1,46 +1,14 @@
 import json
-from pathlib import Path
 from typing import Callable
 
 import boto3
 import pointblank as pb
 import polars as pl
-import polars.selectors as cs
 
 from polars_utils import utils
 from polars_utils.logger import get_logger
 
 logger = get_logger(__name__)
-
-
-def read_parquet(
-    source: str | Path,
-    selected_columns: list[str] | None = None,
-    exclude_complex_types: bool = False,
-) -> pl.DataFrame:
-    """Reads in a parquet in a format suitable for validating.
-
-    Args:
-        source (str | Path): the full path in s3 of the dataset to be validated
-        selected_columns (list[str] | None, optional): list of columns to return as a
-            subset of the columns in the schema. Defaults to None.
-        exclude_complex_types (bool, optional): whether or not to exclude types which
-            cannot be validated using pointblank (ie., Structs, Lists or similar).
-            Defaults to False.
-
-    Returns:
-        pl.DataFrame: the raw data as a polars Dataframe
-    """
-    raw = pl.scan_parquet(
-        source,
-        cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-        # extra_columns="ignore",
-    ).select(selected_columns or cs.all())
-
-    if not exclude_complex_types:
-        return raw.collect()
-
-    return raw.select(~cs.by_dtype(pl.Struct, pl.List)).collect()
 
 
 def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) -> None:

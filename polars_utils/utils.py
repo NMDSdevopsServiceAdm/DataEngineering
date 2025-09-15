@@ -1,14 +1,56 @@
 import argparse
 import logging
 import uuid
+from pathlib import Path
 
 import polars as pl
+import polars.selectors as cs
 
 util_logger = logging.getLogger(__name__)
 util_logger.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
+
+
+def read_parquet(
+    source: str | Path,
+    schema: pl.Schema | None = None,
+    selected_columns: list[str] | None = None,
+    exclude_complex_types: bool = False,
+) -> pl.DataFrame:
+    """Reads in a parquet in a format suitable for validating.
+
+    Args:
+        source (str | Path): the full path in s3 of the dataset to be validated
+        schema (pl.Schema | None, optional): the schema for the source data.
+            Defaults to None.
+        selected_columns (list[str] | None, optional): list of columns to return as a
+            subset of the columns in the schema. Defaults to None.
+        exclude_complex_types (bool, optional): whether or not to exclude types which
+            cannot be validated using pointblank (ie., Structs, Lists or similar).
+            Defaults to False.
+
+    Returns:
+        pl.DataFrame: the raw data as a polars Dataframe
+    """
+    if isinstance(source, str):
+        source = source.strip("/") + "/"
+
+    if not schema:
+        schema_dict = pl.read_parquet_schema(source)
+        schema = pl.Schema(schema_dict)
+
+    raw = pl.read_parquet(
+        source,
+        columns=selected_columns,
+        schema=schema,
+        missing_columns="insert",
+    )
+    if not exclude_complex_types:
+        return raw
+
+    return raw.select(~cs.by_dtype(pl.Struct, pl.List))
 
 
 def write_to_parquet(

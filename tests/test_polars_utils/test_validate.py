@@ -5,6 +5,7 @@ from unittest.mock import ANY, patch
 import pointblank as pb
 import polars as pl
 
+from polars_utils import utils
 from polars_utils import validate as vl
 
 SRC_PATH = "polars_utils.validate"
@@ -80,7 +81,7 @@ class ValidateTests(unittest.TestCase):
             }
         )
         # When
-        result = vl.read_parquet(TEMP_FILE)
+        result = utils.read_parquet(TEMP_FILE)
         # Then
         self.assertTrue(result.equals(expected))
 
@@ -93,7 +94,7 @@ class ValidateTests(unittest.TestCase):
             }
         )
         # When
-        result = vl.read_parquet(TEMP_FILE, exclude_complex_types=True)
+        result = utils.read_parquet(TEMP_FILE, exclude_complex_types=True)
         # Then
         self.assertTrue(result.equals(expected))
 

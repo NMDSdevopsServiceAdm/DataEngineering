@@ -209,9 +209,9 @@ def main(
         reports_path (str): the output path to write reports to
         compare_path (str): optional path to a dataset to compare against for expected size
     """
-    source_df = vl.read_parquet(f"""s3://{bucket_name}/{source_path.strip("/")}/""")
-    compare_df = vl.read_parquet(
-        f"""s3://{bucket_name}/{compare_path.strip("/")}/""",
+    source_df = utils.read_parquet(f"s3://{bucket_name}/{source_path}")
+    compare_df = utils.read_parquet(
+        f"s3://{bucket_name}/{compare_path}",
         selected_columns=raw_cqc_locations_columns_to_import,
     )
 
