@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
   - locations_raw
 
 - Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datastes.
+
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
 
 - Removed all of the old Step Functions now the newer ones are fully operational.
