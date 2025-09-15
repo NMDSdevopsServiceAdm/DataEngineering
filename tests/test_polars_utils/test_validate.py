@@ -6,7 +6,7 @@ import pointblank as pb
 import polars as pl
 
 from polars_utils import utils
-from polars_utils import validate as vl
+from polars_utils.validation import actions as vl
 
 SRC_PATH = "polars_utils.validate"
 SIMPLE_MOCK_CONFIG = {

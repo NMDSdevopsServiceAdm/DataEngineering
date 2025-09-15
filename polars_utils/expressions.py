@@ -32,11 +32,10 @@ def has_value(
     )
 
 
-def str_length_cols(df: pl.DataFrame, columns: list[str]) -> list[pl.Expr]:
+def str_length_cols(columns: list[str]) -> list[pl.Expr]:
     """Provides the string lengths for each value in a column as a list of column expressions.
 
     Args:
-        df (pl.DataFrame): the DataFrame to analyse
         columns (list[str]): a list of column(s) to calculate string lengths for
 
     Returns:

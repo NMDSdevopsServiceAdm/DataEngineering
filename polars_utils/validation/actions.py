@@ -25,14 +25,14 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
     Raises:
         AssertionError: in case of the dataset failing the validation rules
     """
-
+    reports_path = reports_path.strip("/")
     report = validation.get_tabular_report()
 
     s3_client = boto3.client("s3")
     s3_client.put_object(
         Body=report.as_raw_html(inline_css=True, make_page=True),
         Bucket=bucket_name,
-        Key=f"""{reports_path.strip("/")}/index.html""",
+        Key=f"{reports_path}/index.html",
     )
     try:
         validation.assert_below_threshold(level="warning")
@@ -68,16 +68,20 @@ def _report_on_fail(
     _col_or_cols = step["column"]  # could be a string or a list
     columns = "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
 
+    # get_data_extracts does not provide info for custom validations
     failed_records_df = validation.get_data_extracts(step_idx, frame=True)
-    utils.write_to_parquet(
-        failed_records_df,  # type: ignore = frame=True returns a df
-        f"s3://{bucket_name}/{path}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
-    )
+    # get_data_extracts does not provide info for custom validations
+    if isinstance(failed_records_df, pl.DataFrame):
+        utils.write_to_parquet(
+            failed_records_df,  # type: ignore = frame=True returns a df
+            f"s3://{bucket_name}/{path}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
+            append=False,
+        )
 
 
 def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], bool]:
-    """Creates a function which checks if a the number of different unique values in
-    a column matches a provided value.
+    """Creates a validation function which checks if a the number of different unique
+    values in a column matches a provided value.
 
     This function returns another Callable, for use in pointblank validations,
     particularly `specially` which requires that the inner function accepts only a

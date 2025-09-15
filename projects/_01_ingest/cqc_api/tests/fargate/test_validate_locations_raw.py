@@ -36,7 +36,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
         mock_read_parquet.return_value = self.raw_df
 
         # When
-        job.validate_dataset("bucket", "/my/dataset/", "my/reports/")
+        job.main("bucket", "/my/dataset/", "my/reports/")
 
         # Then
         mock_read_parquet.assert_called_once_with("s3://bucket/my/dataset/")

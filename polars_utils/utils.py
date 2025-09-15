@@ -44,9 +44,9 @@ def read_parquet(
         )
     else:
         logging.info("Determining schema from dataset scan")
-        # Polars will scan the first hive partition to establish the schema
-        # by including missing_columns="insert", we prevent a failure but
-        # will exclude columns introduced in later partitions
+        # Polars may only scan the first hive partition to establish the schema.
+        # By including missing_columns="insert", we prevent a failure but will
+        # exclude columns introduced in later partitions.
         # TODO: establish full schema from latest data
         raw = (
             pl.scan_parquet(
@@ -91,11 +91,12 @@ def write_to_parquet(
     """
     if df.height == 0:
         logger.info("The provided dataframe was empty. No data was written.")
-    else:
-        if append:
-            output_path += f"{uuid.uuid4()}.parquet"
-        df.write_parquet(output_path)
-        logger.info("Parquet written to {}".format(output_path))
+        return
+
+    if append:
+        output_path += f"{uuid.uuid4()}.parquet"
+    df.write_parquet(output_path)
+    logger.info("Parquet written to {}".format(output_path))
 
 
 def get_args(*args: tuple) -> argparse.Namespace:
