@@ -23,8 +23,7 @@ def read_parquet(
 
     Args:
         source (str | Path): the full path in s3 of the dataset to be validated
-        schema (pl.Schema | None, optional): the schema for the source data.
-            Defaults to None.
+        schema
         selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
         exclude_complex_types (bool, optional): whether or not to exclude types which
@@ -37,16 +36,29 @@ def read_parquet(
     if isinstance(source, str):
         source = source.strip("/") + "/"
 
-    if not schema:
-        schema_dict = pl.read_parquet_schema(source)
-        schema = pl.Schema(schema_dict)
+    if schema:
+        raw = pl.read_parquet(
+            source,
+            columns=selected_columns,
+            schema=schema,
+        )
+    else:
+        logging.info("Determining schema from dataset scan")
+        # Polars will scan the first hive partition to establish the schema
+        # by including missing_columns="insert", we prevent a failure but
+        # will exclude columns introduced in later partitions
+        # TODO: establish full schema from latest data
+        raw = (
+            pl.scan_parquet(
+                source,
+                cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+                extra_columns="ignore",
+                missing_columns="insert",
+            )
+            .select(selected_columns or cs.all())
+            .collect()
+        )
 
-    raw = pl.read_parquet(
-        source,
-        columns=selected_columns,
-        schema=schema,
-        missing_columns="insert",
-    )
     if not exclude_complex_types:
         return raw
 

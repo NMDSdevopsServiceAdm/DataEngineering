@@ -170,7 +170,7 @@ def expected_size(df: pl.DataFrame) -> int:
     has_provider: str = "has_a_known_provider_id"
 
     cleaned_df = df.with_columns(
-        # nullify empty lists to allow prevent index out of bounds error
+        # nullify empty lists to allow avoid index out of bounds error
         pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
             pl.col(CQCL.gac_service_types)
         ),
