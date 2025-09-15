@@ -20,7 +20,10 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
+)
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
     CapacityTrackerNonResCleanColumns as CTNRClean,
@@ -53,12 +56,14 @@ gac_dim_columns_to_import = [
     CQCLClean.primary_service_type,
     CQCLClean.care_home,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 ra_dim_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.imputed_regulated_activities,
     CQCLClean.registered_manager_names,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 specialism_dim_columns_to_import = [
     CQCLClean.location_id,
@@ -68,6 +73,7 @@ specialism_dim_columns_to_import = [
     CQCLClean.specialist_generalist_other_lda,
     CQCLClean.specialist_generalist_other_mh,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 pcm_dim_columns_to_import = [
     CQCLClean.location_id,
@@ -86,6 +92,7 @@ pcm_dim_columns_to_import = [
     ONSClean.current_lsoa21,
     ONSClean.current_rural_urban_ind_11,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 
 cleaned_ascwds_workplace_columns_to_import = [
