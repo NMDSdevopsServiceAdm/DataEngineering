@@ -308,7 +308,8 @@ def join_dimension(
     fact_df: DataFrame, dimension_df: DataFrame, primary_key: str
 ) -> DataFrame:
     """
-    Joins the most up-to-date version of a dimension onto a fact table
+    Joins the most up-to-date version of a dimension onto a fact table.
+    It then fills any values which are missing due to the delta nature of the dimension.
     Args:
         fact_df (DataFrame): The fact table to join onto.
         dimension_df (DataFrame): The dimension table to join.
@@ -321,9 +322,17 @@ def join_dimension(
     window_spec_dim = Window.partitionBy(
         primary_key, DimensionKeys.import_date
     ).orderBy(F.col(DimensionKeys.last_updated).desc())
-    current_dimension = dimension_df.withColumn(
-        "row_num", F.row_number().over(window_spec_dim)
-    ).filter(F.col("row_num") == 1)
+    current_dimension = (
+        dimension_df.withColumn("row_num", F.row_number().over(window_spec_dim))
+        .filter(F.col("row_num") == 1)
+        .drop(
+            "row_num",
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        )
+    )
 
     current_dimension = current_dimension.repartition(
         primary_key, DimensionKeys.import_date
@@ -332,13 +341,7 @@ def join_dimension(
 
     joined_df = fact_df.join(
         F.broadcast(
-            current_dimension.drop(
-                "row_num",
-                DimensionKeys.year,
-                DimensionKeys.month,
-                DimensionKeys.day,
-                DimensionKeys.last_updated,
-            ),
+            current_dimension,
         ),
         [
             primary_key,
@@ -346,4 +349,18 @@ def join_dimension(
         ],
         how="left",
     )
+
+    window_spec = Window.partitionBy(primary_key).orderBy(
+        F.col(DimensionKeys.import_date)
+    )
+
+    for dim_col in [
+        c
+        for c in dimension_df.columns
+        if c not in [primary_key, DimensionKeys.import_date]
+    ]:
+        joined_df = joined_df.withColumn(
+            dim_col, F.last(dim_col, ignorenulls=True).over(window_spec)
+        )
+
     return joined_df
