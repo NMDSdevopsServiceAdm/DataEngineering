@@ -84,7 +84,7 @@
                   "ContainerOverrides": [
                     {
                       "Name": "cqc-api-container",
-                      "Command.$": "States.Array($.validate_locations_script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path,, $.compare_path_arg, $.compare_path)"
+                      "Command.$": "States.Array($.validate_locations_script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path, $.compare_path_arg, $.compare_path)"
                     }
                   ]
                 }
