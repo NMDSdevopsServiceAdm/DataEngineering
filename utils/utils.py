@@ -356,7 +356,7 @@ def join_dimension(
 
     for dim_col in [
         c
-        for c in dimension_df.columns
+        for c in current_dimension.columns
         if c not in [primary_key, DimensionKeys.import_date]
     ]:
         joined_df = joined_df.withColumn(
