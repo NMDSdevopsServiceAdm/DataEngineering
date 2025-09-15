@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
 
-- Removed all of the old Step Functions now the newer ones are fully operational.
+- Removed the original Step Functions now the replacement ones are fully operational.
 
 ### Improved
 
@@ -60,6 +60,9 @@ All notable changes to this project will be documented in this file.
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
 - Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
+
+- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
+  - locations_raw
 
 ### Improved
 
