@@ -374,6 +374,28 @@ class MergeCoverageData:
     ]
     # fmt: on
 
+    sample_cqc_providers_for_merge_rows = [
+        ("provider_1", "Provider Name A", date(2025, 9, 1)),
+        ("provider_1", "Provider Name B", date(2025, 9, 8)),
+        ("provider_2", "Provider Name C", date(2025, 9, 8)),
+    ]
+    sample_merged_coverage_rows = [
+        ("loc_1", "provider_1"),
+        ("loc_2", "provider_1"),
+        ("loc_3", "provider_1"),
+        ("loc_4", "provider_2"),
+        ("loc_5", "provider_2"),
+        ("loc_6", "provider_2"),
+    ]
+    expected_merged_covergae_and_provider_name_joined_rows = [
+        ("loc_1", "provider_1", "Provider Name B"),
+        ("loc_2", "provider_1", "Provider Name B"),
+        ("loc_3", "provider_1", "Provider Name B"),
+        ("loc_4", "provider_2", "Provider Name C"),
+        ("loc_5", "provider_2", "Provider Name C"),
+        ("loc_6", "provider_2", "Provider Name C"),
+    ]
+
 
 @dataclass
 class ValidateMergedCoverageData:
@@ -1127,6 +1149,100 @@ class FlattenCQCRatings:
             CQCRatingsValues.good,
         ),
     ]
+    assessment_ratings_for_merging_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "2024-09-11 08:00:00",
+            "AP004",
+            "title",
+            "assessment_date_current",
+            "Assessed",
+            "SAF",
+            "Supported Living",
+            CQCCurrentOrHistoricValues.current,
+            CQCRatingsValues.good,
+            "assessment.ratings.asg_ratings",
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+        ),
+    ]
+    standard_ratings_for_merging_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "report_date",
+            CQCCurrentOrHistoricValues.current,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            "3",
+            "3",
+            "3",
+            "3",
+            "3",
+            "15",
+            "067b31658a0fcad5ac23",
+        )
+    ]
+    expected_merge_cqc_ratings_rows = [
+        (
+            "loc_1",
+            "2024-09-11",
+            "AP004",
+            "title",
+            "assessment_date_current",
+            "Assessed",
+            "Supported Living",
+            "Registered",
+            CQCCurrentOrHistoricValues.current,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            "3",
+            "3",
+            "3",
+            "3",
+            "3",
+            "15",
+            "067b31658a0fcad5ac23",
+            "SAF",
+        ),
+        (
+            "loc_1",
+            "report_date",
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Registered",
+            CQCCurrentOrHistoricValues.current,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            CQCRatingsValues.good,
+            "3",
+            "3",
+            "3",
+            "3",
+            "3",
+            "15",
+            "067b31658a0fcad5ac23",
+            "Pre SAF",
+        ),
+    ]
     recode_unknown_to_null_rows = [
         (
             "loc_1",
@@ -1558,6 +1674,7 @@ class FlattenCQCRatings:
     expected_create_standard_rating_dataset_rows = [
         (
             "loc_1",
+            "Registered",
             "2024-01-01",
             "Current",
             "Good",
@@ -1577,6 +1694,27 @@ class FlattenCQCRatings:
         ),
         (
             "loc_1",
+            "Degistered",
+            "2024-01-01",
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            1,
+            1,
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
+        ),
+        (
+            "loc_1",
+            "Registered",
             "2024-01-01",
             "Historic",
             "Good",
