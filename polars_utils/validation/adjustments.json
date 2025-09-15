@@ -1,0 +1,45 @@
+{
+  "exclusions": {
+    "worker": [
+      {
+        "workerid": "1737540",
+        "ascwds_worker_import_date": "20230802",
+        "establishmentid": "28208"
+      }
+    ],
+    "workplace": {
+      "establishmentid": {
+        "identical_ascwds_data": [
+          "48904",
+          "49966",
+          "49967",
+          "49968"
+        ],
+        "identical_data": [
+          "50538",
+          "50561",
+          "50590",
+          "50596",
+          "50598",
+          "50621",
+          "50623",
+          "50624",
+          "50627",
+          "50629",
+          "50639",
+          "50640",
+          "50767",
+          "50769",
+          "50770",
+          "50771",
+          "50869",
+          "50870"
+        ]
+      }
+    },
+    "locationId": {
+      "dental_practice": "1-12082335777",
+      "temp_registration": "1-127367030"
+    }
+  }
+}

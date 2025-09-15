@@ -8,6 +8,7 @@ from polars_utils import utils
 from polars_utils import validate as vl
 from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
+from polars_utils.validation.raw_data_adjustments import is_invalid_location
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -29,7 +30,6 @@ from utils.column_values.categorical_column_values import (
 from utils.column_values.categorical_columns_by_dataset import (
     CleanedIndCQCCategoricalValues as CatValues,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -169,25 +169,21 @@ def expected_size(df: pl.DataFrame) -> int:
     has_activity: str = "has_a_known_regulated_activity"
     has_provider: str = "has_a_known_provider_id"
 
-    archived_ids = RecordsToRemoveInLocationsData().__dict__.values()
-
     cleaned_df = df.with_columns(
         # nullify empty lists to allow prevent index out of bounds error
         pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
             pl.col(CQCL.gac_service_types)
         ),
+    ).filter(
         has_value(df, CQCL.regulated_activities, has_activity, CQCL.location_id).alias(
             has_activity
         ),
         has_value(df, CQCL.provider_id, has_provider, CQCL.location_id).alias(
             has_provider
         ),
-    ).filter(
-        pl.col(has_activity),
-        pl.col(has_provider),
         pl.col(CQCL.type) == LocationType.social_care_identifier,
         pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-        ~pl.col(CQCL.location_id).is_in(archived_ids),
+        ~is_invalid_location(df),
         ~(
             (pl.col(CQCL.gac_service_types).list.len() == 1)
             & (
