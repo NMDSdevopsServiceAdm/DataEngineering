@@ -229,6 +229,10 @@ resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
     cqc_crawler_name                             = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
     data_validation_reports_crawler_name         = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn         = aws_lambda_function.error_notification_lambda.arn
+    cluster_arn                                  = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                     = module.cqc-api.task_arn
+    public_subnet_ids                            = jsonencode(module.cqc-api.subnet_ids)
+    security_group_id                            = module.cqc-api.security_group_id
   })
 
   logging_configuration {
