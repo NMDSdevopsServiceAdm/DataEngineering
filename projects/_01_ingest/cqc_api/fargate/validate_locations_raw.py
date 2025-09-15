@@ -5,11 +5,17 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils import validate as vl
 from polars_utils.logger import get_logger
-from polars_utils.validation_enums import ValidationDatasets, Validator
+
+# from polars_utils.validation_enums import ValidationDatasets, Validator
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 logger = get_logger(__name__)
 
-
+COMPLETE_COLUMNS = [CQCL.location_id, Keys.import_date, CQCL.name]
+INDEX_COLUMNS = [CQCL.location_id, Keys.import_date]
 # class Rules(list[str], Enum):
 #     pass
 
@@ -58,16 +64,15 @@ def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> N
     """
     source_df = vl.read_parquet(f"""s3://{bucket_name}/{source_path.strip("/")}/""")
 
-    rule_set = ValidationDatasets["locations_raw"].value
+    # rule_set = ValidationDatasets["locations_raw"].value
 
     validation = (
-        # pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
-        Validator(data=source_df, thresholds=pb.Thresholds(warning=1)).add_checks(
-            rule_set
-        )
-        # .add_checks(LocationsRaw)
-        # .col_vals_not_null(Rules.COLS_NOT_NULL)
-        # .rows_distinct(Validations.ROWS_DISTINCT)
+        # Validator(data=source_df, thresholds=pb.Thresholds(warning=1)).add_checks(
+        #     rule_set
+        # )
+        pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
+        .col_vals_not_null(COMPLETE_COLUMNS)
+        .rows_distinct(INDEX_COLUMNS)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path.strip("/"))

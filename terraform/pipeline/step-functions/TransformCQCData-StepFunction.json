@@ -36,9 +36,9 @@
           }
         },
         {
-          "StartAt": "Clean CQC Location Data",
+          "StartAt": "Set Parameters",
           "States": {
-            "Set parameters": {
+            "Set Parameters": {
               "Type": "Pass",
               "Result": {
                 "validate_locations_script": "validate_locations_cleaned.py",
@@ -47,7 +47,7 @@
                 "source_path_arg": "--source_path",
                 "source_path.$": "domain=CQC_delta/dataset=full_locations_api_cleaned/",
                 "reports_path_arg": "--reports_path",
-                "reports_path.$": "domain=data_validation_reports/dataset=full_locations_api_cleaned_test/",
+                "reports_path.$": "domain=data_validation_reports/dataset=data_validation_reports_full_locations_api_cleaned/",
                 "compare_path_arg": "--compare_path",
                 "compare_path.$": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
               },
