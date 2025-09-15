@@ -77,7 +77,10 @@ def main(
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
-    ratings_df = current_ratings_df.unionByName(historic_ratings_df)
+
+    ratings_pre_saf_df = current_ratings_df.unionByName(historic_ratings_df)
+    ratings_df = merge_cqc_ratings(assessment_ratings_df, ratings_pre_saf_df)
+
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
@@ -85,9 +88,6 @@ def main(
     ratings_df = add_numerical_ratings(ratings_df)
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
     standard_ratings_df = add_location_id_hash(standard_ratings_df)
-    assessment_and_standard_ratings_merged_df = merge_cqc_ratings(
-        assessment_ratings_df, standard_ratings_df
-    )
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
     benchmark_ratings_df = join_establishment_ids(
@@ -96,7 +96,7 @@ def main(
     benchmark_ratings_df = create_benchmark_ratings_dataset(benchmark_ratings_df)
 
     utils.write_to_parquet(
-        assessment_and_standard_ratings_merged_df,
+        standard_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -474,13 +474,6 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.safe_rating_value,
-        CQCRatings.well_led_rating_value,
-        CQCRatings.caring_rating_value,
-        CQCRatings.responsive_rating_value,
-        CQCRatings.effective_rating_value,
-        CQCRatings.total_rating_value,
-        CQCRatings.location_id_hash,
         CQCL.dataset,
     ]
     standard_df = standard_ratings_df.select(
@@ -494,13 +487,6 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.safe_rating_value,
-        CQCRatings.well_led_rating_value,
-        CQCRatings.caring_rating_value,
-        CQCRatings.responsive_rating_value,
-        CQCRatings.effective_rating_value,
-        CQCRatings.total_rating_value,
-        CQCRatings.location_id_hash,
         F.lit("Pre SAF").alias(CQCL.dataset),
     )
     assessment_df = assessment_ratings_df.select(
@@ -525,11 +511,7 @@ def merge_cqc_ratings(
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
         CQCL.dataset,
     )
-    assessment_df = add_numerical_ratings(assessment_df)
-    assessment_df = add_location_id_hash(assessment_df)
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
-    merged_df = recode_unknown_codes_to_null(merged_df)
-    merged_df = remove_blank_and_duplicate_rows(merged_df)
     return merged_df.select(*expected_columns)
 
 
