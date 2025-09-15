@@ -55,7 +55,8 @@ resource "aws_iam_policy" "s3_read_write_policy" {
         Action = [
           "s3:GetObject*",
           "s3:PutObject*",
-          "s3:ListObjects"
+          "s3:ListObjects",
+          "s3:ListBucket"
         ],
         Resource = [
           "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/*",

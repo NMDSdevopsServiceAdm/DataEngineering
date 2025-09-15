@@ -29,7 +29,6 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
-    TEST_ASSESSMENT_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -50,6 +49,7 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.join_establishment_ids")
     @patch(f"{PATCH_PATH}.add_good_and_outstanding_flag_column")
     @patch(f"{PATCH_PATH}.select_ratings_for_benchmarks")
+    @patch(f"{PATCH_PATH}.merge_cqc_ratings")
     @patch(f"{PATCH_PATH}.add_location_id_hash")
     @patch(f"{PATCH_PATH}.create_standard_ratings_dataset")
     @patch(f"{PATCH_PATH}.add_numerical_ratings")
@@ -76,6 +76,7 @@ class MainTests(FlattenCQCRatingsTests):
         add_numerical_ratings_mock: Mock,
         create_standard_ratings_dataset_mock: Mock,
         add_location_id_hash_mock: Mock,
+        merge_cqc_ratings_mock: Mock,
         select_ratings_for_benchmarks_mock: Mock,
         add_good_and_outstanding_flag_column_mock: Mock,
         join_establishment_ids_mock: Mock,
@@ -92,7 +93,6 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
-            self.TEST_ASSESSMENT_RATINGS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -107,11 +107,12 @@ class MainTests(FlattenCQCRatingsTests):
         add_numerical_ratings_mock.assert_called_once()
         create_standard_ratings_dataset_mock.assert_called_once()
         add_location_id_hash_mock.assert_called_once()
+        merge_cqc_ratings_mock.assert_called_once()
         select_ratings_for_benchmarks_mock.assert_called_once()
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
         create_benchmark_ratings_dataset_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_mock.call_count, 3)
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
 
         expected_write_to_parquet_calls = [
             call(
@@ -122,11 +123,6 @@ class MainTests(FlattenCQCRatingsTests):
             call(
                 ANY,
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
-                mode="overwrite",
-            ),
-            call(
-                ANY,
-                self.TEST_ASSESSMENT_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
         ]
@@ -269,6 +265,41 @@ class FlattenAssessmentRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_rows, expected_rows)
 
     def test_flatten_assessment_ratings_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class MergeCQCRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_assessment_ratings_df = self.spark.createDataFrame(
+            Data.assessment_ratings_for_merging_rows,
+            Schema.assessment_ratings_for_merging_schema,
+        )
+        self.test_standard_ratings_df = self.spark.createDataFrame(
+            Data.standard_ratings_for_merging_rows,
+            Schema.standard_ratings_for_merging_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merge_cqc_ratings_rows,
+            Schema.expected_merge_cqc_ratings_schema,
+        )
+        self.returned_df = job.merge_cqc_ratings(
+            self.test_assessment_ratings_df, self.test_standard_ratings_df
+        )
+
+    def test_merge_cqc_ratings_returns_correct_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_merge_cqc_ratings_returns_correct_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_merge_cqc_ratings_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
