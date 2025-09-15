@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import Callable
 
 import boto3
 import pointblank as pb
@@ -13,14 +14,19 @@ logger = get_logger(__name__)
 
 
 def read_parquet(
-    source: str | Path, exclude_complex_types: bool = False
+    source: str | Path,
+    selected_columns: list[str] | None = None,
+    exclude_complex_types: bool = False,
 ) -> pl.DataFrame:
-    """Reads in a parquet in a format suitable for validating
+    """Reads in a parquet in a format suitable for validating.
 
     Args:
         source (str | Path): the full path in s3 of the dataset to be validated
-        exclude_complex_types (bool, optional): whether or not to exclude types which cannot be
-            validated using pointblank (ie., Structs, Lists or similar). Defaults to False.
+        selected_columns (list[str] | None, optional): list of columns to return as a 
+            subset of the columns in the schema. Defaults to None.
+        exclude_complex_types (bool, optional): whether or not to exclude types which 
+            cannot be validated using pointblank (ie., Structs, Lists or similar). 
+            Defaults to False.
 
     Returns:
         pl.DataFrame: the raw data as a polars Dataframe
@@ -28,8 +34,9 @@ def read_parquet(
     raw = pl.scan_parquet(
         source,
         cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
-        extra_columns="ignore",
-    )
+        # extra_columns="ignore",
+    ).select(selected_columns or cs.all())
+
     if not exclude_complex_types:
         return raw.collect()
 
@@ -75,13 +82,15 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
 def _report_on_fail(
     step: dict, validation: pb.Validate, bucket_name: str, path: str
 ) -> None:
-    """Checks a given pb.Validate step for failures and writes the failed records to S3 if present.
+    """Checks a given pb.Validate step for failures and writes the failed records to 
+    S3 if present.
 
     Args:
         step (dict): metadata on the validation step result
         validation (pb.Validate): the Validate object containing the resulting data
         bucket_name (str): the bucket in which to write reports
-        path (str): the filepath in the bucket to write, should include the validation report name
+        path (str): the filepath in the bucket to write, should include the validation 
+            report name
     """
     if step["all_passed"]:
         return
@@ -96,3 +105,26 @@ def _report_on_fail(
         failed_records_df,  # type: ignore = frame=True returns a df
         f"s3://{bucket_name}/{path}/failed_step_{step_idx}_{assertion}_{columns}.parquet",
     )
+
+
+def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], bool]:
+    """Creates a function which checks if a the number of different unique values in 
+    a column matches a provided value.
+
+    This function returns another Callable, for use in pointblank validations, 
+    particularly `specially` which requires that the inner function accepts only a 
+    single parameter (pl.DataFrame) as its arguments.
+
+    Args:
+        column (str): the column to check
+        value (int): the value to assert against
+
+    Returns:
+        Callable[[pl.DataFrame], bool]: the inner function which checks the unique 
+        value count
+    """
+
+    def is_unique_count_equal(df: pl.DataFrame) -> bool:
+        return df.n_unique(subset=[column]) == value
+
+    return is_unique_count_equal
