@@ -9,6 +9,11 @@ variable "aws_secret_key" {
   sensitive   = true
 }
 
+variable "bucket" {
+    type = string
+    description = "Reference to terraform remote state bucket from *.s3.tfbackend"
+}
+
 variable "region" {
   default = "eu-west-2"
 }
