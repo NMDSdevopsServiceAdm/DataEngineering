@@ -5,15 +5,46 @@ import pointblank as pb
 from polars_utils import utils
 from polars_utils import validate as vl
 from polars_utils.logger import get_logger
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
+from polars_utils.validation_enums import ValidationDatasets, Validator
 
 logger = get_logger(__name__)
 
-COLS_NOT_NULL = [CQCL.location_id, Keys.import_date, CQCL.name]
-ROWS_DISTINCT = [CQCL.location_id, Keys.import_date]
+
+# class Rules(list[str], Enum):
+#     pass
+
+
+# class ListRules(Rules):
+#     cols_not_null = [CQCL.location_id, Keys.import_date, CQCL.name]
+#     rows_distinct = [CQCL.location_id, Keys.import_date]
+
+
+# class LocationsRaw(Enum):
+#     lists: ListRules
+
+
+# class ValidationDatasets(Enum):
+#     locations_raw = LocationsRaw
+
+
+# class Validator(pb.Validate):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+
+#     def add_checks(self, rules_parent: EnumType) -> "Validator":
+#         for data_types, enum_class in rules_parent.__members__.items():
+#             match data_types:
+#                 case "lists":
+#                     self = self.add_list_rules(enum_class)
+#                 case _:
+#                     logger.warning(f"Unrecognised rule set {data_types}")
+#         return self
+
+#     def add_list_rules(self, rule_set: EnumType) -> "Validator":
+#         for rule_type, values in rule_set.__members__.items():
+#             func = getattr(self, rule_type)
+#             self = func(values)
+#         return self
 
 
 def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> None:
@@ -27,10 +58,16 @@ def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> N
     """
     source_df = vl.read_parquet(f"""s3://{bucket_name}/{source_path.strip("/")}/""")
 
+    rule_set = ValidationDatasets["locations_raw"].value
+
     validation = (
-        pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
-        .col_vals_not_null(COLS_NOT_NULL)
-        .rows_distinct(ROWS_DISTINCT)
+        # pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
+        Validator(data=source_df, thresholds=pb.Thresholds(warning=1)).add_checks(
+            rule_set
+        )
+        # .add_checks(LocationsRaw)
+        # .col_vals_not_null(Rules.COLS_NOT_NULL)
+        # .rows_distinct(Validations.ROWS_DISTINCT)
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path.strip("/"))
@@ -44,7 +81,7 @@ if __name__ == "__main__":
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
     )
-    logger.info(f"Starting validation for {args.dataset}")
+    logger.info(f"Starting validation for {args.source_path}")
 
-    validate_dataset(args.bucket_name, args.source_path, args.report_path)
-    logger.info(f"Validation of {args.dataset} complete")
+    validate_dataset(args.bucket_name, args.source_path, args.reports_path)
+    logger.info(f"Validation of {args.source_path} complete")

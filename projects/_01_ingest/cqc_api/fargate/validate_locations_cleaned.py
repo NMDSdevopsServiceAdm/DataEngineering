@@ -171,35 +171,31 @@ def expected_size(df: pl.DataFrame) -> int:
 
     archived_ids = RecordsToRemoveInLocationsData().__dict__.values()
 
-    cleaned_df = (
-        df.with_columns(
-            # nullify empty lists to allow prevent index out of bounds error
-            pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
-                pl.col(CQCL.gac_service_types)
-            ),
-            has_value(
-                df, CQCL.regulated_activities, has_activity, CQCL.location_id
-            ).alias(has_activity),
-            has_value(df, CQCL.provider_id, has_provider, CQCL.location_id).alias(
-                has_provider
-            ),
-        ).filter(
-            pl.col(has_activity),
-            pl.col(has_provider),
-            pl.col(CQCL.type) == LocationType.social_care_identifier,
-            pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-            ~pl.col(CQCL.location_id).is_in(archived_ids),
-            ~(
-                (pl.col(CQCL.gac_service_types).list.len() == 1)
-                & (
-                    pl.col(CQCL.gac_service_types)
-                    .list[0]
-                    .struct.field(CQCL.description)
-                    == Services.specialist_college_service
-                )
-                & (pl.col(CQCL.gac_service_types).is_not_null())
-            ),
-        )
+    cleaned_df = df.with_columns(
+        # nullify empty lists to allow prevent index out of bounds error
+        pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
+            pl.col(CQCL.gac_service_types)
+        ),
+        has_value(df, CQCL.regulated_activities, has_activity, CQCL.location_id).alias(
+            has_activity
+        ),
+        has_value(df, CQCL.provider_id, has_provider, CQCL.location_id).alias(
+            has_provider
+        ),
+    ).filter(
+        pl.col(has_activity),
+        pl.col(has_provider),
+        pl.col(CQCL.type) == LocationType.social_care_identifier,
+        pl.col(CQCL.registration_status) == RegistrationStatus.registered,
+        ~pl.col(CQCL.location_id).is_in(archived_ids),
+        ~(
+            (pl.col(CQCL.gac_service_types).list.len() == 1)
+            & (
+                pl.col(CQCL.gac_service_types).list[0].struct.field(CQCL.description)
+                == Services.specialist_college_service
+            )
+            & (pl.col(CQCL.gac_service_types).is_not_null())
+        ),
     )
     logger.info(f"Compared dataset has {cleaned_df.height} records")
     return cleaned_df.height
@@ -215,7 +211,7 @@ def main(
             - shoud correspond to workspace / feature branch name
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
-        compare_path (str | None): optional path to a dataset to compare against for expected size
+        compare_path (str): optional path to a dataset to compare against for expected size
     """
     source_df = vl.read_parquet(f"""s3://{bucket_name}/{source_path.strip("/")}/""")
     compare_df = vl.read_parquet(

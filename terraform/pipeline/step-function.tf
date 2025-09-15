@@ -225,7 +225,6 @@ resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
     dataset_bucket_name                          = module.datasets_bucket.bucket_name
     clean_cqc_provider_data_job_name             = module.clean_cqc_provider_data_job.job_name
     clean_cqc_location_data_job_name             = module.delta_clean_cqc_location_data_job.job_name
-    validate_locations_api_cleaned_data_job_name = module.validate_delta_locations_api_cleaned_data_job.job_name
     validate_providers_api_cleaned_data_job_name = module.validate_providers_api_cleaned_data_job.job_name
     cqc_crawler_name                             = module.cqc_crawler_delta.crawler_name # TODO: point back to main crawler
     data_validation_reports_crawler_name         = module.data_validation_reports_crawler.crawler_name

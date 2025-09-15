@@ -22,10 +22,10 @@ def read_parquet(
 
     Args:
         source (str | Path): the full path in s3 of the dataset to be validated
-        selected_columns (list[str] | None, optional): list of columns to return as a 
+        selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
-        exclude_complex_types (bool, optional): whether or not to exclude types which 
-            cannot be validated using pointblank (ie., Structs, Lists or similar). 
+        exclude_complex_types (bool, optional): whether or not to exclude types which
+            cannot be validated using pointblank (ie., Structs, Lists or similar).
             Defaults to False.
 
     Returns:
@@ -82,14 +82,14 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
 def _report_on_fail(
     step: dict, validation: pb.Validate, bucket_name: str, path: str
 ) -> None:
-    """Checks a given pb.Validate step for failures and writes the failed records to 
+    """Checks a given pb.Validate step for failures and writes the failed records to
     S3 if present.
 
     Args:
         step (dict): metadata on the validation step result
         validation (pb.Validate): the Validate object containing the resulting data
         bucket_name (str): the bucket in which to write reports
-        path (str): the filepath in the bucket to write, should include the validation 
+        path (str): the filepath in the bucket to write, should include the validation
             report name
     """
     if step["all_passed"]:
@@ -108,11 +108,11 @@ def _report_on_fail(
 
 
 def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], bool]:
-    """Creates a function which checks if a the number of different unique values in 
+    """Creates a function which checks if a the number of different unique values in
     a column matches a provided value.
 
-    This function returns another Callable, for use in pointblank validations, 
-    particularly `specially` which requires that the inner function accepts only a 
+    This function returns another Callable, for use in pointblank validations,
+    particularly `specially` which requires that the inner function accepts only a
     single parameter (pl.DataFrame) as its arguments.
 
     Args:
@@ -120,7 +120,7 @@ def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], b
         value (int): the value to assert against
 
     Returns:
-        Callable[[pl.DataFrame], bool]: the inner function which checks the unique 
+        Callable[[pl.DataFrame], bool]: the inner function which checks the unique
         value count
     """
 
