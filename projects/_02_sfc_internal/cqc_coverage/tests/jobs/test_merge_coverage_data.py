@@ -39,6 +39,7 @@ class SetupForTests(unittest.TestCase):
     TEST_PCM_SOURCE = "some/directory"
     TEST_ASCWDS_WORKPLACE_SOURCE = "some/other/directory"
     TEST_CQC_RATINGS_SOURCE = "some/other/directory"
+    TEST_CQC_PROVIDERS_SOURCE = "some/other/directory"
     TEST_MERGED_DESTINATION = "some/other/directory"
     TEST_REDUCED_DESTINATION = "some/other/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -57,6 +58,10 @@ class SetupForTests(unittest.TestCase):
             Data.sample_cqc_ratings_for_merge_rows,
             Schemas.sample_cqc_ratings_for_merge_schema,
         )
+        self.test_cqc_providers_df = self.spark.createDataFrame(
+            Data.sample_cqc_providers_for_merge_rows,
+            Schemas.sample_cqc_providers_for_merge_schema,
+        )
 
 
 class MainTests(SetupForTests):
@@ -65,6 +70,7 @@ class MainTests(SetupForTests):
 
     @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.join_provider_name_into_merged_covergae_df")
     @patch(f"{PATCH_PATH}.add_columns_for_locality_manager_dashboard")
     @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
     @patch(f"{PATCH_PATH}.rUtils.add_parents_or_singles_and_subs_col_to_df")
@@ -85,6 +91,7 @@ class MainTests(SetupForTests):
         add_parents_or_singles_and_subs_col_to_df_mock: Mock,
         join_latest_cqc_rating_into_coverage_df_mock: Mock,
         add_columns_for_locality_manager_dashboard_mock: Mock,
+        join_provider_name_into_merged_covergae_df_mock: Mock,
         write_to_parquet_mock: Mock,
         filter_df_to_maximum_value_in_column_mock: Mock,
     ):
@@ -96,6 +103,7 @@ class MainTests(SetupForTests):
             self.test_clean_cqc_location_df,
             self.test_clean_ascwds_workplace_df,
             self.test_cqc_ratings_df,
+            self.test_cqc_providers_df,
         ]
         join_dimension_mock.return_value = self.test_clean_cqc_location_df
 
@@ -107,11 +115,12 @@ class MainTests(SetupForTests):
             self.TEST_PCM_SOURCE,
             self.TEST_ASCWDS_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_SOURCE,
+            self.TEST_CQC_PROVIDERS_SOURCE,
             self.TEST_MERGED_DESTINATION,
             self.TEST_REDUCED_DESTINATION,
         )
 
-        self.assertEqual(read_from_parquet_mock.call_count, 7)
+        self.assertEqual(read_from_parquet_mock.call_count, 8)
         self.assertEqual(join_dimension_mock.call_count, 4)
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
         self.assertEqual(remove_duplicates_based_on_column_order_mock.call_count, 2)
@@ -120,6 +129,7 @@ class MainTests(SetupForTests):
         add_parents_or_singles_and_subs_col_to_df_mock.assert_called_once()
         join_latest_cqc_rating_into_coverage_df_mock.assert_called_once()
         add_columns_for_locality_manager_dashboard_mock.assert_called_once()
+        join_provider_name_into_merged_covergae_df_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_with(
             ANY,
@@ -263,6 +273,35 @@ class JoinLatestCqcRatingsIntoCoverageTests(SetupForTests):
         )
 
     def test_join_latest_cqc_rating_into_coverage_df_has_expected_values(self):
+        self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
+
+
+class JoinProviderNameIntoMergedCovergae(SetupForTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+        self.sample_merged_coverage_df = self.spark.createDataFrame(
+            Data.sample_merged_coverage_rows,
+            Schemas.sample_merged_coverage_schema,
+        )
+
+        self.returned_df = job.join_provider_name_into_merged_covergae_df(
+            self.sample_merged_coverage_df, self.test_cqc_providers_df
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merged_covergae_and_provider_name_joined_rows,
+            Schemas.expected_merged_covergae_and_provider_name_joined_schema,
+        )
+
+    def test_join_provider_name_into_merged_coverage_df_adds_expected_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(sorted(returned_columns), sorted(expected_columns))
+
+    def test_join_provider_name_into_merged_covergae_df_does_not_add_any_rows(self):
+        self.assertEqual(self.returned_df.count(), self.expected_df.count())
+
+    def test_join_provider_name_into_merged_covergae_df_has_expected_values(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 

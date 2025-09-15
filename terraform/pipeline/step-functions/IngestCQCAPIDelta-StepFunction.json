@@ -151,16 +151,38 @@
                 "Overwrite": true,
                 "Type": "String"
               },
+              "ResultSelector": {
+                "script": "validate_locations_raw.py",
+                "bucket_name_arg": "--bucket_name",
+                "bucket_name": "${dataset_bucket_name}",
+                "source_path_arg": "--source_path",
+                "source_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
+                "reports_path_arg": "--reports_path",
+                "reports_path": "domain=data_validation_reports/dataset=delta_providers_api_raw/"
+              },
               "Next": "Validate Locations Api Raw"
             },
             "Validate Locations Api Raw": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${validate_locations_api_raw_delta_data_job_name}",
-                "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_locations_api_raw/"
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                    }
+                  ]
                 }
               },
               "End": true
