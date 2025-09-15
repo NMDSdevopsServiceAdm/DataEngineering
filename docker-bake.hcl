@@ -11,7 +11,7 @@ variable "CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc"]
+  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "model_retrain"]
 }
 
 # group "ingest" {
