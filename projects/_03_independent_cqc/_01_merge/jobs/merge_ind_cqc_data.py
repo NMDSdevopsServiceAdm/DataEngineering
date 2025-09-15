@@ -34,7 +34,6 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.name,
-    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
@@ -72,6 +71,7 @@ specialism_dim_columns_to_import = [
 ]
 pcm_dim_columns_to_import = [
     CQCLClean.location_id,
+    CQCLClean.postal_code,
     ONSClean.contemporary_ons_import_date,
     ONSClean.contemporary_cssr,
     ONSClean.contemporary_region,
