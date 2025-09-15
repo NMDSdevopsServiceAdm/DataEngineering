@@ -1860,6 +1860,7 @@ class CQCLocationsSchema:
     gac_service_dimension_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(
                 CQCL.gac_service_types,
                 ArrayType(
