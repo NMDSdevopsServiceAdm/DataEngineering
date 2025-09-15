@@ -24,6 +24,7 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
@@ -41,7 +42,6 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.name,
-    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
@@ -60,25 +60,30 @@ gac_dim_columns_to_import = [
     CQCLClean.primary_service_type,
     CQCLClean.care_home,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 ra_dim_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.imputed_regulated_activities,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 specialism_dim_columns_to_import = [
     CQCLClean.location_id,
     CQCLClean.imputed_specialisms,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 pcm_dim_columns_to_import = [
     CQCLClean.location_id,
+    CQCLClean.postal_code,
     ONSClean.current_ons_import_date,
     ONSClean.current_cssr,
     ONSClean.current_icb,
     ONSClean.current_region,
     ONSClean.current_rural_urban_ind_11,
     Keys.import_date,
+    DimensionKeys.last_updated,
 ]
 
 cleaned_ascwds_workplace_columns_to_import = [
