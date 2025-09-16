@@ -64,13 +64,14 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
         prepare_assessment_ratings_mock: Mock,
+        raise_error_when_assessment_df_contains_overall_data_mock: Mock,
+        merge_cqc_ratings_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
         add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
         add_numerical_ratings_mock: Mock,
         create_standard_ratings_dataset_mock: Mock,
         add_location_id_hash_mock: Mock,
-        merge_cqc_ratings_mock: Mock,
         select_ratings_for_benchmarks_mock: Mock,
         add_good_and_outstanding_flag_column_mock: Mock,
         join_establishment_ids_mock: Mock,
@@ -95,13 +96,14 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()
+        raise_error_when_assessment_df_contains_overall_data_mock.assert_called_once()
+        merge_cqc_ratings_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
         self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
         add_latest_rating_flag_column_mock.assert_called_once()
         add_numerical_ratings_mock.assert_called_once()
         create_standard_ratings_dataset_mock.assert_called_once()
         add_location_id_hash_mock.assert_called_once()
-        merge_cqc_ratings_mock.assert_called_once()
         select_ratings_for_benchmarks_mock.assert_called_once()
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
