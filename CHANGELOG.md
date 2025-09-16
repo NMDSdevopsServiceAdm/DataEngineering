@@ -12,8 +12,11 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
-- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datastes.
+- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datasets.
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
+- Updated CQC Locations Cleaning to work with delta data 
+- Created dimensions for imputed values in CQC Location Cleaning, and separated this from the main fact table
+  - The dimensions are rejoined to the fact table in the downstream steps where they are needed
 
 ### Improved
 
