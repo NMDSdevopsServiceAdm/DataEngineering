@@ -30,7 +30,7 @@ class DataError(Exception):
 def build_snapshot_table_from_delta(
     bucket: str,
     read_folder: str,
-    organisation_type: str,
+    dataset: str,
     timepoint: int,
 ) -> Optional[pl.DataFrame]:
     """
@@ -38,7 +38,7 @@ def build_snapshot_table_from_delta(
     Args:
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
-        organisation_type (str): CQC organisation type (locations or providers)
+        dataset (str): CQC organisation type (locations or providers)
         timepoint (int): timepoint to get data for (yyyymmdd)
 
     Returns:
@@ -48,7 +48,7 @@ def build_snapshot_table_from_delta(
         DataError: if no snapshot is found for the specified date
 
     """
-    for snapshot in get_snapshots(bucket, read_folder, organisation_type):
+    for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
     else:
@@ -58,36 +58,36 @@ def build_snapshot_table_from_delta(
 def get_snapshots(
     bucket: str,
     read_folder: str,
-    organisation_type: str,
+    dataset: str,
 ) -> Generator[pl.DataFrame, None, None]:
     """
     Generator for all snapshots, in order
     Args:
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
-        organisation_type (str): CQC organisation type (locations or providers)
+        dataset (str): CQC organisation type (locations or providers)
 
     Yields:
         pl.DataFrame: Generator of snapshots
 
     Raises:
-        ValueError: If the organisation_type is not supported
+        ValueError: If the dataset is not supported
         DataError: If the base snapshot is not found
 
     """
 
-    if organisation_type == "locations":
+    if dataset == "locations":
         primary_key = CqcLocations.location_id
         schema = LocationsSchema.POLARS_LOCATION_SCHEMA
-    elif organisation_type == "providers":
+    elif dataset == "providers":
         primary_key = CqcProviders.provider_id
         schema = ProvidersSchema.POLARS_PROVIDER_SCHEMA
-    elif organisation_type == "locations-cleaned":
+    elif dataset == "locations-cleaned":
         primary_key = CqcLocations.location_id
         schema = LocationsSchemaCleaned.POLARS_CLEANED_LOCATIONS_SCHEMA
     else:
         raise ValueError(
-            f"Unknown organisation type: {organisation_type}. Must be either locations, providers or locations-cleaned"
+            f"Unknown organisation type: {dataset}. Must be either locations, providers or locations-cleaned"
         )
 
     delta_df = pl.scan_parquet(
@@ -130,7 +130,7 @@ def get_snapshots(
                 pl.lit(date.group("day")).alias(Keys.day).cast(pl.Int64),
                 pl.lit(import_date[0]).alias(Keys.import_date).cast(pl.Int64),
             )
-            if organisation_type == "locations-cleaned":
+            if dataset == "locations-cleaned":
                 previous_ss = previous_ss.with_columns(
                     pl.lit(datetime.strptime(str(import_date[0]), "%Y%m%d"))
                     .alias(CqcLocationsCleaned.cqc_location_import_date)

@@ -77,7 +77,7 @@
               "Parameters": {
                 "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
                 "Payload": {
-                  "organisation_type": "locations-cleaned",
+                  "dataset": "locations-cleaned",
                   "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
                   "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
                   "snapshot_date.$": "$$.State.EnteredTime"
