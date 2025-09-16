@@ -1919,7 +1919,6 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
-            StructField(CQCL.care_home, StringType(), True),
             StructField(DimensionKeys.year, StringType(), True),
             StructField(DimensionKeys.month, StringType(), True),
             StructField(DimensionKeys.day, StringType(), True),
