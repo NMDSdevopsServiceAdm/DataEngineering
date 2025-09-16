@@ -1149,6 +1149,11 @@ class FlattenCQCRatings:
         ),
     ]
 
+    raise_error_when_assessment_df_contains_overall_data_with_overall_data_rows = [
+        ("loc-1", "assessment.ratings.overall", CQCRatingsValues.good),
+        ("loc-2", "assessment.ratings.asg_ratings", CQCRatingsValues.good),
+    ]
+
     assessment_ratings_for_merging_rows = [
         (
             "loc_1",

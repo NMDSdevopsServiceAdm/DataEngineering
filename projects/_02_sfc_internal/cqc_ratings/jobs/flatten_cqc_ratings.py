@@ -78,6 +78,8 @@ def main(
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
 
+    raise_error_when_assessment_df_contains_overall_data(assessment_ratings_df)
+
     ratings_pre_saf_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = merge_cqc_ratings(assessment_ratings_df, ratings_pre_saf_df)
 
@@ -367,6 +369,40 @@ def extract_overall(assessment_df: DataFrame) -> DataFrame:
         F.lit("assessment.ratings.overall").alias(CQCL.source_path),
     )
     return overall_df
+
+
+def raise_error_when_assessment_df_contains_overall_data(df: DataFrame) -> None:
+    """
+    Raise an error when the assessments dataframe contains any overall ratings data.
+
+    Currently, CQC publish an overall rating object within the assessments column, but this is not populated
+    for any social care locations we've checked as at 15/09/2025. It is published for non-social care locations.
+    This overall rating object can have it's own "rating" and "key question ratings".
+
+    CQC also publish a "rating" and "key question ratings" within the asg_ratings object within the assessments column.
+    This "rating" and "key question ratings" are at the service level within a location (one location can have many services).
+    We are refering to this "rating" as the overall rating for social care locations.
+
+    This function raises a value error if the overall object contains any values.
+    If this happens, we need to refactor the flattening of CQC assessments data.
+
+    Args:
+        df (DataFrame): Dataframe of flattened CQC assessments data.
+
+    Raises:
+        ValueError: If the DataFrame contains overall assessements data.
+    """
+    rows_where_overall_has_value = df.where(
+        (F.col(CQCL.source_path) == "assessment.ratings.overall")
+        & (F.col(CQCL.rating).isNotNull())
+    ).count()
+
+    if rows_where_overall_has_value > 0:
+        raise ValueError(
+            f"The overall object within the assessments column contains {rows_where_overall_has_value} values for social care locations."
+        )
+
+    return None
 
 
 def extract_asg(assessment_df: DataFrame) -> DataFrame:

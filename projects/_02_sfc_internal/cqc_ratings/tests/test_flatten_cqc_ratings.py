@@ -264,6 +264,29 @@ class PrepareAssessmentRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
+class RaiseErrorWhenAssessmentDfContainsOverallData(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_raise_error_when_assessment_df_contains_overall_data_raises_error_when_overall_is_populated(
+        self,
+    ):
+        test_df_with_overall_data = self.spark.createDataFrame(
+            Data.raise_error_when_assessment_df_contains_overall_data_with_overall_data_rows,
+            Schema.raise_error_when_assessment_df_contains_overall_data_schema,
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.raise_error_when_assessment_df_contains_overall_data(
+                test_df_with_overall_data
+            )
+
+        self.assertIn(
+            "The overall object within the assessments column contains 1 values for social care locations.",
+            str(context.exception),
+        )
+
+
 class MergeCQCRatings(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()

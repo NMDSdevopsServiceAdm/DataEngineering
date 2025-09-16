@@ -1205,6 +1205,14 @@ class FlattenCQCRatings:
         ]
     )
 
+    raise_error_when_assessment_df_contains_overall_data_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.rating, StringType(), True),
+        ]
+    )
+
     assessment_ratings_for_merging_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
