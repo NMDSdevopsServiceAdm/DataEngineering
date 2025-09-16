@@ -1,9 +1,14 @@
 import polars as pl
+from click.decorators import pass_meta_key
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
+)
 
 
 def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
@@ -100,4 +105,63 @@ def clean_and_impute_registration_date(
         .alias(CQCLClean.imputed_registration_date)
     )
 
+    return cqc_df
+
+
+def impute_historic_relationships(
+    cqc_df: pl.DataFrame,
+) -> pl.DataFrame:
+    """
+    Imputes historic relationships for locations in the given DataFrame.
+
+    1. Get the first non-null relationship for each location id: first_known_relationships
+    2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    3. Impute relationships such that:
+       - If 'relationships' is not null, use 'relationships'.
+       - If 'registration_status' is 'deregistered', use 'first_known_relationships'.
+       - If 'registration_status' is 'registered', use 'relationships_predecessors_only'.
+    4. Drop intermediate columns
+
+    Args:
+        cqc_df (pl.DataFrame): Dataframe with relationship columns
+
+    Returns:
+        pl.DataFrame: Dataframe with imputed relationship columns
+    """
+    # 1. Get the first non-null relationship for each location id: first_known_relationships
+    cqc_df = cqc_df.with_columns(
+        pl.col(CQCLClean.relationships)
+        .first()
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.cqc_location_import_date,
+        )
+        .alias(CQCLClean.first_known_relationships),
+    )
+
+    # 2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
+    cqc_df = get_predecessor_relationships(cqc_df)
+
+    # 3. Impute relationships
+    cqc_df = cqc_df.with_columns(
+        pl.when(pl.col(CQCLClean.relationships).is_not_null())
+        .then(pl.col(CQCLClean.relationships))
+        .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered)
+        .then(pl.col(CQCLClean.first_known_relationships))
+        .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.registered)
+        .then(pl.col(CQCLClean.relationships_predecessors_only))
+        .alias(CQCLClean.imputed_relationships)
+    )
+
+    # 4. Drop intermediate columns
+    cqc_df = cqc_df.drop(
+        CQCLClean.first_known_relationships, CQCLClean.relationships_predecessors_only
+    )
+
+    return cqc_df
+
+
+def get_predecessor_relationships(
+    cqc_df: pl.DataFrame,
+) -> pl.DataFrame:
     return cqc_df

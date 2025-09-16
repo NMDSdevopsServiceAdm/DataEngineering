@@ -245,6 +245,7 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
+# converted to polars
 def remove_registration_dates_that_are_later_than_import_date(
     df: DataFrame,
 ) -> DataFrame:
@@ -317,6 +318,7 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# In downstream process
 def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     """
     Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
@@ -344,10 +346,11 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
     return df
 
 
+# Should be in main
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
-
+# converted to polars
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
     """
     Imputes historic relationships for locations in the given DataFrame.
