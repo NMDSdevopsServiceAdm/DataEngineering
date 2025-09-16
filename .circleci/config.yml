@@ -114,6 +114,11 @@ jobs:
           command: terraform fmt -check -recursive -diff
 
   terraform-plan:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant `tfbackend` file
+        enum: ["prod", "non-prod"]
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -124,9 +129,9 @@ jobs:
           name: terraform plan
           command: |
             cd terraform/pipeline
-            terraform init -input=false
+            terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform plan -out tfapply
+            terraform plan -out tfapply -var-file=../<< parameters.aws_account >>.s3.tfbackend
       - store_artifacts:
           path: terraform/pipeline/tfapply
       - persist_to_workspace:
@@ -209,6 +214,11 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant `tfbackend` file
+        enum: ["non-prod"]
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -219,9 +229,9 @@ jobs:
           name: terraform destroy
           command: |
             cd terraform/pipeline
-            terraform init -input=false
+            terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
             terraform workspace select << pipeline.parameters.GHA_Meta >>
-            terraform destroy -auto-approve
+            terraform destroy -auto-approve -var-file=../<< parameters.aws_account >>.s3.tfbackend
       - run:
           name: delete workspace
           command: |
@@ -244,6 +254,7 @@ workflows:
             branches:
               only: main
       - terraform-plan:
+          aws_account: "prod"
           requires:
             - test
             - task-containerisation
@@ -283,6 +294,7 @@ workflows:
             branches:
               ignore: main
       - terraform-plan:
+          aws_account: "non-prod"
           requires:
             - lint-terraform
             - test
@@ -300,4 +312,5 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      - terraform-destroy
+      - terraform-destroy:
+          aws_account: "non-prod"

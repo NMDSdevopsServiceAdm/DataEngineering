@@ -28,22 +28,24 @@ Populate this file with your access key and secret access key.
 % pwd
 /Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
 ```
-3. Run `terraform plan` to evaluate the planned changes
+3. Run `terraform plan -var-file=../non-prod.s3.tfbackend` to evaluate the planned changes
 ```
 terraform plan
 ```
 4. Check the planned changes to make sure they are correct!
-5. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
+5. Then run `terraform apply -var-file=../non-prod.s3.tfbackend` to deploy the changes. Confirm with `yes` when prompted
 ```
-terraform apply
+terraform apply -var-file=../non-prod.s3.tfbackend`
 ```
+
+In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod.s3.tfbackend` as the value for `-backend-config`. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config=../non-prod.s3.tfbackend`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
 
 ## Destroying Terraform
 To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
 
 ```
 cd terraform/pipeline
-terraform init
+terraform init -backend-config=../non-prod.s3.tfbackend
 terraform workspace list
 ```
 
