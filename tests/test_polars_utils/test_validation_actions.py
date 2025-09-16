@@ -57,7 +57,7 @@ class TestWriteReports(TestValidate):
         mock_s3_client.return_value.put_object.assert_called_once_with(
             Body=ANY,
             Bucket="bucket",
-            Key="reports/index.html",
+            Key="reports/summary.html",
         )
 
         # calls include null check for each column

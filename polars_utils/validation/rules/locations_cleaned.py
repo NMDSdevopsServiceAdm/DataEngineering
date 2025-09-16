@@ -24,7 +24,7 @@ from utils.column_values.categorical_column_values import (
     Services,
 )
 from utils.column_values.categorical_columns_by_dataset import (
-    CleanedIndCQCCategoricalValues as CatValues,
+    LocationsApiCleanedCategoricalValues as CatValues,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
