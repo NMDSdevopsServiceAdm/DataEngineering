@@ -496,13 +496,13 @@ def merge_cqc_ratings(
 
     expected_columns = [
         CQCL.location_id,
+        CQCL.registration_status,
         CQCRatings.date,
         CQCL.assessment_plan_id,
         CQCL.title,
         CQCL.assessment_date,
         CQCL.assessment_plan_status,
         CQCL.name,
-        CQCL.registration_status,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -514,8 +514,8 @@ def merge_cqc_ratings(
     ]
     standard_df = standard_ratings_df.select(
         CQCL.location_id,
-        CQCRatings.date,
         CQCL.registration_status,
+        CQCRatings.date,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -527,6 +527,7 @@ def merge_cqc_ratings(
     )
     assessment_df = assessment_ratings_df.select(
         CQCL.location_id,
+        CQCL.registration_status,
         F.to_date(
             F.to_timestamp(
                 CQCL.assessment_plan_published_datetime, "yyyy-MM-dd HH:mm:ss"
@@ -537,7 +538,7 @@ def merge_cqc_ratings(
         CQCL.assessment_date,
         CQCL.assessment_plan_status,
         CQCL.name,
-        CQCL.registration_status,
+        CQCL.source_path,
         F.col(CQCL.status).alias(CQCRatings.current_or_historic),
         F.col(CQCL.rating).alias(CQCRatings.overall_rating),
         F.col(CQCL.safe).alias(CQCRatings.safe_rating),

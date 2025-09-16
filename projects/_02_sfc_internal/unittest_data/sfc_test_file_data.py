@@ -1157,13 +1157,13 @@ class FlattenCQCRatings:
     assessment_ratings_for_merging_rows = [
         (
             "loc_1",
+            "Registered",
             "2025-09-15 08:00:00",
             "AP004",
             "title",
             "assessment_date_current",
             "Assessed",
             "Supported Living",
-            "Registered",
             "assessment.ratings.asg_ratings",
             CQCCurrentOrHistoricValues.current,
             "asg.rating",
@@ -1178,8 +1178,8 @@ class FlattenCQCRatings:
     standard_ratings_for_merging_rows = [
         (
             "loc_1",
-            "2024-09-15",
             "Registered",
+            "2024-09-15",
             CQCCurrentOrHistoricValues.current,
             "pre-saf.ratings.overall",
             "pre-saf.ratings.safe",
@@ -1192,13 +1192,14 @@ class FlattenCQCRatings:
     expected_merge_cqc_ratings_rows = [
         (
             "loc_1",
+            "Registered",
             "2024-09-15",
             None,
             None,
             None,
             None,
             None,
-            "Registered",
+            None,
             CQCCurrentOrHistoricValues.current,
             "pre-saf.ratings.overall",
             "pre-saf.ratings.safe",
@@ -1210,13 +1211,14 @@ class FlattenCQCRatings:
         ),
         (
             "loc_1",
+            "Registered",
             "2025-09-15",
             "AP004",
             "title",
             "assessment_date_current",
             "Assessed",
             "Supported Living",
-            "Registered",
+            "assessment.ratings.asg_ratings",
             CQCCurrentOrHistoricValues.current,
             "asg.rating",
             "asg.safe",
