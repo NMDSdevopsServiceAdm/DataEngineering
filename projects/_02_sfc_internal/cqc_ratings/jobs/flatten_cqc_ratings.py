@@ -91,6 +91,7 @@ def main(
 
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
     standard_ratings_df = add_location_id_hash(standard_ratings_df)
+
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
     benchmark_ratings_df = join_establishment_ids(
@@ -661,6 +662,13 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCL.location_id,
         CQCL.registration_status,
         CQCRatings.date,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.source_path,
+        CQCL.dataset,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
