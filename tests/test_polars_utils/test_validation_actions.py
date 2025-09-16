@@ -98,6 +98,7 @@ class TestValidate(unittest.TestCase):
         # Then
         self.assertTrue(result.equals(expected))
 
+
 class TestWriteReports(TestValidate):
     @patch(f"{SRC_PATH}._report_on_fail")
     @patch("boto3.client", autospec=True)
@@ -174,6 +175,7 @@ class TestWriteReports(TestValidate):
             col_vals_not_null_name_step,
         )
 
+
 class TestReportOnFail(TestValidate):
     @patch("polars_utils.utils.write_to_parquet", autospec=True)
     @patch("pointblank.Validate")
@@ -203,7 +205,7 @@ class TestReportOnFail(TestValidate):
         mock_write_parquet.assert_called_once_with(
             mock_df,
             "s3://bucket/path/failed_step_1_rows_distinct_someId_my_date.parquet",
-            append=False
+            append=False,
         )
 
     @patch("pointblank.Validate")
@@ -221,6 +223,7 @@ class TestReportOnFail(TestValidate):
         self.assertEquals(
             mock_validate.return_value.get_data_extracts.call_args_list, []
         )
+
 
 class TestIsUniqueCount(TestValidate):
     def test_is_unique_count_equal_true(self):
