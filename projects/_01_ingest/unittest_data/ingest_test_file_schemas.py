@@ -1946,6 +1946,7 @@ class CQCLocationsSchema:
     postcode_matching_dimension_input_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCLClean.name, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
             StructField(CQCLClean.postal_address_line1, StringType(), True),
             StructField(CQCLClean.postcode, StringType(), True),

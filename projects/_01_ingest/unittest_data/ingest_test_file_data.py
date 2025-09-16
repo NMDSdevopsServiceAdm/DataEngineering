@@ -3410,6 +3410,7 @@ class CQCLocationsData:
     postcode_matching_dimension_current_rows = [
         (
             "loc1",
+            "some name",
             date(2023, 1, 1),
             "some street",
             "AB12 3CD",
@@ -3421,6 +3422,7 @@ class CQCLocationsData:
         ),
         (
             "loc2",
+            "other name",
             date(2024, 1, 1),
             "some street",
             "EF45 4YZ",
