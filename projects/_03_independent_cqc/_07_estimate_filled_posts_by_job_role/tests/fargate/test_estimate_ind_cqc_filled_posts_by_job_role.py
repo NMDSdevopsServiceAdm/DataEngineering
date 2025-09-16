@@ -16,24 +16,22 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.pl.read_parquet")
+    @patch(f"{PATCH_PATH}.pl.scan_parquet")
     def test_main_runs(
         self,
-        read_from_parquet_mock: Mock,
+        scan_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
 
-        self.assertEqual(read_from_parquet_mock.call_count, 2)
-        read_from_parquet_mock.assert_has_calls(
+        self.assertEqual(scan_parquet_mock.call_count, 2)
+        scan_parquet_mock.assert_has_calls(
             [
                 call(
                     source=self.ESTIMATE_SOURCE,
-                    columns=job.estimated_ind_cqc_filled_posts_columns_to_import,
                 ),
                 call(
                     source=self.ASCWDS_WORKER_SOURCE,
-                    columns=job.cleaned_ascwds_worker_columns_to_import,
                 ),
             ]
         )

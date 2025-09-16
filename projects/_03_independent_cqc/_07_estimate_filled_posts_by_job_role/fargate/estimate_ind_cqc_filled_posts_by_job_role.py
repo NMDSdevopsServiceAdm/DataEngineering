@@ -69,14 +69,12 @@ def main(
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
     """
-    estimated_ind_cqc_filled_posts_df = pl.read_parquet(
+    estimated_ind_cqc_filled_posts_df = pl.scan_parquet(
         source=estimated_ind_cqc_filled_posts_source,
-        columns=estimated_ind_cqc_filled_posts_columns_to_import,
     )
 
-    cleaned_ascwds_worker_df = pl.read_parquet(
+    cleaned_ascwds_worker_df = pl.scan_parquet(
         source=cleaned_ascwds_worker_source,
-        columns=cleaned_ascwds_worker_columns_to_import,
     )
 
     utils.write_to_parquet(
