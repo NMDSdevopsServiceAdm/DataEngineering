@@ -88,6 +88,7 @@ def main(
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
     ratings_df = add_latest_rating_flag_column(ratings_df)
     ratings_df = add_numerical_ratings(ratings_df)
+
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
     standard_ratings_df = add_location_id_hash(standard_ratings_df)
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
@@ -503,6 +504,8 @@ def merge_cqc_ratings(
         CQCL.assessment_date,
         CQCL.assessment_plan_status,
         CQCL.name,
+        CQCL.source_path,
+        CQCL.dataset,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -510,7 +513,6 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCL.dataset,
     ]
     standard_df = standard_ratings_df.select(
         CQCL.location_id,
@@ -539,6 +541,7 @@ def merge_cqc_ratings(
         CQCL.assessment_plan_status,
         CQCL.name,
         CQCL.source_path,
+        CQCL.dataset,
         F.col(CQCL.status).alias(CQCRatings.current_or_historic),
         F.col(CQCL.rating).alias(CQCRatings.overall_rating),
         F.col(CQCL.safe).alias(CQCRatings.safe_rating),
@@ -546,7 +549,6 @@ def merge_cqc_ratings(
         F.col(CQCL.caring).alias(CQCRatings.caring_rating),
         F.col(CQCL.responsive).alias(CQCRatings.responsive_rating),
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
-        CQCL.dataset,
     )
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
     return merged_df.select(*expected_columns)

@@ -1165,6 +1165,7 @@ class FlattenCQCRatings:
             "Assessed",
             "Supported Living",
             "assessment.ratings.asg_ratings",
+            "SAF",
             CQCCurrentOrHistoricValues.current,
             "asg.rating",
             "asg.safe",
@@ -1172,7 +1173,6 @@ class FlattenCQCRatings:
             "asg.caring",
             "asg.responsive",
             "asg.well-led",
-            "SAF",
         ),
     ]
     standard_ratings_for_merging_rows = [
@@ -1200,6 +1200,7 @@ class FlattenCQCRatings:
             None,
             None,
             None,
+            "Pre SAF",
             CQCCurrentOrHistoricValues.current,
             "pre-saf.ratings.overall",
             "pre-saf.ratings.safe",
@@ -1207,7 +1208,6 @@ class FlattenCQCRatings:
             "pre-saf.ratings.caring",
             "pre-saf.ratings.responsive",
             "pre-saf.ratings.effective",
-            "Pre SAF",
         ),
         (
             "loc_1",
@@ -1219,6 +1219,7 @@ class FlattenCQCRatings:
             "Assessed",
             "Supported Living",
             "assessment.ratings.asg_ratings",
+            "SAF",
             CQCCurrentOrHistoricValues.current,
             "asg.rating",
             "asg.safe",
@@ -1226,7 +1227,6 @@ class FlattenCQCRatings:
             "asg.caring",
             "asg.responsive",
             "asg.effective",
-            "SAF",
         ),
     ]
 

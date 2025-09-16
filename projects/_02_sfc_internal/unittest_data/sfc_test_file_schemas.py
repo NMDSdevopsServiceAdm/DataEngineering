@@ -1224,6 +1224,7 @@ class FlattenCQCRatings:
             StructField(CQCL.assessment_plan_status, StringType(), True),
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCL.status, StringType(), True),
             StructField(CQCL.rating, StringType(), True),
             StructField(CQCL.safe, StringType(), True),
@@ -1231,7 +1232,6 @@ class FlattenCQCRatings:
             StructField(CQCL.caring, StringType(), True),
             StructField(CQCL.responsive, StringType(), True),
             StructField(CQCL.well_led, StringType(), True),
-            StructField(CQCL.dataset, StringType(), True),
         ]
     )
     standard_ratings_for_merging_schema = StructType(
@@ -1259,6 +1259,7 @@ class FlattenCQCRatings:
             StructField(CQCL.assessment_plan_status, StringType(), True),
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
@@ -1266,7 +1267,6 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCL.dataset, StringType(), True),
         ]
     )
 
