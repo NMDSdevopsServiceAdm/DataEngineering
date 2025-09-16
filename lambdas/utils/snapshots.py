@@ -75,20 +75,20 @@ def get_snapshots(
         DataError: If the base snapshot is not found
 
     """
-
-    if dataset == "locations":
-        primary_key = CqcLocations.location_id
-        schema = LocationsSchema.POLARS_LOCATION_SCHEMA
-    elif dataset == "providers":
-        primary_key = CqcProviders.provider_id
-        schema = ProvidersSchema.POLARS_PROVIDER_SCHEMA
-    elif dataset == "locations-cleaned":
-        primary_key = CqcLocations.location_id
-        schema = LocationsSchemaCleaned.POLARS_CLEANED_LOCATIONS_SCHEMA
-    else:
-        raise ValueError(
-            f"Unknown organisation type: {dataset}. Must be either locations, providers or locations-cleaned"
-        )
+    match dataset:
+        case "locations":
+            primary_key = CqcLocations.location_id
+            schema = LocationsSchema.POLARS_LOCATION_SCHEMA
+        case "providers":
+            primary_key = CqcProviders.provider_id
+            schema = ProvidersSchema.POLARS_PROVIDER_SCHEMA
+        case "locations-cleaned":
+            primary_key = CqcLocations.location_id
+            schema = LocationsSchemaCleaned.POLARS_CLEANED_LOCATIONS_SCHEMA
+        case _:
+            raise ValueError(
+                f"Unknown organisation type: {dataset}. Must be either locations, providers or locations-cleaned"
+            )
 
     delta_df = pl.scan_parquet(
         f"s3://{bucket}/{read_folder}",
