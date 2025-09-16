@@ -8,10 +8,10 @@ from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from polars_utils.validation.rules.locations_cleaned import Rules
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys
 
 compare_columns_to_import = [
     PartitionKeys.import_date,
@@ -72,9 +72,7 @@ def main(
         .col_vals_in_set(*Rules.care_home)
         .col_vals_in_set(*Rules.cqc_sector)
         .col_vals_in_set(*Rules.registration_status)
-        .col_vals_in_set(
-            *Rules.dormancy, pre=
-        )
+        .col_vals_in_set(*Rules.dormancy)
         .col_vals_in_set(*Rules.primary_service_type)
         .col_vals_in_set(*Rules.contemporary_cssr)
         .col_vals_in_set(*Rules.contemporary_region)
@@ -101,7 +99,7 @@ def main(
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
-locations_api_cleaned
+
 
 if __name__ == "__main__":
     logger.info(f"Validation script called with parameters: {sys.argv}")
