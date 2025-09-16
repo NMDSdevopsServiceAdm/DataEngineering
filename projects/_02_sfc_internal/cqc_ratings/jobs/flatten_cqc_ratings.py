@@ -751,6 +751,8 @@ def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFra
         benchmark_ratings_df[AWP.establishment_id].alias(
             CQCRatings.benchmarks_establishment_id
         ),
+        benchmark_ratings_df[CQCL.name],
+        benchmark_ratings_df[CQCL.dataset],
         benchmark_ratings_df[CQCRatings.good_or_outstanding_flag],
         benchmark_ratings_df[CQCRatings.overall_rating].alias(
             CQCRatings.benchmarks_overall_rating
