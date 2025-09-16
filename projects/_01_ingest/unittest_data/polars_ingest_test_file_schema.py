@@ -38,3 +38,58 @@ class CQCLocationsSchema:
             (CQCLClean.imputed_registration_date, pl.String()),
         ]
     )
+
+    impute_historic_relationships_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (
+                CQCL.relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
+
+    expected_impute_historic_relationships_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (
+                CQCL.relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.imputed_relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
