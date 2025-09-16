@@ -22,18 +22,31 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         scan_parquet_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
+        estimated_ind_cqc_filled_posts_scan_mock = Mock()
+        cleaned_ascwds_worker_scan_mock = Mock()
+        scan_parquet_mock.side_effect = [
+            estimated_ind_cqc_filled_posts_scan_mock,
+            cleaned_ascwds_worker_scan_mock,
+        ]
+
         job.main(self.ESTIMATE_SOURCE, self.ASCWDS_WORKER_SOURCE, self.OUTPUT_DIR)
 
         self.assertEqual(scan_parquet_mock.call_count, 2)
         scan_parquet_mock.assert_has_calls(
             [
                 call(
-                    source=self.ESTIMATE_SOURCE,
+                    self.ESTIMATE_SOURCE,
                 ),
                 call(
-                    source=self.ASCWDS_WORKER_SOURCE,
+                    self.ASCWDS_WORKER_SOURCE,
                 ),
             ]
+        )
+        estimated_ind_cqc_filled_posts_scan_mock.select.assert_called_once_with(
+            job.estimated_ind_cqc_filled_posts_columns_to_import
+        )
+        cleaned_ascwds_worker_scan_mock.select.assert_called_once_with(
+            job.cleaned_ascwds_worker_columns_to_import
         )
 
         write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, logger=ANY)
