@@ -79,10 +79,6 @@ def is_invalid_location() -> pl.Expr:
         but conatins barely any data and appears to have deregistered very
         quickly. The location ID is enough to identify and remove this row.
 
-    Args:
-        df (pl.DataFrame): the DataFrame to validate, must include:
-            - locationId
-
     Returns:
         pl.Expr: an expression that shows which records are marked for exclusions
     """
