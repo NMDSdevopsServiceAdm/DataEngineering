@@ -194,7 +194,7 @@ class Rules(tuple, Enum):
             ),
             pl.col(CQCL.type) == LocationType.social_care_identifier,
             pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-            ~is_invalid_location(df),
+            ~is_invalid_location(),
             ~(
                 (pl.col(CQCL.gac_service_types).list.len() == 1)
                 & (

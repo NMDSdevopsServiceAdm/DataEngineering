@@ -63,9 +63,9 @@ def main(
         # index columns
         .rows_distinct(*Rules.index_columns)
         # min values
-        .col_vals_ge(*Rules.time_registered)
+        .col_vals_ge(*Rules.time_registered,)
         # between (inclusive)
-        .col_vals_between(*Rules.number_of_beds)
+        .col_vals_between(*Rules.number_of_beds, na_pass=True)
         .col_vals_between(*Rules.location_id_length)
         .col_vals_between(*Rules.provider_id_length)
         # categorical

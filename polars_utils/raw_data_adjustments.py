@@ -15,11 +15,11 @@ CONFIG = Path(__file__).parent / "exclusions.json"
 EXCLUSIONS = json.loads(CONFIG.read_text())
 
 
-def is_duplicated_worker_data(df: pl.DataFrame) -> pl.Expr:
+def is_duplicated_worker_data() -> pl.Expr:
     """Identifies records known to be duplicates in the raw data.
 
-    Args:
-        df (pl.DataFrame): the DataFrame to validate, must include columns:
+    There are no required args but the expression should be used on a DataFrame
+    which include columns:
             - workerid
             - ascwds_worker_import_date
             - establishmentid
@@ -39,7 +39,7 @@ def is_duplicated_worker_data(df: pl.DataFrame) -> pl.Expr:
     )
 
 
-def is_duplicated_workplace_data(df: pl.DataFrame) -> pl.Expr:
+def is_duplicated_workplace_data() -> pl.Expr:
     """Identifies duplicate workplace records based on establishmentid.
 
     These are duplicates in the sense that the same data has been uploaded to ASCWDS for multiple accounts.
@@ -51,9 +51,8 @@ def is_duplicated_workplace_data(df: pl.DataFrame) -> pl.Expr:
       - Four locations who submit the exact same ASCWDS files on the same day.
       - 18 separate locations, seemingly unrelated, all submit identical data on the same day.
 
-
-    Args:
-        df (pl.DataFrame): the DataFrame to validate, must include:
+    There are no required args but the expression should be used on a DataFrame
+    which include columns:
             - establishmentid
 
     Returns:
@@ -64,7 +63,7 @@ def is_duplicated_workplace_data(df: pl.DataFrame) -> pl.Expr:
     return pl.col(AWPClean.establishment_id).is_in(duplicates)
 
 
-def is_invalid_location(df: pl.DataFrame) -> pl.Expr:
+def is_invalid_location() -> pl.Expr:
     """Identifies invalid records based on locationId for known records.
 
     Known issues so far...
