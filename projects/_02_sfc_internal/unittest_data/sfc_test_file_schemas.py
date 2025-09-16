@@ -1410,6 +1410,8 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(AWP.establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
@@ -1420,6 +1422,8 @@ class FlattenCQCRatings:
         [
             StructField(CQCRatings.benchmarks_location_id, StringType(), True),
             StructField(CQCRatings.benchmarks_establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),

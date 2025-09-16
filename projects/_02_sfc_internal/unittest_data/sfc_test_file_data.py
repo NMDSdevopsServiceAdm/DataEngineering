@@ -1770,17 +1770,19 @@ class FlattenCQCRatings:
         ("loc_3", "ratings data", None),
     ]
 
+    # fmt: off
     create_benchmark_ratings_dataset_rows = [
-        ("loc_1", "estab_1", 1, "Good", "2024-01-01", ""),
-        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01", ""),
-        ("loc_3", None, 1, "Good", "2024-01-01", ""),
-        ("loc_4", "estab_2", 0, None, "2024-01-01", ""),
-        ("loc_5", None, 0, None, "2024-01-01", ""),
+        ("loc_1", "estab_1", "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01", ""),
+        ("loc_2", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, "Requires improvement", "2024-01-01", ""),
+        ("loc_3", None, "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01", ""),
+        ("loc_4", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, None, "2024-01-01", ""),
+        ("loc_5", None, "Care Homes", "assessment.ratings.asg_ratings", 0, None, "2024-01-01", ""),
     ]
     expected_create_benchmark_ratings_dataset_rows = [
-        ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
-        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
+        ("loc_1", "estab_1", "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01"),
+        ("loc_2", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, "Requires improvement", "2024-01-01"),
     ]
+    # fmt: on
 
     add_numerical_ratings_rows = [
         (
