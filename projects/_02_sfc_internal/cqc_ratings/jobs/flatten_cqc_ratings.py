@@ -617,6 +617,7 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
         DataFrame: The given data frame with additional columns containing the key ratings as numerical values and a total of all the values.
     """
     rating_columns_dict = {
+        CQCRatings.overall_rating: CQCRatings.overall_rating_value,
         CQCRatings.safe_rating: CQCRatings.safe_rating_value,
         CQCRatings.well_led_rating: CQCRatings.well_led_rating_value,
         CQCRatings.caring_rating: CQCRatings.caring_rating_value,
@@ -719,14 +720,12 @@ def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
 
 
 def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> DataFrame:
+    w = Window.partitionBy(CQCL.location_id)
+
     benchmark_ratings_df = benchmark_ratings_df.withColumn(
         CQCRatings.good_or_outstanding_flag,
         F.when(
-            (benchmark_ratings_df[CQCRatings.overall_rating] == CQCRatingsValues.good)
-            | (
-                benchmark_ratings_df[CQCRatings.overall_rating]
-                == CQCRatingsValues.outstanding
-            ),
+            F.min(CQCRatings.overall_rating_value).over(w) >= 3,
             F.lit(1),
         ).otherwise(F.lit(0)),
     )

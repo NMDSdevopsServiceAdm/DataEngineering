@@ -1375,10 +1375,10 @@ class FlattenCQCRatings:
     add_good_and_outstanding_flag_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCRatings.overall_rating_value, IntegerType(), True),
         ]
     )
-
     expected_add_good_and_outstanding_flag_column_schema = StructType(
         [
             *add_good_and_outstanding_flag_column_schema,
@@ -1405,6 +1405,7 @@ class FlattenCQCRatings:
             StructField(AWP.establishment_id, StringType(), True),
         ]
     )
+
     create_benchmark_ratings_dataset_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1415,7 +1416,6 @@ class FlattenCQCRatings:
             StructField("other column", StringType(), True),
         ]
     )
-
     expected_create_benchmark_ratings_dataset_schema = StructType(
         [
             StructField(CQCRatings.benchmarks_location_id, StringType(), True),
@@ -1446,6 +1446,7 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.overall_rating_value, IntegerType(), True),
             StructField(CQCRatings.safe_rating_value, IntegerType(), True),
             StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
             StructField(CQCRatings.caring_rating_value, IntegerType(), True),

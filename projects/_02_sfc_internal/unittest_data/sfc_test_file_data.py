@@ -1737,22 +1737,30 @@ class FlattenCQCRatings:
     ]
 
     add_good_or_outstanding_flag_rows = [
-        ("loc_1", CQCRatingsValues.outstanding),
-        ("loc_2", CQCRatingsValues.good),
-        ("loc_3", "other rating"),
-        ("loc_1", None),
+        ("loc_1", None, 4),
+        ("loc_2", None, 3),
+        ("loc_3", "Care Home", 4),
+        ("loc_3", "Other service", 3),
+        ("loc_4", "Same service", 4),
+        ("loc_4", "Same service", 2),
+        ("loc_5", "Care Home", 4),
+        ("loc_5", "Other service", 2),
     ]
     expected_add_good_or_outstanding_flag_rows = [
-        ("loc_1", CQCRatingsValues.outstanding, 1),
-        ("loc_2", CQCRatingsValues.good, 1),
-        ("loc_3", "other rating", 0),
-        ("loc_1", None, 0),
+        ("loc_1", None, 4, 1),
+        ("loc_2", None, 3, 1),
+        ("loc_3", "Care Home", 4, 1),
+        ("loc_3", "Other service", 3, 1),
+        ("loc_4", "Same service", 4, 0),
+        ("loc_4", "Same service", 2, 0),
+        ("loc_5", "Care Home", 4, 0),
+        ("loc_5", "Other service", 2, 0),
     ]
+
     ratings_join_establishment_ids_rows = [
         ("loc_1", "ratings data"),
         ("loc_3", "ratings data"),
     ]
-
     ascwds_join_establishment_ids_rows = [
         ("loc_1", "estab_1", "20240101"),
         ("loc_2", "estab_2", "20240101"),
@@ -1761,6 +1769,7 @@ class FlattenCQCRatings:
         ("loc_1", "ratings data", "estab_1"),
         ("loc_3", "ratings data", None),
     ]
+
     create_benchmark_ratings_dataset_rows = [
         ("loc_1", "estab_1", 1, "Good", "2024-01-01", ""),
         ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01", ""),
@@ -1793,6 +1802,7 @@ class FlattenCQCRatings:
             CQCRatingsValues.inadequate,
             CQCRatingsValues.good,
             None,
+            3,
             4,
             2,
             1,
