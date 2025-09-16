@@ -272,6 +272,7 @@ def create_postcode_matching_dimension(
     current_dimension = run_postcode_matching(
         cqc_df.select(
             CQCL.location_id,
+            CQCL.name,
             CQCLClean.cqc_location_import_date,
             CQCL.postal_address_line1,
             CQCL.postal_code,
@@ -290,9 +291,6 @@ def create_postcode_matching_dimension(
             ],
             how="anti",
         )
-        missing_dim_columns = list(set(previous_dimension.columns) - set(delta.columns))
-        for col_name in missing_dim_columns:
-            delta = delta.withColumn(col_name, F.lit(None))
 
     else:
         delta = current_dimension
@@ -302,6 +300,7 @@ def create_postcode_matching_dimension(
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
+        .drop(CQCL.name)
     )
 
     return delta
