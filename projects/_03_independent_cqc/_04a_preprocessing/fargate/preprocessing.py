@@ -1,15 +1,6 @@
 import polars as pl
 
 
-class NonResPIRPreprocessor:
-    def __init__(self):
-        self.df = None
-
-    def read_data(self, data_source: str):
-        pass
-
-    def preprocess(self):
-        pass
-
-    def save(self, data_destination: str):
-        pass
+def preprocess_non_res_pir(path_to_data: str, lazy=False) -> None:
+    data = pl.scan_parquet(path_to_data) if lazy else pl.read_parquet(path_to_data)
+    return
