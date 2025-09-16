@@ -8,7 +8,7 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.validation import actions as vl
 
-SRC_PATH = "polars_utils.validate"
+SRC_PATH = "polars_utils.validation.actions"
 SIMPLE_MOCK_CONFIG = {
     "datasets": {
         "my_dataset": {
@@ -201,6 +201,7 @@ class ValidateTests(unittest.TestCase):
         mock_write_parquet.assert_called_once_with(
             mock_df,
             "s3://bucket/path/failed_step_1_rows_distinct_someId_my_date.parquet",
+            append=False
         )
 
     @patch("pointblank.Validate")
