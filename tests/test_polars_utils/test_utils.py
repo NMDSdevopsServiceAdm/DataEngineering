@@ -16,16 +16,6 @@ from polars_utils import utils
 from polars_utils.utils import write_to_parquet
 
 SRC_PATH = "polars_utils.validation.actions"
-SIMPLE_MOCK_CONFIG = {
-    "datasets": {
-        "my_dataset": {
-            "dataset": "dataset_name_in_s3",
-            "domain": "cqc_or_other",
-            "version": "x.x.x",
-            "report_name": "data_quality_report",
-        }
-    }
-}
 
 
 class TestUtils(unittest.TestCase):

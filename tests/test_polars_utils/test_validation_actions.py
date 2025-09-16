@@ -1,42 +1,16 @@
 import unittest
-from pathlib import Path
 from unittest.mock import ANY, patch
 
 import pointblank as pb
 import polars as pl
 
-from polars_utils import utils
 from polars_utils.validation import actions as vl
 
 SRC_PATH = "polars_utils.validation.actions"
-SIMPLE_MOCK_CONFIG = {
-    "datasets": {
-        "my_dataset": {
-            "dataset": "dataset_name_in_s3",
-            "domain": "cqc_or_other",
-            "version": "x.x.x",
-            "report_name": "data_quality_report",
-        }
-    }
-}
-TEMP_FILE = Path(__file__).parent / "test.parquet"
 
 
 class TestValidate(unittest.TestCase):
     def setUp(self) -> None:
-        types_df = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-                "a_list": [
-                    [[1, 2], [1], None],
-                    [[1, 2], [2], None],
-                    [[1, 2], [3], None],
-                ],
-            }
-        ).with_columns(pl.struct(pl.all()).alias("a_struct"))
-        types_df.write_parquet(TEMP_FILE)
-
         self.df = pl.DataFrame(
             [
                 ("1-00001", "20240101", "a"),
@@ -54,49 +28,6 @@ class TestValidate(unittest.TestCase):
             ),
             orient="row",
         )
-
-    def tearDown(self) -> None:
-        try:
-            TEMP_FILE.unlink()
-        except FileNotFoundError:
-            pass
-        return super().tearDown()
-
-    def test_read_parquet_keep_all(self):
-        # Given
-        expected = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-                "a_list": [
-                    [[1, 2], [1], None],
-                    [[1, 2], [2], None],
-                    [[1, 2], [3], None],
-                ],
-                "a_struct": [
-                    {"foo": 1, "bar": None, "a_list": [[1, 2], [1], None]},
-                    {"foo": 2, "bar": "bak", "a_list": [[1, 2], [2], None]},
-                    {"foo": 3, "bar": "baz", "a_list": [[1, 2], [3], None]},
-                ],
-            }
-        )
-        # When
-        result = utils.read_parquet(TEMP_FILE)
-        # Then
-        self.assertTrue(result.equals(expected))
-
-    def test_read_parquet_exclude_complex(self):
-        # Given
-        expected = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-            }
-        )
-        # When
-        result = utils.read_parquet(TEMP_FILE, exclude_complex_types=True)
-        # Then
-        self.assertTrue(result.equals(expected))
 
 
 class TestWriteReports(TestValidate):
