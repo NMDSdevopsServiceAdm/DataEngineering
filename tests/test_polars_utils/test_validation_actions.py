@@ -22,7 +22,7 @@ SIMPLE_MOCK_CONFIG = {
 TEMP_FILE = Path(__file__).parent / "test.parquet"
 
 
-class ValidateTests(unittest.TestCase):
+class TestValidate(unittest.TestCase):
     def setUp(self) -> None:
         types_df = pl.DataFrame(
             {
@@ -98,6 +98,7 @@ class ValidateTests(unittest.TestCase):
         # Then
         self.assertTrue(result.equals(expected))
 
+class TestWriteReports(TestValidate):
     @patch(f"{SRC_PATH}._report_on_fail")
     @patch("boto3.client", autospec=True)
     def test_write_reports(self, mock_s3_client, mock_report_on_fail):
@@ -173,6 +174,7 @@ class ValidateTests(unittest.TestCase):
             col_vals_not_null_name_step,
         )
 
+class TestReportOnFail(TestValidate):
     @patch("polars_utils.utils.write_to_parquet", autospec=True)
     @patch("pointblank.Validate")
     def test_report_when_fail(self, mock_validate, mock_write_parquet):
@@ -219,6 +221,23 @@ class ValidateTests(unittest.TestCase):
         self.assertEquals(
             mock_validate.return_value.get_data_extracts.call_args_list, []
         )
+
+class TestIsUniqueCount(TestValidate):
+    def test_is_unique_count_equal_true(self):
+        # Given
+        func = vl.is_unique_count_equal("someId", 2)
+        # When
+        result = func(self.df)
+        # Then
+        self.assertTrue(result)
+
+    def is_unique_count_equal_false(self):
+        # Given
+        func = vl.is_unique_count_equal("someId", 3)
+        # When
+        result = func(self.df)
+        # Then
+        self.assertFalse(result)
 
 
 if __name__ == "__main__":

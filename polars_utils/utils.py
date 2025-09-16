@@ -67,7 +67,7 @@ def read_parquet(
 
 def write_to_parquet(
     df: pl.DataFrame,
-    output_path: str,
+    output_path: str | Path,
     logger: logging.Logger = util_logger,
     append: bool = True,
 ) -> None:
@@ -79,7 +79,7 @@ def write_to_parquet(
 
     Args:
         df (pl.DataFrame): The Polars DataFrame to write.
-        output_path (str): The file path where the Parquet file(s) will be written.
+        output_path (str | Path): The file path where the Parquet file(s) will be written.
             This must be a directory if append is set to True.
         logger (logging.Logger): An optional logger instance to use for logging messages.
             If not provided, a default logger will be used (or you can ensure
@@ -89,12 +89,17 @@ def write_to_parquet(
     Return:
         None
     """
+
     if df.height == 0:
         logger.info("The provided dataframe was empty. No data was written.")
         return
 
     if append:
-        output_path += f"{uuid.uuid4()}.parquet"
+        fname = f"{uuid.uuid4()}.parquet"
+        if isinstance(output_path, str):
+            output_path += fname
+        else:
+            output_path = output_path / fname
     df.write_parquet(output_path)
     logger.info("Parquet written to {}".format(output_path))
 
@@ -127,13 +132,7 @@ def get_args(*args: tuple) -> argparse.Namespace:
         raise argparse.ArgumentError(None, "Error parsing argument")
 
 
-def generate_s3_datasets_dir_date_path(
-    destination_prefix,
-    domain,
-    dataset,
-    date,
-    version="1.0.0",
-):
+def generate_s3_dir(destination_prefix, domain, dataset, date, version="1.0.0"):
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
