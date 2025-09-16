@@ -49,7 +49,7 @@
                 "reports_path_arg": "--reports_path",
                 "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_full_locations_api_cleaned/",
                 "compare_path_arg": "--compare_path",
-                "compare_path": "domain=CQC_delta/dataset=full_locations_api//version=3.0.0/"
+                "compare_path": "domain=CQC_delta/dataset=full_locations_api/version=3.0.0/"
               },
               "Next": "Clean CQC Location Data"
             },
