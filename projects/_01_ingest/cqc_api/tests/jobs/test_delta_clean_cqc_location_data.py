@@ -213,7 +213,6 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             CQCL.location_id,
             CQCL.gac_service_types,
             CQCLCleaned.imputed_gac_service_types,
-            CQCL.care_home,
             Keys.import_date,
             DimensionKeys.last_updated,
         ]
