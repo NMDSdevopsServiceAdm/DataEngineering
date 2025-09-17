@@ -14,7 +14,22 @@ def preprocess_non_res_pir(path_to_data: str, destination: str, lazy=False) -> N
     ]
     data.select(*required_columns).filter(
         (
-            pl.col("ascwds_filled_posts_deduplicated_clean").is_not_null()
-            & pl.col("pir_people_directly_employed_deduplicated").is_not_null()
+            (pl.col("ascwds_filled_posts_deduplicated_clean").is_not_null())
+            & (pl.col("pir_people_directly_employed_deduplicated").is_not_null())
+            & (pl.col("ascwds_filled_posts_deduplicated_clean") > 0)
+            & (pl.col("pir_people_directly_employed_deduplicated") > 0)
         )
-    ).write_parquet(destination)
+    ).with_columns(
+        (
+            pl.col("ascwds_filled_posts_deduplicated_clean")
+            - pl.col("pir_people_directly_employed_deduplicated")
+        )
+        .abs()
+        .alias("abs_resid"),
+    ).filter(
+        pl.col("abs_resid") <= 500
+    ).drop(
+        "abs_resid"
+    ).write_parquet(
+        destination
+    )

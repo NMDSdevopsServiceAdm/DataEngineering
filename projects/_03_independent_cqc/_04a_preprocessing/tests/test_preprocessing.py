@@ -72,24 +72,45 @@ class TestPreprocessNonResPir(unittest.TestCase):
             0,
         )
 
-    @patch(f"{PATCH_STEM}.pl.read_parquet")
-    def test_preprocess_non_res_pir_eliminates_negatives_or_zeros(
-        self, mock_read_parquet
-    ):
-        pass
+    def test_preprocess_non_res_pir_eliminates_negatives_or_zeros(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.df_test
+            preprocess_non_res_pir(self.s3_uri, self.destination, lazy=False)
+        df = pl.read_parquet(self.destination)
+        self.assertEqual(
+            df.filter(pl.col("ascwds_filled_posts_deduplicated_clean") <= 0).shape[0],
+            0,
+        )
+        self.assertEqual(
+            df.filter(pl.col("pir_people_directly_employed_deduplicated") <= 0).shape[
+                0
+            ],
+            0,
+        )
 
-    @patch(f"{PATCH_STEM}.pl.read_parquet")
-    def test_preprocess_non_res_pir_eliminates_small_residuals(self, mock_read_parquet):
-        pass
+    def test_preprocess_non_res_pir_eliminates_small_residuals(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.df_test
+            preprocess_non_res_pir(self.s3_uri, self.destination, lazy=False)
+        df = pl.read_parquet(self.destination).with_columns(
+            (
+                pl.col("ascwds_filled_posts_deduplicated_clean")
+                - pl.col("pir_people_directly_employed_deduplicated")
+            )
+            .abs()
+            .alias("abs_resid")
+        )
+        self.assertEqual(df.filter(pl.col("abs_resid") > 500).shape[0], 0)
 
-    @patch(f"{PATCH_STEM}.pl.read_parquet")
-    def test_preprocess_non_res_pir_logs_failure(self, mock_read_parquet):
-        pass
 
-    @patch(f"{PATCH_STEM}.pl.read_parquet")
-    def test_preprocess_non_res_pir_logs_success(self, mock_read_parquet):
-        pass
-
-    @patch(f"{PATCH_STEM}.pl.read_parquet")
-    def test_non_res_pir_saves_dataframe(self, mock_read_parquet):
-        pass
+    # @patch(f"{PATCH_STEM}.pl.read_parquet")
+    # def test_preprocess_non_res_pir_logs_failure(self, mock_read_parquet):
+    #     pass
+    #
+    # @patch(f"{PATCH_STEM}.pl.read_parquet")
+    # def test_preprocess_non_res_pir_logs_success(self, mock_read_parquet):
+    #     pass
+    #
+    # @patch(f"{PATCH_STEM}.pl.read_parquet")
+    # def test_non_res_pir_saves_dataframe(self, mock_read_parquet):
+    #     pass
