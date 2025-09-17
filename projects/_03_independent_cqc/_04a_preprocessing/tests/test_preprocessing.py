@@ -1,11 +1,12 @@
 from projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing import (
     preprocess_non_res_pir,
     logger,
+    main_preprocessor,
 )
 import unittest
 import os
 import polars as pl
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import shutil
 import tempfile
 from pathlib import Path
@@ -16,6 +17,28 @@ PATCH_STEM = "projects._03_independent_cqc._04a_preprocessing.fargate.preprocess
 DUMMY_SOURCE_BUCKET = "dummy-source-bucket"
 DUMMY_DESTINATION_BUCKET = "dummy-destination-bucket"
 SAMPLE_DATA_PATH = Path(__file__).parent / "testfile.parquet"
+
+
+class TestPreprocessing(unittest.TestCase):
+    def test_main_preprocessor_calls_processor_with_args_and_kwargs(self):
+        preprocessor = MagicMock()
+        args = ["foo", 3, False]
+        kwargs = {"a": 1, "b": 2}
+        main_preprocessor(preprocessor, *args, **kwargs)
+        preprocessor.assert_called_once_with(*args, **kwargs)
+
+    def test_main_preprocessor_logs_errors(self):
+        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+            with self.assertRaises(ValueError):
+                preprocessor = MagicMock()
+                preprocessor.__str__.return_value = "my_preprocessor"
+                preprocessor.side_effect = ValueError("foo")
+                main_preprocessor(preprocessor)
+            self.assertIn("foo", cm.output[1])
+            self.assertIn(
+                f"There was an unexpected exception while executing preprocessor my_preprocessor.",
+                cm.output[0],
+            )
 
 
 class TestPreprocessNonResPir(unittest.TestCase):
@@ -100,12 +123,12 @@ class TestPreprocessNonResPir(unittest.TestCase):
         self.assertEqual({"1-119187505", "1-2206520209", "1-118618710"}, ids)
 
     def test_preprocess_non_res_pir_logs_failure(self):
-        with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
-            with self.assertLogs(logger.name, level=logging.INFO) as cm:
+        with self.assertLogs(logger.name, level=logging.INFO) as cm:
+            with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
                 preprocess_non_res_pir(
                     "my/nonexistent/path", self.destination, lazy=False
                 )
-                self.assertIn(
-                    f"Polars was not able to read or process the data in my/nonexistent/path, or send to {self.destination}",
-                    cm.output[0],
-                )
+            self.assertIn(
+                f"Polars was not able to read or process the data in my/nonexistent/path, or send to {self.destination}",
+                cm.output[0],
+            )

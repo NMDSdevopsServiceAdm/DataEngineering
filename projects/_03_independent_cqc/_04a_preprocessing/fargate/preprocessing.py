@@ -1,6 +1,8 @@
 import sys
 import polars as pl
 import logging
+from collections.abc import Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -8,6 +10,31 @@ handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+
+def main_preprocessor(
+    preprocessor: Callable[..., None], *args: Any, **kwargs: Any
+) -> None:
+    """
+    Calls the selected preprocessor with the required arguments. The required arguments will likely include
+    the location of the source data and the destination to write to.
+
+    Args:
+        preprocessor (Callable[..., None]): a function that carries out the required preprocessing
+        *args (Any) : required arguments
+        **kwargs (Any): required keyword arguments
+
+    Raises:
+        Exception: on any exception occurring within the preprocessor
+    """
+    try:
+        preprocessor(*args, **kwargs)
+    except Exception as e:
+        logger.error(
+            f"There was an unexpected exception while executing preprocessor {str(preprocessor)}."
+        )
+        logger.error(e)
+        raise
 
 
 def preprocess_non_res_pir(
