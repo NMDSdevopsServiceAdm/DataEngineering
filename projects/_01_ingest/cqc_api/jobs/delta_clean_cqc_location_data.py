@@ -407,6 +407,7 @@ def impute_historic_relationships(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.get_predecessor_relationships
 def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.

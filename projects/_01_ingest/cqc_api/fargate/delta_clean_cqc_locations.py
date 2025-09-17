@@ -166,6 +166,12 @@ def get_predecessor_relationships(
 ) -> pl.DataFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
+
+    1. For each location id flatten first known relationship column.
+    2. Filter flattened relationships for type 'HSCA Predecessor'
+    3. Recollate flattened relationships to single row per location id.
+    4. Join to input
+
     Args:
         cqc_df (pl.DataFrame): Dataframe with first known relationship column
 
@@ -173,20 +179,25 @@ def get_predecessor_relationships(
         pl.DataFrame: Dataframe with additional predecessor relationship column
 
     """
+    # 1. For each location id flatten first known relationship column.
     location_id_map = cqc_df.select(
         CQCLClean.location_id, CQCLClean.first_known_relationships
     ).unique()
 
     all_relationships = location_id_map.explode([CQCLClean.first_known_relationships])
 
+    # 2. Filter flattened relationships for type 'HSCA Predecessor'
     predecessor_relationships = all_relationships.filter(
         pl.col(CQCLClean.first_known_relationships).struct.field(CQCLClean.type)
         == "HSCA Predecessor"
     ).rename(
         {CQCLClean.first_known_relationships: CQCLClean.relationships_predecessors_only}
     )
+
+    # 3. Recollate flattened relationships to single row per location id.
     predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
 
+    # 4. Join to input
     cqc_df = cqc_df.join(predecessor_agg, on=CQCLClean.location_id, how="left")
 
     return cqc_df
