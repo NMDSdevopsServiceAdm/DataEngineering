@@ -20,12 +20,11 @@ SAMPLE_DATA_PATH = Path(__file__).parent / "testfile.parquet"
 
 
 class TestPreprocessing(unittest.TestCase):
-    def test_main_preprocessor_calls_processor_with_args_and_kwargs(self):
+    def test_main_preprocessor_calls_processor_with_kwargs(self):
         preprocessor = MagicMock()
-        args = ["foo", 3, False]
-        kwargs = {"a": 1, "b": 2}
-        main_preprocessor(preprocessor, *args, **kwargs)
-        preprocessor.assert_called_once_with(*args, **kwargs)
+        kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
+        main_preprocessor(preprocessor, **kwargs)
+        preprocessor.assert_called_once_with(**kwargs)
 
     def test_main_preprocessor_logs_errors(self):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
@@ -33,12 +32,25 @@ class TestPreprocessing(unittest.TestCase):
                 preprocessor = MagicMock()
                 preprocessor.__str__.return_value = "my_preprocessor"
                 preprocessor.side_effect = ValueError("foo")
-                main_preprocessor(preprocessor)
+                kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
+                main_preprocessor(preprocessor, **kwargs)
             self.assertIn("foo", cm.output[1])
             self.assertIn(
                 f"There was an unexpected exception while executing preprocessor my_preprocessor.",
                 cm.output[0],
             )
+
+    def test_main_preprocessor_requires_correct_signature(self):
+        preprocessor = MagicMock()
+        kwargs = {"destination": "path/b", "a": 1}
+        with self.assertRaises(TypeError):
+            main_preprocessor(preprocessor, **kwargs)
+
+    def test_main_preprocessor_requires_valid_source_and_destination(self):
+        preprocessor = MagicMock()
+        kwargs = {"source": 5, "destination": 6, "a": 1, "b": 2}
+        with self.assertRaises(TypeError):
+            main_preprocessor(preprocessor, **kwargs)
 
 
 class TestPreprocessNonResPir(unittest.TestCase):

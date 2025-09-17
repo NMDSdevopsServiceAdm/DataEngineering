@@ -117,7 +117,7 @@ def parse_arg_by_type(arg: str) -> bool | int | float | str:
         arg (str): The argument to be converted.
 
     Returns:
-        (bool | int | float | str): The converted argument.
+        bool | int | float | str: The converted argument.
     """
     try:
         stripped = arg.strip()

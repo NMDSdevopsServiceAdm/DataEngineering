@@ -13,23 +13,32 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def main_preprocessor(
-    preprocessor: Callable[..., None], *args: Any, **kwargs: Any
-) -> None:
+def main_preprocessor(preprocessor: Callable[..., None], **kwargs: Any) -> None:
     """
     Calls the selected preprocessor with the required arguments. The required arguments will likely include
     the location of the source data and the destination to write to.
 
     Args:
         preprocessor (Callable[..., None]): a function that carries out the required preprocessing
-        *args (Any) : required arguments
-        **kwargs (Any): required keyword arguments
+        **kwargs (Any): required keyword arguments including (as minimum) source and destination (strings)
 
     Raises:
+        TypeError: if source and destination are not included
         Exception: on any exception occurring within the preprocessor
     """
+    required = {"source", "destination"}
+    given_params = set(kwargs.keys())
+    if not required.issubset(given_params):
+        raise TypeError(f"preprocessor requires {required} but got {given_params}")
+    if not isinstance(kwargs["source"], str) or not isinstance(
+        kwargs["destination"], str
+    ):
+        raise TypeError(
+            f"preprocessor requires string source and destination but got {kwargs['source']} and {kwargs['destination']}"
+        )
+
     try:
-        preprocessor(*args, **kwargs)
+        preprocessor(**kwargs)
     except Exception as e:
         logger.error(
             f"There was an unexpected exception while executing preprocessor {str(preprocessor)}."
@@ -38,16 +47,14 @@ def main_preprocessor(
         raise
 
 
-def preprocess_non_res_pir(
-    path_to_data: str, destination: str, lazy: bool = False
-) -> None:
+def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> None:
     """
     Preprocesses data for Non-Residential PIR model prior to training.
 
     The function filters null and non-negative feature columns and eliminates large residuals.
 
     Args:
-        path_to_data (str): the S3 uri of the feature data
+        source (str): the S3 uri of the feature data or a local file path for testing
         destination( str): the S3 uri of the output directory
         lazy(bool, optional): whether to read the incoming data lazily or not (default is False)
 
@@ -56,7 +63,7 @@ def preprocess_non_res_pir(
         pl.exceptions.PolarsError: if there is an error reading or processing the data
     """
     try:
-        data = pl.scan_parquet(path_to_data) if lazy else pl.read_parquet(path_to_data)
+        data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         required_columns = [
             "locationId",
             "cqc_location_import_date",
@@ -95,7 +102,7 @@ def preprocess_non_res_pir(
             result.write_parquet(destination)
     except (pl.exceptions.PolarsError, FileNotFoundError) as e:
         logger.error(
-            f"Polars was not able to read or process the data in {path_to_data}, or send to {destination}"
+            f"Polars was not able to read or process the data in {source}, or send to {destination}"
         )
         logger.error(f"Polars error: {e}")
         raise
@@ -117,4 +124,7 @@ if __name__ == "__main__":
         k: utils.parse_arg_by_type(v)
         for k, v in [tuple(kwarg.split("=", 1)) for kwarg in kwargs.split(",")]
     }
+    if "source" not in keyword_args or "destination" not in keyword_args:
+        logger.error('The arguments "source" and "destination" are required')
+        sys.exit(1)
     main_preprocessor(processor, **keyword_args)
