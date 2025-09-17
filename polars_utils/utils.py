@@ -51,7 +51,10 @@ def read_parquet(
         raw = (
             pl.scan_parquet(
                 source,
-                cast_options=pl.ScanCastOptions(missing_struct_fields="insert"),
+                cast_options=pl.ScanCastOptions(
+                    missing_struct_fields="insert",
+                    extra_struct_fields="ignore",
+                ),
                 extra_columns="ignore",
                 missing_columns="insert",
             )
