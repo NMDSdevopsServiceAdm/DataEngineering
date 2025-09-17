@@ -12,8 +12,8 @@ variable "aws_secret_key" {
 }
 
 variable "bucket" {
-    type = string
-    description = "Reference to terraform remote state bucket from *.s3.tfbackend"
+  type = string
+  description = "Reference to terraform remote state bucket from *.s3.tfbackend"
 }
 
 variable "region" {
