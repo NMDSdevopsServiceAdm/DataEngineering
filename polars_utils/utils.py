@@ -106,3 +106,30 @@ def send_sns_notification(
             "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
         )
         raise
+
+
+def parse_arg_by_type(arg: str) -> bool | int | float | str:
+    """
+    Converts a given argument into one of boolean, integer, float or string in that order. If conversion fails,
+    the string representation of the argument is returned.
+
+    Args:
+        arg (str): The argument to be converted.
+
+    Returns:
+        (bool | int | float | str): The converted argument.
+    """
+    try:
+        stripped = arg.strip()
+        if stripped.lower() == "true":
+            return True
+        elif stripped.lower() == "false":
+            return False
+        elif "." in stripped:
+            return float(stripped)
+        elif stripped.isdigit() or stripped[1].isdigit():
+            return int(stripped)
+        else:
+            return str(stripped)
+    except (ValueError, TypeError, IndexError):
+        return str(arg)

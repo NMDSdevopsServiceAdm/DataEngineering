@@ -3,6 +3,7 @@ import polars as pl
 import logging
 from collections.abc import Callable
 from typing import Any
+from polars_utils import utils
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -98,3 +99,22 @@ def preprocess_non_res_pir(
         )
         logger.error(f"Polars error: {e}")
         raise
+
+
+if __name__ == "__main__":
+    (processor_name, kwargs) = utils.collect_arguments(
+        (
+            "--processor_name",
+            "The name of the processor",
+        ),
+        (
+            "--kwargs",
+            "The additional keyword arguments to pass to the processor in the format name=bill,age=42",
+        ),
+    )
+    processor = locals()[processor_name]
+    keyword_args = {
+        k: utils.parse_arg_by_type(v)
+        for k, v in [tuple(kwarg.split("=", 1)) for kwarg in kwargs.split(",")]
+    }
+    main_preprocessor(processor, **keyword_args)
