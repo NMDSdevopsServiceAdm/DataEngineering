@@ -1367,8 +1367,6 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.rating_sequence, IntegerType(), True),
-            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
             StructField(CQCRatings.safe_rating_value, IntegerType(), True),
             StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
             StructField(CQCRatings.caring_rating_value, IntegerType(), True),

@@ -594,7 +594,7 @@ def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFra
     else:
         window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
         new_column_name = CQCRatings.rating_sequence
-    ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
+    ratings_df = ratings_df.withColumn(new_column_name, F.row_number().over(window))
     return ratings_df
 
 
@@ -677,8 +677,6 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.rating_sequence,
-        CQCRatings.latest_rating_flag,
         CQCRatings.safe_rating_value,
         CQCRatings.well_led_rating_value,
         CQCRatings.caring_rating_value,
