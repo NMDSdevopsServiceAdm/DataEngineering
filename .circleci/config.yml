@@ -24,7 +24,7 @@ jobs:
       aws_account:
         type: enum
         description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
-        enum: ["prod", "non-prod"]
+        enum: ["prod", "non_prod"]
     docker:
       - image: docker:latest
     steps:
@@ -125,7 +125,7 @@ jobs:
       aws_account:
         type: enum
         description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
-        enum: ["prod", "non-prod"]
+        enum: ["prod", "non_prod"]
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
@@ -156,7 +156,7 @@ jobs:
       aws_account:
         type: enum
         description: The short name of the AWS account, used to reference the relevant auth credentials
-        enum: ["prod", "non-prod"]
+        enum: ["prod", "non_prod"]
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
@@ -193,7 +193,7 @@ jobs:
       aws_account:
         type: enum
         description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
-        enum: ["prod", "non-prod"]
+        enum: ["prod", "non_prod"]
     environment:
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
@@ -225,8 +225,8 @@ jobs:
 
   copy-default-data:
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non-prod
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non-prod
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non_prod
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non_prod
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -247,10 +247,10 @@ jobs:
       aws_account:
         type: enum
         description: The short name of the AWS account, used to reference the relevant `tfbackend` file
-        enum: ["non-prod"]
+        enum: ["non_prod"]
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non-prod
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non-prod
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non_prod
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non_prod
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -309,7 +309,7 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          aws_account: "non-prod"
+          aws_account: "non_prod"
           filters:
             branches:
               ignore: main
@@ -330,17 +330,17 @@ workflows:
             branches:
               ignore: main
       - terraform-plan:
-          aws_account: "non-prod"
+          aws_account: "non_prod"
           requires:
             - lint-terraform
             - test
             - task-containerisation
       - terraform-apply:
-          aws_account: "non-prod"
+          aws_account: "non_prod"
           requires:
             - terraform-plan
       - deploy-dependencies:
-          aws_account: "non-prod"
+          aws_account: "non_prod"
           requires:
             - terraform-apply
       - copy-default-data:
@@ -351,4 +351,4 @@ workflows:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
       - terraform-destroy:
-          aws_account: "non-prod"
+          aws_account: "non_prod"
