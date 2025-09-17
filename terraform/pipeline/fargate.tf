@@ -45,3 +45,18 @@ module "model_retrain" {
     { "name" : "MODEL_RETRAIN_S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name }
   ]
 }
+
+module "model_preprocess" {
+  source        = "../modules/fargate-task"
+  task_name     = "model-preprocess"
+  ecr_repo_name = "fargate/model-preprocess"
+  cluster_arn   = aws_ecs_cluster.model_cluster.arn
+  tag_name      = terraform.workspace
+  cpu_size      = 8192
+  ram_size      = 32768
+  environment = [
+    { "name" : "AWS_REGION", "value" : "eu-west-2" },
+    { "name" : "ENVIRONMENT", "value" : terraform.workspace == "default" ? "prod" : "dev" },
+    { "name" : "MODEL_PREPROCESS_S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name }
+  ]
+}
