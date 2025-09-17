@@ -17,7 +17,7 @@ def has_value(
     Returns:
         pl.Expr: a Polars expression which can be used to construct a DataFrame or result
     """
-    if df.schema[column] != pl.Array:
+    if df.schema[column] not in [pl.Array, pl.List]:
         # exists a non-null value within the partition
         return pl.col([column]).is_not_null().over(partition_by).alias(alias)
 
@@ -28,7 +28,6 @@ def has_value(
         .max()
         .cast(pl.Boolean)
         .over(partition_by)
-        .alias(alias)
     )
 
 

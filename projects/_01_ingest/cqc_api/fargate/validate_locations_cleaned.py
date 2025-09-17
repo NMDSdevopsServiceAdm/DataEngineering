@@ -57,7 +57,7 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .col_count_match(Rules.expected_size(compare_df))
+        .row_count_match(Rules.expected_size(compare_df))
         # complete columns
         .col_vals_not_null(*Rules.complete_columns)
         # index columns
@@ -72,7 +72,7 @@ def main(
         .col_vals_in_set(*Rules.care_home)
         .col_vals_in_set(*Rules.cqc_sector)
         .col_vals_in_set(*Rules.registration_status)
-        .col_vals_in_set(*Rules.dormancy)
+        .col_vals_in_set("dormancy", ["Y", "N", None])
         .col_vals_in_set(*Rules.primary_service_type)
         .col_vals_in_set(*Rules.contemporary_cssr)
         .col_vals_in_set(*Rules.contemporary_region)

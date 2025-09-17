@@ -186,12 +186,8 @@ class Rules(tuple, Enum):
                 pl.col(CQCL.gac_service_types)
             ),
         ).filter(
-            has_value(
-                df, CQCL.regulated_activities, has_activity, CQCL.location_id
-            ).alias(has_activity),
-            has_value(df, CQCL.provider_id, has_provider, CQCL.location_id).alias(
-                has_provider
-            ),
+            has_value(df, CQCL.regulated_activities, has_activity, CQCL.location_id),
+            has_value(df, CQCL.provider_id, has_provider, CQCL.location_id),
             pl.col(CQCL.type) == LocationType.social_care_identifier,
             pl.col(CQCL.registration_status) == RegistrationStatus.registered,
             ~is_invalid_location(),
@@ -206,5 +202,5 @@ class Rules(tuple, Enum):
                 & (pl.col(CQCL.gac_service_types).is_not_null())
             ),
         )
-        logger.info(f"Compared dataset has {cleaned_df.height} records")
+        logger.info(f"Expected size {cleaned_df.height}")
         return cleaned_df.height
