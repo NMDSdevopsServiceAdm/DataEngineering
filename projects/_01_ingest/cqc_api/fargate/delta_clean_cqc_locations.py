@@ -201,3 +201,42 @@ def get_predecessor_relationships(
     cqc_df = cqc_df.join(predecessor_agg, on=CQCLClean.location_id, how="left")
 
     return cqc_df
+
+
+def impute_missing_values_for_struct_column(
+    cqc_df: pl.DataFrame, column_name: str
+) -> pl.DataFrame:
+    """
+    Creates new column called 'imputed_[column_name]' containing imputed values for a struct column.
+
+    1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
+    2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
+
+    Args:
+        cqc_df (pl.DataFrame): Dataframe containing 'location_id', 'cqc_location_import_date', and a struct column to impute.
+        column_name (str): Name of struct column to impute
+
+    Returns:
+        DataFrame: DataFrame with the struct column containing imputed values in 'imputed_[column_name]'.
+    """
+    # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
+    imputed_column_name = "imputed_" + column_name
+    cqc_df = cqc_df.with_columns(
+        pl.when(pl.col(column_name).list.len() > 0)
+        .then(pl.col(column_name))
+        .otherwise(None)
+        .alias(imputed_column_name)
+    )
+
+    # 2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
+    cqc_df = cqc_df.with_columns(
+        pl.col(imputed_column_name)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.cqc_location_import_date,
+        )
+    )
+
+    return cqc_df
