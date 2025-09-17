@@ -22,13 +22,7 @@ def has_value(
         return pl.col([column]).is_not_null().over(partition_by).alias(alias)
 
     # exists a non-zero sized array within the partition
-    return (
-        pl.col([column])
-        .list.len()
-        .max()
-        .cast(pl.Boolean)
-        .over(partition_by)
-    )
+    return pl.col([column]).list.len().max().cast(pl.Boolean).over(partition_by)
 
 
 def str_length_cols(columns: list[str]) -> list[pl.Expr]:
