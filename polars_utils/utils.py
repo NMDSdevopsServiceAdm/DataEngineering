@@ -3,6 +3,7 @@ import logging
 import uuid
 from pathlib import Path
 
+import boto3
 import polars as pl
 import polars.selectors as cs
 
@@ -143,3 +144,40 @@ def generate_s3_dir(destination_prefix, domain, dataset, date, version="1.0.0"):
     output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
     print(f"Generated output s3 dir: {output_dir}")
     return output_dir
+
+
+def empty_s3_folder(bucket_name: str, prefix: str) -> None:
+    """Empties a folder in an s3 bucket.
+
+    S3 files Keys are full file paths (including the 'folder') so this function uses
+    the prefix to determine which files to delete, rather than a folder.
+
+    Example:
+        empty_s3_folder("my-bucket", "path/to/my/folder/")
+
+    Args:
+        bucket_name (str): the nucket containing the directory to empty
+            - cannot be the main dataset bucket
+        prefix (str): the path prefix which constitutes the 'folder' to empty
+
+    Raises:
+        ValueError: if the bucket is the main dataset bucket
+    """
+    if bucket_name == "sfc-main-datasets":
+        raise ValueError("Refusing to empty sfc-main-datasets bucket")
+
+    s3_client = boto3.client("s3")
+    paginator = s3_client.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)
+    to_delete = []
+    for item in pages.search("Contents"):
+        if item is not None:
+            to_delete.append(item)
+
+    if not to_delete:
+        logging.info(f"Skipping emptying folder - no objects matching prefix {prefix}")
+        return
+
+    keys_str = "\n".join([obj["Key"] for obj in to_delete])
+    logging.info(f"Deleting {len(to_delete):} objects:\n{keys_str}")
+    s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})

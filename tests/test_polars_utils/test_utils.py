@@ -11,7 +11,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import polars as pl
-
 from polars_utils import utils
 from polars_utils.utils import write_to_parquet
 
@@ -212,3 +211,55 @@ class TestGetArgs(TestUtils):
             # When / Then
             with self.assertRaises(argparse.ArgumentError):
                 utils.get_args(*args)
+
+
+class TestEmptyS3Folder(unittest.TestCase):
+    @patch("boto3.client")
+    def test_empty_s3_folder_refuses_main_bucket(self, mock_s3_client):
+        with self.assertRaises(ValueError) as context:
+            utils.empty_s3_folder("sfc-main-datasets", "a/non/existent/prefix/")
+
+        self.assertIn(
+            "Refusing to empty sfc-main-datasets bucket", str(context.exception)
+        )
+        mock_s3_client.assert_not_called()
+
+    @patch("boto3.client")
+    def test_empty_s3_folder_no_objects(self, mock_s3_client):
+        # Given
+        paginator = mock_s3_client.return_value.get_paginator.return_value
+        paginator.paginate.return_value.search.return_value = [None]
+        # When
+        with self.assertLogs(level="INFO") as cm:
+            utils.empty_s3_folder("my-bucket", "some/prefix/")
+        # Then
+        self.assertIn(
+            "Skipping emptying folder - no objects matching prefix some/prefix/",
+            cm.output[0],
+        )
+        mock_s3_client.return_value.delete_objects.assert_not_called()
+
+    @patch("boto3.client")
+    def test_empty_s3_folder_deletes_objects(self, mock_s3_client):
+        # Given
+        paginator = mock_s3_client.return_value.get_paginator.return_value
+        paginator.paginate.return_value.search.side_effect = [
+            [
+                {"Key": "some/prefix/file1.parquet"},
+                {"Key": "some/prefix/file2.parquet"},
+                {"Key": "some/prefix/file3.parquet"},
+            ]
+        ]
+        # When
+        utils.empty_s3_folder("my-bucket", "some/prefix/")
+        # Then
+        mock_s3_client.return_value.delete_objects.assert_called_once_with(
+            Bucket="my-bucket",
+            Delete={
+                "Objects": [
+                    {"Key": "some/prefix/file1.parquet"},
+                    {"Key": "some/prefix/file2.parquet"},
+                    {"Key": "some/prefix/file3.parquet"},
+                ]
+            },
+        )
