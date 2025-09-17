@@ -10,7 +10,23 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def preprocess_non_res_pir(path_to_data: str, destination: str, lazy=False) -> None:
+def preprocess_non_res_pir(
+    path_to_data: str, destination: str, lazy: bool = False
+) -> None:
+    """
+    Preprocesses data for Non-Residential PIR model prior to training.
+
+    The function filters null and non-negative feature columns and eliminates large residuals.
+
+    Args:
+        path_to_data (str): the S3 uri of the feature data
+        destination( str): the S3 uri of the output directory
+        lazy(bool, optional): whether to read the incoming data lazily or not (default is False)
+
+    Raises:
+        FileNotFoundError: if a local data source file cannot be found
+        pl.exceptions.PolarsError: if there is an error reading or processing the data
+    """
     try:
         data = pl.scan_parquet(path_to_data) if lazy else pl.read_parquet(path_to_data)
         required_columns = [
