@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import polars as pl
+from cffi.model import StructType
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -89,6 +90,61 @@ class CQCLocationsSchema:
                             CQCL.reason: pl.String(),
                         }
                     )
+                ),
+            ),
+        ]
+    )
+
+    get_predecessor_relationships_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (
+                CQCLClean.first_known_relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    ),
+                ),
+            ),
+        ]
+    )
+
+    expected_get_predecessor_relationships_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.registration_status, pl.String()),
+            (
+                CQCLClean.first_known_relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    ),
+                ),
+            ),
+            (
+                CQCLClean.relationships_predecessors_only,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    ),
                 ),
             ),
         ]

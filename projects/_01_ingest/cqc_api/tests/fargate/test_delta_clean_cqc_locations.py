@@ -187,7 +187,7 @@ class CleanAndImputeRegistrationDateTests(unittest.TestCase):
         pl_testing.assert_frame_equal(expected_df, output_df)
 
 
-class ImputeHistoricRelationshipsTest(unittest.TestCase):
+class ImputeHistoricRelationshipsTests(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.get_predecessor_relationships")
     def test_when_no_relationships_returns_null_imputed_relationships(
@@ -360,6 +360,130 @@ class ImputeHistoricRelationshipsTest(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(expected_df, output_df)
+
+
+class GetPredecessorRelationshipsTests(unittest.TestCase):
+    def test_when_no_relationships_returns_null_predecessors(self):
+        # GIVEN
+        #   Input where all rows have no first known relationship
+        input_df = pl.DataFrame(
+            data=Data.get_predecessor_relationships_null_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_df = job.get_predecessor_relationships(input_df)
+
+        # THEN
+        #   The predecessor relationship column should be null for all rows
+        expected_df = pl.DataFrame(
+            data=Data.expected_get_predecessor_relationships_null_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [None, None], output_df["relationships_predecessors_only"].to_list()
+        )
+
+    def test_when_relationships_successor_only_returns_null_predecessors(self):
+        # GIVEN
+        #   Input where all rows have only successor relationships
+        input_df = pl.DataFrame(
+            data=Data.get_predecessor_relationships_successor_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_df = job.get_predecessor_relationships(input_df)
+
+        # THEN
+        #   The predecessor relationship column should be null for all rows
+        expected_df = pl.DataFrame(
+            data=Data.expected_get_predecessor_relationships_successor_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [None, None], output_df["relationships_predecessors_only"].to_list()
+        )
+
+    def test_when_relationships_predecessor_only_returns_predecessor(self):
+        # GIVEN
+        #   Input where all rows have a predecessor relationship
+        input_df = pl.DataFrame(
+            data=Data.get_predecessor_relationships_predecessor_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_df = job.get_predecessor_relationships(input_df)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values
+        expected_df = pl.DataFrame(
+            data=Data.expected_get_predecessor_relationships_predecessor_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r[0]["type"]
+                for r in output_df["relationships_predecessors_only"].to_list()
+            ],
+        )
+
+    def test_when_relationships_both_types_only_returns_predecessors(self):
+        # GIVEN
+        #   Input where all rows have a predecessor relationship and a successor relationship
+        input_df = pl.DataFrame(
+            data=Data.get_predecessor_relationships_both_types,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_df = job.get_predecessor_relationships(input_df)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values
+        expected_df = pl.DataFrame(
+            data=Data.expected_get_predecessor_relationships_both_types,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r[0]["type"]
+                for r in output_df["relationships_predecessors_only"].to_list()
+            ],
+        )
+
+    def test_when_multiple_predecessors_returns_aggregated_predecessors(self):
+        # GIVEN
+        #   Input where there are multiple predecessor relationships for a location
+        input_df = pl.DataFrame(
+            data=Data.get_predecessor_multiple_predecessors,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_df = job.get_predecessor_relationships(input_df)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values aggregated
+        expected_df = pl.DataFrame(
+            data=Data.expected_get_predecessor_multiple_predecessors,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r["type"]
+                for r in output_df["relationships_predecessors_only"].to_list()[0]
+            ],
+        )
 
 
 if __name__ == "__main__":

@@ -463,3 +463,337 @@ class CQCLocationsData:
             None,
         ),
     ]
+
+    get_predecessor_relationships_null_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (None, None),
+    ]
+
+    expected_get_predecessor_relationships_null_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (None, None),
+        (None, None),
+    ]
+
+    get_predecessor_relationships_successor_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HCSA Successor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HCSA Successor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+    ]
+
+    expected_get_predecessor_relationships_successor_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HCSA Successor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HCSA Successor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+        (None, None),
+    ]
+
+    get_predecessor_relationships_predecessor_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+    ]
+
+    expected_get_predecessor_relationships_predecessor_first_known = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+    ]
+
+    get_predecessor_relationships_both_types = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+                {
+                    CQCL.related_location_id: "locZ",
+                    CQCL.related_location_name: "Location Z",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+            ],
+        ),
+    ]
+
+    expected_get_predecessor_relationships_both_types = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+                {
+                    CQCL.related_location_id: "locZ",
+                    CQCL.related_location_name: "Location Z",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+            ],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                }
+            ],
+        ),
+    ]
+
+    get_predecessor_multiple_predecessors = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locW",
+                    CQCL.related_location_name: "Location W",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+                {
+                    CQCL.related_location_id: "locZ",
+                    CQCL.related_location_name: "Location Z",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+            ],
+        ),
+    ]
+
+    expected_get_predecessor_multiple_predecessors = [
+        ("loc_1", "loc_2"),
+        (date(2024, 2, 1), date(2024, 2, 1)),
+        (RegistrationStatus.deregistered, RegistrationStatus.registered),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locW",
+                    CQCL.related_location_name: "Location W",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+                {
+                    CQCL.related_location_id: "locZ",
+                    CQCL.related_location_name: "Location Z",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+            ],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locW",
+                    CQCL.related_location_name: "Location W",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locB",
+                    CQCL.related_location_name: "Location B",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+                {
+                    CQCL.related_location_id: "locZ",
+                    CQCL.related_location_name: "Location Z",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeOtherReason",
+                },
+            ],
+        ),
+    ]
