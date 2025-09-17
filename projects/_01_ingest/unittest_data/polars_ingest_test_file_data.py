@@ -797,3 +797,103 @@ class CQCLocationsData:
             ],
         ),
     ]
+
+    impute_struct_existing_values = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    expected_impute_struct_existing_values = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    impute_struct_from_historic = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    expected_impute_struct_from_historic = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+        (
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    impute_struct_from_future = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    expected_impute_struct_from_future = [
+        ("loc_1", "loc_1", "loc_1"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+        (
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    impute_struct_null_values = [
+        ("loc_1", "loc_1", "loc_2"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    expected_impute_struct_null_values = [
+        ("loc_1", "loc_1", "loc_2"),
+        (date(2024, 1, 1), date(2024, 2, 1), date(2024, 3, 1)),
+        (
+            [],
+            [],
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+        (
+            None,
+            None,
+            [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]

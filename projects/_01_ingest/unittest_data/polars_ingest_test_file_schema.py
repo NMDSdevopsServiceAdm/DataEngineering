@@ -149,3 +149,50 @@ class CQCLocationsSchema:
             ),
         ]
     )
+
+    impute_struct_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (
+                CQCLClean.gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
+
+    expected_impute_struct_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (
+                CQCLClean.gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.imputed_gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
