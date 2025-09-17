@@ -164,4 +164,29 @@ def impute_historic_relationships(
 def get_predecessor_relationships(
     cqc_df: pl.DataFrame,
 ) -> pl.DataFrame:
+    """
+    Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
+    Args:
+        cqc_df (pl.DataFrame): Dataframe with first known relationship column
+
+    Returns:
+        pl.DataFrame: Dataframe with additional predecessor relationship column
+
+    """
+    location_id_map = cqc_df.select(
+        CQCLClean.location_id, CQCLClean.first_known_relationships
+    ).unique()
+
+    all_relationships = location_id_map.explode([CQCLClean.first_known_relationships])
+
+    predecessor_relationships = all_relationships.filter(
+        pl.col(CQCLClean.first_known_relationships).struct.field(CQCLClean.type)
+        == "HSCA Predecessor"
+    ).rename(
+        {CQCLClean.first_known_relationships: CQCLClean.relationships_predecessors_only}
+    )
+    predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
+
+    cqc_df = cqc_df.join(predecessor_agg, on=CQCLClean.location_id, how="left")
+
     return cqc_df
