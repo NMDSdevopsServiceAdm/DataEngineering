@@ -1,16 +1,15 @@
 from projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing import (
     preprocess_non_res_pir,
-    pl as pol,
+    logger,
 )
 import unittest
 import os
-import boto3
-from moto import mock_aws
 import polars as pl
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import shutil
 import tempfile
 from pathlib import Path
+import logging
 
 
 PATCH_STEM = "projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing"
@@ -100,14 +99,13 @@ class TestPreprocessNonResPir(unittest.TestCase):
         ids = set(df["locationId"].to_list())
         self.assertEqual({"1-119187505", "1-2206520209", "1-118618710"}, ids)
 
-    # @patch(f"{PATCH_STEM}.pl.read_parquet")
-    # def test_preprocess_non_res_pir_logs_failure(self, mock_read_parquet):
-    #     pass
-    #
-    # @patch(f"{PATCH_STEM}.pl.read_parquet")
-    # def test_preprocess_non_res_pir_logs_success(self, mock_read_parquet):
-    #     pass
-    #
-    # @patch(f"{PATCH_STEM}.pl.read_parquet")
-    # def test_non_res_pir_saves_dataframe(self, mock_read_parquet):
-    #     pass
+    def test_preprocess_non_res_pir_logs_failure(self):
+        with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
+            with self.assertLogs(logger.name, level=logging.INFO) as cm:
+                preprocess_non_res_pir(
+                    "my/nonexistent/path", self.destination, lazy=False
+                )
+                self.assertIn(
+                    f"Polars was not able to read or process the data in my/nonexistent/path, or send to {self.destination}",
+                    cm.output[0],
+                )
