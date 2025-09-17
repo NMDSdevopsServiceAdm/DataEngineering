@@ -20,6 +20,11 @@ orbs:
 
 jobs:
   task-containerisation:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
+        enum: ["prod", "non-prod"]
     docker:
       - image: docker:latest
     steps:
@@ -27,12 +32,14 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
+          aws_access_key_id: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
+          aws_secret_access_key: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
           region: "eu-west-2"
       - run:
           name: Build Docker Images
           command: |
             # Authenticate Docker to ECR
-            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
+            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID_<< parameters.aws_account >>}.dkr.ecr.eu-west-2.amazonaws.com
             
             echo "Rebuilding lambdas and pushing to ECR."
             docker buildx bake all --push
@@ -246,6 +253,7 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
+          aws_account: "prod"
           filters:
             branches:
               only: main
@@ -274,6 +282,7 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
+          aws_account: "non-prod"
           filters:
             branches:
               ignore: main
