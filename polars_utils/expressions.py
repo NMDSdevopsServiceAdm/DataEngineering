@@ -1,9 +1,7 @@
 import polars as pl
 
 
-def has_value(
-    df: pl.DataFrame, column: str, alias: str, partition_by: str | None = None
-) -> pl.Expr:
+def has_value(df: pl.DataFrame, column: str, partition_by: str) -> pl.Expr:
     """Identifies if a column has a non-null value for each partition (if provided) or the entire
     Series otherwise. For Series containing Lists of values, a non-zero-sized array is treated as
     a valid value.
@@ -11,15 +9,20 @@ def has_value(
     Args:
         df (pl.DataFrame): the DataFrame to analyse
         column (str): the column to search in
-        alias (str): the resulting colum name for the boolean results
-        partition_by (str | None, optional): the column to partition by. Defaults to None.
+        partition_by (str): the column to partition by
 
     Returns:
         pl.Expr: a Polars expression which can be used to construct a DataFrame or result
     """
+    dtype = df.get_column(column).dtype
+
+    if dtype.is_numeric():
+        # exists a non-zero value within the partition
+        return pl.col(column).cast(pl.Boolean).any().over(partition_by)
+
     if df.schema[column] not in [pl.Array, pl.List]:
         # exists a non-null value within the partition
-        return pl.col([column]).is_not_null().over(partition_by).alias(alias)
+        return pl.col(column).str.len_chars().cast(pl.Boolean).any().over(partition_by)
 
     # exists a non-zero sized array within the partition
     return pl.col([column]).list.len().max().cast(pl.Boolean).over(partition_by)

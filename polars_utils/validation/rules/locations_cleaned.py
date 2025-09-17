@@ -4,7 +4,7 @@ import polars as pl
 
 from polars_utils.expressions import has_value
 from polars_utils.logger import get_logger
-from polars_utils.raw_data_adjustments import is_invalid_location
+from polars_utils.raw_data_adjustments import is_valid_location
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -177,20 +177,17 @@ class Rules(tuple, Enum):
 
     @staticmethod
     def expected_size(df: pl.DataFrame) -> int:
-        has_activity: str = "has_a_known_regulated_activity"
-        has_provider: str = "has_a_known_provider_id"
-
         cleaned_df = df.with_columns(
             # nullify empty lists to allow avoid index out of bounds error
             pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
                 pl.col(CQCL.gac_service_types)
             ),
         ).filter(
-            has_value(df, CQCL.regulated_activities, has_activity, CQCL.location_id),
-            has_value(df, CQCL.provider_id, has_provider, CQCL.location_id),
+            has_value(df, CQCL.regulated_activities, CQCL.location_id),
+            has_value(df, CQCL.provider_id, CQCL.location_id),
             pl.col(CQCL.type) == LocationType.social_care_identifier,
             pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-            ~is_invalid_location(),
+            is_valid_location(),
             ~(
                 (pl.col(CQCL.gac_service_types).list.len() == 1)
                 & (

@@ -15,8 +15,8 @@ CONFIG = Path(__file__).parent / "exclusions.json"
 EXCLUSIONS = json.loads(CONFIG.read_text())
 
 
-def is_duplicated_worker_data() -> pl.Expr:
-    """Identifies records known to be duplicates in the raw data.
+def is_unique_worker_data() -> pl.Expr:
+    """Identifies unique records by excluding known duplicates in the raw data.
 
     There are no required args but the expression should be used on a DataFrame
     which include columns:
@@ -25,7 +25,7 @@ def is_duplicated_worker_data() -> pl.Expr:
             - establishmentid
 
     Returns:
-        pl.Expr: an expression that shows which records are marked for exclusions
+        pl.Expr: an expression that shows which records are marked not as exclusions
     """
     duplicate_workers = EXCLUSIONS["worker"]
     return (
@@ -39,32 +39,35 @@ def is_duplicated_worker_data() -> pl.Expr:
     )
 
 
-def is_duplicated_workplace_data() -> pl.Expr:
-    """Identifies duplicate workplace records based on establishmentid.
+def is_unique_workplace_data() -> pl.Expr:
+    """Identifies unique workplace records based on establishmentid.
 
-    These are duplicates in the sense that the same data has been uploaded to ASCWDS for multiple accounts.
+    The exclusions are duplicates in the sense that the same data has been uploaded
+    to ASCWDS for multiple accounts.
 
-    This has been passed on to the support team (03/06/2025) to investigate which may affect what we do with
-    these locations long term but in the short term we're simply removing them from ASCWDS.
+    This has been passed on to the support team (03/06/2025) to investigate which may
+    affect what we do with these locations long term but in the short term we're simply
+      removing them from ASCWDS.
 
     There are two sets of workplaces here.
       - Four locations who submit the exact same ASCWDS files on the same day.
-      - 18 separate locations, seemingly unrelated, all submit identical data on the same day.
+      - 18 separate locations, seemingly unrelated, all submit identical data on the
+        same day.
 
     There are no required args but the expression should be used on a DataFrame
     which include columns:
             - establishmentid
 
     Returns:
-        pl.Expr: an expression that shows which records are marked for exclusions
+        pl.Expr: an expression that shows which records are not marked as exclusions
     """
     duplicate_workplaces = EXCLUSIONS["workplace"]["establishmentid"]
     duplicates = list(itertools.chain.from_iterable(duplicate_workplaces.values()))
-    return pl.col(AWPClean.establishment_id).is_in(duplicates)
+    return pl.col(AWPClean.establishment_id).is_in(duplicates).not_()
 
 
-def is_invalid_location() -> pl.Expr:
-    """Identifies invalid records based on locationId for known records.
+def is_valid_location() -> pl.Expr:
+    """Identifies valid records based on locationId exclusions.
 
     Known issues so far...
 
@@ -80,7 +83,7 @@ def is_invalid_location() -> pl.Expr:
         quickly. The location ID is enough to identify and remove this row.
 
     Returns:
-        pl.Expr: an expression that shows which records are marked for exclusions
+        pl.Expr: an expression that shows which records are not in exclusions
     """
     invalid_locations = EXCLUSIONS["locationId"].values()
-    return pl.col(CQCL.location_id).is_in(invalid_locations)
+    return pl.col(CQCL.location_id).is_in(invalid_locations).not_()
