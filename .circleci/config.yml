@@ -124,8 +124,11 @@ jobs:
     parameters:
       aws_account:
         type: enum
-        description: The short name of the AWS account, used to reference the relevant `tfbackend` file
+        description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
         enum: ["prod", "non-prod"]
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -149,6 +152,14 @@ jobs:
             - .
 
   terraform-apply:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant auth credentials
+        enum: ["prod", "non-prod"]
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
@@ -178,6 +189,14 @@ jobs:
             - ./terraform/pipeline/datasets_bucket_name
 
   deploy-dependencies:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
+        enum: ["prod", "non-prod"]
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
     docker:
       - image: cimg/python:3.11.12
     resource_class: small
@@ -205,6 +224,9 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
   copy-default-data:
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non-prod
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non-prod
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -226,6 +248,9 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant `tfbackend` file
         enum: ["non-prod"]
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non-prod
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non-prod
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -271,9 +296,11 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
+          aws_account: "prod"
           requires:
             - plan-approval
       - deploy-dependencies:
+          aws_account: "prod"
           requires:
             - terraform-apply
 
@@ -309,9 +336,11 @@ workflows:
             - test
             - task-containerisation
       - terraform-apply:
+          aws_account: "non-prod"
           requires:
             - terraform-plan
       - deploy-dependencies:
+          aws_account: "non-prod"
           requires:
             - terraform-apply
       - copy-default-data:
