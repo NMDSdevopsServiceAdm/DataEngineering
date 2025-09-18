@@ -5,9 +5,7 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 from pyspark.sql import functions as F
-from pyspark.sql.types import (
-    StringType,
-)
+from pyspark.sql.types import StringType
 
 import utils.cleaning_utils as cUtils
 from utils import utils
@@ -18,14 +16,21 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-from utils.column_values.categorical_column_values import (
-    Sector,
-)
+from utils.column_values.categorical_column_values import Sector
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 known_la_providerids = LocalAuthorityProviderIds.known_ids
+
+cols_to_import = [
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    Keys.import_date,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+]
 
 
 def main(cqc_source: str, cleaned_cqc_destination: str):
