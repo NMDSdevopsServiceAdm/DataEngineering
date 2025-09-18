@@ -815,6 +815,8 @@ def remove_specialist_colleges(
     Returns:
         tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
     """
+    # The below just prevents IDEs from warning you that the "Column object is not callable"
+    # - this is a false warning and does not cause an error
     # noinspection PyCallingNonCallable
     to_remove = gac_services_dimension.where(
         (
