@@ -7,21 +7,28 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
+
 - New function added to merge the old CQC ratings and the new assessment ratings.
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
+
 - Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datastes.
+
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
 
+- Removed the original Step Functions now the replacement ones are fully operational.
+
 ### Improved
+
 
 ## [v2025.08.0] - 09/09/2025
 
 ### Added
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
+
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 
