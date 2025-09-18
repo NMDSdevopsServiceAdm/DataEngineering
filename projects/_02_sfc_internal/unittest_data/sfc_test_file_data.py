@@ -1158,10 +1158,10 @@ class FlattenCQCRatings:
         (
             "loc_1",
             "Registered",
-            "2025-09-15 08:00:00",
+            "2024-09-11 08:00:00",
             "AP004",
             "title",
-            "2025-09-15",
+            "2024-09-11",
             "Assessed",
             "Supported Living",
             "assessment.ratings.asg_ratings",
@@ -1193,7 +1193,7 @@ class FlattenCQCRatings:
         (
             "loc_1",
             "Registered",
-            date(2024, 9, 15),
+            "2024-09-15",
             None,
             None,
             None,
@@ -1212,10 +1212,10 @@ class FlattenCQCRatings:
         (
             "loc_1",
             "Registered",
-            date(2025, 9, 15),
+            "2024-09-11",
             "AP004",
             "title",
-            date(2025, 9, 15),
+            "2024-09-11",
             "Assessed",
             "Supported Living",
             "assessment.ratings.asg_ratings",
@@ -1517,52 +1517,52 @@ class FlattenCQCRatings:
 
     # fmt: off
     add_rating_sequence_rows = [
-        ("loc_1", date(2024, 1, 1), date(2024, 1, 1)), #paired dates, 1+ day between cases
-        ("loc_1", date(2024, 1, 2), date(2024, 1, 2)), #paired dates, 1+ day between cases
-        ("loc_2", date(2024, 1, 1), date(2024, 1, 1)), #paired dates, 1+ month between cases
-        ("loc_2", date(2024, 2, 1), date(2024, 2, 1)), #paired dates, 1+ month between cases
-        ("loc_3", date(2023, 1, 1), date(2023, 1, 1)), #paired dates, 1+ year between cases
-        ("loc_3", date(2024, 1, 1), date(2024, 1, 1)), #paired dates, 1+ year between cases
-        ("loc_4", date(2023, 1, 1), date(2023, 1, 1)), #different rating date, same assessment_date
-        ("loc_4", date(2024, 1, 1), date(2023, 1, 1)), #different rating date, same assessment_date
-        ("loc_5", date(2023, 1, 1), date(2023, 1, 1)), #same rating date, different assessment_date
-        ("loc_5", date(2023, 1, 1), date(2024, 1, 1)), #same rating date, different assessment_date
-        ("loc_6", date(2023, 1, 1), None), #different rating date, missing assessment_date
-        ("loc_6", date(2024, 1, 1), None), #different rating date, missing assessment_date
-        ("loc_7", date(2023, 1, 1), None), #same rating date, missing assessment_date
-        ("loc_7", date(2023, 1, 1), None), #same rating date, missing assessment_date
+        ("loc_1", "2024-1-1", "2024-1-1"), #paired dates, 1+ day between cases
+        ("loc_1", "2024-1-2", "2024-1-2"), #paired dates, 1+ day between cases
+        ("loc_2", "2024-1-1", "2024-1-1"), #paired dates, 1+ month between cases
+        ("loc_2", "2024-2-1", "2024-2-1"), #paired dates, 1+ month between cases
+        ("loc_3", "2023-1-1", "2023-1-1"), #paired dates, 1+ year between cases
+        ("loc_3", "2024-1-1", "2024-1-1"), #paired dates, 1+ year between cases
+        ("loc_4", "2023-1-1", "2023-1-1"), #different rating date, same assessment_date
+        ("loc_4", "2024-1-1", "2023-1-1"), #different rating date, same assessment_date
+        ("loc_5", "2023-1-1", "2023-1-1"), #same rating date, different assessment_date
+        ("loc_5", "2023-1-1", "2024-1-1"), #same rating date, different assessment_date
+        ("loc_6", "2023-1-1", None), #different rating date, missing assessment_date
+        ("loc_6", "2024-1-1", None), #different rating date, missing assessment_date
+        ("loc_7", "2023-1-1", None), #same rating date, missing assessment_date
+        ("loc_7", "2023-1-1", None), #same rating date, missing assessment_date
     ]
     expected_add_rating_sequence_rows = [
-        ("loc_1", date(2024, 1, 1), date(2024, 1, 1), 1),
-        ("loc_1", date(2024, 1, 2), date(2024, 1, 2), 2),
-        ("loc_2", date(2024, 1, 1), date(2024, 1, 1), 1),
-        ("loc_2", date(2024, 2, 1), date(2024, 2, 1), 2),
-        ("loc_3", date(2023, 1, 1), date(2023, 1, 1), 1),
-        ("loc_3", date(2024, 1, 1), date(2024, 1, 1), 2),
-        ("loc_4", date(2023, 1, 1), date(2023, 1, 1), 1),
-        ("loc_4", date(2024, 1, 1), date(2023, 1, 1), 2),
-        ("loc_5", date(2023, 1, 1), date(2023, 1, 1), 1),
-        ("loc_5", date(2023, 1, 1), date(2024, 1, 1), 2),
-        ("loc_6", date(2023, 1, 1), None, 1),
-        ("loc_6", date(2024, 1, 1), None, 2),
-        ("loc_7", date(2023, 1, 1), None, 1),
-        ("loc_7", date(2023, 1, 1), None, 2),
+        ("loc_1", "2024-1-1", "2024-1-1", 1),
+        ("loc_1", "2024-1-2", "2024-1-2", 2),
+        ("loc_2", "2024-1-1", "2024-1-1", 1),
+        ("loc_2", "2024-2-1", "2024-2-1", 2),
+        ("loc_3", "2023-1-1", "2023-1-1", 1),
+        ("loc_3", "2024-1-1", "2024-1-1", 2),
+        ("loc_4", "2023-1-1", "2023-1-1", 1),
+        ("loc_4", "2024-1-1", "2023-1-1", 2),
+        ("loc_5", "2023-1-1", "2023-1-1", 1),
+        ("loc_5", "2023-1-1", "2024-1-1", 2),
+        ("loc_6", "2023-1-1", None, 1),
+        ("loc_6", "2024-1-1", None, 2),
+        ("loc_7", "2023-1-1", None, 1),
+        ("loc_7", "2023-1-1", None, 2),
     ]
     expected_reversed_add_rating_sequence_rows = [
-        ("loc_1", date(2024, 1, 2), date(2024, 1, 2), 1),
-        ("loc_1", date(2024, 1, 1), date(2024, 1, 1), 2),
-        ("loc_2", date(2024, 2, 1), date(2024, 2, 1), 1),
-        ("loc_2", date(2024, 1, 1), date(2024, 1, 1), 2),
-        ("loc_3", date(2024, 1, 1), date(2024, 1, 1), 1),
-        ("loc_3", date(2023, 1, 1), date(2023, 1, 1), 2),
-        ("loc_4", date(2024, 1, 1), date(2023, 1, 1), 1),
-        ("loc_4", date(2023, 1, 1), date(2023, 1, 1), 2),
-        ("loc_5", date(2023, 1, 1), date(2024, 1, 1), 1),
-        ("loc_5", date(2023, 1, 1), date(2023, 1, 1), 2),
-        ("loc_6", date(2024, 1, 1), None, 1),
-        ("loc_6", date(2023, 1, 1), None, 2),
-        ("loc_7", date(2023, 1, 1), None, 1),
-        ("loc_7", date(2023, 1, 1), None, 2),
+        ("loc_1", "2024-1-2", "2024-1-2", 1),
+        ("loc_1", "2024-1-1", "2024-1-1", 2),
+        ("loc_2", "2024-2-1", "2024-2-1", 1),
+        ("loc_2", "2024-1-1", "2024-1-1", 2),
+        ("loc_3", "2024-1-1", "2024-1-1", 1),
+        ("loc_3", "2023-1-1", "2023-1-1", 2),
+        ("loc_4", "2024-1-1", "2023-1-1", 1),
+        ("loc_4", "2023-1-1", "2023-1-1", 2),
+        ("loc_5", "2023-1-1", "2024-1-1", 1),
+        ("loc_5", "2023-1-1", "2023-1-1", 2),
+        ("loc_6", "2024-1-1", None, 1),
+        ("loc_6", "2023-1-1", None, 2),
+        ("loc_7", "2023-1-1", None, 1),
+        ("loc_7", "2023-1-1", None, 2),
     ]
     # fmt: on
 

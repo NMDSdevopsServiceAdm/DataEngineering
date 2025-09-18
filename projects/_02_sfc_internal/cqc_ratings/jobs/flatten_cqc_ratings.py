@@ -552,12 +552,6 @@ def merge_cqc_ratings(
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
     )
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
-
-    merged_df = merged_df.withColumn(CQCRatings.date, F.to_date(CQCRatings.date))
-    merged_df = merged_df.withColumn(
-        CQCL.assessment_date, F.to_date(CQCL.assessment_date)
-    )
-
     return merged_df.select(*expected_columns)
 
 
