@@ -717,6 +717,7 @@ def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
             ratings_df[CQCRatings.current_or_historic]
             == CQCCurrentOrHistoricValues.current
         )
+        & (ratings_df[CQCRatings.latest_rating_flag] == 1)
     )
     return benchmark_ratings_df
 

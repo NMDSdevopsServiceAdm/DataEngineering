@@ -1796,15 +1796,21 @@ class FlattenCQCRatings:
             15,
         ),
     ]
+    # fmt: off
     select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
-        ("loc_2", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic),
-        ("loc_3", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current),
-        ("loc_4", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic),
+        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 1),
+        ("loc_2", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 0),
+        ("loc_3", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic, 1),
+        ("loc_4", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic, 0),
+        ("loc_5", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current, 1),
+        ("loc_6", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current, 0),
+        ("loc_7", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic, 1),
+        ("loc_8", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic, 0),
     ]
     expected_select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 1),
     ]
+    # fmt: on
 
     add_good_or_outstanding_flag_rows = [
         ("loc_1", None, 4),

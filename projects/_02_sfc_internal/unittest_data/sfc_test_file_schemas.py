@@ -1381,6 +1381,7 @@ class FlattenCQCRatings:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, StringType(), True),
         ]
     )
 
