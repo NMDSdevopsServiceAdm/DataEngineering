@@ -2006,7 +2006,6 @@ class ValidateLocationsAPICleanedData:
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_provider_import_date, DateType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.name, StringType(), True),
             StructField(CQCLClean.provider_id, StringType(), True),
