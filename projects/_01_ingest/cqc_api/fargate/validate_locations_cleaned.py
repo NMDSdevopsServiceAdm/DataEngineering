@@ -244,28 +244,27 @@ def main(
 
 
 def custom_type() -> pl.Expr:
+    # for readability
+    care_home_col = pl.col(IndCQC.care_home)
+    primary_service_col = pl.col(IndCQC.primary_service_type)
+
+    care_home = CareHome.care_home
+    not_care_home = CareHome.not_care_home
+    PST = PrimaryServiceType
+
     return (
-        (pl.col(IndCQC.care_home) == CareHome.not_care_home)
-        & (pl.col(IndCQC.primary_service_type) == PrimaryServiceType.non_residential)
+        (care_home_col == not_care_home) & (primary_service_col == PST.non_residential)
     ) | (
-        (pl.col(IndCQC.care_home) == CareHome.care_home)
-        & (
-            pl.col(IndCQC.primary_service_type).is_in(
-                [
-                    PrimaryServiceType.care_home_with_nursing,
-                    PrimaryServiceType.care_home_only,
-                ]
-            )
-        )
+        (care_home_col == care_home)
+        & (primary_service_col.is_in([PST.care_home_with_nursing, PST.care_home_only]))
     )
 
 
 def expected_size(df: pl.DataFrame) -> int:
+    gac_services = pl.col(CQCL.gac_service_types)
     cleaned_df = df.with_columns(
-        # nullify empty lists to allow avoid index out of bounds error
-        pl.when(pl.col(CQCL.gac_service_types).list.len() > 0).then(
-            pl.col(CQCL.gac_service_types)
-        ),
+        # nullify empty lists to avoid index out of bounds error
+        pl.when(gac_services.list.len() > 0).then(gac_services),
     ).filter(
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
@@ -273,12 +272,12 @@ def expected_size(df: pl.DataFrame) -> int:
         pl.col(CQCL.registration_status) == RegistrationStatus.registered,
         is_valid_location(),
         ~(
-            (pl.col(CQCL.gac_service_types).list.len() == 1)
+            (gac_services.list.len() == 1)
+            & (gac_services.is_not_null())
             & (
-                pl.col(CQCL.gac_service_types).list[0].struct.field(CQCL.description)
+                gac_services.list[0].struct.field(CQCL.description)
                 == Services.specialist_college_service
             )
-            & (pl.col(CQCL.gac_service_types).is_not_null())
         ),
     )
     logger.info(f"Expected size {cleaned_df.height}")
