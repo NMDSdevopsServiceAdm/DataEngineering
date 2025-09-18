@@ -159,9 +159,6 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
         bucket_name (str): the nucket containing the directory to empty
             - cannot be the main dataset bucket
         prefix (str): the path prefix which constitutes the 'folder' to empty
-
-    Raises:
-        ValueError: if the bucket is the main dataset bucket
     """
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects_v2")
