@@ -172,7 +172,7 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
     to_delete = []
     for item in pages.search("Contents"):
         if item is not None:
-            to_delete.append(item)
+            to_delete.append({"Key": item["Key"]})
 
     if not to_delete:
         logging.info(f"Skipping emptying folder - no objects matching prefix {prefix}")
