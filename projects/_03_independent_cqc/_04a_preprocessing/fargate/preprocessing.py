@@ -38,6 +38,7 @@ def main_preprocessor(preprocessor: Callable[..., None], **kwargs: Any) -> None:
         )
 
     try:
+        logger.info(f"Invokng {preprocessor.__name__} with kwargs: {kwargs}")
         preprocessor(**kwargs)
     except Exception as e:
         logger.error(
@@ -63,6 +64,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         pl.exceptions.PolarsError: if there is an error reading or processing the data
     """
     try:
+        logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
         data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         required_columns = [
             "locationId",
@@ -71,6 +73,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             "ascwds_filled_posts_deduplicated_clean",
             "pir_people_directly_employed_deduplicated",
         ]
+        logger.info("Read succeeded - processing...")
         result = (
             data.select(*required_columns)
             .filter(
@@ -95,6 +98,9 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             )
             .filter(pl.col("abs_resid") <= 500)
             .drop("abs_resid")
+        )
+        logger.info(
+            "Processing succeeded. Writing to {destination} - the writing method is LAZY {lazy}"
         )
         if lazy:
             result.sink_parquet(destination)
