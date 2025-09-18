@@ -35,7 +35,7 @@ def lambda_handler(event, context):
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
-        organisation_type=event["organisation_type"],
+        dataset=event["dataset"],
         timepoint=date_int,
     )
 

@@ -41,6 +41,7 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.cqc_location_import_date,
         ],
         RuleName.min_values: {
+            IndCqcColumns.time_registered: 1,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed_cleaned: 1,
             IndCqcColumns.total_staff_bounded: 1,
