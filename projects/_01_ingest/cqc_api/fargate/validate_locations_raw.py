@@ -6,7 +6,10 @@ from polars_utils import utils
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
-from polars_utils.validation.rules.locations_raw import Rules
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 logger = get_logger(__name__)
 
@@ -33,9 +36,9 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             actions=GLOBAL_ACTIONS,
         )
         # complete columns
-        .col_vals_not_null(*Rules.complete_columns)
+        .col_vals_not_null([CQCL.location_id, Keys.import_date, CQCL.name])
         # index columns
-        .rows_distinct(*Rules.index_columns)
+        .rows_distinct([CQCL.location_id, Keys.import_date])
         # run all rules
         .interrogate()
     )

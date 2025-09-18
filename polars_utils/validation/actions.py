@@ -70,7 +70,6 @@ def _report_on_fail(
     _col_or_cols = step["column"]  # could be a string or a list
     columns = "_".join(_col_or_cols) if isinstance(_col_or_cols, list) else _col_or_cols
 
-    # get_data_extracts does not provide info for custom validations
     failed_records_df = validation.get_data_extracts(step_idx, frame=True)
     # get_data_extracts does not provide info for custom validations
     if isinstance(failed_records_df, pl.DataFrame):
