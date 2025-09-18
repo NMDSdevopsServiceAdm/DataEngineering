@@ -1,0 +1,210 @@
+{
+  "locationId": [
+    "1-2345678",
+    "1",
+    "2"
+  ],
+  "providerId": [
+    null,
+    null,
+    null
+  ],
+  "organisationType": [
+    null,
+    null,
+    null
+  ],
+  "type": [
+    null,
+    null,
+    null
+  ],
+  "name": [
+    null,
+    null,
+    null
+  ],
+  "brandId": [
+    null,
+    null,
+    null
+  ],
+  "brandName": [
+    null,
+    null,
+    null
+  ],
+  "onspdCcgCode": [
+    null,
+    null,
+    null
+  ],
+  "onspdCcgName": [
+    null,
+    null,
+    null
+  ],
+  "odsCcgCode": [
+    null,
+    null,
+    null
+  ],
+  "odsCcgName": [
+    null,
+    null,
+    null
+  ],
+  "onspdIcbCode": [
+    null,
+    null,
+    null
+  ],
+  "onspdIcbName": [
+    null,
+    null,
+    null
+  ],
+  "odsCode": [
+    null,
+    null,
+    null
+  ],
+  "registrationStatus": [
+    null,
+    null,
+    null
+  ],
+  "registrationDate": [
+    null,
+    null,
+    null
+  ],
+  "deregistrationDate": [
+    null,
+    null,
+    null
+  ],
+  "dormancy": [
+    null,
+    null,
+    null
+  ],
+  "dormancyStartDate": [
+    null,
+    null,
+    null
+  ],
+  "dormancyEndDate": [
+    null,
+    null,
+    null
+  ],
+  "alsoKnownAs": [
+    null,
+    null,
+    null
+  ],
+  "onspdLatitude": [
+    null,
+    null,
+    null
+  ],
+  "onspdLongitude": [
+    null,
+    null,
+    null
+  ],
+  "careHome": [
+    null,
+    null,
+    null
+  ],
+  "inspectionDirectorate": [
+    null,
+    null,
+    null
+  ],
+  "website": [
+    null,
+    null,
+    null
+  ],
+  "postalAddressLine1": [
+    null,
+    null,
+    null
+  ],
+  "postalAddressLine2": [
+    null,
+    null,
+    null
+  ],
+  "postalAddressTownCity": [
+    null,
+    null,
+    null
+  ],
+  "postalAddressCounty": [
+    null,
+    null,
+    null
+  ],
+  "region": [
+    null,
+    null,
+    null
+  ],
+  "postalCode": [
+    null,
+    null,
+    null
+  ],
+  "uprn": [
+    null,
+    null,
+    null
+  ],
+  "mainPhoneNumber": [
+    null,
+    null,
+    null
+  ],
+  "registeredManagerAbsentDate": [
+    null,
+    null,
+    null
+  ],
+  "numberOfBeds": [
+    null,
+    null,
+    null
+  ],
+  "constituency": [
+    null,
+    null,
+    null
+  ],
+  "localAuthority": [
+    null,
+    null,
+    null
+  ],
+  "lastInspection": {},
+  "lastReport": {},
+  "relationships": [[],[],[]],
+  "locationTypes": [[],[],[]],
+  "regulatedActivities": [[],[],[]],
+  "gacServiceTypes": [[],[],[]],
+  "specialisms": [[],[],[]],
+  "inspectionCategories": [[],[],[]],
+  "inspectionAreas": [[],[],[]],
+  "currentRatings": {},
+  "historicRatings": [[],[],[]],
+  "reports": [[],[],[]],
+  "unpublishedReports": [[],[],[]],
+  "providerInspectionAreas": [[],[],[]],
+  "specialism": [[],[],[]],
+  "ageGroup": [[],[],[]],
+  "settingServices": [[],[],[]],
+  "assessment": [[],[],[]]
+}

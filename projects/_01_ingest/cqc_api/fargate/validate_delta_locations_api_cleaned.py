@@ -91,7 +91,7 @@ def main(
             [
                 CQCLClean.location_id,
                 CQCLClean.cqc_location_import_date,
-            ]
+            ],
         )
         # between (inclusive)
         .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
@@ -121,25 +121,29 @@ def main(
             vl.is_unique_count_equal(
                 CQCLClean.cqc_sector,
                 CatValues.sector_column_values.count_of_categorical_values,
-            )
+            ),
+            brief=f"{CQCLClean.cqc_sector} needs to be one of {CatValues.sector_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.registration_status,
                 CatValues.registration_status_column_values.count_of_categorical_values,
-            )
+            ),
+            brief=f"{CQCLClean.registration_status} needs to be one of {CatValues.registration_status_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.dormancy,
                 CatValues.dormancy_column_values.count_of_categorical_values,
-            )
+            ),
+            brief=f"{CQCLClean.dormancy} needs to be null, or one of {CatValues.dormancy_column_values.categorical_values}",
         )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.related_location,
                 CatValues.related_location_column_values.count_of_categorical_values,
-            )
+            ),
+            brief=f"{CQCLClean.related_location} needs to be one of {CatValues.related_location_column_values.categorical_values}",
         )
         .interrogate()
     )

@@ -80,7 +80,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
                 CatValues.primary_service_type_column_values.count_of_categorical_values,
             )
         )
-        # # index columns
+        # index columns
         .col_vals_expr(custom_type())
         # run all rules
         .interrogate()

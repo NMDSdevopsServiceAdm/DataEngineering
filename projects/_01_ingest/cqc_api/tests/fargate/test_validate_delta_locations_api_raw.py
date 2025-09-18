@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import _01_ingest.cqc_api.fargate.validate_delta_locations_api_raw as job
+import projects._01_ingest.cqc_api.fargate.validate_delta_locations_api_raw as job
 
 PATCH_PATH = "polars_utils"
 

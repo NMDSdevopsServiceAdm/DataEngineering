@@ -97,7 +97,7 @@ def is_unique_count_equal(column: str, value: int) -> Callable[[pl.DataFrame], b
         value count
     """
 
-    def is_unique_count_equal(df: pl.DataFrame) -> bool:
+    def inner_callable(df: pl.DataFrame) -> bool:
         return df.n_unique(subset=[column]) == value
 
-    return is_unique_count_equal
+    return inner_callable

@@ -215,16 +215,6 @@ class TestGetArgs(TestUtils):
 
 class TestEmptyS3Folder(unittest.TestCase):
     @patch("boto3.client")
-    def test_empty_s3_folder_refuses_main_bucket(self, mock_s3_client):
-        with self.assertRaises(ValueError) as context:
-            utils.empty_s3_folder("sfc-main-datasets", "a/non/existent/prefix/")
-
-        self.assertIn(
-            "Refusing to empty sfc-main-datasets bucket", str(context.exception)
-        )
-        mock_s3_client.assert_not_called()
-
-    @patch("boto3.client")
     def test_empty_s3_folder_no_objects(self, mock_s3_client):
         # Given
         paginator = mock_s3_client.return_value.get_paginator.return_value

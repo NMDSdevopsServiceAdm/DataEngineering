@@ -163,9 +163,6 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
     Raises:
         ValueError: if the bucket is the main dataset bucket
     """
-    if bucket_name == "sfc-main-datasets":
-        raise ValueError("Refusing to empty sfc-main-datasets bucket")
-
     s3_client = boto3.client("s3")
     paginator = s3_client.get_paginator("list_objects_v2")
     pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix)

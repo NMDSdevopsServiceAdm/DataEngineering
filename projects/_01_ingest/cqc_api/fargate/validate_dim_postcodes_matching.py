@@ -79,6 +79,7 @@ def main(bucket_name: str, source_path: str, reports_path: str) -> None:
             CQCLClean.current_rural_urban_ind_11,
             CatValues.current_rui_column_values.categorical_values,
         )
+        # distinct values
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.contemporary_cssr,
