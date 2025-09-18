@@ -36,7 +36,7 @@ class TestWriteReports(TestValidate):
     def test_write_reports(self, mock_s3_client, mock_report_on_fail):
         # Given
         validation = (
-            pb.Validate(self.df, thresholds=pb.Thresholds(warning=1))
+            pb.Validate(self.df, thresholds=pb.Thresholds(error=1))
             .rows_distinct(["someId", "my_date"])
             .col_vals_not_null(["someId", "my_date", "name"])
             .interrogate()
