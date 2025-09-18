@@ -2,9 +2,7 @@ import unittest
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
