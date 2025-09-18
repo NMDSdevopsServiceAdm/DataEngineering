@@ -79,7 +79,7 @@ resource "aws_iam_policy" "secretsmanager_read_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ],
-        Resource = var.secret_arn,
+        Resource = "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:${var.secret_arn_label}",
       }
     ]
   })
