@@ -35,7 +35,7 @@ class TestPreprocessing(unittest.TestCase):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
             with self.assertRaises(ValueError):
                 preprocessor = DummyProcessor()
-                preprocessor.__str__.return_value = "DummyProcessor"
+                preprocessor.__str__.return_value = "DummyProcessor at xyz"
                 preprocessor.side_effect = ValueError("foo")
                 kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
                 main_preprocessor(preprocessor, **kwargs)
@@ -159,6 +159,6 @@ class TestPreprocessNonResPir(unittest.TestCase):
                     "my/nonexistent/path", self.destination, lazy=False
                 )
             self.assertIn(
-                f"Polars was not able to read or process the data in my/nonexistent/path, or send to {self.destination}",
+                f"Polars was not able to read or process the data in my/nonexistent/path/, or send to {self.destination}",
                 cm.output[1],
             )

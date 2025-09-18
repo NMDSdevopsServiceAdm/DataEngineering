@@ -44,7 +44,7 @@ def main_preprocessor(preprocessor: Callable[..., None], **kwargs: Any) -> None:
         preprocessor(**kwargs)
     except Exception as e:
         logger.error(
-            f"There was an unexpected exception while executing preprocessor {str(preprocessor)}."
+            f"There was an unexpected exception while executing preprocessor {preprocessor.__name__}."
         )
         logger.error(e)
         raise
@@ -67,6 +67,8 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
     """
     try:
         now = dt.now()
+        if source[-7:] != "parquet" and source[-1] != "/":
+            source = source + "/"
         logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
         data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         required_columns = [
