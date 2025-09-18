@@ -49,7 +49,7 @@ module "model_retrain" {
 module "model_preprocess" {
   source        = "../modules/fargate-task"
   task_name     = "model-preprocess"
-  ecr_repo_name = "fargate/model-preprocess"
+  ecr_repo_name = data.aws_ecr_image.model_preprocess.repository_name
   cluster_arn   = aws_ecs_cluster.model_cluster.arn
   tag_name      = terraform.workspace
   cpu_size      = 8192
