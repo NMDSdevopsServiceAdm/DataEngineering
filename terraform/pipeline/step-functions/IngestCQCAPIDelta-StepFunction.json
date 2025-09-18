@@ -152,7 +152,7 @@
                 "Type": "String"
               },
               "ResultSelector": {
-                "script": "validate_locations_raw.py",
+                "script": "validate_delta_locations_api_raw.py",
                 "bucket_name_arg": "--bucket_name",
                 "bucket_name": "${dataset_bucket_name}",
                 "source_path_arg": "--source_path",
