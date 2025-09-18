@@ -697,6 +697,7 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCL.name,
         CQCL.source_path,
         CQCL.dataset,
+        CQCRatings.latest_rating_flag,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,

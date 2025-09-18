@@ -1329,6 +1329,7 @@ class FlattenCQCRatings:
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.source_path, StringType(), True),
             StructField(CQCL.dataset, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
@@ -1347,7 +1348,6 @@ class FlattenCQCRatings:
             StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
-
     expected_create_standard_ratings_dataset_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1360,6 +1360,7 @@ class FlattenCQCRatings:
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.source_path, StringType(), True),
             StructField(CQCL.dataset, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
