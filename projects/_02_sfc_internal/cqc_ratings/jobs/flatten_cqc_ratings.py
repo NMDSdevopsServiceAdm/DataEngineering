@@ -552,6 +552,12 @@ def merge_cqc_ratings(
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
     )
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
+
+    merged_df = merged_df.withColumn(CQCRatings.date, F.to_date(CQCRatings.date))
+    merged_df = merged_df.withColumn(
+        CQCL.assessment_date, F.to_date(CQCL.assessment_date)
+    )
+
     return merged_df.select(*expected_columns)
 
 
@@ -589,10 +595,14 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
 
 def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
     if reversed == True:
-        window = Window.partitionBy(CQCL.location_id).orderBy(F.desc(CQCRatings.date))
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.desc(CQCRatings.date), F.desc(CQCL.assessment_date)
+        )
         new_column_name = CQCRatings.reversed_rating_sequence
     else:
-        window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.asc(CQCRatings.date), F.asc(CQCL.assessment_date)
+        )
         new_column_name = CQCRatings.rating_sequence
     ratings_df = ratings_df.withColumn(new_column_name, F.row_number().over(window))
     return ratings_df

@@ -1252,10 +1252,10 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
-            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.date, DateType(), True),
             StructField(CQCL.assessment_plan_id, StringType(), True),
             StructField(CQCL.title, StringType(), True),
-            StructField(CQCL.assessment_date, StringType(), True),
+            StructField(CQCL.assessment_date, DateType(), True),
             StructField(CQCL.assessment_plan_status, StringType(), True),
             StructField(CQCL.name, StringType(), True),
             StructField(CQCL.source_path, StringType(), True),
@@ -1287,8 +1287,8 @@ class FlattenCQCRatings:
     add_rating_sequence_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCL.name, StringType(), True),
-            StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCRatings.date, DateType(), True),
+            StructField(CQCL.assessment_date, DateType(), True),
         ]
     )
     expected_add_rating_sequence_schema = StructType(

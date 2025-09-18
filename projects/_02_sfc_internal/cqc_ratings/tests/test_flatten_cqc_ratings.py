@@ -320,8 +320,8 @@ class MergeCQCRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_rows, expected_rows)
 
     def test_merge_cqc_ratings_returns_correct_values(self):
-        returned_data = self.returned_df.sort(CQCRatings.date).collect()
-        expected_data = self.expected_df.sort(CQCRatings.date).collect()
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
 
 
@@ -450,10 +450,10 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         self,
     ):
         returned_data = self.returned_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         expected_data = self.expected_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         self.assertEqual(returned_data, expected_data)
 
