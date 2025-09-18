@@ -12,7 +12,6 @@ from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -21,9 +20,9 @@ from utils.column_names.validation_table_columns import (
     Validation,
 )
 from utils.column_values.categorical_column_values import (
-    CareHome,
+    # CareHome,
     LocationType,
-    PrimaryServiceType,
+    # PrimaryServiceType,
     RegistrationStatus,
     Services,
 )
@@ -32,16 +31,6 @@ from utils.column_values.categorical_columns_by_dataset import (
 )
 
 compare_columns_to_import = [
-    Keys.import_date,
-    CQCL.location_id,
-    CQCL.provider_id,
-    CQCL.type,
-    CQCL.registration_status,
-    CQCL.gac_service_types,
-    CQCL.regulated_activities,
-]
-
-raw_cqc_locations_columns_to_import = [
     Keys.import_date,
     CQCL.location_id,
     CQCL.provider_id,
@@ -92,20 +81,11 @@ def main(
             [
                 CQCLClean.location_id,
                 CQCLClean.cqc_location_import_date,
-                CQCLClean.care_home,
                 CQCLClean.provider_id,
                 CQCLClean.cqc_sector,
                 CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
-                CQCLClean.primary_service_type,
                 CQCLClean.name,
-                CQCLClean.contemporary_ons_import_date,
-                CQCLClean.contemporary_cssr,
-                CQCLClean.contemporary_region,
-                CQCLClean.current_ons_import_date,
-                CQCLClean.current_cssr,
-                CQCLClean.current_region,
-                CQCLClean.current_rural_urban_ind_11,
             ]
         )
         # index columns
@@ -115,16 +95,11 @@ def main(
                 CQCLClean.cqc_location_import_date,
             ]
         )
-        # min values
-        .col_vals_ge(CQCLClean.time_registered, 1)
         # between (inclusive)
         .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # categorical
-        .col_vals_in_set(
-            CQCLClean.care_home, CatValues.care_home_column_values.categorical_values
-        )
         .col_vals_in_set(
             CQCLClean.cqc_sector, CatValues.sector_column_values.categorical_values
         )
@@ -140,41 +115,10 @@ def main(
             [*CatValues.dormancy_column_values.categorical_values, None],
         )
         .col_vals_in_set(
-            CQCLClean.primary_service_type,
-            CatValues.primary_service_type_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            CQCLClean.contemporary_cssr,
-            CatValues.contemporary_cssr_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            CQCLClean.contemporary_region,
-            CatValues.contemporary_region_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            CQCLClean.current_cssr,
-            CatValues.current_cssr_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            CQCLClean.current_region,
-            CatValues.current_region_column_values.categorical_values,
-        )
-        .col_vals_in_set(
-            CQCLClean.current_rural_urban_ind_11,
-            CatValues.current_rui_column_values.categorical_values,
-        )
-        .col_vals_in_set(
             CQCLClean.related_location,
             CatValues.related_location_column_values.categorical_values,
         )
         # distinct values
-        # TODO: Improve logging and report info for `specially` validations
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.care_home,
-                CatValues.care_home_column_values.count_of_categorical_values,
-            )
-        )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.cqc_sector,
@@ -195,69 +139,13 @@ def main(
         )
         .specially(
             vl.is_unique_count_equal(
-                CQCLClean.primary_service_type,
-                CatValues.primary_service_type_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.contemporary_cssr,
-                CatValues.contemporary_cssr_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.contemporary_region,
-                CatValues.contemporary_region_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.current_cssr,
-                CatValues.current_cssr_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.current_region,
-                CatValues.current_region_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.current_rural_urban_ind_11,
-                CatValues.current_rui_column_values.count_of_categorical_values,
-            )
-        )
-        .specially(
-            vl.is_unique_count_equal(
                 CQCLClean.related_location,
                 CatValues.related_location_column_values.count_of_categorical_values,
             )
         )
-        # custom validation
-        .col_vals_expr(custom_type())
-        # run all rules
         .interrogate()
     )
     vl.write_reports(validation, bucket_name, reports_path)
-
-
-def custom_type() -> pl.Expr:
-    # for readability
-    care_home_col = pl.col(IndCQC.care_home)
-    primary_service_col = pl.col(IndCQC.primary_service_type)
-
-    care_home = CareHome.care_home
-    not_care_home = CareHome.not_care_home
-    PST = PrimaryServiceType
-
-    return (
-        (care_home_col == not_care_home) & (primary_service_col == PST.non_residential)
-    ) | (
-        (care_home_col == care_home)
-        & (primary_service_col.is_in([PST.care_home_with_nursing, PST.care_home_only]))
-    )
 
 
 def expected_size(df: pl.DataFrame) -> int:
@@ -266,6 +154,7 @@ def expected_size(df: pl.DataFrame) -> int:
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
     ).filter(
+        # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
         pl.col(CQCL.type) == LocationType.social_care_identifier,
