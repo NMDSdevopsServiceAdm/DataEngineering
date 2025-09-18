@@ -4,6 +4,8 @@ import logging
 from collections.abc import Callable
 from typing import Any
 from polars_utils import utils
+from datetime import datetime as dt
+import os
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -64,6 +66,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         pl.exceptions.PolarsError: if there is an error reading or processing the data
     """
     try:
+        now = dt.now()
         logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
         data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
         required_columns = [
@@ -99,13 +102,14 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             .filter(pl.col("abs_resid") <= 500)
             .drop("abs_resid")
         )
+        uri = f"{destination}/process_datetime={now.strftime('%Y%m%dT%H%M%S')}/processed.parquet"
         logger.info(
-            "Processing succeeded. Writing to {destination} - the writing method is LAZY {lazy}"
+            f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
         )
         if lazy:
-            result.sink_parquet(destination)
+            result.sink_parquet(uri)
         else:
-            result.write_parquet(destination)
+            result.write_parquet(uri)
     except (pl.exceptions.PolarsError, FileNotFoundError) as e:
         logger.error(
             f"Polars was not able to read or process the data in {source}, or send to {destination}"

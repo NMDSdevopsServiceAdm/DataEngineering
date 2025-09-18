@@ -11,6 +11,7 @@ import shutil
 import tempfile
 from pathlib import Path
 import logging
+from freezegun import freeze_time
 
 
 PATCH_STEM = "projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing"
@@ -19,9 +20,13 @@ DUMMY_DESTINATION_BUCKET = "dummy-destination-bucket"
 SAMPLE_DATA_PATH = Path(__file__).parent / "testfile.parquet"
 
 
+class DummyProcessor(MagicMock):
+    __name__ = "DummyProcessor"
+
+
 class TestPreprocessing(unittest.TestCase):
     def test_main_preprocessor_calls_processor_with_kwargs(self):
-        preprocessor = MagicMock()
+        preprocessor = DummyProcessor()
         kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
         main_preprocessor(preprocessor, **kwargs)
         preprocessor.assert_called_once_with(**kwargs)
@@ -29,25 +34,25 @@ class TestPreprocessing(unittest.TestCase):
     def test_main_preprocessor_logs_errors(self):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
             with self.assertRaises(ValueError):
-                preprocessor = MagicMock()
-                preprocessor.__str__.return_value = "my_preprocessor"
+                preprocessor = DummyProcessor()
+                preprocessor.__str__.return_value = "DummyProcessor"
                 preprocessor.side_effect = ValueError("foo")
                 kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
                 main_preprocessor(preprocessor, **kwargs)
-            self.assertIn("foo", cm.output[1])
+            self.assertIn("foo", cm.output[2])
             self.assertIn(
-                f"There was an unexpected exception while executing preprocessor my_preprocessor.",
-                cm.output[0],
+                f"There was an unexpected exception while executing preprocessor DummyProcessor.",
+                cm.output[1],
             )
 
     def test_main_preprocessor_requires_correct_signature(self):
-        preprocessor = MagicMock()
+        preprocessor = DummyProcessor()
         kwargs = {"destination": "path/b", "a": 1}
         with self.assertRaises(TypeError):
             main_preprocessor(preprocessor, **kwargs)
 
     def test_main_preprocessor_requires_valid_source_and_destination(self):
-        preprocessor = MagicMock()
+        preprocessor = DummyProcessor()
         kwargs = {"source": 5, "destination": 6, "a": 1, "b": 2}
         with self.assertRaises(TypeError):
             main_preprocessor(preprocessor, **kwargs)
@@ -57,9 +62,13 @@ class TestPreprocessNonResPir(unittest.TestCase):
     df_test = pl.read_parquet(SAMPLE_DATA_PATH)
     s3_uri = "s3://test_bucket/test_file.parquet"
 
+    @freeze_time("2025-09-30 12:01:02")
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
-        self.destination = os.path.join(self.temp_dir, "test_dest.parquet")
+        self.destination = os.path.join(self.temp_dir, "destination")
+        key = os.path.join(self.destination, "process_datetime=20250930T120102")
+        os.mkdir(self.destination)
+        os.mkdir(key)
         with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
             mock_read_parquet.return_value = self.df_test
             preprocess_non_res_pir(self.s3_uri, self.destination, lazy=False)
@@ -67,16 +76,19 @@ class TestPreprocessNonResPir(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
+    @freeze_time("2025-09-30 12:01:02")
     @patch(f"{PATCH_STEM}.pl.read_parquet")
     def test_preprocess_non_res_pir_reads_dataframe(self, mock_read_parquet):
         preprocess_non_res_pir(self.s3_uri, self.destination)
         mock_read_parquet.assert_called_once_with(self.s3_uri)
 
+    @freeze_time("2025-09-30 12:01:02")
     @patch(f"{PATCH_STEM}.pl.scan_parquet")
     def test_preprocess_non_res_pir_reads_lazyframe(self, mock_scan_parquet):
         preprocess_non_res_pir(self.s3_uri, self.destination, lazy=True)
         mock_scan_parquet.assert_called_once_with(self.s3_uri)
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_non_res_pir_returns_correct_columns_from_read(self):
         df = pl.read_parquet(self.destination)
         expected_columns = [
@@ -85,9 +97,11 @@ class TestPreprocessNonResPir(unittest.TestCase):
             "careHome",
             "ascwds_filled_posts_deduplicated_clean",
             "pir_people_directly_employed_deduplicated",
+            "process_datetime",
         ]
         self.assertListEqual(df.columns, expected_columns)
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_non_res_pir_eliminates_nulls(self):
         df = pl.read_parquet(self.destination)
         self.assertEqual(
@@ -103,6 +117,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
             0,
         )
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_non_res_pir_eliminates_negatives_or_zeros(self):
         df = pl.read_parquet(self.destination)
         self.assertEqual(
@@ -116,6 +131,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
             0,
         )
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_non_res_pir_eliminates_small_residuals(self):
         df = pl.read_parquet(self.destination).with_columns(
             (
@@ -127,6 +143,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
         )
         self.assertEqual(df.filter(pl.col("abs_resid") > 500).shape[0], 0)
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_works_with_lazy_frames(self):
         preprocess_non_res_pir(str(SAMPLE_DATA_PATH), self.destination, lazy=True)
         df = pl.read_parquet(self.destination)
@@ -134,6 +151,7 @@ class TestPreprocessNonResPir(unittest.TestCase):
         ids = set(df["locationId"].to_list())
         self.assertEqual({"1-119187505", "1-2206520209", "1-118618710"}, ids)
 
+    @freeze_time("2025-09-30 12:01:02")
     def test_preprocess_non_res_pir_logs_failure(self):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
             with self.assertRaises((pl.exceptions.PolarsError, FileNotFoundError)):
@@ -142,5 +160,5 @@ class TestPreprocessNonResPir(unittest.TestCase):
                 )
             self.assertIn(
                 f"Polars was not able to read or process the data in my/nonexistent/path, or send to {self.destination}",
-                cm.output[0],
+                cm.output[1],
             )
