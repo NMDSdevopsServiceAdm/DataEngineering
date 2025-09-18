@@ -3685,7 +3685,7 @@ class ValidateProvidersAPICleanedData:
         ("1-000000001", date(2024, 1, 1), "name"),
         ("1-000000002", date(2024, 1, 1), "name"),
         ("1-000000001", date(2024, 1, 9), "name"),
-        ("1-000000002", date(2024, 1, 9), "name"),
+        ("1-000000002", date(2024, 1, 9), None),
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows
