@@ -603,6 +603,20 @@ def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFra
 
 
 def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
+    """
+    Adds a column to flag the latest rating per locationid as 1, otherwise 0.
+
+    The latest rating rating is defined as the lowest row per locationid, when sorted in
+    descending order on rating_date and assessment_date.
+    A location may have multiple ratings on the same dates, and be it's latest date. In these
+    cases the flag is random between the group.
+
+    Args:
+        ratings_df (DataFrame): A dataframe with flattened CQC key ratings columns.
+
+    Returns:
+        DataFrame: The given data frame with an additional column to flag the latest rating.
+    """
     ratings_df = ratings_df.withColumn(
         CQCRatings.latest_rating_flag,
         F.when(ratings_df[CQCRatings.reversed_rating_sequence] == 1, 1).otherwise(0),
@@ -663,6 +677,15 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
 
 
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
+    """
+    Selects columns in the CQC ratings and assessments dataframe and removes duplicate rows.
+
+    Args:
+        ratings_df(DataFrame): A dataframe of CQC ratings and assesments.
+
+    Returns:
+        DataFrame: The input dataframe with selected columns and duplicate rows removed.
+    """
     standard_ratings_df = ratings_df.select(
         CQCL.location_id,
         CQCL.registration_status,
@@ -711,6 +734,15 @@ def add_location_id_hash(df: DataFrame) -> DataFrame:
 
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
+    """
+    Filters to rows which are registered, current rating and flagged as the latest rating.
+
+    Args:
+        ratings_df(DataFrame): A prepared standard ratings dataframe containing the columns registration_status, current_or_historic and latest_rating_flag.
+
+    Returns:
+        DataFrame: A dataframe filtered to registered, current and latest rating only.
+    """
     benchmark_ratings_df = ratings_df.where(
         (ratings_df[CQCL.registration_status] == RegistrationStatus.registered)
         & (
