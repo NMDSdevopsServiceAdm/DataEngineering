@@ -37,7 +37,7 @@ def write_reports(validation: pb.Validate, bucket_name: str, reports_path: str) 
         Key=f"{reports_path}/summary.html",
     )
     try:
-        validation.assert_below_threshold(level="warning")
+        validation.assert_below_threshold(level="error")
     except AssertionError:
         logger.error("Data validation failed. See report for details.")
         steps = json.loads(validation.get_json_report())

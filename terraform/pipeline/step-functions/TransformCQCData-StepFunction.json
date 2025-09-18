@@ -155,15 +155,13 @@
                     "Set GAC Parameters": {
                       "Type": "Pass",
                       "Result": {
-                        "validate_locations_cleaned_script": "validate_dim_gac_services.py",
+                        "script": "validate_dim_gac_service.py",
                         "bucket_name_arg": "--bucket_name",
                         "bucket_name": "${dataset_bucket_name}",
                         "source_path_arg": "--source_path",
-                        "source_path": "domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                        "source_path": "domain=CQC_delta/dataset=dim_gac_service/",
                         "reports_path_arg": "--reports_path",
-                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_dim_gac_services/",
-                        "compare_path_arg": "--compare_path",
-                        "compare_path": "domain=CQC_delta/dataset=dim_gac_services/version=3.0.0/"
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_dim_gac_service/"
                       },
                       "Next": "Validate GAC Dimension"
                     },
@@ -185,7 +183,7 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.validate_locations_cleaned_script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
                             }
                           ]
                         }
