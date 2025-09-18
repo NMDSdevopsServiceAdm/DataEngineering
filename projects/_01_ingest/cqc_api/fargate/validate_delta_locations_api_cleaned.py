@@ -20,9 +20,7 @@ from utils.column_names.validation_table_columns import (
     Validation,
 )
 from utils.column_values.categorical_column_values import (
-    # CareHome,
     LocationType,
-    # PrimaryServiceType,
     RegistrationStatus,
     Services,
 )
