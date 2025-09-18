@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
 - New function added to merge the old CQC ratings and the new assessment ratings.
+- Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:

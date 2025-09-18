@@ -503,6 +503,37 @@ resource "aws_sfn_state_machine" "sfc_internal_state_machine" {
   ]
 }
 
+
+resource "aws_sfn_state_machine" "polars_ind_cqc_filled_post_estimates_pipeline_state_machine" {
+  name     = "${local.workspace_prefix}-Polars-Ind-CQC-Filled-Post-Estimates"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/PolarsIndCqcFilledPostEstimatePipeline-StepFunction.json", {
+    dataset_bucket_name                                = module.datasets_bucket.bucket_name
+    dataset_bucket_uri                                 = module.datasets_bucket.bucket_uri
+    pipeline_resources_bucket_uri                      = module.pipeline_resources.bucket_uri
+    estimate_ind_cqc_filled_posts_by_job_role_job_name = module.estimate_ind_cqc_filled_posts_by_job_role_job.job_name
+    ind_cqc_filled_posts_crawler_name                  = module.ind_cqc_filled_posts_crawler.crawler_name
+    data_validation_reports_crawler_name               = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn               = aws_lambda_function.error_notification_lambda.arn
+    cluster_arn                                        = aws_ecs_cluster.polars_cluster.arn
+    task_arn                                           = module._03_independent_cqc.task_arn
+    public_subnet_ids                                  = jsonencode(module._03_independent_cqc.subnet_ids)
+    security_group_id                                  = module._03_independent_cqc.security_group_id
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
@@ -672,6 +703,7 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ],
         "Resource" : [
           module.cqc-api.task_arn,
+          module._03_independent_cqc.task_arn,
           aws_ecs_cluster.polars_cluster.arn
         ]
       },
@@ -680,7 +712,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Action = "iam:PassRole",
         Resource = [
           module.cqc-api.task_exc_role_arn,
-          module.cqc-api.task_role_arn
+          module._03_independent_cqc.task_exc_role_arn,
+          module.cqc-api.task_role_arn,
+          module._03_independent_cqc.task_role_arn
         ],
         Condition = {
           StringLike = {
