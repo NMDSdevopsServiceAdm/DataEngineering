@@ -15,7 +15,6 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     contacts_exploded: str = "contacts_exploded"
     cqc_location_import_date: str = "cqc_location_import_date"
     cqc_sector: str = "cqc_sector"
-    dormant_date: str = "dormant_date"
     first_known_relationships: str = (
         "first_known_" + NewCqcLocationApiColumns.relationships
     )
@@ -30,7 +29,6 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     imputed_specialisms: str = "imputed_" + NewCqcLocationApiColumns.specialisms
-    last_dormant_date: str = "last_dormant_date"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
@@ -52,5 +50,3 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     specialist_generalist_other_mh: str = (
         "specialist_generalist_other_mental_health_conditions"
     )
-    time_registered: str = "time_registered"
-    time_since_dormant: str = "time_since_dormant"

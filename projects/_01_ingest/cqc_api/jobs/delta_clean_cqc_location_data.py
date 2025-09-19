@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import warnings
@@ -6,7 +7,8 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, StructType, StructField
+from pyspark.errors import AnalysisException
 
 import utils.cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
@@ -27,13 +29,13 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
-    Dormancy,
     LocationType,
     PrimaryServiceType,
     RegistrationStatus,
@@ -46,6 +48,13 @@ from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.raw_data_adjustments import remove_records_from_locations_data
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+dimensionPartitionKeys = [
+    DimensionKeys.year,
+    DimensionKeys.month,
+    DimensionKeys.day,
+    DimensionKeys.last_updated,
+    DimensionKeys.import_date,
+]
 
 cqc_location_api_cols_to_import = [
     CQCL.location_id,
@@ -80,6 +89,10 @@ def main(
     cqc_location_source: str,
     cleaned_ons_postcode_directory_source: str,
     cleaned_cqc_location_destination: str,
+    gac_service_destination: str,
+    regulated_activities_destination: str,
+    specialisms_destination: str,
+    postcode_matching_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -114,57 +127,127 @@ def main(
     cqc_location_df = cUtils.column_to_date(
         cqc_location_df, Keys.import_date, CQCLClean.cqc_location_import_date
     )
-    cqc_location_df = calculate_time_registered_for(cqc_location_df)
-    cqc_location_df = calculate_time_since_dormant(cqc_location_df)
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
     registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.gac_service_types
-    )
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.regulated_activities
-    )
-    registered_locations_df = impute_missing_struct_column(
-        registered_locations_df, CQCL.specialisms
-    )
-    registered_locations_df = remove_locations_that_never_had_regulated_activities(
-        registered_locations_df
-    )
-    registered_locations_df = extract_from_struct(
+    dimension_update_date = registered_locations_df.agg(
+        F.max(Keys.import_date)
+    ).collect()[0][0]
+
+    # Create regulated activity dimension
+    regulated_activity_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
-        registered_locations_df[CQCLClean.imputed_gac_service_types][CQCL.description],
-        CQCLClean.services_offered,
+        CQCL.regulated_activities,
+        regulated_activities_destination,
+        dimension_update_date,
     )
-    registered_locations_df = extract_from_struct(
+    registered_locations_df = registered_locations_df.drop(CQCL.regulated_activities)
+
+    registered_locations_df, regulated_activity_delta = (
+        remove_locations_that_never_had_regulated_activities(
+            registered_locations_df, regulated_activity_delta
+        )
+    )
+    regulated_activity_delta = extract_registered_manager_names(
+        regulated_activity_delta
+    ).drop(CQCLClean.cqc_location_import_date)
+
+    utils.write_to_parquet(
+        regulated_activity_delta,
+        output_dir=regulated_activities_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
+    # Create specialisms dimension
+    specialisms_delta = create_dimension_from_missing_struct_column(
         registered_locations_df,
-        registered_locations_df[CQCLClean.imputed_specialisms][CQCL.name],
+        CQCL.specialisms,
+        specialisms_destination,
+        dimension_update_date,
+    )
+    registered_locations_df = registered_locations_df.drop(CQCL.specialisms)
+
+    specialisms_delta = extract_from_struct(
+        specialisms_delta,
+        specialisms_delta[CQCLClean.imputed_specialisms][CQCL.name],
         CQCLClean.specialisms_offered,
     )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
         Specialisms.dementia,
     )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
         Specialisms.learning_disabilities,
     )
-    registered_locations_df = classify_specialisms(
-        registered_locations_df,
+    specialisms_delta = classify_specialisms(
+        specialisms_delta,
         Specialisms.mental_health,
-    )
-    registered_locations_df = remove_specialist_colleges(registered_locations_df)
-    registered_locations_df = allocate_primary_service_type(registered_locations_df)
-    registered_locations_df = realign_carehome_column_with_primary_service(
-        registered_locations_df
-    )
-    registered_locations_df = extract_registered_manager_names(registered_locations_df)
+    ).drop(CQCLClean.cqc_location_import_date)
 
+    utils.write_to_parquet(
+        specialisms_delta,
+        output_dir=specialisms_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
+    # Create GAC service dimension
+    gac_service_delta = create_dimension_from_missing_struct_column(
+        registered_locations_df,
+        CQCL.gac_service_types,
+        gac_service_destination,
+        dimension_update_date,
+    )
+    # Drop care home from registered location df - stored in gac service dimension
+    registered_locations_df = registered_locations_df.drop(
+        CQCL.gac_service_types, CQCL.care_home
+    )
+
+    gac_service_delta = extract_from_struct(
+        gac_service_delta,
+        gac_service_delta[CQCLClean.imputed_gac_service_types][CQCL.description],
+        CQCLClean.services_offered,
+    )
+
+    registered_locations_df, gac_service_delta = remove_specialist_colleges(
+        registered_locations_df, gac_service_delta
+    )
+    gac_service_delta = allocate_primary_service_type(gac_service_delta)
+
+    gac_service_delta = realign_carehome_column_with_primary_service(
+        gac_service_delta
+    ).drop(CQCLClean.cqc_location_import_date)
+
+    utils.write_to_parquet(
+        gac_service_delta,
+        output_dir=gac_service_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
+    )
+
+    # Final cleaning on fact table
     registered_locations_df = add_related_location_column(registered_locations_df)
 
-    registered_locations_df = run_postcode_matching(
-        registered_locations_df, ons_postcode_directory_df
+    # Create postcode matching dimension
+    postcode_matching_delta = create_postcode_matching_dimension(
+        registered_locations_df,
+        ons_postcode_directory_df,
+        postcode_matching_destination,
+        dimension_update_date,
+    )
+
+    registered_locations_df = registered_locations_df.drop(
+        CQCL.postal_code, CQCL.postal_address_line1
+    )
+
+    utils.write_to_parquet(
+        postcode_matching_delta,
+        output_dir=postcode_matching_destination,
+        mode="append",
+        partitionKeys=dimensionPartitionKeys,
     )
 
     utils.write_to_parquet(
@@ -173,6 +256,119 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def create_postcode_matching_dimension(
+    cqc_df, postcode_df, dimension_location, dimension_update_date
+):
+    try:
+        previous_dimension = utils.read_from_parquet(dimension_location)
+    except AnalysisException:
+        print(
+            f"The postcode dimension was not found in {dimension_location}. A new dimension will be created."
+        )
+        previous_dimension = None
+
+    current_dimension = run_postcode_matching(
+        cqc_df.select(
+            CQCL.location_id,
+            CQCL.name,
+            CQCLClean.cqc_location_import_date,
+            CQCL.postal_address_line1,
+            CQCL.postal_code,
+            Keys.import_date,
+        ),
+        postcode_df,
+    )
+
+    if previous_dimension:
+        delta = current_dimension.join(
+            previous_dimension,
+            on=[
+                CQCLClean.location_id,
+                CQCLClean.postcode_cleaned,
+                CQCLClean.cqc_location_import_date,
+            ],
+            how="anti",
+        )
+
+    else:
+        delta = current_dimension
+
+    delta = (
+        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
+        .drop(CQCL.name)
+    )
+
+    return delta
+
+
+def create_dimension_from_missing_struct_column(
+    df: DataFrame,
+    missing_struct_column: str,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> DataFrame:
+    """
+    Creates delta dimension table for a given missing struct column.
+    Args:
+        df (DataFrame): Dataframe with column which has missing structs
+        missing_struct_column (str): Name of missing struct column
+        dimension_location (str): Path that dimension is stored in
+        dimension_update_date (str): Date that delta data will be stored in
+
+    Returns:
+        DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
+    try:
+        previous_dimension = utils.read_from_parquet(dimension_location)
+    except AnalysisException:
+        print(
+            f"The {missing_struct_column} dimension was not found in the {dimension_location}. A new dimension will be created."
+        )
+        previous_dimension = None
+
+    current_dimension = impute_missing_struct_column(
+        df.select(
+            CQCL.location_id,
+            missing_struct_column,
+            CQCLClean.cqc_location_import_date,
+            Keys.import_date,
+        ),
+        missing_struct_column,
+    ).select(
+        CQCLClean.location_id,
+        missing_struct_column,
+        "imputed_" + missing_struct_column,
+        CQCLClean.cqc_location_import_date,
+        Keys.import_date,
+    )
+
+    if previous_dimension:
+        delta = current_dimension.join(
+            previous_dimension,
+            on=[
+                CQCLClean.location_id,
+                missing_struct_column,
+                "imputed_" + missing_struct_column,
+                Keys.import_date,
+            ],
+            how="anti",
+        )
+    else:
+        delta = current_dimension
+
+    delta = (
+        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
+    )
+
+    return delta
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
@@ -308,33 +504,6 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
             ),
         ).otherwise(df[CQCLClean.imputed_registration_date]),
     )
-    return df
-
-
-def calculate_time_registered_for(df: DataFrame) -> DataFrame:
-    """
-    Adds a new column called time_registered which is the number of months the location has been registered with CQC for (rounded up).
-
-    This function adds a new integer column to the given data frame which represents the number of months (rounded up) between the
-    imputed registration date and the cqc location import date.
-
-    Args:
-        df (DataFrame): A dataframe containing the columns: imputed_registration_date and cqc_location_import_date.
-
-    Returns:
-        DataFrame: A dataframe with the new time_registered column added.
-    """
-    df = df.withColumn(
-        CQCLClean.time_registered,
-        F.floor(
-            F.months_between(
-                F.col(CQCLClean.cqc_location_import_date),
-                F.col(CQCLClean.imputed_registration_date),
-            )
-        )
-        + 1,
-    )
-
     return df
 
 
@@ -488,7 +657,9 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
-def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataFrame:
+def remove_locations_that_never_had_regulated_activities(
+    cqc_df: DataFrame, regulated_activities_dimension: DataFrame
+) -> tuple[DataFrame, DataFrame]:
     """
     Removes locations who have never submitted regulated activities data.
 
@@ -497,13 +668,28 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     from the imputed_regulatedactivities column, which are locations that have no data at any time point.
 
     Args:
-        df (DataFrame): A dataframe with imputed_regulatedactivities
+        cqc_df (DataFrame): A dataframe without imputed_regulatedactivities, but where the location_ids need to be aligned
+        regulated_activities_dimension (DataFrame): A dataframe with imputed_regulatedactivities
 
     Returns:
-        DataFrame: A dataframe where blank imputed rows are removed.
+        tuple[DataFrame, DataFrame]: cqc_df, regulated_activities_dimension with the rows removed
     """
-    df = df.where(df[CQCLClean.imputed_regulated_activities].isNotNull())
-    return df
+    to_remove = regulated_activities_dimension.where(
+        regulated_activities_dimension[CQCLClean.imputed_regulated_activities].isNull()
+    ).select(CQCLClean.location_id)
+
+    # Filter registered location df to remove those not in the regulated_activity_delta
+    cqc_df = cqc_df.join(
+        to_remove,
+        on=CQCLClean.location_id,
+        how="left_anti",
+    )
+    regulated_activities_dimension = regulated_activities_dimension.join(
+        to_remove,
+        on=CQCLClean.location_id,
+        how="left_anti",
+    )
+    return cqc_df, regulated_activities_dimension
 
 
 def extract_from_struct(
@@ -613,7 +799,9 @@ def add_related_location_column(df: DataFrame) -> DataFrame:
     return df
 
 
-def remove_specialist_colleges(df: DataFrame) -> DataFrame:
+def remove_specialist_colleges(
+    cqc_df: DataFrame, gac_services_dimension: DataFrame
+) -> tuple[DataFrame, DataFrame]:
     """
     Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
 
@@ -621,17 +809,37 @@ def remove_specialist_colleges(df: DataFrame) -> DataFrame:
     estimates. This function identifies and removes the ones listed in the locations dataset.
 
     Args:
-        df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
+        cqc_df (DataFrame): A dataframe without services_offered, but where the location_ids need to be aligned
+        gac_services_dimension (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        DataFrame: A cleaned locations dataframe with locations which are only specialist colleges removed.
+        tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
     """
-    df = df.where(
-        (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
-        | (F.size(df[CQCLClean.services_offered]) != 1)
-        | (df[CQCLClean.services_offered].isNull())
+    # The below just prevents IDEs from warning you that the "Column object is not callable"
+    # - this is a false warning and does not cause an error
+    # noinspection PyCallingNonCallable
+    to_remove = gac_services_dimension.where(
+        (
+            gac_services_dimension[CQCLClean.services_offered][0]
+            == Services.specialist_college_service
+        )
+        & (F.size(gac_services_dimension[CQCLClean.services_offered]) == 1)
+        & (gac_services_dimension[CQCLClean.services_offered].isNotNull())
+    ).select(CQCLClean.location_id, Keys.import_date)
+
+    cqc_df = cqc_df.join(
+        to_remove,
+        on=[CQCLClean.location_id, Keys.import_date],
+        how="left_anti",
     )
-    return df
+
+    gac_services_dimension = gac_services_dimension.join(
+        to_remove,
+        on=[CQCLClean.location_id, Keys.import_date],
+        how="left_anti",
+    )
+
+    return cqc_df, gac_services_dimension
 
 
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
@@ -649,64 +857,6 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
         locations_df[CQCL.registration_status] == RegistrationStatus.registered
     )
     return locations_df
-
-
-def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
-    """
-    Adds a column to show the number of months since the location was last dormant.
-
-    This function calculates the number of months since the last time a location was marked as dormant.
-    It uses a window function to track the most recent date when dormancy was marked as "Y" and calculates
-    the number of months since that date for each location.
-
-    'time_since_dormant' values before the first instance of dormancy are null.
-    If the location has never been dormant then 'time_since_dormant' is null.
-
-    Args:
-        df (DataFrame): A dataframe with columns: cqc_location_import_date, dormancy, and location_id.
-
-    Returns:
-        DataFrame: A dataframe with an additional column 'time_since_dormant'.
-    """
-    w = Window.partitionBy(CQCLClean.location_id).orderBy(
-        CQCLClean.cqc_location_import_date
-    )
-
-    df = df.withColumn(
-        CQCLClean.dormant_date,
-        F.when(
-            F.col(CQCLClean.dormancy) == Dormancy.dormant,
-            F.col(CQCLClean.cqc_location_import_date),
-        ),
-    )
-
-    df = df.withColumn(
-        CQCLClean.last_dormant_date,
-        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
-    )
-
-    df = df.withColumn(
-        CQCLClean.time_since_dormant,
-        F.when(
-            F.col(CQCLClean.last_dormant_date).isNotNull(),
-            F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
-                F.floor(
-                    F.months_between(
-                        F.col(CQCLClean.cqc_location_import_date),
-                        F.col(CQCLClean.last_dormant_date),
-                    )
-                )
-                + 1,
-            ),
-        ),
-    )
-
-    df = df.drop(
-        CQCLClean.dormant_date,
-        CQCLClean.last_dormant_date,
-    )
-
-    return df
 
 
 def add_cqc_sector_column_to_cqc_locations_dataframe(
@@ -747,6 +897,10 @@ if __name__ == "__main__":
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
+        gac_service_dest,
+        regulated_activities_dest,
+        specialisms_dest,
+        postcode_matching_dest,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -760,11 +914,31 @@ if __name__ == "__main__":
             "--cleaned_cqc_location_destination",
             "Destination s3 directory for cleaned parquet CQC locations dataset",
         ),
+        (
+            "--gac_service_destination",
+            "Destination s3 directory for GAC service dimension",
+        ),
+        (
+            "--regulated_activities_destination",
+            "Destination s3 directory for regulated activities dimension",
+        ),
+        (
+            "--specialisms_destination",
+            "Destination s3 directory for specialisms dimension",
+        ),
+        (
+            "--postcode_matching_destination",
+            "Destination s3 directory for postcode matching dimension",
+        ),
     )
     main(
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
         cleaned_cqc_location_destination,
+        gac_service_dest,
+        regulated_activities_dest,
+        specialisms_dest,
+        postcode_matching_dest,
     )
 
     print("Spark job 'clean_cqc_location_data' complete")
