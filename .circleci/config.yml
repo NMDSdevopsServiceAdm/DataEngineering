@@ -335,6 +335,10 @@ workflows:
             - lint-terraform
             - test
             - task-containerisation
+      - plan-approval: # TODO remove this before merge
+          type: approval
+          requires:
+            - terraform-plan
       - terraform-apply:
           aws_account: "non_prod"
           requires:
