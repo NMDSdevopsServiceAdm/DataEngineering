@@ -1801,17 +1801,15 @@ class FlattenCQCRatings:
     ]
     # fmt: off
     select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 1),
-        ("loc_2", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 0),
-        ("loc_3", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic, 1),
-        ("loc_4", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic, 0),
-        ("loc_5", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current, 1),
-        ("loc_6", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current, 0),
-        ("loc_7", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic, 1),
-        ("loc_8", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic, 0),
+        ("loc_1", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, "Other service", CQCCurrentOrHistoricValues.current),
+        ("loc_2", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.historic),
+        ("loc_3", RegistrationStatus.deregistered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_4", RegistrationStatus.deregistered, "Care home", CQCCurrentOrHistoricValues.historic),
     ]
     expected_select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current, 1),
+        ("loc_1", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, "Other service", CQCCurrentOrHistoricValues.current),
     ]
     # fmt: on
 
