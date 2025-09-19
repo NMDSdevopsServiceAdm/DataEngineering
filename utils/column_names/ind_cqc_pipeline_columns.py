@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -14,10 +20,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 
 
@@ -118,9 +120,13 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
     ct_care_home_total_employed_dedup: str = (
         ct_care_home_total_employed + "_deduplicated"
+    )
+    ct_care_home_total_employed_dedup_cleaned: str = (
+        ct_care_home_total_employed_dedup + "_cleaned"
     )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res_dedup: str = (

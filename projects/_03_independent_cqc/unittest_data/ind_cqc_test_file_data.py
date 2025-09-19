@@ -9,16 +9,12 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_columns_by_dataset import (
-    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
-)
 from utils.column_values.categorical_column_values import (
+    RUI,
     AscwdsFilteringRule,
     CareHome,
     Dormancy,
@@ -30,10 +26,12 @@ from utils.column_values.categorical_column_values import (
     Region,
     RegistrationStatus,
     RelatedLocation,
-    RUI,
     Sector,
     Services,
     Specialisms,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 
 
@@ -6255,4 +6253,24 @@ class IndCQCDataUtils:
             ],
             PrimaryServiceTypeSecondLevel.other_non_residential,
         ),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00),
+        ("1-002", 1, None),
+        ("1-003", None, 1.00),
+        ("1-004", None, None),
+        ("1-005", 1, 0.65),
+        ("1-006", 1, 6.01),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1),
+        ("1-002", 1, None, 1),
+        ("1-003", None, 1.00, None),
+        ("1-004", None, None, None),
+        ("1-005", 1, 0.65, None),
+        ("1-006", 1, 6.01, None),
     ]

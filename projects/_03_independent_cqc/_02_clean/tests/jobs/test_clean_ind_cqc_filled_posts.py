@@ -3,13 +3,7 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-    DateType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 import projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -19,11 +13,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     CleanIndCQCData as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
@@ -52,6 +43,7 @@ class MainTests(CleanIndFilledPostsTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.null_ct_posts_to_beds_outliers")
     @patch(f"{PATCH_PATH}.clean_ascwds_filled_post_outliers")
     @patch(f"{PATCH_PATH}.cUtils.create_banded_bed_count_column")
     @patch(f"{PATCH_PATH}.cUtils.calculate_filled_posts_per_bed_ratio")
@@ -78,6 +70,7 @@ class MainTests(CleanIndFilledPostsTests):
         calculate_filled_posts_per_bed_ratio_mock: Mock,
         create_banded_bed_count_column_mock: Mock,
         clean_ascwds_filled_post_outliers_mock: Mock,
+        null_ct_posts_to_beds_outliers_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.return_value = self.merge_ind_cqc_test_df
@@ -95,9 +88,10 @@ class MainTests(CleanIndFilledPostsTests):
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 4)
-        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
+        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
+        null_ct_posts_to_beds_outliers_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
             ANY,
