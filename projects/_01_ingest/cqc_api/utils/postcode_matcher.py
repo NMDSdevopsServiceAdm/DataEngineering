@@ -26,7 +26,7 @@ def run_postcode_matching(
 
     This function consists of 5 iterations of matching postcodes:
         - 1 - Match postcodes where there is an exact match at that point in time.
-        - 2 - If not, reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
+        - 2 - If not, reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
         - 3 - If not, replace known postcode issues using the invalid postcode dictionary.
         - 4 - If not, match the postcode based on the first half of the postcode only (truncated postcode).
         - 5 - If not, raise an error to manually investigate any unmatched postcodes.

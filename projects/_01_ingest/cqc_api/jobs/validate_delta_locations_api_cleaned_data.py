@@ -9,10 +9,11 @@ from pyspark.sql.types import ArrayType
 
 from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    NewCqcLocationApiColumns as CQCL,
+    CqcLocationCleanedColumns as CqclCleaned,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_values.categorical_column_values import (
     LocationType,
@@ -34,17 +35,19 @@ PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 raw_cqc_locations_columns_to_import = [
     Keys.import_date,
-    CQCL.location_id,
-    CQCL.provider_id,
-    CQCL.type,
-    CQCL.registration_status,
-    CQCL.gac_service_types,
-    CQCL.regulated_activities,
+    CqclCleaned.location_id,
+    CqclCleaned.provider_id,
+    CqclCleaned.type,
+    CqclCleaned.registration_status,
+    CqclCleaned.gac_service_types,
+    CqclCleaned.regulated_activities,
 ]
 
 
 def main(
     raw_cqc_location_source: str,
+    dim_gac_services_source: str,
+    dim_postcode_matching_source: str,
     cleaned_cqc_locations_source: str,
     report_destination: str,
 ):
@@ -55,6 +58,7 @@ def main(
     cleaned_cqc_locations_df = utils.read_from_parquet(
         cleaned_cqc_locations_source,
     )
+
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = (
@@ -62,7 +66,7 @@ def main(
     )
 
     cleaned_cqc_locations_df = add_column_with_length_of_string(
-        cleaned_cqc_locations_df, [CQCL.location_id, CQCL.provider_id]
+        cleaned_cqc_locations_df, [CqclCleaned.location_id, CqclCleaned.provider_id]
     )
 
     check_result_df = validate_dataset(cleaned_cqc_locations_df, rules)
@@ -73,6 +77,41 @@ def main(
         raise_exception_if_any_checks_failed(check_result_df)
 
 
+def join_dimension(cqc_df: DataFrame, dimension_df: DataFrame) -> DataFrame:
+    """
+    Joins the CQC dataframe to one of its dimensions on location id and import_date
+    Args:
+        cqc_df (DataFrame): CQC dataframe with location id and import date columns
+        dimension_df (DataFrame): Dimension dataframe with location id and import date columns
+
+    Returns:
+        DataFrame: left joined CQC data with the dimension data
+
+    """
+    window_spec_dim = Window.partitionBy(
+        CqclCleaned.location_id, DimensionKeys.import_date
+    ).orderBy(F.col(DimensionKeys.last_updated).desc())
+    current_dimension = dimension_df.withColumn(
+        "row_num", F.row_number().over(window_spec_dim)
+    ).filter(F.col("row_num") == 1)
+
+    joined_df = cqc_df.join(
+        current_dimension.drop(
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ),
+        [
+            CqclCleaned.location_id,
+            CqclCleaned.cqc_location_import_date,
+            Keys.import_date,
+        ],
+        how="left",
+    )
+    return joined_df
+
+
 def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     raw_location_df: DataFrame,
 ) -> int:
@@ -80,30 +119,37 @@ def calculate_expected_size_of_cleaned_cqc_locations_dataset(
     has_a_known_provider_id: str = "has_a_known_provider_id"
 
     raw_location_df = identify_if_location_has_a_known_value(
-        raw_location_df, CQCL.regulated_activities, has_a_known_regulated_activity
+        raw_location_df,
+        CqclCleaned.regulated_activities,
+        has_a_known_regulated_activity,
     )
     raw_location_df = identify_if_location_has_a_known_value(
-        raw_location_df, CQCL.provider_id, has_a_known_provider_id
+        raw_location_df, CqclCleaned.provider_id, has_a_known_provider_id
     )
 
     expected_size = raw_location_df.where(
-        (raw_location_df[CQCL.type] == LocationType.social_care_identifier)
-        & (raw_location_df[CQCL.registration_status] == RegistrationStatus.registered)
+        (raw_location_df[CqclCleaned.type] == LocationType.social_care_identifier)
         & (
-            raw_location_df[CQCL.location_id]
+            raw_location_df[CqclCleaned.registration_status]
+            == RegistrationStatus.registered
+        )
+        & (
+            raw_location_df[CqclCleaned.location_id]
             != RecordsToRemoveInLocationsData.dental_practice
         )
         & (
-            raw_location_df[CQCL.location_id]
+            raw_location_df[CqclCleaned.location_id]
             != RecordsToRemoveInLocationsData.temp_registration
         )
         & (
             (
-                raw_location_df[CQCL.gac_service_types][0][CQCL.description]
+                raw_location_df[CqclCleaned.gac_service_types][0][
+                    CqclCleaned.description
+                ]
                 != Services.specialist_college_service
             )
-            | (F.size(raw_location_df[CQCL.gac_service_types]) != 1)
-            | (raw_location_df[CQCL.gac_service_types].isNull())
+            | (F.size(raw_location_df[CqclCleaned.gac_service_types]) != 1)
+            | (raw_location_df[CqclCleaned.gac_service_types].isNull())
         )
         & (raw_location_df[has_a_known_regulated_activity] == True)
         & (raw_location_df[has_a_known_provider_id] == True)
@@ -131,7 +177,7 @@ def identify_if_location_has_a_known_value(
         DataFrame: The DataFrame with the new column indicating the presence of valid responses.
     """
     window_spec = Window.partitionBy(
-        CQCL.location_id,
+        CqclCleaned.location_id,
     ).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
 
     col_to_check_is_array = isinstance(df.schema[col_to_check].dataType, ArrayType)
@@ -162,12 +208,22 @@ if __name__ == "__main__":
 
     (
         raw_cqc_location_source,
+        gac_dimension_source,
+        postcode_dimension_source,
         cleaned_cqc_locations_source,
         report_destination,
     ) = utils.collect_arguments(
         (
             "--raw_cqc_location_source",
             "Source s3 directory for parquet locations api dataset",
+        ),
+        (
+            "--gac_dimension_source",
+            "Source of the GAC services dimension data",
+        ),
+        (
+            "--postcode_dimension_source",
+            "Source of the postcode matching dimension data",
         ),
         (
             "--cleaned_cqc_locations_source",
@@ -181,6 +237,8 @@ if __name__ == "__main__":
     try:
         main(
             raw_cqc_location_source,
+            gac_dimension_source,
+            postcode_dimension_source,
             cleaned_cqc_locations_source,
             report_destination,
         )

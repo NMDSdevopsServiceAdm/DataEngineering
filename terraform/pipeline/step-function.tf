@@ -223,6 +223,7 @@ resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
   definition = templatefile("step-functions/TransformCQCData-StepFunction.json", {
     dataset_bucket_uri                           = module.datasets_bucket.bucket_uri
     dataset_bucket_name                          = module.datasets_bucket.bucket_name
+    create_snapshot_lambda_lambda_arn            = aws_lambda_function.create_snapshot_lambda.arn
     clean_cqc_provider_data_job_name             = module.clean_cqc_provider_data_job.job_name
     clean_cqc_location_data_job_name             = module.delta_clean_cqc_location_data_job.job_name
     validate_locations_api_cleaned_data_job_name = module.validate_delta_locations_api_cleaned_data_job.job_name
@@ -243,7 +244,6 @@ resource "aws_sfn_state_machine" "transform_cqc_data_state_machine" {
     module.datasets_bucket
   ]
 }
-
 
 resource "aws_sfn_state_machine" "direct_payments_state_machine" {
   name     = "${local.workspace_prefix}-Direct-Payment-Recipients"

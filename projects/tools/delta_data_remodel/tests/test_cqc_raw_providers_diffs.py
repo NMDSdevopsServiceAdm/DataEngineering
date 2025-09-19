@@ -22,7 +22,7 @@ def test_rebuilt_dataset_equality():
         build_full_table_from_delta(
             bucket="sfc-test-diff-datasets",
             read_folder="domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
-            organisation_type="providers",
+            dataset="providers",
             timepoint_limit=20131231,
         )
         .drop(["mainPhoneNumber", "year"])
@@ -50,7 +50,7 @@ def test_snapshot_equality():
     for delta_snapshot in get_snapshots(
         bucket="sfc-test-diff-datasets",
         read_folder="domain=CQC_delta/dataset=delta_providers_api/",
-        organisation_type="providers",
+        dataset="providers",
     ):
         timepoint_int = delta_snapshot.item(1, "import_date")
         date_pattern = r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
