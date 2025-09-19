@@ -125,6 +125,9 @@ class IndCqcColumns:
     ct_care_home_total_employed_dedup: str = (
         ct_care_home_total_employed + "_deduplicated"
     )
+    ct_care_home_total_employed_dedup_cleaned: str = (
+        ct_care_home_total_employed_dedup + "_cleaned"
+    )
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
     ct_combined_care_home_and_non_res_dedup: str = (
         "ct_combined_care_home_and_non_res_deduplicated"
