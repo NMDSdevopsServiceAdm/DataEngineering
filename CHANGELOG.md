@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
 - Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datastes.
+- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
 
 ### Improved
 
