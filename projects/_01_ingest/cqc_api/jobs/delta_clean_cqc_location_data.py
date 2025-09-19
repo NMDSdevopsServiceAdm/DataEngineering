@@ -327,7 +327,7 @@ def create_dimension_from_missing_struct_column(
         previous_dimension = utils.read_from_parquet(dimension_location)
     except AnalysisException:
         print(
-            f"The {missing_struct_column} dimension was not found in the {dimension_location}. A new dimension will be created."
+            f"The {missing_struct_column} dimension was not found in {dimension_location}. A new dimension will be created."
         )
         previous_dimension = None
 
