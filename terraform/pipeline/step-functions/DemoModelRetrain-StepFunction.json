@@ -22,6 +22,12 @@
           "ContainerOverrides": [
             {
               "Name": "model-preprocess-container",
+              "Environment": [
+                {
+                  "Name": "TASK_TOKEN",
+                  "Value.$": "$$.Task.Token"
+                }
+              ],
               "Command": [
                 "python",
                 "preprocessing.py",
@@ -34,6 +40,14 @@
           ]
         }
       },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "HandleFailure"
+        }
+      ],
       "Next": "Model Retrain"
     },
     "Model Retrain": {
@@ -62,6 +76,11 @@
         }
       },
       "End": true
+    },
+    "HandleFailure": {
+      "Type": "Fail",
+      "Cause": "The preprocessing task failed.",
+      "Error": "PreprocessingFailed"
     }
   }
 }

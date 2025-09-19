@@ -24,35 +24,42 @@ class DummyProcessor(MagicMock):
     __name__ = "DummyProcessor"
 
 
+@patch(f"{PATCH_STEM}.boto3.client")
 class TestPreprocessing(unittest.TestCase):
-    def test_main_preprocessor_calls_processor_with_kwargs(self):
+    def test_main_preprocessor_calls_processor_with_kwargs(self, mock_boto_client):
         preprocessor = DummyProcessor()
+        preprocessor.return_value = "20250919120102"
         kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
         main_preprocessor(preprocessor, **kwargs)
         preprocessor.assert_called_once_with(**kwargs)
 
-    def test_main_preprocessor_logs_errors(self):
+    def test_main_preprocessor_logs_errors(self, mock_boto_client):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
             with self.assertRaises(ValueError):
                 preprocessor = DummyProcessor()
+                preprocessor.return_value = "20250919120102"
                 preprocessor.__str__.return_value = "DummyProcessor at xyz"
                 preprocessor.side_effect = ValueError("foo")
                 kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
                 main_preprocessor(preprocessor, **kwargs)
-            self.assertIn("foo", cm.output[2])
+            self.assertIn("foo", cm.output[3])
             self.assertIn(
                 f"There was an unexpected exception while executing preprocessor DummyProcessor.",
-                cm.output[1],
+                cm.output[2],
             )
 
-    def test_main_preprocessor_requires_correct_signature(self):
+    def test_main_preprocessor_requires_correct_signature(self, mock_boto_client):
         preprocessor = DummyProcessor()
+        preprocessor.return_value = "20250919120102"
         kwargs = {"destination": "path/b", "a": 1}
         with self.assertRaises(TypeError):
             main_preprocessor(preprocessor, **kwargs)
 
-    def test_main_preprocessor_requires_valid_source_and_destination(self):
+    def test_main_preprocessor_requires_valid_source_and_destination(
+        self, mock_boto_client
+    ):
         preprocessor = DummyProcessor()
+        preprocessor.return_value = "20250919120102"
         kwargs = {"source": 5, "destination": 6, "a": 1, "b": 2}
         with self.assertRaises(TypeError):
             main_preprocessor(preprocessor, **kwargs)

@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import polars as pl
 import logging
@@ -6,6 +7,8 @@ from collections.abc import Callable
 from typing import Any
 from polars_utils import utils
 from datetime import datetime as dt
+import boto3
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,20 +18,19 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> str:
+def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> None:
     """
     Calls the selected preprocessor with the required arguments. The required arguments will likely include
-    the location of the source data and the destination to write to.
+    the location of the source data and the destination to write to. A callback to the StepFunction client
+    is executed to signal success or failure.
 
     Args:
         preprocessor (Callable[..., str]): a function that carries out the required preprocessing
         **kwargs (Any): required keyword arguments including (as minimum) source and destination (strings)
 
-    Returns:
-        str: the string datetime the processing was performed in the format YYYYMMDDHHmmss.
-
     Raises:
         TypeError: if source and destination are not included
+        ClientError: if there is an error calling the StepFunctions client
         Exception: on any exception occurring within the preprocessor
     """
     required = {"source", "destination"}
@@ -41,17 +43,28 @@ def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> str:
         raise TypeError(
             f"preprocessor requires string source and destination but got {kwargs['source']} and {kwargs['destination']}"
         )
+    sfn = boto3.client("stepfunctions")
+    task_token = os.environ.get("TASK_TOKEN", "testtoken")
 
     try:
+        logger.info("Getting Task Token for Step Function callback")
         logger.info(f"Invokng {preprocessor.__name__} with kwargs: {kwargs}")
         processed = preprocessor(**kwargs)
+        result = {"processed_datetime": processed}
+    except ClientError as e:
+        logger.error("There was an error calling the StepFunction AWS service")
+        logger.error(f"preprocessor error: {e}")
+        sfn.send_task_failure(taskToken=task_token, error=str(e))
+        raise
     except Exception as e:
         logger.error(
             f"There was an unexpected exception while executing preprocessor {preprocessor.__name__}."
         )
         logger.error(e)
+        sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
-    return processed
+    else:
+        sfn.send_task_success(taskToken=task_token, taskOutput=json.dumps(result))
 
 
 def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> str:
