@@ -707,7 +707,9 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         ],
         "Resource" : [
           module.cqc-api.task_arn,
-          aws_ecs_cluster.polars_cluster.arn
+          aws_ecs_cluster.polars_cluster.arn,
+          module.model_preprocess,
+          module.model_retrain
         ]
       },
       {
