@@ -42,8 +42,7 @@ jobs:
           name: Build Docker Images
           command: |
             # Authenticate Docker to ECR
-            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID_<< parameters.aws_account >>}.dkr.ecr.eu-west-2.amazonaws.com
-            
+            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID_<< parameters.aws_account >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             docker buildx bake all --push
 
