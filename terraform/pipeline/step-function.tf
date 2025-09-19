@@ -1,5 +1,4 @@
 locals {
-  demo_preprocessor      = "preprocess_non_res_pir"
   demo_preprocess_source = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts"
   demo_preprocess_dest   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts_processed"
 }
@@ -708,8 +707,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         "Resource" : [
           module.cqc-api.task_arn,
           aws_ecs_cluster.polars_cluster.arn,
-          module.model_preprocess,
-          module.model_retrain
+          module.model_preprocess.task_arn,
+          module.model_retrain.task_arn
         ]
       },
       {
