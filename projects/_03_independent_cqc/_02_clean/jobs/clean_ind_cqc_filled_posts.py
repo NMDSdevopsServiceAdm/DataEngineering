@@ -90,6 +90,12 @@ def main(
         IndCQC.filled_posts_per_bed_ratio,
     )
 
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_df,
+        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_care_home_posts_per_bed_ratio,
+    )
+
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
     utils.write_to_parquet(

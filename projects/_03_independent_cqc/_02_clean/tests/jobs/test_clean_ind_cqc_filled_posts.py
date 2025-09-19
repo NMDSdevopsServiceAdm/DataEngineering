@@ -3,13 +3,7 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-    DateType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 import projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -19,11 +13,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     CleanIndCQCData as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
@@ -95,7 +86,7 @@ class MainTests(CleanIndFilledPostsTests):
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
         self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 4)
-        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 2)
+        self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
 
