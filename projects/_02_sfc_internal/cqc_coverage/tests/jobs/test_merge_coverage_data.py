@@ -8,25 +8,20 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     MergeCoverageData as Schemas,
 )
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
-
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
-    CQCLatestRating,
     CQCCurrentOrHistoricValues,
+    CQCLatestRating,
 )
-
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_coverage.jobs.merge_coverage_data"
 
@@ -70,7 +65,7 @@ class MainTests(SetupForTests):
 
     @patch(f"{PATCH_PATH}.utils.filter_df_to_maximum_value_in_column")
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.join_provider_name_into_merged_covergae_df")
+    @patch(f"{PATCH_PATH}.join_provider_name_into_merged_coverage_df")
     @patch(f"{PATCH_PATH}.add_columns_for_locality_manager_dashboard")
     @patch(f"{PATCH_PATH}.join_latest_cqc_rating_into_coverage_df")
     @patch(f"{PATCH_PATH}.rUtils.add_parents_or_singles_and_subs_col_to_df")
@@ -91,7 +86,7 @@ class MainTests(SetupForTests):
         add_parents_or_singles_and_subs_col_to_df_mock: Mock,
         join_latest_cqc_rating_into_coverage_df_mock: Mock,
         add_columns_for_locality_manager_dashboard_mock: Mock,
-        join_provider_name_into_merged_covergae_df_mock: Mock,
+        join_provider_name_into_merged_coverage_df_mock: Mock,
         write_to_parquet_mock: Mock,
         filter_df_to_maximum_value_in_column_mock: Mock,
     ):
@@ -129,7 +124,7 @@ class MainTests(SetupForTests):
         add_parents_or_singles_and_subs_col_to_df_mock.assert_called_once()
         join_latest_cqc_rating_into_coverage_df_mock.assert_called_once()
         add_columns_for_locality_manager_dashboard_mock.assert_called_once()
-        join_provider_name_into_merged_covergae_df_mock.assert_called_once()
+        join_provider_name_into_merged_coverage_df_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_with(
             ANY,
@@ -285,7 +280,7 @@ class JoinProviderNameIntoMergedCovergae(SetupForTests):
             Schemas.sample_merged_coverage_schema,
         )
 
-        self.returned_df = job.join_provider_name_into_merged_covergae_df(
+        self.returned_df = job.join_provider_name_into_merged_coverage_df(
             self.sample_merged_coverage_df, self.test_cqc_providers_df
         )
         self.expected_df = self.spark.createDataFrame(
@@ -298,10 +293,10 @@ class JoinProviderNameIntoMergedCovergae(SetupForTests):
         expected_columns = self.expected_df.columns
         self.assertEqual(sorted(returned_columns), sorted(expected_columns))
 
-    def test_join_provider_name_into_merged_covergae_df_does_not_add_any_rows(self):
+    def test_join_provider_name_into_merged_coverage_df_does_not_add_any_rows(self):
         self.assertEqual(self.returned_df.count(), self.expected_df.count())
 
-    def test_join_provider_name_into_merged_covergae_df_has_expected_values(self):
+    def test_join_provider_name_into_merged_coverage_df_has_expected_values(self):
         self.assertEqual(self.returned_df.collect(), self.expected_df.collect())
 
 
