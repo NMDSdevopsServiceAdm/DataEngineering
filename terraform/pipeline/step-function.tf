@@ -1,3 +1,10 @@
+locals {
+  demo_preprocessor      = "preprocess_non_res_pir"
+  demo_preprocess_source = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts"
+  demo_preprocess_dest   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts_processed"
+}
+
+
 resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   name     = "${local.workspace_prefix}-CQC-And-ASCWDS-Orchestrator"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -518,6 +525,33 @@ resource "aws_sfn_state_machine" "run_crawler" {
 
   depends_on = [
     aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "demo_model_retrain" {
+  name     = "${local.workspace_prefix}-Demo-Model-Retrain"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/DemoModelRetrain-StepFunction.json", {
+    cluster_arn         = aws_ecs_cluster.model_cluster.arn
+    preprocess_task_arn = module.model_preprocess.task_arn
+    retrain_task_arn    = module.model_retrain.task_arn
+    public_subnet_ids   = jsonencode(module.model_preprocess.subnet_ids)
+    security_group_id   = module.model_preprocess.security_group_id
+    preprocessor_name   = "preprocess_non_res_pir"
+    model_name          = "non_res_pir"
+    preprocess_args     = "source=${local.demo_preprocess_source},destination=${local.demo_preprocess_dest}"
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
   ]
 }
 
