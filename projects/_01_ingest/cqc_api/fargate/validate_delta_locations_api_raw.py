@@ -3,8 +3,9 @@ import sys
 import pointblank as pb
 
 from polars_utils import utils
-from polars_utils import validate as vl
 from polars_utils.logger import get_logger
+from polars_utils.validation import actions as vl
+from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -12,11 +13,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 
 logger = get_logger(__name__)
 
-COMPLETE_COLUMNS = [CQCL.location_id, Keys.import_date, CQCL.name]
-INDEX_COLUMNS = [CQCL.location_id, Keys.import_date]
 
-
-def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> None:
+def main(bucket_name: str, source_path: str, reports_path: str) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
     Args:
@@ -25,15 +23,26 @@ def validate_dataset(bucket_name: str, source_path: str, reports_path: str) -> N
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
     """
-    source_df = vl.read_parquet(f"""s3://{bucket_name}/{source_path.strip("/")}/""")
+    source_df = utils.read_parquet(
+        f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
+    )
 
     validation = (
-        pb.Validate(data=source_df, thresholds=pb.Thresholds(warning=1))
-        .col_vals_not_null(COMPLETE_COLUMNS)
-        .rows_distinct(INDEX_COLUMNS)
+        pb.Validate(
+            data=source_df,
+            label=f"Validation of {source_path}",
+            thresholds=GLOBAL_THRESHOLDS,
+            brief=True,
+            actions=GLOBAL_ACTIONS,
+        )
+        # complete columns
+        .col_vals_not_null([CQCL.location_id, Keys.import_date, CQCL.name])
+        # index columns
+        .rows_distinct([CQCL.location_id, Keys.import_date])
+        # run all rules
         .interrogate()
     )
-    vl.write_reports(validation, bucket_name, reports_path.strip("/"))
+    vl.write_reports(validation, bucket_name, reports_path)
 
 
 if __name__ == "__main__":
@@ -46,5 +55,5 @@ if __name__ == "__main__":
     )
     logger.info(f"Starting validation for {args.source_path}")
 
-    validate_dataset(args.bucket_name, args.source_path, args.reports_path)
+    main(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")

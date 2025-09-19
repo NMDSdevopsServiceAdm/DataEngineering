@@ -124,7 +124,7 @@ if __name__ == "__main__":
     logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
     todays_date = date.today()
-    destination = utils.generate_s3_datasets_dir_date_path(
+    destination = utils.generate_s3_dir(
         destination_prefix=args.destination_prefix,
         domain="CQC_delta",
         dataset="delta_providers_api",

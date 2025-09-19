@@ -1,41 +1,16 @@
 import unittest
-from pathlib import Path
 from unittest.mock import ANY, patch
 
 import pointblank as pb
 import polars as pl
 
-from polars_utils import validate as vl
+from polars_utils.validation import actions as vl
 
-SRC_PATH = "polars_utils.validate"
-SIMPLE_MOCK_CONFIG = {
-    "datasets": {
-        "my_dataset": {
-            "dataset": "dataset_name_in_s3",
-            "domain": "cqc_or_other",
-            "version": "x.x.x",
-            "report_name": "data_quality_report",
-        }
-    }
-}
-TEMP_FILE = Path(__file__).parent / "test.parquet"
+SRC_PATH = "polars_utils.validation.actions"
 
 
-class ValidateTests(unittest.TestCase):
+class TestValidate(unittest.TestCase):
     def setUp(self) -> None:
-        types_df = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-                "a_list": [
-                    [[1, 2], [1], None],
-                    [[1, 2], [2], None],
-                    [[1, 2], [3], None],
-                ],
-            }
-        ).with_columns(pl.struct(pl.all()).alias("a_struct"))
-        types_df.write_parquet(TEMP_FILE)
-
         self.df = pl.DataFrame(
             [
                 ("1-00001", "20240101", "a"),
@@ -54,55 +29,14 @@ class ValidateTests(unittest.TestCase):
             orient="row",
         )
 
-    def tearDown(self) -> None:
-        try:
-            TEMP_FILE.unlink()
-        except FileNotFoundError:
-            pass
-        return super().tearDown()
 
-    def test_read_parquet_keep_all(self):
-        # Given
-        expected = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-                "a_list": [
-                    [[1, 2], [1], None],
-                    [[1, 2], [2], None],
-                    [[1, 2], [3], None],
-                ],
-                "a_struct": [
-                    {"foo": 1, "bar": None, "a_list": [[1, 2], [1], None]},
-                    {"foo": 2, "bar": "bak", "a_list": [[1, 2], [2], None]},
-                    {"foo": 3, "bar": "baz", "a_list": [[1, 2], [3], None]},
-                ],
-            }
-        )
-        # When
-        result = vl.read_parquet(TEMP_FILE)
-        # Then
-        self.assertTrue(result.equals(expected))
-
-    def test_read_parquet_exclude_complex(self):
-        # Given
-        expected = pl.DataFrame(
-            {
-                "foo": [1, 2, 3],
-                "bar": [None, "bak", "baz"],
-            }
-        )
-        # When
-        result = vl.read_parquet(TEMP_FILE, exclude_complex_types=True)
-        # Then
-        self.assertTrue(result.equals(expected))
-
+class TestWriteReports(TestValidate):
     @patch(f"{SRC_PATH}._report_on_fail")
     @patch("boto3.client", autospec=True)
     def test_write_reports(self, mock_s3_client, mock_report_on_fail):
         # Given
         validation = (
-            pb.Validate(self.df, thresholds=pb.Thresholds(warning=1))
+            pb.Validate(self.df, thresholds=pb.Thresholds(error=1))
             .rows_distinct(["someId", "my_date"])
             .col_vals_not_null(["someId", "my_date", "name"])
             .interrogate()
@@ -123,7 +57,7 @@ class ValidateTests(unittest.TestCase):
         mock_s3_client.return_value.put_object.assert_called_once_with(
             Body=ANY,
             Bucket="bucket",
-            Key="reports/index.html",
+            Key="reports/summary.html",
         )
 
         # calls include null check for each column
@@ -172,6 +106,8 @@ class ValidateTests(unittest.TestCase):
             col_vals_not_null_name_step,
         )
 
+
+class TestReportOnFail(TestValidate):
     @patch("polars_utils.utils.write_to_parquet", autospec=True)
     @patch("pointblank.Validate")
     def test_report_when_fail(self, mock_validate, mock_write_parquet):
@@ -200,6 +136,7 @@ class ValidateTests(unittest.TestCase):
         mock_write_parquet.assert_called_once_with(
             mock_df,
             "s3://bucket/path/failed_step_1_rows_distinct_someId_my_date.parquet",
+            append=False,
         )
 
     @patch("pointblank.Validate")
@@ -217,6 +154,24 @@ class ValidateTests(unittest.TestCase):
         self.assertEquals(
             mock_validate.return_value.get_data_extracts.call_args_list, []
         )
+
+
+class TestIsUniqueCount(TestValidate):
+    def test_is_unique_count_equal_true(self):
+        # Given
+        func = vl.is_unique_count_equal("someId", 2)
+        # When
+        result = func(self.df)
+        # Then
+        self.assertTrue(result)
+
+    def is_unique_count_equal_false(self):
+        # Given
+        func = vl.is_unique_count_equal("someId", 3)
+        # When
+        result = func(self.df)
+        # Then
+        self.assertFalse(result)
 
 
 if __name__ == "__main__":

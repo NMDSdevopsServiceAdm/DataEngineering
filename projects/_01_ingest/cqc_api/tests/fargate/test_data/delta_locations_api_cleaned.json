@@ -1,0 +1,73 @@
+{
+  "cqc_location_import_date": [
+    "2024-06-10",
+    "2024-06-10",
+    "2024-06-10"
+  ],
+  "locationId": [
+    "1-2345678",
+    "1",
+    "2"
+  ],
+  "providerId": [
+    "123",
+    "12",
+    null
+  ],
+  "name": [
+    null,
+    null,
+    null
+  ],
+  "registrationStatus": [
+    null,
+    null,
+    null
+  ],
+  "registrationDate": [
+    null,
+    null,
+    null
+  ],
+  "deregistrationDate": [
+    null,
+    null,
+    null
+  ],
+  "type": [
+    null,
+    null,
+    null
+  ],
+  "relationships": [
+    [],
+    [],
+    []
+  ],
+  "numberOfBeds": [
+    null,
+    0,
+    500
+  ],
+  "dormancy": [
+    null,
+    "N",
+    "Y"
+  ],
+  "imputed_registration_date": [
+    null,
+    null,
+    null
+  ],
+  "cqc_sector": [
+    "Local authority",
+    "Local authority",
+    null
+  ],
+  "imputed_relationships": [[],[],[]],
+   "related_location": [
+    null,
+    null,
+    null
+   ]
+}

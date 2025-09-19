@@ -4,9 +4,9 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._01_ingest.cqc_api.fargate.validate_locations_raw as job
+import projects._01_ingest.cqc_api.fargate.validate_delta_locations_api_raw as job
 
-UTILS_PATH = "polars_utils.validate"
+PATCH_PATH = "polars_utils"
 
 
 class ValidateLocationsRawTests(unittest.TestCase):
@@ -29,17 +29,19 @@ class ValidateLocationsRawTests(unittest.TestCase):
             orient="row",
         )
 
-    @patch(f"{UTILS_PATH}.write_reports")
-    @patch(f"{UTILS_PATH}.read_parquet")
+    @patch(f"{PATCH_PATH}.validation.actions.write_reports")
+    @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_invalid_dataset(self, mock_read_parquet: Mock, mock_write_reports: Mock):
         # Given
         mock_read_parquet.return_value = self.raw_df
 
         # When
-        job.validate_dataset("bucket", "/my/dataset/", "my/reports/")
+        job.main("bucket", "my/dataset/", "my/reports/")
 
         # Then
-        mock_read_parquet.assert_called_once_with("s3://bucket/my/dataset/")
+        mock_read_parquet.assert_called_once_with(
+            "s3://bucket/my/dataset/", exclude_complex_types=True
+        )
         mock_write_reports.assert_called_once()
 
         validation_arg = mock_write_reports.call_args[0][0]
