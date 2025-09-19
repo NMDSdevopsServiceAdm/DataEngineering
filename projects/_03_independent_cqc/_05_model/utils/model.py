@@ -48,17 +48,18 @@ class Model:
             case _:
                 raise ValueError("Unknown model type")
 
-    def get_raw_data(self, bucket_name: str) -> pl.LazyFrame:
+    def get_raw_data(self, bucket_name: str, process_date_str: str) -> pl.LazyFrame:
         """
         Retrieves raw data from S3 bucket.
         Args:
             bucket_name (str): Name of the S3 bucket where the raw data is located.
+            process_date_str (str): The datetime the training data was processed in format YYYYMMDDHHmmss
 
         Returns:
             pl.LazyFrame: Raw data from S3 bucket.
 
         """
-        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}"
+        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/process_date={process_date_str}"
         return pl.scan_parquet(s3_uri)
 
     @classmethod

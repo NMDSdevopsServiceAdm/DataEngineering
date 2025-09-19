@@ -33,12 +33,15 @@ MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefi
 ERROR_SUBJECT = "Model Retraining Failure"
 
 
-def main(model_name: str, seed: int = None) -> ModelVersionManager:
+def main(
+    model_name: str, process_date_str: str, seed: int = None
+) -> ModelVersionManager:
     """
     Executes model retraining for standard predefined model.
 
     Args:
         model_name (str): Name of model to retrain
+        process_date_str (str): The datetime the training data was processed in format YYYYMMDDHHmmss
         seed (int): (Optional) Seed for test set generation
 
     Returns:
@@ -71,7 +74,9 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
         logger.info(f"Training model {model_name}...")
         logger.info(f"Model: {model_definition}")
 
-        data = model.get_raw_data(bucket_name=S3_DATA_SOURCE)
+        data = model.get_raw_data(
+            bucket_name=S3_DATA_SOURCE, process_date_str=process_date_str
+        )
         logger.info(f"Raw Data: {data.collect().shape}")
 
         logger.info("Creating train and test datasets...")
@@ -170,10 +175,14 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
 
 
 if __name__ == "__main__":
-    (model_id,) = utils.collect_arguments(
+    (model_id, process_datetime) = utils.collect_arguments(
         (
             "--model_name",
             "The name of the model to train",
         ),
+        (
+            "--process_datetime",
+            "The datetime of the latest preprocessed data in format YYYYMMDDHHmmss",
+        ),
     )
-    vm = main(model_name=model_id)
+    vm = main(model_name=model_id, process_date_str=process_datetime)

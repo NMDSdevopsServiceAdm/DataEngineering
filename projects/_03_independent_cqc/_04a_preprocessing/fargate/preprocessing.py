@@ -1,3 +1,4 @@
+import json
 import sys
 import polars as pl
 import logging
@@ -5,7 +6,6 @@ from collections.abc import Callable
 from typing import Any
 from polars_utils import utils
 from datetime import datetime as dt
-import os
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -15,14 +15,17 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def main_preprocessor(preprocessor: Callable[..., None], **kwargs: Any) -> None:
+def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> str:
     """
     Calls the selected preprocessor with the required arguments. The required arguments will likely include
     the location of the source data and the destination to write to.
 
     Args:
-        preprocessor (Callable[..., None]): a function that carries out the required preprocessing
+        preprocessor (Callable[..., str]): a function that carries out the required preprocessing
         **kwargs (Any): required keyword arguments including (as minimum) source and destination (strings)
+
+    Returns:
+        str: the string datetime the processing was performed in the format YYYYMMDDHHmmss.
 
     Raises:
         TypeError: if source and destination are not included
@@ -41,16 +44,17 @@ def main_preprocessor(preprocessor: Callable[..., None], **kwargs: Any) -> None:
 
     try:
         logger.info(f"Invokng {preprocessor.__name__} with kwargs: {kwargs}")
-        preprocessor(**kwargs)
+        processed = preprocessor(**kwargs)
     except Exception as e:
         logger.error(
             f"There was an unexpected exception while executing preprocessor {preprocessor.__name__}."
         )
         logger.error(e)
         raise
+    return processed
 
 
-def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> None:
+def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> str:
     """
     Preprocesses data for Non-Residential PIR model prior to training.
 
@@ -61,12 +65,15 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         destination( str): the S3 uri of the output directory
         lazy(bool, optional): whether to read the incoming data lazily or not (default is False)
 
+    Returns:
+        str: the string datetime the processing was performed in the format YYYYMMDDHHmmss.
+
     Raises:
         FileNotFoundError: if a local data source file cannot be found
         pl.exceptions.PolarsError: if there is an error reading or processing the data
     """
     try:
-        now = dt.now()
+        dt_now = dt.now()
         if source[-7:] != "parquet" and source[-1] != "/":
             source = source + "/"
         logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
@@ -104,7 +111,8 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             .filter(pl.col("abs_resid") <= 500)
             .drop("abs_resid")
         )
-        uri = f"{destination}/process_datetime={now.strftime('%Y%m%dT%H%M%S')}/processed.parquet"
+        process_datetime = dt_now.strftime("%Y%m%dT%H%M%S")
+        uri = f"{destination}/process_datetime={process_datetime}/processed.parquet"
         logger.info(
             f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
         )
@@ -118,6 +126,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         )
         logger.error(f"Polars error: {e}")
         raise
+    return process_datetime
 
 
 if __name__ == "__main__":
@@ -139,4 +148,7 @@ if __name__ == "__main__":
     if "source" not in keyword_args or "destination" not in keyword_args:
         logger.error('The arguments "source" and "destination" are required')
         sys.exit(1)
-    main_preprocessor(processor, **keyword_args)
+    process_datetime = main_preprocessor(processor, **keyword_args)
+    result = {"process_datetime": process_datetime}
+    sys.stdout.write(json.dumps(result))
+    sys.exit(0)
