@@ -716,7 +716,11 @@ resource "aws_iam_policy" "step_function_iam_policy" {
         Action = "iam:PassRole",
         Resource = [
           module.cqc-api.task_exc_role_arn,
-          module.cqc-api.task_role_arn
+          module.cqc-api.task_role_arn,
+          module.model_retrain.task_exc_role_arn,
+          module.model_retrain.task_role_arn,
+          module.model_preprocess.task_role_arn,
+          module.model_preprocess.task_exc_role_arn
         ],
         Condition = {
           StringLike = {
