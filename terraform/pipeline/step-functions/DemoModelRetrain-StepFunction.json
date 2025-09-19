@@ -15,7 +15,7 @@
             "SecurityGroups": [
               "${security_group_id}"
             ],
-            "AssignPublicIp": "DISABLED"
+            "AssignPublicIp": "ENABLED"
           }
         },
         "Overrides": {
@@ -49,7 +49,7 @@
             "SecurityGroups": [
               "${security_group_id}"
             ],
-            "AssignPublicIp": "DISABLED"
+            "AssignPublicIp": "ENABLED"
           }
         },
         "Overrides": {
