@@ -3,12 +3,19 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
-from utils import utils
 import utils.cleaning_utils as cUtils
+from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
+    add_columns_for_locality_manager_dashboard,
+)
 from projects._02_sfc_internal.reconciliation.utils import (
     reconciliation_utils as rUtils,
+)
+from utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -19,21 +26,13 @@ from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
+    CQCCurrentOrHistoricValues,
     CQCLatestRating,
     InAscwds,
-    CQCCurrentOrHistoricValues,
-)
-from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
-    add_columns_for_locality_manager_dashboard,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -164,7 +163,7 @@ def main(
     )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
-    merged_coverage_df = join_provider_name_into_merged_covergae_df(
+    merged_coverage_df = join_provider_name_into_merged_coverage_df(
         merged_coverage_df, cqc_providers_df
     )
     utils.write_to_parquet(
@@ -327,7 +326,7 @@ def join_latest_cqc_rating_into_coverage_df(
     return merged_coverage_with_latest_rating_df
 
 
-def join_provider_name_into_merged_covergae_df(
+def join_provider_name_into_merged_coverage_df(
     merged_coverage_df: DataFrame,
     cleaned_cqc_providers_df: DataFrame,
 ) -> DataFrame:
