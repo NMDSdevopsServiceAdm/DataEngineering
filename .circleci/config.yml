@@ -25,6 +25,9 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
         enum: ["prod", "non_prod"]
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
     docker:
       - image: docker:latest
     steps:
