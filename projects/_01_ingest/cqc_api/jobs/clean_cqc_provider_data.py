@@ -23,7 +23,9 @@ cols_to_import = [
 
 
 def main(cqc_source: str, cleaned_cqc_destination: str):
-    cqc_provider_df = utils.read_from_parquet(cqc_source)
+    cqc_provider_df = utils.read_from_parquet(
+        cqc_source, selected_columns=cols_to_import
+    )
 
     cqc_provider_df = cUtils.column_to_date(
         cqc_provider_df, Keys.import_date, CQCPClean.cqc_provider_import_date
