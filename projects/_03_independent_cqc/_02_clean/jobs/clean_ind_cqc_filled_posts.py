@@ -4,22 +4,20 @@ from typing import Optional
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
-from utils import utils
 import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-from utils.column_values.categorical_column_values import CareHome, Dormancy
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
-
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome, Dormancy
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
@@ -73,7 +71,9 @@ def main(
     )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.filled_posts_per_bed_ratio,
     )
 
     locations_df = cUtils.create_banded_bed_count_column(
@@ -85,7 +85,9 @@ def main(
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
     )
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
@@ -150,7 +152,7 @@ def deduplicate_care_homes(
     df = df.where(
         (
             (F.col(IndCQC.care_home) == CareHome.care_home) & (F.col(temp_col) == 1)
-            | ((F.col(IndCQC.care_home) == CareHome.not_care_home))
+            | (F.col(IndCQC.care_home) == CareHome.not_care_home)
         )
     ).drop(temp_col)
     return df
