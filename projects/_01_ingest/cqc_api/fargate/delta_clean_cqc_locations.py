@@ -240,3 +240,7 @@ def impute_missing_values_for_struct_column(
     )
 
     return cqc_df
+
+
+def allocate_primary_service_type(df: pl.DataFrame) -> pl.DataFrame:
+    pass

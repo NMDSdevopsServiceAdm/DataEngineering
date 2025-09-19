@@ -500,6 +500,7 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
+# Should be in main
 def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataFrame:
     """
     Removes locations who have never submitted regulated activities data.
@@ -518,6 +519,7 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     return df
 
 
+# Should be move
 def extract_from_struct(
     df: DataFrame, source_struct_column_name: str, new_column_name: str
 ) -> DataFrame:

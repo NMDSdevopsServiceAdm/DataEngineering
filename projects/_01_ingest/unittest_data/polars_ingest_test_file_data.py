@@ -1,10 +1,17 @@
 from dataclasses import dataclass
 from datetime import date
 
+from projects._01_ingest.cqc_api.tests.fargate.test_delta_clean_cqc_locations import (
+    AllocatePrimaryServiceTypeTests,
+)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import RegistrationStatus
+from utils.column_values.categorical_column_values import (
+    RegistrationStatus,
+    CareHome,
+    PrimaryServiceType,
+)
 
 
 @dataclass
@@ -895,5 +902,191 @@ class CQCLocationsData:
             None,
             None,
             [{"name": "Name C", "description": "Desc C"}],
+        ),
+    ]
+
+    allocate_primary_service_care_home_with_nursing = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "With Nurses 1",
+                    "description": "Care home service with nursing",
+                }
+            ],
+            [
+                {
+                    "name": "With Nurses 2",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "With Nurses 3",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Legitimate Service",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+    ]
+
+    expected_allocate_primary_service_care_home_with_nursing = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "With Nurses 1",
+                    "description": "Care home service with nursing",
+                }
+            ],
+            [
+                {
+                    "name": "With Nurses 2",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "With Nurses 3",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Legitimate Service",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.care_home_with_nursing,
+        ),
+    ]
+
+    allocate_primary_service_care_home_only = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "Without Nursing 1",
+                    "description": "Care home service without nursing",
+                }
+            ],
+            [
+                {
+                    "name": "Without Nursing 2",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "Another Service First",
+                    "description": "Another description",
+                },
+                {
+                    "name": "Without Nursing 3",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+    ]
+
+    expected_allocate_primary_service_care_home_only = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "Without Nursing 1",
+                    "description": "Care home service without nursing",
+                }
+            ],
+            [
+                {
+                    "name": "Without Nursing 2",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "Another Service First",
+                    "description": "Another description",
+                },
+                {
+                    "name": "Without Nursing 3",
+                    "description": "Care home service without nursing",
+                },
+            ],
+        ),
+        (
+            PrimaryServiceType.care_home_only,
+            PrimaryServiceType.care_home_only,
+            PrimaryServiceType.care_home_only,
+        ),
+    ]
+
+    allocate_primary_service_non_residential = [
+        ("loc_1", "loc_2"),
+        (
+            [
+                {
+                    "name": "Without Nursing Malformed",
+                    "description": "Care home service without nursing with small difference",
+                }
+            ],
+            [
+                {
+                    "name": "Random Service",
+                    "description": "Random Service",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+        ),
+    ]
+
+    expected_allocate_primary_service_non_residential = [
+        ("loc_1", "loc_2"),
+        (
+            [
+                {
+                    "name": "Without Nursing Malformed",
+                    "description": "Care home service without nursing with small difference",
+                }
+            ],
+            [
+                {
+                    "name": "Random Service",
+                    "description": "Random Service",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+        ),
+        (
+            PrimaryServiceType.non_residential,
+            PrimaryServiceType.non_residential,
         ),
     ]

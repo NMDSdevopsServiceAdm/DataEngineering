@@ -196,3 +196,38 @@ class CQCLocationsSchema:
             ),
         ]
     )
+
+    allocate_primary_service_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.imputed_gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
+
+    expected_allocate_primary_service_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.imputed_gac_service_types,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.description: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (CQCLClean.primary_service_type, pl.String()),
+        ]
+    )

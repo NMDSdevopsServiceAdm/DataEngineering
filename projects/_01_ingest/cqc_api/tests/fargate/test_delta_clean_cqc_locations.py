@@ -589,5 +589,95 @@ class ImputeMissingValuesForStructColumnTests(unittest.TestCase):
         )
 
 
+class AllocatePrimaryServiceTypeTests(unittest.TestCase):
+    def test_allocates_care_home_with_nursing(self):
+        # GIVEN
+        #   Input where all rows have "Care home service with nursing" as one of their inputs
+        input_df = pl.DataFrame(
+            data=Data.allocate_primary_service_care_home_with_nursing,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_df = job.allocate_primary_service_type(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "Care home with nursing"
+        expected_df = pl.DataFrame(
+            data=Data.expected_allocate_primary_service_care_home_with_nursing,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "Care home with nursing",
+                "Care home with nursing",
+                "Care home with nursing",
+            ],
+            output_df["primary_service_type"].to_list(),
+        )
+
+    def test_allocates_care_home_only(self):
+        # GIVEN
+        #   Input where all rows have "Care home service without nursing" as one of their inputs
+        #   and none have the preferential "Care home service with nursing"
+        input_df = pl.DataFrame(
+            data=Data.allocate_primary_service_care_home_only,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_df = job.allocate_primary_service_type(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "Care home without nursing"
+        expected_df = pl.DataFrame(
+            data=Data.expected_allocate_primary_service_care_home_only,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "Care home without nursing",
+                "Care home without nursing",
+                "Care home without nursing",
+            ],
+            output_df["primary_service_type"].to_list(),
+        )
+
+    def test_allocates_non_residential(self):
+        # GIVEN
+        #   Input where no rows have "Care home service with nursing" or "Care home service without nursing"
+        input_df = pl.DataFrame(
+            data=Data.allocate_primary_service_non_residential,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_df = job.allocate_primary_service_type(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "non-residential"
+        expected_df = pl.DataFrame(
+            data=Data.expected_allocate_primary_service_non_residential,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "non-residential",
+                "non-residential",
+                "non-residential",
+            ],
+            output_df["primary_service_type"].to_list(),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
