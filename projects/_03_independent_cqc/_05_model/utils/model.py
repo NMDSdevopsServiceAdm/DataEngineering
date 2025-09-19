@@ -59,7 +59,7 @@ class Model:
             pl.LazyFrame: Raw data from S3 bucket.
 
         """
-        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/process_date={process_date_str}"
+        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/process_datetime={process_date_str}/processed.parquet"
         return pl.scan_parquet(s3_uri)
 
     @classmethod
