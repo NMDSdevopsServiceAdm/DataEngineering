@@ -606,9 +606,9 @@ def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
     """
     Adds a column to flag the latest rating per locationid as 1, otherwise 0.
 
-    The latest rating rating is defined as the lowest row per locationid, when sorted in
+    The latest rating rating is defined as the first row per locationid, when sorted in
     descending order on rating_date and assessment_date.
-    A location may have multiple ratings on the same dates, and be it's latest date. In these
+    A location may have multiple ratings on the same date and be it's latest date. In these
     cases the flag is random between the group.
 
     Args:
