@@ -164,6 +164,33 @@ resource "aws_iam_role_policy_attachment" "ecs_task_role_policy_sns" {
   policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
 
+data "aws_iam_policy_document" "step_func_success_failure" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "states:SendTaskSuccess",
+      "states:SendTaskFailure"
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "sfn_task_policy" {
+  name_prefix = "StepFunctionActions-"
+  policy      = data.aws_iam_policy_document.step_func_success_failure.json
+  path        = "/"
+  description = "A policy allowing success or failure notifications to be sent to SFN."
+}
+
+resource "aws_iam_role_policy_attachment" "stepfn_policy_attach" {
+  policy_arn = aws_iam_policy.sfn_task_policy.arn
+  role       = aws_iam_role.ecs_task_role.name
+}
+
 resource "aws_iam_role" "sfn_execution_role" {
   name_prefix = "${local.workspace_prefix}-sfn-"
 
