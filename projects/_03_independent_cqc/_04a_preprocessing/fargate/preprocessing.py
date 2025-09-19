@@ -64,7 +64,7 @@ def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> None:
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
     else:
-        sfn.send_task_success(taskToken=task_token, taskOutput=json.dumps(result))
+        sfn.send_task_success(taskToken=task_token, output=json.dumps(result))
 
 
 def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> str:
