@@ -8,12 +8,8 @@ from pyspark.sql import functions as F
 
 from utils import utils
 from utils.cleaning_utils import reduce_dataset_to_earliest_file_per_month
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.cleaned_ind_cqc_validation_rules import (

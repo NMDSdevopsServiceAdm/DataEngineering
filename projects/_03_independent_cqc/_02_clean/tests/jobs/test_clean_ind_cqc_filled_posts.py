@@ -3,13 +3,7 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-    DateType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 import projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -19,11 +13,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     CleanIndCQCData as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 

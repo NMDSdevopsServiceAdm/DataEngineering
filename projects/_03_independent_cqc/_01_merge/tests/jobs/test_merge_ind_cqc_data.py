@@ -9,19 +9,16 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     MergeIndCQCData as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
+)
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = "projects._03_independent_cqc._01_merge.jobs.merge_ind_cqc_data"
 

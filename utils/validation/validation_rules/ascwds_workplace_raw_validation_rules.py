@@ -2,9 +2,10 @@ from dataclasses import dataclass
 
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     PartitionKeys as Keys,
 )
-
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 

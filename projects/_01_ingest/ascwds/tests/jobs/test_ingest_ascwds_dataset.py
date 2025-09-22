@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import call, patch, Mock
+from unittest.mock import Mock, call, patch
 
 import projects._01_ingest.ascwds.jobs.ingest_ascwds_dataset as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
@@ -8,10 +8,10 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestASCWDSData as Schemas,
 )
+from utils import utils
 from utils.column_names.raw_data_files.ascwds_worker_columns import (
     AscwdsWorkerColumns as AWK,
 )
-from utils import utils
 
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.ingest_ascwds_dataset"
 

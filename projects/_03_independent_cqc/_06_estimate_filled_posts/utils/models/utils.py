@@ -1,13 +1,14 @@
-import boto3
 import re
+from typing import List, Optional, Tuple
 
-from typing import Optional, List, Tuple
-from pyspark.sql import DataFrame, functions as F
+import boto3
 from pyspark.ml.regression import LinearRegression, LinearRegressionModel
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
+from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from utils.column_values.categorical_column_values import CareHome
-from utils import utils
 
 
 def insert_predictions_into_pipeline(

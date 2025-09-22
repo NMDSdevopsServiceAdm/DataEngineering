@@ -1,20 +1,16 @@
-from typing import Generator
-import unittest
-import re
 import json
+import re
+import unittest
+from typing import Generator
 
 from projects._01_ingest.cqc_api.utils import cqc_api as cqc
-from utils import (
-    aws_secrets_manager_utilities as ars,
-)
-
+from utils import aws_secrets_manager_utilities as ars
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
-
 
 LOCATION_ID_REGEX = r"[0-9]-[0-9]{11}"
 

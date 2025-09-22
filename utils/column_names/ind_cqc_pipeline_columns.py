@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -14,10 +20,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 
 

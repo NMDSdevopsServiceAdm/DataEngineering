@@ -1,6 +1,5 @@
 import unittest
 
-
 import projects._01_ingest.cqc_api.utils.utils as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     CQCLocationsData as Data,
@@ -8,11 +7,7 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CQCLocationsSchema as Schemas,
 )
-
 from utils import utils
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CQCLClean,
-)
 from utils.column_values.categorical_column_values import Specialisms
 
 

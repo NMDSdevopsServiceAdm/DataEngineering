@@ -51,7 +51,6 @@ from utils.column_names.raw_data_files.ascwds_worker_columns import (
 from utils.column_names.raw_data_files.ascwds_workplace_columns import (
     AscwdsWorkplaceColumns as AWP,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )

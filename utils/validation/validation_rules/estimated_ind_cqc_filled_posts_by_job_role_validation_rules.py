@@ -1,10 +1,7 @@
 from dataclasses import dataclass
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_column_values import MainJobRoleLabels
-
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
