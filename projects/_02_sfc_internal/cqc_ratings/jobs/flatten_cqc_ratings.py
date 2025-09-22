@@ -587,7 +587,19 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
-def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
+def add_rating_sequence_column(
+    ratings_df: DataFrame, reversed: bool = False
+) -> DataFrame:
+    """
+    Adds a column with the ratings sequenced by publication date and assessment date.
+
+    Args:
+        ratings_df (DataFrame): A dataframe of CQC ratings and assessments.
+        reversed (bool): Boolean to switch sequence from oldest to newest (False) or newest to oldsest (True). Default = False.
+
+    Returns:
+        DataFrame: The input dataframe with a column showing desired sequence.
+    """
     if reversed == True:
         window = Window.partitionBy(CQCL.location_id).orderBy(
             F.desc(CQCRatings.date), F.desc(CQCL.assessment_date)
@@ -736,13 +748,13 @@ def add_location_id_hash(df: DataFrame) -> DataFrame:
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
     """
-    Filters to rows which are registered, current rating and flagged as the latest rating.
+    Filters to rows which are registered and current rating only.
 
     Args:
         ratings_df(DataFrame): A prepared standard ratings dataframe containing the columns registration_status, current_or_historic and latest_rating_flag.
 
     Returns:
-        DataFrame: A dataframe filtered to registered, current and latest rating only.
+        DataFrame: A dataframe filtered to registered and current rating only.
     """
     benchmark_ratings_df = ratings_df.where(
         (ratings_df[CQCL.registration_status] == RegistrationStatus.registered)
@@ -755,6 +767,15 @@ def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
 
 
 def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> DataFrame:
+    """
+    Flags locations where the minimum overall rating value is 3 (good).
+
+    Args:
+        benchmark_ratings_df (DataFrame): A dataframe filtered to registered and current rating only.
+
+    Returns:
+        DataFrame: The input dataframe with a column to flag locations with good and outstanding current ratings.
+    """
     w = Window.partitionBy(CQCL.location_id)
 
     benchmark_ratings_df = benchmark_ratings_df.withColumn(
