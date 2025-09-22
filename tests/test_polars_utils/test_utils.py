@@ -10,10 +10,13 @@ from glob import glob
 from pathlib import Path
 from unittest.mock import patch
 
+import boto3
 import polars as pl
+from botocore.exceptions import ClientError
+from moto import mock_aws, sns
+from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
-from polars_utils.utils import write_to_parquet
 
 
 class TestUtils(unittest.TestCase):
@@ -25,6 +28,8 @@ class TestUtils(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
 
+
+class WriteToParquetTests(TestUtils):
     def test_write_parquet_does_nothing_for_empty_dataframe(self):
         df: pl.DataFrame = pl.DataFrame({})
         destination: str = os.path.join(self.temp_dir, "test.parquet")
@@ -46,19 +51,21 @@ class TestUtils(unittest.TestCase):
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = self.temp_dir + "/"
-        write_to_parquet(df, destination, self.logger)
-        write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = os.path.join(self.temp_dir, "test.parquet")
-        write_to_parquet(df, destination, self.logger, append=False)
-        write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
 
+
+class GenerateS3DatasetsDirDatePathTests(TestUtils):
     def test_generate_s3_datasets_dir_date_path_changes_version_when_version_number_is_passed(
         self,
     ):
@@ -88,6 +95,8 @@ class TestUtils(unittest.TestCase):
             "s3://sfc-main-datasets/domain=test_domain/dataset=test_dateset/version=1.0.0/year=2021/month=12/day=01/import_date=20211201/",
         )
 
+
+class GetArgsTests(TestUtils):
     def test_get_args_has_all(self):
         # Given
         args = (
@@ -138,3 +147,59 @@ class TestUtils(unittest.TestCase):
             # When / Then
             with self.assertRaises(argparse.ArgumentError):
                 utils.get_args(*args)
+
+
+class SendSnsNotificationTests(TestUtils):
+    @mock_aws
+    def test_send_sns_notification_sends(self):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+
+        utils.send_sns_notification(
+            topic_arn=topic["TopicArn"],
+            subject="Test Subject",
+            message="Test Message",
+        )
+
+        sns_backend = sns.sns_backends[DEFAULT_ACCOUNT_ID]["eu-west-2"]
+        sent_notifications = sns_backend.topics[topic["TopicArn"]].sent_notifications
+
+        assert len(sent_notifications) == 1
+        notification = sent_notifications[0]
+        assert notification[2] == "Test Subject"
+        assert notification[1] == "Test Message"
+
+    @mock_aws
+    def test_send_sns_notification_raises_clienterror_and_logs_with_wrong_arn(self):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(ClientError):
+                utils.send_sns_notification(
+                    topic_arn="silly_arn",
+                    subject="Test Subject",
+                    message="Test Message",
+                )
+        self.assertIn(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
+            cm.output[1],
+        )
+
+    @mock_aws
+    @set_initial_no_auth_action_count(1)
+    def test_send_sns_notification_raises_clienterror_and_logs_with_no_permissions(
+        self,
+    ):
+        client = boto3.client("sns", region_name="eu-west-2")
+        topic = client.create_topic(Name="test-topic")
+        with self.assertLogs(level="ERROR") as cm:
+            with self.assertRaises(ClientError):
+                utils.send_sns_notification(
+                    topic_arn=topic["TopicArn"],
+                    subject="Test Subject",
+                    message="Test Message",
+                )
+        self.assertIn(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN",
+            cm.output[1],
+        )

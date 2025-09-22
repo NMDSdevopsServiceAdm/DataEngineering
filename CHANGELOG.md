@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
 
+- Model retraining process using Polars and scikit-learn in Fargate
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
