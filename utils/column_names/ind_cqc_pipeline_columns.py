@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -14,10 +20,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-)
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
 )
 
 
@@ -294,8 +296,6 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     prediction: str = "prediction"
-    prediction_within_10_posts: str = "prediction_within_10_posts"
-    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -326,8 +326,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rmse: str = "rmse"
-    run_number: str = "run_number"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
