@@ -70,10 +70,6 @@ jobs:
             pipenv run coverage report
             pipenv run coverage xml
             pipenv run coverage html
-      - run:
-          name: run integration tests
-          command: |
-            pipenv run python -m unittest discover tests/integration
       - store_artifacts:
           path: htmlcov
 

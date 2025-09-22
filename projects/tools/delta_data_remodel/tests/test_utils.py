@@ -102,7 +102,7 @@ class UtilsTests(unittest.TestCase):
 
         # When
         result = job.build_full_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers"
+            "bucket", "read_folder", dataset="providers"
         )
 
         # Then
@@ -121,7 +121,7 @@ class UtilsTests(unittest.TestCase):
 
         # When
         result = job.build_full_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers"
+            "bucket", "read_folder", dataset="providers"
         )
         pl.testing.assert_frame_equal(result, expected)
 

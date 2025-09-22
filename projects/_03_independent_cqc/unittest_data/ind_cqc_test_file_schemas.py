@@ -29,18 +29,24 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
-    IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
-    PartitionKeys as Keys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
     JobGroupLabels,
+    MainJobRoleLabels,
 )
 
 
@@ -1232,6 +1238,34 @@ class CleanIndCQCData:
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
+        ]
+    )
+    calculate_time_registered_for_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), True),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), True),
+            StructField(CQCLClean.imputed_registration_date, DateType(), True),
+        ]
+    )
+
+    expected_calculate_time_registered_for_schema = StructType(
+        [
+            *calculate_time_registered_for_schema,
+            StructField(IndCQC.time_registered, IntegerType(), True),
+        ]
+    )
+
+    calculate_time_since_dormant_schema = StructType(
+        [
+            StructField(CQCLClean.location_id, StringType(), False),
+            StructField(CQCLClean.cqc_location_import_date, DateType(), False),
+            StructField(CQCLClean.dormancy, StringType(), True),
+        ]
+    )
+    expected_calculate_time_since_dormant_schema = StructType(
+        [
+            *calculate_time_since_dormant_schema,
+            StructField(IndCQC.time_since_dormant, IntegerType(), True),
         ]
     )
 

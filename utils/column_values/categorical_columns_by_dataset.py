@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
+    AscwdsWorkerCleanedColumns as AWKClean,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -9,19 +12,14 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
     CqcProviderCleanedColumns as CQCPClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
-    AscwdsWorkerCleanedColumns as AWKClean,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
-    ONScol as ONS,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import ONScol as ONS
 from utils.column_names.coverage_columns import CoverageColumns
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
+    RUI,
     ASCWDSFilledPostsSource,
     AscwdsFilteringRule,
     CareHome,
@@ -37,7 +35,6 @@ from utils.column_values.categorical_column_values import (
     Region,
     RegistrationStatus,
     RelatedLocation,
-    RUI,
     Sector,
     Services,
     Specialisms,
@@ -71,11 +68,6 @@ class LocationsApiCleanedCategoricalValues:
     current_cssr_column_values = CurrentCSSR(CQCLClean.current_cssr)
     contemporary_cssr_column_values = ContemporaryCSSR(CQCLClean.contemporary_cssr)
     related_location_column_values = RelatedLocation(CQCLClean.related_location)
-
-
-@dataclass
-class ProvidersApiCleanedCategoricalValues:
-    sector_column_values = Sector(CQCPClean.cqc_sector)
 
 
 @dataclass

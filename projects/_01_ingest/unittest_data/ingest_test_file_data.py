@@ -2675,7 +2675,6 @@ class CQCLocationsData:
         ("1-002", date(2024, 2, 1), None, None),
     ]
     # fmt: on
-
     remove_locations_that_never_had_regulated_activities_rows = [
         (
             "loc 1",
@@ -2697,6 +2696,54 @@ class CQCLocationsData:
         ("loc 2", None),
     ]
     expected_remove_locations_that_never_had_regulated_activities_rows = [
+        (
+            "loc 1",
+            [
+                {
+                    "name": "Personal care",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+        ),
+    ]
+
+    remove_locations_that_never_had_regulated_activities_cqc_rows = [
+        ("loc 1", "20241201"),
+        ("loc 2", "20230108"),
+    ]
+    remove_locations_that_never_had_regulated_activities_dim_rows = [
+        (
+            "loc 1",
+            [
+                {
+                    "name": "Personal care",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+        ),
+        ("loc 2", None),
+    ]
+    expected_remove_locations_that_never_had_regulated_activities_cqc_rows = [
+        ("loc 1", "20241201"),
+    ]
+
+    expected_remove_locations_that_never_had_regulated_activities_dim_rows = [
         (
             "loc 1",
             [
@@ -3175,6 +3222,238 @@ class CQCLocationsData:
         ),
     ]
 
+    previous_gac_service_dimension_rows = [
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            CareHome.not_care_home,
+            "2023",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+        (
+            "loc-2",
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            CareHome.care_home,
+            "2023",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+    ]
+
+    create_gac_service_dimension_rows = [
+        (
+            "loc-1",
+            date(2023, 1, 1),
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "20230101",
+        ),
+        (
+            "loc-1",
+            date(2024, 2, 1),
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "20240201",
+        ),
+        (
+            "loc-2",
+            date(2023, 1, 1),
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            "20230101",
+        ),
+        (
+            "loc-3",
+            date(2024, 2, 1),
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "20240201",
+        ),
+    ]
+
+    expected_gac_service_delta_rows = [
+        (
+            "loc-1",
+            date(2023, 1, 1),
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-1",
+            date(2024, 2, 1),
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+        (
+            "loc-3",
+            date(2024, 2, 1),
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+    ]
+
+    expected_gac_service_delta_when_no_history_rows = [
+        (
+            "loc-1",
+            date(2023, 1, 1),
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-1",
+            date(2024, 2, 1),
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+        (
+            "loc-2",
+            date(2023, 1, 1),
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-3",
+            date(2024, 2, 1),
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+    ]
+
+    postcode_matching_dimension_historic_rows = [
+        (
+            "loc1",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+        (
+            "loc1",
+            date(2023, 8, 1),
+            "some street",
+            "AB12 XCD",
+            "AB12 3CD",
+            "2024",
+            "02",
+            "01",
+            "20230801",
+            "20230801",
+        ),
+        (
+            "loc2",
+            date(2023, 1, 1),
+            "some street",
+            "EF45 4GH",
+            "EF45 4GH",
+            "2024",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+    ]
+
+    postcode_matching_dimension_current_rows = [
+        (
+            "loc1",
+            "some name",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "loc2",
+            "other name",
+            date(2024, 1, 1),
+            "some street",
+            "EF45 4YZ",
+            "EF45 4YZ",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
+    expected_postcode_matching_dimension_rows = [
+        (
+            "loc1",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc2",
+            date(2024, 1, 1),
+            "some street",
+            "EF45 4YZ",
+            "EF45 4YZ",
+            "2024",
+            "02",
+            "01",
+            "20240101",
+            "20240201",
+        ),
+    ]
+
     # fmt: off
     remove_time_from_date_column_rows = [
         ("loc_1", "2018-01-01", "20240101", "2018-01-01"),
@@ -3244,40 +3523,6 @@ class CQCLocationsData:
     ]
     # fmt: on
 
-    calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
-    ]
-    expected_calculate_time_registered_same_day_rows = [
-        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
-    ]
-
-    calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
-    ]
-    expected_calculate_time_registered_exact_months_apart_rows = [
-        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
-        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
-    ]
-
-    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
-    ]
-    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
-        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
-    ]
-
-    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
-    ]
-    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
-        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
-        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
-    ]
-
     clean_provider_id_column_rows = [
         ("loc_1", None, "20240101"),
         ("loc_1", "123456789", "20240201"),
@@ -3317,18 +3562,13 @@ class CQCLocationsData:
     ]
 
     test_only_service_specialist_colleges_rows = [
-        (
-            "loc 1",
-            [Services.specialist_college_service],
-        ),
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 1", "20240101", [Services.specialist_college_service]),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     test_multiple_services_specialist_colleges_rows = [
         (
             "loc 2",
+            "20240101",
             [
                 Services.specialist_college_service,
                 Services.acute_services_with_overnight_beds,
@@ -3336,6 +3576,7 @@ class CQCLocationsData:
         ),
         (
             "loc 3",
+            "20240101",
             [
                 Services.acute_services_with_overnight_beds,
                 Services.specialist_college_service,
@@ -3343,28 +3584,16 @@ class CQCLocationsData:
         ),
     ]
     test_without_specialist_colleges_rows = [
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     test_empty_array_specialist_colleges_rows = [
-        (
-            "loc 5",
-            [],
-        ),
+        ("loc 5", "20240101", []),
     ]
     test_null_row_specialist_colleges_rows = [
-        (
-            "loc 6",
-            None,
-        ),
+        ("loc 6", "20240101", None),
     ]
     expected_only_service_specialist_colleges_rows = [
-        (
-            "loc 4",
-            [Services.care_home_service_with_nursing],
-        ),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
     ]
     expected_multiple_services_specialist_colleges_rows = (
         test_multiple_services_specialist_colleges_rows
@@ -3442,30 +3671,6 @@ class CQCLocationsData:
         ),
     ]
 
-    calculate_time_since_dormant_rows = [
-        ("1-001", date(2025, 1, 1), None),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 3, 1), Dormancy.dormant),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant),
-        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 6, 1), Dormancy.dormant),
-        ("1-001", date(2025, 7, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 8, 1), Dormancy.not_dormant),
-        ("1-001", date(2025, 9, 1), None),
-        ("1-002", date(2025, 10, 1), Dormancy.not_dormant),
-    ]
-    expected_calculate_time_since_dormant_rows = [
-        ("1-001", date(2025, 1, 1), None, None),
-        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, None),
-        ("1-001", date(2025, 3, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 4, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, 2),
-        ("1-001", date(2025, 6, 1), Dormancy.dormant, 1),
-        ("1-001", date(2025, 7, 1), Dormancy.not_dormant, 2),
-        ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
-        ("1-001", date(2025, 9, 1), None, 4),
-        ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
-    ]
     classify_specialisms_rows = [
         ("loc 1", [Specialisms.dementia]),
         (
@@ -3601,25 +3806,6 @@ class CQCProviderData:
         ),
     ]
 
-    sector_rows = [
-        "1-10000000002",
-        "1-10000000003",
-        "1-10000000004",
-        "1-10000000005",
-    ]
-
-    rows_without_cqc_sector = [
-        ("1-10000000001", "data"),
-        ("1-10000000002", None),
-        ("1-10000000003", "data"),
-    ]
-
-    expected_rows_with_cqc_sector = [
-        ("1-10000000001", "data", Sector.independent),
-        ("1-10000000002", None, Sector.local_authority),
-        ("1-10000000003", "data", Sector.local_authority),
-    ]
-
 
 @dataclass
 class ValidateLocationsAPICleanedData:
@@ -3634,10 +3820,10 @@ class ValidateLocationsAPICleanedData:
 
     # fmt: off
     cleaned_cqc_locations_rows = [
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 9), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", date(2024, 1, 9), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
     ]
     # fmt: on
 
@@ -3701,10 +3887,10 @@ class ValidateProvidersAPICleanedData:
         ("1-000000002", "20240201"),
     ]
     cleaned_cqc_providers_rows = [
-        ("1-000000001", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000001", date(2024, 1, 9), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 9), "name", Sector.independent),
+        ("1-000000001", date(2024, 1, 1), "name"),
+        ("1-000000002", date(2024, 1, 1), "name"),
+        ("1-000000001", date(2024, 1, 9), "name"),
+        ("1-000000002", date(2024, 1, 9), None),
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows
