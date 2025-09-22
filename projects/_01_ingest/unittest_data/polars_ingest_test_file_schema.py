@@ -230,3 +230,18 @@ class CQCLocationsSchema:
             (CQCLClean.primary_service_type, pl.String()),
         ]
     )
+
+    align_care_home_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.primary_service_type, pl.String()),
+        ]
+    )
+
+    expected_align_care_home_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.primary_service_type, pl.String()),
+            (CQCLClean.care_home, pl.String()),
+        ]
+    )

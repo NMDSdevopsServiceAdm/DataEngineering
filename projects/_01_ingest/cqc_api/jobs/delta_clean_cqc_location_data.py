@@ -519,7 +519,7 @@ def remove_locations_that_never_had_regulated_activities(df: DataFrame) -> DataF
     return df
 
 
-# Should be move
+# Should be moved into function creating dimensions
 def extract_from_struct(
     df: DataFrame, source_struct_column_name: str, new_column_name: str
 ) -> DataFrame:
@@ -538,6 +538,7 @@ def extract_from_struct(
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_primary_service_type
 def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.

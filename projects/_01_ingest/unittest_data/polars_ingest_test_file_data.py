@@ -1164,3 +1164,31 @@ class CQCLocationsData:
             PrimaryServiceType.non_residential,
         ),
     ]
+
+    align_care_home_care_homes_rows = [
+        ("loc_1", "loc_2"),
+        (PrimaryServiceType.care_home_with_nursing, PrimaryServiceType.care_home_only),
+    ]
+
+    expected_align_care_home_care_homes_rows = [
+        ("loc_1", "loc_2"),
+        (PrimaryServiceType.care_home_with_nursing, PrimaryServiceType.care_home_only),
+        ("Y", "Y"),
+    ]
+
+    align_care_home_non_care_homes_rows = [
+        ("loc_1", "loc_2"),
+        (
+            PrimaryServiceType.non_residential,
+            "FalseValue",
+        ),
+    ]
+
+    expected_align_care_home_non_care_homes_rows = [
+        ("loc_1", "loc_2"),
+        (
+            PrimaryServiceType.non_residential,
+            "FalseValue",
+        ),
+        ("N", "N"),
+    ]

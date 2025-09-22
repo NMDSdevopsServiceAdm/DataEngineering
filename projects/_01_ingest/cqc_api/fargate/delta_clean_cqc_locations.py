@@ -1,4 +1,5 @@
 import polars as pl
+from pyspark.sql import DataFrame
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -241,7 +242,7 @@ def impute_missing_values_for_struct_column(
     return cqc_df
 
 
-def allocate_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def assign_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
 
@@ -285,3 +286,7 @@ def allocate_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
     )
 
     return cqc_df
+
+
+def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
+    pass
