@@ -29,9 +29,6 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
 from utils.column_names.reconciliation_columns import (
     ReconciliationColumns as ReconColumn,
 )
@@ -1035,7 +1032,8 @@ class FlattenCQCRatings:
             StructField(CQCRatings.effective_rating, StringType(), True),
         ]
     )
-    flatten_assessment_ratings_schema = StructType(
+
+    prepare_assessment_ratings_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -1185,7 +1183,7 @@ class FlattenCQCRatings:
             ),
         ]
     )
-    expected_flatten_assessment_ratings_schema = StructType(
+    expected_prepare_assessment_ratings_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
@@ -1206,6 +1204,15 @@ class FlattenCQCRatings:
             StructField(CQCL.well_led, StringType(), True),
         ]
     )
+
+    raise_error_when_assessment_df_contains_overall_data_schema = StructType(
+        [
+            StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.rating, StringType(), True),
+        ]
+    )
+
     assessment_ratings_for_merging_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1215,11 +1222,11 @@ class FlattenCQCRatings:
             StructField(CQCL.title, StringType(), True),
             StructField(CQCL.assessment_date, StringType(), True),
             StructField(CQCL.assessment_plan_status, StringType(), True),
-            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCL.status, StringType(), True),
             StructField(CQCL.rating, StringType(), True),
-            StructField(CQCL.source_path, StringType(), True),
             StructField(CQCL.safe, StringType(), True),
             StructField(CQCL.effective, StringType(), True),
             StructField(CQCL.caring, StringType(), True),
@@ -1239,25 +1246,20 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.safe_rating_value, StringType(), True),
-            StructField(CQCRatings.well_led_rating_value, StringType(), True),
-            StructField(CQCRatings.caring_rating_value, StringType(), True),
-            StructField(CQCRatings.responsive_rating_value, StringType(), True),
-            StructField(CQCRatings.effective_rating_value, StringType(), True),
-            StructField(CQCRatings.total_rating_value, StringType(), True),
-            StructField(CQCRatings.location_id_hash, StringType(), True),
         ]
     )
     expected_merge_cqc_ratings_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
+            StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField(CQCL.assessment_plan_id, StringType(), True),
             StructField(CQCL.title, StringType(), True),
             StructField(CQCL.assessment_date, StringType(), True),
             StructField(CQCL.assessment_plan_status, StringType(), True),
             StructField(CQCL.name, StringType(), True),
-            StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
@@ -1265,16 +1267,9 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.safe_rating_value, StringType(), True),
-            StructField(CQCRatings.well_led_rating_value, StringType(), True),
-            StructField(CQCRatings.caring_rating_value, StringType(), True),
-            StructField(CQCRatings.responsive_rating_value, StringType(), True),
-            StructField(CQCRatings.effective_rating_value, StringType(), True),
-            StructField(CQCRatings.total_rating_value, StringType(), True),
-            StructField(CQCRatings.location_id_hash, StringType(), True),
-            StructField(CQCL.dataset, StringType(), True),
         ]
     )
+
     add_current_or_historic_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
@@ -1293,6 +1288,7 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCL.assessment_date, StringType(), True),
         ]
     )
     expected_add_rating_sequence_schema = StructType(
@@ -1326,6 +1322,13 @@ class FlattenCQCRatings:
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
+            StructField(CQCL.assessment_plan_id, StringType(), True),
+            StructField(CQCL.title, StringType(), True),
+            StructField(CQCL.assessment_date, StringType(), True),
+            StructField(CQCL.assessment_plan_status, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
@@ -1344,21 +1347,26 @@ class FlattenCQCRatings:
             StructField(CQCRatings.total_rating_value, IntegerType(), True),
         ]
     )
-
     expected_create_standard_ratings_dataset_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
-            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCL.assessment_plan_id, StringType(), True),
+            StructField(CQCL.title, StringType(), True),
+            StructField(CQCL.assessment_date, StringType(), True),
+            StructField(CQCL.assessment_plan_status, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.source_path, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
+            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
+            StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.safe_rating, StringType(), True),
             StructField(CQCRatings.well_led_rating, StringType(), True),
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
-            StructField(CQCRatings.rating_sequence, IntegerType(), True),
-            StructField(CQCRatings.latest_rating_flag, IntegerType(), True),
             StructField(CQCRatings.safe_rating_value, IntegerType(), True),
             StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
             StructField(CQCRatings.caring_rating_value, IntegerType(), True),
@@ -1372,6 +1380,7 @@ class FlattenCQCRatings:
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(CQCL.registration_status, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
             StructField(CQCRatings.current_or_historic, StringType(), True),
         ]
     )
@@ -1379,10 +1388,10 @@ class FlattenCQCRatings:
     add_good_and_outstanding_flag_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
-            StructField(CQCRatings.overall_rating, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCRatings.overall_rating_value, IntegerType(), True),
         ]
     )
-
     expected_add_good_and_outstanding_flag_column_schema = StructType(
         [
             *add_good_and_outstanding_flag_column_schema,
@@ -1409,21 +1418,25 @@ class FlattenCQCRatings:
             StructField(AWP.establishment_id, StringType(), True),
         ]
     )
+
     create_benchmark_ratings_dataset_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
             StructField(AWP.establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.overall_rating, StringType(), True),
             StructField(CQCRatings.date, StringType(), True),
             StructField("other column", StringType(), True),
         ]
     )
-
     expected_create_benchmark_ratings_dataset_schema = StructType(
         [
             StructField(CQCRatings.benchmarks_location_id, StringType(), True),
             StructField(CQCRatings.benchmarks_establishment_id, StringType(), True),
+            StructField(CQCL.name, StringType(), True),
+            StructField(CQCL.dataset, StringType(), True),
             StructField(CQCRatings.good_or_outstanding_flag, IntegerType(), True),
             StructField(CQCRatings.benchmarks_overall_rating, StringType(), True),
             StructField(CQCRatings.inspection_date, StringType(), True),
@@ -1450,6 +1463,7 @@ class FlattenCQCRatings:
             StructField(CQCRatings.caring_rating, StringType(), True),
             StructField(CQCRatings.responsive_rating, StringType(), True),
             StructField(CQCRatings.effective_rating, StringType(), True),
+            StructField(CQCRatings.overall_rating_value, IntegerType(), True),
             StructField(CQCRatings.safe_rating_value, IntegerType(), True),
             StructField(CQCRatings.well_led_rating_value, IntegerType(), True),
             StructField(CQCRatings.caring_rating_value, IntegerType(), True),

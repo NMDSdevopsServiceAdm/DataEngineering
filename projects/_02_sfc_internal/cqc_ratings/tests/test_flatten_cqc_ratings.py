@@ -43,13 +43,14 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.join_establishment_ids")
     @patch(f"{PATCH_PATH}.add_good_and_outstanding_flag_column")
     @patch(f"{PATCH_PATH}.select_ratings_for_benchmarks")
-    @patch(f"{PATCH_PATH}.merge_cqc_ratings")
     @patch(f"{PATCH_PATH}.add_location_id_hash")
     @patch(f"{PATCH_PATH}.create_standard_ratings_dataset")
     @patch(f"{PATCH_PATH}.add_numerical_ratings")
     @patch(f"{PATCH_PATH}.add_latest_rating_flag_column")
     @patch(f"{PATCH_PATH}.add_rating_sequence_column")
     @patch(f"{PATCH_PATH}.remove_blank_and_duplicate_rows")
+    @patch(f"{PATCH_PATH}.merge_cqc_ratings")
+    @patch(f"{PATCH_PATH}.raise_error_when_assessment_df_contains_overall_data")
     @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
@@ -64,13 +65,14 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
         prepare_assessment_ratings_mock: Mock,
+        raise_error_when_assessment_df_contains_overall_data_mock: Mock,
+        merge_cqc_ratings_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
         add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
         add_numerical_ratings_mock: Mock,
         create_standard_ratings_dataset_mock: Mock,
         add_location_id_hash_mock: Mock,
-        merge_cqc_ratings_mock: Mock,
         select_ratings_for_benchmarks_mock: Mock,
         add_good_and_outstanding_flag_column_mock: Mock,
         join_establishment_ids_mock: Mock,
@@ -95,13 +97,14 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()
+        raise_error_when_assessment_df_contains_overall_data_mock.assert_called_once()
+        merge_cqc_ratings_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
         self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
         add_latest_rating_flag_column_mock.assert_called_once()
         add_numerical_ratings_mock.assert_called_once()
         create_standard_ratings_dataset_mock.assert_called_once()
         add_location_id_hash_mock.assert_called_once()
-        merge_cqc_ratings_mock.assert_called_once()
         select_ratings_for_benchmarks_mock.assert_called_once()
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
@@ -233,35 +236,58 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class FlattenAssessmentRatings(FlattenCQCRatingsTests):
+class PrepareAssessmentRatings(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_assessment_ratings_df = self.spark.createDataFrame(
-            Data.flatten_assessment_ratings_rows,
-            Schema.flatten_assessment_ratings_schema,
+            Data.prepare_assessment_ratings_rows,
+            Schema.prepare_assessment_ratings_schema,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_flatten_assessment_ratings_rows,
-            Schema.expected_flatten_assessment_ratings_schema,
+            Data.expected_prepare_assessment_ratings_rows,
+            Schema.expected_prepare_assessment_ratings_schema,
         )
-        self.returned_df = job.flatten_assessment_ratings(
+        self.returned_df = job.prepare_assessment_ratings(
             self.test_assessment_ratings_df
         )
 
-    def test_flatten_assessment_ratings_returns_correct_columns(self):
+    def test_prepare_assessment_ratings_returns_correct_columns(self):
         returned_columns = len(self.returned_df.columns)
         expected_columns = len(self.expected_df.columns)
         self.assertEqual(returned_columns, expected_columns)
 
-    def test_flatten_assessment_ratings_returns_correct_rows(self):
+    def test_prepare_assessment_ratings_returns_correct_rows(self):
         returned_rows = self.returned_df.count()
         expected_rows = self.expected_df.count()
         self.assertEqual(returned_rows, expected_rows)
 
-    def test_flatten_assessment_ratings_returns_correct_values(self):
+    def test_prepare_assessment_ratings_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
+
+
+class RaiseErrorWhenAssessmentDfContainsOverallData(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_raise_error_when_assessment_df_contains_overall_data_raises_error_when_overall_is_populated(
+        self,
+    ):
+        test_df_with_overall_data = self.spark.createDataFrame(
+            Data.raise_error_when_assessment_df_contains_overall_data_with_overall_data_rows,
+            Schema.raise_error_when_assessment_df_contains_overall_data_schema,
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.raise_error_when_assessment_df_contains_overall_data(
+                test_df_with_overall_data
+            )
+
+        self.assertIn(
+            "The overall object within the assessments column contains 1 values for social care locations.",
+            str(context.exception),
+        )
 
 
 class MergeCQCRatings(FlattenCQCRatingsTests):
@@ -424,10 +450,10 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         self,
     ):
         returned_data = self.returned_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         expected_data = self.expected_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         self.assertEqual(returned_data, expected_data)
 

@@ -77,17 +77,22 @@ def main(
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
-    ratings_df = current_ratings_df.unionByName(historic_ratings_df)
+
+    raise_error_when_assessment_df_contains_overall_data(assessment_ratings_df)
+
+    ratings_pre_saf_df = current_ratings_df.unionByName(historic_ratings_df)
+    ratings_df = merge_cqc_ratings(assessment_ratings_df, ratings_pre_saf_df)
+
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
     ratings_df = add_latest_rating_flag_column(ratings_df)
     ratings_df = add_numerical_ratings(ratings_df)
+
     standard_ratings_df = create_standard_ratings_dataset(ratings_df)
     standard_ratings_df = add_location_id_hash(standard_ratings_df)
-    assessment_and_standard_ratings_merged_df = merge_cqc_ratings(
-        assessment_ratings_df, standard_ratings_df
-    )
+
     benchmark_ratings_df = select_ratings_for_benchmarks(ratings_df)
     benchmark_ratings_df = add_good_and_outstanding_flag_column(benchmark_ratings_df)
     benchmark_ratings_df = join_establishment_ids(
@@ -96,7 +101,7 @@ def main(
     benchmark_ratings_df = create_benchmark_ratings_dataset(benchmark_ratings_df)
 
     utils.write_to_parquet(
-        assessment_and_standard_ratings_merged_df,
+        standard_ratings_df,
         cqc_ratings_destination,
         mode="overwrite",
     )
@@ -135,11 +140,6 @@ def prepare_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     ratings_df = add_current_or_historic_column(
         ratings_df, CQCCurrentOrHistoricValues.historic
     )
-    return ratings_df
-
-
-def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
-    ratings_df = flatten_assessment_ratings(cqc_location_df)
     return ratings_df
 
 
@@ -231,7 +231,7 @@ def flatten_historic_ratings(cqc_location_df: DataFrame) -> DataFrame:
     return cleaned_historic_ratings_df
 
 
-def flatten_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
+def prepare_assessment_ratings(cqc_location_df: DataFrame) -> DataFrame:
     """
     Flatten overall and ASG ratings within assessment field extracted from CQC location data into a unified, pivoted DataFrame.
 
@@ -374,6 +374,40 @@ def extract_overall(assessment_df: DataFrame) -> DataFrame:
     return overall_df
 
 
+def raise_error_when_assessment_df_contains_overall_data(df: DataFrame) -> None:
+    """
+    Raise an error when the assessments dataframe contains any overall ratings data.
+
+    Currently, CQC publish an overall rating object within the assessments column, but this is not populated
+    for any social care locations we've checked as at 15/09/2025. It is published for non-social care locations.
+    This overall rating object can have it's own "rating" and "key question ratings".
+
+    CQC also publish a "rating" and "key question ratings" within the asg_ratings object within the assessments column.
+    This "rating" and "key question ratings" are at the service level within a location (one location can have many services).
+    We are refering to this "rating" as the overall rating for social care locations.
+
+    This function raises a value error if the overall object contains any values.
+    If this happens, we need to refactor the flattening of CQC assessments data.
+
+    Args:
+        df (DataFrame): Dataframe of flattened CQC assessments data.
+
+    Raises:
+        ValueError: If the DataFrame contains overall assessements data.
+    """
+    rows_where_overall_has_value = df.where(
+        (F.col(CQCL.source_path) == "assessment.ratings.overall")
+        & (F.col(CQCL.rating).isNotNull())
+    ).count()
+
+    if rows_where_overall_has_value > 0:
+        raise ValueError(
+            f"The overall object within the assessments column contains {rows_where_overall_has_value} values for social care locations."
+        )
+
+    return None
+
+
 def extract_asg(assessment_df: DataFrame) -> DataFrame:
     """
     Extract and flatten ASG ratings from assessment data.
@@ -465,13 +499,15 @@ def merge_cqc_ratings(
 
     expected_columns = [
         CQCL.location_id,
+        CQCL.registration_status,
         CQCRatings.date,
         CQCL.assessment_plan_id,
         CQCL.title,
         CQCL.assessment_date,
         CQCL.assessment_plan_status,
         CQCL.name,
-        CQCL.registration_status,
+        CQCL.source_path,
+        CQCL.dataset,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -479,19 +515,11 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.safe_rating_value,
-        CQCRatings.well_led_rating_value,
-        CQCRatings.caring_rating_value,
-        CQCRatings.responsive_rating_value,
-        CQCRatings.effective_rating_value,
-        CQCRatings.total_rating_value,
-        CQCRatings.location_id_hash,
-        CQCL.dataset,
     ]
     standard_df = standard_ratings_df.select(
         CQCL.location_id,
-        CQCRatings.date,
         CQCL.registration_status,
+        CQCRatings.date,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -499,17 +527,11 @@ def merge_cqc_ratings(
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.safe_rating_value,
-        CQCRatings.well_led_rating_value,
-        CQCRatings.caring_rating_value,
-        CQCRatings.responsive_rating_value,
-        CQCRatings.effective_rating_value,
-        CQCRatings.total_rating_value,
-        CQCRatings.location_id_hash,
         F.lit("Pre SAF").alias(CQCL.dataset),
     )
     assessment_df = assessment_ratings_df.select(
         CQCL.location_id,
+        CQCL.registration_status,
         F.to_date(
             F.to_timestamp(
                 CQCL.assessment_plan_published_datetime, "yyyy-MM-dd HH:mm:ss"
@@ -520,7 +542,8 @@ def merge_cqc_ratings(
         CQCL.assessment_date,
         CQCL.assessment_plan_status,
         CQCL.name,
-        CQCL.registration_status,
+        CQCL.source_path,
+        CQCL.dataset,
         F.col(CQCL.status).alias(CQCRatings.current_or_historic),
         F.col(CQCL.rating).alias(CQCRatings.overall_rating),
         F.col(CQCL.safe).alias(CQCRatings.safe_rating),
@@ -528,13 +551,8 @@ def merge_cqc_ratings(
         F.col(CQCL.caring).alias(CQCRatings.caring_rating),
         F.col(CQCL.responsive).alias(CQCRatings.responsive_rating),
         F.col(CQCL.effective).alias(CQCRatings.effective_rating),
-        CQCL.dataset,
     )
-    assessment_df = add_numerical_ratings(assessment_df)
-    assessment_df = add_location_id_hash(assessment_df)
     merged_df = standard_df.unionByName(assessment_df, allowMissingColumns=True)
-    merged_df = recode_unknown_codes_to_null(merged_df)
-    merged_df = remove_blank_and_duplicate_rows(merged_df)
     return merged_df.select(*expected_columns)
 
 
@@ -570,18 +588,48 @@ def remove_blank_and_duplicate_rows(ratings_df: DataFrame) -> DataFrame:
     return ratings_df
 
 
-def add_rating_sequence_column(ratings_df: DataFrame, reversed=False) -> DataFrame:
+def add_rating_sequence_column(
+    ratings_df: DataFrame, reversed: bool = False
+) -> DataFrame:
+    """
+    Adds a column with the ratings sequenced by publication date and assessment date.
+
+    Args:
+        ratings_df (DataFrame): A dataframe of CQC ratings and assessments.
+        reversed (bool): Boolean to switch sequence from oldest to newest (False) or newest to oldsest (True). Default = False.
+
+    Returns:
+        DataFrame: The input dataframe with a column showing desired sequence.
+    """
     if reversed == True:
-        window = Window.partitionBy(CQCL.location_id).orderBy(F.desc(CQCRatings.date))
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.desc(CQCRatings.date), F.desc(CQCL.assessment_date)
+        )
         new_column_name = CQCRatings.reversed_rating_sequence
     else:
-        window = Window.partitionBy(CQCL.location_id).orderBy(F.asc(CQCRatings.date))
+        window = Window.partitionBy(CQCL.location_id).orderBy(
+            F.asc(CQCRatings.date), F.asc(CQCL.assessment_date)
+        )
         new_column_name = CQCRatings.rating_sequence
-    ratings_df = ratings_df.withColumn(new_column_name, F.rank().over(window))
+    ratings_df = ratings_df.withColumn(new_column_name, F.row_number().over(window))
     return ratings_df
 
 
 def add_latest_rating_flag_column(ratings_df: DataFrame) -> DataFrame:
+    """
+    Adds a column to flag the latest rating per locationid as 1, otherwise 0.
+
+    The latest rating rating is defined as the first row per locationid, when sorted in
+    descending order on rating_date and assessment_date.
+    A location may have multiple ratings on the same date and be it's latest date. In these
+    cases the flag is random between the group.
+
+    Args:
+        ratings_df (DataFrame): A dataframe with flattened CQC key ratings columns.
+
+    Returns:
+        DataFrame: The given data frame with an additional column to flag the latest rating.
+    """
     ratings_df = ratings_df.withColumn(
         CQCRatings.latest_rating_flag,
         F.when(ratings_df[CQCRatings.reversed_rating_sequence] == 1, 1).otherwise(0),
@@ -600,6 +648,7 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
         DataFrame: The given data frame with additional columns containing the key ratings as numerical values and a total of all the values.
     """
     rating_columns_dict = {
+        CQCRatings.overall_rating: CQCRatings.overall_rating_value,
         CQCRatings.safe_rating: CQCRatings.safe_rating_value,
         CQCRatings.well_led_rating: CQCRatings.well_led_rating_value,
         CQCRatings.caring_rating: CQCRatings.caring_rating_value,
@@ -641,10 +690,27 @@ def add_numerical_ratings(df: DataFrame) -> DataFrame:
 
 
 def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
+    """
+    Selects columns in the CQC ratings and assessments dataframe and removes duplicate rows.
+
+    Args:
+        ratings_df(DataFrame): A dataframe of CQC ratings and assesments.
+
+    Returns:
+        DataFrame: The input dataframe with selected columns and duplicate rows removed.
+    """
     standard_ratings_df = ratings_df.select(
         CQCL.location_id,
         CQCL.registration_status,
         CQCRatings.date,
+        CQCL.assessment_plan_id,
+        CQCL.title,
+        CQCL.assessment_date,
+        CQCL.assessment_plan_status,
+        CQCL.name,
+        CQCL.source_path,
+        CQCL.dataset,
+        CQCRatings.latest_rating_flag,
         CQCRatings.current_or_historic,
         CQCRatings.overall_rating,
         CQCRatings.safe_rating,
@@ -652,8 +718,6 @@ def create_standard_ratings_dataset(ratings_df: DataFrame) -> DataFrame:
         CQCRatings.caring_rating,
         CQCRatings.responsive_rating,
         CQCRatings.effective_rating,
-        CQCRatings.rating_sequence,
-        CQCRatings.latest_rating_flag,
         CQCRatings.safe_rating_value,
         CQCRatings.well_led_rating_value,
         CQCRatings.caring_rating_value,
@@ -684,6 +748,15 @@ def add_location_id_hash(df: DataFrame) -> DataFrame:
 
 
 def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
+    """
+    Filters to rows which are registered and current rating only.
+
+    Args:
+        ratings_df(DataFrame): A prepared standard ratings dataframe containing the columns registration_status, current_or_historic and latest_rating_flag.
+
+    Returns:
+        DataFrame: A dataframe filtered to registered and current rating only.
+    """
     benchmark_ratings_df = ratings_df.where(
         (ratings_df[CQCL.registration_status] == RegistrationStatus.registered)
         & (
@@ -695,14 +768,21 @@ def select_ratings_for_benchmarks(ratings_df: DataFrame) -> DataFrame:
 
 
 def add_good_and_outstanding_flag_column(benchmark_ratings_df: DataFrame) -> DataFrame:
+    """
+    Flags locations where the minimum overall rating value is 3 (good).
+
+    Args:
+        benchmark_ratings_df (DataFrame): A dataframe filtered to registered and current rating only.
+
+    Returns:
+        DataFrame: The input dataframe with a column to flag locations with good and outstanding current ratings.
+    """
+    w = Window.partitionBy(CQCL.location_id)
+
     benchmark_ratings_df = benchmark_ratings_df.withColumn(
         CQCRatings.good_or_outstanding_flag,
         F.when(
-            (benchmark_ratings_df[CQCRatings.overall_rating] == CQCRatingsValues.good)
-            | (
-                benchmark_ratings_df[CQCRatings.overall_rating]
-                == CQCRatingsValues.outstanding
-            ),
+            F.min(CQCRatings.overall_rating_value).over(w) >= 3,
             F.lit(1),
         ).otherwise(F.lit(0)),
     )
@@ -728,6 +808,8 @@ def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFra
         benchmark_ratings_df[AWP.establishment_id].alias(
             CQCRatings.benchmarks_establishment_id
         ),
+        benchmark_ratings_df[CQCL.name],
+        benchmark_ratings_df[CQCL.dataset],
         benchmark_ratings_df[CQCRatings.good_or_outstanding_flag],
         benchmark_ratings_df[CQCRatings.overall_rating].alias(
             CQCRatings.benchmarks_overall_rating
