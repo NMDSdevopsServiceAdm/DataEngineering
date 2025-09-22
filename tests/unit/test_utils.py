@@ -1,35 +1,33 @@
-from datetime import date, datetime
-from pathlib import Path
 import shutil
 import unittest
-from io import BytesIO
+from datetime import date, datetime
 from enum import Enum
-from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import (
-    StructField,
-    StructType,
-    IntegerType,
-    StringType,
-    DateType,
-    FloatType,
-)
+from io import BytesIO
+from pathlib import Path
 
 import boto3
-from botocore.stub import Stubber
 from botocore.response import StreamingBody
-from tests.test_file_data import UtilsData
-from tests.test_file_schemas import UtilsSchema
-
-from utils import utils
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
-    CqcPIRCleanedColumns,
+from botocore.stub import Stubber
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+from pyspark.sql.types import (
+    DateType,
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
+from tests.test_data.unit_test_data import JoinDimensionData as Data
+from tests.test_data.unit_test_schemas import JoinDimensionSchemas as Schemas
+from tests.test_file_data import UtilsData
+from tests.test_file_schemas import UtilsSchema
+from utils import utils
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import CqcPIRCleanedColumns
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCColNames,
 )
-from tests.test_data.unit_test_data import JoinDimensionData as Data
-from tests.test_data.unit_test_schemas import JoinDimensionSchemas as Schemas
 
 
 class StubberType(Enum):

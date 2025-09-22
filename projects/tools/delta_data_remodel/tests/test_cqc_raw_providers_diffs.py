@@ -1,18 +1,18 @@
+import json
 import os
 import unittest
 from re import match
 
 import polars as pl
 import requests
-import json
 
-from projects.tools.delta_data_remodel.jobs.utils import (
-    build_full_table_from_delta,
-    list_bucket_objects,
-)
 from lambdas.utils.snapshots import get_snapshots
 from projects.tools.delta_data_remodel.jobs.raw_providers_schema import (
     raw_providers_schema,
+)
+from projects.tools.delta_data_remodel.jobs.utils import (
+    build_full_table_from_delta,
+    list_bucket_objects,
 )
 
 

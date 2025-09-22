@@ -1,6 +1,8 @@
-from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import MapType, DoubleType
 from typing import List
+
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+from pyspark.sql.types import DoubleType, MapType
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (

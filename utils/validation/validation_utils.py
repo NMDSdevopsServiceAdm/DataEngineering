@@ -8,21 +8,13 @@ from pydeequ.verification import (
     VerificationRunBuilder,
     VerificationSuite,
 )
-from pyspark.sql import (
-    DataFrame,
-)
-from pyspark.sql import (
-    functions as F,
-)
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 from utils import utils
 from utils.column_names.validation_table_columns import Validation
-from utils.validation.validation_rule_names import (
-    CustomTypeArguments,
-)
-from utils.validation.validation_rule_names import (
-    RuleNames as RuleToCheck,
-)
+from utils.validation.validation_rule_names import CustomTypeArguments
+from utils.validation.validation_rule_names import RuleNames as RuleToCheck
 
 
 def validate_dataset(dataset: DataFrame, rules: dict) -> DataFrame:

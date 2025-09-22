@@ -1,14 +1,14 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import projects._01_ingest.ons_pd.jobs.ingest_ons_data as job
-from utils import utils
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     IngestONSData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     IngestONSData as Schemas,
 )
+from utils import utils
 
 PATCH_PATH = "projects._01_ingest.ons_pd.jobs.ingest_ons_data"
 
