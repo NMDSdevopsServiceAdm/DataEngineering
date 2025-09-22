@@ -40,7 +40,7 @@ class MainTests(ValidateMergedCoverageDatasetTests):
         return super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.join_dimension")
+    @patch(f"{PATCH_PATH}.utils.join_dimension")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main_runs(
         self,
