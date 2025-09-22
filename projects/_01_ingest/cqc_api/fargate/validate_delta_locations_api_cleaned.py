@@ -52,7 +52,7 @@ def main(
             - shoud correspond to workspace / feature branch name
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
-        compare_path (str): optional path to a dataset to compare against for expected size
+        compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
@@ -182,7 +182,10 @@ if __name__ == "__main__":
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
-        ("--compare_path", "The filepath to output reports"),
+        (
+            "--compare_path",
+            "The filepath to a dataset to compare against for expected size",
+        ),
     )
     logger.info(f"Starting validation for {args.source_path}")
 

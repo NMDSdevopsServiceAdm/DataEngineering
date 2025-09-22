@@ -147,16 +147,16 @@ def generate_s3_dir(destination_prefix, domain, dataset, date, version="1.0.0"):
 
 
 def empty_s3_folder(bucket_name: str, prefix: str) -> None:
-    """Empties a folder in an s3 bucket.
+    """Empties a folder in a s3 bucket.
 
     S3 files Keys are full file paths (including the 'folder') so this function uses
-    the prefix to determine which files to delete, rather than a folder.
+    the prefix to determine the contents of a folder and deletes them.
 
     Example:
         empty_s3_folder("my-bucket", "path/to/my/folder/")
 
     Args:
-        bucket_name (str): the nucket containing the directory to empty
+        bucket_name (str): the bucket containing the directory to empty
             - cannot be the main dataset bucket
         prefix (str): the path prefix which constitutes the 'folder' to empty
     """
