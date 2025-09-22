@@ -1,6 +1,6 @@
 import unittest
 
-from utils.column_values.categorical_column_values import ColumnValues, Dormancy
+from utils.column_values.categorical_column_values import Dormancy
 
 
 class ColumnValuesTests(unittest.TestCase):

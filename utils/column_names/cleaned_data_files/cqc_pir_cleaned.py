@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 
-from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns
-
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns,
 )
+from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns
 
 
 @dataclass

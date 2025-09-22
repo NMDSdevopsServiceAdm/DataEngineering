@@ -1,12 +1,7 @@
 import unittest
 import warnings
 
-from pyspark.sql.types import (
-    FloatType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql.types import FloatType, StringType, StructField, StructType
 
 import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_utils.create_summary_table as job
 from projects._04_direct_payment_recipients.direct_payments_column_names import (

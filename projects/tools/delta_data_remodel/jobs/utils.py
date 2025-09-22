@@ -22,14 +22,14 @@ def list_bucket_objects(bucket: str, prefix: str) -> list[str]:
 
 
 def build_full_table_from_delta(
-    bucket: str, read_folder: str, organisation_type: str, timepoint_limit: int = None
+    bucket: str, read_folder: str, dataset: str, timepoint_limit: int = None
 ) -> pl.DataFrame:
     """
     Builds full dataset from delta dataset
     Args:
         bucket (str): bucket name
         read_folder (str): file path (excluding bucket name)
-        organisation_type (str): CQC organisation type (locations or providers)
+        dataset (str): CQC organisation type (locations or providers)
         timepoint_limit (int): date before which you want the full dataset (e.g. 20141231) inclusive
 
     Returns:
@@ -40,9 +40,7 @@ def build_full_table_from_delta(
     if not timepoint_limit:
         timepoint_limit = 300000000
 
-    for t in snapshots.get_snapshots(
-        bucket, read_folder, organisation_type=organisation_type
-    ):
+    for t in snapshots.get_snapshots(bucket, read_folder, dataset=dataset):
         if t.item(1, "import_date") > timepoint_limit:
             break
         ss.append(t)

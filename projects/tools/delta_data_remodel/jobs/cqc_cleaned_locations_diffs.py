@@ -2,8 +2,8 @@
 PLEASE NOTE: THIS FILE IS NOT PRODUCTION READY AND MAY NOT RUN
 """
 
-from polars import read_parquet, concat, col
 import polars as pl
+from polars import col, concat, read_parquet
 from polars.testing import assert_frame_equal
 
 from projects.tools.delta_data_remodel.jobs.utils import get_diffs

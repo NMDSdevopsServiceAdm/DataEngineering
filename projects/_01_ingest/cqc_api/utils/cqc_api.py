@@ -1,9 +1,9 @@
 import logging
-import requests
+from typing import Generator, Iterable, List
 
+import requests
 from ratelimit import limits, sleep_and_retry
 from requests.adapters import HTTPAdapter
-from typing import Generator, Iterable, List
 from urllib3.exceptions import MaxRetryError, ResponseError
 from urllib3.util.retry import Retry
 

@@ -6,9 +6,7 @@ os.environ["SPARK_VERSION"] = "3.5"
 from pyspark.sql.dataframe import DataFrame
 
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CQCP,
 )
@@ -21,8 +19,6 @@ from utils.validation.validation_utils import (
     raise_exception_if_any_checks_failed,
     validate_dataset,
 )
-
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 raw_cqc_providers_columns_to_import = [
     Keys.import_date,

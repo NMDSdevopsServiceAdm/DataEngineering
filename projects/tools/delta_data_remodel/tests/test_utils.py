@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import polars as pl
 
 import projects.tools.delta_data_remodel.jobs.utils as job
-
 
 PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 
@@ -102,7 +101,7 @@ class UtilsTests(unittest.TestCase):
 
         # When
         result = job.build_full_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers"
+            "bucket", "read_folder", dataset="providers"
         )
 
         # Then
@@ -121,7 +120,7 @@ class UtilsTests(unittest.TestCase):
 
         # When
         result = job.build_full_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers"
+            "bucket", "read_folder", dataset="providers"
         )
         pl.testing.assert_frame_equal(result, expected)
 

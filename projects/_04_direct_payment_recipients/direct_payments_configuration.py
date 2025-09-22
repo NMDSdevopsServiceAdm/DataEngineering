@@ -1,14 +1,10 @@
-from dataclasses import dataclass
 import os
+from dataclasses import dataclass
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    IntegerType,
-    FloatType,
-)
+from pyspark.sql.types import FloatType, IntegerType, StructField, StructType
+
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
