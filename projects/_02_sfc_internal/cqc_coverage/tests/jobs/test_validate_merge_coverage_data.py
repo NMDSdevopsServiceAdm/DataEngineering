@@ -48,11 +48,6 @@ class MainTests(ValidateMergedCoverageDatasetTests):
         join_dimension_patch: Mock,
         write_to_parquet_patch: Mock,
     ):
-        read_from_parquet_patch.side_effect = [
-            self.test_clean_cqc_location_df,
-            self.test_merged_coverage_df,
-        ]
-
         with self.assertRaises(ValueError):
             job.main(
                 self.TEST_CQC_LOCATION_SOURCE,
