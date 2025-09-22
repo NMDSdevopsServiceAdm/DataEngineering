@@ -10,9 +10,7 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     MLModelMetrics as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 PATCH_PATH = (
     "projects._03_independent_cqc._06_estimate_filled_posts.utils.ml_model_metrics"

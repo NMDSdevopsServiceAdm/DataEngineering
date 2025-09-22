@@ -1,6 +1,7 @@
 from typing import Optional
 
-from pyspark.sql import DataFrame, Column, Window, functions as F
+from pyspark.sql import Column, DataFrame, Window
+from pyspark.sql import functions as F
 
 
 def calculate_new_column(

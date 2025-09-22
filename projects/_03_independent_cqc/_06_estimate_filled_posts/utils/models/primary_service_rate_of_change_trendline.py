@@ -1,11 +1,13 @@
-from pyspark.sql import DataFrame, functions as F, Window
 from typing import Optional
 
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+
 import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.primary_service_rate_of_change import (
     model_primary_service_rate_of_change,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 
 def model_primary_service_rate_of_change_trendline(

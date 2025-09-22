@@ -1,9 +1,7 @@
-from dataclasses import dataclass
 import time
+from dataclasses import dataclass
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     EstimatedIndCQCFilledPostsCategoricalValues as CatValues,
 )

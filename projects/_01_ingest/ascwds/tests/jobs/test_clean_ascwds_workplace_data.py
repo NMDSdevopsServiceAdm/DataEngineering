@@ -1,5 +1,6 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 from pyspark.sql import DataFrame
 
 import projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data as job
@@ -9,14 +10,14 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     ASCWDSWorkplaceSchemas as Schemas,
 )
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    PartitionKeys,
-    AscwdsWorkplaceColumns as AWP,
-)
+from utils import utils
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-from utils import utils
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import PartitionKeys
 
 PATCH_PATH = "projects._01_ingest.ascwds.jobs.clean_ascwds_workplace_data"
 

@@ -1,14 +1,13 @@
-import logging
 import os
 import sys
 import warnings
 
 os.environ["SPARK_VERSION"] = "3.5"
 
+from pyspark.errors import AnalysisException
 from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql.types import StringType, StructType, StructField
-from pyspark.errors import AnalysisException
+from pyspark.sql.types import StringType
 
 import utils.cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.utils.extract_registered_manager_names import (
@@ -28,9 +27,9 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     current_geography_columns,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
     DimensionPartitionKeys as DimensionKeys,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )

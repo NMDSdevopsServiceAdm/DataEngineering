@@ -9,10 +9,10 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCapacityTrackerCareHomeSchema as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerCareHomeColumns as CTCH,
 )
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
     "projects._01_ingest.capacity_tracker.jobs.clean_capacity_tracker_care_home_data"
