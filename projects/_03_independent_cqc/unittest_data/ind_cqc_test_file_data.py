@@ -362,76 +362,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
 
 
 @dataclass
-class TrainLinearRegressionModelData:
-    feature_rows = [
-        ("1-001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-002", Vectors.dense([50.0, 1.0, 1.0])),
-        ("1-003", None),
-    ]
-
-
-@dataclass
-class ModelMetrics:
-    model_metrics_rows = [
-        ("1-001", None, 50.0, Vectors.dense([10.0, 1.0, 0.0])),
-        ("1-002", 37, 40.0, Vectors.dense([20.0, 0.0, 1.0])),
-    ]
-
-    calculate_residual_non_res_rows = [
-        ("1-001", None, 50.0, 46.8),
-        ("1-002", None, 10.0, 43.2),
-    ]
-    expected_calculate_residual_non_res_rows = [
-        ("1-001", None, 50.0, 46.8, 3.2),
-        ("1-002", None, 10.0, 43.2, -33.2),
-    ]
-
-    calculate_residual_care_home_rows = [
-        ("1-001", 50, 60.0, 1.1),
-        ("1-002", 2, 5.0, 6.0),
-    ]
-    expected_calculate_residual_care_home_rows = [
-        ("1-001", 50, 60.0, 1.1, 5.0),
-        ("1-002", 2, 5.0, 6.0, -7.0),
-    ]
-
-    generate_metric_rows = [
-        ("1-001", 50.0, 46.8),
-        ("1-002", 10.0, 12.2),
-    ]
-
-    generate_proportion_of_predictions_within_range_rows = [
-        ("1-001", -15.0),
-        ("1-002", -10.0),
-        ("1-003", 0.0),
-        ("1-004", 10.0),
-        ("1-005", 15.0),
-    ]
-    range_cutoff: float = 10.0
-    expected_proportion: float = 0.6
-
-    combine_metrics_current_rows = [
-        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
-    ]
-    combine_metrics_previous_rows = [
-        ("model_name", "1.0.0", 0.1),
-    ]
-    expected_combined_metrics_rows = [
-        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
-        ("model_name", "1.0.0", None, 0.1, None, None, None),
-    ]
-
-
-@dataclass
-class RunLinearRegressionModelData:
-    feature_rows = [
-        ("1-001", 10, Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
-        ("1-003", None, None),
-    ]
-
-
-@dataclass
 class ArchiveFilledPostsEstimates:
     filled_posts_rows = [("loc 1", date(2024, 1, 1))]
 
@@ -5541,19 +5471,6 @@ class EstimateFilledPostsModelsUtils:
         ("1-010", CareHome.not_care_home, None, None, 10.0),
         ("1-011", CareHome.not_care_home, 5, 1.6, None),
         ("1-012", CareHome.not_care_home, None, None, None),
-    ]
-
-    create_test_and_train_datasets_rows = [
-        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
-        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
-        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
-        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
-        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-
-    train_lasso_regression_model_rows = [
-        (Vectors.dense([1.0, 2.0]), 5.0),
-        (Vectors.dense([2.0, 1.0]), 4.0),
     ]
 
 
