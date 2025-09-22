@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 
 
 @dataclass

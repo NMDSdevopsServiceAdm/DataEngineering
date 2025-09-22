@@ -4,9 +4,11 @@ from dataclasses import asdict
 from unittest.mock import ANY, Mock, patch
 
 from pyspark.errors import AnalysisException
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 import projects._01_ingest.cqc_api.jobs.delta_clean_cqc_location_data as job
+import utils.cleaning_utils as cUtils
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     CQCLocationsData as Data,
 )
@@ -14,21 +16,17 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CQCLocationsSchema as Schemas,
 )
 from utils import utils
-import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    DimensionPartitionKeys as DimensionKeys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
-from utils.column_values.categorical_column_values import (
-    Sector,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    DimensionPartitionKeys as DimensionKeys,
 )
-
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.delta_clean_cqc_location_data"
 

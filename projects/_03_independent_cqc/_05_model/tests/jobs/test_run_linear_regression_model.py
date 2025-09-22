@@ -9,8 +9,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
     RunLinearRegressionModelSchema as Schemas,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 partition_keys = [
     Keys.year,

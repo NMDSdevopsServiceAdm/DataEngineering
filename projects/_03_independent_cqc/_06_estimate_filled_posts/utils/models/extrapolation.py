@@ -1,8 +1,10 @@
-from pyspark.sql import DataFrame, functions as F, Window
 from typing import Tuple
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
 MAX_RATE_OF_CHANGE: int = 4.0
 

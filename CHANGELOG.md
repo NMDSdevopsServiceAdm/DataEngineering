@@ -27,6 +27,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed unused columns from CQC Providers data
 
+- Formatted imports throughout codebase
+
 ### Improved
 
 

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, Mock, patch, call
+from unittest.mock import ANY, Mock, call, patch
 
 import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
 from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
@@ -8,18 +8,12 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     FlattenCQCRatings as Schema,
 )
-
 from utils import utils
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues,
-)
-
+from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 

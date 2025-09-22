@@ -9,16 +9,12 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_columns_by_dataset import (
-    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
-)
 from utils.column_values.categorical_column_values import (
+    RUI,
     AscwdsFilteringRule,
     CareHome,
     Dormancy,
@@ -30,10 +26,12 @@ from utils.column_values.categorical_column_values import (
     Region,
     RegistrationStatus,
     RelatedLocation,
-    RUI,
     Sector,
     Services,
     Specialisms,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 
 

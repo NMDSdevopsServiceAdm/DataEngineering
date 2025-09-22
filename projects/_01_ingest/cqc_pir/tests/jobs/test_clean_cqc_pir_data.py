@@ -1,11 +1,6 @@
 import unittest
-from unittest.mock import patch, ANY, Mock
+from unittest.mock import ANY, Mock, patch
 
-from utils import utils, cleaning_utils
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
-    CqcPIRCleanedColumns as CQCPIRClean,
-)
 import projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     CleanCQCPIRData as Data,
@@ -13,6 +8,11 @@ from projects._01_ingest.unittest_data.ingest_test_file_data import (
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CleanCQCPIRSchema as Schemas,
 )
+from utils import cleaning_utils, utils
+from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
+    CqcPIRCleanedColumns as CQCPIRClean,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = "projects._01_ingest.cqc_pir.jobs.clean_cqc_pir_data"
 

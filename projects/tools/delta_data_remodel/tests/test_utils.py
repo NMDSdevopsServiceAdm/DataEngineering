@@ -1,10 +1,9 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import polars as pl
 
 import projects.tools.delta_data_remodel.jobs.utils as job
-
 
 PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
 

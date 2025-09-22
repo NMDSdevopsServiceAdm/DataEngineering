@@ -1,10 +1,9 @@
-import unittest
-from unittest.mock import patch, ANY, Mock, MagicMock
-from datetime import datetime
-import boto3
-from botocore.exceptions import ClientError
-import json
 import base64
+import json
+import unittest
+from unittest.mock import MagicMock, patch
+
+from botocore.exceptions import ClientError
 
 import utils.aws_secrets_manager_utilities as ars
 

@@ -1,6 +1,6 @@
 import unittest
-from unittest.mock import Mock, patch
 import warnings
+from unittest.mock import Mock, patch
 
 import projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
