@@ -10,7 +10,7 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import DimensionPartitionKeys as Keys
 
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_coverage_validation_rules import (
@@ -21,8 +21,18 @@ from utils.validation.validation_utils import (
     validate_dataset,
 )
 
-postcode_dim_import_cols = [CQCLClean.location_id, CQCLClean.postal_code]
-gac_dim_import_cols = [CQCLClean.location_id, Keys.import_date]
+postcode_dim_import_cols = [
+    CQCLClean.location_id,
+    CQCLClean.postal_code,
+    Keys.import_date,
+    Keys.last_updated,
+]
+gac_dim_import_cols = [
+    CQCLClean.location_id,
+    CQCLClean.care_home,
+    Keys.import_date,
+    Keys.last_updated,
+]
 
 
 def main(
