@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import polars as pl
-from cffi.model import StructType
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,

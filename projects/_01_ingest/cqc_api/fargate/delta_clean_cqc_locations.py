@@ -1,13 +1,12 @@
 import polars as pl
-from click.decorators import pass_meta_key
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
-    LocationType,
     RegistrationStatus,
+    PrimaryServiceType,
 )
 
 
@@ -242,5 +241,47 @@ def impute_missing_values_for_struct_column(
     return cqc_df
 
 
-def allocate_primary_service_type(df: pl.DataFrame) -> pl.DataFrame:
-    pass
+def allocate_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+
+    1. If any of the imputed GAC service descriptions have "Care home service with nursing" allocate as "Care home with nursing"
+    2. If not, if any of the imputed GAC service descriptions have "Care home service without nursing" allocate as "Care home without nursing"
+    3. Otherwise, allocate as "non-residential"
+
+    Args:
+        cqc_df (pl.DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+
+    Returns:
+        pl.DataFrame: Dataframe with the new 'primary_service_type' column.
+
+    """
+    # 1. If any of the imputed GAC service descriptions have "Care home service with nursing" allocate as "Care home with nursing"
+    cqc_df = cqc_df.with_columns(
+        pl.when(
+            pl.col(CQCLClean.imputed_gac_service_types)
+            .list.eval(
+                pl.element()
+                .struct.field(CQCLClean.description)
+                .eq("Care home service with nursing")
+            )
+            .list.any()
+        )
+        .then(pl.lit(PrimaryServiceType.care_home_with_nursing))
+        # 2. If not, if any of the imputed GAC service descriptions have "Care home service without nursing" allocate as "Care home without nursing"
+        .when(
+            pl.col(CQCLClean.imputed_gac_service_types)
+            .list.eval(
+                pl.element()
+                .struct.field(CQCLClean.description)
+                .eq("Care home service without nursing")
+            )
+            .list.any()
+        )
+        .then(pl.lit(PrimaryServiceType.care_home_only))
+        # 3. Otherwise, allocate as "non-residential"
+        .otherwise(pl.lit(PrimaryServiceType.non_residential))
+        .alias(CQCLClean.primary_service_type)
+    )
+
+    return cqc_df

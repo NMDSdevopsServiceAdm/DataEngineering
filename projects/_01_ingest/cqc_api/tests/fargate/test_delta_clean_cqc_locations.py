@@ -3,7 +3,6 @@ from unittest.mock import patch, ANY
 
 import polars as pl
 import polars.testing as pl_testing
-from openpyxl.styles.builtins import output
 
 import projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations as job
 from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
@@ -673,6 +672,34 @@ class AllocatePrimaryServiceTypeTests(unittest.TestCase):
             [
                 "non-residential",
                 "non-residential",
+            ],
+            output_df["primary_service_type"].to_list(),
+        )
+
+    def test_allocates_all_types(self):
+        # GIVEN
+        #   Input where rows have a range of imputed services
+        input_df = pl.DataFrame(
+            data=Data.allocate_primary_service_all_types,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_df = job.allocate_primary_service_type(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should have been allocated one of each type
+        expected_df = pl.DataFrame(
+            data=Data.expected_allocate_primary_service_all_types,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "Care home with nursing",
+                "Care home without nursing",
                 "non-residential",
             ],
             output_df["primary_service_type"].to_list(),

@@ -1,9 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
 
-from projects._01_ingest.cqc_api.tests.fargate.test_delta_clean_cqc_locations import (
-    AllocatePrimaryServiceTypeTests,
-)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -1087,6 +1084,83 @@ class CQCLocationsData:
         ),
         (
             PrimaryServiceType.non_residential,
+            PrimaryServiceType.non_residential,
+        ),
+    ]
+
+    allocate_primary_service_all_types = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "With Nurses 3",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Legitimate Service",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            [
+                {
+                    "name": "Without Nursing 2",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "Random Service",
+                    "description": "Random Service",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+        ),
+    ]
+
+    expected_allocate_primary_service_all_types = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [
+                {
+                    "name": "With Nurses 3",
+                    "description": "Care home service with nursing",
+                },
+                {
+                    "name": "Another Legitimate Service",
+                    "description": "Care home service without nursing",
+                },
+            ],
+            [
+                {
+                    "name": "Without Nursing 2",
+                    "description": "Care home service without nursing",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+            [
+                {
+                    "name": "Random Service",
+                    "description": "Random Service",
+                },
+                {
+                    "name": "Another Service",
+                    "description": "Any other description",
+                },
+            ],
+        ),
+        (
+            PrimaryServiceType.care_home_with_nursing,
+            PrimaryServiceType.care_home_only,
             PrimaryServiceType.non_residential,
         ),
     ]
