@@ -5,19 +5,17 @@ from pyspark.sql.dataframe import DataFrame
 
 import projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
-    ASCWDSWorkplaceData,
     ASCWDSWorkerData,
+    ASCWDSWorkplaceData,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
-    ASCWDSWorkplaceSchemas,
     ASCWDSWorkerSchemas,
+    ASCWDSWorkplaceSchemas,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    PartitionKeys,
-)
+from utils.column_names.raw_data_files.ascwds_worker_columns import PartitionKeys
 from utils.utils import get_spark
 
 PATCH_PATH: str = "projects._01_ingest.ascwds.jobs.clean_ascwds_worker_data"

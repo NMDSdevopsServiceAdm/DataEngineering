@@ -7,7 +7,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
+
 - New function added to merge the old CQC ratings and the new assessment ratings.
+
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
 - Implemented complex validation for [validate_delta_locations_api_cleaned](projects/_01_ingest/cqc_api/fargate/validate_delta_locations_api_cleaned.py), includes:
   - split into dimensions table with separate validation
@@ -16,13 +18,24 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
+
 - Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datasets.
+
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
-- Updated CQC Locations Cleaning to work with delta data 
+
+- Updated CQC Locations Cleaning to work with delta data
+
 - Created dimensions for imputed values in CQC Location Cleaning, and separated this from the main fact table
   - The dimensions are rejoined to the fact table in the downstream steps where they are needed
 
+- Removed unused columns from CQC Providers data
+
+- Formatted imports throughout codebase
+
+- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
+
 ### Improved
+
 
 ## [v2025.08.0] - 09/09/2025
 

@@ -1,11 +1,7 @@
 import pandas as pd
-
-from cqc_metadata import (
-    CqcCategories,
-    CqcConfig,
-    ColumnNames as Columns,
-    ColumnValues as Values,
-)
+from cqc_metadata import ColumnNames as Columns
+from cqc_metadata import ColumnValues as Values
+from cqc_metadata import CqcCategories, CqcConfig
 
 
 def main():

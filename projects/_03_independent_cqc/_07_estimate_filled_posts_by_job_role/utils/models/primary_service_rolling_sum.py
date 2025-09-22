@@ -1,10 +1,11 @@
-from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.utils.utils import (
     create_map_column,
     pivot_job_role_column,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.utils import convert_days_to_unix_time
 
 

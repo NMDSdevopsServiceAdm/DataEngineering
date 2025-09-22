@@ -4,12 +4,6 @@ from typing import List
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
-from utils.column_values.categorical_column_values import CareHome
 from projects._03_independent_cqc._04_feature_engineering.utils.helper import (
     add_array_column_count,
     add_date_index_column,
@@ -27,6 +21,10 @@ from projects._03_independent_cqc._04_feature_engineering.utils.value_labels imp
     ServicesLabels,
     SpecialismsLabels,
 )
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 
 def main(

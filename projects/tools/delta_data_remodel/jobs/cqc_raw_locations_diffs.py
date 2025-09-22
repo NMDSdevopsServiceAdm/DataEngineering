@@ -2,9 +2,7 @@ import polars as pl
 from raw_locations_schema import raw_locations_schema
 
 from projects.tools.delta_data_remodel.jobs.utils import get_diffs, list_bucket_objects
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCP,
 )

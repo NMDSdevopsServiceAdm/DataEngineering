@@ -1,6 +1,5 @@
 import unittest
 
-from utils import utils
 import projects._04_direct_payment_recipients.utils._03_estimate_direct_payment_utils.fix_la_names as job
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data import (
     PAFilledPostsByIcbArea as TestData,
@@ -8,6 +7,7 @@ from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_data imp
 from projects._04_direct_payment_recipients.unittest_data.dpr_test_file_schemas import (
     PAFilledPostsByIcbAreaSchema as TestSchema,
 )
+from utils import utils
 
 
 class ChangeLaNamesToMatchOnsCleanedLaNames(unittest.TestCase):

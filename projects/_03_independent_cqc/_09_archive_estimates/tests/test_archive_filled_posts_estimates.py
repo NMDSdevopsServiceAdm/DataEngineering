@@ -5,7 +5,6 @@ from unittest.mock import ANY, Mock, patch
 
 from pyspark.sql import functions as F
 
-
 import projects._03_independent_cqc._09_archive_estimates.jobs.archive_filled_posts_estimates as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
     ArchiveFilledPostsEstimates as Data,
@@ -16,8 +15,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
-    IndCqcColumns as IndCQC,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
 PATCH_PATH: str = (
     "projects._03_independent_cqc._09_archive_estimates.jobs.archive_filled_posts_estimates"

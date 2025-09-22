@@ -9,7 +9,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
-    Dormancy,
     LocationType,
     MainJobRoleLabels,
     PrimaryServiceType,
@@ -3806,25 +3805,6 @@ class CQCProviderData:
         ),
     ]
 
-    sector_rows = [
-        "1-10000000002",
-        "1-10000000003",
-        "1-10000000004",
-        "1-10000000005",
-    ]
-
-    rows_without_cqc_sector = [
-        ("1-10000000001", "data"),
-        ("1-10000000002", None),
-        ("1-10000000003", "data"),
-    ]
-
-    expected_rows_with_cqc_sector = [
-        ("1-10000000001", "data", Sector.independent),
-        ("1-10000000002", None, Sector.local_authority),
-        ("1-10000000003", "data", Sector.local_authority),
-    ]
-
 
 @dataclass
 class ValidateLocationsAPICleanedData:
@@ -3839,10 +3819,10 @@ class ValidateLocationsAPICleanedData:
 
     # fmt: off
     cleaned_cqc_locations_rows = [
-        ("1-000000002", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000001", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000001", date(2024, 1, 1), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
-        ("1-000000002", date(2024, 1, 9), date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 9), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000001", date(2024, 1, 1), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
+        ("1-000000002", date(2024, 1, 9), "Y", "name", "prov_1", "prov_name", Sector.independent, RegistrationStatus.registered, date(2024, 1, 1), "Y", 5, PrimaryServiceType.care_home_only, date(2024, 1, 1), "cssr", "region", date(2024, 1, 1), "cssr", "region", "RUI", None, [{CQCL.name: "name", CQCL.code: "A1", CQCL.contacts: []}]),
     ]
     # fmt: on
 
@@ -3906,10 +3886,10 @@ class ValidateProvidersAPICleanedData:
         ("1-000000002", "20240201"),
     ]
     cleaned_cqc_providers_rows = [
-        ("1-000000001", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 1), "name", Sector.independent),
-        ("1-000000001", date(2024, 1, 9), "name", Sector.independent),
-        ("1-000000002", date(2024, 1, 9), "name", Sector.independent),
+        ("1-000000001", date(2024, 1, 1), "name"),
+        ("1-000000002", date(2024, 1, 1), "name"),
+        ("1-000000001", date(2024, 1, 9), "name"),
+        ("1-000000002", date(2024, 1, 9), None),
     ]
 
     calculate_expected_size_rows = raw_cqc_providers_rows

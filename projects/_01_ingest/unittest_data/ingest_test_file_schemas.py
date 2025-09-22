@@ -12,29 +12,16 @@ from pyspark.sql.types import (
 )
 
 from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeColumns as CTCH,
     CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResColumns as CTNR,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeColumns as CTCH,
+)
+from utils.column_names.capacity_tracker_columns import (
     CapacityTrackerNonResCleanColumns as CTNRClean,
 )
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns as AWK,
-)
-from utils.column_names.raw_data_files.ascwds_workplace_columns import (
-    AscwdsWorkplaceColumns as AWP,
-    PartitionKeys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CQCP,
-)
-from utils.column_names.raw_data_files.cqc_pir_columns import (
-    CqcPirColumns as CQCPIR,
-)
-from utils.column_names.raw_data_files.ons_columns import (
-    OnsPostcodeDirectoryColumns as ONS,
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResColumns as CTNR,
 )
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
@@ -45,18 +32,34 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
 from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
     CqcPIRCleanedColumns as CQCPIRClean,
+)
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
 )
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
     DimensionPartitionKeys as DimensionKeys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
+from utils.column_names.raw_data_files.ascwds_workplace_columns import (
+    AscwdsWorkplaceColumns as AWP,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_names.raw_data_files.cqc_pir_columns import CqcPirColumns as CQCPIR
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CQCP,
+)
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
 )
 
 
@@ -2046,35 +2049,21 @@ class CQCLocationsSchema:
 
     rows_without_cqc_sector_schema = StructType(
         [
-            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCLClean.provider_id, StringType(), True),
             StructField("some_data", StringType(), True),
         ]
     )
     expected_rows_with_cqc_sector_schema = StructType(
         [
-            StructField(CQCP.provider_id, StringType(), True),
+            StructField(CQCLClean.provider_id, StringType(), True),
             StructField("some_data", StringType(), True),
-            StructField(CQCPClean.cqc_sector, StringType(), True),
+            StructField(CQCLClean.cqc_sector, StringType(), True),
         ]
     )
 
 
 @dataclass
 class CQCProviderSchema:
-    rows_without_cqc_sector_schema = StructType(
-        [
-            StructField(CQCP.provider_id, StringType(), True),
-            StructField("some_data", StringType(), True),
-        ]
-    )
-    expected_rows_with_cqc_sector_schema = StructType(
-        [
-            StructField(CQCP.provider_id, StringType(), True),
-            StructField("some_data", StringType(), True),
-            StructField(CQCPClean.cqc_sector, StringType(), True),
-        ]
-    )
-
     full_schema = StructType(
         fields=[
             StructField(CQCP.provider_id, StringType(), True),
@@ -2174,7 +2163,6 @@ class ValidateLocationsAPICleanedData:
         [
             StructField(CQCLClean.location_id, StringType(), True),
             StructField(CQCLClean.cqc_location_import_date, DateType(), True),
-            StructField(CQCLClean.cqc_provider_import_date, DateType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.name, StringType(), True),
             StructField(CQCLClean.provider_id, StringType(), True),
@@ -2345,7 +2333,6 @@ class ValidateProvidersAPICleanedData:
             StructField(CQCPClean.provider_id, StringType(), True),
             StructField(CQCPClean.cqc_provider_import_date, DateType(), True),
             StructField(CQCPClean.name, StringType(), True),
-            StructField(CQCPClean.cqc_sector, StringType(), True),
         ]
     )
     calculate_expected_size_schema = raw_cqc_providers_schema

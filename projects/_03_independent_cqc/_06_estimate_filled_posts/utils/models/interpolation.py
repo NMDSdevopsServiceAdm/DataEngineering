@@ -1,5 +1,7 @@
-from pyspark.sql import DataFrame, functions as F, Window
-from typing import Optional, Tuple, List
+from typing import List, Optional, Tuple
+
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc

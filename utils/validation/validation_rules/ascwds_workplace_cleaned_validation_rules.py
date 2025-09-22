@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
     AscwdsWorkplaceCleanedColumns as AWPClean,
 )
-
 from utils.validation.validation_rule_names import RuleNames as RuleName
 
 
