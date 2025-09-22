@@ -9,16 +9,12 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_columns_by_dataset import (
-    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
-)
 from utils.column_values.categorical_column_values import (
+    RUI,
     AscwdsFilteringRule,
     CareHome,
     Dormancy,
@@ -30,10 +26,12 @@ from utils.column_values.categorical_column_values import (
     Region,
     RegistrationStatus,
     RelatedLocation,
-    RUI,
     Sector,
     Services,
     Specialisms,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 
 
@@ -3130,7 +3128,64 @@ class CleanIndCQCData:
         ("1-1000004", "20220308", date(2022, 3, 8), "South West", "Dorset", "Urban", "Y", 9, 0, 25, 25, "Care home with nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
     ]
     # fmt: on
+    calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 9, 1), None),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant),
+    ]
+    expected_calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None, None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, None),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
+        ("1-001", date(2025, 9, 1), None, 4),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
+    ]
 
+    calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
+    ]
+    expected_calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
+    ]
+
+    calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
+    ]
+    expected_calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
+    ]
+
+    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
+    ]
+    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
+    ]
+
+    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
+    ]
+    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
+    ]
     remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",

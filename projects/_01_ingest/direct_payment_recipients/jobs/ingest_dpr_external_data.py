@@ -1,5 +1,5 @@
-import sys
 import argparse
+import sys
 
 from schemas.direct_payment_data_schema import EXTERNAL_DATA
 from utils import utils

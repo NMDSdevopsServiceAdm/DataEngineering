@@ -6,10 +6,35 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Added provider name into the merged dataframe within the CQC Coverage job.
+
+- New function added to merge the old CQC ratings and the new assessment ratings.
+
+- Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
+
+- Model retraining process using Polars and scikit-learn in Fargate
 
 ### Changed
+- Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
+  - locations_raw
+
+- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datasets.
+
+- Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
+
+- Updated CQC Locations Cleaning to work with delta data
+
+- Created dimensions for imputed values in CQC Location Cleaning, and separated this from the main fact table
+  - The dimensions are rejoined to the fact table in the downstream steps where they are needed
+
+- Removed unused columns from CQC Providers data
+
+- Formatted imports throughout codebase
+
+- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
 
 ### Improved
+
 
 ## [v2025.08.0] - 09/09/2025
 
@@ -31,6 +56,7 @@ All notable changes to this project will be documented in this file.
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
+  - CQC locations cleaning uses delta model data
 
 - Created an [SfC Internal pipeline](terraform/pipeline/step-functions/SfCInternal-StepFunction.json) step function which contains all the internal Skills for Care jobs in one pipeline.
 
@@ -47,8 +73,6 @@ All notable changes to this project will be documented in this file.
   - upgrading Glue jobs to 5.0 (default Python version is 3.11)
 
 - Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
-
-- Changed the model retraining process to use Polars and scikit-learn in Fargate
 
 ### Improved
 

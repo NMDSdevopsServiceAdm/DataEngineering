@@ -13,9 +13,9 @@ variable "ecr_repo_name" {
   default = "fargate/cqc"
 }
 
-variable "secret_arn" {
+variable "secret_arn_label" {
   type    = string
-  default = "arn:aws:secretsmanager:eu-west-2:344210435447:secret:cqc_api_primary_key-mK4hzZ"
+  default = "cqc_api_primary_key-mK4hzZ"
 }
 
 variable "secret_name" {
@@ -44,5 +44,3 @@ variable "ram_size" {
 variable "environment" {
   type = list(map(string))
 }
-
-

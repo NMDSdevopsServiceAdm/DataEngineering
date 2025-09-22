@@ -1,11 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
-from utils.column_values.categorical_column_values import (
-    PrimaryServiceTypeSecondLevel,
-)
+from utils.column_values.categorical_column_values import PrimaryServiceTypeSecondLevel
 
 
 @dataclass

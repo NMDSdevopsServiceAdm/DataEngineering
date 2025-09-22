@@ -7,7 +7,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCRatingsValues,
-    CQCCurrentOrHistoricValues,
     IsParent,
     LocationType,
     ParentsOrSinglesAndSubs,
@@ -374,6 +373,28 @@ class MergeCoverageData:
     ]
     # fmt: on
 
+    sample_cqc_providers_for_merge_rows = [
+        ("provider_1", "Provider Name A", date(2025, 9, 1)),
+        ("provider_1", "Provider Name B", date(2025, 9, 8)),
+        ("provider_2", "Provider Name C", date(2025, 9, 8)),
+    ]
+    sample_merged_coverage_rows = [
+        ("loc_1", "provider_1"),
+        ("loc_2", "provider_1"),
+        ("loc_3", "provider_1"),
+        ("loc_4", "provider_2"),
+        ("loc_5", "provider_2"),
+        ("loc_6", "provider_2"),
+    ]
+    expected_merged_covergae_and_provider_name_joined_rows = [
+        ("loc_1", "provider_1", "Provider Name B"),
+        ("loc_2", "provider_1", "Provider Name B"),
+        ("loc_3", "provider_1", "Provider Name B"),
+        ("loc_4", "provider_2", "Provider Name C"),
+        ("loc_5", "provider_2", "Provider Name C"),
+        ("loc_6", "provider_2", "Provider Name C"),
+    ]
+
 
 @dataclass
 class ValidateMergedCoverageData:
@@ -691,7 +712,6 @@ class FlattenCQCRatings:
             ],
         ),
     ]
-
     expected_flatten_ratings_rows = [
         (
             "loc_1",
@@ -705,7 +725,8 @@ class FlattenCQCRatings:
             "Effective rating Good",
         )
     ]
-    flatten_assessment_ratings_rows = [
+
+    prepare_assessment_ratings_rows = [
         (
             "loc_1",
             "registered",
@@ -989,7 +1010,7 @@ class FlattenCQCRatings:
             ],
         )
     ]
-    expected_flatten_assessment_ratings_rows = [
+    expected_prepare_assessment_ratings_rows = [
         # --- Current Overall (Good, Current) ---
         (
             "loc_1",
@@ -1127,6 +1148,88 @@ class FlattenCQCRatings:
             CQCRatingsValues.good,
         ),
     ]
+
+    raise_error_when_assessment_df_contains_overall_data_with_overall_data_rows = [
+        ("loc-1", "assessment.ratings.overall", CQCRatingsValues.good),
+        ("loc-2", "assessment.ratings.asg_ratings", CQCRatingsValues.good),
+    ]
+
+    assessment_ratings_for_merging_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "2024-09-11 08:00:00",
+            "AP004",
+            "title",
+            "2024-09-11",
+            "Assessed",
+            "Supported Living",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            CQCCurrentOrHistoricValues.current,
+            "asg.rating",
+            "asg.safe",
+            "asg.effective",
+            "asg.caring",
+            "asg.responsive",
+            "asg.well-led",
+        ),
+    ]
+    standard_ratings_for_merging_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "2024-09-15",
+            CQCCurrentOrHistoricValues.current,
+            "pre-saf.ratings.overall",
+            "pre-saf.ratings.safe",
+            "pre-saf.ratings.well-led",
+            "pre-saf.ratings.caring",
+            "pre-saf.ratings.responsive",
+            "pre-saf.ratings.effective",
+        )
+    ]
+    expected_merge_cqc_ratings_rows = [
+        (
+            "loc_1",
+            "Registered",
+            "2024-09-15",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            "Pre SAF",
+            CQCCurrentOrHistoricValues.current,
+            "pre-saf.ratings.overall",
+            "pre-saf.ratings.safe",
+            "pre-saf.ratings.well-led",
+            "pre-saf.ratings.caring",
+            "pre-saf.ratings.responsive",
+            "pre-saf.ratings.effective",
+        ),
+        (
+            "loc_1",
+            "Registered",
+            "2024-09-11",
+            "AP004",
+            "title",
+            "2024-09-11",
+            "Assessed",
+            "Supported Living",
+            "assessment.ratings.asg_ratings",
+            "SAF",
+            CQCCurrentOrHistoricValues.current,
+            "asg.rating",
+            "asg.safe",
+            "asg.well-led",
+            "asg.caring",
+            "asg.responsive",
+            "asg.effective",
+        ),
+    ]
+
     recode_unknown_to_null_rows = [
         (
             "loc_1",
@@ -1412,30 +1515,56 @@ class FlattenCQCRatings:
         ),
     ]
 
+    # fmt: off
     add_rating_sequence_rows = [
-        ("loc_1", "2024-01-01"),
-        ("loc_1", "2024-01-02"),
-        ("loc_2", "2024-01-01"),
-        ("loc_2", "2024-02-01"),
-        ("loc_3", "2023-01-01"),
-        ("loc_3", "2024-01-01"),
+        ("loc_1", "2024-1-1", "2024-1-1"), #paired dates, 1+ day between cases
+        ("loc_1", "2024-1-2", "2024-1-2"), #paired dates, 1+ day between cases
+        ("loc_2", "2024-1-1", "2024-1-1"), #paired dates, 1+ month between cases
+        ("loc_2", "2024-2-1", "2024-2-1"), #paired dates, 1+ month between cases
+        ("loc_3", "2023-1-1", "2023-1-1"), #paired dates, 1+ year between cases
+        ("loc_3", "2024-1-1", "2024-1-1"), #paired dates, 1+ year between cases
+        ("loc_4", "2023-1-1", "2023-1-1"), #different rating date, same assessment_date
+        ("loc_4", "2024-1-1", "2023-1-1"), #different rating date, same assessment_date
+        ("loc_5", "2023-1-1", "2023-1-1"), #same rating date, different assessment_date
+        ("loc_5", "2023-1-1", "2024-1-1"), #same rating date, different assessment_date
+        ("loc_6", "2023-1-1", None), #different rating date, missing assessment_date
+        ("loc_6", "2024-1-1", None), #different rating date, missing assessment_date
+        ("loc_7", "2023-1-1", None), #same rating date, missing assessment_date
+        ("loc_7", "2023-1-1", None), #same rating date, missing assessment_date
     ]
     expected_add_rating_sequence_rows = [
-        ("loc_1", "2024-01-02", 2),
-        ("loc_2", "2024-01-01", 1),
-        ("loc_2", "2024-02-01", 2),
-        ("loc_1", "2024-01-01", 1),
-        ("loc_3", "2023-01-01", 1),
-        ("loc_3", "2024-01-01", 2),
+        ("loc_1", "2024-1-1", "2024-1-1", 1),
+        ("loc_1", "2024-1-2", "2024-1-2", 2),
+        ("loc_2", "2024-1-1", "2024-1-1", 1),
+        ("loc_2", "2024-2-1", "2024-2-1", 2),
+        ("loc_3", "2023-1-1", "2023-1-1", 1),
+        ("loc_3", "2024-1-1", "2024-1-1", 2),
+        ("loc_4", "2023-1-1", "2023-1-1", 1),
+        ("loc_4", "2024-1-1", "2023-1-1", 2),
+        ("loc_5", "2023-1-1", "2023-1-1", 1),
+        ("loc_5", "2023-1-1", "2024-1-1", 2),
+        ("loc_6", "2023-1-1", None, 1),
+        ("loc_6", "2024-1-1", None, 2),
+        ("loc_7", "2023-1-1", None, 1),
+        ("loc_7", "2023-1-1", None, 2),
     ]
     expected_reversed_add_rating_sequence_rows = [
-        ("loc_1", "2024-01-02", 1),
-        ("loc_2", "2024-01-01", 2),
-        ("loc_2", "2024-02-01", 1),
-        ("loc_1", "2024-01-01", 2),
-        ("loc_3", "2023-01-01", 2),
-        ("loc_3", "2024-01-01", 1),
+        ("loc_1", "2024-1-2", "2024-1-2", 1),
+        ("loc_1", "2024-1-1", "2024-1-1", 2),
+        ("loc_2", "2024-2-1", "2024-2-1", 1),
+        ("loc_2", "2024-1-1", "2024-1-1", 2),
+        ("loc_3", "2024-1-1", "2024-1-1", 1),
+        ("loc_3", "2023-1-1", "2023-1-1", 2),
+        ("loc_4", "2024-1-1", "2023-1-1", 1),
+        ("loc_4", "2023-1-1", "2023-1-1", 2),
+        ("loc_5", "2023-1-1", "2024-1-1", 1),
+        ("loc_5", "2023-1-1", "2023-1-1", 2),
+        ("loc_6", "2024-1-1", None, 1),
+        ("loc_6", "2023-1-1", None, 2),
+        ("loc_7", "2023-1-1", None, 1),
+        ("loc_7", "2023-1-1", None, 2),
     ]
+    # fmt: on
 
     add_latest_rating_flag_rows = [
         ("loc_1", 1),
@@ -1453,6 +1582,13 @@ class FlattenCQCRatings:
             "loc_1",
             "Registered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
             "Good",
             "Good",
             "Good",
@@ -1474,6 +1610,13 @@ class FlattenCQCRatings:
             "loc_1",
             "Registered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
             "Good",
             "Good",
             "Good",
@@ -1495,6 +1638,13 @@ class FlattenCQCRatings:
             "loc_1",
             "Degistered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
             "Good",
             "Good",
             "Good",
@@ -1516,6 +1666,13 @@ class FlattenCQCRatings:
             "loc_1",
             "Registered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
             "Good",
             "Good",
             "Good",
@@ -1537,6 +1694,13 @@ class FlattenCQCRatings:
             "loc_1",
             "Registered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
             "Good",
             "Good",
             "Good",
@@ -1558,7 +1722,16 @@ class FlattenCQCRatings:
     expected_create_standard_rating_dataset_rows = [
         (
             "loc_1",
+            "Registered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
+            1,
             "Current",
             "Good",
             "Good",
@@ -1566,8 +1739,6 @@ class FlattenCQCRatings:
             "Good",
             "Good",
             "Good",
-            1,
-            1,
             3,
             3,
             3,
@@ -1577,7 +1748,42 @@ class FlattenCQCRatings:
         ),
         (
             "loc_1",
+            "Degistered",
             "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
+            1,
+            "Current",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            "Good",
+            3,
+            3,
+            3,
+            3,
+            3,
+            15,
+        ),
+        (
+            "loc_1",
+            "Registered",
+            "2024-01-01",
+            "assessment_plan_id",
+            "title",
+            "assessment_date",
+            "assessment_plan_status",
+            "name",
+            "source_path",
+            "dataset",
+            1,
             "Historic",
             "Good",
             "Good",
@@ -1585,8 +1791,6 @@ class FlattenCQCRatings:
             "Good",
             "Good",
             "Good",
-            1,
-            1,
             3,
             3,
             3,
@@ -1595,33 +1799,45 @@ class FlattenCQCRatings:
             15,
         ),
     ]
+    # fmt: off
     select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
-        ("loc_2", RegistrationStatus.registered, CQCCurrentOrHistoricValues.historic),
-        ("loc_3", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.current),
-        ("loc_4", RegistrationStatus.deregistered, CQCCurrentOrHistoricValues.historic),
+        ("loc_1", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, "Other service", CQCCurrentOrHistoricValues.current),
+        ("loc_2", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.historic),
+        ("loc_3", RegistrationStatus.deregistered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_4", RegistrationStatus.deregistered, "Care home", CQCCurrentOrHistoricValues.historic),
     ]
     expected_select_ratings_for_benchmarks_rows = [
-        ("loc_1", RegistrationStatus.registered, CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, "Care home", CQCCurrentOrHistoricValues.current),
+        ("loc_1", RegistrationStatus.registered, "Other service", CQCCurrentOrHistoricValues.current),
     ]
+    # fmt: on
 
     add_good_or_outstanding_flag_rows = [
-        ("loc_1", CQCRatingsValues.outstanding),
-        ("loc_2", CQCRatingsValues.good),
-        ("loc_3", "other rating"),
-        ("loc_1", None),
+        ("loc_1", None, 4),
+        ("loc_2", None, 3),
+        ("loc_3", "Care Home", 4),
+        ("loc_3", "Other service", 3),
+        ("loc_4", "Same service", 4),
+        ("loc_4", "Same service", 2),
+        ("loc_5", "Care Home", 4),
+        ("loc_5", "Other service", 2),
     ]
     expected_add_good_or_outstanding_flag_rows = [
-        ("loc_1", CQCRatingsValues.outstanding, 1),
-        ("loc_2", CQCRatingsValues.good, 1),
-        ("loc_3", "other rating", 0),
-        ("loc_1", None, 0),
+        ("loc_1", None, 4, 1),
+        ("loc_2", None, 3, 1),
+        ("loc_3", "Care Home", 4, 1),
+        ("loc_3", "Other service", 3, 1),
+        ("loc_4", "Same service", 4, 0),
+        ("loc_4", "Same service", 2, 0),
+        ("loc_5", "Care Home", 4, 0),
+        ("loc_5", "Other service", 2, 0),
     ]
+
     ratings_join_establishment_ids_rows = [
         ("loc_1", "ratings data"),
         ("loc_3", "ratings data"),
     ]
-
     ascwds_join_establishment_ids_rows = [
         ("loc_1", "estab_1", "20240101"),
         ("loc_2", "estab_2", "20240101"),
@@ -1630,17 +1846,20 @@ class FlattenCQCRatings:
         ("loc_1", "ratings data", "estab_1"),
         ("loc_3", "ratings data", None),
     ]
+
+    # fmt: off
     create_benchmark_ratings_dataset_rows = [
-        ("loc_1", "estab_1", 1, "Good", "2024-01-01", ""),
-        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01", ""),
-        ("loc_3", None, 1, "Good", "2024-01-01", ""),
-        ("loc_4", "estab_2", 0, None, "2024-01-01", ""),
-        ("loc_5", None, 0, None, "2024-01-01", ""),
+        ("loc_1", "estab_1", "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01", ""),
+        ("loc_2", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, "Requires improvement", "2024-01-01", ""),
+        ("loc_3", None, "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01", ""),
+        ("loc_4", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, None, "2024-01-01", ""),
+        ("loc_5", None, "Care Homes", "assessment.ratings.asg_ratings", 0, None, "2024-01-01", ""),
     ]
     expected_create_benchmark_ratings_dataset_rows = [
-        ("loc_1", "estab_1", 1, "Good", "2024-01-01"),
-        ("loc_2", "estab_2", 0, "Requires improvement", "2024-01-01"),
+        ("loc_1", "estab_1", "Care Homes", "assessment.ratings.asg_ratings", 1, "Good", "2024-01-01"),
+        ("loc_2", "estab_2", "Care Homes", "assessment.ratings.asg_ratings", 0, "Requires improvement", "2024-01-01"),
     ]
+    # fmt: on
 
     add_numerical_ratings_rows = [
         (
@@ -1662,6 +1881,7 @@ class FlattenCQCRatings:
             CQCRatingsValues.inadequate,
             CQCRatingsValues.good,
             None,
+            3,
             4,
             2,
             1,

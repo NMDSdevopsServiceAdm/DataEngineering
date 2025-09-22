@@ -44,11 +44,16 @@
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0",
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "--gac_service_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+                  "--regulated_activities_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
+                  "--specialisms_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
+                  "--postcode_matching_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
                 }
               },
+              "ResultSelector": {"clean_arguments.$": "$.Arguments"},
               "Next": "Validate Locations Cleaned"
             },
             "Validate Locations Cleaned": {
@@ -57,9 +62,25 @@
               "Parameters": {
                 "JobName": "${validate_locations_api_cleaned_data_job_name}",
                 "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/",
-                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
+                  "--raw_cqc_location_source.$": "$.clean_arguments.--cqc_location_source",
+                  "--cleaned_cqc_locations_source.$": "$.clean_arguments.--cleaned_cqc_location_destination",
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/",
+                  "--gac_dimension_source.$": "$.clean_arguments.--gac_service_destination",
+                  "--postcode_dimension_source.$": "$.clean_arguments.--postcode_matching_destination"
+                }
+              },
+              "Next": "Build Locations Cleaned"
+            },
+            "Build Locations Cleaned": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "dataset": "locations-cleaned",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
                 }
               },
               "End": true

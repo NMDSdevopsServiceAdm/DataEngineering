@@ -57,7 +57,7 @@ resource "aws_iam_policy" "s3_read_write_policy" {
         Sid    = "AllowS3ReadWriteOnSpecificBuckets",
         Effect = "Allow",
         Action = [
-          "s3:GetObject*",
+          "s3:Get*",
           "s3:PutObject*",
           "s3:List*"
         ],
@@ -84,7 +84,7 @@ resource "aws_iam_policy" "secretsmanager_read_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ],
-        Resource = var.secret_arn,
+        Resource = "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:${var.secret_arn_label}",
       }
     ]
   })
@@ -257,6 +257,3 @@ resource "aws_iam_role_policy_attachment" "sfn_ecs_policy_attachment" {
   role       = aws_iam_role.sfn_execution_role.name
   policy_arn = aws_iam_policy.sfn_ecs_policy.arn
 }
-
-
-
