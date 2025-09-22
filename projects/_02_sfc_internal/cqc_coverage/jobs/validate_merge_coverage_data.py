@@ -22,12 +22,24 @@ from utils.validation.validation_utils import (
 
 def main(
     cleaned_cqc_location_source: str,
+    gac_dimension_source: str,
+    postcode_dimension_source: str,
     merged_coverage_data_source: str,
     report_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cleaned_cqc_location_source,
     )
+    gac_dimension_df = utils.read_from_parquet(gac_dimension_source)
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, gac_dimension_df, primary_key=CQCLClean.location_id
+    )
+
+    postcode_dimension_df = utils.read_from_parquet(postcode_dimension_source)
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, postcode_dimension_df, primary_key=CQCLClean.location_id
+    )
+
     merged_coverage_df = utils.read_from_parquet(
         merged_coverage_data_source,
     )
@@ -67,12 +79,22 @@ if __name__ == "__main__":
 
     (
         cleaned_cqc_location_source,
+        gac_dimension_source,
+        postcode_dimension_source,
         merged_coverage_data_source,
         report_destination,
     ) = utils.collect_arguments(
         (
             "--cleaned_cqc_location_source",
             "Source s3 directory for parquet CQC locations cleaned dataset",
+        ),
+        (
+            "--gac_dimension_source",
+            "Source S3 directory for parquet GAC services dimension of the cleaned CQC locations dataset",
+        ),
+        (
+            "--postcode_dimension_source",
+            "Source S3 directory for parquet postcode matching dimension of the cleaned CQC locations dataset",
         ),
         (
             "--merged_coverage_data_source",
@@ -86,6 +108,8 @@ if __name__ == "__main__":
     try:
         main(
             cleaned_cqc_location_source,
+            gac_dimension_source,
+            postcode_dimension_source,
             merged_coverage_data_source,
             report_destination,
         )
