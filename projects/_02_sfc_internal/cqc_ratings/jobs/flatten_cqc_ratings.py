@@ -83,6 +83,7 @@ def main(
     ratings_pre_saf_df = current_ratings_df.unionByName(historic_ratings_df)
     ratings_df = merge_cqc_ratings(assessment_ratings_df, ratings_pre_saf_df)
 
+    ratings_df = recode_unknown_codes_to_null(ratings_df)
     ratings_df = remove_blank_and_duplicate_rows(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df)
     ratings_df = add_rating_sequence_column(ratings_df, reversed=True)
