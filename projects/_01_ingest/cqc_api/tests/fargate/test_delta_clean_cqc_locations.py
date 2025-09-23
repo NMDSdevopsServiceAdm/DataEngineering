@@ -822,7 +822,7 @@ class AddRelatedLocationFlagTests(unittest.TestCase):
         )
 
 
-@patch(f"{PATCH_PATH}.filter_facts_from_dimensions")
+@patch(f"{PATCH_PATH}.remove_rows", return_value=["a", "b"])
 class RemoveSpecialistCollegesTests(unittest.TestCase):
     def setUp(self):
         self.input_fact_df = pl.DataFrame(
@@ -854,8 +854,10 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
         #   The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
-        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   All the rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
@@ -885,8 +887,10 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
         #   The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
-        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
@@ -916,8 +920,10 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
         #   The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
-        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
@@ -947,8 +953,10 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
         #   The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
-        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]

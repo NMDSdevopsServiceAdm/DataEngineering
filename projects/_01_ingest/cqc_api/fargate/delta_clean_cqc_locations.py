@@ -345,36 +345,32 @@ def remove_specialist_colleges(
         & pl.col(CQCLClean.services_offered).list.len().eq(1)
         & pl.col(CQCLClean.services_offered).is_not_null()
     ).select(CQCLClean.location_id, Keys.import_date)
-
-    return filter_fact_from_dimensions(
-        fact_df=cqc_df, dimension_df=gac_services_dimension, to_remove_df=to_remove_df
+    cqc_df, gac_services_dimension = remove_rows(
+        to_remove_df=to_remove_df, target_dfs=[cqc_df, gac_services_dimension]
     )
+    return cqc_df, gac_services_dimension
 
 
 def remove_rows(
-    fact_df: pl.DataFrame, dimension_df: pl.DataFrame, to_remove_df: pl.DataFrame
-) -> tuple[pl.DataFrame, pl.DataFrame]:
+    to_remove_df: pl.DataFrame, target_dfs: list[pl.DataFrame]
+) -> list[pl.DataFrame]:
     """
-    Filters both a fact table and a dimension table, using a dat
+
     Args:
-        fact_df:
-        dimension_df:
-        to_remove_df:
+        to_remove_df (pl.DataFrame): Dataframe with rows to remove (all columns present will be used as keys for the anti-join).
+        target_dfs (list[pl.DataFrame]): Target tables from which to remove the rows.
 
     Returns:
-
+        list[pl.DataFrame]: List of dataframes in the same order as target_dfs, with the rows removed.
     """
+    result_dfs = []
+    for target_df in target_dfs:
+        result_dfs.append(
+            target_df.join(
+                to_remove_df,
+                on=to_remove_df.columns,
+                how="anti",
+            )
+        )
 
-    fact_filtered_df = fact_df.join(
-        to_remove_df,
-        on=to_remove_df.columns,
-        how="anti",
-    )
-
-    dimension_filtered_df = dimension_df.join(
-        to_remove_df,
-        on=to_remove_df.columns,
-        how="anti",
-    )
-
-    return fact_filtered_df, dimension_filtered_df
+    return result_dfs
