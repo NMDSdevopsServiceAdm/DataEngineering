@@ -8,6 +8,9 @@ from pyspark.sql import DataFrame
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes import (
     model_care_homes,
 )
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts import (
+    estimate_non_res_capacity_tracker_filled_posts,
+)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
     model_imputation_with_extrapolation_and_interpolation,
 )
@@ -185,6 +188,10 @@ def main(
         ],
         IndCQC.estimate_filled_posts,
         IndCQC.estimate_filled_posts_source,
+    )
+
+    estimate_filled_posts_df = estimate_non_res_capacity_tracker_filled_posts(
+        estimate_filled_posts_df
     )
 
     estimate_filled_posts_df = allocate_primary_service_type_second_level(
