@@ -824,144 +824,130 @@ class AddRelatedLocationFlagTests(unittest.TestCase):
 
 @patch(f"{PATCH_PATH}.filter_facts_from_dimensions")
 class RemoveSpecialistCollegesTests(unittest.TestCase):
-    def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_only_service(
+    def setUp(self):
+        self.input_fact_df = pl.DataFrame(
+            data=Data.remove_specialist_colleges_fact,
+            schema=Schemas.remove_specialist_colleges_fact_input_schema,
+        )
+
+    def test_removes_rows_where_specialist_college_is_only_service(
         self, mock_filter_facts_from_dimensions
     ):
         # GIVEN
-        #   Input where all rows have services offered that are specialist colleges only
-        input_fact_df = pl.DataFrame(
-            data=Data.test_remove_specialist_colleges_facts_rows,
-            schema=Schemas.remove_specialist_colleges_input_facts_schema,
-        )
+        #   Input where all rows have specialist colleges as their only service offered
         input_dim_df = pl.DataFrame(
-            data=Data.test_only_service_specialist_colleges_dim_rows,
-            schema=Schemas.remove_specialist_colleges_input_dim_schema,
+            data=Data.remove_specialist_colleges_dim_only_specialist_college,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
         )
 
         # WHEN
         job.remove_specialist_colleges(
-            input_fact_df,
+            self.input_fact_df,
             input_dim_df,
         )
 
         # THEN
-
         expected_to_remove_df = pl.DataFrame(
-            data=Data.expected_only_service_specialist_colleges_rows,
+            data=Data.expected_remove_specialist_colleges_dim_only_specialist_college,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
-        # The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(input_fact_df, mock_call_args["fact_df"])
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
         #   All the rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
         )
 
-    def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_one_of_many_services(
+    def test_does_not_remove_rows_where_specialist_college_is_one_of_many_services(
         self, mock_filter_facts_from_dimensions
     ):
         # GIVEN
-        #   Input where all rows have services offered that are specialist colleges and atleast one other service
-        input_fact_df = pl.DataFrame(
-            data=Data.test_remove_specialist_colleges_facts_rows,
-            schema=Schemas.remove_specialist_colleges_input_facts_schema,
-        )
+        #   Input where all rows have services offered that include specialist college and at least one other service
         input_dim_df = pl.DataFrame(
-            data=Data.test_multiple_service_specialist_colleges_dim_rows,
-            schema=Schemas.remove_specialist_colleges_input_dim_schema,
+            data=Data.remove_specialist_colleges_dim_specialist_college_plus_other,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
         )
 
         # WHEN
         job.remove_specialist_colleges(
-            input_fact_df,
+            self.input_fact_df,
             input_dim_df,
         )
 
         # THEN
-
         expected_to_remove_df = pl.DataFrame(
-            data=Data.expected_to_remove_for_multiple_services_rows,
+            data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
-        # The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(input_fact_df, mock_call_args["fact_df"])
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
         )
 
-    def test_remove_specialist_colleges_removes_no_rows_where_specialist_college_is_not_a_service(
+    def test_does_not_remove_rows_where_specialist_college_is_not_a_service(
         self, mock_filter_facts_from_dimensions
     ):
         # GIVEN
-        #   Input where all rows have services offered that are not specialist colleges service
-        input_fact_df = pl.DataFrame(
-            data=Data.test_remove_specialist_colleges_facts_rows,
-            schema=Schemas.remove_specialist_colleges_input_facts_schema,
-        )
+        #   Input where no rows have specialist college in their services offered
         input_dim_df = pl.DataFrame(
-            data=Data.test_no_service_specialist_colleges_dim_rows,
-            schema=Schemas.remove_specialist_colleges_input_dim_schema,
+            data=Data.remove_specialist_colleges_dim_no_specialist_college,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
         )
 
         # WHEN
         job.remove_specialist_colleges(
-            input_fact_df,
+            self.input_fact_df,
             input_dim_df,
         )
 
         # THEN
-
         expected_to_remove_df = pl.DataFrame(
-            data=Data.expected_to_remove_for_no_specialist_college_services_rows,
+            data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
-        # The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(input_fact_df, mock_call_args["fact_df"])
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
         )
 
-    def test_remove_specialist_colleges_removes_no_rows_where_there_is_no_service_offered(
+    def test_does_not_removes_rows_where_there_is_no_service_offered(
         self, mock_filter_facts_from_dimensions
     ):
         # GIVEN
-        #   Input where no rows have services offered (services offered is null or empty)
-        input_fact_df = pl.DataFrame(
-            data=Data.test_remove_specialist_colleges_facts_rows,
-            schema=Schemas.remove_specialist_colleges_input_facts_schema,
-        )
+        #   Input where no rows have services offered (services offered is null or empty list)
         input_dim_df = pl.DataFrame(
-            data=Data.test_has_no_service_offered_dim_rows,
-            schema=Schemas.remove_specialist_colleges_input_dim_schema,
+            data=Data.remove_specialist_colleges_dim_no_services_offered,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
         )
 
         # WHEN
         job.remove_specialist_colleges(
-            input_fact_df,
+            self.input_fact_df,
             input_dim_df,
         )
 
         # THEN
-
         expected_to_remove_df = pl.DataFrame(
-            data=Data.expected_to_remove_df_when_no_services_offered,
+            data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
         mock_filter_facts_from_dimensions.assert_called_once()
         mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
-        # The input fact and dimension df should be unchanged
-        pl_testing.assert_frame_equal(input_fact_df, mock_call_args["fact_df"])
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(self.input_fact_df, mock_call_args["fact_df"])
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["dimension_df"])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(

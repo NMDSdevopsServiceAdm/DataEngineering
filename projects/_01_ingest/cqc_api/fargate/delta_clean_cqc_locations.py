@@ -1,5 +1,4 @@
 import polars as pl
-from pyspark.sql import DataFrame
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -221,7 +220,7 @@ def impute_missing_values_for_struct_column(
         column_name (str): Name of struct column to impute
 
     Returns:
-        DataFrame: DataFrame with the struct column containing imputed values in 'imputed_[column_name]'.
+        pl.DataFrame: DataFrame with the struct column containing imputed values in 'imputed_[column_name]'.
     """
     # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
     imputed_column_name = "imputed_" + column_name
@@ -307,7 +306,7 @@ def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
         cqc_df (pl.DataFrame): A dataframe with the imputed_relationships column.
 
     Returns:
-        DataFrame: Dataframe with an added related_location column.
+        pl.DataFrame: Dataframe with an added related_location column.
     """
     cqc_df = cqc_df.with_columns(
         # 1. If the length of imputed relationships is more than 0 then flag 'Y'
@@ -322,9 +321,23 @@ def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
 
 
 def remove_specialist_colleges(
-    cqc_df: DataFrame, gac_services_dimension: DataFrame
-) -> tuple[DataFrame, DataFrame]:
-    """ """
+    cqc_df: pl.DataFrame, gac_services_dimension: pl.DataFrame
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    1. Filter for rows in the GAC Service dimension where "Specialist college service" is the only service offered
+    2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
+
+    Args:
+        cqc_df (DataFrame): Fact table to align with dimension
+        gac_services_dimension (DataFrame): Dimension table with services_offered column
+
+    Returns:
+        tuple[pl.DataFrame, pl.DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
+
+    """
     to_remove_df = gac_services_dimension.filter(
         pl.col(CQCLClean.services_offered)
         .list.first()
@@ -332,15 +345,25 @@ def remove_specialist_colleges(
         & pl.col(CQCLClean.services_offered).list.len().eq(1)
         & pl.col(CQCLClean.services_offered).is_not_null()
     ).select(CQCLClean.location_id, Keys.import_date)
-    return filter_facts_from_dimensions(
+
+    return filter_fact_from_dimensions(
         fact_df=cqc_df, dimension_df=gac_services_dimension, to_remove_df=to_remove_df
     )
 
 
-def filter_facts_from_dimensions(
+def remove_rows(
     fact_df: pl.DataFrame, dimension_df: pl.DataFrame, to_remove_df: pl.DataFrame
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
-    """ """
+    """
+    Filters both a fact table and a dimension table, using a dat
+    Args:
+        fact_df:
+        dimension_df:
+        to_remove_df:
+
+    Returns:
+
+    """
 
     fact_filtered_df = fact_df.join(
         to_remove_df,

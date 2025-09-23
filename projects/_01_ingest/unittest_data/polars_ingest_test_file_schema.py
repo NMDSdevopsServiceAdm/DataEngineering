@@ -285,13 +285,13 @@ class CQCLocationsSchema:
         ]
     )
 
-    remove_specialist_colleges_input_facts_schema = pl.Schema(
+    remove_specialist_colleges_fact_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
             (Keys.import_date, pl.String()),
         ]
     )
-    remove_specialist_colleges_input_dim_schema = pl.Schema(
+    remove_specialist_colleges_dim_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
             (Keys.import_date, pl.String()),

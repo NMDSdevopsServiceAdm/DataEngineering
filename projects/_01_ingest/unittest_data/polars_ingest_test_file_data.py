@@ -1271,22 +1271,23 @@ class CQCLocationsData:
         ("N", "N"),
     ]
 
-    test_remove_specialist_colleges_facts_rows = [
+    remove_specialist_colleges_fact = [
         ("loc_1", "loc_2"),
         ("20240101", "20240101"),
     ]
-    test_only_service_specialist_colleges_dim_rows = [
+
+    remove_specialist_colleges_dim_only_specialist_college = [
         ("loc_1", "loc_2"),
         ("20240101", "20240101"),
         ([Services.specialist_college_service], [Services.specialist_college_service]),
     ]
 
-    expected_only_service_specialist_colleges_rows = [
+    expected_remove_specialist_colleges_dim_only_specialist_college = [
         ("loc_1", "loc_2"),
         ("20240101", "20240101"),
     ]
 
-    test_multiple_service_specialist_colleges_dim_rows = [
+    remove_specialist_colleges_dim_specialist_college_plus_other = [
         ("loc_1", "loc_2", "loc_3"),
         ("20240101", "20240101", "20240101"),
         (
@@ -1301,8 +1302,8 @@ class CQCLocationsData:
             ],
         ),
     ]
-    expected_to_remove_for_multiple_services_rows = []
-    test_no_service_specialist_colleges_dim_rows = [
+
+    remove_specialist_colleges_dim_no_specialist_college = [
         ("loc_1", "loc_2"),
         ("20240101", "20240101"),
         (
@@ -1310,10 +1311,10 @@ class CQCLocationsData:
             [Services.acute_services_with_overnight_beds, Services.shared_lives],
         ),
     ]
-    expected_to_remove_for_no_specialist_college_services_rows = []
-    test_has_no_service_offered_dim_rows = [
+
+    remove_specialist_colleges_dim_no_services_offered = [
         ("loc_1", "loc_2"),
         ("20240101", "20240101"),
         ([], None),
     ]
-    expected_to_remove_df_when_no_services_offered = []
+    expected_remove_specialist_colleges_remove_none = []
