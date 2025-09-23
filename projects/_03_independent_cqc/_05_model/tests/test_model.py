@@ -15,7 +15,7 @@ PATCH_PATH = "projects._03_independent_cqc._05_model.utils.model"
 
 class TestModel(unittest.TestCase):
     standard_model = Model(
-        model_type=ModelType.SIMPLE_LINEAR,
+        model_type=ModelType.SIMPLE_LINEAR.value,
         model_identifier="test_linear_model",
         model_params={},
         version_parameter_location="/some/location",
@@ -24,7 +24,7 @@ class TestModel(unittest.TestCase):
         feature_columns=["column1", "column2"],
     )
     ice_cream_model = Model(
-        model_type=ModelType.SIMPLE_LINEAR,
+        model_type=ModelType.SIMPLE_LINEAR.value,
         model_identifier="test_linear_model_ice_cream",
         model_params={},
         version_parameter_location="/some/location",
@@ -38,7 +38,7 @@ class TestModel(unittest.TestCase):
         self.lf = self.lf.with_row_index()
 
     def test_model_linear_regression_instantiates(self):
-        self.assertEqual(self.standard_model.model_type, ModelType.SIMPLE_LINEAR)
+        self.assertEqual(self.standard_model.model_type, ModelType.SIMPLE_LINEAR.value)
         self.assertEqual(self.standard_model.model_identifier, "test_linear_model")
         self.assertEqual(self.standard_model.model_params, {})
         self.assertEqual(
@@ -51,14 +51,14 @@ class TestModel(unittest.TestCase):
         self.assertEqual(self.standard_model.training_score, None)
         self.assertEqual(self.standard_model.testing_score, None)
 
-    @patch(f"{PATCH_PATH}.ModelType", autospec=True)
+    @patch(f"{PATCH_PATH}.ModelType")
     def test_model_linear_regression_raises_value_error_if_invalid_model_type(
         self, mock_model_type
     ):
-        mock_model_type.SILLY_MODEL = "silly_model"
+        mock_model_type.SILLY_MODEL.value = "silly_model"
         with self.assertRaises(ValueError):
             model = Model(
-                model_type=mock_model_type.SILLY_MODEL,
+                model_type=mock_model_type.SILLY_MODEL.value,
                 model_identifier="test_linear_model",
                 model_params={},
                 version_parameter_location="/some/location",

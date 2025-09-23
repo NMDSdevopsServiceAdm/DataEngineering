@@ -21,7 +21,7 @@ class Model:
 
     def __init__(
         self,
-        model_type: ModelType,
+        model_type: str,
         model_identifier: str,
         model_params: Dict[str, Any],
         version_parameter_location: str,
@@ -29,6 +29,9 @@ class Model:
         target_columns: list[str],
         feature_columns: list[str],
     ) -> None:
+        model_types = [mt.value for mt in ModelType]
+        if model_type not in model_types:
+            raise ValueError(f"Unknown model type: {model_type}")
         self.model_type = model_type
         self.model_identifier = model_identifier
         self.model_params = model_params
@@ -39,14 +42,16 @@ class Model:
         self.training_score: float | None = None
         self.testing_score: float | None = None
         match self.model_type:
-            case ModelType.SIMPLE_LINEAR:
+            case ModelType.SIMPLE_LINEAR.value:
                 self.model = LinearRegression(**model_params)
-            case ModelType.LASSO:
+            case ModelType.LASSO.value:
                 self.model = Lasso(**model_params)
-            case ModelType.RIDGE:
+            case ModelType.RIDGE.value:
                 self.model = Ridge(**model_params)
             case _:
-                raise ValueError("Unknown model type")
+                raise ValueError(
+                    f"Model type {model_type} is known but no algorithm is matched."
+                )
 
     def get_raw_data(self, bucket_name: str, process_date_str: str) -> pl.LazyFrame:
         """

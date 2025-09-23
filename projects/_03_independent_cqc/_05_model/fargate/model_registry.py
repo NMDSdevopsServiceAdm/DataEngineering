@@ -5,7 +5,7 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT")
 
 model_definitions = {
     "non_res_pir": {
-        "model_type": ModelType.SIMPLE_LINEAR,
+        "model_type": ModelType.SIMPLE_LINEAR.value,
         "model_identifier": "non_res_pir",
         "model_params": dict(),
         "version_parameter_location": f"/models/{ENVIRONMENT}/non_res_pir",
