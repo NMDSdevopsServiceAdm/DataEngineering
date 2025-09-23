@@ -4,12 +4,10 @@ import sys
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
 
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
-from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -31,18 +29,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
-    IndCQC.number_of_beds,
-    IndCQC.number_of_beds_banded,
-    IndCQC.ct_care_home_total_employed,
-    IndCQC.ct_care_home_total_employed_dedup,
     IndCQC.ct_care_home_total_employed_imputed,
-    IndCQC.ct_non_res_care_workers_employed,
-    IndCQC.ct_non_res_care_workers_employed_dedup,
-    IndCQC.ct_non_res_care_workers_employed_imputed,
-    IndCQC.current_region,
-    IndCQC.current_cssr,
-    IndCQC.current_lsoa21,
-    IndCQC.unix_time,
+    IndCQC.ct_non_res_filled_post_estimate,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -155,21 +143,7 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
     non_res_diagnostics_df = utils.select_rows_with_value(
         filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
     )
-    care_worker_ratio = calculate_care_worker_ratio(
-        non_res_diagnostics_df,
-    )
-    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
-        non_res_diagnostics_df, care_worker_ratio
-    )
-    non_res_diagnostics_df = merge_columns_in_order(
-        non_res_diagnostics_df,
-        [
-            IndCQC.ct_non_res_all_posts,
-            IndCQC.estimate_filled_posts,
-        ],
-        IndCQC.ct_non_res_filled_post_estimate,
-        IndCQC.ct_non_res_filled_post_estimate_source,
-    )
+
     list_of_models = dUtils.create_list_of_models()
     non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
         non_res_diagnostics_df,
@@ -196,48 +170,6 @@ def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame
         standardised_value_cutoff,
     )
     return non_res_diagnostics_df
-
-
-def calculate_care_worker_ratio(df: DataFrame) -> float:
-    """
-    Calculate the overall ratio of care workers to all posts and print it.
-
-    Args:
-        df (DataFrame): A dataframe containing the columns estimate_filled_posts and cqc_care_workers_employed_imputed.
-    Returns:
-        float: A float representing the ratio between care workers and all posts.
-    """
-    df = df.where(
-        (df[IndCQC.ct_non_res_care_workers_employed_imputed].isNotNull())
-        & (df[IndCQC.estimate_filled_posts].isNotNull())
-    )
-    total_care_workers = df.agg(
-        F.sum(df[IndCQC.ct_non_res_care_workers_employed_imputed])
-    ).collect()[0][0]
-    total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
-    care_worker_ratio = total_care_workers / total_posts
-    print(f"The care worker ratio used is: {care_worker_ratio}.")
-    return care_worker_ratio
-
-
-def convert_to_all_posts_using_ratio(
-    df: DataFrame, care_worker_ratio: float
-) -> DataFrame:
-    """
-    Convert the cqc_care_workers_employed figures to all workers.
-
-    Args:
-        df (DataFrame): A dataframe with non res capacity tracker data.
-        care_worker_ratio (float): The ratio of all care workers divided by all posts.
-
-    Returns:
-        DataFrame: A dataframe with a new column containing the all-workers estimate.
-    """
-    df = df.withColumn(
-        IndCQC.ct_non_res_all_posts,
-        F.col(IndCQC.ct_non_res_care_workers_employed_imputed) / care_worker_ratio,
-    )
-    return df
 
 
 if __name__ == "__main__":

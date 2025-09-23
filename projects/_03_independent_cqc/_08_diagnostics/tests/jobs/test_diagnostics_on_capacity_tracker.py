@@ -9,7 +9,6 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     DiagnosticsOnCapacityTrackerSchemas as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH: str = (
@@ -115,16 +114,10 @@ class RunDiagnosticsForNonResidential(DiagnosticsOnCapacityTrackerTests):
     @patch(f"{PATCH_PATH}.dUtils.filter_to_known_values")
     @patch(f"{PATCH_PATH}.dUtils.restructure_dataframe_to_column_wise")
     @patch(f"{PATCH_PATH}.dUtils.create_list_of_models")
-    @patch(f"{PATCH_PATH}.merge_columns_in_order")
-    @patch(f"{PATCH_PATH}.convert_to_all_posts_using_ratio")
-    @patch(f"{PATCH_PATH}.calculate_care_worker_ratio")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     def test_run_diagnostics_for_non_residential_runs(
         self,
         select_rows_with_value_mock: Mock,
-        calculate_care_worker_ratio_mock: Mock,
-        convert_to_all_posts_using_ratio_mock: Mock,
-        merge_columns_in_order_mock: Mock,
         create_list_of_models_mock: Mock,
         restructure_dataframe_to_column_wise_mock: Mock,
         filter_to_known_values_mock: Mock,
@@ -136,9 +129,6 @@ class RunDiagnosticsForNonResidential(DiagnosticsOnCapacityTrackerTests):
         job.run_diagnostics_for_non_residential(self.estimate_jobs_df)
 
         select_rows_with_value_mock.assert_called_once()
-        calculate_care_worker_ratio_mock.assert_called_once()
-        convert_to_all_posts_using_ratio_mock.assert_called_once()
-        merge_columns_in_order_mock.assert_called_once()
         create_list_of_models_mock.assert_called_once()
         restructure_dataframe_to_column_wise_mock.assert_called_once()
         filter_to_known_values_mock.assert_called_once()
@@ -163,43 +153,6 @@ class CheckConstantsTests(DiagnosticsOnCapacityTrackerTests):
     def test_standardised_value_cutoff_is_expected_value(self):
         self.assertEqual(job.standardised_value_cutoff, 1.0)
         self.assertIsInstance(job.standardised_value_cutoff, float)
-
-
-class CalculateCareWorkerRatioTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_care_worker_ratio_returns_correct_ratio(self):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_care_worker_ratio_rows, Schemas.calculate_care_worker_schema
-        )
-        expected_ratio = Data.expected_care_worker_ratio
-        returned_ratio = job.calculate_care_worker_ratio(test_df)
-        self.assertEqual(returned_ratio, expected_ratio)
-
-
-class ConvertToAllPostsUsingRatioTests(DiagnosticsOnCapacityTrackerTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_convert_to_all_posts_using_ratio_returns_correct_values(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.convert_to_all_posts_using_ratio_rows,
-            Schemas.convert_to_all_posts_using_ratio_schema,
-        )
-        test_ratio = Data.expected_care_worker_ratio
-        expected_df = self.spark.createDataFrame(
-            Data.expected_convert_to_all_posts_using_ratio_rows,
-            Schemas.expected_convert_to_all_posts_using_ratio_schema,
-        )
-        returned_df = job.convert_to_all_posts_using_ratio(test_df, test_ratio)
-
-        self.assertEqual(
-            returned_df.sort(IndCQC.location_id).collect(),
-            expected_df.collect(),
-        )
 
 
 if __name__ == "__main__":
