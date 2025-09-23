@@ -11,7 +11,7 @@ variable "CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "model_retrain", "model_preprocess"]
+  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "model_retrain", "model_preprocess", "_03_independent_cqc"]
 }
 
 # group "ingest" {
@@ -58,3 +58,10 @@ target "model_preprocess" {
   no-cache = true
 }
 
+target "_03_independent_cqc" {
+  context = "."
+  dockerfile = "./projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/03_independent_cqc:${CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}

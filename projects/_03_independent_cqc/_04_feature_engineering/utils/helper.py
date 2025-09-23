@@ -1,9 +1,10 @@
+from datetime import date
 from typing import Dict, List, Tuple
 
-from datetime import date
-from pyspark.sql import DataFrame, Window, functions as F
-from pyspark.sql.types import IntegerType
 from pyspark.ml.feature import VectorAssembler
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+from pyspark.sql.types import IntegerType
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 

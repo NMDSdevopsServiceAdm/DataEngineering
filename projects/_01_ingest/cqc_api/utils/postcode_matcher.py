@@ -1,10 +1,12 @@
-from pyspark.sql import DataFrame, Window, functions as F
 from functools import reduce
 from typing import Dict, List, Tuple
 
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+
 import utils.cleaning_utils as cUtils
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
+from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
+    ManualPostcodeCorrections,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -12,8 +14,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
-    ManualPostcodeCorrections,
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
 )
 
 
@@ -26,7 +28,7 @@ def run_postcode_matching(
 
     This function consists of 5 iterations of matching postcodes:
         - 1 - Match postcodes where there is an exact match at that point in time.
-        - 2 - If not, reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
+        - 2 - If not, reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
         - 3 - If not, replace known postcode issues using the invalid postcode dictionary.
         - 4 - If not, match the postcode based on the first half of the postcode only (truncated postcode).
         - 5 - If not, raise an error to manually investigate any unmatched postcodes.

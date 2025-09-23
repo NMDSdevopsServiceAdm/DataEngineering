@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
-from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
-)
+from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
 @dataclass

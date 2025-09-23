@@ -3,9 +3,12 @@ import warnings
 from dataclasses import asdict
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.errors import AnalysisException
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 import projects._01_ingest.cqc_api.jobs.delta_clean_cqc_location_data as job
+import utils.cleaning_utils as cUtils
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     CQCLocationsData as Data,
 )
@@ -13,20 +16,17 @@ from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CQCLocationsSchema as Schemas,
 )
 from utils import utils
-import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
 )
-from utils.column_values.categorical_column_values import (
-    Sector,
+from utils.column_names.ind_cqc_pipeline_columns import (
+    DimensionPartitionKeys as DimensionKeys,
 )
-
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
+from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.delta_clean_cqc_location_data"
 
@@ -35,6 +35,10 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_LOC_SOURCE = "some/directory"
     TEST_DESTINATION = "some/other/directory"
     TEST_ONS_POSTCODE_DIRECTORY_SOURCE = "some/other/directory"
+    TEST_GAC_SERVICE_DIMENSION_SOURCE = "dimension/some/other/directory"
+    TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
+    TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
+    TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -55,7 +59,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         super().setUp()
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.create_postcode_matching_dimension")
     @patch(f"{PATCH_PATH}.add_cqc_sector_column_to_cqc_locations_dataframe")
     @patch(f"{PATCH_PATH}.add_related_location_column")
     @patch(f"{PATCH_PATH}.extract_registered_manager_names")
@@ -66,9 +70,9 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.extract_from_struct")
     @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.create_dimension_from_missing_struct_column")
     @patch(f"{PATCH_PATH}.select_registered_locations_only")
     @patch(f"{PATCH_PATH}.impute_historic_relationships")
-    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch(f"{PATCH_PATH}.remove_records_from_locations_data")
     @patch(f"{PATCH_PATH}.remove_non_social_care_locations")
@@ -87,9 +91,9 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_non_social_care_locations_mock: Mock,
         remove_records_from_locations_data_mock: Mock,
         format_date_fields_mock: Mock,
-        calculate_time_registered_for_mock: Mock,
         impute_historic_relationships_mock: Mock,
         select_registered_locations_only_mock: Mock,
+        create_dimension_from_missing_struct_column_mock: Mock,
         impute_missing_struct_column_mock: Mock,
         remove_locations_that_never_had_regulated_activities_mock: Mock,
         extract_from_struct_mock: Mock,
@@ -100,18 +104,30 @@ class MainTests(CleanCQCLocationDatasetTests):
         extract_registered_manager_names_mock: Mock,
         add_related_location_column_mock: Mock,
         add_cqc_sector_column_to_cqc_locations_dataframe: Mock,
-        run_postcode_matching_mock: Mock,
+        create_postcode_matching_dim_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         read_from_parquet_mock.side_effect = [
             self.test_clean_cqc_location_df,
             self.test_ons_postcode_directory_df,
         ]
+        remove_locations_that_never_had_regulated_activities_mock.return_value = (
+            Mock(),
+            Mock(),
+        )
+        remove_specialist_colleges_mock.return_value = (
+            Mock(),
+            Mock(),
+        )
 
         job.main(
             self.TEST_LOC_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
             self.TEST_DESTINATION,
+            self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
+            self.TEST_SPECIALISM_DIMENSION_SOURCE,
+            self.TEST_POSTCODE_DIMENSION_SOURCE,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -122,10 +138,10 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_non_social_care_locations_mock.assert_called_once()
         remove_records_from_locations_data_mock.assert_called_once()
         format_date_fields_mock.assert_called_once()
-        calculate_time_registered_for_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()
         select_registered_locations_only_mock.assert_called_once()
-        self.assertEqual(impute_missing_struct_column_mock.call_count, 3)
+        self.assertEqual(create_dimension_from_missing_struct_column_mock.call_count, 3)
+        impute_missing_struct_column_mock.assert_not_called()
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         self.assertEqual(extract_from_struct_mock.call_count, 2)
         self.assertEqual(classify_specialisms_mock.call_count, 3)
@@ -135,8 +151,9 @@ class MainTests(CleanCQCLocationDatasetTests):
         extract_registered_manager_names_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
         add_cqc_sector_column_to_cqc_locations_dataframe.assert_called_once()
-        run_postcode_matching_mock.assert_called_once()
-        write_to_parquet_mock.assert_called_once_with(
+        create_postcode_matching_dim_mock.assert_called_once()
+        self.assertEqual(5, write_to_parquet_mock.call_count)
+        write_to_parquet_mock.assert_called_with(
             ANY,
             self.TEST_DESTINATION,
             mode="overwrite",
@@ -147,6 +164,164 @@ class MainTests(CleanCQCLocationDatasetTests):
         expected_cols = list(asdict(CQCLCleaned()).values())
         for col in final_df.columns:
             self.assertIn(col, expected_cols)
+
+
+class CreateDimensionTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    def test_create_dimension_from_missing_struct_column(
+        self, mock_impute_missing_struct_column, mock_read_from_parquet
+    ):
+        # GIVEN
+        #   Historic data:
+        mock_read_from_parquet.return_value = self.spark.createDataFrame(
+            Data.previous_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_schema,
+        )
+        #   Current data has some updates to old rows and a new row
+        mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
+            Data.create_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_input_schema,
+        )
+
+        # WHEN
+        #   the function is run
+        returned_df = job.create_dimension_from_missing_struct_column(
+            df=Mock(),
+            missing_struct_column=CQCL.gac_service_types,
+            dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        #   The updated rows and the new row should be returned
+        expected_df = self.spark.createDataFrame(
+            Data.expected_gac_service_delta_rows,
+            Schemas.gac_service_dimension_return_schema,
+        )
+        mock_read_from_parquet.assert_called_once_with(
+            self.TEST_GAC_SERVICE_DIMENSION_SOURCE
+        )
+        mock_impute_missing_struct_column.assert_called_once()
+        self.assertEqual(len(returned_df.columns), len(expected_df.columns))
+        column_order = [
+            CQCL.location_id,
+            CQCL.gac_service_types,
+            CQCLCleaned.imputed_gac_service_types,
+            Keys.import_date,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            expected_df.select(column_order).collect(),
+            returned_df.select(column_order).collect(),
+        )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    def test_create_dimension_when_no_historic_data(
+        self, mock_impute_missing_struct_column, mock_read_from_parquet
+    ):
+        # GIVEN
+        #   Trying to read historic data creates an analysis exception
+        mock_read_from_parquet.side_effect = AnalysisException(
+            "The file does not exist"
+        )
+        mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
+            Data.create_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_input_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_gac_service_delta_when_no_history_rows,
+            Schemas.gac_service_dimension_return_schema,
+        )
+
+        # WHEN
+        #   the function is run
+        returned_df = job.create_dimension_from_missing_struct_column(
+            df=Mock(),
+            missing_struct_column=CQCL.gac_service_types,
+            dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        #   The original data should be returned in full, with new columns for the update date
+        mock_read_from_parquet.assert_called_once()
+        mock_impute_missing_struct_column.assert_called_once()
+        column_order = [
+            CQCL.location_id,
+            CQCL.gac_service_types,
+            CQCLCleaned.imputed_gac_service_types,
+            Keys.import_date,
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            returned_df.select(column_order).collect(),
+            expected_df.select(column_order).collect(),
+        )
+
+
+class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    def test_postcode_matching_dimension(
+        self, mock_run_postcode_matching, mock_read_from_parquet
+    ):
+        # GIVEN
+        #   Historic data:
+        mock_read_from_parquet.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_historic_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+        #   Current data:
+        mock_run_postcode_matching.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_current_rows,
+            Schemas.postcode_matching_dimension_input_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_postcode_matching_dimension_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+
+        # WHEN
+        returned_df = job.create_postcode_matching_dimension(
+            cqc_df=Mock(),
+            postcode_df=Mock(),
+            dimension_location=self.TEST_POSTCODE_DIMENSION_SOURCE,
+            dimension_update_date="20240201",
+        )
+
+        # THEN
+        mock_read_from_parquet.assert_called_once_with(
+            self.TEST_POSTCODE_DIMENSION_SOURCE
+        )
+        mock_run_postcode_matching.assert_called_once()
+        self.assertEqual(len(returned_df.columns), len(expected_df.columns))
+        column_order = [
+            CQCLCleaned.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            CQCLCleaned.postal_address_line1,
+            CQCLCleaned.postcode,
+            CQCLCleaned.postcode_cleaned,
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.import_date,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            expected_df.select(column_order).collect(),
+            returned_df.select(column_order).collect(),
+        )
 
 
 class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
@@ -232,83 +407,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         )
         returned_df = job.impute_missing_registration_dates(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
-
-
-class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_same_day_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_same_day_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_exact_months_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_exact_months_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
-
-    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
-        )
-        returned_df = job.calculate_time_registered_for(test_df)
-
-        expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
-        )
-        returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
-        expected_data = expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
 
 
 class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
@@ -529,25 +627,33 @@ class ImputeMissingStructColumnTests(CleanCQCLocationDatasetTests):
 class RemoveLocationsThatNeverHadRegulatedActivitesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
-        self.test_df = self.spark.createDataFrame(
-            Data.remove_locations_that_never_had_regulated_activities_rows,
-            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        self.test_cqc_df = self.spark.createDataFrame(
+            Data.remove_locations_that_never_had_regulated_activities_cqc_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_cqc_schema,
         )
-        self.returned_df = job.remove_locations_that_never_had_regulated_activities(
-            self.test_df
+        self.test_dim_df = self.spark.createDataFrame(
+            Data.remove_locations_that_never_had_regulated_activities_dim_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_dim_schema,
         )
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_remove_locations_that_never_had_regulated_activities_rows,
-            Schemas.remove_locations_that_never_had_regulated_activities_schema,
+        self.returned_cqc_df, self.returned_dim_df = (
+            job.remove_locations_that_never_had_regulated_activities(
+                self.test_cqc_df, self.test_dim_df
+            )
         )
-
-        self.returned_data = self.returned_df.sort(CQCL.location_id).collect()
-        self.expected_data = self.expected_df.collect()
+        self.expected_cqc_df = self.spark.createDataFrame(
+            Data.expected_remove_locations_that_never_had_regulated_activities_cqc_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_cqc_schema,
+        )
+        self.expected_dim_df = self.spark.createDataFrame(
+            Data.expected_remove_locations_that_never_had_regulated_activities_dim_rows,
+            Schemas.remove_locations_that_never_had_regulated_activities_dim_schema,
+        )
 
     def test_remove_locations_that_never_had_regulated_activities_returns_expected_data(
         self,
     ):
-        self.assertEqual(self.returned_data, self.expected_data)
+        self.assertEqual(self.expected_cqc_df.collect(), self.returned_cqc_df.collect())
+        self.assertEqual(self.expected_dim_df.collect(), self.returned_dim_df.collect())
 
 
 class ExtractFromStructTests(CleanCQCLocationDatasetTests):
@@ -630,6 +736,8 @@ class RealignCareHomeColumnWthPrimaryServiceTests(CleanCQCLocationDatasetTests):
 class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
     def setUp(self) -> None:
         super().setUp()
+        self.mock_cqc_df = Mock()
+        self.mock_cqc_df.join.return_value = Mock()
 
     def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_only_service(
         self,
@@ -638,7 +746,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -652,7 +760,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -666,7 +774,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -680,7 +788,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -694,7 +802,7 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Data.test_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        returned_df = job.remove_specialist_colleges(test_df)
+        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -808,41 +916,6 @@ class AddColumnRelatedLocation(CleanCQCLocationDatasetTests):
         self.assertEqual(
             expected_df.collect(), returned_df.sort(CQCL.location_id).collect()
         )
-
-
-class CalculateTimeSinceDormant(CleanCQCLocationDatasetTests):
-    def setUp(self):
-        super().setUp()
-
-        self.test_df = self.spark.createDataFrame(
-            Data.calculate_time_since_dormant_rows,
-            Schemas.calculate_time_since_dormant_schema,
-        )
-        self.returned_df = job.calculate_time_since_dormant(self.test_df)
-        self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_since_dormant_rows,
-            Schemas.expected_calculate_time_since_dormant_schema,
-        )
-
-        self.columns_added_by_function = [
-            column
-            for column in self.returned_df.columns
-            if column not in self.test_df.columns
-        ]
-
-    def test_calculate_time_since_dormant_returns_new_column(self):
-        self.assertEqual(len(self.columns_added_by_function), 1)
-        self.assertEqual(
-            self.columns_added_by_function[0], CQCLCleaned.time_since_dormant
-        )
-
-    def test_calculate_time_since_dormant_returns_expected_values(self):
-        returned_data = self.returned_df.sort(
-            CQCLCleaned.cqc_location_import_date
-        ).collect()
-        expected_data = self.expected_df.collect()
-
-        self.assertEqual(returned_data, expected_data)
 
 
 class CreateLaCqcProviderDataframeTests(CleanCQCLocationDatasetTests):

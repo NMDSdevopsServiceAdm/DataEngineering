@@ -25,9 +25,8 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     contemporary_geography_columns,
     current_geography_columns,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as LegacyColumns
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
@@ -354,7 +353,7 @@ def calculate_time_registered_for(df: DataFrame) -> DataFrame:
         DataFrame: A dataframe with the new time_registered column added.
     """
     df = df.withColumn(
-        CQCLClean.time_registered,
+        LegacyColumns.time_registered,
         F.floor(
             F.months_between(
                 F.col(CQCLClean.cqc_location_import_date),
@@ -702,7 +701,7 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     )
 
     df = df.withColumn(
-        CQCLClean.dormant_date,
+        LegacyColumns.dormant_date,
         F.when(
             F.col(CQCLClean.dormancy) == Dormancy.dormant,
             F.col(CQCLClean.cqc_location_import_date),
@@ -710,19 +709,19 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     )
 
     df = df.withColumn(
-        CQCLClean.last_dormant_date,
-        F.last(CQCLClean.dormant_date, ignorenulls=True).over(w),
+        LegacyColumns.last_dormant_date,
+        F.last(LegacyColumns.dormant_date, ignorenulls=True).over(w),
     )
 
     df = df.withColumn(
-        CQCLClean.time_since_dormant,
+        LegacyColumns.time_since_dormant,
         F.when(
-            F.col(CQCLClean.last_dormant_date).isNotNull(),
+            F.col(LegacyColumns.last_dormant_date).isNotNull(),
             F.when(F.col(CQCLClean.dormancy) == Dormancy.dormant, 1).otherwise(
                 F.floor(
                     F.months_between(
                         F.col(CQCLClean.cqc_location_import_date),
-                        F.col(CQCLClean.last_dormant_date),
+                        F.col(LegacyColumns.last_dormant_date),
                     )
                 )
                 + 1,
@@ -731,8 +730,8 @@ def calculate_time_since_dormant(df: DataFrame) -> DataFrame:
     )
 
     df = df.drop(
-        CQCLClean.dormant_date,
-        CQCLClean.last_dormant_date,
+        LegacyColumns.dormant_date,
+        LegacyColumns.last_dormant_date,
     )
 
     return df
