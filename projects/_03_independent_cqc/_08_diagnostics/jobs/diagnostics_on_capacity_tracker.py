@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -12,6 +13,9 @@ from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -48,14 +52,18 @@ def main(
     non_res_diagnostics_destination,
     non_res_summary_diagnostics_destination,
 ):
-    print("Creating diagnostics for capacity tracker data")
+    logger.info("Creating diagnostics for capacity tracker data")
 
     filled_posts_df: DataFrame = utils.read_from_parquet(
         estimate_filled_posts_source, estimate_filled_posts_columns
     )
 
-    care_home_diagnostics_df = run_diagnostics_for_care_homes(filled_posts_df)
-    non_res_diagnostics_df = run_diagnostics_for_non_residential(filled_posts_df)
+    care_home_diagnostics_df = run_diagnostics(
+        filled_posts_df, CareHome.care_home, IndCQC.ct_care_home_total_employed_imputed
+    )
+    non_res_diagnostics_df = run_diagnostics(
+        filled_posts_df, CareHome.not_care_home, IndCQC.ct_non_res_filled_post_estimate
+    )
 
     care_home_summary_df = dUtils.create_summary_diagnostics_table(
         care_home_diagnostics_df
@@ -88,93 +96,49 @@ def main(
     )
 
 
-def run_diagnostics_for_care_homes(filled_posts_df: DataFrame) -> DataFrame:
+def run_diagnostics(
+    df: DataFrame, care_home_value: str, col_for_diagnostics: str
+) -> DataFrame:
     """
-    Controls the steps to generate the care home diagnostic data frame using capacity tracker data as a comparison.
+    Controls the steps to generate the diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
+        df (DataFrame): A dataframe containing pipeline estimates.
+        care_home_value (str): The categorical value to filter the care_home column by.
+        col_for_diagnostics (str): The column name to use for diagnostics comparison.
 
     Returns:
-        DataFrame: A dataframe containing diagnostic data for care homes using capacity tracker values.
+        DataFrame: A dataframe containing diagnostic data for locations using capacity tracker values.
     """
-    care_home_diagnostics_df = utils.select_rows_with_value(
-        filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.care_home
+    filtered_df = utils.select_rows_with_value(
+        df, IndCQC.care_home, value_to_keep=care_home_value
     )
+
     list_of_models = dUtils.create_list_of_models()
-    care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_imputed,
-        list_of_models,
+    restructured_df = dUtils.restructure_dataframe_to_column_wise(
+        filtered_df, col_for_diagnostics, list_of_models
     )
-    care_home_diagnostics_df = dUtils.filter_to_known_values(
-        care_home_diagnostics_df, IndCQC.estimate_value
+    known_estimates_df = dUtils.filter_to_known_values(
+        restructured_df, IndCQC.estimate_value
     )
 
     window = dUtils.create_window_for_model_and_service_splits()
 
-    care_home_diagnostics_df = dUtils.calculate_distribution_metrics(
-        care_home_diagnostics_df, window
-    )
-    care_home_diagnostics_df = dUtils.calculate_residuals(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_imputed,
-    )
-    care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
-        care_home_diagnostics_df,
+    diagnostics_df = dUtils.calculate_distribution_metrics(known_estimates_df, window)
+    diagnostics_df = dUtils.calculate_residuals(diagnostics_df, col_for_diagnostics)
+    diagnostics_df = dUtils.calculate_aggregate_residuals(
+        diagnostics_df,
         window,
         absolute_value_cutoff,
         percentage_value_cutoff,
         standardised_value_cutoff,
     )
-    return care_home_diagnostics_df
-
-
-def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame:
-    """
-    Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
-
-    Args:
-        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
-
-    Returns:
-        DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
-    """
-    non_res_diagnostics_df = utils.select_rows_with_value(
-        filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
-    )
-
-    list_of_models = dUtils.create_list_of_models()
-    non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        non_res_diagnostics_df,
-        IndCQC.ct_non_res_filled_post_estimate,
-        list_of_models,
-    )
-    non_res_diagnostics_df = dUtils.filter_to_known_values(
-        non_res_diagnostics_df, IndCQC.estimate_value
-    )
-
-    window = dUtils.create_window_for_model_and_service_splits()
-
-    non_res_diagnostics_df = dUtils.calculate_distribution_metrics(
-        non_res_diagnostics_df, window
-    )
-    non_res_diagnostics_df = dUtils.calculate_residuals(
-        non_res_diagnostics_df, IndCQC.ct_non_res_filled_post_estimate
-    )
-    non_res_diagnostics_df = dUtils.calculate_aggregate_residuals(
-        non_res_diagnostics_df,
-        window,
-        absolute_value_cutoff,
-        percentage_value_cutoff,
-        standardised_value_cutoff,
-    )
-    return non_res_diagnostics_df
+    return diagnostics_df
 
 
 if __name__ == "__main__":
-    print("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
-    print(f"Job parameters: {sys.argv}")
+    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
+    logger.info(f"Job parameters: {sys.argv}")
 
     (
         estimate_filled_posts_source,
@@ -213,4 +177,4 @@ if __name__ == "__main__":
         non_res_summary_diagnostics_destination,
     )
 
-    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
+    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' complete")
