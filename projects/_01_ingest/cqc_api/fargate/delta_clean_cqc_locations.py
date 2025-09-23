@@ -14,9 +14,10 @@ from utils.column_values.categorical_column_values import (
 
 def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
     """
-    Cleans provider id column by:
-     1. replacing provider ids with more than 14 characters with Null
-     2. forward and backwards filling missing provider ids over location id
+    Cleans provider ID column, removing long IDs and then forwards and backwards filling the value
+
+     1. Replace provider ids with more than 14 characters with Null
+     2. Forward and backwards fill missing provider ids over location id
     Args:
         cqc_df (pl.DataFrame): Dataframe with provider id column
 
@@ -24,7 +25,7 @@ def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
         pl.DataFrame: Dataframe with cleaned provider id column
 
     """
-    # 1. replacing provider ids with more than 14 characters with Null
+    # 1. Replace provider ids with more than 14 characters with Null
     cqc_df = cqc_df.with_columns(
         pl.when(pl.col(CQCLClean.provider_id).str.len_chars() <= 14)
         .then(pl.col(CQCLClean.provider_id))
@@ -32,7 +33,7 @@ def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
         .alias(CQCLClean.provider_id)
     )
 
-    # 2. forward and backwards filling missing provider ids over location id
+    # 2. Forward and backwards fill missing provider ids over location id
     cqc_df = cqc_df.with_columns(
         pl.col(CQCLClean.provider_id)
         .forward_fill()
@@ -46,12 +47,13 @@ def clean_and_impute_registration_date(
     cqc_df: pl.DataFrame,
 ) -> pl.DataFrame:
     """
-    Cleans and imputes registration date by:
-    1. Copying all existing registration dates into the imputed column
-    2. Removing any time elements from the (imputed) registration date
-    3. Replacing registration dates that are after the import date with null
-    4. Replacing registration dates with the minimum registration date for that location id
-    5. Replacing registration dates with the minimum import date if there are no registration dates for that location
+    Cleans registration dates into YYYY-MM-DD format, removing invalid dates and then imputing missing values.
+
+    1. Copy all existing registration dates into the imputed column
+    2. Remove any time elements from the (imputed) registration date
+    3. Replace registration dates that are after the import date with null
+    4. Replace registration dates with the minimum registration date for that location id
+    5. Replace registration dates with the minimum import date if there are no registration dates for that location
 
     Args:
         cqc_df (pl.DataFrame): Dataframe with registration and import date columns
@@ -60,17 +62,17 @@ def clean_and_impute_registration_date(
         pl.DataFrame: Dataframe with imputed registration date column
 
     """
-    # 1. Copying all existing registration dates into the imputed column
+    # 1. Copy all existing registration dates into the imputed column
     cqc_df = cqc_df.with_columns(
         pl.col(CQCLClean.registration_date).alias(CQCLClean.imputed_registration_date)
     )
 
-    # 2. Removing any time elements from the (imputed) registration date
+    # 2. Remove any time elements from the (imputed) registration date
     cqc_df = cqc_df.with_columns(
         pl.col(CQCLClean.imputed_registration_date).str.slice(0, 10)
     )
 
-    # 3. Replacing registration dates that are after the import date with null
+    # 3. Replace registration dates that are after the import date with null
     cqc_df = cqc_df.with_columns(
         pl.when(
             pl.col(CQCLClean.imputed_registration_date).str.to_date(format="%Y-%m-%d")
@@ -80,7 +82,7 @@ def clean_and_impute_registration_date(
         .otherwise(None)
     )
 
-    # 4. Replacing registration dates with the minimum registration date for that location id
+    # 4. Replace registration dates with the minimum registration date for that location id
     cqc_df = cqc_df.with_columns(
         pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
         .then(
@@ -92,7 +94,7 @@ def clean_and_impute_registration_date(
         .alias(CQCLClean.imputed_registration_date)
     )
 
-    # 5. Replacing registration dates with the minimum import date if there are no registration dates for that location
+    # 5. Replace registration dates with the minimum import date if there are no registration dates for that location
     cqc_df = cqc_df.with_columns(
         pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
         .then(
