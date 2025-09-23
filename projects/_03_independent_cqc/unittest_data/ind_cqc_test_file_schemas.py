@@ -2016,6 +2016,36 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
+class EstimateNonResCTFilledPostsSchemas:
+    estimates_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, DoubleType(), True
+            ),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+        ]
+    )
+
+    convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, DoubleType(), True
+            ),
+        ]
+    )
+    expected_convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            *convert_to_all_posts_using_ratio_schema,
+            StructField(IndCQC.ct_non_res_filled_post_estimate, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelPrimaryServiceRateOfChange:
     primary_service_rate_of_change_schema = StructType(
         [
@@ -2867,30 +2897,6 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    convert_to_all_posts_using_ratio_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
-            ),
-        ]
-    )
-    expected_convert_to_all_posts_using_ratio_schema = StructType(
-        [
-            *convert_to_all_posts_using_ratio_schema,
-            StructField(IndCQC.ct_non_res_filled_post_estimate, FloatType(), True),
-        ]
-    )
-    calculate_care_worker_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
-            ),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
 
