@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import ANY, Mock, patch, call
+from unittest.mock import ANY, Mock, call, patch
 
 import projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings as job
 from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
@@ -8,18 +8,12 @@ from projects._02_sfc_internal.unittest_data.sfc_test_file_data import (
 from projects._02_sfc_internal.unittest_data.sfc_test_file_schemas import (
     FlattenCQCRatings as Schema,
 )
-
 from utils import utils
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_column_values import (
-    CQCCurrentOrHistoricValues,
-)
-
+from utils.column_values.categorical_column_values import CQCCurrentOrHistoricValues
 
 PATCH_PATH = "projects._02_sfc_internal.cqc_ratings.jobs.flatten_cqc_ratings"
 
@@ -29,7 +23,6 @@ class FlattenCQCRatingsTests(unittest.TestCase):
     TEST_WORKPLACE_SOURCE = "some/directory"
     TEST_CQC_RATINGS_DESTINATION = "some/other/directory"
     TEST_BENCHMARK_RATINGS_DESTINATION = "some/other/directory"
-    TEST_ASSESSMENT_RATINGS_DESTINATION = "some/other/directory"
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -56,6 +49,8 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.add_latest_rating_flag_column")
     @patch(f"{PATCH_PATH}.add_rating_sequence_column")
     @patch(f"{PATCH_PATH}.remove_blank_and_duplicate_rows")
+    @patch(f"{PATCH_PATH}.merge_cqc_ratings")
+    @patch(f"{PATCH_PATH}.raise_error_when_assessment_df_contains_overall_data")
     @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
@@ -70,6 +65,8 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
         prepare_assessment_ratings_mock: Mock,
+        raise_error_when_assessment_df_contains_overall_data_mock: Mock,
+        merge_cqc_ratings_mock: Mock,
         remove_blank_and_duplicate_rows_mock: Mock,
         add_rating_sequence_column_mock: Mock,
         add_latest_rating_flag_column_mock: Mock,
@@ -92,7 +89,6 @@ class MainTests(FlattenCQCRatingsTests):
             self.TEST_WORKPLACE_SOURCE,
             self.TEST_CQC_RATINGS_DESTINATION,
             self.TEST_BENCHMARK_RATINGS_DESTINATION,
-            self.TEST_ASSESSMENT_RATINGS_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -101,6 +97,8 @@ class MainTests(FlattenCQCRatingsTests):
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()
+        raise_error_when_assessment_df_contains_overall_data_mock.assert_called_once()
+        merge_cqc_ratings_mock.assert_called_once()
         remove_blank_and_duplicate_rows_mock.assert_called_once()
         self.assertEqual(add_rating_sequence_column_mock.call_count, 2)
         add_latest_rating_flag_column_mock.assert_called_once()
@@ -111,7 +109,7 @@ class MainTests(FlattenCQCRatingsTests):
         add_good_and_outstanding_flag_column_mock.assert_called_once()
         join_establishment_ids_mock.assert_called_once()
         create_benchmark_ratings_dataset_mock.assert_called_once()
-        self.assertEqual(write_to_parquet_mock.call_count, 3)
+        self.assertEqual(write_to_parquet_mock.call_count, 2)
 
         expected_write_to_parquet_calls = [
             call(
@@ -122,11 +120,6 @@ class MainTests(FlattenCQCRatingsTests):
             call(
                 ANY,
                 self.TEST_BENCHMARK_RATINGS_DESTINATION,
-                mode="overwrite",
-            ),
-            call(
-                ANY,
-                self.TEST_ASSESSMENT_RATINGS_DESTINATION,
                 mode="overwrite",
             ),
         ]
@@ -243,32 +236,90 @@ class FlattenHistoricRatings(FlattenCQCRatingsTests):
         self.assertEqual(returned_data, expected_data)
 
 
-class FlattenAssessmentRatings(FlattenCQCRatingsTests):
+class PrepareAssessmentRatings(FlattenCQCRatingsTests):
     def setUp(self) -> None:
         super().setUp()
         self.test_assessment_ratings_df = self.spark.createDataFrame(
-            Data.flatten_assessment_ratings_rows,
-            Schema.flatten_assessment_ratings_schema,
+            Data.prepare_assessment_ratings_rows,
+            Schema.prepare_assessment_ratings_schema,
         )
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_flatten_assessment_ratings_rows,
-            Schema.expected_flatten_assessment_ratings_schema,
+            Data.expected_prepare_assessment_ratings_rows,
+            Schema.expected_prepare_assessment_ratings_schema,
         )
-        self.returned_df = job.flatten_assessment_ratings(
+        self.returned_df = job.prepare_assessment_ratings(
             self.test_assessment_ratings_df
         )
 
-    def test_flatten_assessment_ratings_returns_correct_columns(self):
+    def test_prepare_assessment_ratings_returns_correct_columns(self):
         returned_columns = len(self.returned_df.columns)
         expected_columns = len(self.expected_df.columns)
         self.assertEqual(returned_columns, expected_columns)
 
-    def test_flatten_assessment_ratings_returns_correct_rows(self):
+    def test_prepare_assessment_ratings_returns_correct_rows(self):
         returned_rows = self.returned_df.count()
         expected_rows = self.expected_df.count()
         self.assertEqual(returned_rows, expected_rows)
 
-    def test_flatten_assessment_ratings_returns_correct_values(self):
+    def test_prepare_assessment_ratings_returns_correct_values(self):
+        returned_data = self.returned_df.collect()
+        expected_data = self.expected_df.collect()
+        self.assertEqual(returned_data, expected_data)
+
+
+class RaiseErrorWhenAssessmentDfContainsOverallData(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_raise_error_when_assessment_df_contains_overall_data_raises_error_when_overall_is_populated(
+        self,
+    ):
+        test_df_with_overall_data = self.spark.createDataFrame(
+            Data.raise_error_when_assessment_df_contains_overall_data_with_overall_data_rows,
+            Schema.raise_error_when_assessment_df_contains_overall_data_schema,
+        )
+
+        with self.assertRaises(ValueError) as context:
+            job.raise_error_when_assessment_df_contains_overall_data(
+                test_df_with_overall_data
+            )
+
+        self.assertIn(
+            "The overall object within the assessments column contains 1 values for social care locations.",
+            str(context.exception),
+        )
+
+
+class MergeCQCRatings(FlattenCQCRatingsTests):
+    def setUp(self) -> None:
+        super().setUp()
+        self.test_assessment_ratings_df = self.spark.createDataFrame(
+            Data.assessment_ratings_for_merging_rows,
+            Schema.assessment_ratings_for_merging_schema,
+        )
+        self.test_standard_ratings_df = self.spark.createDataFrame(
+            Data.standard_ratings_for_merging_rows,
+            Schema.standard_ratings_for_merging_schema,
+        )
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_merge_cqc_ratings_rows,
+            Schema.expected_merge_cqc_ratings_schema,
+        )
+        self.returned_df = job.merge_cqc_ratings(
+            self.test_assessment_ratings_df, self.test_standard_ratings_df
+        )
+
+    def test_merge_cqc_ratings_returns_correct_columns(self):
+        returned_columns = self.returned_df.columns
+        expected_columns = self.expected_df.columns
+        self.assertEqual(returned_columns, expected_columns)
+
+    def test_merge_cqc_ratings_returns_correct_rows(self):
+        returned_rows = self.returned_df.count()
+        expected_rows = self.expected_df.count()
+        self.assertEqual(returned_rows, expected_rows)
+
+    def test_merge_cqc_ratings_returns_correct_values(self):
         returned_data = self.returned_df.collect()
         expected_data = self.expected_df.collect()
         self.assertEqual(returned_data, expected_data)
@@ -399,10 +450,10 @@ class AddRatingSequenceColumn(FlattenCQCRatingsTests):
         self,
     ):
         returned_data = self.returned_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         expected_data = self.expected_reversed_df.sort(
-            CQCL.location_id, CQCRatings.date
+            CQCL.location_id, CQCRatings.date, CQCL.assessment_date
         ).collect()
         self.assertEqual(returned_data, expected_data)
 

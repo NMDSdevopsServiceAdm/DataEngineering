@@ -3,25 +3,31 @@ import warnings
 from dataclasses import asdict
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 import projects._01_ingest.cqc_api.jobs.clean_cqc_location_data as job
+import utils.cleaning_utils as cUtils
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     CQCLocationsData as Data,
 )
 from projects._01_ingest.unittest_data.ingest_test_file_schemas import (
     CQCLocationsSchema as Schemas,
 )
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
+    CleanIndCQCData as LegacyData,
+)
+from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import (
+    CleanIndCQCData as LegacySchemas,
+)
 from utils import utils
-import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLCleaned,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as LegacyColumns
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
 )
 
 PATCH_PATH = "projects._01_ingest.cqc_api.jobs.clean_cqc_location_data"
@@ -235,14 +241,14 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_same_day_rows,
-            Schemas.calculate_time_registered_for_schema,
+            LegacyData.calculate_time_registered_same_day_rows,
+            LegacySchemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_same_day_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
+            LegacyData.expected_calculate_time_registered_same_day_rows,
+            LegacySchemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.collect()
         expected_data = expected_df.collect()
@@ -253,14 +259,14 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_exact_months_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
+            LegacyData.calculate_time_registered_exact_months_apart_rows,
+            LegacySchemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_exact_months_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
+            LegacyData.expected_calculate_time_registered_exact_months_apart_rows,
+            LegacySchemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
         expected_data = expected_df.collect()
@@ -271,14 +277,14 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
+            LegacyData.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            LegacySchemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
+            LegacyData.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            LegacySchemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
         expected_data = expected_df.collect()
@@ -289,14 +295,14 @@ class CalculateTimeRegisteredForTests(CleanCQCLocationDatasetTests):
         self,
     ):
         test_df = self.spark.createDataFrame(
-            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.calculate_time_registered_for_schema,
+            LegacyData.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            LegacySchemas.calculate_time_registered_for_schema,
         )
         returned_df = job.calculate_time_registered_for(test_df)
 
         expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
-            Schemas.expected_calculate_time_registered_for_schema,
+            LegacyData.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            LegacySchemas.expected_calculate_time_registered_for_schema,
         )
         returned_data = returned_df.sort(CQCLCleaned.location_id).collect()
         expected_data = expected_df.collect()
@@ -808,13 +814,13 @@ class CalculateTimeSinceDormant(CleanCQCLocationDatasetTests):
         super().setUp()
 
         self.test_df = self.spark.createDataFrame(
-            Data.calculate_time_since_dormant_rows,
-            Schemas.calculate_time_since_dormant_schema,
+            LegacyData.calculate_time_since_dormant_rows,
+            LegacySchemas.calculate_time_since_dormant_schema,
         )
         self.returned_df = job.calculate_time_since_dormant(self.test_df)
         self.expected_df = self.spark.createDataFrame(
-            Data.expected_calculate_time_since_dormant_rows,
-            Schemas.expected_calculate_time_since_dormant_schema,
+            LegacyData.expected_calculate_time_since_dormant_rows,
+            LegacySchemas.expected_calculate_time_since_dormant_schema,
         )
 
         self.columns_added_by_function = [
@@ -826,7 +832,7 @@ class CalculateTimeSinceDormant(CleanCQCLocationDatasetTests):
     def test_calculate_time_since_dormant_returns_new_column(self):
         self.assertEqual(len(self.columns_added_by_function), 1)
         self.assertEqual(
-            self.columns_added_by_function[0], CQCLCleaned.time_since_dormant
+            self.columns_added_by_function[0], LegacyColumns.time_since_dormant
         )
 
     def test_calculate_time_since_dormant_returns_expected_values(self):

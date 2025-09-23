@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.cqc_ratings_columns import (
-    CQCRatingsColumns as CQCRatings,
-)
+from utils.column_names.cqc_ratings_columns import CQCRatingsColumns as CQCRatings
 
 
 @dataclass
@@ -20,4 +18,7 @@ class CQCRatingsValueLabelsUnknownCodes:
         "Inspected but not rated": None,
         "No published rating": None,
         "Insufficient evidence to rate": None,
+        "Evidence requirements partially / not yet scored": None,
+        "No Approved Rating": None,
+        "": None,
     }

@@ -3,13 +3,7 @@ import warnings
 from datetime import date
 from unittest.mock import ANY, Mock, patch
 
-from pyspark.sql.types import (
-    IntegerType,
-    StringType,
-    StructField,
-    StructType,
-    DateType,
-)
+from pyspark.sql.types import DateType, IntegerType, StringType, StructField, StructType
 
 import projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts as job
 from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_data import (
@@ -19,11 +13,8 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
     CleanIndCQCData as Schemas,
 )
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._02_clean.jobs.clean_ind_cqc_filled_posts"
 
@@ -60,12 +51,16 @@ class MainTests(CleanIndFilledPostsTests):
     @patch(f"{PATCH_PATH}.populate_missing_care_home_number_of_beds")
     @patch(f"{PATCH_PATH}.replace_zero_beds_with_null")
     @patch(f"{PATCH_PATH}.remove_duplicate_cqc_care_homes")
+    @patch(f"{PATCH_PATH}.calculate_time_registered_for")
+    @patch(f"{PATCH_PATH}.calculate_time_since_dormant")
     @patch(f"{PATCH_PATH}.cUtils.reduce_dataset_to_earliest_file_per_month")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     def test_main(
         self,
         read_from_parquet_mock: Mock,
         reduce_dataset_to_earliest_file_per_month_mock: Mock,
+        calculate_time_since_dormant_mock: Mock,
+        calculate_time_registered_for_mock: Mock,
         remove_duplicate_cqc_care_homes_mock: Mock,
         replace_zero_beds_with_null_mock: Mock,
         populate_missing_care_home_number_of_beds_mock: Mock,
@@ -84,6 +79,8 @@ class MainTests(CleanIndFilledPostsTests):
         )
 
         reduce_dataset_to_earliest_file_per_month_mock.assert_called_once()
+        calculate_time_registered_for_mock.assert_called_once()
+        calculate_time_since_dormant_mock.assert_called_once()
         remove_duplicate_cqc_care_homes_mock.assert_called_once()
         replace_zero_beds_with_null_mock.assert_called_once()
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
@@ -233,6 +230,114 @@ class MainTests(CleanIndFilledPostsTests):
 
         df = df.collect()
         self.assertEqual(df[0][IndCQC.number_of_beds], 1)
+
+
+class CalculateTimeRegisteredForTests(CleanIndFilledPostsTests):
+    def setUp(self) -> None:
+        super().setUp()
+
+    def test_calculate_time_registered_returns_one_when_dates_are_on_the_same_day(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_same_day_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_same_day_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_exact_months_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_exact_months_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_exact_months_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_less_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+    def test_calculate_time_registered_returns_expected_values_when_dates_are_one_day_more_than_a_full_month_apart(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.calculate_time_registered_for_schema,
+        )
+        returned_df = job.calculate_time_registered_for(test_df)
+
+        expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows,
+            Schemas.expected_calculate_time_registered_for_schema,
+        )
+        returned_data = returned_df.sort(IndCQC.location_id).collect()
+        expected_data = expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
+
+
+class CalculateTimeSinceDormant(CleanIndFilledPostsTests):
+    def setUp(self):
+        super().setUp()
+
+        self.test_df = self.spark.createDataFrame(
+            Data.calculate_time_since_dormant_rows,
+            Schemas.calculate_time_since_dormant_schema,
+        )
+        self.returned_df = job.calculate_time_since_dormant(self.test_df)
+        self.expected_df = self.spark.createDataFrame(
+            Data.expected_calculate_time_since_dormant_rows,
+            Schemas.expected_calculate_time_since_dormant_schema,
+        )
+
+        self.columns_added_by_function = [
+            column
+            for column in self.returned_df.columns
+            if column not in self.test_df.columns
+        ]
+
+    def test_calculate_time_since_dormant_returns_new_column(self):
+        self.assertEqual(len(self.columns_added_by_function), 1)
+        self.assertEqual(self.columns_added_by_function[0], IndCQC.time_since_dormant)
+
+    def test_calculate_time_since_dormant_returns_expected_values(self):
+        returned_data = self.returned_df.sort(IndCQC.cqc_location_import_date).collect()
+        expected_data = self.expected_df.collect()
+
+        self.assertEqual(returned_data, expected_data)
 
 
 class RemoveDuplicateCqcCareHomesTests(CleanIndFilledPostsTests):

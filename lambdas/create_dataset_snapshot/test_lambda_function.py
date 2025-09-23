@@ -99,7 +99,7 @@ class TestUtilDependencies(unittest.TestCase):
 
         # When
         result = job.build_snapshot_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers", timepoint=20130301
+            "bucket", "read_folder", dataset="providers", timepoint=20130301
         )
 
         # Then

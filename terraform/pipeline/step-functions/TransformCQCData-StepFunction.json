@@ -44,22 +44,168 @@
               "Parameters": {
                 "JobName": "${clean_cqc_location_data_job_name}",
                 "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0",
+                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
                   "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
+                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "--gac_service_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+                  "--regulated_activities_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
+                  "--specialisms_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
+                  "--postcode_matching_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
                 }
               },
-              "Next": "Validate Locations Cleaned"
+              "ResultPath": "$.cleanLocationResult",
+              "Next": "Validate Location and Dimensions"
             },
-            "Validate Locations Cleaned": {
+            "Validate Location and Dimensions": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "Set Locations Parameters",
+                  "States": {
+                    "Set Locations Parameters": {
+                      "Type": "Pass",
+                      "Result": {
+                        "script": "validate_delta_locations_api_cleaned.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_delta_locations_api_cleaned/",
+                        "compare_path_arg": "--compare_path",
+                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+                      },
+                      "Next": "Validate Locations Cleaned"
+                    },
+                    "Validate Locations Cleaned": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${cluster_arn}",
+                        "TaskDefinition": "${task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path, $.compare_path_arg, $.compare_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.validateLocationsResult",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Set Postcode Parameters",
+                  "States": {
+                    "Set Postcode Parameters": {
+                      "Type": "Pass",
+                      "Result": {
+                        "script": "validate_dim_postcodes_matching.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=dim_postcode_matching/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_dim_postcode_matching/"
+                      },
+                      "Next": "Validate Postcode Dimension"
+                    },
+                    "Validate Postcode Dimension": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${cluster_arn}",
+                        "TaskDefinition": "${task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.validatePostcodeResult",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "Set GAC Parameters",
+                  "States": {
+                    "Set GAC Parameters": {
+                      "Type": "Pass",
+                      "Result": {
+                        "script": "validate_dim_gac_service.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=dim_gac_service/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_dim_gac_service/"
+                      },
+                      "Next": "Validate GAC Dimension"
+                    },
+                    "Validate GAC Dimension": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${cluster_arn}",
+                        "TaskDefinition": "${task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.validateGacResult",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "Next": "Build Locations Cleaned"
+            },
+            "Build Locations Cleaned": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::lambda:invoke",
               "Parameters": {
-                "JobName": "${validate_locations_api_cleaned_data_job_name}",
-                "Arguments": {
-                  "--raw_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/",
-                  "--cleaned_cqc_locations_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_delta_locations_api_cleaned/"
+                "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                "Payload": {
+                  "dataset": "locations-cleaned",
+                  "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                  "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                  "snapshot_date.$": "$$.State.EnteredTime"
                 }
               },
               "End": true

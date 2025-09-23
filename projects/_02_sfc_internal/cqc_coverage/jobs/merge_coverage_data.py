@@ -3,65 +3,91 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
-from utils import utils
 import utils.cleaning_utils as cUtils
+from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
+    add_columns_for_locality_manager_dashboard,
+)
 from projects._02_sfc_internal.reconciliation.utils import (
     reconciliation_utils as rUtils,
+)
+from utils import utils
+from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
+    AscwdsWorkplaceCleanedColumns as AWPClean,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
+    CqcProviderCleanedColumns as CQCPClean,
+)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
-    AscwdsWorkplaceCleanedColumns as AWPClean,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_names.coverage_columns import CoverageColumns
 from utils.column_names.cqc_ratings_columns import CQCRatingsColumns
+from utils.column_names.ind_cqc_pipeline_columns import (
+    DimensionPartitionKeys as DimensionKeys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
+    CQCCurrentOrHistoricValues,
     CQCLatestRating,
     InAscwds,
-    CQCCurrentOrHistoricValues,
-)
-from projects._02_sfc_internal.cqc_coverage.utils.lm_engagement_utils import (
-    add_columns_for_locality_manager_dashboard,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_cqc_locations_columns_to_import = [
-    CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
+    CQCLClean.cqc_location_import_date,
     CQCLClean.name,
-    CQCLClean.postal_code,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
-    CQCLClean.care_home,
     CQCLClean.number_of_beds,
-    CQCLClean.imputed_regulated_activities,
-    CQCLClean.imputed_gac_service_types,
-    CQCLClean.primary_service_type,
-    CQCLClean.imputed_specialisms,
-    CQCLClean.services_offered,
-    ONSClean.current_ons_import_date,
-    ONSClean.current_cssr,
-    ONSClean.current_icb,
-    ONSClean.current_region,
-    ONSClean.current_rural_urban_ind_11,
     Keys.year,
     Keys.month,
     Keys.day,
     Keys.import_date,
 ]
+gac_dim_columns_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.imputed_gac_service_types,
+    CQCLClean.services_offered,
+    CQCLClean.primary_service_type,
+    CQCLClean.care_home,
+    Keys.import_date,
+    DimensionKeys.last_updated,
+]
+ra_dim_columns_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.imputed_regulated_activities,
+    Keys.import_date,
+    DimensionKeys.last_updated,
+]
+specialism_dim_columns_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.imputed_specialisms,
+    Keys.import_date,
+    DimensionKeys.last_updated,
+]
+pcm_dim_columns_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.postal_code,
+    ONSClean.current_ons_import_date,
+    ONSClean.current_cssr,
+    ONSClean.current_icb,
+    ONSClean.current_region,
+    ONSClean.current_rural_urban_ind_11,
+    Keys.import_date,
+    DimensionKeys.last_updated,
+]
+
 cleaned_ascwds_workplace_columns_to_import = [
     AWPClean.ascwds_workplace_import_date,
     AWPClean.location_id,
@@ -84,12 +110,22 @@ cqc_ratings_columns_to_import = [
     CQCRatingsColumns.latest_rating_flag,
     CQCRatingsColumns.current_or_historic,
 ]
+cleaned_cqc_providers_columns_to_import = [
+    CQCPClean.provider_id,
+    CQCPClean.name,
+    CQCPClean.cqc_provider_import_date,
+]
 
 
 def main(
     cleaned_cqc_location_source: str,
+    gac_dim_source: str,
+    reg_act_dim_source: str,
+    spec_dim_source: str,
+    pcm_dim_source: str,
     workplace_for_reconciliation_source: str,
     cqc_ratings_source: str,
+    cleaned_cqc_providers_source: str,
     merged_coverage_destination: str,
     reduced_coverage_destination: str,
 ):
@@ -102,6 +138,34 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
+    gac_dim_df = utils.read_from_parquet(
+        gac_dim_source,
+        selected_columns=gac_dim_columns_to_import,
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, gac_dim_df, CQCLClean.location_id
+    )
+
+    reg_act_dim_df = utils.read_from_parquet(
+        reg_act_dim_source, selected_columns=ra_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, reg_act_dim_df, CQCLClean.location_id
+    )
+
+    spec_dim_df = utils.read_from_parquet(
+        spec_dim_source, selected_columns=specialism_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, spec_dim_df, CQCLClean.location_id
+    )
+
+    pcm_dim_df = utils.read_from_parquet(
+        pcm_dim_source, selected_columns=pcm_dim_columns_to_import
+    )
+    cqc_location_df = utils.join_dimension(
+        cqc_location_df, pcm_dim_df, CQCLClean.location_id
+    )
 
     ascwds_workplace_df = utils.read_from_parquet(
         workplace_for_reconciliation_source,
@@ -112,7 +176,10 @@ def main(
         cqc_ratings_source,
         selected_columns=cqc_ratings_columns_to_import,
     )
-
+    cqc_providers_df = utils.read_from_parquet(
+        cleaned_cqc_providers_source,
+        selected_columns=cleaned_cqc_providers_columns_to_import,
+    )
     cqc_location_df = cUtils.reduce_dataset_to_earliest_file_per_month(cqc_location_df)
 
     ascwds_workplace_df = cUtils.remove_duplicates_based_on_column_order(
@@ -152,7 +219,9 @@ def main(
     )
 
     merged_coverage_df = add_columns_for_locality_manager_dashboard(merged_coverage_df)
-
+    merged_coverage_df = join_provider_name_into_merged_coverage_df(
+        merged_coverage_df, cqc_providers_df
+    )
     utils.write_to_parquet(
         merged_coverage_df,
         merged_coverage_destination,
@@ -313,14 +382,52 @@ def join_latest_cqc_rating_into_coverage_df(
     return merged_coverage_with_latest_rating_df
 
 
+def join_provider_name_into_merged_coverage_df(
+    merged_coverage_df: DataFrame,
+    cleaned_cqc_providers_df: DataFrame,
+) -> DataFrame:
+    """
+    Adds provider name to merge_coverage_df via join on latest providerid.
+
+    The cleaned_cqc_providers_df is deduplicated based on descending cqc_provider_import_date then joined to merged_coverage_df on provider_id.
+
+    Args:
+        merged_coverage_df (DataFrame): A dataframe of CQC locations with ASC-WDS columns joined via locationid.
+        cleaned_cqc_providers_df (DataFrame): A dataframe of cqc providers cleaned.
+
+    Returns:
+        DataFrame: The coverage dataframe with the provider name added to it.
+    """
+    cleaned_cqc_providers_df = cUtils.remove_duplicates_based_on_column_order(
+        cleaned_cqc_providers_df,
+        [CQCPClean.provider_id],
+        CQCPClean.cqc_provider_import_date,
+        sort_ascending=False,
+    ).select(
+        CQCPClean.provider_id, F.col(CQCPClean.name).alias(CQCLClean.provider_name)
+    )
+    merged_coverage_cols = merged_coverage_df.columns
+    merged_coverage_with_provider_name_df = merged_coverage_df.join(
+        cleaned_cqc_providers_df,
+        on=CQCPClean.provider_id,
+        how="left",
+    ).select(*merged_coverage_cols, CQCLClean.provider_name)
+    return merged_coverage_with_provider_name_df
+
+
 if __name__ == "__main__":
     print("Spark job 'merge_coverage_data' starting...")
     print(f"Job parameters: {sys.argv}")
 
     (
         cleaned_cqc_location_source,
+        gac_services_source,
+        regulated_activities_source,
+        specialisms_source,
+        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
+        cleaned_cqc_providers_source,
         merged_coverage_destination,
         reduced_coverage_destination,
     ) = utils.collect_arguments(
@@ -329,10 +436,30 @@ if __name__ == "__main__":
             "Source s3 directory for parquet CQC locations cleaned dataset",
         ),
         (
+            "--gac_services_dimension_source",
+            "Source s3 directory for parquet GAC services dimension",
+        ),
+        (
+            "--regulated_activities_dimension_source",
+            "Source s3 directory for parquet Regulated Activities dimension",
+        ),
+        (
+            "--specialisms_dimension_source",
+            "Source s3 directory for parquet Services dimension",
+        ),
+        (
+            "--postcode_matching_dimension_source",
+            "Source s3 directory for parquet Postcode Matching dimension",
+        ),
+        (
             "--workplace_for_reconciliation_source",
             "Source s3 directory for parquet ASCWDS workplace for reconciliation dataset",
         ),
         ("--cqc_ratings_source", "Source s3 directory for parquet CQC ratings dataset"),
+        (
+            "--cleaned_cqc_providers_source",
+            "Source s3 directory for parquet Cleaned CQC providers dataset",
+        ),
         (
             "--merged_coverage_destination",
             "Destination s3 directory for full parquet",
@@ -344,8 +471,13 @@ if __name__ == "__main__":
     )
     main(
         cleaned_cqc_location_source,
+        gac_services_source,
+        regulated_activities_source,
+        specialisms_source,
+        postcode_matching_source,
         workplace_for_reconciliation_source,
         cqc_ratings_source,
+        cleaned_cqc_providers_source,
         merged_coverage_destination,
         reduced_coverage_destination,
     )

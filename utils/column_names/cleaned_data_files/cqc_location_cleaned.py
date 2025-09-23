@@ -1,13 +1,10 @@
 from dataclasses import dataclass
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns,
-)
-from utils.column_names.cleaned_data_files.cqc_provider_cleaned import (
-    CqcProviderCleanedColumns as CQCPClean,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns,
 )
 
 
@@ -17,9 +14,7 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     contacts_roles: str = "contacts_roles"
     contacts_exploded: str = "contacts_exploded"
     cqc_location_import_date: str = "cqc_location_import_date"
-    cqc_provider_import_date: str = CQCPClean.cqc_provider_import_date
-    cqc_sector: str = CQCPClean.cqc_sector
-    dormant_date: str = "dormant_date"
+    cqc_sector: str = "cqc_sector"
     first_known_relationships: str = (
         "first_known_" + NewCqcLocationApiColumns.relationships
     )
@@ -34,7 +29,6 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     imputed_regulated_activities_exploded: str = "imputed_regulated_activities_exploded"
     imputed_relationships: str = "imputed_" + NewCqcLocationApiColumns.relationships
     imputed_specialisms: str = "imputed_" + NewCqcLocationApiColumns.specialisms
-    last_dormant_date: str = "last_dormant_date"
     ons_contemporary_import_date: str = ONSClean.contemporary_ons_import_date
     ons_current_import_date: str = ONSClean.current_ons_import_date
     postcode_cleaned: str = NewCqcLocationApiColumns.postal_code + "_cleaned"
@@ -56,5 +50,3 @@ class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
     specialist_generalist_other_mh: str = (
         "specialist_generalist_other_mental_health_conditions"
     )
-    time_registered: str = "time_registered"
-    time_since_dormant: str = "time_since_dormant"

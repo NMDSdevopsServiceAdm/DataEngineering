@@ -1,28 +1,23 @@
 """Retrieves Location data from the CQC API."""
 
-from utils.aws_secrets_manager_utilities import get_secret
-import os
 import json
-from datetime import datetime as dt
+import os
+import sys
 from datetime import date
-import logging
-from projects._01_ingest.cqc_api.utils import cqc_api as cqc
+from datetime import datetime as dt
+
 import polars as pl
+
+from polars_utils import utils
+from polars_utils.logger import get_logger
+from projects._01_ingest.cqc_api.utils import cqc_api as cqc
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
+from utils.aws_secrets_manager_utilities import get_secret
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as ColNames,
 )
-from polars_utils import utils
-from typing import Generator
-from argparse import ArgumentError, ArgumentTypeError
-import sys
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 ISO_8601_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
@@ -80,7 +75,7 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
             )
 
         logger.info(f'Getting SecretID "{SECRET_ID}"')
-        secret: str = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
+        secret = get_secret(secret_name=SECRET_ID, region_name=AWS_REGION)
         cqc_api_primary_key_value: str = json.loads(secret)["Ocp-Apim-Subscription-Key"]
 
         logger.info("Collecting locations with changes from API")
@@ -113,29 +108,22 @@ def main(destination: str, start_timestamp: str, end_timestamp: str) -> None:
 
 
 if __name__ == "__main__":
-    try:
-        destination_prefix, start, end, *_ = utils.collect_arguments(
-            (
-                "--destination_prefix",
-                "Source s3 directory for parquet CQC locations dataset",
-                False,
-            ),
-            ("--start_timestamp", "Start timestamp for location changes", True),
-            ("--end_timestamp", "End timestamp for location changes", True),
-        )
-        logger.info(f"Running job from {start} to {end}")
+    args = utils.get_args(
+        (
+            "--destination_prefix",
+            "Source s3 directory for parquet CQC locations dataset",
+        ),
+        ("--start_timestamp", "Start timestamp for location changes"),
+        ("--end_timestamp", "End timestamp for location changes"),
+    )
+    logger.info(f"Running job from {args.start_timestamp} to {args.end_timestamp}")
 
-        date_today = date.today()
-        date_fp = utils.generate_s3_datasets_dir_date_path(
-            destination_prefix=destination_prefix,
-            domain="CQC_delta",
-            dataset="delta_locations_api",
-            date=date_today,
-            version="3.0.0",
-        )
-
-        main(destination=date_fp, start_timestamp=start, end_timestamp=end)
-
-    except (ArgumentError, ArgumentTypeError) as e:
-        logger.error(f"An error occurred parsing arguments for {sys.argv}")
-        raise e
+    date_today = date.today()
+    destination = utils.generate_s3_dir(
+        destination_prefix=args.destination_prefix,
+        domain="CQC_delta",
+        dataset="delta_locations_api",
+        date=date_today,
+        version="3.0.0",
+    )
+    main(destination, args.start_timestamp, args.end_timestamp)

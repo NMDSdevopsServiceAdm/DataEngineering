@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.raw_data_files.ascwds_worker_columns import (
-    AscwdsWorkerColumns,
-)
+from utils.column_names.raw_data_files.ascwds_worker_columns import AscwdsWorkerColumns
 
 
 @dataclass

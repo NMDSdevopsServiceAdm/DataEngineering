@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 
