@@ -9,6 +9,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     PrimaryServiceType,
     Services,
+    Sector,
 )
 
 
@@ -1318,3 +1319,20 @@ class CQCLocationsData:
         ([], None),
     ]
     expected_remove_specialist_colleges_remove_none = []
+
+    assign_cqc_sector = [
+        ("loc_1", "loc_2"),
+        ("prov_1", "prov_2"),
+    ]
+
+    expected_assign_cqc_sector_local_authority = [
+        ("loc_1", "loc_2"),
+        ("prov_1", "prov_2"),
+        (Sector.local_authority, Sector.local_authority),
+    ]
+
+    expected_assign_cqc_sector_independent = [
+        ("loc_1", "loc_2"),
+        ("prov_1", "prov_2"),
+        (Sector.independent, Sector.independent),
+    ]

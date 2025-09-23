@@ -1,4 +1,5 @@
 import unittest
+from unittest import TestCase
 from unittest.mock import patch, ANY
 
 import polars as pl
@@ -960,6 +961,56 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
+        )
+
+
+class AssignCqcSectorTests(TestCase):
+    def test_assigns_local_authority(self):
+        # GIVEN
+        #   Input where rows have provider IDs in the list of LA provider ids
+        input_df = pl.DataFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_input_schema,
+        )
+        local_authority_provider_ids = input_df["providerId"].to_list()
+
+        # WHEN
+        result_df = job.assign_cqc_sector(input_df, local_authority_provider_ids)
+
+        # THEN
+        #   Each row should be assigned the CQC sector of "Local authority"
+        expected_df = pl.DataFrame(
+            data=Data.expected_assign_cqc_sector_local_authority,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["Local authority", "Local authority"], expected_df["cqc_sector"].to_list()
+        )
+
+    def test_assigns_independent(self):
+        # GIVEN
+        #   Input where rows have provider IDs in the list of LA provider ids
+        input_df = pl.DataFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_input_schema,
+        )
+        local_authority_provider_ids = [
+            s + "change" for s in input_df["providerId"].to_list()
+        ]
+
+        # WHEN
+        result_df = job.assign_cqc_sector(input_df, local_authority_provider_ids)
+
+        # THEN
+        #   Each row should be assigned the CQC sector of "Local authority"
+        expected_df = pl.DataFrame(
+            data=Data.expected_assign_cqc_sector_independent,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["Independent", "Independent"], expected_df["cqc_sector"].to_list()
         )
 
 

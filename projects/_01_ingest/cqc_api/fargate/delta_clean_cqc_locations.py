@@ -9,6 +9,7 @@ from utils.column_values.categorical_column_values import (
     PrimaryServiceType,
     RelatedLocation,
     Services,
+    Sector,
 )
 
 
@@ -374,3 +375,13 @@ def remove_rows(
         )
 
     return result_dfs
+
+
+def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]):
+    cqc_df = cqc_df.with_columns(
+        pl.when(pl.col(CQCLClean.provider_id).is_in(la_provider_ids))
+        .then(pl.lit(Sector.local_authority))
+        .otherwise(pl.lit(Sector.independent))
+        .alias(CQCLClean.cqc_sector)
+    )
+    return cqc_df
