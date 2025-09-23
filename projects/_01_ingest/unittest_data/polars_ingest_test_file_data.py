@@ -5,11 +5,10 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
-    CareHome,
     PrimaryServiceType,
-    Services,
+    RegistrationStatus,
     Sector,
+    Services,
 )
 
 
@@ -1335,4 +1334,18 @@ class CQCLocationsData:
         ("loc_1", "loc_2"),
         ("prov_1", "prov_2"),
         (Sector.independent, Sector.independent),
+    ]
+
+
+@dataclass
+class PostcodeMatcherTest:
+    clean_postcode_column_rows = [
+        ("aA11Aa", "AA1 2AA", "aA1 3aA"),
+    ]
+    expected_clean_postcode_column_when_drop_is_false_rows = [
+        ("aA11Aa", "AA1 2AA", "aA1 3aA"),
+        ("AA11AA", "AA12AA", "AA13AA"),
+    ]
+    expected_clean_postcode_column_when_drop_is_true_rows = [
+        ("AA11AA", "AA12AA", "AA13AA")
     ]

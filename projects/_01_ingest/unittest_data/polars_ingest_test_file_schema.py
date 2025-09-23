@@ -2,14 +2,13 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 
 @dataclass
@@ -319,4 +318,15 @@ class CQCLocationsSchema:
             (CQCL.provider_id, pl.String()),
             (CQCLClean.cqc_sector, pl.String()),
         ]
+    )
+
+
+@dataclass
+class PostcodeMatcherTest:
+    clean_postcode_column_schema = pl.Schema([(CQCL.postal_code, pl.String())])
+    expected_clean_postcode_column_when_drop_is_false_schema = pl.Schema(
+        [(CQCL.postal_code, pl.String()), (CQCLClean.postcode_cleaned, pl.String)]
+    )
+    expected_clean_postcode_column_when_drop_is_true_schema = pl.Schema(
+        [(CQCLClean.postcode_cleaned, pl.String)]
     )
