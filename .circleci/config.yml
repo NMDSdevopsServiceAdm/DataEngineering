@@ -21,13 +21,15 @@ orbs:
 jobs:
   task-containerisation:
     parameters:
-      aws_account:
-        type: enum
-        description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
-        enum: ["prod", "non_prod"]
+      aws_account_id:
+        type: string
+      access_key:
+        type: string
+      secret_key:
+        type: string
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
+      AWS_ACCESS_KEY_ID: << parameters.access_key >>
+      AWS_SECRET_ACCESS_KEY: << parameters.secret_key >>
     docker:
       - image: docker:latest
     steps:
@@ -35,14 +37,14 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - aws-cli/setup:
-          aws_access_key_id: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
-          aws_secret_access_key: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
+          aws_access_key_id: << parameters.access_key >>
+          aws_secret_access_key: << parameters.secret_key >>
           region: "eu-west-2"
       - run:
           name: Build Docker Images
           command: |
             # Authenticate Docker to ECR
-            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${AWS_ACCOUNT_ID_<< parameters.aws_account >>}.dkr.ecr.eu-west-2.amazonaws.com
+            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             docker buildx bake all --push
 
@@ -128,9 +130,13 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
         enum: ["prod", "non_prod"]
+      access_key:
+        type: string
+      secret_key:
+        type: string
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
+      AWS_ACCESS_KEY_ID: << parameters.access_key >>
+      AWS_SECRET_ACCESS_KEY: << parameters.secret_key >>
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -159,9 +165,13 @@ jobs:
         type: enum
         description: The short name of the AWS account, used to reference the relevant auth credentials
         enum: ["prod", "non_prod"]
+      access_key:
+        type: string
+      secret_key:
+        type: string
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
+      AWS_ACCESS_KEY_ID: << parameters.access_key >>
+      AWS_SECRET_ACCESS_KEY: << parameters.secret_key >>
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
@@ -192,13 +202,13 @@ jobs:
 
   deploy-dependencies:
     parameters:
-      aws_account:
-        type: enum
-        description: The short name of the AWS account, used to reference the relevant environment variables in circleCI
-        enum: ["prod", "non_prod"]
+      access_key:
+        type: string
+      secret_key:
+        type: string
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_<< parameters.aws_account >>
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_<< parameters.aws_account >>
+      AWS_ACCESS_KEY_ID: << parameters.access_key >>
+      AWS_SECRET_ACCESS_KEY: << parameters.secret_key >>
     docker:
       - image: cimg/python:3.11.12
     resource_class: small
@@ -227,8 +237,8 @@ jobs:
 
   copy-default-data:
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non_prod
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non_prod
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID_non_prod}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY_non_prod}
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -245,14 +255,9 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
-    parameters:
-      aws_account:
-        type: enum
-        description: The short name of the AWS account, used to reference the relevant `tfbackend` file
-        enum: ["non_prod"]
     environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_non_prod
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_non_prod
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID_non_prod}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY_non_prod}
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -280,7 +285,9 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          aws_account: "prod"
+          access_key: ${AWS_ACCESS_KEY_ID_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_prod}
+          aws_account_id: AWS_ACCOUNT_prod
           filters:
             branches:
               only: main
@@ -289,6 +296,8 @@ workflows:
             branches:
               only: main
       - terraform-plan:
+          access_key: ${AWS_ACCESS_KEY_ID_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_prod}
           aws_account: "prod"
           requires:
             - test
@@ -298,11 +307,14 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
+          access_key: ${AWS_ACCESS_KEY_ID_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_prod}
           aws_account: "prod"
           requires:
             - plan-approval
       - deploy-dependencies:
-          aws_account: "prod"
+          access_key: ${AWS_ACCESS_KEY_ID_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_prod}
           requires:
             - terraform-apply
 
@@ -311,7 +323,9 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          aws_account: "non_prod"
+          access_key: ${AWS_ACCESS_KEY_ID_non_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_non_prod}
+          aws_account_id: AWS_ACCOUNT_non_prod
           filters:
             branches:
               ignore: main
@@ -332,6 +346,8 @@ workflows:
             branches:
               ignore: main
       - terraform-plan:
+          access_key: ${AWS_ACCESS_KEY_ID_non_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_non_prod}
           aws_account: "non_prod"
           requires:
             - lint-terraform
@@ -342,11 +358,14 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
+          access_key: ${AWS_ACCESS_KEY_ID_non_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_non_prod}
           aws_account: "non_prod"
           requires:
             - terraform-plan
       - deploy-dependencies:
-          aws_account: "non_prod"
+          access_key: ${AWS_ACCESS_KEY_ID_non_prod}
+          secret_key: ${AWS_SECRET_ACCESS_KEY_non_prod}
           requires:
             - terraform-apply
       - copy-default-data:
