@@ -8,6 +8,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     PrimaryServiceType,
+    RelatedLocation,
 )
 
 
@@ -290,3 +291,28 @@ def assign_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
 
 def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
     pass
+
+
+def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Adds a column which flags whether the location was related to a previous location or not
+
+    1. If the length of imputed relationships is more than 0 then flag 'Y'
+    2. Otherwise, flag 'N'
+
+    Args:
+        cqc_df (pl.DataFrame): A dataframe with the imputed_relationships column.
+
+    Returns:
+        DataFrame: Dataframe with an added related_location column.
+    """
+    cqc_df = cqc_df.with_columns(
+        # 1. If the length of imputed relationships is more than 0 then flag 'Y'
+        pl.when(pl.col(CQCLClean.imputed_relationships).list.len() > 0)
+        .then(pl.lit(RelatedLocation.has_related_location))
+        # 2. Otherwise, flag 'N'
+        .otherwise(pl.lit(RelatedLocation.no_related_location))
+        .alias(CQCLClean.related_location)
+    )
+
+    return cqc_df

@@ -1192,3 +1192,80 @@ class CQCLocationsData:
         ),
         ("N", "N"),
     ]
+
+    related_location_flag_with_related_locations = [
+        ("loc_1", "loc_2"),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locW",
+                    CQCL.related_location_name: "Location W",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+    ]
+
+    expected_related_location_flag_with_related_locations = [
+        ("loc_1", "loc_2"),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locW",
+                    CQCL.related_location_name: "Location W",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "HSCA Successor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "HSCA Predecessor",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+        ["Y", "Y"],
+    ]
+
+    related_location_flag_with_no_related_locations = [("loc_1", "loc_2"), ([], None)]
+
+    expected_related_location_flag_with_no_related_locations = [
+        ("loc_1", "loc_2"),
+        ([], None),
+        ("N", "N"),
+    ]

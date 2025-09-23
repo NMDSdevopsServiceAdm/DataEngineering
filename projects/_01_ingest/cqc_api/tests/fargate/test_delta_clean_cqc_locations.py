@@ -764,5 +764,63 @@ class AssignCareHomeTests(unittest.TestCase):
         )
 
 
+class AddRelatedLocationFlagTests(unittest.TestCase):
+    def test_flags_y_when_related_locations(self):
+        # GIVEN
+        #   Input where rows have 1 or more imputed relationships
+        input_df = pl.DataFrame(
+            data=Data.related_location_flag_with_related_locations,
+            schema=Schemas.related_location_flag_input_schema,
+        )
+
+        # WHEN
+        output_df = job.add_related_location_flag(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should be flagged as Y for related location
+        expected_df = pl.DataFrame(
+            data=Data.expected_related_location_flag_with_related_locations,
+            schema=Schemas.expected_related_location_flag_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "Y",
+                "Y",
+            ],
+            output_df["related_location"].to_list(),
+        )
+
+    def test_flags_n_when_no_related_locations(self):
+        # GIVEN
+        #   Input where rows have no imputed relationships
+        input_df = pl.DataFrame(
+            data=Data.related_location_flag_with_no_related_locations,
+            schema=Schemas.related_location_flag_input_schema,
+        )
+
+        # WHEN
+        output_df = job.add_related_location_flag(
+            input_df,
+        )
+
+        # THEN
+        #   All the rows should be flagged as N for related location
+        expected_df = pl.DataFrame(
+            data=Data.expected_related_location_flag_with_no_related_locations,
+            schema=Schemas.expected_related_location_flag_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, output_df)
+        self.assertEqual(
+            [
+                "N",
+                "N",
+            ],
+            output_df["related_location"].to_list(),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
