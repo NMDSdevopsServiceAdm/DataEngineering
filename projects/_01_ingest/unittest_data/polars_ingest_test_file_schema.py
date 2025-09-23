@@ -284,3 +284,24 @@ class CQCLocationsSchema:
             (CQCLClean.related_location, pl.String()),
         ]
     )
+
+    remove_specialist_colleges_input_facts_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+    remove_specialist_colleges_input_dim_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+            (CQCLClean.services_offered, pl.List(pl.String())),
+        ]
+    )
+
+    expected_remove_specialist_colleges_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )

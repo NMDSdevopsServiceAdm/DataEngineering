@@ -9,6 +9,7 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     PrimaryServiceType,
     RelatedLocation,
+    Services,
 )
 
 
@@ -318,3 +319,39 @@ def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
     )
 
     return cqc_df
+
+
+def remove_specialist_colleges(
+    cqc_df: DataFrame, gac_services_dimension: DataFrame
+) -> tuple[DataFrame, DataFrame]:
+    """ """
+    to_remove_df = gac_services_dimension.filter(
+        pl.col(CQCLClean.services_offered)
+        .list.first()
+        .eq(Services.specialist_college_service)
+        & pl.col(CQCLClean.services_offered).list.len().eq(1)
+        & pl.col(CQCLClean.services_offered).is_not_null()
+    ).select(CQCLClean.location_id, Keys.import_date)
+    return filter_facts_from_dimensions(
+        fact_df=cqc_df, dimension_df=gac_services_dimension, to_remove_df=to_remove_df
+    )
+
+
+def filter_facts_from_dimensions(
+    fact_df: pl.DataFrame, dimension_df: pl.DataFrame, to_remove_df: pl.DataFrame
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    """ """
+
+    fact_filtered_df = fact_df.join(
+        to_remove_df,
+        on=to_remove_df.columns,
+        how="anti",
+    )
+
+    dimension_filtered_df = dimension_df.join(
+        to_remove_df,
+        on=to_remove_df.columns,
+        how="anti",
+    )
+
+    return fact_filtered_df, dimension_filtered_df

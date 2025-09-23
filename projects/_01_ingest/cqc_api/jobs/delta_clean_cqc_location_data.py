@@ -369,6 +369,7 @@ def create_dimension_from_missing_struct_column(
 
     return delta
 
+
 # converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_provider_id_column
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
     cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
@@ -663,6 +664,7 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     )
 
     return df
+
 
 # Should be in main
 def remove_locations_that_never_had_regulated_activities(
