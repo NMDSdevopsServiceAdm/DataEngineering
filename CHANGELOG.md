@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
   - split into dimensions table with separate validation
   - Pointblank translation of helper functions and new expressions.
 
+- Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -35,6 +37,8 @@ All notable changes to this project will be documented in this file.
 - Added CQC assessments into both the ratings for data requests and benchmarks datasets.
 
 - Removed the original Step Functions now the replacement ones are fully operational.
+
+- Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
 ### Improved
 
