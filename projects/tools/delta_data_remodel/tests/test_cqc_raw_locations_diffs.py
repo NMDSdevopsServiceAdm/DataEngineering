@@ -7,12 +7,12 @@ import polars as pl
 import requests
 
 from lambdas.utils.snapshots import get_snapshots
-from projects.tools.delta_data_remodel.jobs.raw_locations_schema import (
-    raw_locations_schema,
-)
 from projects.tools.delta_data_remodel.jobs.utils import (
     build_full_table_from_delta,
     list_bucket_objects,
+)
+from schemas.cqc_locations_schema_polars import (
+    POLARS_LOCATION_SCHEMA as raw_locations_schema,
 )
 
 
