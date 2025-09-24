@@ -855,6 +855,7 @@ def remove_specialist_colleges(
     return cqc_df, gac_services_dimension
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != RegistrationStatus.registered)

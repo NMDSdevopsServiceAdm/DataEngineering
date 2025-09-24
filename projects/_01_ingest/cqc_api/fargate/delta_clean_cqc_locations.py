@@ -356,7 +356,7 @@ def remove_rows(
     to_remove_df: pl.DataFrame, target_dfs: list[pl.DataFrame]
 ) -> list[pl.DataFrame]:
     """
-
+    Remove rows from a fact table and any provided dimension tables
     Args:
         to_remove_df (pl.DataFrame): Dataframe with rows to remove (all columns present will be used as keys for the anti-join).
         target_dfs (list[pl.DataFrame]): Target tables from which to remove the rows.
@@ -377,10 +377,25 @@ def remove_rows(
     return result_dfs
 
 
-def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]):
+def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.DataFrame:
+    """
+    Assign CQC sector for each row based on the Provider ID.
+
+    1. If the Provider ID is in the list of la_provider_ids then assign "Local authority"
+    2. Otherwise, assign "Independent"
+
+    Args:
+        cqc_df (pl.DataFrame): Dataframe with provider id column.
+        la_provider_ids (list[str]): List of provider IDs that indicate a location is part of the local authority.
+
+    Returns:
+        pl.DataFrame: Input dataframe with new CQC sector column.
+    """
     cqc_df = cqc_df.with_columns(
+        # 1. If the Provider ID is in the list of la_provider_ids then assign "Local authority"
         pl.when(pl.col(CQCLClean.provider_id).is_in(la_provider_ids))
         .then(pl.lit(Sector.local_authority))
+        # 2. Otherwise, assign "Independent"
         .otherwise(pl.lit(Sector.independent))
         .alias(CQCLClean.cqc_sector)
     )
