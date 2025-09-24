@@ -1318,7 +1318,100 @@ class CQCLocationsData:
         ("20240101", "20240101"),
         ([], None),
     ]
+
     expected_remove_specialist_colleges_remove_none = []
+
+    remove_locations_without_ra_fact = [
+        ("loc_1", "loc_2", "loc_1"),
+        ("20240101", "20240101"),
+    ]
+
+    remove_locations_without_ra_dim_without_ra = [
+        ("loc_1", "loc_2", "loc_1"),
+        ([], None, None),
+        ("20240101", "20240101", "20240201"),
+    ]
+
+    expected_remove_locations_without_ra_dim_without_ra_to_remove = [
+        ("loc_1", "loc_2", "loc_1")
+    ]
+
+    remove_locations_without_ra_dim_with_ra = [
+        ("loc_1", "loc_2"),
+        (
+            [
+                {
+                    "name": "SomeActivity",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+            [
+                {
+                    "name": "Different activity",
+                    "code": "RA2",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "Jannet",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mrs",
+                        }
+                    ],
+                },
+                {
+                    "name": "Another activity",
+                    "code": "RA3",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Jones",
+                            "persongivenname": "Jenny",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Miss",
+                        }
+                    ],
+                },
+            ],
+        ),
+        ("20240101", "20240101"),
+    ]
+
+    expected_remove_locations_without_ra_dim_with_ra_to_remove = []
+
+    remove_locations_without_ra_empty = []
+
+    expected_remove_locations_without_ra_empty_to_remove = []
+
+    remove_locations_without_ra_dim_some_dates_without_ra = [
+        ("loc_1", "loc_1"),
+        (
+            [
+                {
+                    "name": "SomeActivity",
+                    "code": "RA1",
+                    "contacts": [
+                        {
+                            "personfamilyname": "Doe",
+                            "persongivenname": "John",
+                            "personroles": ["Registered Manager"],
+                            "persontitle": "Mr",
+                        }
+                    ],
+                }
+            ],
+            [],
+        ),
+        ("20240101", "20240201"),
+    ]
+
+    expected_remove_locations_without_ra_dim_some_dates_without_ra_to_remove = ["loc_1"]
 
     select_registered_locations_all_registered = [
         ("loc_1", "loc_2"),

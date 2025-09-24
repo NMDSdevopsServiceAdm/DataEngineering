@@ -306,6 +306,47 @@ class CQCLocationsSchema:
         ]
     )
 
+    remove_locations_without_ra_fact_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    remove_locations_without_ra_dim_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.regulated_activities,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                            CQCL.code: pl.String(),
+                            CQCL.contacts: pl.List(
+                                pl.Struct(
+                                    {
+                                        CQCL.person_family_name: pl.String(),
+                                        CQCL.person_given_name: pl.String(),
+                                        CQCL.person_roles: pl.String(),
+                                        CQCL.person_title: pl.String(),
+                                    }
+                                )
+                            ),
+                        }
+                    )
+                ),
+            ),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    expected_remove_locations_without_ra_to_remove_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+        ]
+    )
+
     select_registered_locations_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

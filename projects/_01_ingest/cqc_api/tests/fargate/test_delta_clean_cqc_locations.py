@@ -832,7 +832,7 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
     def test_removes_rows_where_specialist_college_is_only_service(
-        self, mock_filter_facts_from_dimensions
+        self, mock_remove_rows
     ):
         # GIVEN
         #   Input where all rows have specialist colleges as their only service offered
@@ -852,8 +852,9 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
             data=Data.expected_remove_specialist_colleges_dim_only_specialist_college,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
-        mock_filter_facts_from_dimensions.assert_called_once()
-        mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
         #   The input fact and dimension df should be unchanged
         pl_testing.assert_frame_equal(
             self.input_fact_df, mock_call_args["target_dfs"][0]
@@ -865,7 +866,7 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
     def test_does_not_remove_rows_where_specialist_college_is_one_of_many_services(
-        self, mock_filter_facts_from_dimensions
+        self, mock_remove_rows
     ):
         # GIVEN
         #   Input where all rows have services offered that include specialist college and at least one other service
@@ -885,8 +886,9 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
             data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
-        mock_filter_facts_from_dimensions.assert_called_once()
-        mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
         #   The input fact and dimension df should be unchanged
         pl_testing.assert_frame_equal(
             self.input_fact_df, mock_call_args["target_dfs"][0]
@@ -898,7 +900,7 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
     def test_does_not_remove_rows_where_specialist_college_is_not_a_service(
-        self, mock_filter_facts_from_dimensions
+        self, mock_remove_rows
     ):
         # GIVEN
         #   Input where no rows have specialist college in their services offered
@@ -918,8 +920,9 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
             data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
-        mock_filter_facts_from_dimensions.assert_called_once()
-        mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
         #   The input fact and dimension df should be unchanged
         pl_testing.assert_frame_equal(
             self.input_fact_df, mock_call_args["target_dfs"][0]
@@ -931,7 +934,7 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
     def test_does_not_removes_rows_where_there_is_no_service_offered(
-        self, mock_filter_facts_from_dimensions
+        self, mock_remove_rows
     ):
         # GIVEN
         #   Input where no rows have services offered (services offered is null or empty list)
@@ -951,14 +954,164 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
             data=Data.expected_remove_specialist_colleges_remove_none,
             schema=Schemas.expected_remove_specialist_colleges_schema,
         )
-        mock_filter_facts_from_dimensions.assert_called_once()
-        mock_call_args = mock_filter_facts_from_dimensions.call_args.kwargs
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
         #   The input fact and dimension df should be unchanged
         pl_testing.assert_frame_equal(
             self.input_fact_df, mock_call_args["target_dfs"][0]
         )
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_df, mock_call_args["to_remove_df"]
+        )
+
+
+@patch(f"{PATCH_PATH}.remove_rows", return_value=["a", "b"])
+class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
+    def setUp(self):
+        self.input_fact_df = pl.DataFrame(
+            data=Data.remove_locations_without_ra_fact,
+            schema=Schemas.remove_locations_without_ra_fact_schema,
+        )
+
+    def test_removes_locations_without_regulated_activities(self, mock_remove_rows):
+        # GIVEN
+        #   Input where all rows have no regulated activities
+        input_dim_df = pl.DataFrame(
+            data=Data.remove_locations_without_ra_dim_without_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_df,
+            input_dim_df,
+        )
+
+        # THEN
+        expected_to_remove_df = pl.DataFrame(
+            data=Data.expected_remove_locations_without_ra_dim_without_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
+        #   All the rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_df, mock_call_args["to_remove_df"]
+        )
+
+    def test_does_not_remove_rows_with_regulated_activities(self, mock_remove_rows):
+        # GIVEN
+        #   Input where all rows have regulated activities
+        input_dim_df = pl.DataFrame(
+            data=Data.remove_locations_without_ra_dim_with_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_df,
+            input_dim_df,
+        )
+
+        # THEN
+        expected_to_remove_df = pl.DataFrame(
+            data=Data.expected_remove_locations_without_ra_dim_with_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_df, mock_call_args["to_remove_df"]
+        )
+
+    def test_returns_empty_df_when_empty_input_df(self, mock_remove_rows):
+        # GIVEN
+        #   Input where there are no rows
+        input_dim_df = pl.DataFrame(
+            data=Data.remove_locations_without_ra_empty,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_df,
+            input_dim_df,
+        )
+
+        # THEN
+        expected_to_remove_df = pl.DataFrame(
+            data=Data.expected_remove_locations_without_ra_empty_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_df, mock_call_args["to_remove_df"]
+        )
+
+    def test_warns_when_not_all_rows_for_location_have_no_regulated_activities(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where all rows have no regulated activities
+        input_dim_df = pl.DataFrame(
+            data=Data.remove_locations_without_ra_dim_some_dates_without_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(UserWarning) as cm:
+            job.remove_locations_without_regulated_activities(
+                self.input_fact_df,
+                input_dim_df,
+            )
+
+        # THEN
+        expected_to_remove_df = pl.DataFrame(
+            data=Data.expected_remove_locations_without_ra_dim_without_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   A single warning should have been raised
+        self.assertIn(
+            (
+                "The following locations have some dates with imputed regulated activities, and others do not:  ['loc_1']. "
+                "Please check that the imputation has been carried out correctly."
+            ),
+            str(cm.warnings[0].message),
+        )
+        self.assertEqual(1, len(cm.warnings))
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension df should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_df, mock_call_args["target_dfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
+        #   All the rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
             expected_to_remove_df, mock_call_args["to_remove_df"]
         )

@@ -386,6 +386,12 @@ def remove_specialist_colleges(
     return cqc_df, gac_services_dimension
 
 
+def remove_locations_without_regulated_activities(
+    cqc_df: pl.DataFrame, gac_services_dimension: pl.DataFrame
+) -> tuple[pl.DataFrame, pl.DataFrame]:
+    pass
+
+
 def remove_rows(
     to_remove_df: pl.DataFrame, target_dfs: list[pl.DataFrame]
 ) -> list[pl.DataFrame]:
