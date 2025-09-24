@@ -355,7 +355,7 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           aws_account: "non_prod"
           requires:
-            - terraform-plan
+            - plan-approval
       - deploy-dependencies:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
