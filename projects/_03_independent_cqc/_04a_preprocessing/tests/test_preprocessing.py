@@ -3,6 +3,7 @@ from projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing impor
     logger,
     main_preprocessor,
 )
+from projects._03_independent_cqc._05_model.utils.model import ModelType
 import unittest
 import os
 import polars as pl
@@ -24,24 +25,44 @@ class DummyProcessor(MagicMock):
     __name__ = "DummyProcessor"
 
 
+fake_definition = {
+    "dummy_model": {
+        "preprocessor": "DummyProcessor",
+        "preprocessor_kwargs": {"a": 1, "b": 2},
+        "model_type": ModelType.SIMPLE_LINEAR.value,
+        "model_identifier": "dummy_model",
+        "source_prefix": "path/a",
+        "processed_location": "path/b",
+    }
+}
+
+
+@patch.dict(f"{PATCH_STEM}.model_definitions", fake_definition)
+@patch.dict("os.environ", {"S3_SOURCE_BUCKET": DUMMY_SOURCE_BUCKET})
 @patch(f"{PATCH_STEM}.boto3.client")
 class TestPreprocessing(unittest.TestCase):
-    def test_main_preprocessor_calls_processor_with_kwargs(self, mock_boto_client):
+    def test_main_preprocessor_calls_processor_with_correct_arguments(
+        self, mock_boto_client
+    ):
         preprocessor = DummyProcessor()
         preprocessor.return_value = "20250919120102"
-        kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
-        main_preprocessor(preprocessor, **kwargs)
-        preprocessor.assert_called_once_with(**kwargs)
+        expected_kwargs = {
+            "source": "s3://dummy-source-bucket/path/a",
+            "destination": "s3://dummy-source-bucket/path/b",
+            "a": 1,
+            "b": 2,
+        }
+        main_preprocessor("dummy_model", preprocessor)
+        preprocessor.assert_called_once_with(**expected_kwargs)
 
     def test_main_preprocessor_logs_errors(self, mock_boto_client):
         with self.assertLogs(logger.name, level=logging.INFO) as cm:
-            with self.assertRaises(ValueError):
+            with self.assertRaises(FileNotFoundError):
                 preprocessor = DummyProcessor()
                 preprocessor.return_value = "20250919120102"
                 preprocessor.__str__.return_value = "DummyProcessor at xyz"
-                preprocessor.side_effect = ValueError("foo")
-                kwargs = {"source": "path/a", "destination": "path/b", "a": 1, "b": 2}
-                main_preprocessor(preprocessor, **kwargs)
+                preprocessor.side_effect = FileNotFoundError("foo")
+                main_preprocessor("dummy_model", preprocessor)
             self.assertIn("foo", cm.output[3])
             self.assertIn(
                 f"There was an unexpected exception while executing preprocessor DummyProcessor.",
@@ -53,7 +74,7 @@ class TestPreprocessing(unittest.TestCase):
         preprocessor.return_value = "20250919120102"
         kwargs = {"destination": "path/b", "a": 1}
         with self.assertRaises(TypeError):
-            main_preprocessor(preprocessor, **kwargs)
+            main_preprocessor(preprocessor)
 
     def test_main_preprocessor_requires_valid_source_and_destination(
         self, mock_boto_client
@@ -62,7 +83,7 @@ class TestPreprocessing(unittest.TestCase):
         preprocessor.return_value = "20250919120102"
         kwargs = {"source": 5, "destination": 6, "a": 1, "b": 2}
         with self.assertRaises(TypeError):
-            main_preprocessor(preprocessor, **kwargs)
+            main_preprocessor(preprocessor)
 
 
 class TestPreprocessNonResPir(unittest.TestCase):

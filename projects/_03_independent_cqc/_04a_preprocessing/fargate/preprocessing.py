@@ -9,6 +9,9 @@ from polars_utils import utils
 from datetime import datetime as dt
 import boto3
 from botocore.exceptions import ClientError
+from projects._03_independent_cqc._05_model.fargate.model_registry import (
+    model_definitions,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,42 +21,55 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> None:
+def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None:
     """
-    Calls the selected preprocessor with the required arguments. The required arguments will likely include
-    the location of the source data and the destination to write to. A callback to the StepFunction client
-    is executed to signal success or failure.
+    Calls the correct model preprocessor with the required arguments.
+
+    The function retrieves the name of the preprocessing function from the model registry using the model name, along
+    with any other required information. After invoking the function, a callback to the StepFunction client is
+    executed to signal success or failure.
 
     Args:
-        preprocessor (Callable[..., str]): a function that carries out the required preprocessing
-        **kwargs (Any): required keyword arguments including (as minimum) source and destination (strings)
+        model_name (str): the name of a valid model
+        preprocessor (Callable[..., str]): the preprocessing function that will be called (must be defined in this
+            module)
 
     Raises:
-        TypeError: if source and destination are not included
+        ValueError: if source, destination, or processor keyword arguments are not found
         ClientError: if there is an error calling the StepFunctions client
         Exception: on any exception occurring within the preprocessor
     """
-    required = {"source", "destination"}
-    given_params = set(kwargs.keys())
-    if not required.issubset(given_params):
-        raise TypeError(f"preprocessor requires {required} but got {given_params}")
-    if not isinstance(kwargs["source"], str) or not isinstance(
-        kwargs["destination"], str
-    ):
-        raise TypeError(
-            f"preprocessor requires string source and destination but got {kwargs['source']} and {kwargs['destination']}"
-        )
+    S3_SOURCE_BUCKET = os.environ.get("S3_SOURCE_BUCKET")
     sfn = boto3.client("stepfunctions")
     task_token = os.environ.get("TASK_TOKEN", "testtoken")
 
     try:
+        validate_model_definition(model_name)
+
+        preprocessor_kwargs = model_definitions[model_name]["preprocessor_kwargs"]
+
+        source = (
+            f's3://{S3_SOURCE_BUCKET}/{model_definitions[model_name]["source_prefix"]}'
+        )
+        destination = f's3://{S3_SOURCE_BUCKET}/{model_definitions[model_name]["processed_location"]}'
+        preprocessor_kwargs["source"] = source
+        preprocessor_kwargs["destination"] = destination
+
         logger.info("Getting Task Token for Step Function callback")
-        logger.info(f"Invokng {preprocessor.__name__} with kwargs: {kwargs}")
-        processed = preprocessor(**kwargs)
+        logger.info(
+            f"Invoking {preprocessor.__name__} with kwargs: {preprocessor_kwargs}"
+        )
+        processed = preprocessor(**preprocessor_kwargs)
         result = {"processed_datetime": processed}
+        sfn.send_task_success(taskToken=task_token, output=json.dumps(result))
     except ClientError as e:
         logger.error("There was an error calling the StepFunction AWS service")
         logger.error(f"preprocessor error: {e}")
+        sfn.send_task_failure(taskToken=task_token, error=str(e))
+        raise
+    except ValueError as e:
+        logger.error("There was an invalid parameter included in the invocation.")
+        logger.error(e)
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
     except Exception as e:
@@ -63,8 +79,21 @@ def main_preprocessor(preprocessor: Callable[..., str], **kwargs: Any) -> None:
         logger.error(e)
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
-    else:
-        sfn.send_task_success(taskToken=task_token, output=json.dumps(result))
+
+
+def validate_model_definition(model_id: str) -> None:
+    if model_id not in model_definitions:
+        raise ValueError(f"{model_id} not included in model_definitions")
+    elif "preprocessor_kwargs" not in model_definitions[model_id]:
+        raise ValueError(
+            f"{model_id} preprocessor_kwargs not included in model_definitions"
+        )
+    elif "source_prefix" not in model_definitions[model_id]:
+        raise ValueError(f"{model_id} source_prefix not included in model_definitions")
+    elif "processed_location" not in model_definitions[model_id]:
+        raise ValueError(
+            f"{model_id} processed_location not included in model_definitions"
+        )
 
 
 def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> str:
@@ -143,25 +172,19 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
 
 
 if __name__ == "__main__":
-    (processor_name, kwargs) = utils.collect_arguments(
+    (model_id) = utils.collect_arguments(
         (
-            "--processor_name",
+            "--model_name",
             "The name of the processor",
         ),
-        (
-            "--kwargs",
-            "The additional keyword arguments to pass to the processor in the format name=bill,age=42",
-        ),
     )
-    processor = locals()[processor_name]
-    keyword_args = {
-        k: utils.parse_arg_by_type(v)
-        for k, v in [tuple(kwarg.split("=", 1)) for kwarg in kwargs.split(",")]
-    }
-    if "source" not in keyword_args or "destination" not in keyword_args:
-        logger.error('The arguments "source" and "destination" are required')
-        sys.exit(1)
-    process_datetime = main_preprocessor(processor, **keyword_args)
-    result = {"process_datetime": process_datetime}
-    sys.stdout.write(json.dumps(result))
-    sys.exit(0)
+    if "preprocessor" not in model_definitions[model_id]:
+        raise ValueError(f"{model_id} preprocessor not included in model_definitions")
+    preprocessor_id = model_definitions[model_id]["preprocessor"]
+    if preprocessor_id not in locals():
+        logger.error(
+            "The processor name provided in the model definition does not match a defined processor function."
+        )
+        raise ValueError(f"No such preprocessor: {preprocessor_id}")
+    preprocessor = locals()[preprocessor_id]
+    main_preprocessor(model_id, preprocessor)

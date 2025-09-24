@@ -1,9 +1,3 @@
-locals {
-  demo_preprocess_source = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts"
-  demo_preprocess_dest   = "${module.datasets_bucket.bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts_processed"
-}
-
-
 resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   name     = "${local.workspace_prefix}-CQC-And-ASCWDS-Orchestrator"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -569,7 +563,6 @@ resource "aws_sfn_state_machine" "demo_model_retrain" {
     security_group_id   = module.model_preprocess.security_group_id
     preprocessor_name   = "preprocess_non_res_pir"
     model_name          = "non_res_pir"
-    preprocess_args     = "source=${local.demo_preprocess_source},destination=${local.demo_preprocess_dest}"
   })
 
   logging_configuration {

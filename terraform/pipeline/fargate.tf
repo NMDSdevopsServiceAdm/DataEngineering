@@ -57,7 +57,7 @@ module "model_preprocess" {
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" },
     { "name" : "ENVIRONMENT", "value" : terraform.workspace == "default" ? "prod" : "dev" },
-    { "name" : "MODEL_PREPROCESS_S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name }
+    { "name" : "S3_SOURCE_BUCKET", "value" : module.datasets_bucket.bucket_name }
   ]
 }
 

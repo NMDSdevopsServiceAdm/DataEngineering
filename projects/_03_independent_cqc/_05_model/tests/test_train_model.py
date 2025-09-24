@@ -32,7 +32,7 @@ invalid_definition = {
 
 ice_cream_model = {
     "dummy_model": {
-        "model_type": ModelType.SIMPLE_LINEAR,
+        "model_type": ModelType.SIMPLE_LINEAR.value,
         "model_identifier": "dummy_model",
         "model_params": dict(),
         "version_parameter_location": "/param_loc",
