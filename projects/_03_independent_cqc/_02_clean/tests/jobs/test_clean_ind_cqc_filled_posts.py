@@ -87,7 +87,7 @@ class MainTests(CleanIndFilledPostsTests):
         replace_zero_beds_with_null_mock.assert_called_once()
         populate_missing_care_home_number_of_beds_mock.assert_called_once()
         calculate_ascwds_filled_posts_mock.assert_called_once()
-        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 4)
+        self.assertEqual(create_column_with_repeated_values_removed_mock.call_count, 2)
         self.assertEqual(calculate_filled_posts_per_bed_ratio_mock.call_count, 3)
         create_banded_bed_count_column_mock.assert_called_once()
         clean_ascwds_filled_post_outliers_mock.assert_called_once()
