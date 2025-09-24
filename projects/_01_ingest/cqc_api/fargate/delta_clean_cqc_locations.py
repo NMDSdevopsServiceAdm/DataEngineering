@@ -10,6 +10,7 @@ from utils.column_values.categorical_column_values import (
     RelatedLocation,
     Services,
     Sector,
+    CareHome,
 )
 
 
@@ -293,7 +294,35 @@ def assign_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
 
 
 def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
-    pass
+    """
+    Assigns care home status for each row based on the Primary Service Type
+
+    1. If the Primary Service Type is 'Care home service with nursing' or 'Care home only' then assign 'Y'
+    2. Otherwise, assign 'N'
+
+    Args:
+        cqc_df (pl.DataFrame): DataFrame containing 'primary_service_type' column.
+
+    Returns:
+        pl.DataFrame: Dataframe with the new 'care_home' column.
+
+    """
+    cqc_df = cqc_df.with_columns(
+        # 1. If the Primary Service Type is 'Care home service with nursing' or 'Care home only' then assign 'Y'
+        pl.when(
+            pl.col(CQCLClean.primary_service_type).is_in(
+                [
+                    PrimaryServiceType.care_home_with_nursing,
+                    PrimaryServiceType.care_home_only,
+                ]
+            )
+        )
+        .then(pl.lit(CareHome.care_home))
+        # 2. Otherwise, assign 'N'
+        .otherwise(pl.lit(CareHome.not_care_home))
+        .alias(CQCLClean.care_home)
+    )
+    return cqc_df
 
 
 def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
@@ -340,12 +369,15 @@ def remove_specialist_colleges(
 
     """
     to_remove_df = gac_services_dimension.filter(
+        # 1. Filter for rows in the GAC Service dimension where "Specialist college service" is the only service offered
         pl.col(CQCLClean.services_offered)
         .list.first()
         .eq(Services.specialist_college_service)
         & pl.col(CQCLClean.services_offered).list.len().eq(1)
         & pl.col(CQCLClean.services_offered).is_not_null()
     ).select(CQCLClean.location_id, Keys.import_date)
+
+    # 2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
     cqc_df, gac_services_dimension = remove_rows(
         to_remove_df=to_remove_df, target_dfs=[cqc_df, gac_services_dimension]
     )
@@ -375,6 +407,10 @@ def remove_rows(
         )
 
     return result_dfs
+
+
+def select_registered_locations(cqc_df: pl.DataFrame) -> pl.DataFrame:
+    return cqc_df
 
 
 def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.DataFrame:

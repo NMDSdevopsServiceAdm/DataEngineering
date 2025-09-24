@@ -758,6 +758,7 @@ def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_care_home
 def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     """
     Allocates the location as a care_home if primary_service_type is a care home.
@@ -812,6 +813,7 @@ def add_related_location_column(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.remove_specialist_colleges
 def remove_specialist_colleges(
     cqc_df: DataFrame, gac_services_dimension: DataFrame
 ) -> tuple[DataFrame, DataFrame]:
@@ -855,7 +857,6 @@ def remove_specialist_colleges(
     return cqc_df, gac_services_dimension
 
 
-# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
@@ -873,6 +874,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     return locations_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def add_cqc_sector_column_to_cqc_locations_dataframe(
     cqc_location_df: DataFrame, la_providerids: list
 ):
@@ -889,6 +891,7 @@ def add_cqc_sector_column_to_cqc_locations_dataframe(
     return cqc_location_with_sector_column
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFrame:
     spark = utils.get_spark()
 
