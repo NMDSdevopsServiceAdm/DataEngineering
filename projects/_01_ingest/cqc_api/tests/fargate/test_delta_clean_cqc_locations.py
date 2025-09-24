@@ -964,6 +964,111 @@ class RemoveSpecialistCollegesTests(unittest.TestCase):
         )
 
 
+class SelectRegisteredLocationsTests(unittest.TestCase):
+    def test_selects_all_registered(self):
+        # GIVEN
+        #   Input where all rows have registration status of 'Y'
+        input_df = pl.DataFrame(
+            data=Data.select_registered_locations_all_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_df = job.select_registered_locations(input_df)
+
+        # THEN
+        #   All rows should be selected (returned) unchanged
+        pl_testing.assert_frame_equal(input_df, result_df)
+        self.assertEqual(2, result_df.shape[0])
+
+    def test_selects_no_deregistered(self):
+        # GIVEN
+        #   Input where all rows have registration status of 'N'
+        input_df = pl.DataFrame(
+            data=Data.select_registered_locations_all_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_df = job.select_registered_locations(input_df)
+
+        # THEN
+        #   No rows should be selected (returned)
+        expected_df = pl.DataFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(0, result_df.shape[0])
+
+    def test_selects_registered_when_status_is_mixed(self):
+        # GIVEN
+        #   Input where some rows have registration status of 'Y', and some have registration status of 'N'
+        input_df = pl.DataFrame(
+            data=Data.select_registered_locations_all_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_df = job.select_registered_locations(input_df)
+
+        # THEN
+        #   Only rows with a registration status of 'Y' should be returned
+        expected_df = pl.DataFrame(
+            data=Data.expected_select_registered_locations_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(2, result_df.shape[0])
+
+    def test_handles_empty_input_df(self):
+        # GIVEN
+        #   Input with no rows
+        input_df = pl.DataFrame(
+            data=Data.select_registered_locations_empty_input,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_df = job.select_registered_locations(input_df)
+
+        # THEN
+        #   Should return an empty dataframe
+        expected_df = pl.DataFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(0, result_df.shape[0])
+
+    def test_warns_on_invalid_registration_status(self):
+        # GIVEN
+        #   Input where all rows have a registration status which is invalid
+        input_df = pl.DataFrame(
+            data=Data.select_registered_locations_invalid_status,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(UserWarning) as cm:
+            result_df = job.select_registered_locations(input_df)
+
+        # THEN
+        #   A warning should have been raised
+        self.assertIn(
+            "2 row(s) had  an invalid registration status and have been dropped.",
+            cm.msg,
+        )
+
+        #   And it should return an empty dataframe (with the invalid rows removed)
+        expected_df = pl.DataFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(0, result_df.shape[0])
+
+
 class AssignCqcSectorTests(TestCase):
     def test_assigns_local_authority(self):
         # GIVEN

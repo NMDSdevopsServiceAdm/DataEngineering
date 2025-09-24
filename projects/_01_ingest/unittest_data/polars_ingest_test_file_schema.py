@@ -306,6 +306,13 @@ class CQCLocationsSchema:
         ]
     )
 
+    select_registered_locations_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.registration_status, pl.String()),
+        ]
+    )
+
     assign_cqc_sector_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

@@ -1320,6 +1320,40 @@ class CQCLocationsData:
     ]
     expected_remove_specialist_colleges_remove_none = []
 
+    select_registered_locations_all_registered = [
+        ("loc_1", "loc_2"),
+        (RegistrationStatus.registered, RegistrationStatus.registered),
+    ]
+
+    select_registered_locations_none_registered = [
+        ("loc_1", "loc_2"),
+        (RegistrationStatus.deregistered, RegistrationStatus.deregistered),
+    ]
+
+    select_registered_locations_mixed_status = [
+        ("loc_1", "loc_2", "loc_3", "loc_4"),
+        (
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.deregistered,
+            RegistrationStatus.deregistered,
+        ),
+    ]
+
+    select_registered_locations_empty_input = []
+
+    select_registered_locations_invalid_status = [
+        ("loc_1", "loc_2"),
+        ("invalid_status", f"{RegistrationStatus.registered}-"),
+    ]
+
+    expected_select_registered_locations_registered = [
+        ("loc_1", "loc_2"),
+        (RegistrationStatus.registered, RegistrationStatus.registered),
+    ]
+
+    expected_select_registered_locations_empty = []
+
     assign_cqc_sector = [
         ("loc_1", "loc_2"),
         ("prov_1", "prov_2"),
