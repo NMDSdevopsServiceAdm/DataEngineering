@@ -31,10 +31,8 @@
               "Command": [
                 "python",
                 "preprocessing.py",
-                "--processor_name",
-                "${preprocessor_name}",
-                "--kwargs",
-                "${preprocess_args}"
+                "--model_name",
+                "${model_name}"
               ]
             }
           ]

@@ -174,7 +174,7 @@ if __name__ == "__main__":
     (model_id) = utils.collect_arguments(
         (
             "--model_name",
-            "The name of the processor",
+            "The name of the model being prepared",
         ),
     )
     if "preprocessor" not in model_definitions[model_id]:
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     preprocessor_id = model_definitions[model_id]["preprocessor"]
     if preprocessor_id not in locals():
         logger.error(
-            "The processor name provided in the model definition does not match a defined processor function."
+            "The processor name provided in the model definition does not match a local processor function."
         )
         raise ValueError(f"No such preprocessor: {preprocessor_id}")
     preprocessor = locals()[preprocessor_id]

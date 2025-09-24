@@ -44,7 +44,7 @@ target "delta_cqc" {
 
 target "model_retrain" {
   context = "."
-  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/Dockerfile"
+  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/retraining/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/model-retrain:${CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
@@ -52,7 +52,7 @@ target "model_retrain" {
 
 target "model_preprocess" {
   context = "."
-  dockerfile = "./projects/_03_independent_cqc/_04a_preprocessing/fargate/Dockerfile"
+  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/preprocessing/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/preprocessing:${CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
