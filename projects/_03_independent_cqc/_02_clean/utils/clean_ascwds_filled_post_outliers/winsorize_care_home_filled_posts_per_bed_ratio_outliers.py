@@ -436,5 +436,3 @@ def combine_dataframes(
     all_locations_df = original_non_care_home_df.unionByName(care_home_df)
 
     return all_locations_df
-    return all_locations_df
-    return all_locations_df

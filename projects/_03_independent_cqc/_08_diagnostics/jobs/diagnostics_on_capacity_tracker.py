@@ -280,5 +280,3 @@ if __name__ == "__main__":
     )
 
     print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
-
-    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
