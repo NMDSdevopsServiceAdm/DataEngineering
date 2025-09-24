@@ -13,7 +13,7 @@ def extract_registered_manager_names(df: pl.DataFrame) -> pl.DataFrame:
     - flattening the contacts from `imputed_regulated_activities`
     - creating full names for each contact
     - deduplicating the names.
-    Intermediate columns are dropped before returning the final DataFrame.
+    - dropping the intermediate flattened contacts column.
 
     Args:
         df (pl.DataFrame): Input DataFrame containing the `imputed_regulated_activities` column.
