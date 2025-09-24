@@ -43,6 +43,7 @@ jobs:
             # Authenticate Docker to ECR
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
+            export AWS_ACCOUNT_ID=${<< parameters.aws_account_id >>}
             docker buildx bake all --push
 
   test:
