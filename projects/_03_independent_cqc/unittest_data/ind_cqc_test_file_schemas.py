@@ -348,103 +348,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
 
 
 @dataclass
-class TrainLinearRegressionModelSchema:
-    feature_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-
-@dataclass
-class ModelMetrics:
-    model_metrics_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-    calculate_residual_non_res_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
-            StructField(IndCQC.non_res_with_dormancy_model, FloatType(), True),
-        ]
-    )
-    expected_calculate_residual_non_res_schema = StructType(
-        [
-            *calculate_residual_non_res_schema,
-            StructField(IndCQC.residual, FloatType(), True),
-        ]
-    )
-    calculate_residual_care_home_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
-            StructField(IndCQC.care_home_model, FloatType(), True),
-        ]
-    )
-    expected_calculate_residual_care_home_schema = StructType(
-        [
-            *calculate_residual_care_home_schema,
-            StructField(IndCQC.residual, FloatType(), True),
-        ]
-    )
-
-    generate_metric_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.imputed_filled_post_model, FloatType(), True),
-            StructField(IndCQC.prediction, FloatType(), True),
-        ]
-    )
-
-    generate_proportion_of_predictions_within_range_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.residual, FloatType(), True),
-        ]
-    )
-
-    combine_metrics_current_schema = StructType(
-        [
-            StructField(IndCQC.model_name, StringType(), True),
-            StructField(IndCQC.model_version, StringType(), True),
-            StructField(IndCQC.run_number, StringType(), True),
-            StructField(IndCQC.r2, FloatType(), True),
-            StructField(IndCQC.rmse, FloatType(), True),
-            StructField(IndCQC.prediction_within_10_posts, FloatType(), True),
-            StructField(IndCQC.prediction_within_25_posts, FloatType(), True),
-        ]
-    )
-    combine_metrics_previous_schema = StructType(
-        [
-            StructField(IndCQC.model_name, StringType(), True),
-            StructField(IndCQC.model_version, StringType(), True),
-            StructField(IndCQC.r2, FloatType(), True),
-        ]
-    )
-    expected_combined_metrics_schema = combine_metrics_current_schema
-
-
-@dataclass
-class RunLinearRegressionModelSchema:
-    feature_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-
-@dataclass
 class ArchiveFilledPostsEstimates:
     filled_posts_schema = StructType(
         [
@@ -2108,20 +2011,6 @@ class EstimateFilledPostsModelsUtils:
                 IndCQC.banded_bed_ratio_rolling_average_model, DoubleType(), True
             ),
             StructField(IndCQC.posts_rolling_average_model, DoubleType(), True),
-        ]
-    )
-
-    create_test_and_train_datasets_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), False),
-            StructField(IndCQC.features, VectorUDT(), True),
-        ]
-    )
-
-    train_lasso_regression_model_schema = StructType(
-        [
-            StructField(IndCQC.features, VectorUDT(), True),
-            StructField(IndCQC.imputed_filled_post_model, DoubleType(), True),
         ]
     )
 

@@ -2,18 +2,18 @@ import unittest
 import warnings
 
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
     FloatType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
-from utils import utils
 import projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.prepare_during_year_data as job
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
+from utils import utils
 
 
 class TestPrepareDuringYearData(unittest.TestCase):

@@ -1,10 +1,10 @@
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
     DateType,
     DoubleType,
     IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC

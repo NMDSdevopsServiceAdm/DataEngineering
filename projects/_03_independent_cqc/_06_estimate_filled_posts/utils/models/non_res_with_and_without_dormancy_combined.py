@@ -1,16 +1,17 @@
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCqc,
-    NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
-)
-from utils.column_values.categorical_column_values import CareHome
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.utils import (
     insert_predictions_into_pipeline,
     set_min_value,
 )
 from projects._03_independent_cqc.utils.utils.utils import get_selected_value
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
+from utils.column_names.ind_cqc_pipeline_columns import (
+    NonResWithAndWithoutDormancyCombinedColumns as TempColumns,
+)
+from utils.column_values.categorical_column_values import CareHome
 
 
 def combine_non_res_with_and_without_dormancy_models(

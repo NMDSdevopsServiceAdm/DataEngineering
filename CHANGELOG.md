@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 - New function added to merge the old CQC ratings and the new assessment ratings.
 
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
+- Implemented complex validation for [validate_delta_locations_api_cleaned](projects/_01_ingest/cqc_api/fargate/validate_delta_locations_api_cleaned.py), includes:
+  - split into dimensions table with separate validation
+  - Pointblank translation of helper functions and new expressions.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
@@ -27,6 +30,12 @@ All notable changes to this project will be documented in this file.
 
 - Removed unused columns from CQC Providers data
 
+- Formatted imports throughout codebase
+
+- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
+
+- Removed the original Step Functions now the replacement ones are fully operational.
+
 ### Improved
 
 
@@ -34,6 +43,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
+
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 

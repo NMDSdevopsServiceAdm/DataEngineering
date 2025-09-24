@@ -5,12 +5,8 @@ from unittest.mock import ANY, Mock, patch
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
 from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
 

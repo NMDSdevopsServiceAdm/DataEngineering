@@ -1,11 +1,9 @@
 import unittest
 
-from utils import utils
-
 import utils.raw_data_adjustments as job
-
-from tests.test_file_schemas import RawDataAdjustments as Schemas
 from tests.test_file_data import RawDataAdjustments as Data
+from tests.test_file_schemas import RawDataAdjustments as Schemas
+from utils import utils
 
 
 class TestRawDataAdjustments(unittest.TestCase):

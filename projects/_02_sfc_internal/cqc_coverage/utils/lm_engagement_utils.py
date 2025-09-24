@@ -1,17 +1,14 @@
 from typing import Tuple
 
-from pyspark.sql import DataFrame, functions as F, Window
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 from utils.column_names.coverage_columns import CoverageColumns
-from utils.column_values.categorical_column_values import (
-    InAscwds,
-)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import InAscwds
 
 
 def add_columns_for_locality_manager_dashboard(df: DataFrame) -> DataFrame:
