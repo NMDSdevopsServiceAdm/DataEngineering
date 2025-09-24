@@ -5,7 +5,7 @@ import sys
 from polars.exceptions import PolarsError
 from botocore.exceptions import ClientError
 
-from projects._03_independent_cqc._05_model.fargate.model_registry import (
+from projects._03_independent_cqc._05_model.model_registry import (
     model_definitions,
 )
 from projects._03_independent_cqc._05_model.utils.model import (

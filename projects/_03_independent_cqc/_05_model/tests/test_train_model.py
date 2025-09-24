@@ -9,13 +9,13 @@ from sklearn.metrics import r2_score
 import polars as pl
 from pathlib import Path
 
-from projects._03_independent_cqc._05_model.fargate.train_model import (
+from projects._03_independent_cqc._05_model.fargate.retraining.train_model import (
     ModelVersionManager,
     main,
     model_definitions,
 )
 
-PATCH_PATH = "projects._03_independent_cqc._05_model.fargate.train_model"
+PATCH_PATH = "projects._03_independent_cqc._05_model.fargate.retraining.train_model"
 
 mock_model_type = MagicMock(spec=ModelType)
 mock_model_type.SILLY = "silly"
@@ -62,9 +62,7 @@ def null_action(var: Any) -> None:
 class TestMain(unittest.TestCase):
     @patch(f"{PATCH_PATH}.ModelVersionManager", return_value=MagicMock())
     @patch(f"{PATCH_PATH}.Model", return_value=MagicMock())
-    @patch.dict(
-        f"{PATCH_PATH}.model_definitions", {"some_model": {"some_key": "some_value"}}
-    )
+    @patch.dict(model_definitions, {"some_model": {"some_key": "some_value"}})
     def test_calls_expected_functions(
         self, mock_model, mock_version_manager, mock_sns_notification
     ):
@@ -129,7 +127,7 @@ class TestMain(unittest.TestCase):
         )
 
     @patch.dict(
-        "projects._03_independent_cqc._05_model.fargate.model_registry.model_definitions",
+        model_definitions,
         {"some_model": {"some_key": "some_value"}},
     )
     def test_raises_type_error_and_logs_if_invalid_model_parameters(
@@ -147,7 +145,7 @@ class TestMain(unittest.TestCase):
     @patch.object(ModelVersionManager, "save_model")
     @patch.object(Model, "get_raw_data")
     @patch.dict(
-        "projects._03_independent_cqc._05_model.fargate.model_registry.model_definitions",
+        model_definitions,
         ice_cream_model,
     )
     def test_train_model_saves_expected_model_parameters(

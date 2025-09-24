@@ -1,4 +1,4 @@
-from projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing import (
+from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
     preprocess_non_res_pir,
     logger,
     main_preprocessor,
@@ -15,7 +15,9 @@ import logging
 from freezegun import freeze_time
 
 
-PATCH_STEM = "projects._03_independent_cqc._04a_preprocessing.fargate.preprocessing"
+PATCH_STEM = (
+    "projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing"
+)
 DUMMY_SOURCE_BUCKET = "dummy-source-bucket"
 DUMMY_DESTINATION_BUCKET = "dummy-destination-bucket"
 SAMPLE_DATA_PATH = Path(__file__).parent / "testfile.parquet"

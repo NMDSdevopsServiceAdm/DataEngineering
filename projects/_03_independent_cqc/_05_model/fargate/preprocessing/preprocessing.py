@@ -4,12 +4,11 @@ import sys
 import polars as pl
 import logging
 from collections.abc import Callable
-from typing import Any
 from polars_utils import utils
 from datetime import datetime as dt
 import boto3
 from botocore.exceptions import ClientError
-from projects._03_independent_cqc._05_model.fargate.model_registry import (
+from projects._03_independent_cqc._05_model.model_registry import (
     model_definitions,
 )
 
