@@ -1,3 +1,5 @@
+import warnings
+
 import polars as pl
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -361,8 +363,8 @@ def remove_specialist_colleges(
     2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
 
     Args:
-        cqc_df (DataFrame): Fact table to align with dimension
-        gac_services_dimension (DataFrame): Dimension table with services_offered column
+        cqc_df (pl.DataFrame): Fact table to align with dimension
+        gac_services_dimension (pl.DataFrame): Dimension table with services_offered column
 
     Returns:
         tuple[pl.DataFrame, pl.DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
@@ -410,6 +412,37 @@ def remove_rows(
 
 
 def select_registered_locations(cqc_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Select rows where registration status is registered.
+
+    1. Check that there are no values in registration status that is not registered or deregistered.
+    2. Select rows where registration status is registered.
+
+    Args:
+        cqc_df (pl.DataFrame): Dataframe filter
+
+    Returns:
+        pl.DataFrame: Dataframe with only rows where registration status is registered.
+    """
+    # 1. Check that there are no values in registration status that is not registered or deregistered.
+    invalid_rows = cqc_df.filter(
+        ~pl.col(CQCLClean.registration_status).is_in(
+            [RegistrationStatus.registered, RegistrationStatus.deregistered]
+        )
+    )
+
+    if not invalid_rows.is_empty():
+        warnings.warn(
+            f"{invalid_rows.shape[0]} row(s) had an invalid registration status and have been dropped.",
+            UserWarning,
+        )
+        print("The following values are invalid:")
+        print(invalid_rows[CQCLClean.registration_status].value_counts())
+
+    # 2. Select rows where registration status is registered.
+    cqc_df = cqc_df.filter(
+        pl.col(CQCLClean.registration_status).eq(RegistrationStatus.registered)
+    )
     return cqc_df
 
 

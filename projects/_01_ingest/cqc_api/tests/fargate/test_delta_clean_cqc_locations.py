@@ -985,7 +985,7 @@ class SelectRegisteredLocationsTests(unittest.TestCase):
         # GIVEN
         #   Input where all rows have registration status of 'N'
         input_df = pl.DataFrame(
-            data=Data.select_registered_locations_all_registered,
+            data=Data.select_registered_locations_none_registered,
             schema=Schemas.select_registered_locations_schema,
         )
 
@@ -1054,11 +1054,12 @@ class SelectRegisteredLocationsTests(unittest.TestCase):
             result_df = job.select_registered_locations(input_df)
 
         # THEN
-        #   A warning should have been raised
+        #   A single warning should have been raised
         self.assertIn(
-            "2 row(s) had  an invalid registration status and have been dropped.",
-            cm.msg,
+            "2 row(s) had an invalid registration status and have been dropped.",
+            str(cm.warnings[0].message),
         )
+        self.assertEqual(1, len(cm.warnings))
 
         #   And it should return an empty dataframe (with the invalid rows removed)
         expected_df = pl.DataFrame(
