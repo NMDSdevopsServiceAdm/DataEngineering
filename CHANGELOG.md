@@ -36,6 +36,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed the original Step Functions now the replacement ones are fully operational.
 
+- Removed usage of the raw location schema with hardcoded column names and updated all dependent jobs to reference the standardised polars schema with column name references.
+
 ### Improved
 
 
