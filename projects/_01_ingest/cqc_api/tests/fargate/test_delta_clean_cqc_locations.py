@@ -1091,13 +1091,13 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
 
         # THEN
         expected_to_remove_df = pl.DataFrame(
-            data=Data.expected_remove_locations_without_ra_dim_without_ra_to_remove,
+            data=Data.expected_remove_locations_without_ra_dim_some_dates_without_ra_to_remove,
             schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
         )
         #   A single warning should have been raised
         self.assertIn(
             (
-                "The following locations have some dates with imputed regulated activities, and others do not:  ['loc_1']. "
+                "The following locations have some dates with imputed regulated activities, and others do not: ['loc_1']. "
                 "Please check that the imputation has been carried out correctly."
             ),
             str(cm.warnings[0].message),

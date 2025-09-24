@@ -317,7 +317,7 @@ class CQCLocationsSchema:
         [
             (CQCL.location_id, pl.String()),
             (
-                CQCLClean.regulated_activities,
+                CQCLClean.imputed_regulated_activities,
                 pl.List(
                     pl.Struct(
                         {

@@ -387,9 +387,55 @@ def remove_specialist_colleges(
 
 
 def remove_locations_without_regulated_activities(
-    cqc_df: pl.DataFrame, gac_services_dimension: pl.DataFrame
+    cqc_df: pl.DataFrame, regulated_activities_dimension: pl.DataFrame
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
-    pass
+    """
+    Remove locations that have no imputed regulated activities. This should only be the case when the location has never had any reported regulated activities.
+
+    1. Filter for rows in the Regulated Activities dimension where there are no imputed regulated activities.
+    2. Check that none of these locations have regulated activities for any other date.
+    3. Remove the identified rows from the cqc fact table, and the Regulated Activities dimension
+
+    Args:
+        cqc_df (pl.DataFrame): Fact table to align with dimension
+        regulated_activities_dimension (pl.DataFrame): Dimension table with imputed_regulated_activities column
+
+    Returns:
+        pl.DataFrame: cqq_df, regulated_activities_dimension where all rows have imputed regulated activities.
+
+    """
+    # 1. Filter for rows in the Regulated Activities dimension where there are no imputed regulated activities.
+    to_remove_df = (
+        regulated_activities_dimension.filter(
+            pl.col(CQCLClean.imputed_regulated_activities).is_null()
+            | pl.col(CQCLClean.imputed_regulated_activities).list.len().eq(0)
+        )
+        .select(CQCLClean.location_id)
+        .unique()
+    )
+
+    # 2. Check that none of these locations have regulated activities for any other date.
+    locations_to_investigate = regulated_activities_dimension.filter(
+        pl.col(CQCLClean.location_id).is_in(
+            to_remove_df[CQCLClean.location_id].to_list()
+        )
+        & pl.col(CQCLClean.imputed_regulated_activities).is_not_null()
+    )
+    if not locations_to_investigate.is_empty():
+        warnings.warn(
+            message=(
+                "The following locations have some dates with imputed regulated activities, and others do not: "
+                f"{locations_to_investigate[CQCLClean.location_id].unique().to_list()}. "
+                "Please check that the imputation has been carried out correctly."
+            ),
+            category=UserWarning,
+        )
+
+    # 3. Remove the identified rows from the cqc fact table, and the Regulated Activities dimension
+    cqc_df, regulated_activities_dimension = remove_rows(
+        to_remove_df=to_remove_df, target_dfs=[cqc_df, regulated_activities_dimension]
+    )
+    return cqc_df, regulated_activities_dimension
 
 
 def remove_rows(

@@ -666,7 +666,7 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
-# Should be in main
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.remove_locations_without_regulated_activities
 def remove_locations_that_never_had_regulated_activities(
     cqc_df: DataFrame, regulated_activities_dimension: DataFrame
 ) -> tuple[DataFrame, DataFrame]:

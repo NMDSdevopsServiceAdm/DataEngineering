@@ -1323,18 +1323,16 @@ class CQCLocationsData:
 
     remove_locations_without_ra_fact = [
         ("loc_1", "loc_2", "loc_1"),
-        ("20240101", "20240101"),
-    ]
-
-    remove_locations_without_ra_dim_without_ra = [
-        ("loc_1", "loc_2", "loc_1"),
-        ([], None, None),
         ("20240101", "20240101", "20240201"),
     ]
 
-    expected_remove_locations_without_ra_dim_without_ra_to_remove = [
-        ("loc_1", "loc_2", "loc_1")
+    remove_locations_without_ra_dim_without_ra = [
+        ("loc_1", "loc_2"),
+        ([], None),
+        ("20240101", "20240101"),
     ]
+
+    expected_remove_locations_without_ra_dim_without_ra_to_remove = [("loc_1", "loc_2")]
 
     remove_locations_without_ra_dim_with_ra = [
         ("loc_1", "loc_2"),
