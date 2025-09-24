@@ -3364,7 +3364,7 @@ class NullCtPostsToBedsOutliers:
     null_ct_posts_to_beds_outliers_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.ct_care_home_total_employed_dedup, IntegerType(), True),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
             StructField(IndCQC.ct_care_home_posts_per_bed_ratio, FloatType(), True),
         ]
     )
@@ -3372,7 +3372,7 @@ class NullCtPostsToBedsOutliers:
         [
             *null_ct_posts_to_beds_outliers_schema,
             StructField(
-                IndCQC.ct_care_home_total_employed_dedup_cleaned, IntegerType(), True
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
             ),
         ]
     )

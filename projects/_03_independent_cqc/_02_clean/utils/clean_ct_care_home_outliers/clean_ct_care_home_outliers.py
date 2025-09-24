@@ -14,18 +14,18 @@ def null_ct_posts_to_beds_outliers(df: DataFrame) -> DataFrame:
     Analysis of Capacity Tracker posts to bed ratio between April 2024 and September 2025 showed
     95% of locations per month have a ratio between 0.66 and 6.00.
 
-    This function copies ct_care_home_total_employed_dedup into ct_care_home_total_employed_dedup_cleaned
+    This function copies ct_care_home_total_employed into ct_care_home_total_employed_cleaned
     when the locations posts to bed ratio is inside 0.66 to 6.00 or ratio is null.
 
     Args:
         df(DataFrame): A dataframe with ct_care_home_posts_per_bed_ratio column.
 
     Returns:
-        DataFrame: The same dataframe with ct_care_home_total_employed_dedup_cleaned.
+        DataFrame: The same dataframe with ct_care_home_total_employed_cleaned.
     """
 
     df = df.withColumn(
-        IndCQC.ct_care_home_total_employed_dedup_cleaned,
+        IndCQC.ct_care_home_total_employed_cleaned,
         F.when(
             (F.col(IndCQC.ct_care_home_posts_per_bed_ratio).isNull())
             | (
@@ -35,7 +35,7 @@ def null_ct_posts_to_beds_outliers(df: DataFrame) -> DataFrame:
                     < MAXIMUM_RATIO_CUTOFF
                 )
             ),
-            F.col(IndCQC.ct_care_home_total_employed_dedup),
+            F.col(IndCQC.ct_care_home_total_employed),
         ).otherwise(None),
     )
 

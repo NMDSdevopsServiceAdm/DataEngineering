@@ -62,16 +62,6 @@ def main(
         IndCQC.pir_people_directly_employed_cleaned,
         IndCQC.pir_people_directly_employed_dedup,
     )
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.ct_care_home_total_employed,
-        IndCQC.ct_care_home_total_employed_dedup,
-    )
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.ct_non_res_care_workers_employed,
-        IndCQC.ct_non_res_care_workers_employed_dedup,
-    )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
@@ -95,7 +85,7 @@ def main(
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
         locations_df,
-        IndCQC.ct_care_home_total_employed_dedup,
+        IndCQC.ct_care_home_total_employed,
         IndCQC.ct_care_home_posts_per_bed_ratio,
     )
 

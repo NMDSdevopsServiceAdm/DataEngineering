@@ -40,7 +40,7 @@ class TestNullCtPostsToBedsOutliers(TestCleanCtCareHomeOutliers):
     ):
         self.assertEqual(len(self.new_columns_added), 1)
         self.assertEqual(
-            self.new_columns_added[0], IndCQC.ct_care_home_total_employed_dedup_cleaned
+            self.new_columns_added[0], IndCQC.ct_care_home_total_employed_cleaned
         )
 
     def test_null_ct_posts_to_beds_outliers_returns_expected_values(

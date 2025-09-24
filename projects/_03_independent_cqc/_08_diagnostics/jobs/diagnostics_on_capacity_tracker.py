@@ -3,18 +3,17 @@ import sys
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, functions as F
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
-from utils.column_values.categorical_column_values import CareHome
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
 from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -35,10 +34,8 @@ estimate_filled_posts_columns: list = [
     IndCQC.number_of_beds,
     IndCQC.number_of_beds_banded,
     IndCQC.ct_care_home_total_employed,
-    IndCQC.ct_care_home_total_employed_dedup,
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.ct_non_res_care_workers_employed,
-    IndCQC.ct_non_res_care_workers_employed_dedup,
     IndCQC.ct_non_res_care_workers_employed_imputed,
     IndCQC.current_region,
     IndCQC.current_cssr,
@@ -281,5 +278,7 @@ if __name__ == "__main__":
         non_res_diagnostics_destination,
         non_res_summary_diagnostics_destination,
     )
+
+    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
 
     print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
