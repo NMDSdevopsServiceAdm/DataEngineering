@@ -331,23 +331,20 @@ class ExtractRegisteredManagerNamesSchema:
             pl.Field(CQCL.person_title, pl.String()),
         ]
     )
+    activity_struct = pl.Struct(
+        [
+            pl.Field(CQCL.name, pl.String()),
+            pl.Field(CQCL.code, pl.String()),
+            pl.Field(CQCL.contacts, pl.List(contact_struct)),
+        ]
+    )
+    activities_list = pl.List(activity_struct)
 
     extract_registered_manager_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
-            (
-                CQCLClean.imputed_regulated_activities,
-                pl.List(
-                    pl.Struct(
-                        [
-                            pl.Field(CQCL.name, pl.String()),
-                            pl.Field(CQCL.code, pl.String()),
-                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
-                        ]
-                    )
-                ),
-            ),
+            (CQCLClean.imputed_regulated_activities, activities_list),
         ]
     )
 
@@ -355,36 +352,10 @@ class ExtractRegisteredManagerNamesSchema:
         [
             (CQCL.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
-            (
-                CQCLClean.imputed_regulated_activities,
-                pl.List(
-                    pl.Struct(
-                        [
-                            pl.Field(CQCL.name, pl.String()),
-                            pl.Field(CQCL.code, pl.String()),
-                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
-                        ]
-                    )
-                ),
-            ),
+            (CQCLClean.imputed_regulated_activities, activities_list),
         ]
     )
     expected_extract_contacts_schema = pl.Schema(
-        [
-            (CQCL.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
-            (
-                CQCLClean.imputed_regulated_activities,
-                pl.List(
-                    pl.Struct(
-                        [
-                            pl.Field(CQCL.name, pl.String()),
-                            pl.Field(CQCL.code, pl.String()),
-                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
-                        ]
-                    )
-                ),
-            ),
-            (CQCLClean.all_contacts_flat, pl.List(pl.List(contact_struct))),
-        ]
+        list(extract_contacts_schema.items())
+        + [(CQCLClean.all_contacts_flat, pl.List(pl.List(contact_struct)))]
     )
