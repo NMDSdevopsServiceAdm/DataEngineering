@@ -5,7 +5,6 @@ import polars as pl
 import logging
 from collections.abc import Callable
 from polars_utils import utils
-from datetime import datetime as dt
 import boto3
 from botocore.exceptions import ClientError
 from projects._03_independent_cqc._05_model.model_registry import (
@@ -20,7 +19,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None:
+def main_preprocessor(model_name: str, preprocessor: Callable[..., None]) -> None:
     """
     Calls the correct model preprocessor with the required arguments.
 
@@ -30,7 +29,7 @@ def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None
 
     Args:
         model_name (str): the name of a valid model
-        preprocessor (Callable[..., str]): the preprocessing function that will be called (must be defined in this
+        preprocessor (Callable[..., None]): the preprocessing function that will be called (must be defined in this
             module)
 
     Raises:
@@ -43,7 +42,7 @@ def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None
     task_token = os.environ.get("TASK_TOKEN", "testtoken")
 
     try:
-        validate_model_definition(model_name)
+        validate_model_definition(model_name, model_definitions)
 
         preprocessor_kwargs = model_definitions[model_name]["preprocessor_kwargs"]
 
@@ -58,16 +57,15 @@ def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None
         logger.info(
             f"Invoking {preprocessor.__name__} with kwargs: {preprocessor_kwargs}"
         )
-        processed = preprocessor(**preprocessor_kwargs)
-        result = {"processed_datetime": processed}
+        preprocessor(**preprocessor_kwargs)
+        result = {"result": "SUCCESS"}
         sfn.send_task_success(taskToken=task_token, output=json.dumps(result))
     except ClientError as e:
         logger.error("There was an error calling the StepFunction AWS service")
         logger.error(f"preprocessor error: {e}")
-        sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
     except ValueError as e:
-        logger.error("There was an invalid parameter included in the invocation.")
+        logger.error("There was an invalid or missing parameter in the invocation.")
         logger.error(e)
         sfn.send_task_failure(taskToken=task_token, error=str(e))
         raise
@@ -80,7 +78,7 @@ def main_preprocessor(model_name: str, preprocessor: Callable[..., str]) -> None
         raise
 
 
-def validate_model_definition(model_id: str) -> None:
+def validate_model_definition(model_id: str, model_definitions: dict) -> None:
     if model_id not in model_definitions:
         raise ValueError(f"{model_id} not included in model_definitions")
     elif "preprocessor_kwargs" not in model_definitions[model_id]:
@@ -95,7 +93,7 @@ def validate_model_definition(model_id: str) -> None:
         )
 
 
-def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> str:
+def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> None:
     """
     Preprocesses data for Non-Residential PIR model prior to training.
 
@@ -106,15 +104,11 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         destination( str): the S3 uri of the output directory
         lazy(bool, optional): whether to read the incoming data lazily or not (default is False)
 
-    Returns:
-        str: the string datetime the processing was performed in the format YYYYMMDDHHmmss.
-
     Raises:
         FileNotFoundError: if a local data source file cannot be found
         pl.exceptions.PolarsError: if there is an error reading or processing the data
     """
     try:
-        dt_now = dt.now()
         if source[-7:] != "parquet" and source[-1] != "/":
             source = source + "/"
         logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
@@ -152,8 +146,7 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
             .filter(pl.col("abs_resid") <= 500)
             .drop("abs_resid")
         )
-        process_datetime = dt_now.strftime("%Y%m%dT%H%M%S")
-        uri = f"{destination}/process_datetime={process_datetime}/processed.parquet"
+        uri = f"{destination}/processed.parquet"
         logger.info(
             f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
         )
@@ -167,7 +160,6 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
         )
         logger.error(f"Polars error: {e}")
         raise
-    return process_datetime
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ class Model:
                     f"Model type {model_type} is known but no algorithm is matched."
                 )
 
-    def get_raw_data(self, bucket_name: str, process_date_str: str) -> pl.LazyFrame:
+    def get_raw_data(self, bucket_name: str) -> pl.LazyFrame:
         """
         Retrieves raw data from S3 bucket.
         Args:
@@ -64,7 +64,7 @@ class Model:
             pl.LazyFrame: Raw data from S3 bucket.
 
         """
-        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/process_datetime={process_date_str}/processed.parquet"
+        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/processed.parquet"
         return pl.scan_parquet(s3_uri)
 
     @classmethod

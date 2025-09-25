@@ -175,14 +175,10 @@ def main(
 
 
 if __name__ == "__main__":
-    (model_id, process_datetime) = utils.collect_arguments(
+    (model_id) = utils.collect_arguments(
         (
             "--model_name",
             "The name of the model to train",
-        ),
-        (
-            "--process_datetime",
-            "The datetime of the latest preprocessed data in format YYYYMMDDHHmmss",
-        ),
+        )
     )
     vm = main(model_name=model_id, process_date_str=process_datetime)
