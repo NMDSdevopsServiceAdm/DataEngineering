@@ -1437,3 +1437,24 @@ class PostcodeMatcherTest:
         ("1 road name",),
         ("AB1 2CD",),
     ]
+
+    combine_matched_df1_rows = [
+        ("1-001", "1-003"),
+        (date(2025, 1, 1), date(2025, 1, 1)),
+        ("AA11AA", "AA12AA"),
+        ("CSSR 1", "CSSR 1"),
+    ]
+    combine_matched_df2_rows = [
+        ("1-002", "1-004"),
+        (date(2025, 1, 1), date(2025, 1, 1)),
+        ("ZZ11AA", "ZZ12AA"),
+        ("ZZ11", "ZZ12"),
+        ("CSSR 2", "CSSR 3"),
+    ]
+    expected_combine_matched_rows = [
+        ("1-001", "1-003", "1-002", "1-004"),
+        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        ("AA11AA", "AA12AA", "ZZ11AA", "ZZ12AA"),
+        ("CSSR 1", "CSSR 1", "CSSR 2", "CSSR 3"),
+        (None, None, "ZZ11", "ZZ12"),
+    ]

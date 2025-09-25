@@ -175,3 +175,23 @@ class RaiseErrorIfUnmatched(unittest.TestCase):
             self.fail(
                 f"raise_error_if_unmatched() raised an exception unexpectedly: {e}"
             )
+
+
+class CombineMatchedDataframesTests(unittest.TestCase):
+    def test_combine_matched_dataframes_returns_expected_dataframe(self):
+        matched_1_df = pl.DataFrame(
+            Data.combine_matched_df1_rows,
+            Schemas.combine_matched_df1_schema,
+        )
+        matched_2_df = pl.DataFrame(
+            Data.combine_matched_df2_rows,
+            Schemas.combine_matched_df2_schema,
+        )
+
+        returned_df = job.combine_matched_dataframes([matched_1_df, matched_2_df])
+        expected_df = pl.DataFrame(
+            Data.expected_combine_matched_rows,
+            Schemas.expected_combine_matched_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)

@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import polars as pl
 
@@ -253,3 +253,18 @@ def raise_error_if_unmatched(unmatched_df: pl.DataFrame) -> None:
         for r in rows
     ]
     raise TypeError(f"Unmatched postcodes found: {errors}")
+
+
+def combine_matched_dataframes(dataframes: List[pl.DataFrame]) -> pl.DataFrame:
+    """
+    Combines a list of DataFrames using unionByName.
+
+    allowMissingColumns is set to True to account for some DataFrames having additional columns.
+
+    Args:
+        dataframes (List[pl.DataFrame]): List of DataFrames to combine.
+
+    Returns:
+        pl.DataFrame: Unified DataFrame with all rows.
+    """
+    return pl.concat(dataframes, how="diagonal")
