@@ -1398,3 +1398,13 @@ class PostcodeMatcherTest:
         ("1-001", "1-002", "1-003"),
         ("CH16HU", "AB12CD", None),
     ]
+
+    truncate_postcode_rows = [
+        ("AA11AA", "AA11AB", "AB1CD", "B1CD"),
+        (date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1)),
+    ]
+    expected_truncate_postcode_rows = [
+        ("AA11AA", "AA11AB", "AB1CD", "B1CD"),
+        (date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1)),
+        ("AA11", "AA11", "AB1", "B1"),
+    ]

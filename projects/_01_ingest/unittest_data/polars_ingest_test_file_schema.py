@@ -375,3 +375,14 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_cleaned, pl.String()),
         ]
     )
+
+    truncate_postcode_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_truncate_postcode_schema = pl.Schema(
+        list(truncate_postcode_schema.items())
+        + [(CQCLClean.postcode_truncated, pl.String())]
+    )

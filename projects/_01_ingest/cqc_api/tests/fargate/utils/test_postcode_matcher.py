@@ -119,3 +119,18 @@ class AmendInvalidPostcodesTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+class TruncatePostcodeTests(unittest.TestCase):
+    def test_truncate_postcode_returns_expected_dataframe(self):
+        test_df = pl.DataFrame(
+            Data.truncate_postcode_rows, Schemas.truncate_postcode_schema
+        )
+        returned_df = job.truncate_postcode(test_df)
+
+        expected_df = pl.DataFrame(
+            Data.expected_truncate_postcode_rows,
+            Schemas.expected_truncate_postcode_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)

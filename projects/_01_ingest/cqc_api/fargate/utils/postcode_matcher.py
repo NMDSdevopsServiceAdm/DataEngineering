@@ -140,3 +140,22 @@ def amend_invalid_postcodes(df: pl.DataFrame) -> pl.DataFrame:
 
     df = df.with_columns(pl.col(CQCLClean.postcode_cleaned).replace(mapping_dict))
     return df
+
+
+def truncate_postcode(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Creates a new column which has the last 2 characters of the postcode cleaned column removed
+
+    Args:
+        df (pl.DataFrame): A DataFrame containing the full postcode.
+
+    Returns:
+        pl.DataFrame: DataFrame with the truncated postcode added.
+    """
+    string_length_exp = pl.col(CQCLClean.postcode_cleaned).str.len_bytes() - 2
+
+    return df.with_columns(
+        pl.col(CQCLClean.postcode_cleaned)
+        .str.slice(0, string_length_exp)
+        .alias(CQCLClean.postcode_truncated)
+    )
