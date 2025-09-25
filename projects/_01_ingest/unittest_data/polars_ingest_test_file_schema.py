@@ -2,14 +2,13 @@ from dataclasses import dataclass
 
 import polars as pl
 
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CQCL,
+)
 
 
 @dataclass
@@ -318,5 +317,74 @@ class CQCLocationsSchema:
             (CQCL.location_id, pl.String()),
             (CQCL.provider_id, pl.String()),
             (CQCLClean.cqc_sector, pl.String()),
+        ]
+    )
+
+
+@dataclass
+class ExtractRegisteredManagerNamesSchema:
+    contact_struct = pl.Struct(
+        [
+            pl.Field(CQCL.person_family_name, pl.String()),
+            pl.Field(CQCL.person_given_name, pl.String()),
+            pl.Field(CQCL.person_roles, pl.List(pl.String())),
+            pl.Field(CQCL.person_title, pl.String()),
+        ]
+    )
+
+    extract_registered_manager_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (
+                CQCLClean.imputed_regulated_activities,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.name, pl.String()),
+                            pl.Field(CQCL.code, pl.String()),
+                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+
+    extract_contacts_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (
+                CQCLClean.imputed_regulated_activities,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.name, pl.String()),
+                            pl.Field(CQCL.code, pl.String()),
+                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
+                        ]
+                    )
+                ),
+            ),
+        ]
+    )
+    expected_extract_contacts_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (
+                CQCLClean.imputed_regulated_activities,
+                pl.List(
+                    pl.Struct(
+                        [
+                            pl.Field(CQCL.name, pl.String()),
+                            pl.Field(CQCL.code, pl.String()),
+                            pl.Field(CQCL.contacts, pl.List(contact_struct)),
+                        ]
+                    )
+                ),
+            ),
+            (CQCLClean.all_contacts_flat, pl.List(pl.List(contact_struct))),
         ]
     )
