@@ -1340,6 +1340,59 @@ class CQCLocationsData:
 
 @dataclass
 class ExtractRegisteredManagerNamesData:
+    extract_contacts_when_single_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_extract_contacts_when_single_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+        (
+            [
+                [
+                    {
+                        CQCL.person_family_name: "Surname",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            ],
+        ),
+    ]
+
     extract_contacts_when_multiple_activities = [
         ("1-001", "1-002"),
         (date(2024, 1, 1), date(2024, 1, 1)),

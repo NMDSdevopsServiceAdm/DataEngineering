@@ -338,7 +338,7 @@ class ExtractRegisteredManagerNamesSchema:
             pl.Field(CQCL.contacts, pl.List(contact_struct)),
         ]
     )
-    contact_struct_list = pl.List(contact_struct)
+    contact_struct_list = pl.List(activity_struct)
     nested_contact_struct_list = pl.List(pl.List(contact_struct))
 
     extract_registered_manager_schema = pl.Schema(

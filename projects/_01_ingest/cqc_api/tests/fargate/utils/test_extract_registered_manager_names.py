@@ -47,6 +47,26 @@ class ExtractRegisteredManagerNamesTests(unittest.TestCase):
 
 
 class ExtractContactsTests(unittest.TestCase):
+    def test_single_contact(self):
+        # GIVEN
+        #   Data where location has one activity with one contact
+        input_df = pl.DataFrame(
+            data=Data.extract_contacts_when_single_contact,
+            schema=Schemas.extract_contacts_schema,
+        )
+
+        # WHEN
+        returned_df = job.extract_contacts(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with the contact flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_extract_contacts_when_single_contact,
+            schema=Schemas.expected_extract_contacts_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
     def test_multiple_activities(self):
         # GIVEN
         #   Data where location has multiple activities
@@ -143,7 +163,7 @@ class CreateRegisteredManagerNamesTests(unittest.TestCase):
     def test_multiple_inner_lists_multiple_contacts(self):
         pass
 
-    def test_duplicate_names_across_inner_lists(self):
+    def test_duplicate_names(self):
         pass
 
     def test_empty_lists(self):
