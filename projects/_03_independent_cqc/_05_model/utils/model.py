@@ -58,7 +58,6 @@ class Model:
         Retrieves raw data from S3 bucket.
         Args:
             bucket_name (str): Name of the S3 bucket where the raw data is located.
-            process_date_str (str): The datetime the training data was processed in format YYYYMMDDHHmmss
 
         Returns:
             pl.LazyFrame: Raw data from S3 bucket.

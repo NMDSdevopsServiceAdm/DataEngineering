@@ -33,9 +33,7 @@ MODEL_S3_PREFIX = os.environ.get("MODEL_S3_PREFIX", default="test_model_s3_prefi
 ERROR_SUBJECT = "Model Retraining Failure"
 
 
-def main(
-    model_name: str, seed: int = None
-) -> ModelVersionManager:
+def main(model_name: str, seed: int = None) -> ModelVersionManager:
     """
     Executes model retraining for standard predefined model.
 
@@ -174,9 +172,10 @@ def main(
 
 
 if __name__ == "__main__":
-    parsed = utils.get_args((
-        "--model_name",
-        "The name of the model to train",
-    )
+    parsed = utils.get_args(
+        (
+            "--model_name",
+            "The name of the model to train",
+        )
     )
     vm = main(model_name=parsed.model_name)

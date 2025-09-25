@@ -163,13 +163,16 @@ def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) ->
 
 
 if __name__ == "__main__":
-    parsed = utils.get_args((
+    parsed = utils.get_args(
+        (
             "--model_name",
             "The name of the model being prepared",
         ),
     )
     if "preprocessor" not in model_definitions[parsed.model_name]:
-        raise ValueError(f"{parsed.model_name} preprocessor not included in model_definitions")
+        raise ValueError(
+            f"{parsed.model_name} preprocessor not included in model_definitions"
+        )
     preprocessor_id = model_definitions[parsed.model_name]["preprocessor"]
     if preprocessor_id not in locals():
         logger.error(
