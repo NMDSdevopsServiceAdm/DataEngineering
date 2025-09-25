@@ -83,12 +83,12 @@ class TestMain(unittest.TestCase):
         mock_model.return_value.version_parameter_location = "some_param_location"
 
         # WHEN
-        main(model_name="some_model", process_date_str="20250919120102")
+        main(model_name="some_model")
 
         # THEN
         mock_model.assert_called_once_with(**{"some_key": "some_value"})
         mock_model.return_value.get_raw_data.assert_called_once_with(
-            bucket_name="test_raw_data_bucket", process_date_str="20250919120102"
+            bucket_name="test_raw_data_bucket"
         )
         mock_model.create_train_and_test_datasets.assert_called_once_with(
             mock_raw_data, seed=None
@@ -111,7 +111,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(KeyError):
-                main(model_name="silly_model", process_date_str="20250919120102")
+                main(model_name="silly_model")
         self.assertIn("Check that the model name is valid.", cm.output[2])
 
     @patch.dict(model_definitions, {"some_model": invalid_definition})
@@ -120,7 +120,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(ValueError):
-                main(model_name="some_model", process_date_str="20250919120102")
+                main(model_name="some_model")
         self.assertIn(
             "Check that you specified a valid model_type in your model definition.",
             cm.output[2],
@@ -135,7 +135,7 @@ class TestMain(unittest.TestCase):
     ):
         with self.assertLogs(level="ERROR") as cm:
             with self.assertRaises(TypeError):
-                main(model_name="some_model", process_date_str="20250919120102")
+                main(model_name="some_model")
         self.assertIn(
             "It is likely the model failed to instantiate. Check the parameters.",
             cm.output[2],
@@ -154,7 +154,7 @@ class TestMain(unittest.TestCase):
         mock_get_data.return_value = ice_cream_data.lazy()
         mock_save.side_effect = save_to_temp
         mock_update_parameter_store.side_effect = null_action
-        vm = main(model_name="dummy_model", process_date_str="20250919120102", seed=1)
+        vm = main(model_name="dummy_model", seed=1)
         loc = vm.storage_location_uri
         with open(loc, mode="rb") as f:
             model = pickle.load(f)

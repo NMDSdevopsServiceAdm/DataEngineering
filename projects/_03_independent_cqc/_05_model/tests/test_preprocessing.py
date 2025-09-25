@@ -1,11 +1,8 @@
-import botocore
-
 from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
     preprocess_non_res_pir,
     logger,
     main_preprocessor,
     validate_model_definition,
-    boto3 as b3,
 )
 from projects._03_independent_cqc._05_model.utils.model import ModelType
 import unittest
@@ -17,7 +14,6 @@ import tempfile
 from pathlib import Path
 import logging
 from botocore.exceptions import ClientError
-from freezegun import freeze_time
 
 
 PATCH_STEM = (

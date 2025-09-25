@@ -69,8 +69,8 @@ class TestModel(unittest.TestCase):
 
     @patch(f"{PATCH_PATH}.pl.scan_parquet")
     def test_get_raw_data_uses_correct_s3_uri(self, mock_scan_parquet):
-        data = self.standard_model.get_raw_data("test_bucket", "20250919120102")
-        expected_s3_uri = "s3://test_bucket/some/prefix/process_datetime=20250919120102/processed.parquet"
+        data = self.standard_model.get_raw_data("test_bucket")
+        expected_s3_uri = "s3://test_bucket/some/prefix/processed.parquet"
         mock_scan_parquet.assert_called_once_with(expected_s3_uri)
 
     def test_get_test_train_from_dataframe(self):
