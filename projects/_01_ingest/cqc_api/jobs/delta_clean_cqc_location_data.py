@@ -513,6 +513,7 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# should be in main
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 

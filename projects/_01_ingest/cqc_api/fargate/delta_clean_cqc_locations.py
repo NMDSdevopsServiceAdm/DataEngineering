@@ -2,8 +2,12 @@ import warnings
 
 import polars as pl
 
+from polars_utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
+    DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
@@ -451,7 +455,15 @@ def remove_rows(
         list[pl.DataFrame]: List of dataframes in the same order as target_dfs, with the rows removed.
     """
     result_dfs = []
+    to_remove_schema = set(to_remove_df.schema.to_python())
     for target_df in target_dfs:
+        target_df_schema = set(target_df.schema.to_python())
+        if not to_remove_schema.issubset(target_df_schema):
+            raise ValueError(
+                "The target dataframe schema does not contain all the columns present to_remove_df, or the types are not matched."
+                f"\nto_remove_schema: {to_remove_schema}"
+                f"\ntarget_df_schema: {target_df_schema}"
+            )
         result_dfs.append(
             target_df.join(
                 to_remove_df,

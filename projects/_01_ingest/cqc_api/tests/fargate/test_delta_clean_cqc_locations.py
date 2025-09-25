@@ -1135,6 +1135,199 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
         )
 
 
+class RemoveRowsTests(unittest.TestCase):
+    def setUp(self):
+        self.input_target_df = pl.DataFrame(
+            data=Data.remove_rows_target, schema=Schemas.remove_rows_target_schema
+        )
+
+    def test_removes_when_all_to_remove_rows_have_match(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in the target df
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            [
+                self.input_target_df,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_dfs))
+
+        #   All the matching rows should have been removed
+        expected_df = pl.DataFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_dfs[0])
+
+    def test_removes_none_when_all_to_remove_rows_have_no_match(self):
+        # GIVEN
+        #   Input where no to_remove rows have a corresponding row in the target df
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_no_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            [
+                self.input_target_df,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_dfs))
+
+        #   No rows should have been removed
+        pl_testing.assert_frame_equal(self.input_target_df, result_dfs[0])
+
+    def test_removes_from_multiple_target_dfs(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in multiple target dfs
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+        input_target_dfs = [
+            self.input_target_df,
+            self.input_target_df,
+        ]
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            target_dfs=input_target_dfs,
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 2
+        self.assertEqual(len(input_target_dfs), len(result_dfs))
+
+        #   The target rows should have been removed from both dataframes
+        expected_df = pl.DataFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_dfs[0])
+        pl_testing.assert_frame_equal(expected_df, result_dfs[1])
+
+    def test_removes_none_when_empty_to_remove(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in the target df
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_empty_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            [
+                self.input_target_df,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_dfs))
+
+        #   The target df should be unchanged
+        pl_testing.assert_frame_equal(self.input_target_df, result_dfs[0])
+
+    def test_removes_when_non_unique_to_remove(self):
+        # GIVEN
+        #   Input where the to_remove df has duplicate rows
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_non_unique_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            [
+                self.input_target_df,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_dfs))
+
+        #   All the matching rows should have been removed, duplicates should not affect the output
+        expected_df = pl.DataFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_dfs[0])
+
+    def test_removes_when_non_unique_target_df(self):
+        # GIVEN
+        #   Input where the target df has duplicate rows
+        alt_input_target_df = pl.DataFrame(
+            data=Data.remove_rows_non_unique_target,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        #   Input where all to_remove rows have a corresponding row in the target df
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_dfs = job.remove_rows(
+            input_to_remove_df,
+            [
+                alt_input_target_df,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_dfs))
+
+        #   All the matching rows should have been removed, including duplicates if they match
+        expected_df = pl.DataFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_dfs[0])
+
+    def test_raises_exception_when_schemas_do_not_match(self):
+        # GIVEN
+        #   Input where to_remove contains columns not in the target df
+        input_to_remove_df = pl.DataFrame(
+            data=Data.remove_rows_schemas_do_not_match,
+            schema=Schemas.remove_rows_to_remove_unmatched_schema,
+        )
+
+        # WHEN
+        with self.assertRaises(ValueError) as cm:
+            result_dfs = job.remove_rows(
+                input_to_remove_df,
+                [
+                    self.input_target_df,
+                ],
+            )
+
+        # THEN
+        #   The error message should
+        self.assertTrue(
+            "The target dataframe schema does not contain all the columns present to_remove_df, or the types are not matched."
+            in str(cm.exception)
+        )
+
+
 class SelectRegisteredLocationsTests(unittest.TestCase):
     def test_selects_all_registered(self):
         # GIVEN

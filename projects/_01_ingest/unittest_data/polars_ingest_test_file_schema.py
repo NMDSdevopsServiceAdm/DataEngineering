@@ -347,6 +347,29 @@ class CQCLocationsSchema:
         ]
     )
 
+    remove_rows_to_remove_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    remove_rows_target_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.registration_status, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    remove_rows_to_remove_unmatched_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_sector, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
     select_registered_locations_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

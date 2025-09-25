@@ -1411,6 +1411,70 @@ class CQCLocationsData:
 
     expected_remove_locations_without_ra_dim_some_dates_without_ra_to_remove = ["loc_1"]
 
+    remove_rows_all_to_remove_have_match_to_remove = [
+        ("loc_1", "loc_2"),
+        ("20240101", "20240101"),
+    ]
+
+    remove_rows_target = [
+        (
+            "loc_1",
+            "loc_2",
+            "loc_3",
+        ),
+        (
+            RegistrationStatus.registered,
+            RegistrationStatus.deregistered,
+            RegistrationStatus.registered,
+        ),
+        ("20240101", "20240101", "20240101"),
+    ]
+
+    expected_remove_rows_all_to_remove_have_match = [
+        ("loc_3",),
+        (RegistrationStatus.registered,),
+        ("20240101",),
+    ]
+
+    remove_rows_no_to_remove_have_match_to_remove = [
+        ("loc_a", "loc_b"),
+        ("20240101", "20240101"),
+    ]
+
+    remove_rows_empty_to_remove = []
+
+    remove_rows_non_unique_to_remove = [
+        ("loc_1", "loc_2", "loc_1"),
+        ("20240101", "20240101", "20240101"),
+    ]
+
+    remove_rows_non_unique_target = [
+        (
+            "loc_1",
+            "loc_2",
+            "loc_3",
+            "loc_2",
+        ),
+        (
+            RegistrationStatus.registered,
+            RegistrationStatus.deregistered,
+            RegistrationStatus.registered,
+            RegistrationStatus.deregistered,
+        ),
+        (
+            "20240101",
+            "20240101",
+            "20240101",
+            "20240101",
+        ),
+    ]
+
+    remove_rows_schemas_do_not_match = [
+        ("loc_1", "loc_2"),
+        (Sector.local_authority, Sector.local_authority),
+        ("20240101", "20240101"),
+    ]
+
     select_registered_locations_all_registered = [
         ("loc_1", "loc_2"),
         (RegistrationStatus.registered, RegistrationStatus.registered),
