@@ -8,6 +8,9 @@ from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    NewCqcLocationApiColumns as CQCL,
+)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -210,3 +213,43 @@ def create_truncated_postcode_df(df: pl.DataFrame) -> pl.DataFrame:
     )
 
     return df
+
+
+def raise_error_if_unmatched(unmatched_df: pl.DataFrame) -> None:
+    """
+    Raise error if there are any unmatched postcodes left.
+
+    If unmatched_df is empty then all postcodes have been matched.
+    If there is data in unmatched_df, the pipeline will fail and the
+    location ID, name and postcode will be printed.
+
+    Args:
+        unmatched_df (pl.DataFrame): DataFrame containing any remaining unmatched locations (if there are any).
+
+    Raises:
+        TypeError: If unmatched postcodes exist.
+    """
+    if unmatched_df.is_empty():
+        return
+
+    rows = (
+        unmatched_df.select(
+            CQCL.location_id,
+            CQCL.name,
+            CQCL.postal_address_line1,
+            CQCLClean.postcode_cleaned,
+        )
+        .unique()
+        .sort(CQCLClean.postcode_cleaned)
+        .to_dicts()
+    )
+    errors = [
+        (
+            r[CQCL.location_id],
+            r[CQCL.name],
+            r[CQCL.postal_address_line1],
+            r[CQCLClean.postcode_cleaned],
+        )
+        for r in rows
+    ]
+    raise TypeError(f"Unmatched postcodes found: {errors}")

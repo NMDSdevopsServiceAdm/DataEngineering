@@ -1429,3 +1429,11 @@ class PostcodeMatcherTest:
         (date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
         (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
     ]
+
+    raise_error_if_unmatched_rows = [
+        ("1-001",),
+        (date(2025, 1, 1),),
+        ("name 1",),
+        ("1 road name",),
+        ("AB1 2CD",),
+    ]

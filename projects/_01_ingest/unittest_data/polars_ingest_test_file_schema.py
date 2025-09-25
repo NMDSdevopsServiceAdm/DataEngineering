@@ -409,3 +409,13 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_truncated, pl.String()),
         ]
     )
+
+    raise_error_if_unmatched_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.postal_address_line1, pl.String()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
