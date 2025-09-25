@@ -338,13 +338,14 @@ class ExtractRegisteredManagerNamesSchema:
             pl.Field(CQCL.contacts, pl.List(contact_struct)),
         ]
     )
-    activities_list = pl.List(activity_struct)
+    contact_struct_list = pl.List(contact_struct)
+    nested_contact_struct_list = pl.List(pl.List(contact_struct))
 
     extract_registered_manager_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.imputed_regulated_activities, activities_list),
+            (CQCLClean.imputed_regulated_activities, contact_struct_list),
         ]
     )
 
@@ -352,10 +353,22 @@ class ExtractRegisteredManagerNamesSchema:
         [
             (CQCL.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
-            (CQCLClean.imputed_regulated_activities, activities_list),
+            (CQCLClean.imputed_regulated_activities, contact_struct_list),
         ]
     )
     expected_extract_contacts_schema = pl.Schema(
         list(extract_contacts_schema.items())
-        + [(CQCLClean.all_contacts_flat, pl.List(pl.List(contact_struct)))]
+        + [(CQCLClean.all_contacts_flat, nested_contact_struct_list)]
+    )
+
+    create_registered_manager_names_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.all_contacts_flat, nested_contact_struct_list),
+        ]
+    )
+    expected_create_registered_manager_names_schema = pl.Schema(
+        list(create_registered_manager_names_schema.items())
+        + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
     )

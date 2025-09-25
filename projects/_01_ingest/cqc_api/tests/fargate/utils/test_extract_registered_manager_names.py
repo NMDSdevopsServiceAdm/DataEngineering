@@ -47,7 +47,7 @@ class ExtractRegisteredManagerNamesTests(unittest.TestCase):
 
 
 class ExtractContactsTests(unittest.TestCase):
-    def test_extract_contacts_when_location_has_multiple_activities(self):
+    def test_multiple_activities(self):
         # GIVEN
         #   Data where location has multiple activities
         input_df = pl.DataFrame(
@@ -67,7 +67,7 @@ class ExtractContactsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
-    def test_extract_contacts_when_location_has_multiple_contacts_per_activity(self):
+    def test_multiple_contacts_per_activity(self):
         # GIVEN
         #   Data where location has multiple contacts for each activity
         input_df = pl.DataFrame(
@@ -87,7 +87,7 @@ class ExtractContactsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
-    def test_extract_contacts_when_location_has_multiple_activities_and_multiple_contacts_per_activity(
+    def test_multiple_activities_and_multiple_contacts_per_activity(
         self,
     ):
         # GIVEN
@@ -109,7 +109,7 @@ class ExtractContactsTests(unittest.TestCase):
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
-    def test_extract_contacts_when_location_has_no_contacts(self):
+    def test_no_contacts(self):
         # GIVEN
         #   Data where location does not have any contacts for any activity
         input_df = pl.DataFrame(
@@ -128,3 +128,23 @@ class ExtractContactsTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+class CreateRegisteredManagerNamesTests(unittest.TestCase):
+    def test_single_contact(self):
+        pass
+
+    def test_multiple_inner_lists(self):
+        pass
+
+    def test_multiple_contacts_single_inner_list(self):
+        pass
+
+    def test_multiple_inner_lists_multiple_contacts(self):
+        pass
+
+    def test_duplicate_names_across_inner_lists(self):
+        pass
+
+    def test_empty_lists(self):
+        pass
