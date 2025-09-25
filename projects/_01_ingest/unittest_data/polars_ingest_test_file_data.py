@@ -15,6 +15,263 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class CQCLocationsData:
+    create_dimension_delta_historic = [
+        (
+            "loc_1",
+            "loc_2",
+            "loc_1",
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+        ),
+        ("20240101", "20240101", "20240401"),
+        ("2024", "2024", "2024"),
+        ("04", "01", "04"),
+        ("01", "01", "01"),
+        ("20240401", "20240101", "20240401"),
+    ]
+
+    create_dimension_delta_current_same_as_historic = [
+        (
+            "loc_1",
+            "loc_2",
+            "loc_1",
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+        ),
+        ("20240101", "20240101", "20240401"),
+    ]
+
+    create_dimension_delta_current_entirely_unique_from_historic = [
+        (
+            "loc_1",
+            "loc_2",
+            "loc_2",
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+        ("20250101", "20240101", "20250101"),
+    ]
+
+    expected_create_dimension_delta_only_unique_from_historic = [
+        *create_dimension_delta_current_entirely_unique_from_historic,
+        ("2025", "2025", "2025"),
+        ("01", "01", "01"),
+        ("01", "01", "01"),
+        ("20250101", "20250101", "20250101"),
+    ]
+
+    create_dimension_delta_current_some_overlap_with_historic = [
+        (
+            "loc_1",
+            "loc_1",
+            "loc_2",
+            "loc_2",
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            None,
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+        (
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locA",
+                    CQCL.related_location_name: "Location A",
+                    CQCL.type: "SomeType",
+                    CQCL.reason: "SomeReason",
+                }
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+            [
+                {
+                    CQCL.related_location_id: "locX",
+                    CQCL.related_location_name: "Location X",
+                    CQCL.type: "SomeSpecificType",
+                    CQCL.reason: "SomeReason",
+                },
+                {
+                    CQCL.related_location_id: "locY",
+                    CQCL.related_location_name: "Location Y",
+                    CQCL.type: "SomeOtherType",
+                    CQCL.reason: "SomeReason",
+                },
+            ],
+        ),
+        ("20240101", "20250101", "20240101", "20250101"),
+    ]
+
+    create_dimension_delta_empty_current = []
+
+    expected_create_dimension_delta_empty_delta = []
+
     clean_provider_id_column_rows = [
         ("loc_1", "loc_1", "loc_1", "loc_2", "loc_2", "loc_2"),
         ("123456789", "123456789", "123456789", "223456789", "223456789", "223456789"),

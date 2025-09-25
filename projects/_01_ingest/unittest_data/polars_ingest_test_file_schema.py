@@ -9,11 +9,84 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
+    PartitionKeys as Keys,
+    DimensionPartitionKeys as DimKeys,
+)
 
 
 @dataclass
 class CQCLocationsSchema:
+    create_dimension_delta_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCL.relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.imputed_relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    create_dimension_delta_dim_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCL.relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (
+                CQCLClean.imputed_relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (Keys.import_date, pl.String()),
+            (DimKeys.year, pl.String()),
+            (DimKeys.month, pl.String()),
+            (DimKeys.day, pl.String()),
+            (DimKeys.last_updated, pl.String()),
+        ]
+    )
+
     clean_provider_id_column_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

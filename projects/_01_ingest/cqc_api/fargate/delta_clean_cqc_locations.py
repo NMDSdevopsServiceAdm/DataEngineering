@@ -20,6 +20,59 @@ from utils.column_values.categorical_column_values import (
 )
 
 
+def _create_dimension_delta(
+    dimension_location: str,
+    dimension_update_date: str,
+    current_dimension: pl.DataFrame,
+    join_columns: list[str],
+) -> pl.DataFrame:
+    """
+    Create dimension delta, including rows from any new import dates, as well as any updated values for old import dates
+
+    1. Read in the previous state of the dimension.
+        - If no such dimension exists, create a new one.
+    2. Identify which rows in the current dimension are new or updated.
+    3. Assign partition values to the updated rows.
+
+    Args:
+        dimension_location:
+        dimension_update_date:
+        current_dimension:
+        join_columns:
+
+    Returns:
+
+    """
+    # 1. Read in the previous state of the dimension.
+    try:
+        previous_dimension = utils.read_parquet(dimension_location)
+    except OSError:
+        dimension_name = dimension_location.split("/")[-2]
+        warnings.warn(
+            f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
+            UserWarning,
+        )
+        delta = current_dimension
+    else:
+        # 2. Identify which rows in the current dimension are new or updated.
+        delta = current_dimension.join(
+            previous_dimension,
+            on=join_columns,
+            how="anti",
+            nulls_equal=True,
+        )
+
+    # 3. Assign partition values to the updated rows.
+    delta = delta.with_columns(
+        pl.lit(dimension_update_date[:4]).alias(DimensionKeys.year),
+        pl.lit(dimension_update_date[4:6]).alias(DimensionKeys.month),
+        pl.lit(dimension_update_date[6:]).alias(DimensionKeys.day),
+        pl.lit(dimension_update_date).alias(DimensionKeys.last_updated),
+    )
+
+    return delta
+
+
 def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
     """
     Cleans provider ID column, removing long IDs and then forwards and backwards filling the value

@@ -21,6 +21,176 @@ class MainTests(unittest.TestCase):
         pass
 
 
+@patch(f"{PATCH_PATH}.utils.read_parquet")
+class CreateDimensionDeltaTests(unittest.TestCase):
+    def setUp(self):
+        self.historic_dimension = pl.DataFrame(
+            data=Data.create_dimension_delta_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+
+    def test_current_is_same_as_historic(self, mock_read_parquet):
+        # GIVEN
+        #   current dim which is identical to the historic dim (other than the added dim key columns)
+        mock_read_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.DataFrame(
+            data=Data.create_dimension_delta_current_same_as_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_df = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20240801",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_df = pl.DataFrame(
+            data=Data.expected_create_dimension_delta_empty_delta,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should be empty
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+    def test_current_entirely_unique_from_historic(self, mock_read_parquet):
+        # GIVEN
+        #   current dim which is has no rows which match the historic dim
+        mock_read_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.DataFrame(
+            data=Data.create_dimension_delta_current_entirely_unique_from_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_df = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20250101",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_df = pl.DataFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   All the rows from the current dim should be returned, with the partitioning cols added
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+    def test_current_has_some_overlap_with_historic(self, mock_read_parquet):
+        # GIVEN
+        #   current dim which is has some rows which match the historic dim, and some that don't
+        mock_read_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.DataFrame(
+            data=Data.create_dimension_delta_current_some_overlap_with_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_df = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20250101",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_df = pl.DataFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should contain only the rows which are different from the historic
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+    def test_empty_current(self, mock_read_parquet):
+        # GIVEN
+        #   an empty current dim
+        mock_read_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.DataFrame(
+            data=Data.create_dimension_delta_empty_current,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_df = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20240801",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_df = pl.DataFrame(
+            data=Data.expected_create_dimension_delta_empty_delta,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should be empty
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+    def test_no_previous_dimension_warns_and_continues(self, mock_read_parquet):
+        # GIVEN
+        #   The historic dim cannot be found and raises an OS error
+        mock_read_parquet.side_effect = OSError()
+        input_current_dim = pl.DataFrame(
+            data=Data.create_dimension_delta_current_entirely_unique_from_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(UserWarning) as cm:
+            result_df = job._create_dimension_delta(
+                dimension_location="s3://bucket_name/domain=some_domain/dataset=dim_name/",
+                dimension_update_date="20250101",
+                current_dimension=input_current_dim,
+                join_columns=[
+                    "locationId",
+                    "relationships",
+                    "imputed_relationships",
+                    "import_date",
+                ],
+            )
+
+        # THEN
+        expected_df = pl.DataFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   A single warning should have been raised
+        self.assertIn(
+            (
+                "The dataset=dim_name dimension was not found in the s3://bucket_name/domain=some_domain/dataset=dim_name/. "
+                "A new dimension will be created."
+            ),
+            str(cm.warnings[0].message),
+        )
+        self.assertEqual(1, len(cm.warnings))
+
+        #   All the rows from the current dim should be returned, with the partitioning cols added
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+
 class CleanProviderIdColumnTests(unittest.TestCase):
     def test_does_not_change_valid_ids(self):
         # GIVEN
