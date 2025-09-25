@@ -368,3 +368,10 @@ class PostcodeMatcherTest:
     expected_get_first_successful_postcode_match_schema = (
         first_successful_postcode_unmatched_schema
     )
+
+    amend_invalid_postcodes_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )

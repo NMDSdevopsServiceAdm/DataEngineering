@@ -1388,3 +1388,13 @@ class PostcodeMatcherTest:
         (date(2023, 1, 1), date(2025, 1, 1)),
         ("AA11AB", "AA13AA"),
     ]
+
+    amend_invalid_postcodes_rows = [
+        ("1-001", "1-002", "1-003"),
+        ("CH52LY", "AB12CD", None),
+    ]
+    expected_amend_invalid_postcodes_rows = [
+        # 1. amended as per invalid postcode dictionary, 2. not in dictionary, doesn't change, 3. null values should remain as null
+        ("1-001", "1-002", "1-003"),
+        ("CH16HU", "AB12CD", None),
+    ]

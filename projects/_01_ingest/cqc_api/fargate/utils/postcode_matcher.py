@@ -1,7 +1,10 @@
-from typing import Tuple
+from typing import Dict, Tuple
 
 import polars as pl
 
+from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
+    ManualPostcodeCorrections,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -117,3 +120,23 @@ def get_first_successful_postcode_match(
     ).drop(successfully_matched_postcode)
 
     return reassigned_df
+
+
+def amend_invalid_postcodes(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Replace invalid postcodes in the DataFrame using a predefined mapping.
+
+    This function uses a dictionary of known invalid postcodes and their corrections.
+    If a postcode in the input DataFrame matches a key in the mapping, it is replaced
+    with the corresponding corrected postcode. Otherwise, the original postcode is retained.
+
+    Args:
+        df (pl.DataFrame): Input DataFrame containing a column of postcodes.
+
+    Returns:
+        pl.DataFrame: A new DataFrame with amended postcodes.
+    """
+    mapping_dict: Dict[str, str] = ManualPostcodeCorrections.postcode_corrections_dict
+
+    df = df.with_columns(pl.col(CQCLClean.postcode_cleaned).replace(mapping_dict))
+    return df
