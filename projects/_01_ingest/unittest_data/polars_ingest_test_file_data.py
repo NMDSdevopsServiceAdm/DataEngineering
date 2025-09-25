@@ -1349,3 +1349,25 @@ class PostcodeMatcherTest:
     expected_clean_postcode_column_when_drop_is_true_rows = [
         ("AA11AA", "AA12AA", "AA13AA")
     ]
+
+    join_postcode_data_locations_rows = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (date(2020, 1, 1), date(2025, 1, 1), date(2020, 1, 1), date(2025, 1, 1)),
+        ("AA11AA", "AA11AA", "AA1ZAA", "AA12AA"),
+    ]
+    join_postcode_data_postcodes_rows = [
+        ("AA11AA", "AA12AA", "AA11AA", "AA12AA"),
+        (date(2020, 1, 1), date(2020, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        ("CSSR 1", "CSSR 2", "CSSR 1", "CSSR 2"),
+    ]
+    expected_join_postcode_data_matched_rows = [
+        ("1-001", "1-001", "1-002"),
+        (date(2020, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        ("AA11AA", "AA11AA", "AA12AA"),
+        ("CSSR 1", "CSSR 1", "CSSR 2"),
+    ]
+    expected_join_postcode_data_unmatched_rows = [
+        ("1-002",),
+        (date(2020, 1, 1),),
+        ("AA1ZAA",),
+    ]

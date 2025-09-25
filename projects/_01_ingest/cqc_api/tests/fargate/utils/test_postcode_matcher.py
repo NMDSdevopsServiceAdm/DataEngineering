@@ -48,3 +48,36 @@ class CleanPostcodeColumnTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+class JoinPostcodeDataTests(unittest.TestCase):
+    def setUp(
+        self,
+    ):
+        locations_df = pl.DataFrame(
+            data=Data.join_postcode_data_locations_rows,
+            schema=Schemas.join_postcode_data_locations_schema,
+        )
+        postcode_df = pl.DataFrame(
+            data=Data.join_postcode_data_postcodes_rows,
+            schema=Schemas.join_postcode_data_postcodes_schema,
+        )
+        self.returned_matched_df, self.returned_unmatched_df = job.join_postcode_data(
+            locations_df, postcode_df, CQCLClean.postcode_cleaned
+        )
+        self.expected_matched_df = pl.DataFrame(
+            data=Data.expected_join_postcode_data_matched_rows,
+            schema=Schemas.expected_join_postcode_data_matched_schema,
+        )
+        self.expected_unmatched_df = pl.DataFrame(
+            data=Data.expected_join_postcode_data_unmatched_rows,
+            schema=Schemas.expected_join_postcode_data_unmatched_schema,
+        )
+
+    def test_returns_expected_dataframe(self):
+        pl_testing.assert_frame_equal(
+            self.returned_matched_df, self.expected_matched_df
+        )
+        pl_testing.assert_frame_equal(
+            self.returned_unmatched_df, self.expected_unmatched_df
+        )

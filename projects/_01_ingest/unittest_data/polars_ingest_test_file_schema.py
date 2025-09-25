@@ -5,6 +5,9 @@ import polars as pl
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -325,8 +328,29 @@ class CQCLocationsSchema:
 class PostcodeMatcherTest:
     clean_postcode_column_schema = pl.Schema([(CQCL.postal_code, pl.String())])
     expected_clean_postcode_column_when_drop_is_false_schema = pl.Schema(
-        [(CQCL.postal_code, pl.String()), (CQCLClean.postcode_cleaned, pl.String)]
+        [(CQCL.postal_code, pl.String()), (CQCLClean.postcode_cleaned, pl.String())]
     )
     expected_clean_postcode_column_when_drop_is_true_schema = pl.Schema(
-        [(CQCLClean.postcode_cleaned, pl.String)]
+        [(CQCLClean.postcode_cleaned, pl.String())]
     )
+
+    join_postcode_data_locations_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+
+    join_postcode_data_postcodes_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.current_cssr, pl.String()),
+        ]
+    )
+    expected_join_postcode_data_matched_schema = pl.Schema(
+        list(join_postcode_data_locations_schema.items())
+        + [(ONSClean.current_cssr, pl.String())]
+    )
+    expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
