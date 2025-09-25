@@ -15,6 +15,8 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class CQCLocationsData:
+    create_dimension_from_postcode = []
+
     create_dimension_delta_historic = [
         (
             "loc_1",
@@ -338,7 +340,7 @@ class CQCLocationsData:
         ("loc_1", "loc_2", "loc_3"),
         ("2018-01-01", "2023-07-01", "2018-01-01"),
         ("20121101", "20240101", "20131101"),
-        (None, "2023-07-01", None),
+        ("2012-11-01", "2023-07-01", "2013-11-01"),
     ]
 
     registration_date_missing_single_reg_date_for_loc_column_rows = [

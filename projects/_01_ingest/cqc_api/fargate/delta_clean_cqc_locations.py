@@ -84,6 +84,40 @@ def create_dimension_from_struct_field(
     )
 
 
+def run_postcode_matching(*args):
+    return pl.DataFrame()
+
+
+def create_dimension_from_postcode(
+    cqc_df: pl.DataFrame,
+    ons_df: str,
+    dimension_location: str,
+    dimension_update_date: str,
+):
+    current_dim = run_postcode_matching(
+        cqc_df.select(
+            CQCLClean.location_id,
+            CQCLClean.name,
+            CQCLClean.cqc_location_import_date,
+            CQCLClean.postal_address_line1,
+            CQCLClean.postal_code,
+            Keys.import_date,
+        ),
+        ons_df,
+    )
+
+    return _create_dimension_delta(
+        dimension_location=dimension_location,
+        dimension_update_date=dimension_update_date,
+        current_dimension=current_dim,
+        join_columns=[
+            CQCLClean.location_id,
+            CQCLClean.postcode_cleaned,
+            CQCLClean.cqc_location_import_date,
+        ],
+    )
+
+
 def _create_dimension_delta(
     dimension_location: str,
     dimension_update_date: str,

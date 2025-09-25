@@ -1,8 +1,9 @@
 import unittest
 from unittest import TestCase
-from unittest.mock import patch, ANY
+from unittest.mock import patch, ANY, Mock
 
 import polars as pl
+from polars.exceptions import ColumnNotFoundError
 import polars.testing as pl_testing
 
 import projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations as job
@@ -147,6 +148,64 @@ class CreateDimensionFromStructFieldTests(unittest.TestCase):
         )
         #   The return value from the mocked function should be returned
         self.assertEqual("return_from_create_dimension_delta", return_value)
+
+
+@patch(
+    f"{PATCH_PATH}._create_dimension_delta",
+    return_value="return_from_create_dimension_delta",
+)
+@patch(f"{PATCH_PATH}.run_postcode_matching")
+class CreateDimensionFromPostcodeTests(unittest.TestCase):
+    """
+    All the processing to create this function is done elsewhere.
+    This test just ensures all the needed columns are passed into the postcode matching function.
+    """
+
+    def test_selects_expected_columns(
+        self, mock_postcode_matching, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input with columns that are not required by the postcode matching function
+        input_df = pl.DataFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.create_dimension_from_postcode_input_extra_cols_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_postcode(
+            input_df, Mock(name="ons_df"), "some/location", "20250101"
+        )
+
+        # THEN
+        #   Each of the mock functions should have been called once
+        mock_postcode_matching.assert_called_once()
+        mock_create_dimension_delta.assert_called_once()
+        result_df = mock_postcode_matching.call_args.args[0]
+        #   The passed in dataframe should only have expected columns
+        expected_df = pl.DataFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.expected_create_dimension_from_postcode_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_raises_exception_when_expected_columns_are_missing(
+        self, mock_postcode_matching, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input with columns that are required by the postcode matching function missing
+        input_df = pl.DataFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.create_dimension_from_postcode_input_missing_cols_schema,
+        )
+
+        # THEN
+        #   A Polars ColumnNotFoundError should have been raised
+        with self.assertRaises(ColumnNotFoundError):
+            job.create_dimension_from_postcode(
+                input_df, Mock(name="ons_df"), "some/location", "20250101"
+            )
 
 
 @patch(f"{PATCH_PATH}.utils.read_parquet")
@@ -418,7 +477,7 @@ class CleanAndImputeRegistrationDateTests(unittest.TestCase):
         self.assertIsInstance(output_df, pl.DataFrame)
         pl_testing.assert_frame_equal(expected_df, output_df)
 
-    def test_removes_registration_dates_later_than_import_date(self):
+    def test_replaces_registration_dates_later_than_import_date_with_import_date(self):
         # WHEN
         #   The import date is before the registration date
         input_df = pl.DataFrame(
@@ -1218,7 +1277,7 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   All the rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
-            expected_to_remove_df, mock_call_args["to_remove_df"]
+            expected_to_remove_df, mock_call_args["to_remove_df"], check_row_order=False
         )
 
     def test_does_not_remove_rows_with_regulated_activities(self, mock_remove_rows):
@@ -1250,7 +1309,7 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
-            expected_to_remove_df, mock_call_args["to_remove_df"]
+            expected_to_remove_df, mock_call_args["to_remove_df"], check_row_order=False
         )
 
     def test_returns_empty_df_when_empty_input_df(self, mock_remove_rows):
@@ -1282,7 +1341,7 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   No rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
-            expected_to_remove_df, mock_call_args["to_remove_df"]
+            expected_to_remove_df, mock_call_args["to_remove_df"], check_row_order=False
         )
 
     def test_warns_when_not_all_rows_for_location_have_no_regulated_activities(
@@ -1326,7 +1385,7 @@ class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
         pl_testing.assert_frame_equal(input_dim_df, mock_call_args["target_dfs"][1])
         #   All the rows should be passed in to the mock function as to be removed
         pl_testing.assert_frame_equal(
-            expected_to_remove_df, mock_call_args["to_remove_df"]
+            expected_to_remove_df, mock_call_args["to_remove_df"], check_row_order=False
         )
 
 

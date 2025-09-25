@@ -17,6 +17,53 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 @dataclass
 class CQCLocationsSchema:
+    create_dimension_from_postcode_input_extra_cols_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postal_address_line1, pl.String()),
+            (CQCLClean.postal_code, pl.String()),
+            (CQCLClean.contacts, pl.String()),
+            (
+                CQCL.relationships,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.related_location_id: pl.String(),
+                            CQCL.related_location_name: pl.String(),
+                            CQCL.type: pl.String(),
+                            CQCL.reason: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    expected_create_dimension_from_postcode_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postal_address_line1, pl.String()),
+            (CQCLClean.postal_code, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    create_dimension_from_postcode_input_missing_cols_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postal_address_line1, pl.String()),
+            (CQCLClean.contacts, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
     create_dimension_delta_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
