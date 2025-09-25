@@ -18,33 +18,41 @@ PATCH_PATH = (
 
 
 class ExtractRegisteredManagerNamesTests(unittest.TestCase):
-    pass
-    #     @patch(f"{PATCH_PATH}.create_registered_manager_names")
-    #     @patch(f"{PATCH_PATH}.extract_contacts")
-    #     def test_extract_registered_manager_names_calls_expected_functions(
-    #         self,
-    #         mock_extract_contacts: Mock,
-    #         mock_create_registered_manager_names: Mock,
-    #     ):
-    #         # GIVEN
-    #         mock_input_df = MagicMock(name="input_df")
-    #         mock_extracted_df = MagicMock(name="extracted_df")
-    #         mock_final_df = MagicMock(name="final_df")
+    @patch(f"{PATCH_PATH}.join_names_column_into_original_df")
+    @patch(f"{PATCH_PATH}.group_and_collect_names")
+    @patch(f"{PATCH_PATH}.select_and_create_full_name")
+    @patch(f"{PATCH_PATH}.explode_contacts_information")
+    def test_extract_registered_manager_names_calls_expected_functions(
+        self,
+        mock_explode_contacts_information: Mock,
+        mock_select_and_create_full_name: Mock,
+        mock_group_and_collect_names: Mock,
+        mock_join_names_column_into_original_df: Mock,
+    ):
+        # GIVEN
+        mock_input_df = MagicMock(name="input_df")
+        mock_exploded_df = MagicMock(name="exploded_df")
+        mock_names_df = MagicMock(name="names_df")
+        mock_grouped_df = MagicMock(name="grouped_df")
+        mock_final_df = MagicMock(name="final_df")
 
-    #         mock_extract_contacts.return_value = mock_extracted_df
-    #         mock_create_registered_manager_names.return_value = mock_final_df
+        mock_explode_contacts_information.return_value = mock_exploded_df
+        mock_select_and_create_full_name.return_value = mock_names_df
+        mock_group_and_collect_names.return_value = mock_grouped_df
+        mock_join_names_column_into_original_df.return_value = mock_final_df
 
-    #         mock_return_df = MagicMock(name="returned_df")
-    #         mock_final_df.drop.return_value = mock_return_df
+        # WHEN
+        returned_df = job.extract_registered_manager_names(mock_input_df)
 
-    #         # WHEN
-    #         returned_df = job.extract_registered_manager_names(mock_input_df)
+        # THEN
+        mock_explode_contacts_information.assert_called_once_with(mock_input_df)
+        mock_select_and_create_full_name.assert_called_once_with(mock_exploded_df)
+        mock_group_and_collect_names.assert_called_once_with(mock_names_df)
+        mock_join_names_column_into_original_df.assert_called_once_with(
+            mock_input_df, mock_grouped_df
+        )
 
-    #         # THEN
-    #         mock_extract_contacts.assert_called_once_with(mock_input_df)
-    #         mock_create_registered_manager_names.assert_called_once_with(mock_extracted_df)
-
-    #         assert returned_df == mock_return_df
+        assert returned_df == mock_final_df
 
 
 # class ExtractContactsTests(unittest.TestCase):
