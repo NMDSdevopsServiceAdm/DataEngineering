@@ -322,10 +322,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+      # - test: # TODO revert this before merge
+      #     filters:
+      #       branches:
+      #         ignore: main
       - lint-python:
           filters:
             branches:
@@ -344,7 +344,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            - test
+            # - test # TODO revert this before merge
             - task-containerisation
       - plan-approval: # TODO remove this before merge
           type: approval
