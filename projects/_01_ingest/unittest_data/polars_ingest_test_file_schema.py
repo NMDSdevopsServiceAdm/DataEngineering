@@ -386,3 +386,26 @@ class PostcodeMatcherTest:
         list(truncate_postcode_schema.items())
         + [(CQCLClean.postcode_truncated, pl.String())]
     )
+
+    create_truncated_postcode_df_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (CQCLClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.contemporary_cssr, pl.String()),
+            (CQCLClean.contemporary_ccg, pl.String()),
+            (CQCLClean.contemporary_sub_icb, pl.String()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_sub_icb, pl.String()),
+        ]
+    )
+    expected_create_truncated_postcode_df_schema = pl.Schema(
+        [
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.contemporary_cssr, pl.String()),
+            (ONSClean.contemporary_ccg, pl.String()),
+            (ONSClean.contemporary_sub_icb, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+            (ONSClean.current_sub_icb, pl.String()),
+            (CQCLClean.postcode_truncated, pl.String()),
+        ]
+    )

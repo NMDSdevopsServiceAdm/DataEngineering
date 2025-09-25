@@ -1408,3 +1408,24 @@ class PostcodeMatcherTest:
         (date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1), date(2023, 1, 1)),
         ("AA11", "AA11", "AB1", "B1"),
     ]
+
+    create_truncated_postcode_df_rows = [
+        ("AB12CD", "AB12CE", "AB12CF", "AB12CG", "AB12CG", "AB13CD"),
+        (
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+        ),
+        ("LA_1", "LA_2", "LA_2", "LA_3", "LA_4", "LA_3"),
+        ("CCG_1", "CCG_2", "CCG_2", "CCG_1", "CCG_1", "CCG_3"),
+        ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
+        ("LA_1", "LA_2", "LA_2", "LA_1", "LA_1", "LA_3"),
+        ("ICB_1", "ICB_2", "ICB_2", "ICB_1", "ICB_1", "ICB_3"),
+    ]
+    expected_create_truncated_postcode_df_rows = [
+        (date(2025, 1, 1), "LA_2", "CCG_2", "ICB_2", "LA_2", "ICB_2", "AB12"),
+        (date(2025, 1, 1), "LA_3", "CCG_3", "ICB_3", "LA_3", "ICB_3", "AB13"),
+    ]

@@ -134,3 +134,18 @@ class TruncatePostcodeTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_df, expected_df)
+
+
+class CreateTruncatedPostcodeDfTests(unittest.TestCase):
+    def test_create_truncated_postcode_df_returns_expected_dataframe(self) -> None:
+        test_df = pl.DataFrame(
+            Data.create_truncated_postcode_df_rows,
+            Schemas.create_truncated_postcode_df_schema,
+        )
+        returned_df = job.create_truncated_postcode_df(test_df)
+        expected_df = pl.DataFrame(
+            Data.expected_create_truncated_postcode_df_rows,
+            Schemas.expected_create_truncated_postcode_df_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)

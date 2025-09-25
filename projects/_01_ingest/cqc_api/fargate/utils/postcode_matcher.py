@@ -159,3 +159,54 @@ def truncate_postcode(df: pl.DataFrame) -> pl.DataFrame:
         .str.slice(0, string_length_exp)
         .alias(CQCLClean.postcode_truncated)
     )
+
+
+def create_truncated_postcode_df(df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Generates a DataFrame containing one representative row for each truncated postcode.
+
+    This function performs the following steps:
+        - 1 - Truncates postcodes by removing the final two characters.
+        - 2 - Groups by truncated postcode and a set of geography columns to count frequency.
+        - 3 - Identifies the most common combination for each truncated postcode.
+        - 4 - Filters the DataFrame to keep only the first row for each most common combination.
+
+    Args:
+        df (pl.DataFrame): Input DataFrame containing cleaned postcodes and geography columns.
+
+    Returns:
+        pl.DataFrame: Filtered DataFrame containing one representative row per truncated postcode,
+        with the most frequently occurring combination of geography fields.
+    """
+    count_col = "count"
+    rank_col = "rank"
+
+    grouping_cols = [
+        ONSClean.contemporary_cssr,
+        ONSClean.contemporary_sub_icb,
+        ONSClean.contemporary_ccg,
+        ONSClean.current_cssr,
+        ONSClean.current_sub_icb,
+    ]
+
+    df = truncate_postcode(df)
+
+    count_over = [
+        CQCLClean.postcode_truncated,
+        ONSClean.contemporary_ons_import_date,
+    ] + grouping_cols
+    df = df.with_columns(pl.len().over(count_over).alias(count_col))
+
+    rank_over = [CQCLClean.postcode_truncated, ONSClean.contemporary_ons_import_date]
+    df = df.sort(
+        by=[count_col] + grouping_cols,
+        descending=[True, False, False, False, False, False],
+    )
+
+    df = df.with_columns(pl.cum_count(count_col).over(rank_over).alias(rank_col))
+
+    df = df.filter(pl.col(rank_col) == 1).drop(
+        rank_col, count_col, CQCLClean.postcode_cleaned
+    )
+
+    return df
