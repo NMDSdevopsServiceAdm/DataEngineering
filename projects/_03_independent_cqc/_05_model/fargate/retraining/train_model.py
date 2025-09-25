@@ -34,14 +34,13 @@ ERROR_SUBJECT = "Model Retraining Failure"
 
 
 def main(
-    model_name: str, process_date_str: str, seed: int = None
+    model_name: str, seed: int = None
 ) -> ModelVersionManager:
     """
     Executes model retraining for standard predefined model.
 
     Args:
         model_name (str): Name of model to retrain
-        process_date_str (str): The datetime the training data was processed in format YYYYMMDDHHmmss
         seed (int): (Optional) Seed for test set generation
 
     Returns:
@@ -75,7 +74,7 @@ def main(
         logger.info(f"Model: {model_definition}")
 
         data = model.get_raw_data(
-            bucket_name=S3_DATA_SOURCE, process_date_str=process_date_str
+            bucket_name=S3_DATA_SOURCE,
         )
         logger.info(f"Raw Data: {data.collect().shape}")
 
@@ -175,10 +174,9 @@ def main(
 
 
 if __name__ == "__main__":
-    (model_id) = utils.collect_arguments(
-        (
-            "--model_name",
-            "The name of the model to train",
-        )
+    parsed = utils.get_args((
+        "--model_name",
+        "The name of the model to train",
     )
-    vm = main(model_name=model_id, process_date_str=process_datetime)
+    )
+    vm = main(model_name=parsed.model_name)
