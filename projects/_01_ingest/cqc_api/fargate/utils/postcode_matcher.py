@@ -101,7 +101,7 @@ def get_first_successful_postcode_match(
             CQCLClean.cqc_location_import_date,
         )
         .with_columns(
-            pl.row_index(row_number)
+            pl.row_index(row_number)  # Note. Warning in documentation for row_index.
             .over(CQCLClean.location_id)
             .sort_by(CQCLClean.cqc_location_import_date),
         )
