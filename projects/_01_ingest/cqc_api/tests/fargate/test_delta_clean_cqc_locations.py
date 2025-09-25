@@ -21,6 +21,134 @@ class MainTests(unittest.TestCase):
         pass
 
 
+@patch(
+    f"{PATCH_PATH}._create_dimension_delta",
+    return_value="return_from_create_dimension_delta",
+)
+class CreateDimensionFromStructFieldTests(unittest.TestCase):
+    def test_does_not_impute_if_existing_value(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where the GAC service column is fully populated
+        input_df = pl.DataFrame(
+            data=Data.impute_struct_existing_values,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_df, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_df = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The imputed values should be equal to the input
+        expected_df = pl.DataFrame(
+            data=Data.expected_impute_struct_existing_values,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["Name A", "Name B", "Name C"],
+            [r[0]["name"] for r in result_df["imputed_gacServiceTypes"].to_list()],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_imputes_struct_backwards_if_possible(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where the GAC service column has a missing middle value
+        input_df = pl.DataFrame(
+            data=Data.impute_struct_from_historic,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_df, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_df = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The missing value should be imputed from the historic row
+        expected_df = pl.DataFrame(
+            data=Data.expected_impute_struct_from_historic,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["Name A", "Name A", "Name C"],
+            [r[0]["name"] for r in result_df["imputed_gacServiceTypes"].to_list()],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_imputes_forwards_if_no_previous_value(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where there is no historic value to impute from
+        input_df = pl.DataFrame(
+            data=Data.impute_struct_from_future,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_df, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_df = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The missing values should be imputed from the future row
+        expected_df = pl.DataFrame(
+            data=Data.expected_impute_struct_from_future,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["Name C", "Name C", "Name C"],
+            [r[0]["name"] for r in result_df["imputed_gacServiceTypes"].to_list()],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_when_no_values_returns_null_imputed_values(
+        self, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input where there is no values for a particular location id to impute from
+        input_df = pl.DataFrame(
+            data=Data.impute_struct_null_values,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_df, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_df = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The location with no values should have null in the imputed column
+        expected_df = pl.DataFrame(
+            data=Data.expected_impute_struct_null_values,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            [None, None, ANY],
+            result_df["imputed_gacServiceTypes"].to_list(),
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+
 @patch(f"{PATCH_PATH}.utils.read_parquet")
 class CreateDimensionDeltaTests(unittest.TestCase):
     def setUp(self):
@@ -671,109 +799,6 @@ class GetPredecessorRelationshipsTests(unittest.TestCase):
                 r["type"]
                 for r in output_df["relationships_predecessors_only"].to_list()[0]
             ],
-        )
-
-
-class ImputeMissingValuesForStructColumnTests(unittest.TestCase):
-    def test_does_not_impute_if_existing_value(self):
-        # GIVEN
-        #   Input where the GAC service column is fully populated
-        input_df = pl.DataFrame(
-            data=Data.impute_struct_existing_values,
-            schema=Schemas.impute_struct_input_schema,
-        )
-
-        # WHEN
-        output_df = job.impute_missing_values_for_struct_column(
-            input_df, "gacServiceTypes"
-        )
-
-        # THEN
-        #   The imputed values should be equal to the input
-        expected_df = pl.DataFrame(
-            data=Data.expected_impute_struct_existing_values,
-            schema=Schemas.expected_impute_struct_input_schema,
-        )
-        pl_testing.assert_frame_equal(expected_df, output_df)
-        self.assertEqual(
-            ["Name A", "Name B", "Name C"],
-            [r[0]["name"] for r in output_df["imputed_gacServiceTypes"].to_list()],
-        )
-
-    def test_imputes_struct_backwards_if_possible(self):
-        # GIVEN
-        #   Input where the GAC service column has a missing middle value
-        input_df = pl.DataFrame(
-            data=Data.impute_struct_from_historic,
-            schema=Schemas.impute_struct_input_schema,
-        )
-
-        # WHEN
-        output_df = job.impute_missing_values_for_struct_column(
-            input_df, "gacServiceTypes"
-        )
-
-        # THEN
-        #   The missing value should be imputed from the historic row
-        expected_df = pl.DataFrame(
-            data=Data.expected_impute_struct_from_historic,
-            schema=Schemas.expected_impute_struct_input_schema,
-        )
-        pl_testing.assert_frame_equal(expected_df, output_df)
-
-        self.assertEqual(
-            ["Name A", "Name A", "Name C"],
-            [r[0]["name"] for r in output_df["imputed_gacServiceTypes"].to_list()],
-        )
-
-    def test_imputes_forwards_if_no_previous_value(self):
-        # GIVEN
-        #   Input where there is no historic value to impute from
-        input_df = pl.DataFrame(
-            data=Data.impute_struct_from_future,
-            schema=Schemas.impute_struct_input_schema,
-        )
-
-        # WHEN
-        output_df = job.impute_missing_values_for_struct_column(
-            input_df, "gacServiceTypes"
-        )
-
-        # THEN
-        #   The missing values should be imputed from the future row
-        expected_df = pl.DataFrame(
-            data=Data.expected_impute_struct_from_future,
-            schema=Schemas.expected_impute_struct_input_schema,
-        )
-        pl_testing.assert_frame_equal(expected_df, output_df)
-        self.assertEqual(
-            ["Name C", "Name C", "Name C"],
-            [r[0]["name"] for r in output_df["imputed_gacServiceTypes"].to_list()],
-        )
-
-    def test_when_no_values_returns_null_imputed_values(self):
-        # GIVEN
-        #   Input where there is no values for a particular location id to impute from
-        input_df = pl.DataFrame(
-            data=Data.impute_struct_null_values,
-            schema=Schemas.impute_struct_input_schema,
-        )
-
-        # WHEN
-        output_df = job.impute_missing_values_for_struct_column(
-            input_df, "gacServiceTypes"
-        )
-
-        # THEN
-        #   The location with no values should have null in the imputed column
-        expected_df = pl.DataFrame(
-            data=Data.expected_impute_struct_null_values,
-            schema=Schemas.expected_impute_struct_input_schema,
-        )
-        pl_testing.assert_frame_equal(expected_df, output_df)
-        self.assertEqual(
-            [None, None, ANY],
-            output_df["imputed_gacServiceTypes"].to_list(),
         )
 
 

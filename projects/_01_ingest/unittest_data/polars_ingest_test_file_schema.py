@@ -237,13 +237,13 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (Keys.import_date, pl.String()),
         ]
     )
 
     expected_impute_struct_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
-            (CQCLClean.cqc_location_import_date, pl.Date()),
             (
                 CQCLClean.gac_service_types,
                 pl.List(
@@ -255,6 +255,8 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (Keys.import_date, pl.String()),
             (
                 CQCLClean.imputed_gac_service_types,
                 pl.List(

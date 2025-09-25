@@ -20,6 +20,70 @@ from utils.column_values.categorical_column_values import (
 )
 
 
+def create_dimension_from_struct_field(
+    cqc_df: pl.DataFrame,
+    struct_column_name: str,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> pl.DataFrame:
+    """
+    Creates a dimension for a struct column by imputing missing values from history, then from the future for each location id.
+
+    1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
+    2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
+    3. Create dimension delta, including rows from any new import dates, as well as any updated values for old import dates
+
+
+    Args:
+        cqc_df (pl.DataFrame): Dataframe containing 'location_id', 'cqc_location_import_date', 'import_date' and a struct column to impute.
+        struct_column_name (str): Name of the struct column to impute.
+        dimension_location (str): Location of the dimension data
+        dimension_update_date (str): Update date of the dimension date
+
+    Returns:
+        pl.DataFrame:  Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
+    # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
+    imputed_column_name = "imputed_" + struct_column_name
+
+    current_dim = cqc_df.select(
+        CQCLClean.location_id,
+        struct_column_name,
+        CQCLClean.cqc_location_import_date,
+        Keys.import_date,
+    )
+    current_dim = current_dim.with_columns(
+        pl.when(pl.col(struct_column_name).list.len() > 0)
+        .then(pl.col(struct_column_name))
+        .otherwise(None)
+        .alias(imputed_column_name)
+    )
+
+    # 2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
+    current_dim = current_dim.with_columns(
+        pl.col(imputed_column_name)
+        .forward_fill()
+        .backward_fill()
+        .over(
+            partition_by=CQCLClean.location_id,
+            order_by=CQCLClean.cqc_location_import_date,
+        )
+    )
+
+    # 3. Create dimension delta, including rows from any new import dates, as well as any updated values for old import dates
+    return _create_dimension_delta(
+        dimension_location=dimension_location,
+        dimension_update_date=dimension_update_date,
+        current_dimension=current_dim,
+        join_columns=[
+            CQCLClean.location_id,
+            struct_column_name,
+            imputed_column_name,
+            Keys.import_date,
+        ],
+    )
+
+
 def _create_dimension_delta(
     dimension_location: str,
     dimension_update_date: str,
@@ -263,45 +327,6 @@ def get_predecessor_relationships(
 
     # 4. Join to input
     cqc_df = cqc_df.join(predecessor_agg, on=CQCLClean.location_id, how="left")
-
-    return cqc_df
-
-
-def impute_missing_values_for_struct_column(
-    cqc_df: pl.DataFrame, column_name: str
-) -> pl.DataFrame:
-    """
-    Creates new column called 'imputed_[column_name]' containing imputed values for a struct column.
-
-    1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
-    2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
-
-    Args:
-        cqc_df (pl.DataFrame): Dataframe containing 'location_id', 'cqc_location_import_date', and a struct column to impute.
-        column_name (str): Name of struct column to impute
-
-    Returns:
-        pl.DataFrame: DataFrame with the struct column containing imputed values in 'imputed_[column_name]'.
-    """
-    # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
-    imputed_column_name = "imputed_" + column_name
-    cqc_df = cqc_df.with_columns(
-        pl.when(pl.col(column_name).list.len() > 0)
-        .then(pl.col(column_name))
-        .otherwise(None)
-        .alias(imputed_column_name)
-    )
-
-    # 2. First forward and then backwards fill any missing values in 'imputed_[column_name]' for each location id
-    cqc_df = cqc_df.with_columns(
-        pl.col(imputed_column_name)
-        .forward_fill()
-        .backward_fill()
-        .over(
-            partition_by=CQCLClean.location_id,
-            order_by=CQCLClean.cqc_location_import_date,
-        )
-    )
 
     return cqc_df
 
