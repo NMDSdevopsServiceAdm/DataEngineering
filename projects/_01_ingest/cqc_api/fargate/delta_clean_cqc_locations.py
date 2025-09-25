@@ -5,11 +5,11 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
     PrimaryServiceType,
+    RegistrationStatus,
     RelatedLocation,
-    Services,
     Sector,
+    Services,
 )
 
 
@@ -332,8 +332,8 @@ def remove_specialist_colleges(
     2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
 
     Args:
-        cqc_df (DataFrame): Fact table to align with dimension
-        gac_services_dimension (DataFrame): Dimension table with services_offered column
+        cqc_df (pl.DataFrame): Fact table to align with dimension
+        gac_services_dimension (pl.DataFrame): Dimension table with services_offered column
 
     Returns:
         tuple[pl.DataFrame, pl.DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
