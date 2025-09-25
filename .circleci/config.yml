@@ -146,7 +146,7 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
-            terraform plan -out tfapply -var-file=../<< parameters.aws_account >>.s3.tfbackend
+            terraform plan -out tfapply
       - store_artifacts:
           path: terraform/pipeline/tfapply
       - persist_to_workspace:
@@ -263,7 +263,7 @@ jobs:
             cd terraform/pipeline
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
             terraform workspace select << pipeline.parameters.GHA_Meta >>
-            terraform destroy -auto-approve -var-file=../<< parameters.aws_account >>.s3.tfbackend
+            terraform destroy -auto-approve
       - run:
           name: delete workspace
           command: |
