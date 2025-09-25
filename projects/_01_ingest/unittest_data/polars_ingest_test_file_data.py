@@ -1371,3 +1371,20 @@ class PostcodeMatcherTest:
         (date(2020, 1, 1),),
         ("AA1ZAA",),
     ]
+
+    first_successful_postcode_unmatched_rows = [
+        ("1-001", "1-003"),
+        (date(2023, 1, 1), date(2025, 1, 1)),
+        ("AA10AA", "AA13AA"),
+    ]
+    first_successful_postcode_matched_rows = [
+        ("1-001", "1-001", "1-002"),
+        (date(2024, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        ("AA11AB", "AA11AA", "AA12AA"),
+        ("CSSR 2", "CSSR 1", "CSSR 1"),
+    ]
+    expected_get_first_successful_postcode_match_rows = [
+        ("1-001", "1-003"),
+        (date(2023, 1, 1), date(2025, 1, 1)),
+        ("AA11AB", "AA13AA"),
+    ]

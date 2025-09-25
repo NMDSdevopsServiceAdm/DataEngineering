@@ -81,3 +81,25 @@ class JoinPostcodeDataTests(unittest.TestCase):
         pl_testing.assert_frame_equal(
             self.returned_unmatched_df, self.expected_unmatched_df
         )
+
+
+class GetFirstSuccessfulPostcodeMatch(unittest.TestCase):
+    def setUp(self):
+        unmatched_df = pl.DataFrame(
+            Data.first_successful_postcode_unmatched_rows,
+            Schemas.first_successful_postcode_unmatched_schema,
+        )
+        matched_df = pl.DataFrame(
+            Data.first_successful_postcode_matched_rows,
+            Schemas.first_successful_postcode_matched_schema,
+        )
+        self.returned_df = job.get_first_successful_postcode_match(
+            unmatched_df, matched_df
+        )
+        self.expected_df = pl.DataFrame(
+            Data.expected_get_first_successful_postcode_match_rows,
+            Schemas.expected_get_first_successful_postcode_match_schema,
+        )
+
+    def test_get_first_successful_postcode_match_returns_expected_dataframe(self):
+        pl_testing.assert_frame_equal(self.returned_df, self.expected_df)

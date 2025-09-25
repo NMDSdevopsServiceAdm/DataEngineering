@@ -341,7 +341,6 @@ class PostcodeMatcherTest:
             (CQCLClean.postcode_cleaned, pl.String()),
         ]
     )
-
     join_postcode_data_postcodes_schema = pl.Schema(
         [
             (CQCLClean.postcode_cleaned, pl.String()),
@@ -354,3 +353,18 @@ class PostcodeMatcherTest:
         + [(ONSClean.current_cssr, pl.String())]
     )
     expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
+
+    first_successful_postcode_unmatched_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+    first_successful_postcode_matched_schema = pl.Schema(
+        list(first_successful_postcode_unmatched_schema.items())
+        + [(ONSClean.current_cssr, pl.String())]
+    )
+    expected_get_first_successful_postcode_match_schema = (
+        first_successful_postcode_unmatched_schema
+    )
