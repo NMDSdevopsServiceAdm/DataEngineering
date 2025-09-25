@@ -50,9 +50,7 @@ def extract_contacts(df: pl.DataFrame) -> pl.DataFrame:
             .alias(CQCLClean.all_contacts)
         )
         .with_columns(
-            pl.col(CQCLClean.all_contacts)
-            .list.concat()
-            .alias(CQCLClean.all_contacts_flat)
+            pl.concat_list(CQCLClean.all_contacts).alias(CQCLClean.all_contacts_flat)
         )
         .drop(CQCLClean.all_contacts)
     )
