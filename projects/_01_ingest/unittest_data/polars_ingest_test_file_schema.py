@@ -328,6 +328,35 @@ class CQCLocationsSchema:
 
 
 @dataclass
+class ExtractRegisteredManagerNamesSchema:
+    contact_struct = pl.Struct(
+        [
+            pl.Field(CQCL.person_family_name, pl.String()),
+            pl.Field(CQCL.person_given_name, pl.String()),
+            pl.Field(CQCL.person_roles, pl.List(pl.String())),
+            pl.Field(CQCL.person_title, pl.String()),
+        ]
+    )
+    activity_struct_list = pl.List(
+        pl.Struct(
+            [
+                pl.Field(CQCL.name, pl.String()),
+                pl.Field(CQCL.code, pl.String()),
+                pl.Field(CQCL.contacts, pl.List(contact_struct)),
+            ]
+        )
+    )
+
+    extract_registered_manager_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.imputed_regulated_activities, activity_struct_list),
+        ]
+    )
+
+
+@dataclass
 class PostcodeMatcherTest:
     locations_schema = pl.Schema(
         [
