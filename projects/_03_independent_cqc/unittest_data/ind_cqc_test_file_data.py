@@ -9,16 +9,12 @@ from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.total_staff_equals_worker_records import (
     ascwds_filled_posts_totalstaff_equal_wkrrecs_source_description,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_values.categorical_columns_by_dataset import (
-    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
-)
 from utils.column_values.categorical_column_values import (
+    RUI,
     AscwdsFilteringRule,
     CareHome,
     Dormancy,
@@ -30,10 +26,12 @@ from utils.column_values.categorical_column_values import (
     Region,
     RegistrationStatus,
     RelatedLocation,
-    RUI,
     Sector,
     Services,
     Specialisms,
+)
+from utils.column_values.categorical_columns_by_dataset import (
+    DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
 
 
@@ -360,76 +358,6 @@ class ValidateImputedIndCqcAscwdsAndPir:
             "1-000000001",
             date(2024, 1, 1),
         ),
-    ]
-
-
-@dataclass
-class TrainLinearRegressionModelData:
-    feature_rows = [
-        ("1-001", Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-002", Vectors.dense([50.0, 1.0, 1.0])),
-        ("1-003", None),
-    ]
-
-
-@dataclass
-class ModelMetrics:
-    model_metrics_rows = [
-        ("1-001", None, 50.0, Vectors.dense([10.0, 1.0, 0.0])),
-        ("1-002", 37, 40.0, Vectors.dense([20.0, 0.0, 1.0])),
-    ]
-
-    calculate_residual_non_res_rows = [
-        ("1-001", None, 50.0, 46.8),
-        ("1-002", None, 10.0, 43.2),
-    ]
-    expected_calculate_residual_non_res_rows = [
-        ("1-001", None, 50.0, 46.8, 3.2),
-        ("1-002", None, 10.0, 43.2, -33.2),
-    ]
-
-    calculate_residual_care_home_rows = [
-        ("1-001", 50, 60.0, 1.1),
-        ("1-002", 2, 5.0, 6.0),
-    ]
-    expected_calculate_residual_care_home_rows = [
-        ("1-001", 50, 60.0, 1.1, 5.0),
-        ("1-002", 2, 5.0, 6.0, -7.0),
-    ]
-
-    generate_metric_rows = [
-        ("1-001", 50.0, 46.8),
-        ("1-002", 10.0, 12.2),
-    ]
-
-    generate_proportion_of_predictions_within_range_rows = [
-        ("1-001", -15.0),
-        ("1-002", -10.0),
-        ("1-003", 0.0),
-        ("1-004", 10.0),
-        ("1-005", 15.0),
-    ]
-    range_cutoff: float = 10.0
-    expected_proportion: float = 0.6
-
-    combine_metrics_current_rows = [
-        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
-    ]
-    combine_metrics_previous_rows = [
-        ("model_name", "1.0.0", 0.1),
-    ]
-    expected_combined_metrics_rows = [
-        ("model_name", "2.0.0", "run=1", 0.12, 1.2, 0.45, 0.78),
-        ("model_name", "1.0.0", None, 0.1, None, None, None),
-    ]
-
-
-@dataclass
-class RunLinearRegressionModelData:
-    feature_rows = [
-        ("1-001", 10, Vectors.dense([12.0, 0.0, 1.0])),
-        ("1-002", 40, Vectors.dense([50.0, 1.0, 1.0])),
-        ("1-003", None, None),
     ]
 
 
@@ -3130,7 +3058,64 @@ class CleanIndCQCData:
         ("1-1000004", "20220308", date(2022, 3, 8), "South West", "Dorset", "Urban", "Y", 9, 0, 25, 25, "Care home with nursing", "name", "postcode", date(2022, 1, 1), "2020", "01", "01"),
     ]
     # fmt: on
+    calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant),
+        ("1-001", date(2025, 9, 1), None),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant),
+    ]
+    expected_calculate_time_since_dormant_rows = [
+        ("1-001", date(2025, 1, 1), None, None),
+        ("1-001", date(2025, 2, 1), Dormancy.not_dormant, None),
+        ("1-001", date(2025, 3, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 4, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 5, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 6, 1), Dormancy.dormant, 1),
+        ("1-001", date(2025, 7, 1), Dormancy.not_dormant, 2),
+        ("1-001", date(2025, 8, 1), Dormancy.not_dormant, 3),
+        ("1-001", date(2025, 9, 1), None, 4),
+        ("1-002", date(2025, 10, 1), Dormancy.not_dormant, None),
+    ]
 
+    calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1)),
+    ]
+    expected_calculate_time_registered_same_day_rows = [
+        ("1-0001", date(2025, 1, 1), date(2025, 1, 1), 1),
+    ]
+
+    calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1)),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1)),
+    ]
+    expected_calculate_time_registered_exact_months_apart_rows = [
+        ("1-0001", date(2024, 2, 1), date(2024, 1, 1), 2),
+        ("1-0002", date(2020, 1, 1), date(2019, 1, 1), 13),
+    ]
+
+    calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2)),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9)),
+    ]
+    expected_calculate_time_registered_one_day_less_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 1), date(2024, 12, 2), 1),
+        ("1-0002", date(2025, 6, 8), date(2025, 1, 9), 5),
+    ]
+
+    calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1)),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31)),
+    ]
+    expected_calculate_time_registered_one_day_more_than_a_full_month_apart_rows = [
+        ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
+        ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
+    ]
     remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
@@ -5488,19 +5473,6 @@ class EstimateFilledPostsModelsUtils:
         ("1-012", CareHome.not_care_home, None, None, None),
     ]
 
-    create_test_and_train_datasets_rows = [
-        ("1-001", Vectors.dense([10.0, 0.0, 1.0])),
-        ("1-002", Vectors.dense([20.0, 1.0, 1.0])),
-        ("1-003", Vectors.dense([30.0, 0.0, 1.0])),
-        ("1-004", Vectors.dense([40.0, 0.0, 1.0])),
-        ("1-005", Vectors.dense([50.0, 1.0, 1.0])),
-    ]
-
-    train_lasso_regression_model_rows = [
-        (Vectors.dense([1.0, 2.0]), 5.0),
-        (Vectors.dense([2.0, 1.0]), 4.0),
-    ]
-
 
 @dataclass
 class DiagnosticsOnKnownFilledPostsData:
@@ -6198,4 +6170,24 @@ class IndCQCDataUtils:
             ],
             PrimaryServiceTypeSecondLevel.other_non_residential,
         ),
+    ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00),
+        ("1-002", 1, None),
+        ("1-003", None, 1.00),
+        ("1-004", None, None),
+        ("1-005", 1, 0.65),
+        ("1-006", 1, 6.01),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1),
+        ("1-002", 1, None, 1),
+        ("1-003", None, 1.00, None),
+        ("1-004", None, None, None),
+        ("1-005", 1, 0.65, None),
+        ("1-006", 1, 6.01, None),
     ]

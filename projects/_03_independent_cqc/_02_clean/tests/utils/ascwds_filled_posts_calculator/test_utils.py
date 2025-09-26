@@ -3,11 +3,11 @@ import warnings
 
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
-    StructType,
-    StructField,
-    StringType,
-    IntegerType,
     DoubleType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
 )
 
 import projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.utils as job

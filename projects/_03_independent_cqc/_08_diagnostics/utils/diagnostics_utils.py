@@ -1,21 +1,14 @@
-from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import (
-    DateType,
-    FloatType,
-    StringType,
-    StructField,
-    StructType,
-)
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+from pyspark.sql.types import DateType, FloatType, StringType, StructField, StructType
 
+from projects.utils.utils.utils import calculate_windowed_column
 from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_columns_by_dataset import (
     DiagnosticOnKnownFilledPostsCategoricalValues as CatValues,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns as IndCQC,
-    PartitionKeys as Keys,
-)
-from projects.utils.utils.utils import calculate_windowed_column
 
 
 def filter_to_known_values(df: DataFrame, column: str) -> DataFrame:

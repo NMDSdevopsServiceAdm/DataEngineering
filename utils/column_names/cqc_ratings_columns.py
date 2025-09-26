@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class CQCRatingsColumns:
     date: str = "rating_date"
     overall_rating: str = "Overall_rating"
+    overall_rating_value: str = "Overall_rating_value"
     safe_rating: str = "Safe_rating"
     well_led_rating: str = "Well-led_rating"
     caring_rating: str = "Caring_rating"

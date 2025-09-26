@@ -1,11 +1,7 @@
 from pyspark.ml.evaluation import RegressionEvaluator
-from pyspark.sql import DataFrame, functions as F
-from pyspark.sql.types import (
-    StructField,
-    StructType,
-    StringType,
-    FloatType,
-)
+from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
+from pyspark.sql.types import FloatType, StringType, StructField, StructType
 
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc

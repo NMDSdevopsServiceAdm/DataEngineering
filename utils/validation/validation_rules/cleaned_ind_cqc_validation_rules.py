@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 
-from utils.column_names.ind_cqc_pipeline_columns import (
-    IndCqcColumns,
-)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns
 from utils.column_values.categorical_columns_by_dataset import (
     CleanedIndCQCCategoricalValues as CatValues,
 )
@@ -41,6 +39,7 @@ class CleanedIndCqcValidationRules:
             IndCqcColumns.cqc_location_import_date,
         ],
         RuleName.min_values: {
+            IndCqcColumns.time_registered: 1,
             IndCqcColumns.number_of_beds: 1,
             IndCqcColumns.pir_people_directly_employed_cleaned: 1,
             IndCqcColumns.total_staff_bounded: 1,

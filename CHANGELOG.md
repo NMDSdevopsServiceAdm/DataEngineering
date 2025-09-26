@@ -7,20 +7,49 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Added provider name into the merged dataframe within the CQC Coverage job.
+
 - New function added to merge the old CQC ratings and the new assessment ratings.
+
+- Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
+- Implemented complex validation for [validate_delta_locations_api_cleaned](projects/_01_ingest/cqc_api/fargate/validate_delta_locations_api_cleaned.py), includes:
+  - split into dimensions table with separate validation
+  - Pointblank translation of helper functions and new expressions.
+
+- Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
-- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datastes.
+
+- Updated glue script and step function parameters for flatten_cqc_ratings job with CQC_delta datasets.
+
 - Updated reconciliation job parameters in glue script to be consistent with SFC-Internal step function.
 
+- Updated CQC Locations Cleaning to work with delta data
+
+- Created dimensions for imputed values in CQC Location Cleaning, and separated this from the main fact table
+  - The dimensions are rejoined to the fact table in the downstream steps where they are needed
+
+- Removed unused columns from CQC Providers data
+
+- Formatted imports throughout codebase
+
+- Added CQC assessments into both the ratings for data requests and benchmarks datasets.
+
+- Removed the original Step Functions now the replacement ones are fully operational.
+
+- Added a third argument calculate_filled_posts_per_bed_ratio so it can be used for either ASC-WDS posts or Capacity Tracker posts.
+
+- Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
+
 ### Improved
+
 
 ## [v2025.08.0] - 09/09/2025
 
 ### Added
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
+
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
 
@@ -37,6 +66,7 @@ All notable changes to this project will be documented in this file.
   - refactored Master & CQC-API StepFunctions to handle flow and separate concerns
   - downstream IND CQC and Coverage pipelines wired up to Master StepFunction
   - legacy bulk download pipeline disconnected from downstream processing but kept in place for reconciliation purposes
+  - CQC locations cleaning uses delta model data
 
 - Created an [SfC Internal pipeline](terraform/pipeline/step-functions/SfCInternal-StepFunction.json) step function which contains all the internal Skills for Care jobs in one pipeline.
 

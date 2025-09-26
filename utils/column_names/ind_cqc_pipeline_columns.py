@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerCareHomeCleanColumns as CTCHClean,
+)
+from utils.column_names.capacity_tracker_columns import (
+    CapacityTrackerNonResCleanColumns as CTNRClean,
+)
 from utils.column_names.cleaned_data_files.ascwds_worker_cleaned import (
     AscwdsWorkerCleanedColumns as AWKClean,
 )
@@ -15,10 +21,6 @@ from utils.column_names.cleaned_data_files.cqc_pir_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.capacity_tracker_columns import (
-    CapacityTrackerCareHomeCleanColumns as CTCHClean,
-    CapacityTrackerNonResCleanColumns as CTNRClean,
-)
 
 
 @dataclass
@@ -27,6 +29,10 @@ class PartitionKeys:
     import_date: str = "import_date"
     month: str = "month"
     year: str = "year"
+
+
+class DimensionPartitionKeys(PartitionKeys):
+    last_updated: str = "last_updated"
 
 
 class ArchivePartitionKeys:
@@ -114,22 +120,16 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
-    ct_care_home_total_employed_dedup: str = (
-        ct_care_home_total_employed + "_deduplicated"
-    )
+    ct_care_home_total_employed_cleaned: str = ct_care_home_total_employed + "_cleaned"
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
-    ct_combined_care_home_and_non_res_dedup: str = (
-        "ct_combined_care_home_and_non_res_deduplicated"
-    )
+    ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
-        ct_combined_care_home_and_non_res_dedup + "_rate_of_change_trendline"
+        ct_combined_care_home_and_non_res + "_rate_of_change_trendline"
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
-    ct_non_res_care_workers_employed_dedup: str = (
-        CTNRClean.cqc_care_workers_employed + "_deduplicated"
-    )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
     )
@@ -170,6 +170,8 @@ class IndCqcColumns:
     distribution_kurtosis: str = "distribution_kurtosis"
     distribution_skewness: str = "distribution_skewness"
     dormancy: str = CQCLClean.dormancy
+    dormant_date: str = "dormant_date"
+    last_dormant_date: str = "last_dormant_date"
     establishment_id: str = AWPClean.establishment_id
     estimate_filled_posts: str = "estimate_filled_posts"
     estimate_filled_posts_from_all_job_roles: str = (
@@ -288,8 +290,6 @@ class IndCqcColumns:
     postcode: str = CQCLClean.postal_code
     posts_rolling_average_model: str = "posts_rolling_average_model"
     prediction: str = "prediction"
-    prediction_within_10_posts: str = "prediction_within_10_posts"
-    prediction_within_25_posts: str = "prediction_within_25_posts"
     previous_model_value: str = "previous_model_value"
     previous_non_null_value: str = "previous_non_null_value"
     previous_submission_time: str = "previous_submission_time"
@@ -320,8 +320,6 @@ class IndCqcColumns:
     residuals_estimate_filled_posts_non_res_pir: str = (
         "residuals_estimate_filled_posts_non_res_pir"
     )
-    rmse: str = "rmse"
-    run_number: str = "run_number"
     service_count: str = "service_count"
     service_count_capped: str = "service_count_capped"
     services_offered: str = CQCLClean.services_offered
@@ -338,9 +336,9 @@ class IndCqcColumns:
         "sum_non_rm_managerial_estimated_filled_posts"
     )
     time_between_submissions: str = "time_between_submissions"
-    time_registered: str = CQCLClean.time_registered
+    time_registered: str = "time_registered"
     time_registered_capped_at_four_years: str = "time_registered_capped_at_four_years"
-    time_since_dormant: str = CQCLClean.time_since_dormant
+    time_since_dormant: str = "time_since_dormant"
     total_staff_bounded: str = AWPClean.total_staff_bounded
     unix_time: str = "unix_time"
     upper_percentile: str = "upper_percentile"

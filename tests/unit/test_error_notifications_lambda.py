@@ -1,9 +1,9 @@
-import boto3
 import json
 import os
 import unittest
 
-from botocore.stub import Stubber, ANY
+import boto3
+from botocore.stub import ANY, Stubber
 
 from lambdas.error_notifications import error_notifications
 

@@ -70,9 +70,7 @@ class UtilsTests(unittest.TestCase):
         expected = self.base_snapshot
 
         # When
-        generator = job.get_snapshots(
-            "bucket", "read_folder", organisation_type="providers"
-        )
+        generator = job.get_snapshots("bucket", "read_folder", dataset="providers")
 
         # Then
         pl_testing.assert_frame_equal(next(generator), expected)
@@ -92,9 +90,7 @@ class UtilsTests(unittest.TestCase):
         expected_second = self.second_full_snapshot
 
         # When
-        generator = job.get_snapshots(
-            "bucket", "read_folder", organisation_type="providers"
-        )
+        generator = job.get_snapshots("bucket", "read_folder", dataset="providers")
 
         # Then
         pl_testing.assert_frame_equal(
@@ -121,7 +117,7 @@ class UtilsTests(unittest.TestCase):
 
         # When
         result = job.build_snapshot_table_from_delta(
-            "bucket", "read_folder", organisation_type="providers", timepoint=20130301
+            "bucket", "read_folder", dataset="providers", timepoint=20130301
         )
 
         # Then

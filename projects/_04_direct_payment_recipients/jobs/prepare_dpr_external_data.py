@@ -4,7 +4,6 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from utils import utils
 from projects._04_direct_payment_recipients.direct_payments_column_names import (
     DirectPaymentColumnNames as DP,
 )
@@ -17,6 +16,7 @@ from projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.prepare_
 from projects._04_direct_payment_recipients.utils._01_prepare_dpr_utils.remove_outliers import (
     remove_outliers,
 )
+from utils import utils
 
 columns_to_import = [
     DP.LA_AREA,
