@@ -19,4 +19,4 @@ COPY projects/_03_independent_cqc/_05_model/fargate/retraining/requirements.txt 
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT ["python", "train_model.py"]
+ENTRYPOINT ["python"]

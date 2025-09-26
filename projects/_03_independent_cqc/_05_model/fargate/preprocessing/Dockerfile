@@ -17,4 +17,4 @@ COPY projects/_03_independent_cqc/_05_model/model_registry.py /app/projects/_03_
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT ["python", "preprocessing.py"]
+ENTRYPOINT ["python"]

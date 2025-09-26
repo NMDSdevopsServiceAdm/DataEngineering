@@ -29,7 +29,6 @@
                 }
               ],
               "Command": [
-                "python",
                 "preprocessing.py",
                 "--model_name",
                 "${model_name}"
@@ -69,7 +68,6 @@
             {
               "Name": "model-retrain-container",
               "Command": [
-                          "python",
                           "train_model.py",
                           "--model_name",
                           "${model_name}"
