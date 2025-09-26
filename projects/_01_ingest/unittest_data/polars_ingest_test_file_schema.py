@@ -521,6 +521,21 @@ class CQCLocationsSchema:
         ]
     )
 
+    assign_specialism_category_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
+        ]
+    )
+
+    expected_assign_specialism_category_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
+            (CQCLClean.specialist_generalist_other_dementia, pl.String()),
+        ]
+    )
+
 
 @dataclass
 class ExtractRegisteredManagerNamesSchema:

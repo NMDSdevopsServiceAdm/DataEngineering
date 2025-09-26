@@ -1,8 +1,17 @@
+import logging
 import warnings
 
 import polars as pl
 
 from polars_utils import utils
+from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    OnsCleanedColumns as ONSClean,
+)
+from utils.column_names.cleaned_data_files.ons_cleaned import (
+    contemporary_geography_columns,
+    current_geography_columns,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -10,6 +19,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     PrimaryServiceType,
@@ -17,7 +27,178 @@ from utils.column_values.categorical_column_values import (
     Services,
     Sector,
     CareHome,
+    LocationType,
+    SpecialistGeneralistOther,
 )
+
+
+cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+dimensionPartitionKeys = [
+    DimensionKeys.year,
+    DimensionKeys.month,
+    DimensionKeys.day,
+    DimensionKeys.last_updated,
+    DimensionKeys.import_date,
+]
+
+cqc_location_cols_to_import = [
+    CQCLClean.location_id,
+    CQCLClean.provider_id,
+    CQCLClean.name,
+    CQCLClean.postal_address_line1,
+    CQCLClean.postal_code,
+    CQCLClean.registration_status,
+    CQCLClean.registration_date,
+    CQCLClean.deregistration_date,
+    CQCLClean.type,
+    CQCLClean.relationships,
+    CQCLClean.care_home,
+    CQCLClean.number_of_beds,
+    CQCLClean.dormancy,
+    CQCLClean.gac_service_types,
+    CQCLClean.regulated_activities,
+    CQCLClean.specialisms,
+    Keys.import_date,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+]
+ons_cols_to_import = [
+    ONSClean.postcode,
+    *contemporary_geography_columns,
+    *current_geography_columns,
+]
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger.addHandler(logging.StreamHandler())
+logger.handlers[0].setFormatter(formatter)
+
+
+def main(
+    cqc_locations_source: str,
+    cleaned_ons_source: str,
+    cleaned_cqc_locations_destination: str,
+    gac_service_destination: str,
+    regulated_activities_destination: str,
+    specialisms_destination: str,
+    postcode_matching_destination: str,
+):
+    cqc_df = utils.read_parquet(
+        cqc_locations_source, selected_columns=cqc_location_cols_to_import
+    )
+    logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
+
+    # Clean date columns and force to date type
+    cqc_df = clean_and_impute_registration_date(cqc_df)
+    cqc_df = cqc_df.with_columns(
+        pl.col(CQCLClean.imputed_registration_date).str.to_date("yyyy-MM-dd")
+    )  # TODO: should this not be in the clean and impute function - if no, move to l111
+
+    # Clean provider ID, and then filter only for rows that have a provider id
+    cqc_df = clean_provider_id_column(cqc_df)
+    cqc_df = cqc_df.filter(pl.col(CQCLClean.provider_id).is_not_null())
+    # Use the provider ID to identify which locations are members of the local authority
+    cqc_df = assign_cqc_sector(
+        cqc_df=cqc_df, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    )
+
+    # Filter CQC dataframe on known conditions
+    cqc_df = cqc_df.filter(
+        pl.col(CQCLClean.type).eq(LocationType.social_care_identifier),
+        ~pl.col(CQCLClean.location_id).is_in(
+            [
+                RecordsToRemoveInLocationsData.dental_practice,
+                RecordsToRemoveInLocationsData.temp_registration,
+            ]
+        ),
+    )
+    logger.info(
+        f"CQC Location DataFrame filtered to registered Social Care Orgs\n"
+        f"{cqc_df.shape[0]} rows remain"
+    )
+
+    # Format dates
+    cqc_df = cqc_df.with_columns(
+        pl.col(CQCLClean.registration_date).str.to_date("yyyy-MM-dd"),
+        pl.col(CQCLClean.deregistration_date).str.to_date("yyyy-MM-dd"),
+        pl.col(Keys.import_date)
+        .str.to_date("yyyyMMdd")
+        .alias(CQCLClean.cqc_location_import_date),
+    )
+
+    cqc_df = impute_historic_relationships(cqc_df)
+    cqc_df = select_registered_locations(cqc_df)  # TODO: move to filter section?
+
+    # Calculate latest import date for dimension update date
+    dimension_update_date = cqc_df.select(Keys.import_date).max().item()
+
+    # Create Regulated Activities dimension delta
+    regulated_activity_delta = create_dimension_from_struct_field(
+        cqc_df=cqc_df,
+        struct_column_name=CQCLClean.regulated_activities,
+        dimension_location=regulated_activities_destination,
+        dimension_update_date=dimension_update_date,
+    )
+    cqc_df = cqc_df.drop(CQCLClean.regulated_activities)
+
+    cqc_df, regulated_activity_delta = remove_locations_without_regulated_activities(
+        cqc_df=cqc_df, regulated_activities_dimension=regulated_activity_delta
+    )
+    logger.info(
+        f"CQC Location DataFrame filtered to remove locations which have never had a regulated activity\n"
+        f"{cqc_df.shape[0]} rows remain"
+    )
+    # TODO extract registered manager names
+
+    utils.write_to_parquet(
+        df=regulated_activity_delta.drop(CQCLClean.cqc_location_import_date),
+        output_path=regulated_activities_destination,
+        logger=logger,
+        partition_cols=dimensionPartitionKeys,
+    )
+
+    # Create Specialisms dimension
+    specialisms_delta = create_dimension_from_struct_field(
+        cqc_df=cqc_df,
+        struct_column_name=CQCLClean.specialisms,
+        dimension_location=specialisms_destination,
+        dimension_update_date=dimension_update_date,
+    )
+
+    specialisms_delta = specialisms_delta.with_columns(
+        pl.col(CQCLClean.imputed_specialisms).struct.field(CQCLClean.name)
+    )
+
+    # specialisms_delta =
+
+    # Create GAC Service dimension delta
+    gac_service_delta = create_dimension_from_struct_field(
+        cqc_df=cqc_df,
+        struct_column_name=CQCLClean.gac_service_types,
+        dimension_location=gac_service_destination,
+        dimension_update_date=dimension_update_date,
+    )
+    # Drop care home from registered location df - stored in gac service dimension
+    cqc_df = cqc_df.drop(CQCLClean.gac_service_types, CQCLClean.care_home)
+
+    # Drop columns stored in dimensions
+    cqc_df = cqc_df.drop(
+        # From RegulatedActivities dimension
+        CQCLClean.regulated_activities,
+        # From Specialisms dimension
+        CQCLClean.specialisms,
+        # From GAC Services dimension
+        CQCLClean.gac_service_types,
+        CQCLClean.care_home,
+        # From PostcodeMatching dimension
+        CQCLClean.postal_code,
+        CQCLClean.postal_address_line1,
+    )
+
+    ons_df = utils.read_parquet(cleaned_ons_source, selected_columns=ons_cols_to_import)
+    logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
 
 
 def create_dimension_from_struct_field(
@@ -142,10 +323,10 @@ def _create_dimension_delta(
 
     """
     # 1. Read in the previous state of the dimension.
+    dimension_name = dimension_location.split("/")[-2]
     try:
         previous_dimension = utils.read_parquet(dimension_location)
     except OSError:
-        dimension_name = dimension_location.split("/")[-2]
         warnings.warn(
             f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
             UserWarning,
@@ -167,7 +348,9 @@ def _create_dimension_delta(
         pl.lit(dimension_update_date[6:]).alias(DimensionKeys.day),
         pl.lit(dimension_update_date).alias(DimensionKeys.last_updated),
     )
-
+    logger.info(
+        f"The {dimension_name} delta has been created with {delta.shape[0]} rows."
+    )
     return delta
 
 
@@ -490,9 +673,9 @@ def remove_specialist_colleges(
         # 1. Filter for rows in the GAC Service dimension where "Specialist college service" is the only service offered
         pl.col(CQCLClean.services_offered)
         .list.first()
-        .eq(Services.specialist_college_service)
-        & pl.col(CQCLClean.services_offered).list.len().eq(1)
-        & pl.col(CQCLClean.services_offered).is_not_null()
+        .eq(Services.specialist_college_service),
+        pl.col(CQCLClean.services_offered).list.len().eq(1),
+        pl.col(CQCLClean.services_offered).is_not_null(),
     ).select(CQCLClean.location_id, Keys.import_date)
 
     # 2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
@@ -534,8 +717,8 @@ def remove_locations_without_regulated_activities(
     locations_to_investigate = regulated_activities_dimension.filter(
         pl.col(CQCLClean.location_id).is_in(
             to_remove_df[CQCLClean.location_id].to_list()
-        )
-        & pl.col(CQCLClean.imputed_regulated_activities).is_not_null()
+        ),
+        pl.col(CQCLClean.imputed_regulated_activities).is_not_null(),
     )
     if not locations_to_investigate.is_empty():
         warnings.warn(
@@ -645,3 +828,40 @@ def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.Da
         .alias(CQCLClean.cqc_sector)
     )
     return cqc_df
+
+
+def assign_specialism_category(df: pl.DataFrame, specialism: str) -> pl.DataFrame:
+    """
+    Categorises each row as "Specialist", "Generalist" or "Other for the given specialism.
+
+    1. If the specialism is the only one offered by the location then categorise as "Specialist".
+    2. If the specialism among multiple offered by the location then categorise as "Generalist".
+    3. Otherwise, categorise as "Specialist".
+
+    Args:
+        df (pl.DataFrame): Dataframe with specialisms_offered column.
+        specialism (str): Specialism to categorise.
+
+    Returns:
+        pl.DataFrame: Input dataframe with new "specialist_generalist_other_[specialism]" column.
+
+    """
+    new_column_name: str = f"specialist_generalist_other_{specialism}".replace(
+        " ", "_"
+    ).lower()
+
+    df = df.with_columns(
+        # 1. If the specialism is the only one offered by the location then categorise as "Specialist".
+        pl.when(
+            pl.col(CQCLClean.specialisms_offered).list.contains(specialism),
+            pl.col(CQCLClean.specialisms_offered).list.len() == 1,
+        )
+        .then(pl.lit(SpecialistGeneralistOther.specialist))
+        # 2. If the specialism among multiple offered by the location then categorise as "Generalist".
+        .when(pl.col(CQCLClean.specialisms_offered).list.contains(specialism))
+        .then(pl.lit(SpecialistGeneralistOther.generalist))
+        # 3. Otherwise, categorise as "Specialist".
+        .otherwise(pl.lit(SpecialistGeneralistOther.other))
+        .alias(new_column_name)
+    )
+    return df

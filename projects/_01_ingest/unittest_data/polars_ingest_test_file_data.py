@@ -9,6 +9,8 @@ from utils.column_values.categorical_column_values import (
     RegistrationStatus,
     Sector,
     Services,
+    Specialisms,
+    SpecialistGeneralistOther,
 )
 
 
@@ -1790,6 +1792,65 @@ class CQCLocationsData:
         ("loc_1", "loc_2"),
         ("prov_1", "prov_2"),
         (Sector.independent, Sector.independent),
+    ]
+
+    assign_specialism_category_specialist = [
+        ("loc_1", "loc_2"),
+        ([Specialisms.dementia], [Specialisms.dementia]),
+    ]
+
+    expected_assign_specialism_category_specialist = [
+        ("loc_1", "loc_2"),
+        ([Specialisms.dementia], [Specialisms.dementia]),
+        (SpecialistGeneralistOther.specialist, SpecialistGeneralistOther.specialist),
+    ]
+
+    assign_specialism_category_generalist = [
+        ("loc_1", "loc_2"),
+        (
+            [Specialisms.dementia, Specialisms.physical_disabilities],
+            [
+                Specialisms.mental_health,
+                Specialisms.dementia,
+                Specialisms.physical_disabilities,
+            ],
+        ),
+    ]
+
+    expected_assign_specialism_category_generalist = [
+        ("loc_1", "loc_2"),
+        (
+            [Specialisms.dementia, Specialisms.physical_disabilities],
+            [
+                Specialisms.mental_health,
+                Specialisms.dementia,
+                Specialisms.physical_disabilities,
+            ],
+        ),
+        (SpecialistGeneralistOther.generalist, SpecialistGeneralistOther.generalist),
+    ]
+
+    assign_specialism_category_other = [
+        ("loc_1", "loc_2"),
+        (
+            [Specialisms.physical_disabilities],
+            [
+                Specialisms.mental_health,
+                Specialisms.physical_disabilities,
+            ],
+        ),
+    ]
+
+    expected_assign_specialism_category_other = [
+        ("loc_1", "loc_2"),
+        (
+            [Specialisms.physical_disabilities],
+            [
+                Specialisms.mental_health,
+                Specialisms.physical_disabilities,
+            ],
+        ),
+        (SpecialistGeneralistOther.other, SpecialistGeneralistOther.other),
     ]
 
 

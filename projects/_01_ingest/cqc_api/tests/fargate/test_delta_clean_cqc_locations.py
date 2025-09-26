@@ -1738,5 +1738,76 @@ class AssignCqcSectorTests(TestCase):
         )
 
 
+class AssignSpecialismCategoryTests(TestCase):
+    def test_assigns_specialist(self):
+        # GIVEN
+        #   Input where all rows have just "Dementia" in their specialisms
+        input_df = pl.DataFrame(
+            data=Data.assign_specialism_category_specialist,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_df = job.assign_specialism_category(input_df, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as specialists
+        expected_df = pl.DataFrame(
+            data=Data.expected_assign_specialism_category_specialist,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["specialist", "specialist"],
+            result_df["specialist_generalist_other_dementia"].to_list(),
+        )
+
+    def test_assigns_generalist(self):
+        # GIVEN
+        #   Input where all rows have "Dementia" and one or more other specialties in their specialisms
+        input_df = pl.DataFrame(
+            data=Data.assign_specialism_category_generalist,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_df = job.assign_specialism_category(input_df, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as generalist
+        expected_df = pl.DataFrame(
+            data=Data.expected_assign_specialism_category_generalist,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["generalist", "generalist"],
+            result_df["specialist_generalist_other_dementia"].to_list(),
+        )
+
+    def test_assigns_other(self):
+        # GIVEN
+        #   Input where no rows have "Dementia" in their specialisms
+        input_df = pl.DataFrame(
+            data=Data.assign_specialism_category_other,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_df = job.assign_specialism_category(input_df, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as other
+        expected_df = pl.DataFrame(
+            data=Data.expected_assign_specialism_category_other,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_df, result_df)
+        self.assertEqual(
+            ["other", "other"],
+            result_df["specialist_generalist_other_dementia"].to_list(),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

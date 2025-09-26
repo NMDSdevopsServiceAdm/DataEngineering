@@ -257,6 +257,7 @@ def main(
     )
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.create_dimension_from_postcode
 def create_postcode_matching_dimension(
     cqc_df, postcode_df, dimension_location, dimension_update_date
 ):
@@ -305,6 +306,7 @@ def create_postcode_matching_dimension(
     return delta
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.create_dimension_from_struct_field
 def create_dimension_from_missing_struct_column(
     df: DataFrame,
     missing_struct_column: str,
