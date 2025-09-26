@@ -68,7 +68,12 @@
           "ContainerOverrides": [
             {
               "Name": "model-retrain-container",
-              "Command.$": "States.Array('python', 'train_model.py', '--model_name', '${model_name}'"
+              "Command": [
+                          "python",
+                          "train_model.py",
+                          "--model_name",
+                          "${model_name}"
+              ]
             }
           ]
         }
