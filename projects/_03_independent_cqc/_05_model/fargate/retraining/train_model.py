@@ -53,6 +53,15 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
         PolarsError: If there is an error originating in Polars
         Exception: If there is an unexplained error
     """
+    FIELD_LIST = [
+        "model_type",
+        "model_identifier",
+        "model_params",
+        "version_parameter_location",
+        "data_source_prefix",
+        "target_columns",
+        "feature_columns",
+    ]
 
     def get_error_notification(model_id: str, error: str) -> str:
         return (
@@ -66,7 +75,7 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
     try:
         model_definition = model_definitions[model_name]
 
-        model = Model(**model_definition)
+        model = Model(**{k: v for k, v in model_definition.items() if k in FIELD_LIST})
 
         logger.info(f"Training model {model_name}...")
         logger.info(f"Model: {model_definition}")
