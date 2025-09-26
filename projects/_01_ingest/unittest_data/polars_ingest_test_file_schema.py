@@ -12,6 +12,9 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_names.raw_data_files.ons_columns import (
+    OnsPostcodeDirectoryColumns as ONS,
+)
 
 
 @dataclass
@@ -326,6 +329,27 @@ class CQCLocationsSchema:
 
 @dataclass
 class PostcodeMatcherTest:
+    locations_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCL.name, pl.String()),
+            (CQCL.postal_address_line1, pl.String()),
+            (CQCL.postal_code, pl.String()),
+        ]
+    )
+    postcodes_schema = pl.Schema(
+        [
+            (ONS.postcode, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.contemporary_cssr, pl.String()),
+            (ONSClean.contemporary_sub_icb, pl.String()),
+            (ONSClean.contemporary_ccg, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+            (ONSClean.current_sub_icb, pl.String()),
+        ]
+    )
+
     clean_postcode_column_schema = pl.Schema([(CQCL.postal_code, pl.String())])
     expected_clean_postcode_column_when_drop_is_false_schema = pl.Schema(
         [(CQCL.postal_code, pl.String()), (CQCLClean.postcode_cleaned, pl.String())]

@@ -1339,6 +1339,31 @@ class CQCLocationsData:
 
 @dataclass
 class PostcodeMatcherTest:
+    locations_where_all_match_rows = [
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
+        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),
+        ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),
+    ]
+    locations_with_unmatched_postcode_rows = [
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
+        ("1-005", date(2025, 1, 1), "name 5", "5 road name", "AA2 5XX"),
+    ]
+    postcodes_rows = [
+        ("AA11AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 1", "SubICB 1"),
+        ("AA12AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 2", "SubICB 1"),
+        ("AA13AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 3", "SubICB 1"),
+        ("AA11AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 1", "SubICB 1"),
+        ("AA12AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 2", "SubICB 1"),
+        ("AA13AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 3", "SubICB 1"),
+        ("AA14AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 4", "SubICB 1"),
+        ("TF74EH", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 5", "SubICB 1"),
+    ]
+
     clean_postcode_column_rows = [
         ("aA11Aa", "AA1 2AA", "aA1 3aA"),
     ]

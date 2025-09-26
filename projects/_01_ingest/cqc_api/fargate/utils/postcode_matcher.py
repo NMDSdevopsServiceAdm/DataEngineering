@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple
 
 import polars as pl
 
+import utils.cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
     ManualPostcodeCorrections,
 )
@@ -14,6 +15,92 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+
+
+def run_postcode_matching(
+    locations_df: pl.DataFrame,
+    postcode_df: pl.DataFrame,
+) -> pl.DataFrame:
+    """
+    Runs full postcode matching logic and raises error if final validation fails.
+
+    This function consists of 5 iterations of matching postcodes:
+        - 1 - Match postcodes where there is an exact match at that point in time.
+        - 2 - If not, reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
+        - 3 - If not, replace known postcode issues using the invalid postcode dictionary.
+        - 4 - If not, match the postcode based on the first half of the postcode only (truncated postcode).
+        - 5 - If not, raise an error to manually investigate any unmatched postcodes.
+
+    If an error isn't raised, return a DataFrame with all of the matched postcodes from steps 1 to 4.
+
+    Args:
+        locations_df (pl.DataFrame): DataFrame of workplaces with postcodes.
+        postcode_df (pl.DataFrame): ONS postcode directory.
+
+    Returns:
+        pl.DataFrame: Fully matched DataFrame.
+    """
+    locations_df = clean_postcode_column(
+        locations_df, CQCL.postal_code, CQCLClean.postcode_cleaned, drop_col=False
+    )
+
+    postcode_df = clean_postcode_column(
+        postcode_df, ONSClean.postcode, CQCLClean.postcode_cleaned, drop_col=True
+    )
+
+    locations_df = cUtils.add_aligned_date_column(
+        locations_df,
+        postcode_df,
+        CQCLClean.cqc_location_import_date,
+        ONSClean.contemporary_ons_import_date,
+    )
+
+    # Step 1 - Match postcodes where there is an exact match at that point in time.
+    matched_locations_df, unmatched_locations_df = join_postcode_data(
+        locations_df, postcode_df, CQCLClean.postcode_cleaned
+    )
+
+    # Step 2 - Reassign unmatched potcode with the first successfully matched postcode for that location ID (where available).
+    reassigned_locations_df = get_first_successful_postcode_match(
+        unmatched_locations_df, matched_locations_df
+    )
+    (
+        matched_reassigned_locations_df,
+        unmatched_reassigned_locations_df,
+    ) = join_postcode_data(
+        reassigned_locations_df, postcode_df, CQCLClean.postcode_cleaned
+    )
+
+    # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
+    amended_locations_df = amend_invalid_postcodes(unmatched_reassigned_locations_df)
+    matched_amended_locations_df, unmatched_amended_locations_df = join_postcode_data(
+        amended_locations_df, postcode_df, CQCLClean.postcode_cleaned
+    )
+
+    # Step 4 - Match the postcode based on the truncated postcode (excludes the last two characters).
+    truncated_postcode_df = create_truncated_postcode_df(postcode_df)
+    truncated_locations_df = truncate_postcode(unmatched_amended_locations_df)
+    (
+        matched_truncated_locations_df,
+        unmatched_truncated_locations_df,
+    ) = join_postcode_data(
+        truncated_locations_df, truncated_postcode_df, CQCLClean.postcode_truncated
+    )
+
+    # Step 5 - Raise an error and abort pipeline to manually investigate any unmatched postcodes.
+    raise_error_if_unmatched(unmatched_truncated_locations_df)
+
+    # Step 6 - Create a final DataFrame with all matched postcodes.
+    final_matched_df = combine_matched_dataframes(
+        [
+            matched_locations_df,
+            matched_reassigned_locations_df,
+            matched_amended_locations_df,
+            matched_truncated_locations_df,
+        ]
+    )
+
+    return final_matched_df
 
 
 def clean_postcode_column(
