@@ -19,7 +19,7 @@ class TestModel(unittest.TestCase):
         model_identifier="test_linear_model",
         model_params={},
         version_parameter_location="/some/location",
-        source_prefix="some/prefix",
+        processed_location="some/prefix",
         target_columns=["target"],
         feature_columns=["column1", "column2"],
     )
@@ -28,7 +28,7 @@ class TestModel(unittest.TestCase):
         model_identifier="test_linear_model_ice_cream",
         model_params={},
         version_parameter_location="/some/location",
-        source_prefix="some/prefix",
+        processed_location="some/prefix",
         target_columns=["IceCreamSales"],
         feature_columns=["MeanDailyTemperature"],
     )
@@ -44,7 +44,7 @@ class TestModel(unittest.TestCase):
         self.assertEqual(
             self.standard_model.version_parameter_location, "/some/location"
         )
-        self.assertEqual(self.standard_model.source_prefix, "some/prefix")
+        self.assertEqual(self.standard_model.processed_location, "some/prefix")
         self.assertEqual(self.standard_model.target_columns, ["target"])
         self.assertEqual(self.standard_model.feature_columns, ["column1", "column2"])
         self.assertIsInstance(self.standard_model.model, LinearRegression)
@@ -62,7 +62,7 @@ class TestModel(unittest.TestCase):
                 model_identifier="test_linear_model",
                 model_params={},
                 version_parameter_location="/some/location",
-                source_prefix="some/prefix",
+                processed_location="some/prefix",
                 target_columns=["target"],
                 feature_columns=["column1", "column2"],
             )
