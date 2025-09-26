@@ -197,7 +197,7 @@ def null_care_home_grouped_providers(df: DataFrame) -> DataFrame:
     )
 
     df = cUtils.calculate_filled_posts_per_bed_ratio(
-        df, IndCQC.ascwds_filled_posts_dedup_clean
+        df, IndCQC.ascwds_filled_posts_dedup_clean, IndCQC.filled_posts_per_bed_ratio
     )
 
     df = update_filtering_rule(
