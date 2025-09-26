@@ -74,6 +74,7 @@ def write_to_parquet(
     output_path: str | Path,
     logger: logging.Logger = util_logger,
     append: bool = True,
+    partition_cols: list[str] | None = None,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -89,6 +90,7 @@ def write_to_parquet(
             If not provided, a default logger will be used (or you can ensure
             `util_logger` is globally available).
         append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
         None
@@ -104,8 +106,16 @@ def write_to_parquet(
             output_path += fname
         else:
             output_path = output_path / fname
-    df.write_parquet(output_path)
-    logger.info("Parquet written to {}".format(output_path))
+
+    if not partition_cols:
+        df.write_parquet(output_path)
+        logger.info("Parquet written to {}".format(output_path))
+    else:
+        df.rechunk().write_parquet(
+            output_path,
+            use_pyarrow=True,
+            pyarrow_options={"compression": "snappy", "partition_cols": partition_cols},
+        )
 
 
 def get_args(*args: tuple) -> argparse.Namespace:

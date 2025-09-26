@@ -132,6 +132,22 @@ class TestWriteParquet(TestUtils):
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
 
+    def test_write_parquet_partitions_complex(self):
+        df: pl.DataFrame = pl.read_parquet(
+            "tests/test_data/domain=CQC/dataset=delta_locations_api/"
+        )
+
+        destination: str = str(self.temp_dir) + "/"
+        write_to_parquet(
+            df,
+            destination,
+            self.logger,
+            append=False,
+            partition_cols=["day", "import_date"],
+        )
+        files = glob(str(self.temp_dir) + "/**/**/*.parquet")
+        self.assertEqual(4, len(files))
+
 
 class TestGenerateS3Dir(TestUtils):
     def test_get_date_partitioned_s3_path_version(self):

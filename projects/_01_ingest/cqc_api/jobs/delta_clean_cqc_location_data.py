@@ -257,6 +257,7 @@ def main(
     )
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.create_dimension_from_postcode
 def create_postcode_matching_dimension(
     cqc_df, postcode_df, dimension_location, dimension_update_date
 ):
@@ -305,6 +306,7 @@ def create_postcode_matching_dimension(
     return delta
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.create_dimension_from_struct_field
 def create_dimension_from_missing_struct_column(
     df: DataFrame,
     missing_struct_column: str,
@@ -370,12 +372,14 @@ def create_dimension_from_missing_struct_column(
     return delta
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_provider_id_column
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
     cqc_df = remove_provider_ids_with_too_many_characters(cqc_df)
     cqc_df = fill_missing_provider_ids_from_other_rows(cqc_df)
     return cqc_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_provider_id_column
 def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame:
     cqc_df = cqc_df.withColumn(
         CQCL.provider_id,
@@ -384,6 +388,7 @@ def remove_provider_ids_with_too_many_characters(cqc_df: DataFrame) -> DataFrame
     return cqc_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_provider_id_column
 def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     cqc_df = cqc_df.withColumn(
         CQCL.provider_id,
@@ -397,6 +402,7 @@ def fill_missing_provider_ids_from_other_rows(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_and_impute_registration_date
 def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     """
     Adds a new column which is a cleaned and imputed copy of registrationdate.
@@ -418,6 +424,7 @@ def create_cleaned_registration_date_column(cqc_df: DataFrame) -> DataFrame:
     return cqc_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_and_impute_registration_date
 def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Converts a timestamp-as-string to a date-as-string.
@@ -435,6 +442,7 @@ def remove_time_from_date_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_and_impute_registration_date
 def remove_registration_dates_that_are_later_than_import_date(
     df: DataFrame,
 ) -> DataFrame:
@@ -468,6 +476,7 @@ def remove_registration_dates_that_are_later_than_import_date(
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.clean_and_impute_registration_date
 def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     """
     Fills missing dates in the imputed_registration_date_column.
@@ -506,10 +515,12 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
+# should be in main
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.impute_historic_relationships
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
     """
     Imputes historic relationships for locations in the given DataFrame.
@@ -565,6 +576,7 @@ def impute_historic_relationships(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.get_predecessor_relationships
 def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
@@ -604,6 +616,7 @@ def get_relationships_where_type_is_predecessor(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.impute_missing_values_for_struct_column
 def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     """
     Imputes missing rows in a struct col in the DataFrame by filling with known values from other import_dates.
@@ -656,6 +669,7 @@ def impute_missing_struct_column(df: DataFrame, column_name: str) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.remove_locations_without_regulated_activities
 def remove_locations_that_never_had_regulated_activities(
     cqc_df: DataFrame, regulated_activities_dimension: DataFrame
 ) -> tuple[DataFrame, DataFrame]:
@@ -691,6 +705,7 @@ def remove_locations_that_never_had_regulated_activities(
     return cqc_df, regulated_activities_dimension
 
 
+# Should be moved into function creating dimensions
 def extract_from_struct(
     df: DataFrame, source_struct_column_name: str, new_column_name: str
 ) -> DataFrame:
@@ -709,6 +724,7 @@ def extract_from_struct(
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_primary_service_type
 def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     """
     Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
@@ -745,6 +761,7 @@ def allocate_primary_service_type(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_care_home
 def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     """
     Allocates the location as a care_home if primary_service_type is a care home.
@@ -776,6 +793,7 @@ def realign_carehome_column_with_primary_service(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.add_related_location_flag
 def add_related_location_column(df: DataFrame) -> DataFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not
@@ -798,6 +816,7 @@ def add_related_location_column(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.remove_specialist_colleges
 def remove_specialist_colleges(
     cqc_df: DataFrame, gac_services_dimension: DataFrame
 ) -> tuple[DataFrame, DataFrame]:
@@ -841,6 +860,7 @@ def remove_specialist_colleges(
     return cqc_df, gac_services_dimension
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.select_registered_locations
 def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     invalid_rows = locations_df.where(
         (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
@@ -858,6 +878,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
     return locations_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def add_cqc_sector_column_to_cqc_locations_dataframe(
     cqc_location_df: DataFrame, la_providerids: list
 ):
@@ -874,6 +895,7 @@ def add_cqc_sector_column_to_cqc_locations_dataframe(
     return cqc_location_with_sector_column
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations.assign_cqc_sector
 def create_dataframe_from_la_cqc_location_list(la_providerids: list) -> DataFrame:
     spark = utils.get_spark()
 
