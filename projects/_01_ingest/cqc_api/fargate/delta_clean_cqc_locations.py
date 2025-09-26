@@ -314,12 +314,13 @@ def _create_dimension_delta(
     3. Assign partition values to the updated rows.
 
     Args:
-        dimension_location:
-        dimension_update_date:
-        current_dimension:
-        join_columns:
+        dimension_location (str): Location of the (historic) dimension data
+        dimension_update_date (str): Update date of the dimension date (where the dimension is/will be stored)
+        current_dimension (pl.DataFrame): Current dimension data
+        join_columns (list[str]): List of columns to join current dimension data to historic dimension data
 
     Returns:
+        pl.DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
 
     """
     # 1. Read in the previous state of the dimension.
@@ -700,7 +701,7 @@ def remove_locations_without_regulated_activities(
         regulated_activities_dimension (pl.DataFrame): Dimension table with imputed_regulated_activities column
 
     Returns:
-        pl.DataFrame: cqq_df, regulated_activities_dimension where all rows have imputed regulated activities.
+        tuple[pl.DataFrame, pl.DataFrame]: cqq_df, regulated_activities_dimension where all rows have imputed regulated activities.
 
     """
     # 1. Filter for rows in the Regulated Activities dimension where there are no imputed regulated activities.
@@ -748,6 +749,9 @@ def remove_rows(
 
     Returns:
         list[pl.DataFrame]: List of dataframes in the same order as target_dfs, with the rows removed.
+
+    Raises:
+        ValueError: If any of the target_dfs does not contain the columns in to_remove_df.
     """
     result_dfs = []
     to_remove_schema = set(to_remove_df.schema.to_python())
