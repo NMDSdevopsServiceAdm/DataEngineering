@@ -351,16 +351,12 @@ workflows:
             - lint-terraform
             # - test # TODO revert this before merge
             - task-containerisation
-      - plan-approval: # TODO remove this before merge
-          type: approval
-          requires:
-            - terraform-plan
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           aws_account: "non_prod"
           requires:
-            - plan-approval
+            - terraform-plan
       - deploy-dependencies:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
