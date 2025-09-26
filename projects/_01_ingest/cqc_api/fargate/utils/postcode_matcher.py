@@ -2,7 +2,7 @@ from typing import Dict, List, Tuple
 
 import polars as pl
 
-import utils.cleaning_utils as cUtils
+import polars_utils.cleaning_utils as cUtils
 from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
     ManualPostcodeCorrections,
 )

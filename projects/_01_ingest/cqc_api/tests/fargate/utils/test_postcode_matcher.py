@@ -79,7 +79,7 @@ class RunPostcodeMatchingTests(unittest.TestCase):
             self.locations_where_all_match_df, self.postcodes_df
         )
 
-        self.assertEqual(returned_df.count(), self.locations_where_all_match_df.count())
+        self.assertEqual(returned_df.height, self.locations_where_all_match_df.height)
 
     def test_main_raises_error_when_some_postcodes_do_not_match(self):
         with self.assertRaises(TypeError) as context:
