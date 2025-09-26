@@ -275,7 +275,7 @@ jobs:
           name: terraform destroy
           command: |
             cd terraform/pipeline
-            terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
+            terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select << pipeline.parameters.GHA_Meta >>
             terraform destroy -auto-approve
       - run:
