@@ -214,6 +214,11 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
+      - run:
           name: package utils, schemas, projects and environment
           command: |
             mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment
@@ -234,15 +239,17 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
   copy-default-data:
-    environment:
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID_non_prod}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY_non_prod}
     docker:
       - image: cimg/base:current
     resource_class: small
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
@@ -253,15 +260,17 @@ jobs:
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/models/"
 
   terraform-destroy:
-    environment:
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID_non_prod}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY_non_prod}
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
     steps:
       - checkout
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - run:
           name: terraform destroy
           command: |
