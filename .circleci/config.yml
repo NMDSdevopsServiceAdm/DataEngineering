@@ -185,14 +185,16 @@ jobs:
           name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
-            # Ignore anything piped to stderr here (i.e. terraform warnings) by ignoring stderr (i.e. 2>/dev/null)
-            echo $(terraform output --raw pipeline_resources_bucket_name 2>/dev/null) > pipeline_resources_bucket_name
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
+            echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
       - run:
           name: save datasets bucket name
           command: |
             cd terraform/pipeline
-            # Ignore anything piped to stderr here (i.e. terraform warnings) by ignoring stderr (i.e. 2>/dev/null)
-            echo $(terraform output --raw datasets_bucket_name 2>/dev/null) > datasets_bucket_name
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
+            echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
       - persist_to_workspace:
           root: .
           paths:
