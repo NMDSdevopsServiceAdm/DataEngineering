@@ -25,7 +25,7 @@ class Model:
         model_identifier: str,
         model_params: Dict[str, Any],
         version_parameter_location: str,
-        data_source_prefix: str,
+        source_prefix: str,
         target_columns: list[str],
         feature_columns: list[str],
     ) -> None:
@@ -36,7 +36,7 @@ class Model:
         self.model_identifier = model_identifier
         self.model_params = model_params
         self.version_parameter_location = version_parameter_location
-        self.data_source_prefix = data_source_prefix
+        self.source_prefix = source_prefix
         self.target_columns = target_columns
         self.feature_columns = feature_columns
         self.training_score: float | None = None
@@ -63,7 +63,7 @@ class Model:
             pl.LazyFrame: Raw data from S3 bucket.
 
         """
-        s3_uri = f"s3://{bucket_name}/{self.data_source_prefix}/processed.parquet"
+        s3_uri = f"s3://{bucket_name}/{self.source_prefix}/processed.parquet"
         return pl.scan_parquet(s3_uri)
 
     @classmethod

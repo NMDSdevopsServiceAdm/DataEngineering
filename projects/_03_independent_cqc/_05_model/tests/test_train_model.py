@@ -25,7 +25,7 @@ invalid_definition = {
     "model_identifier": "non_res_pir",
     "model_params": dict(),
     "version_parameter_location": f"/models/test/non_res_pir",
-    "data_source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
+    "source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
     "target_columns": ["ascwds_filled_posts_deduplicated_clean"],
     "feature_columns": ["pir_people_directly_employed_deduplicated"],
 }
@@ -35,7 +35,7 @@ valid_definition = {
     "model_identifier": "non_res_pir",
     "model_params": dict(),
     "version_parameter_location": f"/models/test/non_res_pir",
-    "data_source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
+    "source_prefix": "domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_missing_ascwds_filled_posts/",
     "target_columns": ["ascwds_filled_posts_deduplicated_clean"],
     "feature_columns": ["pir_people_directly_employed_deduplicated"],
 }
@@ -46,7 +46,7 @@ ice_cream_model = {
         "model_identifier": "dummy_model",
         "model_params": dict(),
         "version_parameter_location": "/param_loc",
-        "data_source_prefix": "dummy_prefix",
+        "source_prefix": "dummy_prefix",
         "target_columns": ["IceCreamSales"],
         "feature_columns": ["MeanDailyTemperature"],
     }

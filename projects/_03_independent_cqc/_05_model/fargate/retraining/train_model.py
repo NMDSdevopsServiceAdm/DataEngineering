@@ -58,7 +58,7 @@ def main(model_name: str, seed: int = None) -> ModelVersionManager:
         "model_identifier",
         "model_params",
         "version_parameter_location",
-        "data_source_prefix",
+        "source_prefix",
         "target_columns",
         "feature_columns",
     ]
