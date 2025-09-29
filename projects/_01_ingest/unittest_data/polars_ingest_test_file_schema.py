@@ -571,6 +571,30 @@ class ExtractRegisteredManagerNamesSchema:
         ]
     )
 
+    select_and_create_full_name_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.care_home, pl.String()),
+            (CQCLClean.contacts_exploded, contact_struct),
+        ]
+    )
+    expected_select_and_create_full_name_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.contacts_full_name, pl.String()),
+        ]
+    )
+
+    add_registered_manager_names_full_df_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.care_home, pl.String()),
+        ]
+    )
+
 
 @dataclass
 class PostcodeMatcherTest:

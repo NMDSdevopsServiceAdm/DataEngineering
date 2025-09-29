@@ -30,6 +30,8 @@ def explode_contacts_information(df: pl.DataFrame) -> pl.DataFrame:
     """
     Explodes the `imputed_regulated_activities` array and then the `contacts` array.
 
+    Only rows with non-null contacts are retained.
+
     Args:
         df (pl.DataFrame): Input Polars DataFrame with `imputed_regulated_activities`.
 
@@ -53,6 +55,8 @@ def explode_contacts_information(df: pl.DataFrame) -> pl.DataFrame:
         .struct.field(CQCLClean.contacts)
         .alias(CQCLClean.contacts_exploded)
     ).explode(CQCLClean.contacts_exploded)
+
+    df = df.filter(pl.col(CQCLClean.contacts_exploded).is_not_null())
 
     return df
 
@@ -109,16 +113,12 @@ def add_registered_manager_names(
         pl.DataFrame: Original DataFrame with an added `registered_manager_names` column
         containing a list of unique manager names.
     """
-    grouped_df = contact_names_df.group_by(
-        [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
-    ).agg(
+    join_keys: list[str] = [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
+
+    grouped_df = contact_names_df.group_by(join_keys).agg(
         pl.col(CQCLClean.contacts_full_name)
         .unique()
         .alias(CQCLClean.registered_manager_names)
     )
 
-    return df.join(
-        grouped_df,
-        on=[CQCLClean.location_id, CQCLClean.cqc_location_import_date],
-        how="left",
-    )
+    return df.join(grouped_df, on=join_keys, how="left")

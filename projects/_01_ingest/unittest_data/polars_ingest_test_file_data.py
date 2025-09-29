@@ -1911,7 +1911,18 @@ class ExtractRegisteredManagerNamesData:
         (CareHome.care_home, CareHome.not_care_home),
         (
             [
-                {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 1a",
+                    CQCL.code: "A1a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
                 {
                     CQCL.name: "Activity 1b",
                     CQCL.code: "A1b",
@@ -1957,7 +1968,18 @@ class ExtractRegisteredManagerNamesData:
         ("1-001", "1-001", "1-002", "1-002"),
         (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
         (
-            {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
+            {
+                CQCL.name: "Activity 1a",
+                CQCL.code: "A1a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1a",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
             {
                 CQCL.name: "Activity 1b",
                 CQCL.code: "A1b",
@@ -1996,7 +2018,12 @@ class ExtractRegisteredManagerNamesData:
             },
         ),
         (
-            None,
+            {
+                CQCL.person_family_name: "Surname_1a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
             {
                 CQCL.person_family_name: "Surname_1b",
                 CQCL.person_given_name: "Name",
@@ -2316,13 +2343,24 @@ class ExtractRegisteredManagerNamesData:
         ),
     ]
 
-    explode_contacts_information_when_no_contacts = [
+    explode_contacts_information_when_contains_empty_contacts = [
         ("1-001", "1-002"),
         (date(2024, 1, 1), date(2024, 1, 1)),
         (CareHome.care_home, CareHome.not_care_home),
         (
             [
-                {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
+                {
+                    CQCL.name: "Activity 1a",
+                    CQCL.code: "A1a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
                 {CQCL.name: "Activity 1b", CQCL.code: "A1b", CQCL.contacts: []},
             ],
             [
@@ -2330,112 +2368,110 @@ class ExtractRegisteredManagerNamesData:
             ],
         ),
     ]
-    expected_explode_contacts_information_when_no_contacts = [
-        ("1-001", "1-001", "1-002"),
-        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+    expected_explode_contacts_information_when_contains_empty_contacts = [
+        ("1-001",),
+        (date(2024, 1, 1),),
         (
-            {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
-            {CQCL.name: "Activity 1b", CQCL.code: "A1b", CQCL.contacts: []},
-            {CQCL.name: "Activity 2", CQCL.code: "A2", CQCL.contacts: []},
+            {
+                CQCL.name: "Activity 1a",
+                CQCL.code: "A1a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
         ),
-        (None, None, None),
+        (
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
     ]
 
-    # create_registered_manager_names_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    # ]
-    # expected_create_registered_manager_names_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    #     (["Name Surname"],),
-    # ]
+    select_and_create_full_name = [
+        ("1-001", "1-001", "1-002", "1-003", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (
+            None,
+            {
+                CQCL.person_family_name: "Surname_1",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_3",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_3",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Other Role"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+    expected_select_and_create_full_name = [
+        ("1-001", "1-001", "1-002", "1-003", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            None,
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_3",
+            "Name Surname_3",
+        ),
+    ]
 
-    # create_registered_manager_names_when_multiple_inner_lists_multiple_contacts = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_1",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 }
-    #             ],
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2a",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2b",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    # ]
-    # expected_create_registered_manager_names_when_multiple_inner_lists_multiple_contacts = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_1",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 }
-    #             ],
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2a",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2b",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    #     (["Name Surname_1", "Name Surname_2a", "Name Surname_2b"],),
-    # ]
+    add_registered_manager_names_full_df = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+    ]
 
 
 @dataclass
