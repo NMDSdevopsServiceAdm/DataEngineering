@@ -23,10 +23,7 @@ def extract_registered_manager_names(df: pl.DataFrame) -> pl.DataFrame:
     """
     exploded_contacts_df = explode_contacts_information(df)
     contact_names_df = select_and_create_full_name(exploded_contacts_df)
-    grouped_registered_manager_names_df = group_and_collect_names(contact_names_df)
-    df_with_reg_man_names = join_names_column_into_original_df(
-        df, grouped_registered_manager_names_df
-    )
+    df_with_reg_man_names = add_registered_manager_names(df, contact_names_df)
     return df_with_reg_man_names
 
 
@@ -92,42 +89,37 @@ def select_and_create_full_name(df: pl.DataFrame) -> pl.DataFrame:
     return df
 
 
-def group_and_collect_names(df: pl.DataFrame) -> pl.DataFrame:
+def add_registered_manager_names(
+    df: pl.DataFrame, contact_names_df: pl.DataFrame
+) -> pl.DataFrame:
     """
-    Groups the DataFrame by location and import date, collecting unique registered manager names.
+    Adds a column of registered manager names to the original DataFrame.
+
+    This function:
+    - Groups `contact_names_df` by `location_id` and `cqc_location_import_date`.
+    - Collects unique values from `contacts_full_name` into a grouped list of names.
+    - Joins the grouped names back into the original DataFrame (`df`).
 
     Args:
-        df (pl.DataFrame): DataFrame with `contacts_full_name` column.
+        df (pl.DataFrame): Original DataFrame containing `location_id` and
+            `cqc_location_import_date`.
+        contact_names_df  (pl.DataFrame): DataFrame containing the `contacts_full_name`,
+            `location_id` and `cqc_location_import_date` columns.
 
     Returns:
-        pl.DataFrame: DataFrame grouped by `location_id` and `cqc_location_import_date` with a new
-        column `registered_manager_names` containing unique full names as a list.
+        pl.DataFrame: Original DataFrame with an added `registered_manager_names` column
+        containing a list of unique manager names.
     """
-    df = df.group_by([CQCLClean.location_id, CQCLClean.cqc_location_import_date]).agg(
+    grouped_df = contact_names_df.group_by(
+        [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
+    ).agg(
         pl.col(CQCLClean.contacts_full_name)
         .unique()
         .alias(CQCLClean.registered_manager_names)
     )
-    return df
 
-
-def join_names_column_into_original_df(
-    df: pl.DataFrame, registered_manager_names_df: pl.DataFrame
-) -> pl.DataFrame:
-    """
-    Joins the registered manager names column back into the original DataFrame.
-
-    Args:
-        df (pl.DataFrame): Original DataFrame.
-        registered_manager_names_df (pl.DataFrame): DataFrame containing
-            `location_id`, `cqc_location_import_date`, and `registered_manager_names`.
-
-    Returns:
-        pl.DataFrame: Original DataFrame enriched with the `registered_manager_names` column.
-    """
-    df = df.join(
-        registered_manager_names_df,
+    return df.join(
+        grouped_df,
         on=[CQCLClean.location_id, CQCLClean.cqc_location_import_date],
         how="left",
     )
-    return df
