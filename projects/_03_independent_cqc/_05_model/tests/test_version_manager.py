@@ -24,9 +24,13 @@ class DummyModel(BaseEstimator):
         self.name = name
         self.param1 = param1
         self.param2 = param2
+        self.version = None
 
     def fit(self, *args, **kwargs):
         pass
+
+    def set_version(self, version):
+        self.version = version
 
 
 class TestVersionManager(unittest.TestCase):
@@ -235,3 +239,15 @@ class TestVersionManager(unittest.TestCase):
         names2 = [p["Name"] for p in response2["Parameters"]]
         self.assertIn("/model/test/version", names2)
         self.assertEqual(len(names2), 1)
+
+    def test_version_manager_sets_the_model_version(self):
+        self.version_manager = ModelVersionManager(
+            s3_bucket=DUMMY_BUCKET_NAME,
+            s3_prefix="model/test/version",
+            param_store_name="/model/test/version",
+            default_patch=True,
+        )
+        fitted_model = DummyModel(name="clever_model", param1=17, param2=26)
+        self.assertEqual(self.version_manager.get_current_version(), "5.6.7")
+        self.version_manager.prompt_and_save(fitted_model)
+        self.assertEqual(fitted_model.version, "5.6.8")

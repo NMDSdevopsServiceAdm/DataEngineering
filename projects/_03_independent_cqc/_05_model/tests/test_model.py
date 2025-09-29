@@ -150,3 +150,8 @@ class TestModel(unittest.TestCase):
         self.ice_cream_model.fit(train)
         result = self.ice_cream_model.predict(test)
         self.assertIsInstance(result, DataFrame)
+
+    def test_set_version(self):
+        self.assertIsNone(self.standard_model.version)
+        self.standard_model.set_version("1.2.3")
+        self.assertEqual(self.standard_model.version, "1.2.3")

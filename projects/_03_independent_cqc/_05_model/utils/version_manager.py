@@ -217,6 +217,7 @@ class ModelVersionManager:
 
         new_version = self.get_new_version(change_type)
         loc = self.save_model(model, new_version)
+        model.set_version(new_version)
         self.storage_location_uri = loc
         logger.info(f"Saved model to {loc}")
         self.update_parameter_store(new_version)

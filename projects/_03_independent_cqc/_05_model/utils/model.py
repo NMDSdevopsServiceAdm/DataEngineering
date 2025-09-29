@@ -39,6 +39,7 @@ class Model:
         self.processed_location = processed_location
         self.target_columns = target_columns
         self.feature_columns = feature_columns
+        self.version: str | None = None
         self.training_score: float | None = None
         self.testing_score: float | None = None
         match self.model_type:
@@ -142,3 +143,7 @@ class Model:
         target_values = feature_df.to_numpy().reshape(-1, num_features)
         predictions = self.model.predict(target_values)
         return pl.from_numpy(predictions, schema=self.target_columns, orient="row")
+
+    def set_version(self, version: str) -> None:
+        if not self.version:
+            self.version = version
