@@ -5,6 +5,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
+    CareHome,
     PrimaryServiceType,
     RegistrationStatus,
     Sector,
@@ -1897,559 +1898,621 @@ class CQCLocationsData:
 
 @dataclass
 class ExtractRegisteredManagerNamesData:
-    pass
-    # extract_contacts_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1",
-    #                 CQCL.code: "A1",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    # ]
-    # expected_extract_contacts_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1",
-    #                 CQCL.code: "A1",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #     ),
-    # ]
+    explode_contacts_information_when_single_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (CareHome.care_home,),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_explode_contacts_information_when_single_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (
+            {
+                CQCL.name: "Activity 1",
+                CQCL.code: "A1",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+        ),
+        (
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
 
-    # extract_contacts_when_multiple_activities = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
-    #             {
-    #                 CQCL.name: "Activity 1b",
-    #                 CQCL.code: "A1b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #             {
-    #                 CQCL.name: "Activity 2b",
-    #                 CQCL.code: "A2b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    # ]
-    # expected_extract_contacts_when_multiple_activities = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
-    #             {
-    #                 CQCL.name: "Activity 1b",
-    #                 CQCL.code: "A1b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #             {
-    #                 CQCL.name: "Activity 2b",
-    #                 CQCL.code: "A2b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    #     (
-    #         [
-    #             {},
-    #             {
-    #                 CQCL.person_family_name: "Surname_1b",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #     ),
-    # ]
+    explode_contacts_information_when_multiple_activities = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.not_care_home),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1a",
+                    CQCL.code: "A1a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 1b",
+                    CQCL.code: "A1b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 2b",
+                    CQCL.code: "A2b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_explode_contacts_information_when_multiple_activities = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+        (
+            {
+                CQCL.name: "Activity 1a",
+                CQCL.code: "A1a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1a",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 1b",
+                CQCL.code: "A1b",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1b",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2a",
+                CQCL.code: "A2a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2b",
+                CQCL.code: "A2b",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+        ),
+        (
+            {
+                CQCL.person_family_name: "Surname_1a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_1b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
 
-    # extract_contacts_when_multiple_contacts_per_activity = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1",
-    #                 CQCL.code: "A1",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1a",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    # ]
-    # expected_extract_contacts_when_multiple_contacts_per_activity = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1",
-    #                 CQCL.code: "A1",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1a",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname_1a",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #             {
-    #                 CQCL.person_family_name: "Surname_1b",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #     ),
-    # ]
+    explode_contacts_information_when_multiple_contacts_per_activity = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.not_care_home),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1",
+                    CQCL.code: "A1",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_explode_contacts_information_when_multiple_contacts_per_activity = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+        (
+            {
+                CQCL.name: "Activity 1",
+                CQCL.code: "A1",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1a",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_1b",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 1",
+                CQCL.code: "A1",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1a",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_1b",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2a",
+                CQCL.code: "A2a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2a",
+                CQCL.code: "A2a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+        ),
+        (
+            {
+                CQCL.person_family_name: "Surname_1a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_1b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
 
-    # extract_contacts_when_multiple_activities_and_multple_contacts_per_activity = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1a",
-    #                 CQCL.code: "A1a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1a",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #             {
-    #                 CQCL.name: "Activity 1b",
-    #                 CQCL.code: "A1b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    # ]
-    # expected_extract_contacts_when_multiple_activities_and_multple_contacts_per_activity = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 1a",
-    #                 CQCL.code: "A1a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1a",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #             {
-    #                 CQCL.name: "Activity 1b",
-    #                 CQCL.code: "A1b",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_1b",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.name: "Activity 2a",
-    #                 CQCL.code: "A2a",
-    #                 CQCL.contacts: [
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                     {
-    #                         CQCL.person_family_name: "Surname_2",
-    #                         CQCL.person_given_name: "Name",
-    #                         CQCL.person_roles: ["Registered Manager"],
-    #                         CQCL.person_title: "M",
-    #                     },
-    #                 ],
-    #             },
-    #         ],
-    #     ),
-    #     (
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname_1a",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #             {
-    #                 CQCL.person_family_name: "Surname_1b",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #         [
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #             {
-    #                 CQCL.person_family_name: "Surname_2",
-    #                 CQCL.person_given_name: "Name",
-    #                 CQCL.person_roles: ["Registered Manager"],
-    #                 CQCL.person_title: "M",
-    #             },
-    #         ],
-    #     ),
-    # ]
+    explode_contacts_information_when_multiple_activities_and_multple_contacts_per_activity = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.not_care_home),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1a",
+                    CQCL.code: "A1a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1a",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {
+                    CQCL.name: "Activity 1b",
+                    CQCL.code: "A1b",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_1b",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+            [
+                {
+                    CQCL.name: "Activity 2a",
+                    CQCL.code: "A2a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                        {
+                            CQCL.person_family_name: "Surname_2",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+            ],
+        ),
+    ]
+    expected_explode_contacts_information_when_multiple_activities_and_multple_contacts_per_activity = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1), date(2024, 1, 1)),
+        (
+            {
+                CQCL.name: "Activity 1a",
+                CQCL.code: "A1a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1a",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 1b",
+                CQCL.code: "A1b",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_1b",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2a",
+                CQCL.code: "A2a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+            {
+                CQCL.name: "Activity 2a",
+                CQCL.code: "A2a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                    {
+                        CQCL.person_family_name: "Surname_2",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+        ),
+        (
+            {
+                CQCL.person_family_name: "Surname_1a",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_1b",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
 
-    # extract_contacts_when_no_contacts = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
-    #             {CQCL.name: "Activity 1b", CQCL.code: "A1b", CQCL.contacts: []},
-    #         ],
-    #         [
-    #             {CQCL.name: "Activity 2", CQCL.code: "A2", CQCL.contacts: []},
-    #         ],
-    #     ),
-    # ]
-    # expected_extract_contacts_when_no_contacts = [
-    #     ("1-001", "1-002"),
-    #     (date(2024, 1, 1), date(2024, 1, 1)),
-    #     (
-    #         [
-    #             {CQCL.name: "Activity 1a", CQCL.code: "A1a", CQCL.contacts: []},
-    #             {CQCL.name: "Activity 1b", CQCL.code: "A1b", CQCL.contacts: []},
-    #         ],
-    #         [
-    #             {CQCL.name: "Activity 2", CQCL.code: "A2", CQCL.contacts: []},
-    #         ],
-    #     ),
-    #     ([], []),
-    # ]
+    explode_contacts_information_when_contains_empty_contacts = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.not_care_home),
+        (
+            [
+                {
+                    CQCL.name: "Activity 1a",
+                    CQCL.code: "A1a",
+                    CQCL.contacts: [
+                        {
+                            CQCL.person_family_name: "Surname",
+                            CQCL.person_given_name: "Name",
+                            CQCL.person_roles: ["Registered Manager"],
+                            CQCL.person_title: "M",
+                        },
+                    ],
+                },
+                {CQCL.name: "Activity 1b", CQCL.code: "A1b", CQCL.contacts: []},
+            ],
+            [
+                {CQCL.name: "Activity 2", CQCL.code: "A2", CQCL.contacts: []},
+            ],
+        ),
+    ]
+    expected_explode_contacts_information_when_contains_empty_contacts = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (
+            {
+                CQCL.name: "Activity 1a",
+                CQCL.code: "A1a",
+                CQCL.contacts: [
+                    {
+                        CQCL.person_family_name: "Surname",
+                        CQCL.person_given_name: "Name",
+                        CQCL.person_roles: ["Registered Manager"],
+                        CQCL.person_title: "M",
+                    },
+                ],
+            },
+        ),
+        (
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
 
-    # create_registered_manager_names_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    # ]
-    # expected_create_registered_manager_names_when_single_contact = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    #     (["Name Surname"],),
-    # ]
+    select_and_create_full_name = [
+        ("1-001", "1-001", "1-002", "1-003", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (
+            None,
+            {
+                CQCL.person_family_name: "Surname_1",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_2",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_3",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname_3",
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Other Role"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+    expected_select_and_create_full_name = [
+        ("1-001", "1-001", "1-002", "1-003", "1-003"),
+        (
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+        ),
+        (
+            None,
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_3",
+            "Name Surname_3",
+        ),
+    ]
 
-    # create_registered_manager_names_when_multiple_inner_lists_multiple_contacts = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_1",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 }
-    #             ],
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2a",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2b",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    # ]
-    # expected_create_registered_manager_names_when_multiple_inner_lists_multiple_contacts = [
-    #     ("1-001",),
-    #     (date(2024, 1, 1),),
-    #     (
-    #         [
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_1",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 }
-    #             ],
-    #             [
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2a",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #                 {
-    #                     CQCL.person_family_name: "Surname_2b",
-    #                     CQCL.person_given_name: "Name",
-    #                     CQCL.person_roles: ["Registered Manager"],
-    #                     CQCL.person_title: "M",
-    #                 },
-    #             ],
-    #         ],
-    #     ),
-    #     (["Name Surname_1", "Name Surname_2a", "Name Surname_2b"],),
-    # ]
+    add_registered_manager_names_full_df = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+    ]
 
 
 @dataclass
