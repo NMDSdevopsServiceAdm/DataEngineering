@@ -25,6 +25,8 @@ To deploy a new model, mirror the steps for the example process provided `non_re
     slash `/` character. Enter any special parameters (e.g. a regularisation parameter in the `model_params` section).
 3. Create or edit a Step Function to first call the preprocessing step and then the retraining step. You can refer to 
     the example [here](/Users/joemulvey/Projects/SkillsForCare/DataEngineering/terraform/pipeline/step-functions/DemoModelRetrain-StepFunction.json)
+4. Successful retraining should trigger an SNS notification. The SNS topic name is in the form `[branch_name]-model-retrain`.
+   Users can subscribe to the topic using email, SMS or other means in the AWS console.
 
 ## Semantic versioning
 The [version_manager](/Users/joemulvey/Projects/SkillsForCare/DataEngineering/projects/_03_independent_cqc/_05_model/utils/version_manager.py)
@@ -39,6 +41,22 @@ All the models are serialised using the Python built-in `pickle` format, which i
 in this case the model class instances. The `pickle` format adequate as long as the models remain simple. Other libraries
 can be used if needs become more complex.
 
+To read a model from S3, the following standard code can be used:
+```python
+import boto3
+import pickle
+
+model_path = "s3://my_bucket/my/path/to/model.pkl"
+
+s3 = boto3.client('s3')
+
+with open('model.pkl', 'rb') as f:
+    my_model=pickle.load(f)
+
+```
+
+The variable `my_model` now refers to a fully intantiated copy of the model with all attributes available. To
+get detailed information about the model, you can type `help(my_model)` in a REPL or notebook.
 
 ## How to refresh the docker image on AWS 
 If you have made a change to the model training scripts, or added a model to `model_registry.py` you may need to 

@@ -17,13 +17,31 @@ class ModelNotTrainedError(Exception):
 class Model:
     """
     Manages training and testing of linear models using Scikit-learn.
+
+    In addition to the constructor variables, the other attributes are:
+    version (str | None): the version number of this model in the format MAJOR.MINOR.PATCH.
+    training_score (float | None): the R2 of the model measured against the training set.
+    testing_score (float | None): the R2 of the model measured against the test set.
+    model (LinearRegression | Lasso | Ridge | None): the scikit-learn model to be trained.
+
+    Args:
+        model_type (str): a string describing the model type, conforming to the ModelType enumerator.
+        model_identifier (str): a string uniquely specifying the model, must correspond with identifier in model registry.
+        model_params (dict[str, Any]): a dictionary containing the required model parameters.
+        version_parameter_location (str): the path in Parameter Store where the current version of the model is stored.
+        processed_location (str): the S3 location where the cleaned an prepared training data is stored.
+        target_columns (list[str]): the target columns of the model.
+        feature_columns (list[str]): the feature columns of the model.
+
+    Raises:
+        ValueError: if the model type is not supported.
     """
 
     def __init__(
         self,
         model_type: str,
         model_identifier: str,
-        model_params: Dict[str, Any],
+        model_params: dict[str, Any],
         version_parameter_location: str,
         processed_location: str,
         target_columns: list[str],
@@ -42,6 +60,7 @@ class Model:
         self.version: str | None = None
         self.training_score: float | None = None
         self.testing_score: float | None = None
+        self.model: LinearRegression | Lasso | Ridge | None = None
         match self.model_type:
             case ModelType.SIMPLE_LINEAR.value:
                 self.model = LinearRegression(**model_params)
@@ -145,5 +164,6 @@ class Model:
         return pl.from_numpy(predictions, schema=self.target_columns, orient="row")
 
     def set_version(self, version: str) -> None:
+        """Sets the version number of the model."""
         if not self.version:
             self.version = version
