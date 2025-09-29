@@ -120,22 +120,16 @@ class IndCqcColumns:
     cqc_pir_import_date: str = CQCPIRClean.cqc_pir_import_date
     cqc_sector: str = CQCLClean.cqc_sector
     ct_care_home_import_date: str = CTCHClean.ct_care_home_import_date
+    ct_care_home_posts_per_bed_ratio: str = "ct_care_home_posts_per_bed_ratio"
     ct_care_home_total_employed: str = CTCHClean.ct_care_home_total_employed
-    ct_care_home_total_employed_dedup: str = (
-        ct_care_home_total_employed + "_deduplicated"
-    )
+    ct_care_home_total_employed_cleaned: str = ct_care_home_total_employed + "_cleaned"
     ct_care_home_total_employed_imputed: str = ct_care_home_total_employed + "_imputed"
-    ct_combined_care_home_and_non_res_dedup: str = (
-        "ct_combined_care_home_and_non_res_deduplicated"
-    )
+    ct_combined_care_home_and_non_res: str = "ct_combined_care_home_and_non_res"
     ct_combined_care_home_and_non_res_rate_of_change_trendline: str = (
-        ct_combined_care_home_and_non_res_dedup + "_rate_of_change_trendline"
+        ct_combined_care_home_and_non_res + "_rate_of_change_trendline"
     )
     ct_non_res_all_posts: str = "capacity_tracker_non_res_all_posts"
     ct_non_res_care_workers_employed: str = CTNRClean.cqc_care_workers_employed
-    ct_non_res_care_workers_employed_dedup: str = (
-        CTNRClean.cqc_care_workers_employed + "_deduplicated"
-    )
     ct_non_res_care_workers_employed_imputed: str = (
         CTNRClean.cqc_care_workers_employed + "_imputed"
     )

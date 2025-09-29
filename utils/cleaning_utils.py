@@ -210,7 +210,7 @@ def cast_to_int(df: DataFrame, column_names: list) -> DataFrame:
 
 
 def calculate_filled_posts_per_bed_ratio(
-    input_df: DataFrame, filled_posts_column: str
+    input_df: DataFrame, filled_posts_column: str, new_column_name: str
 ) -> DataFrame:
     """
     Add a column with the filled post per bed ratio for care homes.
@@ -218,12 +218,13 @@ def calculate_filled_posts_per_bed_ratio(
     Args:
         input_df (DataFrame): A dataframe containing the given column, care_home and numberofbeds.
         filled_posts_column (str): The name of the column to use for calculating the ratio.
+        new_column_name (str): The name to give the new column.
 
     Returns:
         DataFrame: The same dataframe with an additional column contianing the filled posts per bed ratio for care homes.
     """
     input_df = input_df.withColumn(
-        IndCQC.filled_posts_per_bed_ratio,
+        new_column_name,
         F.when(
             F.col(IndCQC.care_home) == CareHome.care_home,
             F.col(filled_posts_column) / F.col(IndCQC.number_of_beds),
