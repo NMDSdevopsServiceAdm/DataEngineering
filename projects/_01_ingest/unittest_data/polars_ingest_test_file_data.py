@@ -25,7 +25,7 @@ class CQCLocationsData:
     main_coerce_dates = [
         ("loc_1", "loc_2", "loc_1"),
         ("2012-12-01", "2009-01-15", None),
-        (None, "2021-10-23", None),
+        (None, "2021-10-23", "20240101"),
         (20200301, 20211023, 20240201),
         (3, 10, 2),
         (1, 23, 1),
@@ -34,7 +34,7 @@ class CQCLocationsData:
     expected_main_coerce_dates = [
         ("loc_1", "loc_2", "loc_1"),
         (date(2012, 12, 1), date(2009, 1, 15), None),
-        (None, date(2021, 10, 23), None),
+        (None, date(2021, 10, 23), date(2024, 1, 1)),
         ("20200301", "20211023", "20240201"),
         ("03", "10", "02"),
         ("01", "23", "01"),

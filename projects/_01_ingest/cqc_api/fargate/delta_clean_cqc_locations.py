@@ -140,7 +140,13 @@ def main(
         # Format dates
         cqc_df = cqc_df.with_columns(
             pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
-            pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
+            pl.col(CQCLClean.deregistration_date)
+            .str.to_date("%Y-%m-%d", strict=False)
+            .fill_null(
+                pl.col(CQCLClean.deregistration_date).str.to_date(
+                    "%Y%m%d", strict=False
+                )
+            ),
             pl.col(Keys.import_date).cast(pl.String).alias(Keys.import_date),
             pl.col(Keys.import_date)
             .cast(pl.String)
