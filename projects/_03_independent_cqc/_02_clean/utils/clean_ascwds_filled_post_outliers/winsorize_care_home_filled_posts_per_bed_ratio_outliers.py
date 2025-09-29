@@ -405,7 +405,9 @@ def winsorize_outliers(
     )
 
     winsorized_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        winsorized_df, IndCQC.ascwds_filled_posts_dedup_clean
+        winsorized_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
     )
 
     return winsorized_df
