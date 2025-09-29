@@ -13,7 +13,7 @@ from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names 
 from projects._01_ingest.cqc_api.fargate.utils.postcode_matcher import (
     run_postcode_matching,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
+from utils.raw_data_adjustment_polars import RecordsToRemoveInLocationsData
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
