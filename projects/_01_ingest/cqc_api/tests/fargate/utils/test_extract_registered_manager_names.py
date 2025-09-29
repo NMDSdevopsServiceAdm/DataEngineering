@@ -56,7 +56,107 @@ class ExtractRegisteredManagerNamesTests(unittest.TestCase):
 
 
 class ExplodeContactsInformationTests(unittest.TestCase):
-    pass
+    def test_single_contact(self):
+        # GIVEN
+        #   Data where location has one activity with one contact
+        input_df = pl.DataFrame(
+            data=Data.explode_contacts_information_when_single_contact,
+            schema=Schemas.explode_contacts_information_schema,
+        )
+
+        # WHEN
+        returned_df = job.explode_contacts_information(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with the contact flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_explode_contacts_information_when_single_contact,
+            schema=Schemas.expected_explode_contacts_information_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_multiple_activities(self):
+        # GIVEN
+        #   Data where location has multiple activities
+        input_df = pl.DataFrame(
+            data=Data.explode_contacts_information_when_multiple_activities,
+            schema=Schemas.explode_contacts_information_schema,
+        )
+
+        # WHEN
+        returned_df = job.explode_contacts_information(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with all contacts flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_explode_contacts_information_when_multiple_activities,
+            schema=Schemas.expected_explode_contacts_information_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_multiple_contacts_per_activity(self):
+        # GIVEN
+        #   Data where location has multiple contacts for each activity
+        input_df = pl.DataFrame(
+            data=Data.explode_contacts_information_when_multiple_contacts_per_activity,
+            schema=Schemas.explode_contacts_information_schema,
+        )
+
+        # WHEN
+        returned_df = job.explode_contacts_information(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with all contacts flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_explode_contacts_information_when_multiple_contacts_per_activity,
+            schema=Schemas.expected_explode_contacts_information_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_multiple_activities_and_multiple_contacts_per_activity(
+        self,
+    ):
+        # GIVEN
+        #   Data where location has multiple activities and multiple contacts for each activity
+        input_df = pl.DataFrame(
+            data=Data.explode_contacts_information_when_multiple_activities_and_multple_contacts_per_activity,
+            schema=Schemas.explode_contacts_information_schema,
+        )
+
+        # WHEN
+        returned_df = job.explode_contacts_information(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with all contacts flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_explode_contacts_information_when_multiple_activities_and_multple_contacts_per_activity,
+            schema=Schemas.expected_explode_contacts_information_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
+
+    def test_no_contacts(self):
+        # GIVEN
+        #   Data where location does not have any contacts for any activity
+        input_df = pl.DataFrame(
+            data=Data.explode_contacts_information_when_no_contacts,
+            schema=Schemas.explode_contacts_information_schema,
+        )
+
+        # WHEN
+        returned_df = job.explode_contacts_information(input_df)
+
+        # THEN
+        #   The returned dataframe should have a new column with all contacts flattened
+        expected_df = pl.DataFrame(
+            data=Data.expected_explode_contacts_information_when_no_contacts,
+            schema=Schemas.expected_explode_contacts_information_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_df, expected_df)
 
 
 class SelectAndCreateFullNameTests(unittest.TestCase):
@@ -65,114 +165,6 @@ class SelectAndCreateFullNameTests(unittest.TestCase):
 
 class AddRegisteredManagerNamesTests(unittest.TestCase):
     pass
-
-
-# class ExtractContactsTests(unittest.TestCase):
-#     def test_single_contact(self):
-#         # GIVEN
-#         #   Data where location has one activity with one contact
-#         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_single_contact,
-#             schema=Schemas.extract_contacts_schema,
-#         )
-
-#         # WHEN
-#         returned_df = job.extract_contacts(input_df)
-
-#         # THEN
-#         #   The returned dataframe should have a new column with the contact flattened
-#         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_single_contact,
-#             schema=Schemas.expected_extract_contacts_schema,
-#         )
-
-#         pl_testing.assert_frame_equal(returned_df, expected_df)
-
-#     def test_multiple_activities(self):
-#         # GIVEN
-#         #   Data where location has multiple activities
-#         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_multiple_activities,
-#             schema=Schemas.extract_contacts_schema,
-#         )
-
-#         # WHEN
-#         returned_df = job.extract_contacts(input_df)
-
-#         # THEN
-#         #   The returned dataframe should have a new column with all contacts flattened
-#         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_multiple_activities,
-#             schema=Schemas.expected_extract_contacts_schema,
-#         )
-#         print(returned_df)
-#         print(expected_df)
-
-#         pl_testing.assert_frame_equal(returned_df, expected_df)
-
-#     def test_multiple_contacts_per_activity(self):
-#         # GIVEN
-#         #   Data where location has multiple contacts for each activity
-#         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_multiple_contacts_per_activity,
-#             schema=Schemas.extract_contacts_schema,
-#         )
-
-#         # WHEN
-#         returned_df = job.extract_contacts(input_df)
-
-#         # THEN
-#         #   The returned dataframe should have a new column with all contacts flattened
-#         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_multiple_contacts_per_activity,
-#             schema=Schemas.expected_extract_contacts_schema,
-#         )
-
-#         pl_testing.assert_frame_equal(returned_df, expected_df)
-
-#     def test_multiple_activities_and_multiple_contacts_per_activity(
-#         self,
-#     ):
-#         # GIVEN
-#         #   Data where location has multiple activities and multiple contacts for each activity
-#         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_multiple_activities_and_multple_contacts_per_activity,
-#             schema=Schemas.extract_contacts_schema,
-#         )
-
-#         # WHEN
-#         returned_df = job.extract_contacts(input_df)
-
-#         # THEN
-#         #   The returned dataframe should have a new column with all contacts flattened
-#         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_multiple_activities_and_multple_contacts_per_activity,
-#             schema=Schemas.expected_extract_contacts_schema,
-#         )
-#         print(returned_df)
-#         print(expected_df)
-
-#         pl_testing.assert_frame_equal(returned_df, expected_df)
-
-#     def test_no_contacts(self):
-#         # GIVEN
-#         #   Data where location does not have any contacts for any activity
-#         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_no_contacts,
-#             schema=Schemas.extract_contacts_schema,
-#         )
-
-#         # WHEN
-#         returned_df = job.extract_contacts(input_df)
-
-#         # THEN
-#         #   The returned dataframe should have a new column with all contacts flattened
-#         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_no_contacts,
-#             schema=Schemas.expected_extract_contacts_schema,
-#         )
-
-#         pl_testing.assert_frame_equal(returned_df, expected_df)
 
 
 # class CreateRegisteredManagerNamesTests(unittest.TestCase):
@@ -206,7 +198,7 @@ class AddRegisteredManagerNamesTests(unittest.TestCase):
 #         # GIVEN
 #         #   Data where a location has a mix of inner lists and multiple contacts
 #         input_df = pl.DataFrame(
-#             data=Data.extract_contacts_when_single_contact,
+#             data=Data.explode_contacts_information_when_single_contact,
 #             schema=Schemas.create_registered_manager_names_schema,
 #         )
 
@@ -216,7 +208,7 @@ class AddRegisteredManagerNamesTests(unittest.TestCase):
 #         # THEN
 #         #   The returned dataframe should have a new column with a list of the unique Registered Manager names
 #         expected_df = pl.DataFrame(
-#             data=Data.expected_extract_contacts_when_single_contact,
+#             data=Data.expected_explode_contacts_information_when_single_contact,
 #             schema=Schemas.expected_create_registered_manager_names_schema,
 #         )
 

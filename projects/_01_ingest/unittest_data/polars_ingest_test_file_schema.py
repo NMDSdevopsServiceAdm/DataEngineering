@@ -8,17 +8,15 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
+from utils.column_names.ind_cqc_pipeline_columns import (
+    DimensionPartitionKeys as DimKeys,
+)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.raw_data_files.ons_columns import (
     OnsPostcodeDirectoryColumns as ONS,
-)
-
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    DimensionPartitionKeys as DimKeys,
 )
 
 
@@ -547,21 +545,29 @@ class ExtractRegisteredManagerNamesSchema:
             pl.Field(CQCL.person_title, pl.String()),
         ]
     )
-    activity_struct_list = pl.List(
-        pl.Struct(
-            [
-                pl.Field(CQCL.name, pl.String()),
-                pl.Field(CQCL.code, pl.String()),
-                pl.Field(CQCL.contacts, pl.List(contact_struct)),
-            ]
-        )
-    )
-
-    extract_registered_manager_schema = pl.Schema(
+    activity_struct = pl.Struct(
         [
-            (CQCL.location_id, pl.String()),
+            pl.Field(CQCL.name, pl.String()),
+            pl.Field(CQCL.code, pl.String()),
+            pl.Field(CQCL.contacts, pl.List(contact_struct)),
+        ]
+    )
+    activity_struct_list = pl.List(activity_struct)
+
+    explode_contacts_information_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.care_home, pl.String()),
             (CQCLClean.imputed_regulated_activities, activity_struct_list),
+        ]
+    )
+    expected_explode_contacts_information_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.imputed_regulated_activities, activity_struct),
+            (CQCLClean.contacts_exploded, contact_struct),
         ]
     )
 
