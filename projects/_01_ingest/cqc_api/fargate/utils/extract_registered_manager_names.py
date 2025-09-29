@@ -12,8 +12,7 @@ def extract_registered_manager_names(df: pl.DataFrame) -> pl.DataFrame:
     This function:
     - Explodes the regulated activities and contacts arrays.
     - Concatenates given and family names into a full name.
-    - Collects unique names per location and import date.
-    - Joins the result back into the original DataFrame.
+    - Adds a list of unique names per location and import date into the original DataFrame.
 
     Args:
         df (pl.DataFrame): Input Polars DataFrame containing `imputed_regulated_activities` array.
