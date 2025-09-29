@@ -525,12 +525,16 @@ module "merge_coverage_data_job" {
   number_of_workers = 5
 
   job_parameters = {
-    "--cleaned_cqc_location_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
-    "--workplace_for_reconciliation_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
-    "--cqc_ratings_source"                  = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
-    "--cleaned_cqc_providers_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
-    "--merged_coverage_destination"         = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
-    "--reduced_coverage_destination"        = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
+    "--cleaned_cqc_location_source"           = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
+    "--gac_services_dimension_source"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+    "--regulated_activities_dimension_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
+    "--specialisms_dimension_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
+    "--postcode_matching_dimension_source"    = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/",
+    "--workplace_for_reconciliation_source"   = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_workplace_for_reconciliation/"
+    "--cqc_ratings_source"                    = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_cqc_ratings_for_data_requests/"
+    "--cleaned_cqc_providers_source"          = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_providers_api_cleaned/"
+    "--merged_coverage_destination"           = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
+    "--reduced_coverage_destination"          = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_monthly_coverage_data/"
   }
 }
 
