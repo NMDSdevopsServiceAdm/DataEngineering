@@ -91,6 +91,7 @@ def remove_records_from_locations_data(
     )
     return raw_locations_df
 
+
 # Converted to polars in utils.raw_data_adjustment_polars
 @dataclass
 class RecordsToRemoveInLocationsData:
