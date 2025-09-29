@@ -4,6 +4,12 @@ import warnings
 import polars as pl
 
 from polars_utils import utils
+from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
+    extract_registered_manager_names,
+)
+from projects._01_ingest.cqc_api.fargate.utils.postcode_matcher import (
+    run_postcode_matching,
+)
 from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
@@ -147,7 +153,9 @@ def main(
         f"CQC Location DataFrame filtered to remove locations which have never had a regulated activity\n"
         f"{cqc_df.shape[0]} rows remain"
     )
-    # TODO extract registered manager names
+    regulated_activity_delta = extract_registered_manager_names(
+        regulated_activity_delta
+    )
 
     utils.write_to_parquet(
         df=regulated_activity_delta.drop(CQCLClean.cqc_location_import_date),
@@ -315,10 +323,6 @@ def create_dimension_from_struct_field(
             Keys.import_date,
         ],
     )
-
-
-def run_postcode_matching(*args):
-    return pl.DataFrame()
 
 
 def create_dimension_from_postcode(
@@ -848,11 +852,13 @@ def select_registered_locations(cqc_df: pl.DataFrame) -> pl.DataFrame:
 
     if not invalid_rows.is_empty():
         warnings.warn(
-            f"{invalid_rows.shape[0]} row(s) had an invalid registration status and have been dropped.",
+            (
+                f"{invalid_rows.shape[0]} row(s) had an invalid registration status and have been dropped."
+                "\nThe following values are invalid:"
+                f"{invalid_rows[CQCLClean.registration_status].value_counts()}"
+            ),
             UserWarning,
         )
-        print("The following values are invalid:")
-        print(invalid_rows[CQCLClean.registration_status].value_counts())
 
     # 2. Select rows where registration status is registered.
     cqc_df = cqc_df.filter(

@@ -37,6 +37,10 @@ mock_cqc_locations_data.filter.return_value = mock_cqc_locations_data
 @patch(f"{PATCH_PATH}.assign_specialism_category", return_value=mock_cqc_locations_data)
 @patch(f"{PATCH_PATH}.utils.write_to_parquet", return_value=mock_cqc_locations_data)
 @patch(
+    f"{PATCH_PATH}.extract_registered_manager_names",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
     f"{PATCH_PATH}.remove_locations_without_regulated_activities",
     return_value=[mock_cqc_locations_data, mock_cqc_locations_data],
 )
@@ -73,6 +77,7 @@ class MainTests(unittest.TestCase):
         mock_add_related_location_flag: Mock,
         mock_create_dimension_from_struct_field: Mock,
         mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
         mock_write_to_parquet: Mock,
         mock_assign_specialism_category: Mock,
         mock_remove_specialist_colleges: Mock,
@@ -112,6 +117,7 @@ class MainTests(unittest.TestCase):
         mock_select_registered_locations.assert_called_once()
         mock_add_related_location_flag.assert_called_once()
         mock_remove_locations_without_regulated_activities.assert_called_once()
+        mock_extract_registered_manager_names.assert_called_once()
         mock_remove_specialist_colleges.assert_called_once()
         mock_assign_primary_service_type.assert_called_once()
         mock_assign_care_home.assert_called_once()
@@ -128,6 +134,7 @@ class MainTests(unittest.TestCase):
         mock_add_related_location_flag: Mock,
         mock_create_dimension_from_struct_field: Mock,
         mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
         mock_write_to_parquet: Mock,
         mock_assign_specialism_category: Mock,
         mock_remove_specialist_colleges: Mock,
@@ -172,6 +179,7 @@ class MainTests(unittest.TestCase):
         mock_add_related_location_flag: Mock,
         mock_create_dimension_from_struct_field: Mock,
         mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
         mock_write_to_parquet: Mock,
         mock_assign_specialism_category: Mock,
         mock_remove_specialist_colleges: Mock,
@@ -239,6 +247,7 @@ class MainTests(unittest.TestCase):
         mock_add_related_location_flag: Mock,
         mock_create_dimension_from_struct_field: Mock,
         mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
         mock_write_to_parquet: Mock,
         mock_assign_specialism_category: Mock,
         mock_remove_specialist_colleges: Mock,
