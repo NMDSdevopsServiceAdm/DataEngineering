@@ -1,6 +1,6 @@
 import unittest
 from unittest import TestCase
-from unittest.mock import patch, ANY, Mock
+from unittest.mock import patch, ANY, Mock, call
 
 import polars as pl
 from polars.exceptions import ColumnNotFoundError
@@ -16,10 +16,276 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations"
 
+mock_cqc_locations_data = Mock(name="cqc_locations_data")
+mock_cqc_locations_data.shape = ["rows", "columns"]
+mock_cqc_locations_data.filter.return_value = mock_cqc_locations_data
 
+
+@patch(
+    f"{PATCH_PATH}.create_dimension_from_postcode",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.assign_care_home", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.assign_primary_service_type",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.remove_specialist_colleges",
+    return_value=[mock_cqc_locations_data, mock_cqc_locations_data],
+)
+@patch(f"{PATCH_PATH}.assign_specialism_category", return_value=mock_cqc_locations_data)
+@patch(f"{PATCH_PATH}.utils.write_to_parquet", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.extract_registered_manager_names",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.remove_locations_without_regulated_activities",
+    return_value=[mock_cqc_locations_data, mock_cqc_locations_data],
+)
+@patch(
+    f"{PATCH_PATH}.create_dimension_from_struct_field",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.add_related_location_flag", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.select_registered_locations",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.impute_historic_relationships",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.assign_cqc_sector", return_value=mock_cqc_locations_data)
+@patch(f"{PATCH_PATH}.clean_provider_id_column", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.clean_and_impute_registration_date",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.utils.read_parquet", return_value=mock_cqc_locations_data)
 class MainTests(unittest.TestCase):
-    def test_main(self):
-        pass
+
+    def test_expected_function_calls_are_made(
+        self,
+        mock_read_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   All functions return a mock object
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The read_parquet util should have been read twice (cqc raw and ons cleaned) - dimensions read in mocked functions
+        self.assertEqual(2, mock_read_parquet.call_count)
+        #   The function to create dimension from struct field should have been called three times
+        self.assertEqual(3, mock_create_dimension_from_struct_field.call_count)
+        #   The write_to_parquet util should have been called five times
+        self.assertEqual(5, mock_write_to_parquet.call_count)
+        #   The function to categorise specialisms should have been called three times (dementia, mental health, learning disabilities)
+        self.assertEqual(3, mock_assign_specialism_category.call_count)
+
+        #   All other cleaning functions should have been called just once
+        mock_clean_and_impute_registration_date.assert_called_once()
+        mock_clean_provider_id_column.assert_called_once()
+        mock_assign_cqc_sector.assert_called_once()
+        mock_impute_historic_relationships.assert_called_once()
+        mock_select_registered_locations.assert_called_once()
+        mock_add_related_location_flag.assert_called_once()
+        mock_remove_locations_without_regulated_activities.assert_called_once()
+        mock_extract_registered_manager_names.assert_called_once()
+        mock_remove_specialist_colleges.assert_called_once()
+        mock_assign_primary_service_type.assert_called_once()
+        mock_assign_care_home.assert_called_once()
+        mock_create_dimension_from_postcode.assert_called_once()
+
+    def test_coerces_dates(
+        self,
+        mock_read_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   Function before coercing dates returns a dataframe with dates in the correct format
+        mock_clean_and_impute_registration_date.return_value = pl.DataFrame(
+            data=Data.main_coerce_dates, schema=Schemas.main_coerce_dates_input
+        )
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The next function should have been called with a dataframe containing the date columns
+        expected_df = pl.DataFrame(
+            data=Data.expected_main_coerce_dates,
+            schema=Schemas.expected_main_coerce_dates,
+        )
+        result_df = mock_clean_provider_id_column.call_args.args[0]
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
+    def test_calculates_expected_dimension_update_date(
+        self,
+        mock_read_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   Last function before the dimension date calculation returns a dataframe with the latest import date of 20240201
+        mock_add_related_location_flag.return_value = pl.DataFrame(
+            data=Data.main_dimension_update_date,
+            schema=Schemas.main_dimension_update_date,
+        )
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The import date 20240201 should have been passed into all the dimension creation functions
+        mock_create_dimension_from_struct_field.assert_has_calls(
+            [
+                call(
+                    cqc_df=ANY,
+                    struct_column_name="regulatedActivities",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+                call(
+                    cqc_df=ANY,
+                    struct_column_name="specialisms",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+                call(
+                    cqc_df=ANY,
+                    struct_column_name="gacServiceTypes",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+            ]
+        )
+        mock_create_dimension_from_postcode.assert_called_once_with(
+            cqc_df=ANY,
+            ons_df=ANY,
+            dimension_location=ANY,
+            dimension_update_date="20240201",
+        )
+
+    def test_extracts_from_struct(
+        self,
+        mock_read_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   The create dimension function returns a dataframe for specialisms
+        mock_create_dimension_from_struct_field.side_effect = [
+            mock_cqc_locations_data,
+            pl.DataFrame(
+                data=Data.main_extract_struct, schema=Schemas.main_extract_struct_input
+            ),
+            mock_cqc_locations_data,
+        ]
+        #   The assign_specialism function returns its input
+        mock_assign_specialism_category.side_effect = lambda df, specialism: df
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The next function called on the specialisms df should have the extracted struct in a new column
+        expected_df = pl.DataFrame(
+            data=Data.expected_main_extract_struct,
+            schema=Schemas.expected_main_extract_struct,
+        )
+        result_df = mock_assign_specialism_category.call_args.kwargs["df"]
+        pl_testing.assert_frame_equal(expected_df, result_df)
 
 
 @patch(
