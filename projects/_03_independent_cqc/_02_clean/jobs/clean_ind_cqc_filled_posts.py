@@ -172,13 +172,14 @@ def copy_ascwds_data_across_duplicate_rows(
     Returns:
         DataFrame: A dataframe with total_staff_bounded and worker_records_bounded copied across duplicate rows.
     """
-    window = (
-        Window.partitionBy(duplicate_columns)
-        .orderBy(IndCQC.imputed_registration_date)
-        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
-    )
     columns_to_copy = [IndCQC.total_staff_bounded, IndCQC.worker_records_bounded]
     functions_to_run = [F.first, F.last]
+    window = (
+        Window.partitionBy(duplicate_columns)
+        .orderBy([IndCQC.imputed_registration_date] + columns_to_copy)
+        .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+    )
+
     for column in columns_to_copy:
         for function in functions_to_run:
             df = df.withColumn(
