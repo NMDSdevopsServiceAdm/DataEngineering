@@ -998,3 +998,43 @@ def assign_specialism_category(df: pl.DataFrame, specialism: str) -> pl.DataFram
         .alias(new_column_name)
     )
     return df
+
+
+if __name__ == "__main__":
+    args = utils.get_args(
+        ("--cqc_locations_source", "S3 URI to read CQC locations raw data from"),
+        ("--cleaned_ons_source", "S3 URI to read ONS cleaned data from"),
+        (
+            "--cleaned_cqc_locations_destination",
+            "S3 URI to WRITE CQC locations cleaned data to",
+        ),
+        (
+            "--gac_service_destination",
+            "S3 URI to WRITE GAC services cleaned dimension to",
+        ),
+        (
+            "--regulated_activities_destination",
+            "S3 URI to WRITE regulated activities cleaned dimension to",
+        ),
+        (
+            "--specialisms_destination",
+            "S3 URI to WRITE specialisms cleaned dimension to",
+        ),
+        (
+            "--postcode_matching_destination",
+            "S3 URI to WRITE postcode matching cleaned dimension to",
+        ),
+    )
+    logger.info(f"Running cleaning job")
+
+    main(
+        cqc_locations_source=args.cqc_locations_source,
+        cleaned_ons_source=args.cleaned_ons_source,
+        cleaned_cqc_locations_destination=args.cleaned_cqc_locations_destination,
+        gac_service_destination=args.gac_service_destination,
+        regulated_activities_destination=args.regulated_activities_destination,
+        specialisms_destination=args.specialisms_destination,
+        postcode_matching_destination=args.postcode_matching_destination,
+    )
+
+    logger.info(f"Finished cleaning job")

@@ -36,23 +36,52 @@
           }
         },
         {
-          "StartAt": "Clean CQC Location Data",
+          "StartAt": "Set Locations Cleaning Parameters",
           "States": {
+            "Set Locations Cleaning Parameters": {
+              "Type": "Pass",
+                      "Result": {
+                        "script": "delta_clean_cqc_locations.py",
+                        "cqc_raw_arg": "--cqc_locations_source",
+                        "cqc_raw": "${dataset_bucket_name}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                        "ons_arg": "--cleaned_ons_source",
+                        "ons": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
+                        "cqc_cleaned_arg": "--cleaned_cqc_locations_destination",
+                        "cqc_cleaned": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                        "gac_service_arg": "--gac_service_destination",
+                        "gac_service": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+                        "regulated_activities_arg": "--regulated_activities_destination",
+                        "regulated_activities": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
+                        "specialisms_arg": "--specialisms_destination",
+                        "specialisms": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
+                        "postcode_matching_arg": "--postcode_matching_destination",
+                        "postcode_matching": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
+                      },
+                      "Next": "Clean CQC Location Data"
+            },
             "Clean CQC Location Data": {
               "Type": "Task",
-              "Resource": "arn:aws:states:::glue:startJobRun.sync",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "JobName": "${clean_cqc_location_data_job_name}",
-                "Arguments": {
-                  "--cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
-                  "--cleaned_ons_postcode_directory_source": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-                  "--cleaned_cqc_location_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
-                  "--gac_service_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
-                  "--regulated_activities_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
-                  "--specialisms_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
-                  "--postcode_matching_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
-                }
-              },
+                        "Cluster": "${cluster_arn}",
+                        "TaskDefinition": "${task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.cqc_raw_arg, $.cqc_raw, $.ons_arg, $.ons, $.cqc_cleaned_arg, $.cqc_cleaned, $.gac_service_arg, $.gac_service, $.regulated_activities_arg, $.regulated_activities, $.specialisms_arg, $.specialisms, $.postcode_matching_arg, $.postcode_matching)"
+                            }
+                          ]
+                        }
+                      },
               "ResultPath": "$.cleanLocationResult",
               "Next": "Validate Location and Dimensions"
             },
