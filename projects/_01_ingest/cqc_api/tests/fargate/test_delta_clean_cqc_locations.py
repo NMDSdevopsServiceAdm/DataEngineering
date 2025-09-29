@@ -3,7 +3,7 @@ from unittest import TestCase
 from unittest.mock import patch, ANY, Mock, call
 
 import polars as pl
-from polars.exceptions import ColumnNotFoundError
+from polars.exceptions import ColumnNotFoundError, ComputeError
 import polars.testing as pl_testing
 
 import projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations as job
@@ -605,7 +605,7 @@ class CreateDimensionDeltaTests(unittest.TestCase):
     def test_no_previous_dimension_warns_and_continues(self, mock_read_parquet):
         # GIVEN
         #   The historic dim cannot be found and raises an OS error
-        mock_read_parquet.side_effect = OSError()
+        mock_read_parquet.side_effect = ComputeError()
         input_current_dim = pl.DataFrame(
             data=Data.create_dimension_delta_current_entirely_unique_from_historic,
             schema=Schemas.create_dimension_delta_input_schema,

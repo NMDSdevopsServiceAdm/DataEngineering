@@ -3,7 +3,7 @@ import sys
 import warnings
 
 import polars as pl
-from polars.exceptions import ColumnNotFoundError
+from polars.exceptions import ColumnNotFoundError, ComputeError
 from botocore.exceptions import ClientError
 
 from polars_utils import utils
@@ -463,7 +463,7 @@ def _create_dimension_delta(
     dimension_name = dimension_location.split("/")[-2]
     try:
         previous_dimension = utils.read_parquet(dimension_location)
-    except OSError:
+    except ComputeError:
         warnings.warn(
             f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
             UserWarning,
