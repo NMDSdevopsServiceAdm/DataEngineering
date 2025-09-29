@@ -37,6 +37,7 @@ class CQCLocationsSchema:
             (Keys.import_date, pl.String()),
         ]
     )
+
     expected_main_coerce_dates = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
@@ -45,6 +46,39 @@ class CQCLocationsSchema:
             (CQCL.deregistration_date, pl.Date()),
             (Keys.import_date, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
+    main_extract_struct_input = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.imputed_specialisms,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                        }
+                    )
+                ),
+            ),
+        ]
+    )
+
+    expected_main_extract_struct = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (
+                CQCLClean.imputed_specialisms,
+                pl.List(
+                    pl.Struct(
+                        {
+                            CQCL.name: pl.String(),
+                        }
+                    )
+                ),
+            ),
+            (CQCLClean.specialisms_offered, pl.List(pl.String())),
         ]
     )
 

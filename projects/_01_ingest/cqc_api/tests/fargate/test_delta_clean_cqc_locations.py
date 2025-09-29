@@ -228,6 +228,56 @@ class MainTests(unittest.TestCase):
             dimension_update_date="20240201",
         )
 
+    def test_extracts_from_struct(
+        self,
+        mock_read_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   The create dimension function returns a dataframe for specialisms
+        mock_create_dimension_from_struct_field.side_effect = [
+            mock_cqc_locations_data,
+            pl.DataFrame(
+                data=Data.main_extract_struct, schema=Schemas.main_extract_struct_input
+            ),
+            mock_cqc_locations_data,
+        ]
+        #   The assign_specialism function returns its input
+        mock_assign_specialism_category.side_effect = lambda df, specialism: df
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The next function called on the specialisms df should have the extracted struct in a new column
+        expected_df = pl.DataFrame(
+            data=Data.expected_main_extract_struct,
+            schema=Schemas.expected_main_extract_struct,
+        )
+        result_df = mock_assign_specialism_category.call_args.kwargs["df"]
+        pl_testing.assert_frame_equal(expected_df, result_df)
+
 
 @patch(
     f"{PATCH_PATH}._create_dimension_delta",

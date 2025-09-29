@@ -126,7 +126,7 @@ def main(
     )
 
     cqc_df = impute_historic_relationships(cqc_df)
-    cqc_df = select_registered_locations(cqc_df)  # TODO: move to filter section?
+    cqc_df = select_registered_locations(cqc_df)
     cqc_df = add_related_location_flag(cqc_df)
 
     # Calculate latest import date for dimension update date
@@ -163,11 +163,10 @@ def main(
         dimension_location=specialisms_destination,
         dimension_update_date=dimension_update_date,
     )
-
     # Extract and categorise the location specialisms
     specialisms_delta = specialisms_delta.with_columns(
         pl.col(CQCLClean.imputed_specialisms)
-        .struct.field(CQCLClean.name)
+        .list.eval(pl.element().struct.field(CQCLClean.name))
         .alias(CQCLClean.specialisms_offered)
     )
     specialisms_delta = assign_specialism_category(
@@ -179,7 +178,6 @@ def main(
     specialisms_delta = assign_specialism_category(
         df=specialisms_delta, specialism=Specialisms.mental_health
     )
-
     utils.write_to_parquet(
         df=specialisms_delta,
         output_path=specialisms_destination,
@@ -197,7 +195,7 @@ def main(
 
     gac_service_delta = gac_service_delta.with_columns(
         pl.col(CQCLClean.imputed_gac_service_types)
-        .struct.field(CQCLClean.description)
+        .list.eval(pl.element().struct.field(CQCLClean.description))
         .alias(CQCLClean.services_offered)
     )
 

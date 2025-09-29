@@ -38,6 +38,25 @@ class CQCLocationsData:
         (date(2020, 3, 1), date(2021, 10, 23), date(2024, 2, 1)),
     ]
 
+    main_extract_struct = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [{CQCL.name: "only_name"}],
+            None,
+            [{CQCL.name: "name A"}, {CQCL.name: "name B"}, {CQCL.name: "name C"}],
+        ),
+    ]
+
+    expected_main_extract_struct = [
+        ("loc_1", "loc_2", "loc_3"),
+        (
+            [{CQCL.name: "only_name"}],
+            None,
+            [{CQCL.name: "name A"}, {CQCL.name: "name B"}, {CQCL.name: "name C"}],
+        ),
+        (["only_name"], None, ["name A", "name B", "name C"]),
+    ]
+
     create_dimension_from_postcode = []
 
     create_dimension_delta_historic = [
