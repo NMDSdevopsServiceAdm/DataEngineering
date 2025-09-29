@@ -146,6 +146,8 @@ def main(
             pl.col(Keys.import_date)
             .str.to_date("%Y%m%d")
             .alias(CQCLClean.cqc_location_import_date),
+            pl.col(Keys.month).cast(pl.String).str.pad_start(2, "0"),
+            pl.col(Keys.day).cast(pl.String).str.pad_start(2, "0"),
         )
         cqc_df = clean_and_impute_registration_date(cqc_df)
 

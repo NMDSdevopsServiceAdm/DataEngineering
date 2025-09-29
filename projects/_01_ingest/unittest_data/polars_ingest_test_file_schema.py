@@ -33,6 +33,8 @@ class CQCLocationsSchema:
             (CQCLClean.imputed_registration_date, pl.String()),
             (CQCL.deregistration_date, pl.String()),
             (Keys.import_date, pl.String()),
+            (Keys.month, pl.Int64()),
+            (Keys.day, pl.Int64()),
         ]
     )
 
@@ -43,6 +45,8 @@ class CQCLocationsSchema:
             (CQCLClean.imputed_registration_date, pl.Date()),
             (CQCL.deregistration_date, pl.Date()),
             (Keys.import_date, pl.String()),
+            (Keys.month, pl.String()),
+            (Keys.day, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
         ]
     )
