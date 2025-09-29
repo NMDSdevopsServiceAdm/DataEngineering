@@ -138,15 +138,16 @@ def main(
         logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
 
         # Format dates
-        cqc_df = clean_and_impute_registration_date(cqc_df)
         cqc_df = cqc_df.with_columns(
             pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
             pl.col(CQCLClean.imputed_registration_date).str.to_date("%Y-%m-%d"),
             pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
+            pl.col(Keys.import_date).cast(pl.String).alias(Keys.import_date),
             pl.col(Keys.import_date)
             .str.to_date("%Y%m%d")
             .alias(CQCLClean.cqc_location_import_date),
         )
+        cqc_df = clean_and_impute_registration_date(cqc_df)
 
         # Clean provider ID, and then filter only for rows that have a provider id
         cqc_df = clean_provider_id_column(cqc_df)
@@ -538,14 +539,12 @@ def clean_and_impute_registration_date(
     )
 
     # 2. Remove any time elements from the (imputed) registration date
-    cqc_df = cqc_df.with_columns(
-        pl.col(CQCLClean.imputed_registration_date).str.slice(0, 10)
-    )
+    cqc_df = cqc_df.with_columns(pl.col(CQCLClean.imputed_registration_date).dt.date())
 
     # 3. Replace registration dates that are after the import date with null
     cqc_df = cqc_df.with_columns(
         pl.when(
-            pl.col(CQCLClean.imputed_registration_date).str.to_date(format="%Y-%m-%d")
+            pl.col(CQCLClean.imputed_registration_date)
             <= pl.col(Keys.import_date).str.to_date(format="%Y%m%d")
         )
         .then(pl.col(CQCLClean.imputed_registration_date))
@@ -572,7 +571,6 @@ def clean_and_impute_registration_date(
             .min()
             .over(CQCLClean.location_id)
             .str.strptime(pl.Date, format="%Y%m%d")
-            .dt.strftime("%Y-%m-%d")
         )
         .otherwise(pl.col(CQCLClean.imputed_registration_date))
         .alias(CQCLClean.imputed_registration_date)

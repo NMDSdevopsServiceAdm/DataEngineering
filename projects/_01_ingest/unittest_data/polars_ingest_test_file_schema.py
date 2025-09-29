@@ -208,7 +208,7 @@ class CQCLocationsSchema:
     clean_registration_date_column_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
-            (CQCL.registration_date, pl.String()),
+            (CQCL.registration_date, pl.Date()),
             (Keys.import_date, pl.String()),
         ]
     )
@@ -216,9 +216,9 @@ class CQCLocationsSchema:
     clean_registration_date_column_output_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
-            (CQCL.registration_date, pl.String()),
+            (CQCL.registration_date, pl.Date()),
             (Keys.import_date, pl.String()),
-            (CQCLClean.imputed_registration_date, pl.String()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
         ]
     )
 

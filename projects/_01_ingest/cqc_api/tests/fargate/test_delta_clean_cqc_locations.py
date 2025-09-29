@@ -144,7 +144,7 @@ class MainTests(unittest.TestCase):
     ):
         # GIVEN
         #   Function before coercing dates returns a dataframe with dates in the correct format
-        mock_clean_and_impute_registration_date.return_value = pl.DataFrame(
+        mock_read_parquet.return_value = pl.DataFrame(
             data=Data.main_coerce_dates, schema=Schemas.main_coerce_dates_input
         )
 
@@ -165,7 +165,7 @@ class MainTests(unittest.TestCase):
             data=Data.expected_main_coerce_dates,
             schema=Schemas.expected_main_coerce_dates,
         )
-        result_df = mock_clean_provider_id_column.call_args.args[0]
+        result_df = mock_clean_and_impute_registration_date.call_args.args[0]
         pl_testing.assert_frame_equal(expected_df, result_df)
 
     def test_calculates_expected_dimension_update_date(
