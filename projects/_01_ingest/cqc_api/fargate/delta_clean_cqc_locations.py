@@ -29,6 +29,7 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     LocationType,
     SpecialistGeneralistOther,
+    Specialisms,
 )
 
 
@@ -90,11 +91,16 @@ def main(
     )
     logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
 
-    # Clean date columns and force to date type
+    # Format dates
     cqc_df = clean_and_impute_registration_date(cqc_df)
     cqc_df = cqc_df.with_columns(
-        pl.col(CQCLClean.imputed_registration_date).str.to_date("yyyy-MM-dd")
-    )  # TODO: should this not be in the clean and impute function - if no, move to l111
+        pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
+        pl.col(CQCLClean.imputed_registration_date).str.to_date("%Y-%m-%d"),
+        pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
+        pl.col(Keys.import_date)
+        .str.to_date("%Y%m%d")
+        .alias(CQCLClean.cqc_location_import_date),
+    )
 
     # Clean provider ID, and then filter only for rows that have a provider id
     cqc_df = clean_provider_id_column(cqc_df)
@@ -119,17 +125,9 @@ def main(
         f"{cqc_df.shape[0]} rows remain"
     )
 
-    # Format dates
-    cqc_df = cqc_df.with_columns(
-        pl.col(CQCLClean.registration_date).str.to_date("yyyy-MM-dd"),
-        pl.col(CQCLClean.deregistration_date).str.to_date("yyyy-MM-dd"),
-        pl.col(Keys.import_date)
-        .str.to_date("yyyyMMdd")
-        .alias(CQCLClean.cqc_location_import_date),
-    )
-
     cqc_df = impute_historic_relationships(cqc_df)
     cqc_df = select_registered_locations(cqc_df)  # TODO: move to filter section?
+    cqc_df = add_related_location_flag(cqc_df)
 
     # Calculate latest import date for dimension update date
     dimension_update_date = cqc_df.select(Keys.import_date).max().item()
@@ -141,7 +139,6 @@ def main(
         dimension_location=regulated_activities_destination,
         dimension_update_date=dimension_update_date,
     )
-    cqc_df = cqc_df.drop(CQCLClean.regulated_activities)
 
     cqc_df, regulated_activity_delta = remove_locations_without_regulated_activities(
         cqc_df=cqc_df, regulated_activities_dimension=regulated_activity_delta
@@ -167,11 +164,28 @@ def main(
         dimension_update_date=dimension_update_date,
     )
 
+    # Extract and categorise the location specialisms
     specialisms_delta = specialisms_delta.with_columns(
-        pl.col(CQCLClean.imputed_specialisms).struct.field(CQCLClean.name)
+        pl.col(CQCLClean.imputed_specialisms)
+        .struct.field(CQCLClean.name)
+        .alias(CQCLClean.specialisms_offered)
+    )
+    specialisms_delta = assign_specialism_category(
+        df=specialisms_delta, specialism=Specialisms.dementia
+    )
+    specialisms_delta = assign_specialism_category(
+        df=specialisms_delta, specialism=Specialisms.learning_disabilities
+    )
+    specialisms_delta = assign_specialism_category(
+        df=specialisms_delta, specialism=Specialisms.mental_health
     )
 
-    # specialisms_delta =
+    utils.write_to_parquet(
+        df=specialisms_delta,
+        output_path=specialisms_destination,
+        logger=logger,
+        partition_cols=dimensionPartitionKeys,
+    )
 
     # Create GAC Service dimension delta
     gac_service_delta = create_dimension_from_struct_field(
@@ -180,8 +194,44 @@ def main(
         dimension_location=gac_service_destination,
         dimension_update_date=dimension_update_date,
     )
-    # Drop care home from registered location df - stored in gac service dimension
-    cqc_df = cqc_df.drop(CQCLClean.gac_service_types, CQCLClean.care_home)
+
+    gac_service_delta = gac_service_delta.with_columns(
+        pl.col(CQCLClean.imputed_gac_service_types)
+        .struct.field(CQCLClean.description)
+        .alias(CQCLClean.services_offered)
+    )
+
+    cqc_df, gac_service_delta = remove_specialist_colleges(
+        cqc_df=cqc_df, gac_services_dimension=gac_service_delta
+    )
+
+    gac_service_delta = assign_primary_service_type(gac_service_delta)
+    gac_service_delta = assign_care_home(gac_service_delta)
+
+    utils.write_to_parquet(
+        df=gac_service_delta,
+        output_path=gac_service_destination,
+        logger=logger,
+        partition_cols=dimensionPartitionKeys,
+    )
+
+    # Create postcode matching dimension
+    ons_df = utils.read_parquet(cleaned_ons_source, selected_columns=ons_cols_to_import)
+    logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
+
+    postcode_delta = create_dimension_from_postcode(
+        cqc_df=cqc_df,
+        ons_df=ons_df,
+        dimension_location=postcode_matching_destination,
+        dimension_update_date=dimension_update_date,
+    )
+
+    utils.write_to_parquet(
+        df=postcode_delta,
+        output_path=postcode_matching_destination,
+        logger=logger,
+        partition_cols=dimensionPartitionKeys,
+    )
 
     # Drop columns stored in dimensions
     cqc_df = cqc_df.drop(
@@ -197,8 +247,12 @@ def main(
         CQCLClean.postal_address_line1,
     )
 
-    ons_df = utils.read_parquet(cleaned_ons_source, selected_columns=ons_cols_to_import)
-    logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
+    utils.write_to_parquet(
+        df=cqc_df,
+        output_path=cleaned_cqc_locations_destination,
+        logger=logger,
+        partition_cols=cqcPartitionKeys,
+    )
 
 
 def create_dimension_from_struct_field(

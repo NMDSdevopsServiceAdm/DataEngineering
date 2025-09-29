@@ -24,6 +24,30 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 
 @dataclass
 class CQCLocationsSchema:
+    main_dimension_update_date = pl.Schema(
+        [(CQCL.location_id, pl.String()), (Keys.import_date, pl.String())]
+    )
+
+    main_coerce_dates_input = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.registration_date, pl.String()),
+            (CQCLClean.imputed_registration_date, pl.String()),
+            (CQCL.deregistration_date, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+    expected_main_coerce_dates = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.registration_date, pl.Date()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+            (CQCL.deregistration_date, pl.Date()),
+            (Keys.import_date, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+
     create_dimension_from_postcode_input_extra_cols_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

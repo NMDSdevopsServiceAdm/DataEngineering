@@ -16,6 +16,28 @@ from utils.column_values.categorical_column_values import (
 
 @dataclass
 class CQCLocationsData:
+    main_dimension_update_date = [
+        ("loc_1", "loc_2", "loc_1"),
+        ("20200301", "20211023", "20240201"),
+    ]
+
+    main_coerce_dates = [
+        ("loc_1", "loc_2", "loc_1"),
+        ("2012-12-01", "2009-01-15", None),
+        ("2012-12-01", "2009-01-15", "2012-12-01"),
+        (None, "2021-10-23", None),
+        ("20200301", "20211023", "20240201"),
+    ]
+
+    expected_main_coerce_dates = [
+        ("loc_1", "loc_2", "loc_1"),
+        (date(2012, 12, 1), date(2009, 1, 15), None),
+        (date(2012, 12, 1), date(2009, 1, 15), date(2012, 12, 1)),
+        (None, date(2021, 10, 23), None),
+        ("20200301", "20211023", "20240201"),
+        (date(2020, 3, 1), date(2021, 10, 23), date(2024, 2, 1)),
+    ]
+
     create_dimension_from_postcode = []
 
     create_dimension_delta_historic = [
