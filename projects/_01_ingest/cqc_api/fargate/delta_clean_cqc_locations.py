@@ -214,6 +214,7 @@ def main(
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del regulated_activity_delta
 
         # Create Specialisms dimension
         specialisms_delta = create_dimension_from_struct_field(
@@ -243,6 +244,7 @@ def main(
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del specialisms_delta
 
         # Create GAC Service dimension delta
         gac_service_delta = create_dimension_from_struct_field(
@@ -271,6 +273,7 @@ def main(
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del gac_service_delta
 
         # Create postcode matching dimension
         ons_df = utils.read_parquet(
@@ -291,6 +294,7 @@ def main(
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del postcode_delta
 
         # Drop columns stored in dimensions
         cqc_df = cqc_df.drop(
