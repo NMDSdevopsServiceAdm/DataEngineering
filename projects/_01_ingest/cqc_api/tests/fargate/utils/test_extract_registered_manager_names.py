@@ -55,6 +55,18 @@ class ExtractRegisteredManagerNamesTests(unittest.TestCase):
         assert returned_df == mock_final_df
 
 
+class ExplodeContactsInformationTests(unittest.TestCase):
+    pass
+
+
+class SelectAndCreateFullNameTests(unittest.TestCase):
+    pass
+
+
+class AddRegisteredManagerNamesTests(unittest.TestCase):
+    pass
+
+
 # class ExtractContactsTests(unittest.TestCase):
 #     def test_single_contact(self):
 #         # GIVEN
