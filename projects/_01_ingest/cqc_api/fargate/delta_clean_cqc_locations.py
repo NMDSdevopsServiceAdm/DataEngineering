@@ -143,6 +143,7 @@ def main(
             pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
             pl.col(Keys.import_date).cast(pl.String).alias(Keys.import_date),
             pl.col(Keys.import_date)
+            .cast(pl.String)
             .str.to_date("%Y%m%d")
             .alias(CQCLClean.cqc_location_import_date),
             pl.col(Keys.month).cast(pl.String).str.pad_start(2, "0"),

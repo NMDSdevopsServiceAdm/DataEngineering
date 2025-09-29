@@ -31,7 +31,7 @@ class CQCLocationsSchema:
             (CQCL.location_id, pl.String()),
             (CQCL.registration_date, pl.String()),
             (CQCL.deregistration_date, pl.String()),
-            (Keys.import_date, pl.String()),
+            (Keys.import_date, pl.Int64()),
             (Keys.month, pl.Int64()),
             (Keys.day, pl.Int64()),
         ]
