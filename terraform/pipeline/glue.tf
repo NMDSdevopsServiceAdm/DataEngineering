@@ -675,7 +675,9 @@ module "validate_merge_coverage_data_job" {
   glue_version    = "5.0"
 
   job_parameters = {
-    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=locations_api_cleaned/"
+    "--cleaned_cqc_location_source" = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/"
+    "--gac_dimension_source"        = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
+    "--postcode_dimension_source"   = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/",
     "--merged_coverage_data_source" = "${module.datasets_bucket.bucket_uri}/domain=SfC/dataset=sfc_merged_coverage_data/"
     "--report_destination"          = "${module.datasets_bucket.bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_sfc_merged_coverage_data/"
   }
