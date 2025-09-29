@@ -1,7 +1,10 @@
 import logging
+import sys
 import warnings
 
 import polars as pl
+from polars.exceptions import ColumnNotFoundError
+from botocore.exceptions import ClientError
 
 from polars_utils import utils
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
@@ -91,174 +94,242 @@ def main(
     regulated_activities_destination: str,
     specialisms_destination: str,
     postcode_matching_destination: str,
-):
-    cqc_df = utils.read_parquet(
-        cqc_locations_source, selected_columns=cqc_location_cols_to_import
-    )
-    logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
+) -> None:
+    """
+    Performs cleaning and imputation steps for CQC location data.
 
-    # Format dates
-    cqc_df = clean_and_impute_registration_date(cqc_df)
-    cqc_df = cqc_df.with_columns(
-        pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
-        pl.col(CQCLClean.imputed_registration_date).str.to_date("%Y-%m-%d"),
-        pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
-        pl.col(Keys.import_date)
-        .str.to_date("%Y%m%d")
-        .alias(CQCLClean.cqc_location_import_date),
-    )
+    Filtered for:
+    - location type is Social Care
+    - registration status is registered
+    - location has a regulated activity at some point
+    - location GAC service type is not only Specialist College
 
-    # Clean provider ID, and then filter only for rows that have a provider id
-    cqc_df = clean_provider_id_column(cqc_df)
-    cqc_df = cqc_df.filter(pl.col(CQCLClean.provider_id).is_not_null())
-    # Use the provider ID to identify which locations are members of the local authority
-    cqc_df = assign_cqc_sector(
-        cqc_df=cqc_df, la_provider_ids=LocalAuthorityProviderIds.known_ids
-    )
+    Coerced data types:
+    - registrationDate
+    - deregistrationDate
 
-    # Filter CQC dataframe on known conditions
-    cqc_df = cqc_df.filter(
-        pl.col(CQCLClean.type).eq(LocationType.social_care_identifier),
-        ~pl.col(CQCLClean.location_id).is_in(
-            [
-                RecordsToRemoveInLocationsData.dental_practice,
-                RecordsToRemoveInLocationsData.temp_registration,
-            ]
-        ),
-    )
-    logger.info(
-        f"CQC Location DataFrame filtered to registered Social Care Orgs\n"
-        f"{cqc_df.shape[0]} rows remain"
-    )
+    Imputed columns:
+    - registrationDate (forwards only)
+    - providerId (forwards only)
+    - regulatedActivities (forwards and backwards)
+    - specialisms (forwards and backwards)
+    - gacServiceTypes (forwards and backwards)
+    - postalcode/address information (forwards and backwards)
 
-    cqc_df = impute_historic_relationships(cqc_df)
-    cqc_df = select_registered_locations(cqc_df)
-    cqc_df = add_related_location_flag(cqc_df)
+    Args:
+        cqc_locations_source (str): S3 URI to read CQC locations raw data from
+        cleaned_ons_source (str): S3 URI to read ONS cleaned data from
+        cleaned_cqc_locations_destination (str): S3 URI to WRITE CQC locations cleaned data to
+        gac_service_destination (str): S3 URI to WRITE GAC services cleaned dimension to
+        regulated_activities_destination (str): S3 URI to WRITE regulated activities cleaned dimension to
+        specialisms_destination (str): S3 URI to WRITE specialisms cleaned dimension to
+        postcode_matching_destination (str): S3 URI to WRITE postcode matching cleaned dimension to
 
-    # Calculate latest import date for dimension update date
-    dimension_update_date = cqc_df.select(Keys.import_date).max().item()
+    Raises:
+        ColumnNotFoundError: When the schema has changed unexpectedly
+        ClientError: When reading from or writing to S3 fails
+        OSError: When there are no AWS credentials in the environment
+        Exception: For any other error occurring during cleaning.
+    """
+    try:
+        cqc_df = utils.read_parquet(
+            cqc_locations_source, selected_columns=cqc_location_cols_to_import
+        )
+        logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
 
-    # Create Regulated Activities dimension delta
-    regulated_activity_delta = create_dimension_from_struct_field(
-        cqc_df=cqc_df,
-        struct_column_name=CQCLClean.regulated_activities,
-        dimension_location=regulated_activities_destination,
-        dimension_update_date=dimension_update_date,
-    )
+        # Format dates
+        cqc_df = clean_and_impute_registration_date(cqc_df)
+        cqc_df = cqc_df.with_columns(
+            pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
+            pl.col(CQCLClean.imputed_registration_date).str.to_date("%Y-%m-%d"),
+            pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
+            pl.col(Keys.import_date)
+            .str.to_date("%Y%m%d")
+            .alias(CQCLClean.cqc_location_import_date),
+        )
 
-    cqc_df, regulated_activity_delta = remove_locations_without_regulated_activities(
-        cqc_df=cqc_df, regulated_activities_dimension=regulated_activity_delta
-    )
-    logger.info(
-        f"CQC Location DataFrame filtered to remove locations which have never had a regulated activity\n"
-        f"{cqc_df.shape[0]} rows remain"
-    )
-    regulated_activity_delta = extract_registered_manager_names(
-        regulated_activity_delta
-    )
+        # Clean provider ID, and then filter only for rows that have a provider id
+        cqc_df = clean_provider_id_column(cqc_df)
+        cqc_df = cqc_df.filter(pl.col(CQCLClean.provider_id).is_not_null())
+        # Use the provider ID to identify which locations are members of the local authority
+        cqc_df = assign_cqc_sector(
+            cqc_df=cqc_df, la_provider_ids=LocalAuthorityProviderIds.known_ids
+        )
 
-    utils.write_to_parquet(
-        df=regulated_activity_delta.drop(CQCLClean.cqc_location_import_date),
-        output_path=regulated_activities_destination,
-        logger=logger,
-        partition_cols=dimensionPartitionKeys,
-    )
+        # Filter CQC dataframe on known conditions
+        cqc_df = cqc_df.filter(
+            pl.col(CQCLClean.type).eq(LocationType.social_care_identifier),
+            ~pl.col(CQCLClean.location_id).is_in(
+                [
+                    RecordsToRemoveInLocationsData.dental_practice,
+                    RecordsToRemoveInLocationsData.temp_registration,
+                ]
+            ),
+        )
+        logger.info(
+            f"CQC Location DataFrame filtered to registered Social Care Orgs\n"
+            f"{cqc_df.shape[0]} rows remain"
+        )
 
-    # Create Specialisms dimension
-    specialisms_delta = create_dimension_from_struct_field(
-        cqc_df=cqc_df,
-        struct_column_name=CQCLClean.specialisms,
-        dimension_location=specialisms_destination,
-        dimension_update_date=dimension_update_date,
-    )
-    # Extract and categorise the location specialisms
-    specialisms_delta = specialisms_delta.with_columns(
-        pl.col(CQCLClean.imputed_specialisms)
-        .list.eval(pl.element().struct.field(CQCLClean.name))
-        .alias(CQCLClean.specialisms_offered)
-    )
-    specialisms_delta = assign_specialism_category(
-        df=specialisms_delta, specialism=Specialisms.dementia
-    )
-    specialisms_delta = assign_specialism_category(
-        df=specialisms_delta, specialism=Specialisms.learning_disabilities
-    )
-    specialisms_delta = assign_specialism_category(
-        df=specialisms_delta, specialism=Specialisms.mental_health
-    )
-    utils.write_to_parquet(
-        df=specialisms_delta,
-        output_path=specialisms_destination,
-        logger=logger,
-        partition_cols=dimensionPartitionKeys,
-    )
+        cqc_df = impute_historic_relationships(cqc_df)
+        cqc_df = select_registered_locations(cqc_df)
+        cqc_df = add_related_location_flag(cqc_df)
 
-    # Create GAC Service dimension delta
-    gac_service_delta = create_dimension_from_struct_field(
-        cqc_df=cqc_df,
-        struct_column_name=CQCLClean.gac_service_types,
-        dimension_location=gac_service_destination,
-        dimension_update_date=dimension_update_date,
-    )
+        # Calculate latest import date for dimension update date
+        dimension_update_date = cqc_df.select(Keys.import_date).max().item()
 
-    gac_service_delta = gac_service_delta.with_columns(
-        pl.col(CQCLClean.imputed_gac_service_types)
-        .list.eval(pl.element().struct.field(CQCLClean.description))
-        .alias(CQCLClean.services_offered)
-    )
+        # Create Regulated Activities dimension delta
+        regulated_activity_delta = create_dimension_from_struct_field(
+            cqc_df=cqc_df,
+            struct_column_name=CQCLClean.regulated_activities,
+            dimension_location=regulated_activities_destination,
+            dimension_update_date=dimension_update_date,
+        )
 
-    cqc_df, gac_service_delta = remove_specialist_colleges(
-        cqc_df=cqc_df, gac_services_dimension=gac_service_delta
-    )
+        cqc_df, regulated_activity_delta = (
+            remove_locations_without_regulated_activities(
+                cqc_df=cqc_df, regulated_activities_dimension=regulated_activity_delta
+            )
+        )
+        logger.info(
+            f"CQC Location DataFrame filtered to remove locations which have never had a regulated activity\n"
+            f"{cqc_df.shape[0]} rows remain"
+        )
+        regulated_activity_delta = extract_registered_manager_names(
+            regulated_activity_delta
+        )
 
-    gac_service_delta = assign_primary_service_type(gac_service_delta)
-    gac_service_delta = assign_care_home(gac_service_delta)
+        utils.write_to_parquet(
+            df=regulated_activity_delta.drop(CQCLClean.cqc_location_import_date),
+            output_path=regulated_activities_destination,
+            logger=logger,
+            partition_cols=dimensionPartitionKeys,
+        )
 
-    utils.write_to_parquet(
-        df=gac_service_delta,
-        output_path=gac_service_destination,
-        logger=logger,
-        partition_cols=dimensionPartitionKeys,
-    )
+        # Create Specialisms dimension
+        specialisms_delta = create_dimension_from_struct_field(
+            cqc_df=cqc_df,
+            struct_column_name=CQCLClean.specialisms,
+            dimension_location=specialisms_destination,
+            dimension_update_date=dimension_update_date,
+        )
+        # Extract and categorise the location specialisms
+        specialisms_delta = specialisms_delta.with_columns(
+            pl.col(CQCLClean.imputed_specialisms)
+            .list.eval(pl.element().struct.field(CQCLClean.name))
+            .alias(CQCLClean.specialisms_offered)
+        )
+        specialisms_delta = assign_specialism_category(
+            df=specialisms_delta, specialism=Specialisms.dementia
+        )
+        specialisms_delta = assign_specialism_category(
+            df=specialisms_delta, specialism=Specialisms.learning_disabilities
+        )
+        specialisms_delta = assign_specialism_category(
+            df=specialisms_delta, specialism=Specialisms.mental_health
+        )
+        utils.write_to_parquet(
+            df=specialisms_delta,
+            output_path=specialisms_destination,
+            logger=logger,
+            partition_cols=dimensionPartitionKeys,
+        )
 
-    # Create postcode matching dimension
-    ons_df = utils.read_parquet(cleaned_ons_source, selected_columns=ons_cols_to_import)
-    logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
+        # Create GAC Service dimension delta
+        gac_service_delta = create_dimension_from_struct_field(
+            cqc_df=cqc_df,
+            struct_column_name=CQCLClean.gac_service_types,
+            dimension_location=gac_service_destination,
+            dimension_update_date=dimension_update_date,
+        )
 
-    postcode_delta = create_dimension_from_postcode(
-        cqc_df=cqc_df,
-        ons_df=ons_df,
-        dimension_location=postcode_matching_destination,
-        dimension_update_date=dimension_update_date,
-    )
+        gac_service_delta = gac_service_delta.with_columns(
+            pl.col(CQCLClean.imputed_gac_service_types)
+            .list.eval(pl.element().struct.field(CQCLClean.description))
+            .alias(CQCLClean.services_offered)
+        )
 
-    utils.write_to_parquet(
-        df=postcode_delta,
-        output_path=postcode_matching_destination,
-        logger=logger,
-        partition_cols=dimensionPartitionKeys,
-    )
+        cqc_df, gac_service_delta = remove_specialist_colleges(
+            cqc_df=cqc_df, gac_services_dimension=gac_service_delta
+        )
 
-    # Drop columns stored in dimensions
-    cqc_df = cqc_df.drop(
-        # From RegulatedActivities dimension
-        CQCLClean.regulated_activities,
-        # From Specialisms dimension
-        CQCLClean.specialisms,
-        # From GAC Services dimension
-        CQCLClean.gac_service_types,
-        CQCLClean.care_home,
-        # From PostcodeMatching dimension
-        CQCLClean.postal_code,
-        CQCLClean.postal_address_line1,
-    )
+        gac_service_delta = assign_primary_service_type(gac_service_delta)
+        gac_service_delta = assign_care_home(gac_service_delta)
 
-    utils.write_to_parquet(
-        df=cqc_df,
-        output_path=cleaned_cqc_locations_destination,
-        logger=logger,
-        partition_cols=cqcPartitionKeys,
-    )
+        utils.write_to_parquet(
+            df=gac_service_delta,
+            output_path=gac_service_destination,
+            logger=logger,
+            partition_cols=dimensionPartitionKeys,
+        )
+
+        # Create postcode matching dimension
+        ons_df = utils.read_parquet(
+            cleaned_ons_source, selected_columns=ons_cols_to_import
+        )
+        logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
+
+        postcode_delta = create_dimension_from_postcode(
+            cqc_df=cqc_df,
+            ons_df=ons_df,
+            dimension_location=postcode_matching_destination,
+            dimension_update_date=dimension_update_date,
+        )
+
+        utils.write_to_parquet(
+            df=postcode_delta,
+            output_path=postcode_matching_destination,
+            logger=logger,
+            partition_cols=dimensionPartitionKeys,
+        )
+
+        # Drop columns stored in dimensions
+        cqc_df = cqc_df.drop(
+            # From RegulatedActivities dimension
+            CQCLClean.regulated_activities,
+            # From Specialisms dimension
+            CQCLClean.specialisms,
+            # From GAC Services dimension
+            CQCLClean.gac_service_types,
+            CQCLClean.care_home,
+            # From PostcodeMatching dimension
+            CQCLClean.postal_code,
+            CQCLClean.postal_address_line1,
+        )
+
+        utils.write_to_parquet(
+            df=cqc_df,
+            output_path=cleaned_cqc_locations_destination,
+            logger=logger,
+            partition_cols=cqcPartitionKeys,
+        )
+    except ColumnNotFoundError as e:
+        logger.error(f"There has been an unexpected schema change.")
+        logger.error(sys.argv)
+        logger.error(e)
+        raise
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "AccessDenied":
+            logger.error(
+                f"Please check you are reading from/writing to the right bucket or update your IAM permissions"
+            )
+        elif e.response["Error"]["Code"] == "NoSuchKey":
+            logger.error("The file does not exist, please check the path.")
+        logger.error(sys.argv)
+        logger.error(e)
+        raise
+    except OSError as e:
+        if "Generic S3 error" in str(e):
+            logger.error(
+                "There are no AWS credentials available. If running locally, please ensure you are authenticated before running."
+            )
+        logger.error(sys.argv)
+        logger.error(e)
+        raise
+    except Exception as e:
+        logger.error(sys.argv)
+        logger.error(e)
+        raise
 
 
 def create_dimension_from_struct_field(
