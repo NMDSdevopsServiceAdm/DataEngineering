@@ -466,7 +466,9 @@ def _create_dimension_delta(
     # 1. Read in the previous state of the dimension.
     dimension_name = dimension_location.split("/")[-2]
     try:
-        previous_dimension = utils.read_parquet(dimension_location)
+        previous_dimension = utils.read_parquet(dimension_location).with_columns(
+            pl.col(DimensionKeys.import_date).cast(pl.String)
+        )
     except ComputeError:
         warnings.warn(
             f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
