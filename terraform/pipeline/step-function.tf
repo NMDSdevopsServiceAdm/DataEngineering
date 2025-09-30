@@ -440,6 +440,32 @@ resource "aws_sfn_state_machine" "demo_model_retrain" {
   ]
 }
 
+resource "aws_sfn_state_machine" "demo_care_home_model" {
+  name     = "${local.workspace_prefix}-Demo-Care-Home-Model"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/DemoCareHomeModelTrainAndPredict.json", {
+    cluster_arn         = aws_ecs_cluster.model_cluster.arn
+    preprocess_task_arn = module.model_preprocess.task_arn
+    retrain_task_arn    = module.model_retrain.task_arn
+    public_subnet_ids   = jsonencode(module.model_preprocess.subnet_ids)
+    security_group_id   = module.model_preprocess.security_group_id
+    preprocessor_name   = "preprocess_remove_nulls"
+    model_name          = "care_home_filled_posts_prediction"
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket
+  ]
+}
+
 resource "aws_cloudwatch_log_group" "state_machines" {
   name_prefix = "/aws/vendedlogs/states/${local.workspace_prefix}-state-machines"
 }
