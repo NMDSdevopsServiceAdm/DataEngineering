@@ -6,6 +6,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names.py
 def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     """
     Extracts registered manager names from the regulated activities column.
@@ -31,6 +32,7 @@ def extract_registered_manager_names(df: DataFrame) -> DataFrame:
     return df_with_reg_man_names
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names.py
 def extract_contacts_information(
     df: DataFrame,
 ) -> DataFrame:
@@ -66,6 +68,7 @@ def extract_contacts_information(
     return exploded_contacts_df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names.py
 def select_and_create_full_name(df: DataFrame) -> DataFrame:
     """
     Selects relevant columns and creates a full name column by concatenating given and family names.
@@ -88,6 +91,7 @@ def select_and_create_full_name(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names.py
 def group_and_collect_names(df: DataFrame) -> DataFrame:
     """
     Groups the DataFrame by location_id and cqc_location_import_date, and collects all the unique names into an array column.
@@ -106,6 +110,7 @@ def group_and_collect_names(df: DataFrame) -> DataFrame:
     return df
 
 
+# converted to polars -> projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names.py
 def join_names_column_into_original_df(
     df: DataFrame, registered_manager_names_df: DataFrame
 ) -> DataFrame:

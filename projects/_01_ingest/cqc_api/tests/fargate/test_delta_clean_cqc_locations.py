@@ -1,0 +1,2098 @@
+import unittest
+from unittest import TestCase
+from unittest.mock import patch, ANY, Mock, call
+
+import polars as pl
+from polars.exceptions import ColumnNotFoundError, ComputeError
+import polars.testing as pl_testing
+
+import projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations as job
+from projects._01_ingest.unittest_data.polars_ingest_test_file_data import (
+    CQCLocationsData as Data,
+)
+from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
+    CQCLocationsSchema as Schemas,
+)
+
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_clean_cqc_locations"
+
+mock_cqc_locations_data = Mock(name="cqc_locations_data")
+mock_cqc_locations_data.shape = ["rows", "columns"]
+mock_cqc_locations_data.filter.return_value = mock_cqc_locations_data
+
+
+@patch(
+    f"{PATCH_PATH}.create_dimension_from_postcode",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.assign_care_home", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.assign_primary_service_type",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.remove_specialist_colleges",
+    return_value=[mock_cqc_locations_data, mock_cqc_locations_data],
+)
+@patch(f"{PATCH_PATH}.assign_specialism_category", return_value=mock_cqc_locations_data)
+@patch(f"{PATCH_PATH}.utils.write_to_parquet", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.extract_registered_manager_names",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.remove_locations_without_regulated_activities",
+    return_value=[mock_cqc_locations_data, mock_cqc_locations_data],
+)
+@patch(
+    f"{PATCH_PATH}.create_dimension_from_struct_field",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.add_related_location_flag", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.select_registered_locations",
+    return_value=mock_cqc_locations_data,
+)
+@patch(
+    f"{PATCH_PATH}.impute_historic_relationships",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.assign_cqc_sector", return_value=mock_cqc_locations_data)
+@patch(f"{PATCH_PATH}.clean_provider_id_column", return_value=mock_cqc_locations_data)
+@patch(
+    f"{PATCH_PATH}.clean_and_impute_registration_date",
+    return_value=mock_cqc_locations_data,
+)
+@patch(f"{PATCH_PATH}.utils.scan_parquet", return_value=mock_cqc_locations_data)
+class MainTests(unittest.TestCase):
+
+    def test_expected_function_calls_are_made(
+        self,
+        mock_scan_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   All functions return a mock object
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The read_parquet util should have been read twice (cqc raw and ons cleaned) - dimensions read in mocked functions
+        self.assertEqual(2, mock_scan_parquet.call_count)
+        #   The function to create dimension from struct field should have been called three times
+        self.assertEqual(3, mock_create_dimension_from_struct_field.call_count)
+        #   The write_to_parquet util should have been called five times
+        self.assertEqual(5, mock_write_to_parquet.call_count)
+        #   The function to categorise specialisms should have been called three times (dementia, mental health, learning disabilities)
+        self.assertEqual(3, mock_assign_specialism_category.call_count)
+
+        #   All other cleaning functions should have been called just once
+        mock_clean_and_impute_registration_date.assert_called_once()
+        mock_clean_provider_id_column.assert_called_once()
+        mock_assign_cqc_sector.assert_called_once()
+        mock_impute_historic_relationships.assert_called_once()
+        mock_select_registered_locations.assert_called_once()
+        mock_add_related_location_flag.assert_called_once()
+        mock_remove_locations_without_regulated_activities.assert_called_once()
+        mock_extract_registered_manager_names.assert_called_once()
+        mock_remove_specialist_colleges.assert_called_once()
+        mock_assign_primary_service_type.assert_called_once()
+        mock_assign_care_home.assert_called_once()
+        mock_create_dimension_from_postcode.assert_called_once()
+
+    def test_coerces_dates(
+        self,
+        mock_scan_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   Function before coercing dates returns a dataframe with dates in the correct format
+        mock_scan_parquet.return_value = pl.LazyFrame(
+            data=Data.main_coerce_dates, schema=Schemas.main_coerce_dates_input
+        )
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The next function should have been called with a dataframe containing the date columns
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_main_coerce_dates,
+            schema=Schemas.expected_main_coerce_dates,
+        )
+        result_lf = mock_clean_and_impute_registration_date.call_args.args[0]
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_calculates_expected_dimension_update_date(
+        self,
+        mock_scan_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   Last function before the dimension date calculation returns a dataframe with the latest import date of 20240201
+        mock_add_related_location_flag.return_value = pl.LazyFrame(
+            data=Data.main_dimension_update_date,
+            schema=Schemas.main_dimension_update_date,
+        )
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The import date 20240201 should have been passed into all the dimension creation functions
+        mock_create_dimension_from_struct_field.assert_has_calls(
+            [
+                call(
+                    cqc_lf=ANY,
+                    struct_column_name="regulatedActivities",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+                call(
+                    cqc_lf=ANY,
+                    struct_column_name="specialisms",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+                call(
+                    cqc_lf=ANY,
+                    struct_column_name="gacServiceTypes",
+                    dimension_location=ANY,
+                    dimension_update_date="20240201",
+                ),
+            ]
+        )
+        mock_create_dimension_from_postcode.assert_called_once_with(
+            cqc_lf=ANY,
+            ons_lf=ANY,
+            dimension_location=ANY,
+            dimension_update_date="20240201",
+        )
+
+    def test_extracts_from_struct(
+        self,
+        mock_scan_parquet: Mock,
+        mock_clean_and_impute_registration_date: Mock,
+        mock_clean_provider_id_column: Mock,
+        mock_assign_cqc_sector: Mock,
+        mock_impute_historic_relationships: Mock,
+        mock_select_registered_locations: Mock,
+        mock_add_related_location_flag: Mock,
+        mock_create_dimension_from_struct_field: Mock,
+        mock_remove_locations_without_regulated_activities: Mock,
+        mock_extract_registered_manager_names: Mock,
+        mock_write_to_parquet: Mock,
+        mock_assign_specialism_category: Mock,
+        mock_remove_specialist_colleges: Mock,
+        mock_assign_primary_service_type: Mock,
+        mock_assign_care_home: Mock,
+        mock_create_dimension_from_postcode: Mock,
+    ):
+        # GIVEN
+        #   The create dimension function returns a dataframe for specialisms
+        mock_create_dimension_from_struct_field.side_effect = [
+            mock_cqc_locations_data,
+            pl.LazyFrame(
+                data=Data.main_extract_struct, schema=Schemas.main_extract_struct_input
+            ),
+            mock_cqc_locations_data,
+        ]
+        #   The assign_specialism function returns its input
+        mock_assign_specialism_category.side_effect = lambda lf, specialism: lf
+
+        # WHEN
+        job.main(
+            "some/locations/source",
+            "a/ons_cleaned/source",
+            "some/locations/destination",
+            "some/gac_services/destination",
+            "some/regulated_activities/destination",
+            "some/specialisms/destination",
+            "some_postcode_matching/destination",
+        )
+
+        # THEN
+        #   The next function called on the specialisms lf should have the extracted struct in a new column
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_main_extract_struct,
+            schema=Schemas.expected_main_extract_struct,
+        )
+        result_lf = mock_assign_specialism_category.call_args.kwargs["lf"]
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+@patch(
+    f"{PATCH_PATH}._create_dimension_delta",
+    return_value="return_from_create_dimension_delta",
+)
+class CreateDimensionFromStructFieldTests(unittest.TestCase):
+    def test_does_not_impute_if_existing_value(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where the GAC service column is fully populated
+        input_lf = pl.LazyFrame(
+            data=Data.impute_struct_existing_values,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_lf, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_lf = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The imputed values should be equal to the input
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_struct_existing_values,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["Name A", "Name B", "Name C"],
+            [
+                r[0]["name"]
+                for r in result_lf.collect()["imputed_gacServiceTypes"].to_list()
+            ],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_imputes_struct_backwards_if_possible(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where the GAC service column has a missing middle value
+        input_lf = pl.LazyFrame(
+            data=Data.impute_struct_from_historic,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_lf, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_lf = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The missing value should be imputed from the historic row
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_struct_from_historic,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["Name A", "Name A", "Name C"],
+            [
+                r[0]["name"]
+                for r in result_lf.collect()["imputed_gacServiceTypes"].to_list()
+            ],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_imputes_forwards_if_no_previous_value(self, mock_create_dimension_delta):
+        # GIVEN
+        #   Input where there is no historic value to impute from
+        input_lf = pl.LazyFrame(
+            data=Data.impute_struct_from_future,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_lf, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_lf = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The missing values should be imputed from the future row
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_struct_from_future,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["Name C", "Name C", "Name C"],
+            [
+                r[0]["name"]
+                for r in result_lf.collect()["imputed_gacServiceTypes"].to_list()
+            ],
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_when_no_values_returns_null_imputed_values(
+        self, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input where there is no values for a particular location id to impute from
+        input_lf = pl.LazyFrame(
+            data=Data.impute_struct_null_values,
+            schema=Schemas.impute_struct_input_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_struct_field(
+            input_lf, "gacServiceTypes", "some/location", "20250101"
+        )
+
+        # THEN
+        #   The mock function should have been called once
+        mock_create_dimension_delta.assert_called_once()
+        result_lf = mock_create_dimension_delta.call_args.kwargs["current_dimension"]
+        #   The location with no values should have null in the imputed column
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_struct_null_values,
+            schema=Schemas.expected_impute_struct_input_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            [None, None, ANY],
+            result_lf.collect()["imputed_gacServiceTypes"].to_list(),
+        )
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+
+@patch(
+    f"{PATCH_PATH}._create_dimension_delta",
+    return_value="return_from_create_dimension_delta",
+)
+@patch(f"{PATCH_PATH}.run_postcode_matching")
+class CreateDimensionFromPostcodeTests(unittest.TestCase):
+    """
+    All the processing to create this function is done elsewhere.
+    This test just ensures all the needed columns are passed into the postcode matching function.
+    """
+
+    def test_selects_expected_columns(
+        self, mock_postcode_matching, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input with columns that are not required by the postcode matching function
+        input_lf = pl.LazyFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.create_dimension_from_postcode_input_extra_cols_schema,
+        )
+
+        # WHEN
+        return_value = job.create_dimension_from_postcode(
+            input_lf, Mock(name="ons_lf"), "some/location", "20250101"
+        )
+
+        # THEN
+        #   Each of the mock functions should have been called once
+        mock_postcode_matching.assert_called_once()
+        mock_create_dimension_delta.assert_called_once()
+        result_lf = mock_postcode_matching.call_args.args[0]
+        #   The passed in dataframe should only have expected columns
+        expected_lf = pl.LazyFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.expected_create_dimension_from_postcode_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        #   The return value from the mocked function should be returned
+        self.assertEqual("return_from_create_dimension_delta", return_value)
+
+    def test_raises_exception_when_expected_columns_are_missing(
+        self, mock_postcode_matching, mock_create_dimension_delta
+    ):
+        # GIVEN
+        #   Input with columns that are required by the postcode matching function missing
+        input_lf = pl.LazyFrame(
+            data=Data.create_dimension_from_postcode,
+            schema=Schemas.create_dimension_from_postcode_input_missing_cols_schema,
+        )
+
+        # THEN
+        #   A Polars ColumnNotFoundError should have been raised
+        with self.assertRaises(ColumnNotFoundError):
+            job.create_dimension_from_postcode(
+                input_lf, Mock(name="ons_lf"), "some/location", "20250101"
+            )
+
+
+@patch(f"{PATCH_PATH}.utils.scan_parquet")
+class CreateDimensionDeltaTests(unittest.TestCase):
+    def setUp(self):
+        self.historic_dimension = pl.LazyFrame(
+            data=Data.create_dimension_delta_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+
+    def test_current_is_same_as_historic(self, mock_scan_parquet):
+        # GIVEN
+        #   current dim which is identical to the historic dim (other than the added dim key columns)
+        mock_scan_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.LazyFrame(
+            data=Data.create_dimension_delta_current_same_as_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_lf = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20240801",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_dimension_delta_empty_delta,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should be empty
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_current_entirely_unique_from_historic(self, mock_scan_parquet):
+        # GIVEN
+        #   current dim which is has no rows which match the historic dim
+        mock_scan_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.LazyFrame(
+            data=Data.create_dimension_delta_current_entirely_unique_from_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_lf = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20250101",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   All the rows from the current dim should be returned, with the partitioning cols added
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_current_has_some_overlap_with_historic(self, mock_scan_parquet):
+        # GIVEN
+        #   current dim which is has some rows which match the historic dim, and some that don't
+        mock_scan_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.LazyFrame(
+            data=Data.create_dimension_delta_current_some_overlap_with_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_lf = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20250101",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should contain only the rows which are different from the historic
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_empty_current(self, mock_scan_parquet):
+        # GIVEN
+        #   an empty current dim
+        mock_scan_parquet.return_value = self.historic_dimension
+        input_current_dim = pl.LazyFrame(
+            data=Data.create_dimension_delta_empty_current,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        result_lf = job._create_dimension_delta(
+            dimension_location="some/location",
+            dimension_update_date="20240801",
+            current_dimension=input_current_dim,
+            join_columns=[
+                "locationId",
+                "relationships",
+                "imputed_relationships",
+                "import_date",
+            ],
+        )
+
+        # THEN
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_dimension_delta_empty_delta,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   The returned delta should be empty
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_no_previous_dimension_warns_and_continues(self, mock_scan_parquet):
+        # GIVEN
+        #   The historic dim cannot be found and raises an OS error
+        mock_scan_parquet.side_effect = FileNotFoundError()
+        input_current_dim = pl.LazyFrame(
+            data=Data.create_dimension_delta_current_entirely_unique_from_historic,
+            schema=Schemas.create_dimension_delta_input_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(FileNotFoundError) as cm:
+            result_lf = job._create_dimension_delta(
+                dimension_location="s3://bucket_name/domain=some_domain/dataset=dim_name/",
+                dimension_update_date="20250101",
+                current_dimension=input_current_dim,
+                join_columns=[
+                    "locationId",
+                    "relationships",
+                    "imputed_relationships",
+                    "import_date",
+                ],
+            )
+
+        # THEN
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_dimension_delta_only_unique_from_historic,
+            schema=Schemas.create_dimension_delta_dim_schema,
+        )
+        #   A single warning should have been raised
+        self.assertIn(
+            (
+                "The dataset=dim_name dimension was not found in the s3://bucket_name/domain=some_domain/dataset=dim_name/. "
+                "A new dimension will be created."
+            ),
+            str(cm.warnings[0].message),
+        )
+        self.assertEqual(1, len(cm.warnings))
+
+        #   All the rows from the current dim should be returned, with the partitioning cols added
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+class CleanProviderIdColumnTests(unittest.TestCase):
+    def test_does_not_change_valid_ids(self):
+        # GIVEN
+        #   Input with provider ids which are all populated and less than 14 characters
+        input_lf = pl.LazyFrame(
+            data=Data.clean_provider_id_column_rows,
+            schema=Schemas.clean_provider_id_column_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_provider_id_column(input_lf)
+
+        # THEN
+        #   The provider ids should be unchanged
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(output_lf, input_lf)
+
+    def test_removes_long_provider_ids(self):
+        # GIVEN
+        #   Input with provider ids which are longer than 14 characters
+        input_lf = pl.LazyFrame(
+            data=Data.long_provider_id_column_rows,
+            schema=Schemas.clean_provider_id_column_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_long_provider_id_column_rows,
+            schema=Schemas.clean_provider_id_column_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_provider_id_column(input_lf)
+
+        # THEN
+        #   The long provider id should be replaced with null
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_fills_missing_provider_id(self):
+        # GIVEN
+        #   Input with provider ids which are missing for some instances of a location id
+        input_lf = pl.LazyFrame(
+            data=Data.missing_provider_id_column_rows,
+            schema=Schemas.clean_provider_id_column_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_fill_missing_provider_id_column_rows,
+            schema=Schemas.clean_provider_id_column_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_provider_id_column(input_lf)
+
+        # THEN
+        #   The missing provider ids should be imputed forwards and backwards
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+
+class CleanAndImputeRegistrationDateTests(unittest.TestCase):
+    def test_does_not_change_valid_dates(self):
+        # WHEN
+        #   All dates are valid
+        input_lf = pl.LazyFrame(
+            data=Data.clean_registration_date_column_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_clean_registration_date_column_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The dates should be unchanged
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_removes_time_from_datetime(self):
+        # WHEN
+        #   Dates are provided with a time element (YYYY-mm-dd HH:MM:SS)
+        input_lf = pl.LazyFrame(
+            data=Data.time_in_registration_date_column_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_time_in_registration_date_column_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The time elements should have been removed
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_replaces_registration_dates_later_than_import_date_with_import_date(self):
+        # WHEN
+        #   The import date is before the registration date
+        input_lf = pl.LazyFrame(
+            data=Data.registration_date_after_import_date_column_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_registration_date_after_import_date_column_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The offending registration date should have been removed
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_imputes_missing_registration_date_when_one_reg_date_for_location(self):
+        # WHEN
+        #   There is a missing value for a given location id, and just one registration date elsewhere for that location id
+        input_lf = pl.LazyFrame(
+            data=Data.registration_date_missing_single_reg_date_for_loc_column_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_registration_date_missing_single_reg_date_for_loc_column_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The value should be imputed to fill the missing registration date for that location id
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_imputes_missing_registration_date_when_multiple_reg_date_for_location(
+        self,
+    ):
+        # WHEN
+        #   There is a missing value for a given location id, but multiple registration dates elsewhere for that location id
+        input_lf = pl.LazyFrame(
+            data=Data.registration_date_missing_multiple_reg_date_for_loc_column_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_registration_date_missing_multiple_reg_date_for_loc_column_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The earliest registration date for that location should be used
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    def test_imputes_missing_registration_date_from_first_import_date(
+        self,
+    ):
+        # WHEN
+        #   A location has no value for registration date at any point
+        input_lf = pl.LazyFrame(
+            data=Data.registration_date_missing_for_all_loc_rows,
+            schema=Schemas.clean_registration_date_column_input_schema,
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_registration_date_missing_for_all_loc_rows,
+            schema=Schemas.clean_registration_date_column_output_schema,
+        )
+
+        # WHEN
+        output_lf = job.clean_and_impute_registration_date(input_lf)
+
+        # THEN
+        #   The first import date for the location should be used
+        self.assertIsInstance(output_lf, pl.LazyFrame)
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+
+class ImputeHistoricRelationshipsTests(unittest.TestCase):
+
+    @patch(f"{PATCH_PATH}.get_predecessor_relationships")
+    def test_when_no_relationships_returns_null_imputed_relationships(
+        self, mock_get_predecessor_relationships
+    ):
+        # GIVEN
+        #   Data where relationship column is null for all rows for a location
+        input_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_no_relationships_rows,
+            schema=Schemas.impute_historic_relationships_input_schema,
+        )
+        #   get_predecessor_relationships should return a null relationships_predecessors_only column
+        predecessor_output = input_lf.with_columns(
+            pl.lit(None).alias("relationships_predecessors_only"),
+            pl.lit(None).alias("first_known_relationships"),
+        )
+        mock_get_predecessor_relationships.return_value = predecessor_output
+
+        # WHEN
+        output_lf = job.impute_historic_relationships(input_lf)
+
+        # THEN
+        #   The returned dataframe should have just one new column - imputed_relationships, with null values
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_no_relationships_rows,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf, check_column_order=False)
+
+        #   The mock predecessor function should have been called once, with the input dataset + a null first_known_relationships column
+        expected_get_predecessor_relationships_input = input_lf.with_columns(
+            pl.lit(None).alias("first_known_relationships")
+        )
+        mock_get_predecessor_relationships.assert_called_once()
+        mock_predecessor_relationships_output = (
+            mock_get_predecessor_relationships.call_args.args[0]
+        )
+        pl.testing.assert_frame_equal(
+            expected_get_predecessor_relationships_input,
+            mock_predecessor_relationships_output,
+            check_column_order=False,
+            check_dtype=False,
+        )
+
+    @patch(f"{PATCH_PATH}.get_predecessor_relationships")
+    def test_uses_relationships_column_if_not_null(
+        self, mock_get_predecessor_relationships
+    ):
+        # GIVEN
+        #   Data where every row has relationships populated
+        input_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_all_populated,
+            schema=Schemas.impute_historic_relationships_input_schema,
+        )
+        #   get_predecessor_relationships should return a relationships_predecessors_only with values that WILL NOT BE USED
+        dummy_value = [
+            {
+                "relatedLocationId": "UnusedID",
+                "relatedLocationName": "UnusedName",
+                "type": "UnusedType",
+                "reason": "UnusedReason",
+            }
+        ]
+        mock_get_predecessor_relationships.side_effect = lambda x: x.with_columns(
+            pl.lit(dummy_value).alias("relationships_predecessors_only")
+        )
+
+        # WHEN
+        output_lf = job.impute_historic_relationships(input_lf)
+
+        # THEN
+        #   The returned dataframe should have imputed_relationships equal to relationships
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_all_populated,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    @patch(f"{PATCH_PATH}.get_predecessor_relationships")
+    def test_uses_first_known_relationships_when_deregistered(
+        self, mock_get_predecessor_relationships
+    ):
+        # GIVEN
+        #   Data for the same location at 3 points, where relationships in the final timepoint is missing
+        input_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_deregistered,
+            schema=Schemas.impute_historic_relationships_input_schema,
+        )
+        #   get_predecessor_relationships should return a relationships_predecessors_only with values that WILL NOT BE USED
+        dummy_value = [
+            {
+                "relatedLocationId": "UnusedID",
+                "relatedLocationName": "UnusedName",
+                "type": "UnusedType",
+                "reason": "UnusedReason",
+            }
+        ]
+        mock_get_predecessor_relationships.side_effect = lambda x: x.with_columns(
+            pl.lit(dummy_value).alias("relationships_predecessors_only")
+        )
+
+        # WHEN
+        output_lf = job.impute_historic_relationships(input_lf)
+
+        # THEN
+        #   The first value for the location id should have been filled into the missing row
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_deregistered,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    @patch(f"{PATCH_PATH}.get_predecessor_relationships")
+    def test_uses_predecessor_when_registered(self, mock_get_predecessor_relationships):
+        # GIVEN
+        #   Data for the same location at 3 points, where relationships in the final timepoint is missing
+        input_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_registered,
+            schema=Schemas.impute_historic_relationships_input_schema,
+        )
+        #   get_predecessor_relationships returns no predecessors
+        dummy_value = [
+            {
+                "relatedLocationId": "PredecessorID",
+                "relatedLocationName": "PredecessorName",
+                "type": "PredecessorType",
+                "reason": "PredecessorReason",
+            }
+        ]
+        mock_get_predecessor_relationships.side_effect = lambda x: x.with_columns(
+            pl.lit(dummy_value).alias("relationships_predecessors_only")
+        )
+
+        # WHEN
+        output_lf = job.impute_historic_relationships(input_lf)
+
+        # THEN
+        #   The dummy value should have been imputed
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_registered,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+    @patch(f"{PATCH_PATH}.get_predecessor_relationships")
+    def test_when_no_predecessor_registered_returns_null_imputed_relationships(
+        self, mock_get_predecessor_relationships
+    ):
+        # GIVEN
+        #   Data for the same location at 3 points, where relationships in the final timepoint is missing
+        input_lf = pl.LazyFrame(
+            data=Data.impute_historic_relationships_registered,
+            schema=Schemas.impute_historic_relationships_input_schema,
+        )
+        #   get_predecessor_relationships should return a relationships_predecessors_only with values that WILL BE USED
+        mock_get_predecessor_relationships.side_effect = lambda x: x.with_columns(
+            pl.lit(None).alias("relationships_predecessors_only")
+        )
+
+        # WHEN
+        output_lf = job.impute_historic_relationships(input_lf)
+
+        # THEN
+        #   The missing row should have a missing imputed value
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_impute_historic_relationships_registered_no_predecessor,
+            schema=Schemas.expected_impute_historic_relationships_schema,
+        )
+
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+
+
+class GetPredecessorRelationshipsTests(unittest.TestCase):
+    def test_when_no_relationships_returns_null_predecessors(self):
+        # GIVEN
+        #   Input where all rows have no first known relationship
+        input_lf = pl.LazyFrame(
+            data=Data.get_predecessor_relationships_null_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.get_predecessor_relationships(input_lf)
+
+        # THEN
+        #   The predecessor relationship column should be null for all rows
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_predecessor_relationships_null_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [None, None],
+            output_lf.collect()["relationships_predecessors_only"].to_list(),
+        )
+
+    def test_when_relationships_successor_only_returns_null_predecessors(self):
+        # GIVEN
+        #   Input where all rows have only successor relationships
+        input_lf = pl.LazyFrame(
+            data=Data.get_predecessor_relationships_successor_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.get_predecessor_relationships(input_lf)
+
+        # THEN
+        #   The predecessor relationship column should be null for all rows
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_predecessor_relationships_successor_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [None, None],
+            output_lf.collect()["relationships_predecessors_only"].to_list(),
+        )
+
+    def test_when_relationships_predecessor_only_returns_predecessor(self):
+        # GIVEN
+        #   Input where all rows have a predecessor relationship
+        input_lf = pl.LazyFrame(
+            data=Data.get_predecessor_relationships_predecessor_first_known,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.get_predecessor_relationships(input_lf)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_predecessor_relationships_predecessor_first_known,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r[0]["type"]
+                for r in output_lf.collect()[
+                    "relationships_predecessors_only"
+                ].to_list()
+            ],
+        )
+
+    def test_when_relationships_both_types_only_returns_predecessors(self):
+        # GIVEN
+        #   Input where all rows have a predecessor relationship and a successor relationship
+        input_lf = pl.LazyFrame(
+            data=Data.get_predecessor_relationships_both_types,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.get_predecessor_relationships(input_lf)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_predecessor_relationships_both_types,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r[0]["type"]
+                for r in output_lf.collect()[
+                    "relationships_predecessors_only"
+                ].to_list()
+            ],
+        )
+
+    def test_when_multiple_predecessors_returns_aggregated_predecessors(self):
+        # GIVEN
+        #   Input where there are multiple predecessor relationships for a location
+        input_lf = pl.LazyFrame(
+            data=Data.get_predecessor_multiple_predecessors,
+            schema=Schemas.get_predecessor_relationships_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.get_predecessor_relationships(input_lf)
+
+        # THEN
+        #   The predecessor relationship column should have the predecessor values aggregated
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_get_predecessor_multiple_predecessors,
+            schema=Schemas.expected_get_predecessor_relationships_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            ["HSCA Predecessor", "HSCA Predecessor"],
+            [
+                r["type"]
+                for r in output_lf.collect()[
+                    "relationships_predecessors_only"
+                ].to_list()[0]
+            ],
+        )
+
+
+class AssignPrimaryServiceTypeTests(unittest.TestCase):
+    def test_assigns_care_home_with_nursing(self):
+        # GIVEN
+        #   Input where all rows have "Care home service with nursing" as one of their inputs
+        input_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_care_home_with_nursing,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_primary_service_type(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "Care home with nursing"
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_care_home_with_nursing,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "Care home with nursing",
+                "Care home with nursing",
+                "Care home with nursing",
+            ],
+            output_lf.collect()["primary_service_type"].to_list(),
+        )
+
+    def test_assigns_care_home_only(self):
+        # GIVEN
+        #   Input where all rows have "Care home service without nursing" as one of their inputs
+        #   and none have the preferential "Care home service with nursing"
+        input_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_care_home_only,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_primary_service_type(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "Care home without nursing"
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_care_home_only,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "Care home without nursing",
+                "Care home without nursing",
+                "Care home without nursing",
+            ],
+            output_lf.collect()["primary_service_type"].to_list(),
+        )
+
+    def test_assigns_non_residential(self):
+        # GIVEN
+        #   Input where no rows have "Care home service with nursing" or "Care home service without nursing"
+        input_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_non_residential,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_primary_service_type(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as "non-residential"
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_non_residential,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "non-residential",
+                "non-residential",
+            ],
+            output_lf.collect()["primary_service_type"].to_list(),
+        )
+
+    def test_assigns_all_types(self):
+        # GIVEN
+        #   Input where rows have a range of imputed services
+        input_lf = pl.LazyFrame(
+            data=Data.allocate_primary_service_all_types,
+            schema=Schemas.allocate_primary_service_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_primary_service_type(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated one of each type
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_allocate_primary_service_all_types,
+            schema=Schemas.expected_allocate_primary_service_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "Care home with nursing",
+                "Care home without nursing",
+                "non-residential",
+            ],
+            output_lf.collect()["primary_service_type"].to_list(),
+        )
+
+
+class AssignCareHomeTests(unittest.TestCase):
+    def test_assigns_care_homes(self):
+        # GIVEN
+        #   Input where rows have primary service of either care_home_with_nursing or care_home_only
+        input_lf = pl.LazyFrame(
+            data=Data.align_care_home_care_homes_rows,
+            schema=Schemas.align_care_home_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_care_home(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as care homes
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_align_care_home_care_homes_rows,
+            schema=Schemas.expected_align_care_home_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "Y",
+                "Y",
+            ],
+            output_lf.collect()["careHome"].to_list(),
+        )
+
+    def test_assigns_non_care_homes(self):
+        # GIVEN
+        #   Input where rows have primary service of not care_home_with_nursing or care_home_only
+        input_lf = pl.LazyFrame(
+            data=Data.align_care_home_non_care_homes_rows,
+            schema=Schemas.align_care_home_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.assign_care_home(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should have been allocated as not care homes
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_align_care_home_non_care_homes_rows,
+            schema=Schemas.expected_align_care_home_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "N",
+                "N",
+            ],
+            output_lf.collect()["careHome"].to_list(),
+        )
+
+
+class AddRelatedLocationFlagTests(unittest.TestCase):
+    def test_flags_y_when_related_locations(self):
+        # GIVEN
+        #   Input where rows have 1 or more imputed relationships
+        input_lf = pl.LazyFrame(
+            data=Data.related_location_flag_with_related_locations,
+            schema=Schemas.related_location_flag_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.add_related_location_flag(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should be flagged as Y for related location
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_related_location_flag_with_related_locations,
+            schema=Schemas.expected_related_location_flag_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "Y",
+                "Y",
+            ],
+            output_lf.collect()["related_location"].to_list(),
+        )
+
+    def test_flags_n_when_no_related_locations(self):
+        # GIVEN
+        #   Input where rows have no imputed relationships
+        input_lf = pl.LazyFrame(
+            data=Data.related_location_flag_with_no_related_locations,
+            schema=Schemas.related_location_flag_input_schema,
+        )
+
+        # WHEN
+        output_lf = job.add_related_location_flag(
+            input_lf,
+        )
+
+        # THEN
+        #   All the rows should be flagged as N for related location
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_related_location_flag_with_no_related_locations,
+            schema=Schemas.expected_related_location_flag_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, output_lf)
+        self.assertEqual(
+            [
+                "N",
+                "N",
+            ],
+            output_lf.collect()["related_location"].to_list(),
+        )
+
+
+@patch(f"{PATCH_PATH}.remove_rows", return_value=["a", "b"])
+class RemoveSpecialistCollegesTests(unittest.TestCase):
+    def setUp(self):
+        self.input_fact_lf = pl.LazyFrame(
+            data=Data.remove_specialist_colleges_fact,
+            schema=Schemas.remove_specialist_colleges_fact_input_schema,
+        )
+
+    def test_removes_rows_where_specialist_college_is_only_service(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where all rows have specialist colleges as their only service offered
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_specialist_colleges_dim_only_specialist_college,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
+        )
+
+        # WHEN
+        job.remove_specialist_colleges(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_specialist_colleges_dim_only_specialist_college,
+            schema=Schemas.expected_remove_specialist_colleges_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   All the rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"]
+        )
+
+    def test_does_not_remove_rows_where_specialist_college_is_one_of_many_services(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where all rows have services offered that include specialist college and at least one other service
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_specialist_colleges_dim_specialist_college_plus_other,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
+        )
+
+        # WHEN
+        job.remove_specialist_colleges(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_specialist_colleges_remove_none,
+            schema=Schemas.expected_remove_specialist_colleges_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"]
+        )
+
+    def test_does_not_remove_rows_where_specialist_college_is_not_a_service(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where no rows have specialist college in their services offered
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_specialist_colleges_dim_no_specialist_college,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
+        )
+
+        # WHEN
+        job.remove_specialist_colleges(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_specialist_colleges_remove_none,
+            schema=Schemas.expected_remove_specialist_colleges_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"]
+        )
+
+    def test_does_not_removes_rows_where_there_is_no_service_offered(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where no rows have services offered (services offered is null or empty list)
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_specialist_colleges_dim_no_services_offered,
+            schema=Schemas.remove_specialist_colleges_dim_input_schema,
+        )
+
+        # WHEN
+        job.remove_specialist_colleges(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_specialist_colleges_remove_none,
+            schema=Schemas.expected_remove_specialist_colleges_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"]
+        )
+
+
+@patch(f"{PATCH_PATH}.remove_rows", return_value=["a", "b"])
+class RemoveLocationsWithoutRegulatedActivitiesTests(unittest.TestCase):
+    def setUp(self):
+        self.input_fact_lf = pl.LazyFrame(
+            data=Data.remove_locations_without_ra_fact,
+            schema=Schemas.remove_locations_without_ra_fact_schema,
+        )
+
+    def test_removes_locations_without_regulated_activities(self, mock_remove_rows):
+        # GIVEN
+        #   Input where all rows have no regulated activities
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_locations_without_ra_dim_without_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_locations_without_ra_dim_without_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   All the rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"], check_row_order=False
+        )
+
+    def test_does_not_remove_rows_with_regulated_activities(self, mock_remove_rows):
+        # GIVEN
+        #   Input where all rows have regulated activities
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_locations_without_ra_dim_with_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_locations_without_ra_dim_with_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"], check_row_order=False
+        )
+
+    def test_returns_empty_lf_when_empty_input_lf(self, mock_remove_rows):
+        # GIVEN
+        #   Input where there are no rows
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_locations_without_ra_empty,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        job.remove_locations_without_regulated_activities(
+            self.input_fact_lf,
+            input_dim_lf,
+        )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_locations_without_ra_empty_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   No rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"], check_row_order=False
+        )
+
+    def test_warns_when_not_all_rows_for_location_have_no_regulated_activities(
+        self, mock_remove_rows
+    ):
+        # GIVEN
+        #   Input where all rows have no regulated activities
+        input_dim_lf = pl.LazyFrame(
+            data=Data.remove_locations_without_ra_dim_some_dates_without_ra,
+            schema=Schemas.remove_locations_without_ra_dim_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(UserWarning) as cm:
+            job.remove_locations_without_regulated_activities(
+                self.input_fact_lf,
+                input_dim_lf,
+            )
+
+        # THEN
+        expected_to_remove_lf = pl.LazyFrame(
+            data=Data.expected_remove_locations_without_ra_dim_some_dates_without_ra_to_remove,
+            schema=Schemas.expected_remove_locations_without_ra_to_remove_schema,
+        )
+        #   A single warning should have been raised
+        self.assertIn(
+            (
+                "The following locations have some dates with imputed regulated activities, and others do not: ['loc_1']. "
+                "Please check that the imputation has been carried out correctly."
+            ),
+            str(cm.warnings[0].message),
+        )
+        self.assertEqual(1, len(cm.warnings))
+        #   The row removal function should have been called once
+        mock_remove_rows.assert_called_once()
+        mock_call_args = mock_remove_rows.call_args.kwargs
+        #   The input fact and dimension lf should be unchanged
+        pl_testing.assert_frame_equal(
+            self.input_fact_lf, mock_call_args["target_lfs"][0]
+        )
+        pl_testing.assert_frame_equal(input_dim_lf, mock_call_args["target_lfs"][1])
+        #   All the rows should be passed in to the mock function as to be removed
+        pl_testing.assert_frame_equal(
+            expected_to_remove_lf, mock_call_args["to_remove_lf"], check_row_order=False
+        )
+
+
+class RemoveRowsTests(unittest.TestCase):
+    def setUp(self):
+        self.input_target_lf = pl.LazyFrame(
+            data=Data.remove_rows_target, schema=Schemas.remove_rows_target_schema
+        )
+
+    def test_removes_when_all_to_remove_rows_have_match(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in the target lf
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            [
+                self.input_target_lf,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_lfs))
+
+        #   All the matching rows should have been removed
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lfs[0])
+
+    def test_removes_none_when_all_to_remove_rows_have_no_match(self):
+        # GIVEN
+        #   Input where no to_remove rows have a corresponding row in the target lf
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_no_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            [
+                self.input_target_lf,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_lfs))
+
+        #   No rows should have been removed
+        pl_testing.assert_frame_equal(self.input_target_lf, result_lfs[0])
+
+    def test_removes_from_multiple_target_lfs(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in multiple target lfs
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+        input_target_lfs = [
+            self.input_target_lf,
+            self.input_target_lf,
+        ]
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            target_lfs=input_target_lfs,
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 2
+        self.assertEqual(len(input_target_lfs), len(result_lfs))
+
+        #   The target rows should have been removed from both dataframes
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lfs[0])
+        pl_testing.assert_frame_equal(expected_lf, result_lfs[1])
+
+    def test_removes_none_when_empty_to_remove(self):
+        # GIVEN
+        #   Input where all to_remove rows have a corresponding row in the target lf
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_empty_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            [
+                self.input_target_lf,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_lfs))
+
+        #   The target lf should be unchanged
+        pl_testing.assert_frame_equal(self.input_target_lf, result_lfs[0])
+
+    def test_removes_when_non_unique_to_remove(self):
+        # GIVEN
+        #   Input where the to_remove lf has duplicate rows
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_non_unique_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            [
+                self.input_target_lf,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_lfs))
+
+        #   All the matching rows should have been removed, duplicates should not affect the output
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lfs[0])
+
+    def test_removes_when_non_unique_target_lf(self):
+        # GIVEN
+        #   Input where the target lf has duplicate rows
+        alt_input_target_lf = pl.LazyFrame(
+            data=Data.remove_rows_non_unique_target,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        #   Input where all to_remove rows have a corresponding row in the target lf
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_all_to_remove_have_match_to_remove,
+            schema=Schemas.remove_rows_to_remove_schema,
+        )
+
+        # WHEN
+        result_lfs = job.remove_rows(
+            input_to_remove_lf,
+            [
+                alt_input_target_lf,
+            ],
+        )
+
+        # THEN
+        #   The length of the returned list should be equal to the list of targets - 1
+        self.assertEqual(1, len(result_lfs))
+
+        #   All the matching rows should have been removed, including duplicates if they match
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_remove_rows_all_to_remove_have_match,
+            schema=Schemas.remove_rows_target_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lfs[0])
+
+    def test_raises_exception_when_schemas_do_not_match(self):
+        # GIVEN
+        #   Input where to_remove contains columns not in the target lf
+        input_to_remove_lf = pl.LazyFrame(
+            data=Data.remove_rows_schemas_do_not_match,
+            schema=Schemas.remove_rows_to_remove_unmatched_schema,
+        )
+
+        # WHEN
+        with self.assertRaises(ValueError) as cm:
+            result_lfs = job.remove_rows(
+                input_to_remove_lf,
+                [
+                    self.input_target_lf,
+                ],
+            )
+
+        # THEN
+        #   The error message should
+        self.assertTrue(
+            "The target dataframe schema does not contain all the columns present to_remove_lf, or the types are not matched."
+            in str(cm.exception)
+        )
+
+
+class SelectRegisteredLocationsTests(unittest.TestCase):
+    def test_selects_all_registered(self):
+        # GIVEN
+        #   Input where all rows have registration status of 'Y'
+        input_lf = pl.LazyFrame(
+            data=Data.select_registered_locations_all_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_lf = job.select_registered_locations(input_lf)
+
+        # THEN
+        #   All rows should be selected (returned) unchanged
+        pl_testing.assert_frame_equal(input_lf, result_lf)
+        self.assertEqual(2, result_lf.collect().shape[0])
+
+    def test_selects_no_deregistered(self):
+        # GIVEN
+        #   Input where all rows have registration status of 'N'
+        input_lf = pl.LazyFrame(
+            data=Data.select_registered_locations_none_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_lf = job.select_registered_locations(input_lf)
+
+        # THEN
+        #   No rows should be selected (returned)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(0, result_lf.collect().shape[0])
+
+    def test_selects_registered_when_status_is_mixed(self):
+        # GIVEN
+        #   Input where some rows have registration status of 'Y', and some have registration status of 'N'
+        input_lf = pl.LazyFrame(
+            data=Data.select_registered_locations_all_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_lf = job.select_registered_locations(input_lf)
+
+        # THEN
+        #   Only rows with a registration status of 'Y' should be returned
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_select_registered_locations_registered,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(2, result_lf.collect().shape[0])
+
+    def test_handles_empty_input_lf(self):
+        # GIVEN
+        #   Input with no rows
+        input_lf = pl.LazyFrame(
+            data=Data.select_registered_locations_empty_input,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        result_lf = job.select_registered_locations(input_lf)
+
+        # THEN
+        #   Should return an empty dataframe
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(0, result_lf.collect().shape[0])
+
+    def test_warns_on_invalid_registration_status(self):
+        # GIVEN
+        #   Input where all rows have a registration status which is invalid
+        input_lf = pl.LazyFrame(
+            data=Data.select_registered_locations_invalid_status,
+            schema=Schemas.select_registered_locations_schema,
+        )
+
+        # WHEN
+        with self.assertWarns(UserWarning) as cm:
+            result_lf = job.select_registered_locations(input_lf)
+
+        # THEN
+        #   A single warning should have been raised
+        self.assertIn(
+            "2 row(s) had an invalid registration status and have been dropped.",
+            str(cm.warnings[0].message),
+        )
+        self.assertEqual(1, len(cm.warnings))
+
+        #   And it should return an empty dataframe (with the invalid rows removed)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_select_registered_locations_empty,
+            schema=Schemas.select_registered_locations_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(0, result_lf.collect().shape[0])
+
+
+class AssignCqcSectorTests(TestCase):
+    def test_assigns_local_authority(self):
+        # GIVEN
+        #   Input where rows have provider IDs in the list of LA provider ids
+        input_lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_input_schema,
+        )
+        local_authority_provider_ids = input_lf.collect()["providerId"].to_list()
+
+        # WHEN
+        result_lf = job.assign_cqc_sector(input_lf, local_authority_provider_ids)
+
+        # THEN
+        #   Each row should be assigned the CQC sector of "Local authority"
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_local_authority,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["Local authority", "Local authority"],
+            expected_lf.collect()["cqc_sector"].to_list(),
+        )
+
+    def test_assigns_independent(self):
+        # GIVEN
+        #   Input where rows have provider IDs in the list of LA provider ids
+        input_lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_input_schema,
+        )
+        local_authority_provider_ids = [
+            s + "change" for s in input_lf.collect()["providerId"].to_list()
+        ]
+
+        # WHEN
+        result_lf = job.assign_cqc_sector(input_lf, local_authority_provider_ids)
+
+        # THEN
+        #   Each row should be assigned the CQC sector of "Local authority"
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_independent,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["Independent", "Independent"],
+            expected_lf.collect()["cqc_sector"].to_list(),
+        )
+
+
+class AssignSpecialismCategoryTests(TestCase):
+    def test_assigns_specialist(self):
+        # GIVEN
+        #   Input where all rows have just "Dementia" in their specialisms
+        input_lf = pl.LazyFrame(
+            data=Data.assign_specialism_category_specialist,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_lf = job.assign_specialism_category(input_lf, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as specialists
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_specialism_category_specialist,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["specialist", "specialist"],
+            result_lf.collect()["specialist_generalist_other_dementia"].to_list(),
+        )
+
+    def test_assigns_generalist(self):
+        # GIVEN
+        #   Input where all rows have "Dementia" and one or more other specialties in their specialisms
+        input_lf = pl.LazyFrame(
+            data=Data.assign_specialism_category_generalist,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_lf = job.assign_specialism_category(input_lf, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as generalist
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_specialism_category_generalist,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["generalist", "generalist"],
+            result_lf.collect()["specialist_generalist_other_dementia"].to_list(),
+        )
+
+    def test_assigns_other(self):
+        # GIVEN
+        #   Input where no rows have "Dementia" in their specialisms
+        input_lf = pl.LazyFrame(
+            data=Data.assign_specialism_category_other,
+            schema=Schemas.assign_specialism_category_input_schema,
+        )
+
+        # WHEN
+        result_lf = job.assign_specialism_category(input_lf, "Dementia")
+
+        # THEN
+        #   All rows should have been assigned as other
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_specialism_category_other,
+            schema=Schemas.expected_assign_specialism_category_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+        self.assertEqual(
+            ["other", "other"],
+            result_lf.collect()["specialist_generalist_other_dementia"].to_list(),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

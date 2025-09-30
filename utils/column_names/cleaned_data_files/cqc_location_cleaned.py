@@ -10,6 +10,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 
 @dataclass
 class CqcLocationCleanedColumns(NewCqcLocationApiColumns, ONSClean):
+    all_contacts: str = "all_contacts"
+    all_contacts_flat: str = "all_contacts_flat"
     contacts_full_name: str = "contacts_full_name"
     contacts_roles: str = "contacts_roles"
     contacts_exploded: str = "contacts_exploded"
