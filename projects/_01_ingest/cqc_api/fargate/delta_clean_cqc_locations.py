@@ -416,7 +416,7 @@ def create_dimension_from_postcode(
     ons_lf: pl.LazyFrame,
     dimension_location: str,
     dimension_update_date: str,
-):
+) -> pl.LazyFrame:
     """
     Creates dimension from postcode column, matching ONS data
     Args:
@@ -427,6 +427,9 @@ def create_dimension_from_postcode(
 
     Returns:
         pl.LazyFrame:  Dataframe of delta dimension table, with rows of the changes since the last update.
+
+    Raises:
+        ColumnNotFoundError: if one of the required columns is not present in the CQC data.
     """
     postcode_columns = [
         CQCLClean.location_id,
