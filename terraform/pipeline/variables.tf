@@ -20,3 +20,9 @@ variable "glue_database_name" {
   description = "The name of the glue database"
   default     = "data-engineering-database"
 }
+
+variable "secret_name" {
+  type    = string
+  default = "cqc_api_primary_key"
+}
+
