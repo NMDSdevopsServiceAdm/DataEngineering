@@ -11,10 +11,12 @@ from pathlib import Path
 from unittest.mock import patch
 
 import polars as pl
+import polars.testing as pl_testing
 from polars_utils import utils
 from polars_utils.utils import write_to_parquet
 
 SRC_PATH = "polars_utils.validation.actions"
+PATCH_PATH = "polars_utils.utils"
 
 
 class TestUtils(unittest.TestCase):
@@ -54,6 +56,54 @@ class TestUtils(unittest.TestCase):
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
+
+
+class TestScanParquet(TestUtils):
+    def test_uses_schema(self):
+        # GIVEN
+        #   Dataframe written to parquet and schema is directly inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+        schema = self.df.schema
+
+        # WHEN
+        return_lf = utils.scan_parquet(source=self.temp_dir, schema=schema)
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.lazy(), return_lf)
+
+    def test_infers_schema_if_not_provided(self):
+        # GIVEN
+        #   Dataframe written to parquet but no schema is inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+
+        # WHEN
+        return_lf = utils.scan_parquet(source=self.temp_dir)
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.lazy(), return_lf)
+
+    def test_selects_columns(self):
+        # GIVEN
+        #   Dataframe written to parquet but no schema is inferred
+        self.df.write_parquet(self.temp_dir / "df.parquet")
+        selected_columns = ["someId"]
+
+        # WHEN
+        return_lf = utils.scan_parquet(
+            source=self.temp_dir, selected_columns=selected_columns
+        )
+
+        # THEN
+        #   The returned instance should be a LazyFrame
+        self.assertIsInstance(return_lf, pl.LazyFrame)
+        #   The returned lf should be equal to the dataframe that was originally written out
+        pl_testing.assert_frame_equal(self.df.select("someId").lazy(), return_lf)
 
 
 class TestReadParquet(TestUtils):

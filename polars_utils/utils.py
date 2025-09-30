@@ -81,19 +81,7 @@ def read_parquet(
         # By including missing_columns="insert", we prevent a failure but will
         # exclude columns introduced in later partitions.
         # TODO: establish full schema from latest data
-        raw = (
-            pl.scan_parquet(
-                source,
-                cast_options=pl.ScanCastOptions(
-                    missing_struct_fields="insert",
-                    extra_struct_fields="ignore",
-                ),
-                extra_columns="ignore",
-                missing_columns="insert",
-            )
-            .select(selected_columns or cs.all())
-            .collect()
-        )
+        raw = scan_parquet(source, selected_columns=selected_columns).collect()
 
     if not exclude_complex_types:
         return raw
