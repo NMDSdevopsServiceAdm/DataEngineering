@@ -92,13 +92,14 @@ def run_postcode_matching(
     raise_error_if_unmatched(unmatched_truncated_locations_lf)
 
     # Step 6 - Create a final LazyFrame with all matched postcodes.
-    final_matched_lf = combine_matched_dataframes(
+    final_matched_lf = pl.concat(
         [
             matched_locations_lf,
             matched_reassigned_locations_lf,
             matched_amended_locations_lf,
             matched_truncated_locations_lf,
-        ]
+        ],
+        how="diagonal",
     )
 
     return final_matched_lf
@@ -342,18 +343,3 @@ def raise_error_if_unmatched(unmatched_lf: pl.LazyFrame) -> None:
         for r in rows
     ]
     raise TypeError(f"Unmatched postcodes found: {errors}")
-
-
-def combine_matched_dataframes(dataframes: List[pl.LazyFrame]) -> pl.LazyFrame:
-    """
-    Combines a list of LazyFrames using unionByName.
-
-    allowMissingColumns is set to True to account for some LazyFrames having additional columns.
-
-    Args:
-        dataframes (List[pl.LazyFrame]): List of LazyFrames to combine.
-
-    Returns:
-        pl.LazyFrame: Unified LazyFrame with all rows.
-    """
-    return pl.concat(dataframes, how="diagonal")
