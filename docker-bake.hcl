@@ -11,7 +11,7 @@ variable "CIRCLE_BRANCH" {
 }
 
 group "all" {
-  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "_03_independent_cqc"]
+  targets = ["create_dataset_snapshot", "check_dataset_equality", "delta_cqc", "model_retrain", "model_preprocess", "_03_independent_cqc"]
 }
 
 # group "ingest" {
@@ -38,6 +38,22 @@ target "delta_cqc" {
   context = "."
   dockerfile = "./projects/_01_ingest/cqc_api/fargate/Dockerfile"
   tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/cqc:${CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}
+
+target "model_retrain" {
+  context = "."
+  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/retraining/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/model-retrain:${CIRCLE_BRANCH}"]
+  platforms = ["linux/amd64"]
+  no-cache = true
+}
+
+target "model_preprocess" {
+  context = "."
+  dockerfile = "./projects/_03_independent_cqc/_05_model/fargate/preprocessing/Dockerfile"
+  tags = ["${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com/fargate/preprocessing:${CIRCLE_BRANCH}"]
   platforms = ["linux/amd64"]
   no-cache = true
 }
