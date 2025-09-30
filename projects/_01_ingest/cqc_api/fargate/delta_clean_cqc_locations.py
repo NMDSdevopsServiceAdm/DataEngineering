@@ -137,15 +137,10 @@ def main(
             cqc_locations_source,
             schema=POLARS_LOCATION_SCHEMA,
             selected_columns=cqc_location_cols_to_import,
-        ).filter(
-            pl.col(CQCLClean.location_id).is_in(
-                ["1-16132859906", "1-939874319", "1-804413795"]
-            )
         )
 
         logger.info(f"CQC Location LazyFrame read in")
-        if logger.level == logging.DEBUG:
-            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
 
         # Format dates
         cqc_lf = cqc_lf.with_columns(
@@ -186,8 +181,7 @@ def main(
             ),
         )
         logger.info(f"CQC Location LazyFrame filtered to registered Social Care Orgs")
-        if logger.level == logging.DEBUG:
-            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
 
         cqc_lf = impute_historic_relationships(cqc_lf)
         cqc_lf = select_registered_locations(cqc_lf)
@@ -212,8 +206,7 @@ def main(
         logger.info(
             f"CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
         )
-        if logger.level == logging.DEBUG:
-            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
 
         regulated_activity_delta = extract_registered_manager_names(
             regulated_activity_delta
@@ -325,7 +318,7 @@ def main(
         )
 
         utils.write_to_parquet(
-            df=cqc_lf.drop(CQCLClean.cqc_location_import_date).collect(),
+            df=cqc_lf.collect(),
             output_path=cleaned_cqc_locations_destination,
             logger=logger,
             partition_cols=cqcPartitionKeys,

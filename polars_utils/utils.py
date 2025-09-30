@@ -40,8 +40,8 @@ def scan_parquet(
     # Check if directory exists.
     s3_client = boto3.client("s3")
     response = s3_client.list_objects_v2(
-        Bucket=source.split("/")[2],
-        Prefix=source.split("/", 3)[3],
+        Bucket=str(source).split("/")[2],
+        Prefix=str(source).split("/", 3)[3],
         MaxKeys=1,
     )
     if "Contents" not in response:
