@@ -2436,69 +2436,63 @@ class ExtractRegisteredManagerNamesData:
         ),
     ]
 
-    select_and_create_full_name = [
-        ("1-001", "1-001", "1-002", "1-003", "1-003"),
+    select_and_create_full_name_when_given_and_family_name_both_populated = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (CareHome.care_home,),
         (
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-        ),
-        (
-            CareHome.care_home,
-            CareHome.care_home,
-            CareHome.care_home,
-            CareHome.care_home,
-            CareHome.care_home,
-        ),
-        (
-            None,
             {
-                CQCL.person_family_name: "Surname_1",
+                CQCL.person_family_name: "Surname",
                 CQCL.person_given_name: "Name",
                 CQCL.person_roles: ["Registered Manager"],
-                CQCL.person_title: "M",
-            },
-            {
-                CQCL.person_family_name: "Surname_2",
-                CQCL.person_given_name: "Name",
-                CQCL.person_roles: ["Registered Manager"],
-                CQCL.person_title: "M",
-            },
-            {
-                CQCL.person_family_name: "Surname_3",
-                CQCL.person_given_name: "Name",
-                CQCL.person_roles: ["Registered Manager"],
-                CQCL.person_title: "M",
-            },
-            {
-                CQCL.person_family_name: "Surname_3",
-                CQCL.person_given_name: "Name",
-                CQCL.person_roles: ["Other Role"],
                 CQCL.person_title: "M",
             },
         ),
     ]
-    expected_select_and_create_full_name = [
-        ("1-001", "1-001", "1-002", "1-003", "1-003"),
-        (
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-            date(2024, 1, 1),
-        ),
-        (
-            None,
-            "Name Surname_1",
-            "Name Surname_2",
-            "Name Surname_3",
-            "Name Surname_3",
-        ),
+    expected_select_and_create_full_name_when_given_and_family_name_both_populated = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        ("Name Surname",),
     ]
 
-    add_registered_manager_names_full_df = [
+    select_and_create_full_name_when_given_or_family_name_or_null = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (CareHome.care_home, CareHome.care_home),
+        (
+            {
+                CQCL.person_family_name: None,
+                CQCL.person_given_name: "Name",
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+            {
+                CQCL.person_family_name: "Surname",
+                CQCL.person_given_name: None,
+                CQCL.person_roles: ["Registered Manager"],
+                CQCL.person_title: "M",
+            },
+        ),
+    ]
+    expected_select_and_create_full_name_when_given_or_family_name_or_null = [
+        ("1-001", "1-002"),
+        (date(2024, 1, 1), date(2024, 1, 1)),
+        (None, None),
+    ]
+
+    select_and_create_full_name_without_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (CareHome.care_home,),
+        (None,),
+    ]
+    expected_select_and_create_full_name_without_contact = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        (None,),
+    ]
+
+    initial_df = [
         ("1-001", "1-001", "1-002", "1-002"),
         (
             date(2024, 1, 1),
@@ -2512,6 +2506,151 @@ class ExtractRegisteredManagerNamesData:
             CareHome.care_home,
             CareHome.care_home,
         ),
+    ]
+
+    registered_manager_names_without_duplicates = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_3",
+            "Name Surname_4",
+        ),
+    ]
+    expected_add_registered_manager_names_without_duplicates = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (
+            ["Name Surname_1"],
+            ["Name Surname_2"],
+            ["Name Surname_3"],
+            ["Name Surname_4"],
+        ),
+    ]
+
+    registered_manager_names_with_duplicates = [
+        ("1-001", "1-001", "1-001", "1-002", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            "Name Surname_1",
+            "Name Surname_1",
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_2",
+            "Name Surname_2",
+        ),
+    ]
+    expected_add_registered_manager_names_with_duplicates = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (
+            ["Name Surname_1"],
+            ["Name Surname_1"],
+            ["Name Surname_2"],
+            ["Name Surname_2"],
+        ),
+    ]
+
+    registered_manager_names_with_locations_with_multiple_managers = [
+        ("1-001", "1-001", "1-001", "1-002", "1-002", "1-002", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_1",
+            "Name Surname_3",
+            "Name Surname_1",
+            "Name Surname_2",
+            "Name Surname_3",
+            "Name Surname_1",
+        ),
+    ]
+    expected_registered_manager_names_with_locations_with_multiple_managers = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (
+            ["Name Surname_1"],
+            ["Name Surname_1", "Name Surname_2"],
+            ["Name Surname_1", "Name Surname_3"],
+            ["Name Surname_1", "Name Surname_2", "Name Surname_3"],
+        ),
+    ]
+
+    registered_manager_names_with_locations_without_contact_names = [
+        ("1-001",),
+        (date(2024, 1, 1),),
+        ("Name Surname",),
+    ]
+    expected_registered_manager_names_with_locations_without_contact_names = [
+        ("1-001", "1-001", "1-002", "1-002"),
+        (
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+            date(2024, 1, 1),
+            date(2024, 2, 1),
+        ),
+        (
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+            CareHome.care_home,
+        ),
+        (["Name Surname"], None, None, None),
     ]
 
 

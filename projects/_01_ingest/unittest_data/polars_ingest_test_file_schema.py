@@ -645,12 +645,23 @@ class ExtractRegisteredManagerNamesSchema:
         ]
     )
 
-    add_registered_manager_names_full_df_schema = pl.Schema(
+    initial_df_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.care_home, pl.String()),
         ]
+    )
+    registered_manager_names_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.contacts_full_name, pl.String()),
+        ]
+    )
+    expected_add_registered_manager_names_schema = pl.Schema(
+        list(initial_df_schema.items())
+        + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
     )
 
 
