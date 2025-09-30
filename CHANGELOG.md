@@ -44,6 +44,9 @@ All notable changes to this project will be documented in this file.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
+- Added additional sorting to handling of duplicate registrations so that null rows are above populated rows. Therefore,
+null ASC-WDS figures wont be copied across duplicate registration.
+
 ### Improved
 
 
