@@ -614,14 +614,14 @@ class CreateDimensionDeltaTests(unittest.TestCase):
     def test_no_previous_dimension_warns_and_continues(self, mock_scan_parquet):
         # GIVEN
         #   The historic dim cannot be found and raises an OS error
-        mock_scan_parquet.side_effect = ComputeError()
+        mock_scan_parquet.side_effect = FileNotFoundError()
         input_current_dim = pl.LazyFrame(
             data=Data.create_dimension_delta_current_entirely_unique_from_historic,
             schema=Schemas.create_dimension_delta_input_schema,
         )
 
         # WHEN
-        with self.assertWarns(UserWarning) as cm:
+        with self.assertWarns(FileNotFoundError) as cm:
             result_lf = job._create_dimension_delta(
                 dimension_location="s3://bucket_name/domain=some_domain/dataset=dim_name/",
                 dimension_update_date="20250101",

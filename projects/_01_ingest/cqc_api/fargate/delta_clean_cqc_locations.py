@@ -138,6 +138,7 @@ def main(
             schema=POLARS_LOCATION_SCHEMA,
             selected_columns=cqc_location_cols_to_import,
         )
+
         logger.info(f"CQC Location LazyFrame read in")
         if logger.level == logging.DEBUG:
             logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
@@ -380,7 +381,6 @@ def create_dimension_from_struct_field(
     """
     # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
     imputed_column_name = "imputed_" + struct_column_name
-
     current_dim = cqc_lf.select(
         CQCLClean.location_id,
         struct_column_name,
@@ -494,7 +494,7 @@ def _create_dimension_delta(
         previous_dimension = utils.scan_parquet(dimension_location).with_columns(
             pl.col(DimensionKeys.import_date).cast(pl.String)
         )
-    except ComputeError:
+    except FileNotFoundError:
         warnings.warn(
             f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
             UserWarning,
@@ -883,7 +883,7 @@ def remove_locations_without_regulated_activities(
 
     # 2. Check that none of these locations have regulated activities for any other date.
     locations_to_investigate = regulated_activities_dimension.join(
-        to_remove_lf.select(pl.col(CQCLClean.location_id).unique()),
+        to_remove_lf,
         on=CQCLClean.location_id,
         how="semi",
     ).filter(pl.col(CQCLClean.imputed_regulated_activities).is_not_null())

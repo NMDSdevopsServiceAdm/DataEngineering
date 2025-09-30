@@ -22,7 +22,7 @@ def scan_parquet(
     """
     Reads in parquet into a LazyFrame
     Args:
-        source (str | Path): the full path in s3 of the dataset to be validated
+        source (str | Path): the full path in s3 of the dataset 
         schema (pl.Schema | None, optional): Polars schema to apply to dataset read
         selected_columns (list[str] | None, optional): list of columns to return as a
             subset of the columns in the schema. Defaults to None.
@@ -30,9 +30,23 @@ def scan_parquet(
     Returns:
         pl.LazyFrame: the raw data as a polars LazyFrame
 
+    Raises:
+        FileNotFoundError: if there are no files in the source directory
+
     """
     if isinstance(source, str):
         source = source.strip("/") + "/"
+
+    # Check if directory exists.
+    s3_client = boto3.client("s3")
+    response = s3_client.list_objects_v2(
+        Bucket=source.split("/")[2],
+        Prefix=source.split("/", 3)[3],
+        MaxKeys=1,
+    )
+    if "Contents" not in response:
+        raise FileNotFoundError(f"No files in {source}")
+
     lf = pl.scan_parquet(
         source,
         schema=schema,
