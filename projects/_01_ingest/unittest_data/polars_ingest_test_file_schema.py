@@ -656,6 +656,17 @@ class ExtractRegisteredManagerNamesSchema:
             (CQCLClean.care_home, pl.String()),
         ]
     )
+    registered_manager_names_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.contacts_full_name, pl.String()),
+        ]
+    )
+    expected_add_registered_manager_names_schema = pl.Schema(
+        list(add_registered_manager_names_full_lf_schema.items())
+        + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
+    )
 
 
 @dataclass

@@ -118,6 +118,7 @@ def add_registered_manager_names(
     grouped_lf = contact_names_lf.group_by(join_keys).agg(
         pl.col(CQCLClean.contacts_full_name)
         .unique()
+        .sort()
         .alias(CQCLClean.registered_manager_names)
     )
 
