@@ -57,6 +57,10 @@ mock_cqc_locations_data.filter.return_value = mock_cqc_locations_data
     f"{PATCH_PATH}.impute_historic_relationships",
     return_value=mock_cqc_locations_data,
 )
+@patch(
+    f"{PATCH_PATH}.raw_data_adjustments.is_valid_location",
+    return_value=mock_cqc_locations_data,
+)
 @patch(f"{PATCH_PATH}.assign_cqc_sector", return_value=mock_cqc_locations_data)
 @patch(f"{PATCH_PATH}.clean_provider_id_column", return_value=mock_cqc_locations_data)
 @patch(
@@ -72,6 +76,7 @@ class MainTests(unittest.TestCase):
         mock_clean_and_impute_registration_date: Mock,
         mock_clean_provider_id_column: Mock,
         mock_assign_cqc_sector: Mock,
+        mock_is_valid_location: Mock,
         mock_impute_historic_relationships: Mock,
         mock_select_registered_locations: Mock,
         mock_add_related_location_flag: Mock,
@@ -131,6 +136,7 @@ class MainTests(unittest.TestCase):
         mock_assign_cqc_sector: Mock,
         mock_impute_historic_relationships: Mock,
         mock_select_registered_locations: Mock,
+        mock_is_valid_location: Mock,
         mock_add_related_location_flag: Mock,
         mock_create_dimension_from_struct_field: Mock,
         mock_remove_locations_without_regulated_activities: Mock,
@@ -174,6 +180,7 @@ class MainTests(unittest.TestCase):
         mock_clean_and_impute_registration_date: Mock,
         mock_clean_provider_id_column: Mock,
         mock_assign_cqc_sector: Mock,
+        mock_is_valid_location: Mock,
         mock_impute_historic_relationships: Mock,
         mock_select_registered_locations: Mock,
         mock_add_related_location_flag: Mock,
@@ -242,6 +249,7 @@ class MainTests(unittest.TestCase):
         mock_clean_and_impute_registration_date: Mock,
         mock_clean_provider_id_column: Mock,
         mock_assign_cqc_sector: Mock,
+        mock_is_valid_location: Mock,
         mock_impute_historic_relationships: Mock,
         mock_select_registered_locations: Mock,
         mock_add_related_location_flag: Mock,
@@ -621,7 +629,7 @@ class CreateDimensionDeltaTests(unittest.TestCase):
         )
 
         # WHEN
-        with self.assertWarns(FileNotFoundError) as cm:
+        with self.assertWarns(UserWarning) as cm:
             result_lf = job._create_dimension_delta(
                 dimension_location="s3://bucket_name/domain=some_domain/dataset=dim_name/",
                 dimension_update_date="20250101",

@@ -1,4 +1,3 @@
-import logging
 import sys
 import warnings
 
@@ -6,7 +5,7 @@ import polars as pl
 from polars.exceptions import ColumnNotFoundError, ComputeError
 from botocore.exceptions import ClientError
 
-from polars_utils import utils
+from polars_utils import utils, logger, raw_data_adjustments
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
@@ -14,7 +13,6 @@ from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names 
 from projects._01_ingest.cqc_api.fargate.utils.postcode_matcher import (
     run_postcode_matching,
 )
-from utils.raw_data_adjustment_polars import RecordsToRemoveInLocationsData
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -43,8 +41,8 @@ from utils.column_values.categorical_column_values import (
 )
 
 
-cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-dimensionPartitionKeys = [
+cqc_partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+dimension_partition_keys = [
     DimensionKeys.year,
     DimensionKeys.month,
     DimensionKeys.day,
@@ -80,11 +78,7 @@ ons_cols_to_import = [
     *current_geography_columns,
 ]
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger.addHandler(logging.StreamHandler())
-logger.handlers[0].setFormatter(formatter)
+logger = logger.get_logger(__name__)
 
 
 def main(
@@ -139,8 +133,10 @@ def main(
             selected_columns=cqc_location_cols_to_import,
         )
 
-        logger.info(f"CQC Location LazyFrame read in")
-        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.info("CQC Location LazyFrame read in")
+        logger.debug(
+            f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
+        )
 
         # Format dates
         cqc_lf = cqc_lf.with_columns(
@@ -173,15 +169,12 @@ def main(
         # Filter CQC dataframe on known conditions
         cqc_lf = cqc_lf.filter(
             pl.col(CQCLClean.type).eq(LocationType.social_care_identifier),
-            ~pl.col(CQCLClean.location_id).is_in(
-                [
-                    RecordsToRemoveInLocationsData.dental_practice,
-                    RecordsToRemoveInLocationsData.temp_registration,
-                ]
-            ),
+            raw_data_adjustments.is_valid_location(),
         )
-        logger.info(f"CQC Location LazyFrame filtered to registered Social Care Orgs")
-        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.info("CQC Location LazyFrame filtered to registered Social Care Orgs")
+        logger.debug(
+            f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
+        )
 
         cqc_lf = impute_historic_relationships(cqc_lf)
         cqc_lf = select_registered_locations(cqc_lf)
@@ -204,9 +197,11 @@ def main(
             )
         )
         logger.info(
-            f"CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
+            "CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
         )
-        logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        logger.debug(
+            f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
+        )
 
         regulated_activity_delta = extract_registered_manager_names(
             regulated_activity_delta
@@ -218,7 +213,7 @@ def main(
             ).collect(),
             output_path=regulated_activities_destination,
             logger=logger,
-            partition_cols=dimensionPartitionKeys,
+            partition_cols=dimension_partition_keys,
         )
         del regulated_activity_delta
 
@@ -248,7 +243,7 @@ def main(
             df=specialisms_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=specialisms_destination,
             logger=logger,
-            partition_cols=dimensionPartitionKeys,
+            partition_cols=dimension_partition_keys,
         )
         del specialisms_delta
 
@@ -277,7 +272,7 @@ def main(
             df=gac_service_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=gac_service_destination,
             logger=logger,
-            partition_cols=dimensionPartitionKeys,
+            partition_cols=dimension_partition_keys,
         )
         del gac_service_delta
 
@@ -285,21 +280,22 @@ def main(
         ons_lf = utils.scan_parquet(
             cleaned_ons_source, selected_columns=ons_cols_to_import
         )
-        logger.info(f"Cleaned ONS LazyFrame read in")
-        if logger.level == logging.DEBUG:
-            logger.debug(f"Cleaned ONS LazyFrame has {ons_lf.collect().shape[0]} rows")
+        logger.info("Cleaned ONS LazyFrame read in")
+        logger.debug(
+            f"Cleaned ONS LazyFrame has {ons_lf.select(pl.len()).collect().item()} rows"
+        )
 
         postcode_delta = create_dimension_from_postcode(
             cqc_lf=cqc_lf,
             ons_lf=ons_lf,
             dimension_location=postcode_matching_destination,
-            dimension_update_date="20250930",
+            dimension_update_date=dimension_update_date,
         )
         utils.write_to_parquet(
             df=postcode_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=postcode_matching_destination,
             logger=logger,
-            partition_cols=dimensionPartitionKeys,
+            partition_cols=dimension_partition_keys,
         )
         del postcode_delta
 
@@ -321,17 +317,17 @@ def main(
             df=cqc_lf.collect(),
             output_path=cleaned_cqc_locations_destination,
             logger=logger,
-            partition_cols=cqcPartitionKeys,
+            partition_cols=cqc_partition_keys,
         )
     except ColumnNotFoundError as e:
-        logger.error(f"There has been an unexpected schema change.")
+        logger.error("There has been an unexpected schema change.")
         logger.error(sys.argv)
         logger.error(e)
         raise
     except ClientError as e:
         if e.response["Error"]["Code"] == "AccessDenied":
             logger.error(
-                f"Please check you are reading from/writing to the right bucket or update your IAM permissions"
+                "Please check you are reading from/writing to the right bucket or update your IAM permissions"
             )
         elif e.response["Error"]["Code"] == "NoSuchKey":
             logger.error("The file does not exist, please check the path.")
@@ -417,10 +413,21 @@ def create_dimension_from_struct_field(
 
 def create_dimension_from_postcode(
     cqc_lf: pl.LazyFrame,
-    ons_lf: str,
+    ons_lf: pl.LazyFrame,
     dimension_location: str,
     dimension_update_date: str,
 ):
+    """
+    Creates dimension from postcode column, matching ONS data
+    Args:
+        cqc_lf (pl.LazyFrame): LazyFrame containing 'location_id', 'cqc_location_import_date', 'import_date' and 'postalcode'.
+        ons_lf (pl.LazyFrame): LazyFrame containing ONS data
+        dimension_location (str): Location of the dimension data
+        dimension_update_date (str): Update date of the dimension date
+
+    Returns:
+        pl.LazyFrame:  Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
     postcode_columns = [
         CQCLClean.location_id,
         CQCLClean.name,
@@ -431,7 +438,7 @@ def create_dimension_from_postcode(
     ]
     if not all(col in cqc_lf.columns for col in postcode_columns):
         raise ColumnNotFoundError(
-            f"One or more required columns are missing from the CQC dataframe. "
+            "One or more required columns are missing from the CQC dataframe. "
             f"\nRequired columns: {postcode_columns}"
             f"\nExisting columns: {cqc_lf.columns}"
         )
@@ -513,10 +520,9 @@ def _create_dimension_delta(
         pl.lit(dimension_update_date).alias(DimensionKeys.last_updated),
     )
     logger.info(f"The {dimension_name} delta has been created.")
-    if logger.level == logging.DEBUG:
-        logger.debug(
-            f"{dimension_name} delta LazyFrame has {delta.collect().shape[0]} rows"
-        )
+    logger.debug(
+        f"{dimension_name} delta LazyFrame has {delta.select(pl.len()).collect().item()} rows"
+    )
 
     return delta
 
@@ -960,7 +966,7 @@ def select_registered_locations(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     if not invalid_rows.collect().is_empty():
         warnings.warn(
             (
-                f"{invalid_rows.collect().shape[0]} row(s) had an invalid registration status and have been dropped."
+                f"{invalid_rows.select(pl.len()).collect().item()} row(s) had an invalid registration status and have been dropped."
                 "\nThe following values are invalid:"
                 f"{invalid_rows.select(CQCLClean.registration_status).collect().get_column(CQCLClean.registration_status).value_counts()}"
             ),
@@ -1061,7 +1067,7 @@ if __name__ == "__main__":
             "S3 URI to WRITE postcode matching cleaned dimension to",
         ),
     )
-    logger.info(f"Running cleaning job")
+    logger.info("Running cleaning job")
 
     main(
         cqc_locations_source=args.cqc_locations_source,
@@ -1073,4 +1079,4 @@ if __name__ == "__main__":
         postcode_matching_destination=args.postcode_matching_destination,
     )
 
-    logger.info(f"Finished cleaning job")
+    logger.info("Finished cleaning job")
