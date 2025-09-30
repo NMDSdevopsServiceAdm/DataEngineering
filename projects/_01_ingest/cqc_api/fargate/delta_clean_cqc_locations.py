@@ -3,10 +3,11 @@ import sys
 import warnings
 
 import polars as pl
-from polars.exceptions import ColumnNotFoundError
+from polars.exceptions import ColumnNotFoundError, ComputeError
 from botocore.exceptions import ClientError
 
 from polars_utils import utils
+from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from projects._01_ingest.cqc_api.fargate.utils.extract_registered_manager_names import (
     extract_registered_manager_names,
 )
@@ -132,32 +133,45 @@ def main(
         Exception: For any other error occurring during cleaning.
     """
     try:
-        cqc_df = utils.read_parquet(
-            cqc_locations_source, selected_columns=cqc_location_cols_to_import
+        cqc_lf = utils.scan_parquet(
+            cqc_locations_source,
+            schema=POLARS_LOCATION_SCHEMA,
+            selected_columns=cqc_location_cols_to_import,
         )
-        logger.info(f"CQC Location DataFrame read in with {cqc_df.shape[0]} rows")
+        logger.info(f"CQC Location LazyFrame read in")
+        if logger.level == logging.DEBUG:
+            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
 
         # Format dates
-        cqc_df = clean_and_impute_registration_date(cqc_df)
-        cqc_df = cqc_df.with_columns(
+        cqc_lf = cqc_lf.with_columns(
             pl.col(CQCLClean.registration_date).str.to_date("%Y-%m-%d"),
-            pl.col(CQCLClean.imputed_registration_date).str.to_date("%Y-%m-%d"),
-            pl.col(CQCLClean.deregistration_date).str.to_date("%Y-%m-%d"),
+            pl.col(CQCLClean.deregistration_date)
+            .str.to_date("%Y-%m-%d", strict=False)
+            .fill_null(
+                pl.col(CQCLClean.deregistration_date).str.to_date(
+                    "%Y%m%d", strict=False
+                )
+            ),
+            pl.col(Keys.import_date).cast(pl.String).alias(Keys.import_date),
             pl.col(Keys.import_date)
+            .cast(pl.String)
             .str.to_date("%Y%m%d")
             .alias(CQCLClean.cqc_location_import_date),
+            pl.col(Keys.month).cast(pl.String).str.pad_start(2, "0"),
+            pl.col(Keys.day).cast(pl.String).str.pad_start(2, "0"),
         )
+        cqc_lf = clean_and_impute_registration_date(cqc_lf)
 
         # Clean provider ID, and then filter only for rows that have a provider id
-        cqc_df = clean_provider_id_column(cqc_df)
-        cqc_df = cqc_df.filter(pl.col(CQCLClean.provider_id).is_not_null())
+        cqc_lf = clean_provider_id_column(cqc_lf)
+        cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
         # Use the provider ID to identify which locations are members of the local authority
-        cqc_df = assign_cqc_sector(
-            cqc_df=cqc_df, la_provider_ids=LocalAuthorityProviderIds.known_ids
+        cqc_lf = assign_cqc_sector(
+            cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
         )
 
         # Filter CQC dataframe on known conditions
-        cqc_df = cqc_df.filter(
+        cqc_lf = cqc_lf.filter(
             pl.col(CQCLClean.type).eq(LocationType.social_care_identifier),
             ~pl.col(CQCLClean.location_id).is_in(
                 [
@@ -166,49 +180,53 @@ def main(
                 ]
             ),
         )
-        logger.info(
-            f"CQC Location DataFrame filtered to registered Social Care Orgs\n"
-            f"{cqc_df.shape[0]} rows remain"
-        )
+        logger.info(f"CQC Location LazyFrame filtered to registered Social Care Orgs")
+        if logger.level == logging.DEBUG:
+            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
 
-        cqc_df = impute_historic_relationships(cqc_df)
-        cqc_df = select_registered_locations(cqc_df)
-        cqc_df = add_related_location_flag(cqc_df)
+        cqc_lf = impute_historic_relationships(cqc_lf)
+        cqc_lf = select_registered_locations(cqc_lf)
+        cqc_lf = add_related_location_flag(cqc_lf)
 
         # Calculate latest import date for dimension update date
-        dimension_update_date = cqc_df.select(Keys.import_date).max().item()
+        dimension_update_date = cqc_lf.select(Keys.import_date).max().collect().item()
 
         # Create Regulated Activities dimension delta
         regulated_activity_delta = create_dimension_from_struct_field(
-            cqc_df=cqc_df,
+            cqc_lf=cqc_lf,
             struct_column_name=CQCLClean.regulated_activities,
             dimension_location=regulated_activities_destination,
             dimension_update_date=dimension_update_date,
         )
 
-        cqc_df, regulated_activity_delta = (
+        cqc_lf, regulated_activity_delta = (
             remove_locations_without_regulated_activities(
-                cqc_df=cqc_df, regulated_activities_dimension=regulated_activity_delta
+                cqc_lf=cqc_lf, regulated_activities_dimension=regulated_activity_delta
             )
         )
         logger.info(
-            f"CQC Location DataFrame filtered to remove locations which have never had a regulated activity\n"
-            f"{cqc_df.shape[0]} rows remain"
+            f"CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
         )
+        if logger.level == logging.DEBUG:
+            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+
         regulated_activity_delta = extract_registered_manager_names(
             regulated_activity_delta
         )
 
         utils.write_to_parquet(
-            df=regulated_activity_delta.drop(CQCLClean.cqc_location_import_date),
+            df=regulated_activity_delta.drop(
+                CQCLClean.cqc_location_import_date
+            ).collect(),
             output_path=regulated_activities_destination,
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del regulated_activity_delta
 
         # Create Specialisms dimension
         specialisms_delta = create_dimension_from_struct_field(
-            cqc_df=cqc_df,
+            cqc_lf=cqc_lf,
             struct_column_name=CQCLClean.specialisms,
             dimension_location=specialisms_destination,
             dimension_update_date=dimension_update_date,
@@ -220,24 +238,25 @@ def main(
             .alias(CQCLClean.specialisms_offered)
         )
         specialisms_delta = assign_specialism_category(
-            df=specialisms_delta, specialism=Specialisms.dementia
+            lf=specialisms_delta, specialism=Specialisms.dementia
         )
         specialisms_delta = assign_specialism_category(
-            df=specialisms_delta, specialism=Specialisms.learning_disabilities
+            lf=specialisms_delta, specialism=Specialisms.learning_disabilities
         )
         specialisms_delta = assign_specialism_category(
-            df=specialisms_delta, specialism=Specialisms.mental_health
+            lf=specialisms_delta, specialism=Specialisms.mental_health
         )
         utils.write_to_parquet(
-            df=specialisms_delta,
+            df=specialisms_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=specialisms_destination,
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del specialisms_delta
 
         # Create GAC Service dimension delta
         gac_service_delta = create_dimension_from_struct_field(
-            cqc_df=cqc_df,
+            cqc_lf=cqc_lf,
             struct_column_name=CQCLClean.gac_service_types,
             dimension_location=gac_service_destination,
             dimension_update_date=dimension_update_date,
@@ -249,42 +268,46 @@ def main(
             .alias(CQCLClean.services_offered)
         )
 
-        cqc_df, gac_service_delta = remove_specialist_colleges(
-            cqc_df=cqc_df, gac_services_dimension=gac_service_delta
+        cqc_lf, gac_service_delta = remove_specialist_colleges(
+            cqc_lf=cqc_lf, gac_services_dimension=gac_service_delta
         )
 
         gac_service_delta = assign_primary_service_type(gac_service_delta)
         gac_service_delta = assign_care_home(gac_service_delta)
 
         utils.write_to_parquet(
-            df=gac_service_delta,
+            df=gac_service_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=gac_service_destination,
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del gac_service_delta
 
         # Create postcode matching dimension
-        ons_df = utils.read_parquet(
+        ons_lf = utils.scan_parquet(
             cleaned_ons_source, selected_columns=ons_cols_to_import
         )
-        logger.info(f"Cleaned ONS DataFrame read in with {ons_df.shape[0]} rows")
+        logger.info(f"Cleaned ONS LazyFrame read in")
+        if logger.level == logging.DEBUG:
+            logger.debug(f"Cleaned ONS LazyFrame has {ons_lf.collect().shape[0]} rows")
 
         postcode_delta = create_dimension_from_postcode(
-            cqc_df=cqc_df,
-            ons_df=ons_df,
+            cqc_lf=cqc_lf,
+            ons_lf=ons_lf,
             dimension_location=postcode_matching_destination,
             dimension_update_date=dimension_update_date,
         )
 
         utils.write_to_parquet(
-            df=postcode_delta,
+            df=postcode_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=postcode_matching_destination,
             logger=logger,
             partition_cols=dimensionPartitionKeys,
         )
+        del postcode_delta
 
         # Drop columns stored in dimensions
-        cqc_df = cqc_df.drop(
+        cqc_lf = cqc_lf.drop(
             # From RegulatedActivities dimension
             CQCLClean.regulated_activities,
             # From Specialisms dimension
@@ -298,7 +321,7 @@ def main(
         )
 
         utils.write_to_parquet(
-            df=cqc_df,
+            df=cqc_lf.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=cleaned_cqc_locations_destination,
             logger=logger,
             partition_cols=cqcPartitionKeys,
@@ -333,11 +356,11 @@ def main(
 
 
 def create_dimension_from_struct_field(
-    cqc_df: pl.DataFrame,
+    cqc_lf: pl.LazyFrame,
     struct_column_name: str,
     dimension_location: str,
     dimension_update_date: str,
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     """
     Creates a dimension for a struct column by imputing missing values from history, then from the future for each location id.
 
@@ -347,18 +370,18 @@ def create_dimension_from_struct_field(
 
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe containing 'location_id', 'cqc_location_import_date', 'import_date' and a struct column to impute.
+        cqc_lf (pl.LazyFrame): Dataframe containing 'location_id', 'cqc_location_import_date', 'import_date' and a struct column to impute.
         struct_column_name (str): Name of the struct column to impute.
         dimension_location (str): Location of the dimension data
         dimension_update_date (str): Update date of the dimension date
 
     Returns:
-        pl.DataFrame:  Dataframe of delta dimension table, with rows of the changes since the last update.
+        pl.LazyFrame:  Dataframe of delta dimension table, with rows of the changes since the last update.
     """
     # 1. Uses the value in the existing column for 'imputed_[column_name]' if it is a list which contains values.
     imputed_column_name = "imputed_" + struct_column_name
 
-    current_dim = cqc_df.select(
+    current_dim = cqc_lf.select(
         CQCLClean.location_id,
         struct_column_name,
         CQCLClean.cqc_location_import_date,
@@ -397,13 +420,28 @@ def create_dimension_from_struct_field(
 
 
 def create_dimension_from_postcode(
-    cqc_df: pl.DataFrame,
-    ons_df: str,
+    cqc_lf: pl.LazyFrame,
+    ons_lf: str,
     dimension_location: str,
     dimension_update_date: str,
 ):
+    postcode_columns = [
+        CQCLClean.location_id,
+        CQCLClean.name,
+        CQCLClean.cqc_location_import_date,
+        CQCLClean.postal_address_line1,
+        CQCLClean.postal_code,
+        Keys.import_date,
+    ]
+    if not all(col in cqc_lf.columns for col in postcode_columns):
+        raise ColumnNotFoundError(
+            f"One or more required columns are missing from the CQC dataframe. "
+            f"\nRequired columns: {postcode_columns}"
+            f"\nExisting columns: {cqc_lf.columns}"
+        )
+
     current_dim = run_postcode_matching(
-        cqc_df.select(
+        cqc_lf.select(
             CQCLClean.location_id,
             CQCLClean.name,
             CQCLClean.cqc_location_import_date,
@@ -411,7 +449,7 @@ def create_dimension_from_postcode(
             CQCLClean.postal_code,
             Keys.import_date,
         ),
-        ons_df,
+        ons_lf,
     )
 
     return _create_dimension_delta(
@@ -429,9 +467,9 @@ def create_dimension_from_postcode(
 def _create_dimension_delta(
     dimension_location: str,
     dimension_update_date: str,
-    current_dimension: pl.DataFrame,
+    current_dimension: pl.LazyFrame,
     join_columns: list[str],
-) -> pl.DataFrame:
+) -> pl.LazyFrame:
     """
     Create dimension delta, including rows from any new import dates, as well as any updated values for old import dates
 
@@ -443,18 +481,20 @@ def _create_dimension_delta(
     Args:
         dimension_location (str): Location of the (historic) dimension data
         dimension_update_date (str): Update date of the dimension date (where the dimension is/will be stored)
-        current_dimension (pl.DataFrame): Current dimension data
+        current_dimension (pl.LazyFrame): Current dimension data
         join_columns (list[str]): List of columns to join current dimension data to historic dimension data
 
     Returns:
-        pl.DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
+        pl.LazyFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
 
     """
     # 1. Read in the previous state of the dimension.
     dimension_name = dimension_location.split("/")[-2]
     try:
-        previous_dimension = utils.read_parquet(dimension_location)
-    except OSError:
+        previous_dimension = utils.scan_parquet(dimension_location).with_columns(
+            pl.col(DimensionKeys.import_date).cast(pl.String)
+        )
+    except ComputeError:
         warnings.warn(
             f"The {dimension_name} dimension was not found in the {dimension_location}. A new dimension will be created.",
             UserWarning,
@@ -476,27 +516,30 @@ def _create_dimension_delta(
         pl.lit(dimension_update_date[6:]).alias(DimensionKeys.day),
         pl.lit(dimension_update_date).alias(DimensionKeys.last_updated),
     )
-    logger.info(
-        f"The {dimension_name} delta has been created with {delta.shape[0]} rows."
-    )
+    logger.info(f"The {dimension_name} delta has been created.")
+    if logger.level == logging.DEBUG:
+        logger.debug(
+            f"{dimension_name} delta LazyFrame has {delta.collect().shape[0]} rows"
+        )
+
     return delta
 
 
-def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def clean_provider_id_column(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Cleans provider ID column, removing long IDs and then forwards and backwards filling the value
 
      1. Replace provider ids with more than 14 characters with Null
      2. Forward and backwards fill missing provider ids over location id
     Args:
-        cqc_df (pl.DataFrame): Dataframe with provider id column
+        cqc_lf (pl.LazyFrame): Dataframe with provider id column
 
     Returns:
-        pl.DataFrame: Dataframe with cleaned provider id column
+        pl.LazyFrame: Dataframe with cleaned provider id column
 
     """
     # 1. Replace provider ids with more than 14 characters with Null
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.provider_id).str.len_chars() <= 14)
         .then(pl.col(CQCLClean.provider_id))
         .otherwise(None)
@@ -504,18 +547,18 @@ def clean_provider_id_column(cqc_df: pl.DataFrame) -> pl.DataFrame:
     )
 
     # 2. Forward and backwards fill missing provider ids over location id
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.col(CQCLClean.provider_id)
         .forward_fill()
         .backward_fill()
         .over(CQCLClean.location_id)
     )
-    return cqc_df
+    return cqc_lf
 
 
 def clean_and_impute_registration_date(
-    cqc_df: pl.DataFrame,
-) -> pl.DataFrame:
+    cqc_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
     Cleans registration dates into YYYY-MM-DD format, removing invalid dates and then imputing missing values.
 
@@ -526,26 +569,24 @@ def clean_and_impute_registration_date(
     5. Replace registration dates with the minimum import date if there are no registration dates for that location
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe with registration and import date columns
+        cqc_lf (pl.LazyFrame): Dataframe with registration and import date columns
 
     Returns:
-        pl.DataFrame: Dataframe with imputed registration date column
+        pl.LazyFrame: Dataframe with imputed registration date column
 
     """
     # 1. Copy all existing registration dates into the imputed column
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.col(CQCLClean.registration_date).alias(CQCLClean.imputed_registration_date)
     )
 
     # 2. Remove any time elements from the (imputed) registration date
-    cqc_df = cqc_df.with_columns(
-        pl.col(CQCLClean.imputed_registration_date).str.slice(0, 10)
-    )
+    cqc_lf = cqc_lf.with_columns(pl.col(CQCLClean.imputed_registration_date).dt.date())
 
     # 3. Replace registration dates that are after the import date with null
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(
-            pl.col(CQCLClean.imputed_registration_date).str.to_date(format="%Y-%m-%d")
+            pl.col(CQCLClean.imputed_registration_date)
             <= pl.col(Keys.import_date).str.to_date(format="%Y%m%d")
         )
         .then(pl.col(CQCLClean.imputed_registration_date))
@@ -553,7 +594,7 @@ def clean_and_impute_registration_date(
     )
 
     # 4. Replace registration dates with the minimum registration date for that location id
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
         .then(
             pl.col(CQCLClean.imputed_registration_date)
@@ -565,27 +606,26 @@ def clean_and_impute_registration_date(
     )
 
     # 5. Replace registration dates with the minimum import date if there are no registration dates for that location
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.imputed_registration_date).is_null())
         .then(
             pl.col(Keys.import_date)
             .min()
             .over(CQCLClean.location_id)
             .str.strptime(pl.Date, format="%Y%m%d")
-            .dt.strftime("%Y-%m-%d")
         )
         .otherwise(pl.col(CQCLClean.imputed_registration_date))
         .alias(CQCLClean.imputed_registration_date)
     )
 
-    return cqc_df
+    return cqc_lf
 
 
 def impute_historic_relationships(
-    cqc_df: pl.DataFrame,
-) -> pl.DataFrame:
+    cqc_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
-    Imputes historic relationships for locations in the given DataFrame.
+    Imputes historic relationships for locations in the given LazyFrame.
 
     1. Get the first non-null relationship for each location id: first_known_relationships
     2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
@@ -596,13 +636,13 @@ def impute_historic_relationships(
     4. Drop intermediate columns
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe with relationship columns
+        cqc_lf (pl.LazyFrame): Dataframe with relationship columns
 
     Returns:
-        pl.DataFrame: Dataframe with imputed relationship columns
+        pl.LazyFrame: Dataframe with imputed relationship columns
     """
     # 1. Get the first non-null relationship for each location id: first_known_relationships
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.col(CQCLClean.relationships)
         .first()
         .over(
@@ -613,10 +653,10 @@ def impute_historic_relationships(
     )
 
     # 2. Get first known relationship which is 'HSCA Predecessor': relationships_predecessors_only
-    cqc_df = get_predecessor_relationships(cqc_df)
+    cqc_lf = get_predecessor_relationships(cqc_lf)
 
     # 3. Impute relationships
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(pl.col(CQCLClean.relationships).is_not_null())
         .then(pl.col(CQCLClean.relationships))
         .when(pl.col(CQCLClean.registration_status) == RegistrationStatus.deregistered)
@@ -627,16 +667,16 @@ def impute_historic_relationships(
     )
 
     # 4. Drop intermediate columns
-    cqc_df = cqc_df.drop(
+    cqc_lf = cqc_lf.drop(
         CQCLClean.first_known_relationships, CQCLClean.relationships_predecessors_only
     )
 
-    return cqc_df
+    return cqc_lf
 
 
 def get_predecessor_relationships(
-    cqc_df: pl.DataFrame,
-) -> pl.DataFrame:
+    cqc_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
     """
     Filters and aggregates relationships of type 'HSCA Predecessor' for each location.
 
@@ -646,14 +686,14 @@ def get_predecessor_relationships(
     4. Join to input
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe with first known relationship column
+        cqc_lf (pl.LazyFrame): Dataframe with first known relationship column
 
     Returns:
-        pl.DataFrame: Dataframe with additional predecessor relationship column
+        pl.LazyFrame: Dataframe with additional predecessor relationship column
 
     """
     # 1. For each location id flatten first known relationship column.
-    location_id_map = cqc_df.select(
+    location_id_map = cqc_lf.select(
         CQCLClean.location_id, CQCLClean.first_known_relationships
     ).unique()
 
@@ -671,28 +711,28 @@ def get_predecessor_relationships(
     predecessor_agg = predecessor_relationships.group_by(CQCLClean.location_id).all()
 
     # 4. Join to input
-    cqc_df = cqc_df.join(predecessor_agg, on=CQCLClean.location_id, how="left")
+    cqc_lf = cqc_lf.join(predecessor_agg, on=CQCLClean.location_id, how="left")
 
-    return cqc_df
+    return cqc_lf
 
 
-def assign_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def assign_primary_service_type(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
-    Allocates the primary service type for each row in the DataFrame based on the descriptions in the 'imputed_gac_service_types' field.
+    Allocates the primary service type for each row in the LazyFrame based on the descriptions in the 'imputed_gac_service_types' field.
 
     1. If any of the imputed GAC service descriptions have "Care home service with nursing" allocate as "Care home with nursing"
     2. If not, if any of the imputed GAC service descriptions have "Care home service without nursing" allocate as "Care home without nursing"
     3. Otherwise, allocate as "non-residential"
 
     Args:
-        cqc_df (pl.DataFrame): The input DataFrame containing the 'imputed_gac_service_types' column.
+        cqc_lf (pl.LazyFrame): The input LazyFrame containing the 'imputed_gac_service_types' column.
 
     Returns:
-        pl.DataFrame: Dataframe with the new 'primary_service_type' column.
+        pl.LazyFrame: Dataframe with the new 'primary_service_type' column.
 
     """
     # 1. If any of the imputed GAC service descriptions have "Care home service with nursing" allocate as "Care home with nursing"
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         pl.when(
             pl.col(CQCLClean.imputed_gac_service_types)
             .list.eval(
@@ -719,10 +759,10 @@ def assign_primary_service_type(cqc_df: pl.DataFrame) -> pl.DataFrame:
         .alias(CQCLClean.primary_service_type)
     )
 
-    return cqc_df
+    return cqc_lf
 
 
-def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def assign_care_home(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Assigns care home status for each row based on the Primary Service Type
 
@@ -730,13 +770,13 @@ def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
     2. Otherwise, assign 'N'
 
     Args:
-        cqc_df (pl.DataFrame): DataFrame containing 'primary_service_type' column.
+        cqc_lf (pl.LazyFrame): LazyFrame containing 'primary_service_type' column.
 
     Returns:
-        pl.DataFrame: Dataframe with the new 'care_home' column.
+        pl.LazyFrame: Dataframe with the new 'care_home' column.
 
     """
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         # 1. If the Primary Service Type is 'Care home service with nursing' or 'Care home only' then assign 'Y'
         pl.when(
             pl.col(CQCLClean.primary_service_type).is_in(
@@ -751,10 +791,10 @@ def assign_care_home(cqc_df: pl.DataFrame) -> pl.DataFrame:
         .otherwise(pl.lit(CareHome.not_care_home))
         .alias(CQCLClean.care_home)
     )
-    return cqc_df
+    return cqc_lf
 
 
-def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def add_related_location_flag(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Adds a column which flags whether the location was related to a previous location or not
 
@@ -762,12 +802,12 @@ def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
     2. Otherwise, flag 'N'
 
     Args:
-        cqc_df (pl.DataFrame): A dataframe with the imputed_relationships column.
+        cqc_lf (pl.LazyFrame): A dataframe with the imputed_relationships column.
 
     Returns:
-        pl.DataFrame: Dataframe with an added related_location column.
+        pl.LazyFrame: Dataframe with an added related_location column.
     """
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         # 1. If the length of imputed relationships is more than 0 then flag 'Y'
         pl.when(pl.col(CQCLClean.imputed_relationships).list.len() > 0)
         .then(pl.lit(RelatedLocation.has_related_location))
@@ -776,12 +816,12 @@ def add_related_location_flag(cqc_df: pl.DataFrame) -> pl.DataFrame:
         .alias(CQCLClean.related_location)
     )
 
-    return cqc_df
+    return cqc_lf
 
 
 def remove_specialist_colleges(
-    cqc_df: pl.DataFrame, gac_services_dimension: pl.DataFrame
-) -> tuple[pl.DataFrame, pl.DataFrame]:
+    cqc_lf: pl.LazyFrame, gac_services_dimension: pl.LazyFrame
+) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     We do not include locations which are only specialist colleges in our
     estimates. This function identifies and removes the ones listed in the locations dataset.
@@ -790,14 +830,14 @@ def remove_specialist_colleges(
     2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
 
     Args:
-        cqc_df (pl.DataFrame): Fact table to align with dimension
-        gac_services_dimension (pl.DataFrame): Dimension table with services_offered column
+        cqc_lf (pl.LazyFrame): Fact table to align with dimension
+        gac_services_dimension (pl.LazyFrame): Dimension table with services_offered column
 
     Returns:
-        tuple[pl.DataFrame, pl.DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
+        tuple[pl.LazyFrame, pl.LazyFrame]: cqq_lf, gac_services_dimension with locations which are only specialist colleges removed.
 
     """
-    to_remove_df = gac_services_dimension.filter(
+    to_remove_lf = gac_services_dimension.filter(
         # 1. Filter for rows in the GAC Service dimension where "Specialist college service" is the only service offered
         pl.col(CQCLClean.services_offered)
         .list.first()
@@ -807,15 +847,15 @@ def remove_specialist_colleges(
     ).select(CQCLClean.location_id, Keys.import_date)
 
     # 2. Remove the identified rows from the cqc fact table, and the GAC Service Dimension
-    cqc_df, gac_services_dimension = remove_rows(
-        to_remove_df=to_remove_df, target_dfs=[cqc_df, gac_services_dimension]
+    cqc_lf, gac_services_dimension = remove_rows(
+        to_remove_lf=to_remove_lf, target_lfs=[cqc_lf, gac_services_dimension]
     )
-    return cqc_df, gac_services_dimension
+    return cqc_lf, gac_services_dimension
 
 
 def remove_locations_without_regulated_activities(
-    cqc_df: pl.DataFrame, regulated_activities_dimension: pl.DataFrame
-) -> tuple[pl.DataFrame, pl.DataFrame]:
+    cqc_lf: pl.LazyFrame, regulated_activities_dimension: pl.LazyFrame
+) -> tuple[pl.LazyFrame, pl.LazyFrame]:
     """
     Remove locations that have no imputed regulated activities. This should only be the case when the location has never had any reported regulated activities.
 
@@ -824,15 +864,15 @@ def remove_locations_without_regulated_activities(
     3. Remove the identified rows from the cqc fact table, and the Regulated Activities dimension
 
     Args:
-        cqc_df (pl.DataFrame): Fact table to align with dimension
-        regulated_activities_dimension (pl.DataFrame): Dimension table with imputed_regulated_activities column
+        cqc_lf (pl.LazyFrame): Fact table to align with dimension
+        regulated_activities_dimension (pl.LazyFrame): Dimension table with imputed_regulated_activities column
 
     Returns:
-        tuple[pl.DataFrame, pl.DataFrame]: cqq_df, regulated_activities_dimension where all rows have imputed regulated activities.
+        tuple[pl.LazyFrame, pl.LazyFrame]: cqq_lf, regulated_activities_dimension where all rows have imputed regulated activities.
 
     """
     # 1. Filter for rows in the Regulated Activities dimension where there are no imputed regulated activities.
-    to_remove_df = (
+    to_remove_lf = (
         regulated_activities_dimension.filter(
             pl.col(CQCLClean.imputed_regulated_activities).is_null()
             | pl.col(CQCLClean.imputed_regulated_activities).list.len().eq(0)
@@ -842,66 +882,66 @@ def remove_locations_without_regulated_activities(
     )
 
     # 2. Check that none of these locations have regulated activities for any other date.
-    locations_to_investigate = regulated_activities_dimension.filter(
-        pl.col(CQCLClean.location_id).is_in(
-            to_remove_df[CQCLClean.location_id].to_list()
-        ),
-        pl.col(CQCLClean.imputed_regulated_activities).is_not_null(),
-    )
-    if not locations_to_investigate.is_empty():
+    locations_to_investigate = regulated_activities_dimension.join(
+        to_remove_lf.select(pl.col(CQCLClean.location_id).unique()),
+        on=CQCLClean.location_id,
+        how="semi",
+    ).filter(pl.col(CQCLClean.imputed_regulated_activities).is_not_null())
+
+    if not locations_to_investigate.collect().is_empty():
         warnings.warn(
             message=(
                 "The following locations have some dates with imputed regulated activities, and others do not: "
-                f"{locations_to_investigate[CQCLClean.location_id].unique().to_list()}. "
+                f"{locations_to_investigate.select(CQCLClean.location_id).collect().get_column(CQCLClean.location_id).unique().to_list()}. "
                 "Please check that the imputation has been carried out correctly."
             ),
             category=UserWarning,
         )
 
     # 3. Remove the identified rows from the cqc fact table, and the Regulated Activities dimension
-    cqc_df, regulated_activities_dimension = remove_rows(
-        to_remove_df=to_remove_df, target_dfs=[cqc_df, regulated_activities_dimension]
+    cqc_lf, regulated_activities_dimension = remove_rows(
+        to_remove_lf=to_remove_lf, target_lfs=[cqc_lf, regulated_activities_dimension]
     )
-    return cqc_df, regulated_activities_dimension
+    return cqc_lf, regulated_activities_dimension
 
 
 def remove_rows(
-    to_remove_df: pl.DataFrame, target_dfs: list[pl.DataFrame]
-) -> list[pl.DataFrame]:
+    to_remove_lf: pl.LazyFrame, target_lfs: list[pl.LazyFrame]
+) -> list[pl.LazyFrame]:
     """
     Remove rows from a fact table and any provided dimension tables
     Args:
-        to_remove_df (pl.DataFrame): Dataframe with rows to remove (all columns present will be used as keys for the anti-join).
-        target_dfs (list[pl.DataFrame]): Target tables from which to remove the rows.
+        to_remove_lf (pl.LazyFrame): Dataframe with rows to remove (all columns present will be used as keys for the anti-join).
+        target_lfs (list[pl.LazyFrame]): Target tables from which to remove the rows.
 
     Returns:
-        list[pl.DataFrame]: List of dataframes in the same order as target_dfs, with the rows removed.
+        list[pl.LazyFrame]: List of dataframes in the same order as target_lfs, with the rows removed.
 
     Raises:
-        ValueError: If any of the target_dfs does not contain the columns in to_remove_df.
+        ValueError: If any of the target_lfs does not contain the columns in to_remove_lf.
     """
-    result_dfs = []
-    to_remove_schema = set(to_remove_df.schema.to_python())
-    for target_df in target_dfs:
-        target_df_schema = set(target_df.schema.to_python())
-        if not to_remove_schema.issubset(target_df_schema):
+    result_lfs = []
+    to_remove_schema = set(to_remove_lf.schema.to_python())
+    for target_lf in target_lfs:
+        target_lf_schema = set(target_lf.schema.to_python())
+        if not to_remove_schema.issubset(target_lf_schema):
             raise ValueError(
-                "The target dataframe schema does not contain all the columns present to_remove_df, or the types are not matched."
+                "The target dataframe schema does not contain all the columns present to_remove_lf, or the types are not matched."
                 f"\nto_remove_schema: {to_remove_schema}"
-                f"\ntarget_df_schema: {target_df_schema}"
+                f"\ntarget_lf_schema: {target_lf_schema}"
             )
-        result_dfs.append(
-            target_df.join(
-                to_remove_df,
-                on=to_remove_df.columns,
+        result_lfs.append(
+            target_lf.join(
+                to_remove_lf,
+                on=to_remove_lf.columns,
                 how="anti",
             )
         )
 
-    return result_dfs
+    return result_lfs
 
 
-def select_registered_locations(cqc_df: pl.DataFrame) -> pl.DataFrame:
+def select_registered_locations(cqc_lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Select rows where registration status is registered.
 
@@ -909,36 +949,36 @@ def select_registered_locations(cqc_df: pl.DataFrame) -> pl.DataFrame:
     2. Select rows where registration status is registered.
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe filter
+        cqc_lf (pl.LazyFrame): Dataframe filter
 
     Returns:
-        pl.DataFrame: Dataframe with only rows where registration status is registered.
+        pl.LazyFrame: Dataframe with only rows where registration status is registered.
     """
     # 1. Check that there are no values in registration status that is not registered or deregistered.
-    invalid_rows = cqc_df.filter(
+    invalid_rows = cqc_lf.filter(
         ~pl.col(CQCLClean.registration_status).is_in(
             [RegistrationStatus.registered, RegistrationStatus.deregistered]
         )
     )
 
-    if not invalid_rows.is_empty():
+    if not invalid_rows.collect().is_empty():
         warnings.warn(
             (
-                f"{invalid_rows.shape[0]} row(s) had an invalid registration status and have been dropped."
+                f"{invalid_rows.collect().shape[0]} row(s) had an invalid registration status and have been dropped."
                 "\nThe following values are invalid:"
-                f"{invalid_rows[CQCLClean.registration_status].value_counts()}"
+                f"{invalid_rows.select(CQCLClean.registration_status).collect().get_column(CQCLClean.registration_status).value_counts()}"
             ),
             UserWarning,
         )
 
     # 2. Select rows where registration status is registered.
-    cqc_df = cqc_df.filter(
+    cqc_lf = cqc_lf.filter(
         pl.col(CQCLClean.registration_status).eq(RegistrationStatus.registered)
     )
-    return cqc_df
+    return cqc_lf
 
 
-def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.DataFrame:
+def assign_cqc_sector(cqc_lf: pl.LazyFrame, la_provider_ids: list[str]) -> pl.LazyFrame:
     """
     Assign CQC sector for each row based on the Provider ID.
 
@@ -946,13 +986,13 @@ def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.Da
     2. Otherwise, assign "Independent"
 
     Args:
-        cqc_df (pl.DataFrame): Dataframe with provider id column.
+        cqc_lf (pl.LazyFrame): Dataframe with provider id column.
         la_provider_ids (list[str]): List of provider IDs that indicate a location is part of the local authority.
 
     Returns:
-        pl.DataFrame: Input dataframe with new CQC sector column.
+        pl.LazyFrame: Input dataframe with new CQC sector column.
     """
-    cqc_df = cqc_df.with_columns(
+    cqc_lf = cqc_lf.with_columns(
         # 1. If the Provider ID is in the list of la_provider_ids then assign "Local authority"
         pl.when(pl.col(CQCLClean.provider_id).is_in(la_provider_ids))
         .then(pl.lit(Sector.local_authority))
@@ -960,10 +1000,10 @@ def assign_cqc_sector(cqc_df: pl.DataFrame, la_provider_ids: list[str]) -> pl.Da
         .otherwise(pl.lit(Sector.independent))
         .alias(CQCLClean.cqc_sector)
     )
-    return cqc_df
+    return cqc_lf
 
 
-def assign_specialism_category(df: pl.DataFrame, specialism: str) -> pl.DataFrame:
+def assign_specialism_category(lf: pl.LazyFrame, specialism: str) -> pl.LazyFrame:
     """
     Categorises each row as "Specialist", "Generalist" or "Other for the given specialism.
 
@@ -972,18 +1012,18 @@ def assign_specialism_category(df: pl.DataFrame, specialism: str) -> pl.DataFram
     3. Otherwise, categorise as "Specialist".
 
     Args:
-        df (pl.DataFrame): Dataframe with specialisms_offered column.
+        lf (pl.LazyFrame): Dataframe with specialisms_offered column.
         specialism (str): Specialism to categorise.
 
     Returns:
-        pl.DataFrame: Input dataframe with new "specialist_generalist_other_[specialism]" column.
+        pl.LazyFrame: Input dataframe with new "specialist_generalist_other_[specialism]" column.
 
     """
     new_column_name: str = f"specialist_generalist_other_{specialism}".replace(
         " ", "_"
     ).lower()
 
-    df = df.with_columns(
+    lf = lf.with_columns(
         # 1. If the specialism is the only one offered by the location then categorise as "Specialist".
         pl.when(
             pl.col(CQCLClean.specialisms_offered).list.contains(specialism),
@@ -997,7 +1037,7 @@ def assign_specialism_category(df: pl.DataFrame, specialism: str) -> pl.DataFram
         .otherwise(pl.lit(SpecialistGeneralistOther.other))
         .alias(new_column_name)
     )
-    return df
+    return lf
 
 
 if __name__ == "__main__":

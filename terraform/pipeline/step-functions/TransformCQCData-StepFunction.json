@@ -43,7 +43,7 @@
                       "Result": {
                         "script": "delta_clean_cqc_locations.py",
                         "cqc_raw_arg": "--cqc_locations_source",
-                        "cqc_raw": "${dataset_bucket_name}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                        "cqc_raw": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
                         "ons_arg": "--cleaned_ons_source",
                         "ons": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                         "cqc_cleaned_arg": "--cleaned_cqc_locations_destination",

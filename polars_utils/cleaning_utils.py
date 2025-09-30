@@ -59,14 +59,12 @@ def determine_best_date_matches(
         .alias(date_diff)
     )
 
-    possible_matches = possible_matches.filter(possible_matches[date_diff] >= 0)
+    possible_matches = possible_matches.filter(pl.col(date_diff) >= 0)
 
     possible_matches = possible_matches.with_columns(
         pl.min(date_diff).over(primary_column).alias(min_date_diff)
     )
 
-    aligned_dates = possible_matches.filter(
-        possible_matches[min_date_diff] == possible_matches[date_diff]
-    )
+    aligned_dates = possible_matches.filter(pl.col(min_date_diff) == pl.col(date_diff))
 
     return aligned_dates.select(primary_column, secondary_column)

@@ -14,6 +14,38 @@ util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
 
 
+def scan_parquet(
+    source: str | Path,
+    schema: pl.Schema | None = None,
+    selected_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Reads in parquet into a LazyFrame
+    Args:
+        source (str | Path): the full path in s3 of the dataset to be validated
+        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        selected_columns (list[str] | None, optional): list of columns to return as a
+            subset of the columns in the schema. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: the raw data as a polars LazyFrame
+
+    """
+    if isinstance(source, str):
+        source = source.strip("/") + "/"
+    lf = pl.scan_parquet(
+        source,
+        schema=schema,
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert",
+            extra_struct_fields="ignore",
+        ),
+        extra_columns="ignore",
+        missing_columns="insert",
+    ).select(selected_columns or cs.all())
+    return lf
+
+
 def read_parquet(
     source: str | Path,
     schema: pl.Schema | None = None,

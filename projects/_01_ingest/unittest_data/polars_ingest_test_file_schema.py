@@ -30,9 +30,10 @@ class CQCLocationsSchema:
         [
             (CQCL.location_id, pl.String()),
             (CQCL.registration_date, pl.String()),
-            (CQCLClean.imputed_registration_date, pl.String()),
             (CQCL.deregistration_date, pl.String()),
-            (Keys.import_date, pl.String()),
+            (Keys.import_date, pl.Int64()),
+            (Keys.month, pl.Int64()),
+            (Keys.day, pl.Int64()),
         ]
     )
 
@@ -40,9 +41,10 @@ class CQCLocationsSchema:
         [
             (CQCL.location_id, pl.String()),
             (CQCL.registration_date, pl.Date()),
-            (CQCLClean.imputed_registration_date, pl.Date()),
             (CQCL.deregistration_date, pl.Date()),
             (Keys.import_date, pl.String()),
+            (Keys.month, pl.String()),
+            (Keys.day, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
         ]
     )
@@ -60,6 +62,7 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
         ]
     )
 
@@ -76,6 +79,7 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.specialisms_offered, pl.List(pl.String())),
         ]
     )
@@ -208,7 +212,7 @@ class CQCLocationsSchema:
     clean_registration_date_column_input_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
-            (CQCL.registration_date, pl.String()),
+            (CQCL.registration_date, pl.Date()),
             (Keys.import_date, pl.String()),
         ]
     )
@@ -216,9 +220,9 @@ class CQCLocationsSchema:
     clean_registration_date_column_output_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),
-            (CQCL.registration_date, pl.String()),
+            (CQCL.registration_date, pl.Date()),
             (Keys.import_date, pl.String()),
-            (CQCLClean.imputed_registration_date, pl.String()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
         ]
     )
 
@@ -645,7 +649,7 @@ class ExtractRegisteredManagerNamesSchema:
         ]
     )
 
-    initial_df_schema = pl.Schema(
+    add_registered_manager_names_full_lf_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),
@@ -660,7 +664,7 @@ class ExtractRegisteredManagerNamesSchema:
         ]
     )
     expected_add_registered_manager_names_schema = pl.Schema(
-        list(initial_df_schema.items())
+        list(add_registered_manager_names_full_lf_schema.items())
         + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
     )
 

@@ -5,40 +5,40 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 
-def extract_registered_manager_names(df: pl.DataFrame) -> pl.DataFrame:
+def extract_registered_manager_names(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Extracts deduplicated registered manager names from the regulated activities column.
 
     This function:
     - Explodes the regulated activities and contacts arrays.
     - Concatenates given and family names into a full name.
-    - Adds a list of unique names per location and import date into the original DataFrame.
+    - Adds a list of unique names per location and import date into the original LazyFrame.
 
     Args:
-        df (pl.DataFrame): Input Polars DataFrame containing `imputed_regulated_activities` array.
+        lf (pl.LazyFrame): Input Polars LazyFrame containing `imputed_regulated_activities` array.
 
     Returns:
-        pl.DataFrame: DataFrame with a new column `registered_manager_names` containing unique full names.
+        pl.LazyFrame: LazyFrame with a new column `registered_manager_names` containing unique full names.
     """
-    exploded_contacts_df = explode_contacts_information(df)
-    contact_names_df = select_and_create_full_name(exploded_contacts_df)
-    df_with_reg_man_names = add_registered_manager_names(df, contact_names_df)
-    return df_with_reg_man_names
+    exploded_contacts_lf = explode_contacts_information(lf)
+    contact_names_lf = select_and_create_full_name(exploded_contacts_lf)
+    lf_with_reg_man_names = add_registered_manager_names(lf, contact_names_lf)
+    return lf_with_reg_man_names
 
 
-def explode_contacts_information(df: pl.DataFrame) -> pl.DataFrame:
+def explode_contacts_information(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Explodes the `imputed_regulated_activities` array and then the `contacts` array.
 
     Only rows with non-null contacts are retained.
 
     Args:
-        df (pl.DataFrame): Input Polars DataFrame with `imputed_regulated_activities`.
+        lf (pl.LazyFrame): Input Polars LazyFrame with `imputed_regulated_activities`.
 
     Returns:
-        pl.DataFrame: DataFrame with each contact exploded into its own row in `contacts_exploded`.
+        pl.LazyFrame: LazyFrame with each contact exploded into its own row in `contacts_exploded`.
     """
-    df = df.select(
+    lf = lf.select(
         [
             CQCLClean.location_id,
             CQCLClean.cqc_location_import_date,
@@ -47,29 +47,29 @@ def explode_contacts_information(df: pl.DataFrame) -> pl.DataFrame:
     )
 
     # Explode regulated activities
-    df = df.explode(CQCLClean.imputed_regulated_activities)
+    lf = lf.explode(CQCLClean.imputed_regulated_activities)
 
     # Explode contacts inside each regulated activity
-    df = df.with_columns(
+    lf = lf.with_columns(
         pl.col(CQCLClean.imputed_regulated_activities)
         .struct.field(CQCLClean.contacts)
         .alias(CQCLClean.contacts_exploded)
     ).explode(CQCLClean.contacts_exploded)
 
-    df = df.filter(pl.col(CQCLClean.contacts_exploded).is_not_null())
+    lf = lf.filter(pl.col(CQCLClean.contacts_exploded).is_not_null())
 
-    return df
+    return lf
 
 
-def select_and_create_full_name(df: pl.DataFrame) -> pl.DataFrame:
+def select_and_create_full_name(lf: pl.LazyFrame) -> pl.LazyFrame:
     """
     Selects relevant columns and creates a full name column by concatenating given and family names.
 
     Args:
-        df (pl.DataFrame): DataFrame with exploded `contacts_exploded` struct column.
+        lf (pl.LazyFrame): LazyFrame with exploded `contacts_exploded` struct column.
 
     Returns:
-        pl.DataFrame: DataFrame containing:
+        pl.LazyFrame: LazyFrame containing:
             - `location_id`
             - `cqc_location_import_date`
             - `contacts_full_name`: full name of the contact
@@ -86,40 +86,40 @@ def select_and_create_full_name(df: pl.DataFrame) -> pl.DataFrame:
         ]
     ).alias(CQCLClean.contacts_full_name)
 
-    df = df.select(
+    lf = lf.select(
         [CQCLClean.location_id, CQCLClean.cqc_location_import_date, full_name_col]
     )
-    return df
+    return lf
 
 
 def add_registered_manager_names(
-    df: pl.DataFrame, contact_names_df: pl.DataFrame
-) -> pl.DataFrame:
+    lf: pl.LazyFrame, contact_names_lf: pl.LazyFrame
+) -> pl.LazyFrame:
     """
-    Adds a column of registered manager names to the original DataFrame.
+    Adds a column of registered manager names to the original LazyFrame.
 
     This function:
-    - Groups `contact_names_df` by `location_id` and `cqc_location_import_date`.
+    - Groups `contact_names_lf` by `location_id` and `cqc_location_import_date`.
     - Collects unique values from `contacts_full_name` into a grouped list of names.
-    - Joins the grouped names back into the original DataFrame (`df`).
+    - Joins the grouped names back into the original LazyFrame (`lf`).
 
     Args:
-        df (pl.DataFrame): Original DataFrame containing `location_id` and
+        lf (pl.LazyFrame): Original LazyFrame containing `location_id` and
             `cqc_location_import_date`.
-        contact_names_df  (pl.DataFrame): DataFrame containing the `contacts_full_name`,
+        contact_names_lf  (pl.LazyFrame): LazyFrame containing the `contacts_full_name`,
             `location_id` and `cqc_location_import_date` columns.
 
     Returns:
-        pl.DataFrame: Original DataFrame with an added `registered_manager_names` column
+        pl.LazyFrame: Original LazyFrame with an added `registered_manager_names` column
         containing a list of unique manager names.
     """
     join_keys: list[str] = [CQCLClean.location_id, CQCLClean.cqc_location_import_date]
 
-    grouped_df = contact_names_df.group_by(join_keys).agg(
+    grouped_lf = contact_names_lf.group_by(join_keys).agg(
         pl.col(CQCLClean.contacts_full_name)
         .unique()
         .sort()
         .alias(CQCLClean.registered_manager_names)
     )
 
-    return df.join(grouped_df, on=join_keys, how="left")
+    return lf.join(grouped_lf, on=join_keys, how="left")
