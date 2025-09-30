@@ -93,6 +93,63 @@ def validate_model_definition(model_id: str, model_definitions: dict) -> None:
         )
 
 
+def preprocess_remove_nulls(
+    source: str, destination: str, columns: list[str], lazy: bool = False
+) -> None:
+    """
+    Removes rows containing null values in named columns.
+
+    Args:
+        source (str): the source location in S3.
+        destination(str): the destination location in S3.
+        columns (list[str]): the names of the columns to remove null values from.
+        lazy (bool, optional): whether to read the incoming data lazily or not (default is False)
+
+    Raises:
+        pl.ColumnNotFoundError: if any column specified does not exist
+        pl.exceptions.PolarsError: if there is an error reading or processing the data
+        FileNotFoundError: if the source is not found
+        Exception: on any exception occurring within the preprocessor
+    """
+    if source[-7:] != "parquet" and source[-1] != "/":
+        source = source + "/"
+    logger.info(f"Reading data from {source} - the reading method is LAZY {lazy}")
+    try:
+        data = pl.scan_parquet(source) if lazy else pl.read_parquet(source)
+        result_df = None
+        uri = f"{destination}/processed.parquet"
+        if len(columns) == 0:
+            result_df = data
+        else:
+            conditions = [pl.col(c).is_not_null() for c in columns]
+            condition = True
+            for c in conditions:
+                condition = condition & c
+            result_df = data.filter(condition)
+
+        logger.info(
+            f"Processing succeeded. Writing to {uri} - the writing method is LAZY {lazy}"
+        )
+        if lazy:
+            result_df.sink_parquet(uri)
+        else:
+            result_df.write_parquet(uri)
+
+        logger.info("Finished writing to %s", uri)
+    except pl.ColumnNotFoundError as e:
+        logger.error(
+            f"One or more of the specified columns {columns} are not present in {source}."
+        )
+        logger.error(e)
+        raise
+    except (Exception, FileNotFoundError, pl.exceptions.PolarsError) as e:
+        logger.error(
+            f"Polars was not able to read or process the data in {source}, or send to {destination}"
+        )
+        logger.error(f"Polars error: {e}")
+        raise
+
+
 def preprocess_non_res_pir(source: str, destination: str, lazy: bool = False) -> None:
     """
     Preprocesses data for Non-Residential PIR model prior to training.

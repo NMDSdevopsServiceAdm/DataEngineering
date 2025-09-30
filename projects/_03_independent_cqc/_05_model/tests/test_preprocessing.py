@@ -1,5 +1,6 @@
 from projects._03_independent_cqc._05_model.fargate.preprocessing.preprocessing import (
     preprocess_non_res_pir,
+    preprocess_remove_nulls,
     logger,
     main_preprocessor,
     validate_model_definition,
@@ -8,6 +9,7 @@ from projects._03_independent_cqc._05_model.utils.model import ModelType
 import unittest
 import os
 import polars as pl
+from polars.testing import assert_frame_equal
 from unittest.mock import patch, MagicMock
 import shutil
 import tempfile
@@ -220,3 +222,54 @@ class TestPreprocessNonResPir(unittest.TestCase):
                 f"Polars was not able to read or process the data in my/nonexistent/path/, or send to {self.destination}",
                 cm.output[1],
             )
+
+
+class TestPreprocessRemoveNulls(unittest.TestCase):
+    small_sample_data = {
+        "item_id": [101, 102, 103, 104, 105],
+        "price": [15.00, 22.50, None, 10.00, 35.75],
+        "description": ["Apple", "Banana", "Cherry", None, "Elderberry"],
+        "inventory": [100, 50, 200, 150, None],
+    }
+    sample_df = pl.DataFrame(small_sample_data)
+    s3_uri = "s3://test_bucket/test_file.parquet"
+
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp()
+        self.destination = os.path.join(self.temp_dir, "destination")
+        os.mkdir(self.destination)
+
+    def tearDown(self):
+        shutil.rmtree(self.temp_dir)
+
+    def test_writes_dataframe_unchanged_if_no_columns_provided(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.sample_df
+            preprocess_remove_nulls(self.s3_uri, self.destination, [])
+        result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
+        self.assertEqual((5, 4), result_df.shape)
+        assert_frame_equal(self.sample_df, result_df)
+
+    def test_preprocess_remove_nulls_basic_execution_single_column(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.sample_df
+            preprocess_remove_nulls(self.s3_uri, self.destination, ["price"])
+        result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
+        self.assertEqual((4, 4), result_df.shape)
+
+    def test_preprocess_remove_nulls_basic_execution_multiple_column(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.sample_df
+            preprocess_remove_nulls(
+                self.s3_uri, self.destination, ["price", "description", "inventory"]
+            )
+        result_df = pl.read_parquet(f"{self.destination}/processed.parquet")
+        self.assertEqual((2, 4), result_df.shape)
+
+    def test_raises_error_if_columns_not_present(self):
+        with patch(f"{PATCH_STEM}.pl.read_parquet") as mock_read_parquet:
+            mock_read_parquet.return_value = self.sample_df
+            with self.assertRaises(pl.ColumnNotFoundError):
+                preprocess_remove_nulls(
+                    self.s3_uri, self.destination, ["no_such_column"]
+                )
