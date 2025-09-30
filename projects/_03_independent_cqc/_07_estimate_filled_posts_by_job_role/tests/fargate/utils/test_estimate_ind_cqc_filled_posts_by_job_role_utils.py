@@ -10,6 +10,7 @@ from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data im
 from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
     EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
 )
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
@@ -33,4 +34,11 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
             schema=Schemas.expected_aggregate_ascwds_worker_job_roles_per_establishment_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+        pl_testing.assert_frame_equal(
+            returned_lf.sort(
+                [IndCQC.establishment_id, IndCQC.ascwds_worker_import_date]
+            ),
+            expected_lf.sort(
+                [IndCQC.establishment_id, IndCQC.ascwds_worker_import_date]
+            ),
+        )
