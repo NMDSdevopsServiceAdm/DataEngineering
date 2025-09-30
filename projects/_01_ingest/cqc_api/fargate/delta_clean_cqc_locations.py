@@ -137,6 +137,10 @@ def main(
             cqc_locations_source,
             schema=POLARS_LOCATION_SCHEMA,
             selected_columns=cqc_location_cols_to_import,
+        ).filter(
+            pl.col(CQCLClean.location_id).is_in(
+                ["1-16132859906", "1-939874319", "1-804413795"]
+            )
         )
 
         logger.info(f"CQC Location LazyFrame read in")
@@ -189,105 +193,105 @@ def main(
         cqc_lf = select_registered_locations(cqc_lf)
         cqc_lf = add_related_location_flag(cqc_lf)
 
-        # Calculate latest import date for dimension update date
-        dimension_update_date = cqc_lf.select(Keys.import_date).max().collect().item()
-
-        # Create Regulated Activities dimension delta
-        regulated_activity_delta = create_dimension_from_struct_field(
-            cqc_lf=cqc_lf,
-            struct_column_name=CQCLClean.regulated_activities,
-            dimension_location=regulated_activities_destination,
-            dimension_update_date=dimension_update_date,
-        )
-
-        cqc_lf, regulated_activity_delta = (
-            remove_locations_without_regulated_activities(
-                cqc_lf=cqc_lf, regulated_activities_dimension=regulated_activity_delta
-            )
-        )
-        logger.info(
-            f"CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
-        )
-        if logger.level == logging.DEBUG:
-            logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
-
-        regulated_activity_delta = extract_registered_manager_names(
-            regulated_activity_delta
-        )
-
-        utils.write_to_parquet(
-            df=regulated_activity_delta.drop(
-                CQCLClean.cqc_location_import_date
-            ).collect(),
-            output_path=regulated_activities_destination,
-            logger=logger,
-            partition_cols=dimensionPartitionKeys,
-        )
-        del regulated_activity_delta
-
-        # Create Specialisms dimension
-        specialisms_delta = create_dimension_from_struct_field(
-            cqc_lf=cqc_lf,
-            struct_column_name=CQCLClean.specialisms,
-            dimension_location=specialisms_destination,
-            dimension_update_date=dimension_update_date,
-        )
-        # Extract and categorise the location specialisms
-        specialisms_delta = specialisms_delta.with_columns(
-            pl.col(CQCLClean.imputed_specialisms)
-            .list.eval(pl.element().struct.field(CQCLClean.name))
-            .alias(CQCLClean.specialisms_offered)
-        )
-        specialisms_delta = assign_specialism_category(
-            lf=specialisms_delta, specialism=Specialisms.dementia
-        )
-        specialisms_delta = assign_specialism_category(
-            lf=specialisms_delta, specialism=Specialisms.learning_disabilities
-        )
-        specialisms_delta = assign_specialism_category(
-            lf=specialisms_delta, specialism=Specialisms.mental_health
-        )
-        utils.write_to_parquet(
-            df=specialisms_delta.drop(CQCLClean.cqc_location_import_date).collect(),
-            output_path=specialisms_destination,
-            logger=logger,
-            partition_cols=dimensionPartitionKeys,
-        )
-        del specialisms_delta
-
-        # Create GAC Service dimension delta
-        gac_service_delta = create_dimension_from_struct_field(
-            cqc_lf=cqc_lf,
-            struct_column_name=CQCLClean.gac_service_types,
-            dimension_location=gac_service_destination,
-            dimension_update_date=dimension_update_date,
-        )
-
-        gac_service_delta = gac_service_delta.with_columns(
-            pl.col(CQCLClean.imputed_gac_service_types)
-            .list.eval(pl.element().struct.field(CQCLClean.description))
-            .alias(CQCLClean.services_offered)
-        )
-
-        cqc_lf, gac_service_delta = remove_specialist_colleges(
-            cqc_lf=cqc_lf, gac_services_dimension=gac_service_delta
-        )
-
-        gac_service_delta = assign_primary_service_type(gac_service_delta)
-        gac_service_delta = assign_care_home(gac_service_delta)
-
-        utils.write_to_parquet(
-            df=gac_service_delta.drop(CQCLClean.cqc_location_import_date).collect(),
-            output_path=gac_service_destination,
-            logger=logger,
-            partition_cols=dimensionPartitionKeys,
-        )
-        del gac_service_delta
+        # # Calculate latest import date for dimension update date
+        # dimension_update_date = cqc_lf.select(Keys.import_date).max().collect().item()
+        #
+        # # Create Regulated Activities dimension delta
+        # regulated_activity_delta = create_dimension_from_struct_field(
+        #     cqc_lf=cqc_lf,
+        #     struct_column_name=CQCLClean.regulated_activities,
+        #     dimension_location=regulated_activities_destination,
+        #     dimension_update_date=dimension_update_date,
+        # )
+        #
+        # cqc_lf, regulated_activity_delta = (
+        #     remove_locations_without_regulated_activities(
+        #         cqc_lf=cqc_lf, regulated_activities_dimension=regulated_activity_delta
+        #     )
+        # )
+        # logger.info(
+        #     f"CQC Location LazyFrame filtered to remove locations which have never had a regulated activity"
+        # )
+        # if logger.level == logging.DEBUG:
+        #     logger.debug(f"CQC Location LazyFrame has {cqc_lf.collect().shape[0]} rows")
+        #
+        # regulated_activity_delta = extract_registered_manager_names(
+        #     regulated_activity_delta
+        # )
+        #
+        # # utils.write_to_parquet(
+        # #     df=regulated_activity_delta.drop(
+        # #         CQCLClean.cqc_location_import_date
+        # #     ).collect(),
+        # #     output_path=regulated_activities_destination,
+        # #     logger=logger,
+        # #     partition_cols=dimensionPartitionKeys,
+        # # )
+        # del regulated_activity_delta
+        #
+        # # Create Specialisms dimension
+        # specialisms_delta = create_dimension_from_struct_field(
+        #     cqc_lf=cqc_lf,
+        #     struct_column_name=CQCLClean.specialisms,
+        #     dimension_location=specialisms_destination,
+        #     dimension_update_date=dimension_update_date,
+        # )
+        # # Extract and categorise the location specialisms
+        # specialisms_delta = specialisms_delta.with_columns(
+        #     pl.col(CQCLClean.imputed_specialisms)
+        #     .list.eval(pl.element().struct.field(CQCLClean.name))
+        #     .alias(CQCLClean.specialisms_offered)
+        # )
+        # specialisms_delta = assign_specialism_category(
+        #     lf=specialisms_delta, specialism=Specialisms.dementia
+        # )
+        # specialisms_delta = assign_specialism_category(
+        #     lf=specialisms_delta, specialism=Specialisms.learning_disabilities
+        # )
+        # specialisms_delta = assign_specialism_category(
+        #     lf=specialisms_delta, specialism=Specialisms.mental_health
+        # )
+        # # utils.write_to_parquet(
+        # #     df=specialisms_delta.drop(CQCLClean.cqc_location_import_date).collect(),
+        # #     output_path=specialisms_destination,
+        # #     logger=logger,
+        # #     partition_cols=dimensionPartitionKeys,
+        # # )
+        # del specialisms_delta
+        #
+        # # Create GAC Service dimension delta
+        # gac_service_delta = create_dimension_from_struct_field(
+        #     cqc_lf=cqc_lf,
+        #     struct_column_name=CQCLClean.gac_service_types,
+        #     dimension_location=gac_service_destination,
+        #     dimension_update_date=dimension_update_date,
+        # )
+        #
+        # gac_service_delta = gac_service_delta.with_columns(
+        #     pl.col(CQCLClean.imputed_gac_service_types)
+        #     .list.eval(pl.element().struct.field(CQCLClean.description))
+        #     .alias(CQCLClean.services_offered)
+        # )
+        #
+        # cqc_lf, gac_service_delta = remove_specialist_colleges(
+        #     cqc_lf=cqc_lf, gac_services_dimension=gac_service_delta
+        # )
+        #
+        # gac_service_delta = assign_primary_service_type(gac_service_delta)
+        # gac_service_delta = assign_care_home(gac_service_delta)
+        #
+        # # utils.write_to_parquet(
+        # #     df=gac_service_delta.drop(CQCLClean.cqc_location_import_date).collect(),
+        # #     output_path=gac_service_destination,
+        # #     logger=logger,
+        # #     partition_cols=dimensionPartitionKeys,
+        # # )
+        # del gac_service_delta
 
         # Create postcode matching dimension
         ons_lf = utils.scan_parquet(
             cleaned_ons_source, selected_columns=ons_cols_to_import
-        )
+        ).filter(pl.col(ONSClean.postcode).is_in(["LS26 8UE", "RG1 2EG", "RM15 4SW"]))
         logger.info(f"Cleaned ONS LazyFrame read in")
         if logger.level == logging.DEBUG:
             logger.debug(f"Cleaned ONS LazyFrame has {ons_lf.collect().shape[0]} rows")
@@ -296,9 +300,9 @@ def main(
             cqc_lf=cqc_lf,
             ons_lf=ons_lf,
             dimension_location=postcode_matching_destination,
-            dimension_update_date=dimension_update_date,
+            dimension_update_date="20250930",
         )
-
+        sys.exit()
         utils.write_to_parquet(
             df=postcode_delta.drop(CQCLClean.cqc_location_import_date).collect(),
             output_path=postcode_matching_destination,
@@ -921,9 +925,9 @@ def remove_rows(
         ValueError: If any of the target_lfs does not contain the columns in to_remove_lf.
     """
     result_lfs = []
-    to_remove_schema = set(to_remove_lf.schema.to_python())
+    to_remove_schema = set(to_remove_lf.head(1).collect().schema.to_python())
     for target_lf in target_lfs:
-        target_lf_schema = set(target_lf.schema.to_python())
+        target_lf_schema = set(target_lf.head(1).collect().schema.to_python())
         if not to_remove_schema.issubset(target_lf_schema):
             raise ValueError(
                 "The target dataframe schema does not contain all the columns present to_remove_lf, or the types are not matched."
