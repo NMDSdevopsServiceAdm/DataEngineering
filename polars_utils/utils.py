@@ -18,7 +18,7 @@ def scan_parquet(
     source: str | Path,
     schema: pl.Schema | None = None,
     selected_columns: list[str] | None = None,
-):
+) -> pl.LazyFrame:
     """
     Reads in parquet into a LazyFrame
     Args:
@@ -33,20 +33,16 @@ def scan_parquet(
     """
     if isinstance(source, str):
         source = source.strip("/") + "/"
-    lf = (
-        pl.scan_parquet(
-            source,
-            schema=schema,
-            cast_options=pl.ScanCastOptions(
-                missing_struct_fields="insert",
-                extra_struct_fields="ignore",
-            ),
-            extra_columns="ignore",
-            missing_columns="insert",
-        )
-        .select(selected_columns or cs.all())
-        .collect()
-    )
+    lf = pl.scan_parquet(
+        source,
+        schema=schema,
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert",
+            extra_struct_fields="ignore",
+        ),
+        extra_columns="ignore",
+        missing_columns="insert",
+    ).select(selected_columns or cs.all())
     return lf
 
 
