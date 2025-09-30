@@ -291,7 +291,7 @@ def main(
         # Create postcode matching dimension
         ons_lf = utils.scan_parquet(
             cleaned_ons_source, selected_columns=ons_cols_to_import
-        ).filter(pl.col(ONSClean.postcode).is_in(["LS26 8UE", "RG1 2EG", "RM15 4SW"]))
+        )
         logger.info(f"Cleaned ONS LazyFrame read in")
         if logger.level == logging.DEBUG:
             logger.debug(f"Cleaned ONS LazyFrame has {ons_lf.collect().shape[0]} rows")
