@@ -62,6 +62,7 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
         ]
     )
 
@@ -78,6 +79,7 @@ class CQCLocationsSchema:
                     )
                 ),
             ),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.specialisms_offered, pl.List(pl.String())),
         ]
     )
@@ -647,7 +649,7 @@ class ExtractRegisteredManagerNamesSchema:
         ]
     )
 
-    add_registered_manager_names_full_df_schema = pl.Schema(
+    add_registered_manager_names_full_lf_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),
             (CQCLClean.cqc_location_import_date, pl.Date()),

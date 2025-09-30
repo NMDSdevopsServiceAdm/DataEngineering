@@ -48,6 +48,7 @@ class CQCLocationsData:
             None,
             [{CQCL.name: "name A"}, {CQCL.name: "name B"}, {CQCL.name: "name C"}],
         ),
+        (date(2020, 3, 1), date(2021, 10, 23), date(2024, 2, 1)),
     ]
 
     expected_main_extract_struct = [
@@ -57,6 +58,7 @@ class CQCLocationsData:
             None,
             [{CQCL.name: "name A"}, {CQCL.name: "name B"}, {CQCL.name: "name C"}],
         ),
+        (date(2020, 3, 1), date(2021, 10, 23), date(2024, 2, 1)),
         (["only_name"], None, ["name A", "name B", "name C"]),
     ]
 
@@ -2512,7 +2514,7 @@ class ExtractRegisteredManagerNamesData:
         ),
     ]
 
-    add_registered_manager_names_full_df = [
+    add_registered_manager_names_full_lf = [
         ("1-001", "1-001", "1-002", "1-002"),
         (
             date(2024, 1, 1),
