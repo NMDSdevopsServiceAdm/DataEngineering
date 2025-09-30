@@ -64,38 +64,12 @@ def run_postcode_matching(
     reassigned_locations_lf = get_first_successful_postcode_match(
         unmatched_locations_lf, matched_locations_lf
     )
-    print("Reassigned postcodes:")
-    print(
-        reassigned_locations_lf.select(
-            CQCLClean.location_id,
-            CQCLClean.postal_code,
-            CQCLClean.postcode_cleaned,
-            CQCLClean.cqc_location_import_date,
-        ).collect()
-    )
+
     (
         matched_reassigned_locations_lf,
         unmatched_reassigned_locations_lf,
     ) = join_postcode_data(
         reassigned_locations_lf, postcode_lf, CQCLClean.postcode_cleaned
-    )
-    print("Matched postcodes:")
-    print(
-        matched_reassigned_locations_lf.select(
-            CQCLClean.location_id,
-            CQCLClean.postal_code,
-            CQCLClean.postcode_cleaned,
-            CQCLClean.cqc_location_import_date,
-        ).collect()
-    )
-    print("Unmatched postcodes:")
-    print(
-        unmatched_reassigned_locations_lf.select(
-            CQCLClean.location_id,
-            CQCLClean.postal_code,
-            CQCLClean.postcode_cleaned,
-            CQCLClean.cqc_location_import_date,
-        ).collect()
     )
 
     # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
@@ -228,31 +202,13 @@ def get_first_successful_postcode_match(
     )
 
     reassigned_lf = unmatched_lf.join(first_matched_lf, CQCLClean.location_id, "left")
-    print("just after join")
-    print(
-        reassigned_lf.select(
-            CQCLClean.location_id,
-            CQCLClean.postal_code,
-            successfully_matched_postcode,
-            CQCLClean.postcode_cleaned,
-            CQCLClean.cqc_location_import_date,
-        ).collect()
-    )
+
     reassigned_lf = reassigned_lf.with_columns(
         pl.when(pl.col(successfully_matched_postcode).is_not_null())
         .then(pl.col(successfully_matched_postcode))
         .otherwise(pl.col(CQCLClean.postcode_cleaned))
         .alias(CQCLClean.postcode_cleaned)
     ).drop(successfully_matched_postcode)
-    print("after coalesce")
-    print(
-        reassigned_lf.select(
-            CQCLClean.location_id,
-            CQCLClean.postal_code,
-            CQCLClean.postcode_cleaned,
-            CQCLClean.cqc_location_import_date,
-        ).collect()
-    )
 
     return reassigned_lf
 
