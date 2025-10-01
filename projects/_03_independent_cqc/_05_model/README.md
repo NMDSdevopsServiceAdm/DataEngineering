@@ -23,9 +23,14 @@ To deploy a new model, mirror the steps for the example process provided `non_re
 2. Add the model details to the registry following the example already provided. There are three model types,
     currently: SIMPLE_LINEAR, LASSO and RIDGE. Note that the location for the version parameter must begin with
     slash `/` character. Enter any special parameters (e.g. a regularisation parameter in the `model_params` section).
-3. Create or edit a Step Function to first call the preprocessing step and then the retraining step. You can refer to 
+3. Ensure that the required feature data exists in the branch/bucket where it will be referenced by the task. If 
+   necessary use a command like:
+   ```commandline
+   aws s3 sync s3://sfc-main-datasets/domain=ind_cqc_filled_posts s3://sfc-[my-branch]-datasets/domain=ind_cqc_filled_posts
+   ```
+4. Create or edit a Step Function to first call the preprocessing step and then the retraining step. You can refer to 
     the example [here](/Users/joemulvey/Projects/SkillsForCare/DataEngineering/terraform/pipeline/step-functions/DemoModelRetrain-StepFunction.json)
-4. Successful retraining should trigger an SNS notification. The SNS topic name is in the form `[branch_name]-model-retrain`.
+5. Successful retraining should trigger an SNS notification. The SNS topic name is in the form `[branch_name]-model-retrain`.
    Users can subscribe to the topic using email, SMS or other means in the AWS console.
 
 ## Semantic versioning

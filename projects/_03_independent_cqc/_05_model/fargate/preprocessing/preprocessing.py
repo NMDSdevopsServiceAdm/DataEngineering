@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import polars as pl
+from polars.exceptions import PolarsError, ColumnNotFoundError
 import logging
 from collections.abc import Callable
 from polars_utils import utils
@@ -136,13 +137,13 @@ def preprocess_remove_nulls(
             result_df.write_parquet(uri)
 
         logger.info("Finished writing to %s", uri)
-    except pl.ColumnNotFoundError as e:
+    except ColumnNotFoundError as e:
         logger.error(
             f"One or more of the specified columns {columns} are not present in {source}."
         )
         logger.error(e)
         raise
-    except (Exception, FileNotFoundError, pl.exceptions.PolarsError) as e:
+    except (Exception, FileNotFoundError, PolarsError) as e:
         logger.error(
             f"Polars was not able to read or process the data in {source}, or send to {destination}"
         )
