@@ -59,3 +59,30 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     ).drop(["mainjrid_clean_labels_right", "ascwds_job_role_counts_right"])
 
     return df
+
+
+def join_worker_to_estimates_dataframe(
+    estimated_filled_posts_lf: pl.LazyFrame,
+    aggregated_job_roles_per_establishment_lf: pl.LazyFrame,
+) -> pl.LazyFrame:
+    """
+    Join the ASC-WDS job role count column from the aggregated worker file into the estimated filled post DataFrame.
+
+    Join where establishment_id matches and ascwds_workplace_import_date == ascwds_worker_import_date.
+
+    Args:
+        estimated_filled_posts_lf (pl.LazyFrame): A dataframe containing estimated filled posts at workplace level.
+        aggregated_job_roles_per_establishment_lf (pl.LazyFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
+
+    Returns:
+        pl.LazyFrame: The estimated filled post DataFrame with the job role count map column joined in.
+    """
+
+    merged_lf = estimated_filled_posts_lf.join(
+        other=aggregated_job_roles_per_establishment_lf,
+        left_on=[IndCQC.establishment_id, IndCQC.ascwds_workplace_import_date],
+        right_on=[IndCQC.establishment_id, IndCQC.ascwds_worker_import_date],
+        how="left",
+    )
+
+    return merged_lf

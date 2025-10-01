@@ -42,3 +42,34 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (1, 0, 0, 0, 1, 0, 2, 0, 0),
     ]
+
+    estimates_df_before_join_rows = [
+        (
+            "1-001",
+            "1-001",
+        ),
+        (
+            "1001",
+            "1001",
+        ),
+        (date(2025, 1, 1), date(2025, 1, 2)),
+    ]
+    worker_df_before_join_rows = [
+        ("1001",),
+        (date(2025, 1, 1),),
+        (MainJobRoleLabels.care_worker,),
+        (10,),
+    ]
+    expected_join_worker_to_estimates_dataframe_rows = [
+        (
+            "1-001",
+            "1-001",
+        ),
+        (
+            "1001",
+            "1001",
+        ),
+        (date(2025, 1, 1), date(2025, 1, 2)),
+        (MainJobRoleLabels.care_worker, None),
+        (10, None),
+    ]
