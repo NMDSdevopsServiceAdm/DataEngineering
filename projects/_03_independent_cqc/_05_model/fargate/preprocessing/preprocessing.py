@@ -107,8 +107,8 @@ def preprocess_remove_nulls(
         lazy (bool, optional): whether to read the incoming data lazily or not (default is False)
 
     Raises:
-        pl.ColumnNotFoundError: if any column specified does not exist
-        pl.exceptions.PolarsError: if there is an error reading or processing the data
+        ColumnNotFoundError: if any column specified does not exist
+        PolarsError: if there is an error reading or processing the data
         FileNotFoundError: if the source is not found
         Exception: on any exception occurring within the preprocessor
     """

@@ -8,14 +8,60 @@ import json
 import os
 import polars as pl
 import pickle
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 DATA_BUCKET = os.environ.get("DATA_BUCKET", "test_data_bucket")
 RESOURCES_BUCKET = os.environ.get("RESOURCES_BUCKET", "test_resources_bucket")
 
 
+class TargetsNotFound(Exception):
+    pass
+
+
+class FeaturesNotFound(Exception):
+    pass
+
+
 def predict(source_data: pl.DataFrame, model: Model) -> pl.DataFrame:
-    df_predict = model.predict(source_data)
-    return source_data.with_columns(df_predict)
+    """
+    Carries out the model prediction based on the feature columns and then populates the targets
+
+    Args:
+        source_data (pl.DataFrame): the source data
+        model (Model): the model
+
+    Returns:
+        pl.DataFrame: the modified dataframe including predicted targets
+
+    Raises:
+        TargetsNotFound: if the target columns do not exist
+        FeaturesNotFound: if the feature columns do not exist
+    """
+    if not (set(model.target_columns) <= set(source_data.columns)):
+        logger.error(
+            "Not all target columns %s exist in source_data", set(model.target_columns)
+        )
+        raise TargetsNotFound(
+            "Not all target columns %s exist in source_data", set(model.target_columns)
+        )
+    elif not (set(model.feature_columns) <= set(source_data.columns)):
+        logger.error(
+            "Not all feature columns %s exist in source_data", set(model.target_columns)
+        )
+        raise FeaturesNotFound(
+            "Not all feature columns %s exist in source_data", set(model.target_columns)
+        )
+    else:
+        df_predict = model.predict(source_data)
+        return source_data.with_columns(df_predict)
 
 
 if __name__ == "__main__":
