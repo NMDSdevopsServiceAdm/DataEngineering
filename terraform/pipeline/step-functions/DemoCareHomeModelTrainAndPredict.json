@@ -75,7 +75,8 @@
             }
           ]
         }
-      }
+      },
+      "Next": "Model Predict"
     },
     "Model Predict": {
       "Type": "Task",
