@@ -374,5 +374,4 @@ workflows:
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
     jobs:
-      - terraform-destroy:
-          aws_account: "non_prod"
+      - terraform-destroy
