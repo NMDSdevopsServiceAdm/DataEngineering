@@ -7,8 +7,8 @@
 - Prefer list comprehensions over `for` loops where appropriate
 - Use meaningful variable names, especially for intermediate values
 - Don't leave commented-out code or `.show()` functions in production scripts
+- Use `logging.info()` instead of `print()` statements
 - Remove unused variables and imports before committing
-- Use logging, not print statements
 - For temporary or in-development code, use clear `# TODO:` or `# FIXME:` comments (and create a Trello card for each)
 - For Polars code, use [LazyFrame](https://docs.pola.rs/api/python/stable/reference/lazyframe/index.html) where possible
 
