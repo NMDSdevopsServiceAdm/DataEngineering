@@ -3401,9 +3401,18 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_non_res_rows = (
-        remove_cqc_duplicates_when_non_res_rows
-    )
+    expected_remove_cqc_duplicates_when_non_res_rows = [
+        (
+            "loc 1",
+            date(2024, 1, 1),
+            "not care home",
+            "AB1 2CD",
+            CareHome.not_care_home,
+            10,
+            10,
+            date(2022, 1, 1),
+        ),
+    ]
 
     repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),
