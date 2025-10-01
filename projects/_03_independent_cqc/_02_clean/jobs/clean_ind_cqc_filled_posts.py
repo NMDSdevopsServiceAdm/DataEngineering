@@ -39,7 +39,7 @@ def main(
     locations_df = calculate_time_registered_for(locations_df)
     locations_df = calculate_time_since_dormant(locations_df)
 
-    locations_df = remove_duplicate_cqc_care_homes(locations_df)
+    locations_df = remove_duplicate_cqc_registrations(locations_df)
 
     locations_df = replace_zero_beds_with_null(locations_df)
     locations_df = populate_missing_care_home_number_of_beds(locations_df)
@@ -101,7 +101,7 @@ def main(
     )
 
 
-def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
+def remove_duplicate_cqc_registrations(df: DataFrame) -> DataFrame:
     """
     Removes cqc locations with dual registration and ensures no loss of ascwds data.
 
@@ -123,17 +123,17 @@ def remove_duplicate_cqc_care_homes(df: DataFrame) -> DataFrame:
     ]
     distinguishing_column = IndCQC.imputed_registration_date
     df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
-    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_column)
+    df = deduplicate_cqc_registrations(df, duplicate_columns, distinguishing_column)
     return df
 
 
-def deduplicate_care_homes(
+def deduplicate_cqc_registrations(
     df: DataFrame, duplicate_columns: list, distinguishing_column: str
 ) -> DataFrame:
     """
     Removes cqc locations with dual registration.
 
-    This function removes the more recently registered instance of cqc care home locations with dual registration.
+    This function removes the more recently registered instance of cqc locations with dual registration.
 
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data.
