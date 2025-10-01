@@ -1172,7 +1172,7 @@ class CleanIndCQCData:
         ]
     )
 
-    remove_cqc_duplicates_schema = StructType(
+    remove_cqc_dual_registrations_schema = StructType(
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_location_import_date, DateType(), True),

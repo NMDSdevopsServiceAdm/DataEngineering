@@ -3116,7 +3116,7 @@ class CleanIndCQCData:
         ("1-0001", date(2025, 1, 2), date(2024, 12, 1), 2),
         ("1-0002", date(2025, 6, 1), date(2025, 1, 31), 5),
     ]
-    remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3138,7 +3138,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_populated_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_populated_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3151,7 +3151,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3173,7 +3173,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_earlier_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3186,7 +3186,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3208,7 +3208,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_later_reg_date_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3221,7 +3221,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3243,7 +3243,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_missing_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3256,7 +3256,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3278,7 +3278,7 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_asc_data_different_on_all_reg_dates_rows = [
         (
             "loc 1",
             date(2024, 2, 1),
@@ -3291,7 +3291,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+    remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3356,7 +3356,7 @@ class CleanIndCQCData:
             date(2022, 1, 3),
         ),
     ]
-    expected_remove_cqc_duplicates_when_carehome_and_registration_dates_the_same_rows = [
+    expected_remove_cqc_dual_registrations_when_carehome_and_registration_dates_the_same_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3379,7 +3379,7 @@ class CleanIndCQCData:
         ),
     ]
 
-    remove_cqc_duplicates_when_non_res_rows = [
+    remove_cqc_dual_registrations_when_non_res_rows = [
         (
             "loc 1",
             date(2024, 1, 1),
@@ -3401,18 +3401,9 @@ class CleanIndCQCData:
             date(2022, 1, 1),
         ),
     ]
-    expected_remove_cqc_duplicates_when_non_res_rows = [
-        (
-            "loc 1",
-            date(2024, 1, 1),
-            "not care home",
-            "AB1 2CD",
-            CareHome.not_care_home,
-            10,
-            10,
-            date(2022, 1, 1),
-        ),
-    ]
+    expected_remove_cqc_dual_registrations_when_non_res_rows = (
+        remove_cqc_dual_registrations_when_non_res_rows
+    )
 
     repeated_value_rows = [
         ("1", 1, date(2023, 2, 1)),

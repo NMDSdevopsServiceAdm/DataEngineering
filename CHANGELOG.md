@@ -44,8 +44,11 @@ All notable changes to this project will be documented in this file.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
-- Added additional sorting to handling of duplicate registrations so that null rows are above populated rows. Therefore,
-null ASC-WDS figures wont be copied across duplicate registration.
+- Changed the remove_duplicate_cqc_care_homes function as followed:
+  - changed function name to remove_dual_registration_cqc_care_homes
+  - updated doc string with information from CQC
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window and
+  instead of looping through applying that to two colums I used the withColumns method.
 
 ### Improved
 
