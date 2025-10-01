@@ -108,6 +108,6 @@ model_definitions = {
             "region_west_midlands",
             "region_yorkshire_and_the_humber",
         ],
-        "prediction_destination": "s3://sfc-mt-sagemaker-demo/predict/care_home_filled_posts_prediction",
+        "prediction_destination": "domain=ind_cqc_filled_posts/dataset=ind_cqc_features_care_home/predict",
     },
 }
