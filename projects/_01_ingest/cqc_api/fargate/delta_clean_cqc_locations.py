@@ -2,7 +2,7 @@ import sys
 import warnings
 
 import polars as pl
-from polars.exceptions import ColumnNotFoundError, ComputeError
+from polars.exceptions import ColumnNotFoundError
 from botocore.exceptions import ClientError
 
 from polars_utils import utils, logger, raw_data_adjustments
@@ -156,17 +156,7 @@ def main(
             pl.col(Keys.month).cast(pl.String).str.pad_start(2, "0"),
             pl.col(Keys.day).cast(pl.String).str.pad_start(2, "0"),
         )
-        print("Before any filtering")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.provider_id,
-                CQCLClean.postal_code,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
-        )
+
         cqc_lf = clean_and_impute_registration_date(cqc_lf)
 
         # Clean provider ID, and then filter only for rows that have a provider id
@@ -175,17 +165,6 @@ def main(
         # Use the provider ID to identify which locations are members of the local authority
         cqc_lf = assign_cqc_sector(
             cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
-        )
-        print("Filter for provider ID")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.type,
-                CQCLClean.postal_code,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
         )
 
         # Filter CQC dataframe on known conditions
@@ -197,33 +176,10 @@ def main(
         logger.debug(
             f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
         )
-        print("Filter for social care")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.postal_code,
-                CQCLClean.registration_status,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
-        )
 
         cqc_lf = impute_historic_relationships(cqc_lf)
         cqc_lf = select_registered_locations(cqc_lf)
         cqc_lf = add_related_location_flag(cqc_lf)
-
-        print("Filter for registered locations")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.postal_code,
-                CQCLClean.regulated_activities,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
-        )
 
         # Calculate latest import date for dimension update date
         dimension_update_date = cqc_lf.select(Keys.import_date).max().collect().item()
@@ -246,18 +202,6 @@ def main(
         )
         logger.debug(
             f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
-        )
-
-        print("Filter for regulated activities")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.postal_code,
-                CQCLClean.gac_service_types,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
         )
 
         regulated_activity_delta = extract_registered_manager_names(
@@ -320,17 +264,6 @@ def main(
 
         cqc_lf, gac_service_delta = remove_specialist_colleges(
             cqc_lf=cqc_lf, gac_services_dimension=gac_service_delta
-        )
-
-        print("Filter for specialist colleges")
-        print(
-            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-            .select(
-                CQCLClean.location_id,
-                CQCLClean.postal_code,
-                CQCLClean.cqc_location_import_date,
-            )
-            .collect()
         )
 
         gac_service_delta = assign_primary_service_type(gac_service_delta)
