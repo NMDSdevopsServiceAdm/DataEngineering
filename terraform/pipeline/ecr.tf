@@ -19,3 +19,8 @@ data "aws_ecr_image" "model_preprocess" {
   repository_name = "fargate/preprocessing"
   image_tag       = terraform.workspace
 }
+
+data "aws_ecr_image" "model_predict" {
+  repository_name = "fargate/prediction"
+  image_tag       = terraform.workspace
+}

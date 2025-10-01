@@ -18,7 +18,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-DATA_BUCKET = os.environ.get("DATA_BUCKET", "test_data_bucket")
+DATA_BUCKET = os.environ.get("S3_SOURCE_BUCKET", "test_data_bucket")
 RESOURCES_BUCKET = os.environ.get("RESOURCES_BUCKET", "test_resources_bucket")
 
 
