@@ -158,11 +158,7 @@ def main(
         )
         print("Before any filtering")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.provider_id,
@@ -182,11 +178,7 @@ def main(
         )
         print("Filter for provider ID")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.type,
@@ -207,11 +199,7 @@ def main(
         )
         print("Filter for social care")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,
@@ -227,11 +215,7 @@ def main(
 
         print("Filter for registered locations")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,
@@ -266,11 +250,7 @@ def main(
 
         print("Filter for regulated activities")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,
@@ -344,11 +324,7 @@ def main(
 
         print("Filter for specialist colleges")
         print(
-            cqc_lf.filter(
-                pl.col(CQCLClean.location_id).is_in(
-                    ["1-16132859906", "1-939874319", "1-804413795"]
-                )
-            )
+            cqc_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,

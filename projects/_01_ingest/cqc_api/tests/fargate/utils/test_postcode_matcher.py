@@ -36,7 +36,6 @@ class RunPostcodeMatchingTests(unittest.TestCase):
             Schemas.postcodes_schema,
         )
 
-    @patch(f"{PATCH_PATH}.combine_matched_dataframes")
     @patch(f"{PATCH_PATH}.raise_error_if_unmatched")
     @patch(f"{PATCH_PATH}.truncate_postcode")
     @patch(f"{PATCH_PATH}.create_truncated_postcode_lf")
@@ -55,7 +54,6 @@ class RunPostcodeMatchingTests(unittest.TestCase):
         create_truncated_postcode_lf_mock: Mock,
         truncate_postcode_mock: Mock,
         raise_error_if_unmatched_mock: Mock,
-        combine_matched_dataframes_mock: Mock,
     ):
         join_postcode_data_mock.return_value = (
             self.locations_where_all_match_df,
@@ -72,7 +70,6 @@ class RunPostcodeMatchingTests(unittest.TestCase):
         create_truncated_postcode_lf_mock.assert_called_once()
         truncate_postcode_mock.assert_called_once()
         raise_error_if_unmatched_mock.assert_called_once()
-        combine_matched_dataframes_mock.assert_called_once()
 
     def test_main_completes_when_all_postcodes_match(self):
         returned_df = job.run_postcode_matching(

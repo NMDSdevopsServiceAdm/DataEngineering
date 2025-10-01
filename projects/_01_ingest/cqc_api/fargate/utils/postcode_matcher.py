@@ -45,11 +45,7 @@ def run_postcode_matching(
     )
     print("In postcode matching")
     print(
-        locations_lf.filter(
-            pl.col(CQCLClean.location_id).is_in(
-                ["1-16132859906", "1-939874319", "1-804413795"]
-            )
-        )
+        locations_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
         .select(
             CQCLClean.location_id,
             CQCLClean.postal_code,
@@ -74,6 +70,19 @@ def run_postcode_matching(
     matched_locations_lf, unmatched_locations_lf = join_postcode_data(
         locations_lf, postcode_lf, CQCLClean.postcode_cleaned
     )
+    print("after first match")
+    print(
+        matched_locations_lf.filter(
+            pl.col(CQCLClean.location_id).is_in(["1-16132859906"])
+        )
+        .select(
+            CQCLClean.location_id,
+            CQCLClean.postal_code,
+            CQCLClean.postcode_cleaned,
+            CQCLClean.cqc_location_import_date,
+        )
+        .collect()
+    )
 
     # Step 2 - Reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
     reassigned_locations_lf = get_first_successful_postcode_match(
@@ -82,15 +91,14 @@ def run_postcode_matching(
     print("Reassigned postcodes:")
     print(
         reassigned_locations_lf.filter(
-            pl.col(CQCLClean.location_id).is_in(
-                ["1-16132859906", "1-939874319", "1-804413795"]
-            )
+            pl.col(CQCLClean.location_id).is_in(["1-16132859906"])
         )
         .select(
             CQCLClean.location_id,
             CQCLClean.postal_code,
             CQCLClean.postcode_cleaned,
             CQCLClean.cqc_location_import_date,
+            "right_import_date",
         )
         .collect()
     )
@@ -228,8 +236,20 @@ def get_first_successful_postcode_match(
             .sort_by(CQCLClean.cqc_location_import_date),
         )
         .filter(pl.col(row_number) == 0)
-        .rename({CQCLClean.postcode_cleaned: successfully_matched_postcode})
+        .rename(
+            {
+                CQCLClean.postcode_cleaned: successfully_matched_postcode,
+                CQCLClean.cqc_location_import_date: "right_import_date",
+            }
+        )
         .drop(row_number, CQCLClean.cqc_location_import_date)
+    )
+
+    print("First matched")
+    print(
+        first_matched_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
+        .select(CQCLClean.location_id, successfully_matched_postcode)
+        .collect()
     )
 
     reassigned_lf = unmatched_lf.join(first_matched_lf, CQCLClean.location_id, "left")
