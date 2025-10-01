@@ -57,13 +57,18 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
     ]
     worker_df_before_join_rows = [
-        ("1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1)),
-        (MainJobRoleLabels.care_worker, MainJobRoleLabels.care_worker),
-        (10, 20),
+        ("1001", "1001", "1002"),
+        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        (
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_management,
+            MainJobRoleLabels.care_worker,
+        ),
+        (10, 5, 20),
     ]
     expected_join_worker_to_estimates_dataframe_rows = [
         (
+            "1-001",
             "1-001",
             "1-001",
             "1-002",
@@ -71,13 +76,20 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (
             "1001",
             "1001",
+            "1001",
             "1002",
         ),
         (
             date(2025, 1, 1),
+            date(2025, 1, 1),
             date(2025, 1, 2),
             date(2025, 1, 1),
         ),
-        (MainJobRoleLabels.care_worker, None, MainJobRoleLabels.care_worker),
-        (10, None, 20),
+        (
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_management,
+            None,
+            MainJobRoleLabels.care_worker,
+        ),
+        (10, 5, None, 20),
     ]
