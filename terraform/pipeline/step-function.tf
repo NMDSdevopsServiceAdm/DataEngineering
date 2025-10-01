@@ -448,6 +448,7 @@ resource "aws_sfn_state_machine" "demo_care_home_model" {
     cluster_arn         = aws_ecs_cluster.model_cluster.arn
     preprocess_task_arn = module.model_preprocess.task_arn
     retrain_task_arn    = module.model_retrain.task_arn
+    prediction_task_arn = module.model_predict.task_arn
     public_subnet_ids   = jsonencode(module.model_preprocess.subnet_ids)
     security_group_id   = module.model_preprocess.security_group_id
     preprocessor_name   = "preprocess_remove_nulls"

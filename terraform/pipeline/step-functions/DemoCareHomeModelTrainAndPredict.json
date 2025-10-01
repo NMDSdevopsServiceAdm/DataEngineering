@@ -76,6 +76,35 @@
           ]
         }
       },
+    "Model Predict": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::ecs:runTask.sync",
+      "Parameters": {
+        "Cluster": "${cluster_arn}",
+        "TaskDefinition": "${prediction_task_arn}",
+        "LaunchType": "FARGATE",
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "Subnets": ${public_subnet_ids},
+            "SecurityGroups": [
+              "${security_group_id}"
+            ],
+            "AssignPublicIp": "ENABLED"
+          }
+        },
+        "Overrides": {
+          "ContainerOverrides": [
+            {
+              "Name": "model-predict-container",
+              "Command": [
+                          "predict.py",
+                          "--model_name",
+                          "${model_name}"
+              ]
+            }
+          ]
+        }
+      },
       "End": true
     },
     "HandleFailure": {
