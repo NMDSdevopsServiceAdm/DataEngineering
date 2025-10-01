@@ -165,8 +165,8 @@ def main(
             )
             .select(
                 CQCLClean.location_id,
+                CQCLClean.provider_id,
                 CQCLClean.postal_code,
-                CQCLClean.postcode_cleaned,
                 CQCLClean.cqc_location_import_date,
             )
             .collect()
@@ -189,8 +189,8 @@ def main(
             )
             .select(
                 CQCLClean.location_id,
+                CQCLClean.type,
                 CQCLClean.postal_code,
-                CQCLClean.postcode_cleaned,
                 CQCLClean.cqc_location_import_date,
             )
             .collect()
@@ -215,7 +215,7 @@ def main(
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,
-                CQCLClean.postcode_cleaned,
+                CQCLClean.registration_status,
                 CQCLClean.cqc_location_import_date,
             )
             .collect()
@@ -235,7 +235,7 @@ def main(
             .select(
                 CQCLClean.location_id,
                 CQCLClean.postal_code,
-                CQCLClean.postcode_cleaned,
+                CQCLClean.regulated_activities,
                 CQCLClean.cqc_location_import_date,
             )
             .collect()
@@ -262,6 +262,22 @@ def main(
         )
         logger.debug(
             f"CQC Location LazyFrame has {cqc_lf.select(pl.len()).collect().item()} rows"
+        )
+
+        print("Filter for regulated activities")
+        print(
+            cqc_lf.filter(
+                pl.col(CQCLClean.location_id).is_in(
+                    ["1-16132859906", "1-939874319", "1-804413795"]
+                )
+            )
+            .select(
+                CQCLClean.location_id,
+                CQCLClean.postal_code,
+                CQCLClean.gac_service_types,
+                CQCLClean.cqc_location_import_date,
+            )
+            .collect()
         )
 
         regulated_activity_delta = extract_registered_manager_names(
@@ -324,6 +340,21 @@ def main(
 
         cqc_lf, gac_service_delta = remove_specialist_colleges(
             cqc_lf=cqc_lf, gac_services_dimension=gac_service_delta
+        )
+
+        print("Filter for specialist colleges")
+        print(
+            cqc_lf.filter(
+                pl.col(CQCLClean.location_id).is_in(
+                    ["1-16132859906", "1-939874319", "1-804413795"]
+                )
+            )
+            .select(
+                CQCLClean.location_id,
+                CQCLClean.postal_code,
+                CQCLClean.cqc_location_import_date,
+            )
+            .collect()
         )
 
         gac_service_delta = assign_primary_service_type(gac_service_delta)
