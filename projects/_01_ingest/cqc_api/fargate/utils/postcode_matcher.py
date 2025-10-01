@@ -242,7 +242,7 @@ def get_first_successful_postcode_match(
                 CQCLClean.cqc_location_import_date: "right_import_date",
             }
         )
-        .drop(row_number, CQCLClean.cqc_location_import_date)
+        .drop(row_number)
     )
 
     print("First matched")
