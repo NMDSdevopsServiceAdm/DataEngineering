@@ -623,7 +623,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           aws_ecs_cluster.polars_cluster.arn,
           aws_ecs_cluster.polars_cluster.arn,
           module.model_preprocess.task_arn,
-          module.model_retrain.task_arn
+          module.model_retrain.task_arn,
+          module.model_predict.task_arn
         ]
       },
       {
@@ -636,6 +637,8 @@ resource "aws_iam_policy" "step_function_iam_policy" {
           module.model_retrain.task_role_arn,
           module.model_preprocess.task_role_arn,
           module.model_preprocess.task_exc_role_arn,
+          module.model_predict.task_exc_role_arn,
+          module.model_predict.task_role_arn,
           module._03_independent_cqc.task_exc_role_arn,
           module.cqc-api.task_role_arn,
           module._03_independent_cqc.task_role_arn
