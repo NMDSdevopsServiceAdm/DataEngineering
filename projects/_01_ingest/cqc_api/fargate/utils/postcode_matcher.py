@@ -231,26 +231,19 @@ def get_first_successful_postcode_match(
             CQCLClean.cqc_location_import_date,
         )
         .with_columns(
-            pl.row_index(row_number)  # Note. Warning in documentation for row_index.
-            .over(CQCLClean.location_id)
-            .sort_by(CQCLClean.cqc_location_import_date),
+            pl.row_index(
+                row_number
+            ).over(  # Note. Warning in documentation for row_index.
+                CQCLClean.location_id, order_by=CQCLClean.cqc_location_import_date
+            )
         )
         .filter(pl.col(row_number) == 0)
-        .rename(
-            {
-                CQCLClean.postcode_cleaned: successfully_matched_postcode,
-                CQCLClean.cqc_location_import_date: "right_import_date",
-            }
-        )
-        .drop(row_number)
+        .rename({CQCLClean.postcode_cleaned: successfully_matched_postcode})
+        .drop(CQCLClean.cqc_location_import_date, row_number)
     )
 
     print("First matched")
-    print(
-        first_matched_lf.filter(pl.col(CQCLClean.location_id).is_in(["1-16132859906"]))
-        .select(CQCLClean.location_id, successfully_matched_postcode)
-        .collect()
-    )
+    print(first_matched_lf.collect())
 
     reassigned_lf = unmatched_lf.join(first_matched_lf, CQCLClean.location_id, "left")
 

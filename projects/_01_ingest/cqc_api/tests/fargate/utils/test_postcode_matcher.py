@@ -161,11 +161,17 @@ class GetFirstSuccessfulPostcodeMatchTests(unittest.TestCase):
             Data.first_successful_postcode_matched_rows,
             Schemas.first_successful_postcode_matched_schema,
         )
+        print("unmatched_df")
+        print(unmatched_df.collect())
+        print("matched_df")
+        print(matched_df.collect())
         returned_df = job.get_first_successful_postcode_match(unmatched_df, matched_df)
+        print(returned_df.collect())
         expected_df = pl.LazyFrame(
             Data.expected_get_first_successful_postcode_match_rows,
             Schemas.expected_get_first_successful_postcode_match_schema,
         )
+        print(expected_df.collect())
         pl_testing.assert_frame_equal(returned_df, expected_df)
 
 

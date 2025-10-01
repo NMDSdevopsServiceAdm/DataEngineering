@@ -2731,20 +2731,21 @@ class PostcodeMatcherTest:
     ]
 
     first_successful_postcode_unmatched_rows = [
-        ("1-001", "1-003"),
-        (date(2023, 1, 1), date(2025, 1, 1)),
-        ("AA10AA", "AA13AA"),
+        ("1-001", "1-003", "1-004"),
+        (date(2023, 1, 1), date(2025, 1, 1), date(2023, 1, 1)),
+        ("AA10AA", "AA13AA", "AA12AA"),
     ]
+
     first_successful_postcode_matched_rows = [
-        ("1-001", "1-001", "1-002"),
-        (date(2024, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        ("AA11AB", "AA11AA", "AA12AA"),
-        ("CSSR 2", "CSSR 1", "CSSR 1"),
+        ("1-001", "1-001", "1-002", "1-004"),
+        (date(2024, 1, 1), date(2025, 1, 1), date(2025, 1, 1), date(2022, 1, 1)),
+        ("AA11AB", "AA11AA", "AA12AA", "AA13AA"),
+        ("CSSR 2", "CSSR 1", "CSSR 1", "CSSR 1"),
     ]
     expected_get_first_successful_postcode_match_rows = [
-        ("1-001", "1-003"),
-        (date(2023, 1, 1), date(2025, 1, 1)),
-        ("AA11AB", "AA13AA"),
+        ("1-001", "1-003", "1-004"),
+        (date(2023, 1, 1), date(2025, 1, 1), date(2023, 1, 1)),
+        ("AA11AB", "AA13AA", "AA13AA"),
     ]
 
     amend_invalid_postcodes_rows = [
