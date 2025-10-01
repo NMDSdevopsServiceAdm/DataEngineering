@@ -84,10 +84,10 @@ if __name__ == "__main__":
     version_param = ssm.get_parameter(Name=version_location)
     version = json.loads(version_param["Parameter"]["Value"])["Current Version"]
     model_location = f"models/{parsed.model_name}/{version}/model.pkl"
-    source_data = pl.read_parquet(f"s3://{DATA_BUCKET}/{data_source_prefix}")
+    source_data = pl.read_parquet(f"s3://{DATA_BUCKET}/{data_source_prefix}/")
     destination = f"{prediction_destination}/{version}/result.parquet"
     logger.info("Retrieving the model from %s", model_location)
-    resp = s3.get_object(Bucket=DATA_BUCKET, Key=model_location)
+    resp = s3.get_object(Bucket=RESOURCES_BUCKET, Key=model_location)
     loaded_model = pickle.load(resp["Body"])
     logger.info("Predicting the targets")
     predicted = predict(source_data, loaded_model)
