@@ -18,7 +18,7 @@ resource "aws_ecs_task_definition" "polars_task" {
       image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${terraform.workspace}",
       essential = true,
       cpu       = 4096,
-      memory    = 24576,
+      memory    = 23552,
       environment = [
         { "name" = "AWS_REGION", "value" = var.region },
         { "name" = "CQC_SECRET_NAME", "value" = var.secret_name }
