@@ -6165,3 +6165,23 @@ class IndCQCDataUtils:
             PrimaryServiceTypeSecondLevel.other_non_residential,
         ),
     ]
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00),
+        ("1-002", 1, None),
+        ("1-003", None, 1.00),
+        ("1-004", None, None),
+        ("1-005", 1, 0.65),
+        ("1-006", 1, 6.01),
+    ]
+    expected_null_ct_posts_to_beds_outliers_rows = [
+        ("1-001", 1, 1.00, 1),
+        ("1-002", 1, None, 1),
+        ("1-003", None, 1.00, None),
+        ("1-004", None, None, None),
+        ("1-005", 1, 0.65, None),
+        ("1-006", 1, 6.01, None),
+    ]
