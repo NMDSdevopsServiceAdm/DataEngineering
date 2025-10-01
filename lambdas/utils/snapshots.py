@@ -55,8 +55,7 @@ def build_snapshot_table_from_delta(
         if snapshot.item(1, Keys.import_date) == timepoint:
             if dataset == "locations-cleaned":
                 return snapshot.filter(
-                    pl.col(CqcLocationsCleaned.registration_status)
-                    == RegistrationStatus.registered
+                    pl.col(CqcLocationsCleaned.deregistration_date).is_null()
                 )
             return snapshot
     else:
