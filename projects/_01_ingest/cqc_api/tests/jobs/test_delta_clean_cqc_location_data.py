@@ -71,7 +71,6 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
     @patch(f"{PATCH_PATH}.create_dimension_from_missing_struct_column")
-    @patch(f"{PATCH_PATH}.select_registered_locations_only")
     @patch(f"{PATCH_PATH}.impute_historic_relationships")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch(f"{PATCH_PATH}.remove_records_from_locations_data")
@@ -92,7 +91,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_records_from_locations_data_mock: Mock,
         format_date_fields_mock: Mock,
         impute_historic_relationships_mock: Mock,
-        select_registered_locations_only_mock: Mock,
         create_dimension_from_missing_struct_column_mock: Mock,
         impute_missing_struct_column_mock: Mock,
         remove_locations_that_never_had_regulated_activities_mock: Mock,
@@ -139,7 +137,6 @@ class MainTests(CleanCQCLocationDatasetTests):
         remove_records_from_locations_data_mock.assert_called_once()
         format_date_fields_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()
-        select_registered_locations_only_mock.assert_called_once()
         self.assertEqual(create_dimension_from_missing_struct_column_mock.call_count, 3)
         impute_missing_struct_column_mock.assert_not_called()
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
@@ -808,56 +805,6 @@ class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
             Schemas.remove_specialist_colleges_schema,
         )
         self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
-class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def test_select_registered_locations_only_splits_data_correctly(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_rows, Schemas.registration_status_schema
-        )
-
-        returned_registered_df = job.select_registered_locations_only(test_df)
-        returned_registered_data = returned_registered_df.collect()
-
-        expected_registered_data = self.spark.createDataFrame(
-            Data.expected_registered_rows, Schemas.registration_status_schema
-        ).collect()
-
-        self.assertEqual(returned_registered_data, expected_registered_data)
-
-    def test_select_registered_locations_only_raises_a_warning_if_any_rows_are_invalid(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_with_missing_data_rows,
-            Schemas.registration_status_schema,
-        )
-        returned_registered_df = job.select_registered_locations_only(test_df)
-        returned_registered_data = returned_registered_df.collect()
-
-        expected_registered_data = self.spark.createDataFrame(
-            Data.expected_registered_rows, Schemas.registration_status_schema
-        ).collect()
-
-        self.assertEqual(returned_registered_data, expected_registered_data)
-
-        self.assertWarns(Warning)
-
-    def test_select_registered_locations_only_does_not_raise_a_warning_if_all_rows_are_valid(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_rows, Schemas.registration_status_schema
-        )
-        with warnings.catch_warnings(record=True) as warnings_log:
-            returned_registered_df = job.select_registered_locations_only(test_df)
-
-            self.assertEqual(warnings_log, [])
 
 
 class CleanProviderIdColumn(CleanCQCLocationDatasetTests):
