@@ -7,11 +7,11 @@
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
         "Cluster": "${cluster_arn}",
-        "TaskDefinition": ${preprocess_task_arn},
+        "TaskDefinition": "${preprocess_task_arn}",
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": "${public_subnet_ids}",
+            "Subnets": ${public_subnet_ids},
             "SecurityGroups": [
               "${security_group_id}"
             ],
