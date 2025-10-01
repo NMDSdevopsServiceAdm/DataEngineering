@@ -4,6 +4,7 @@ from argparse import ArgumentError, ArgumentTypeError
 
 import polars as pl
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -69,16 +70,26 @@ def main(
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
     """
-    estimated_ind_cqc_filled_posts_df = pl.scan_parquet(
+    estimated_ind_cqc_filled_posts_lf = pl.scan_parquet(
         estimated_ind_cqc_filled_posts_source,
     ).select(estimated_ind_cqc_filled_posts_columns_to_import)
 
-    cleaned_ascwds_worker_df = pl.scan_parquet(
+    cleaned_ascwds_worker_lf = pl.scan_parquet(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
+    aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
+        cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
+    )
+
+    estimated_ind_cqc_filled_posts_by_job_role_lf = (
+        JRUtils.join_worker_to_estimates_dataframe(
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+        )
+    )
+
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         logger=logger,
     )
@@ -91,7 +102,7 @@ if __name__ == "__main__":
             cleaned_ascwds_worker_source,
             estimated_ind_cqc_filled_posts_by_job_role_destination,
             *_,
-        ) = utils.collect_arguments(
+        ) = utils.get_args(
             (
                 "--estimated_ind_cqc_filled_posts_source",
                 "Source s3 directory for estimated ind cqc filled posts data",

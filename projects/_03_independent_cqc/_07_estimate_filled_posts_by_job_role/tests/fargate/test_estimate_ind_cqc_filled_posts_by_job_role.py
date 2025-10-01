@@ -14,10 +14,14 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
+    @patch(f"{PATCH_PATH}.JRUtils.aggregate_ascwds_worker_job_roles_per_establishment")
     @patch(f"{PATCH_PATH}.pl.scan_parquet")
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
+        join_worker_to_estimates_dataframe_mock: Mock,
+        aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
         estimated_ind_cqc_filled_posts_scan_mock = Mock()
@@ -46,5 +50,8 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         cleaned_ascwds_worker_scan_mock.select.assert_called_once_with(
             job.cleaned_ascwds_worker_columns_to_import
         )
+
+        aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
+        join_worker_to_estimates_dataframe_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, logger=ANY)
