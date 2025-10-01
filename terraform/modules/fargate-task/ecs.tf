@@ -2,8 +2,8 @@ resource "aws_ecs_task_definition" "polars_task" {
   family                   = "${local.workspace_prefix}-${var.task_name}-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "4096"
-  memory                   = "30720"
+  cpu                      = "8192"
+  memory                   = "61440"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
@@ -17,8 +17,8 @@ resource "aws_ecs_task_definition" "polars_task" {
       name      = "${var.task_name}-container",
       image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${terraform.workspace}",
       essential = true,
-      cpu       = 4096,
-      memory    = 29696,
+      cpu       = 8192,
+      memory    = 61440,
       environment = [
         { "name" = "AWS_REGION", "value" = var.region },
         { "name" = "CQC_SECRET_NAME", "value" = var.secret_name }
