@@ -44,6 +44,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
+- Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
+
 - Changed the remove_duplicate_cqc_care_homes function as followed:
   - changed function name to remove_dual_registration_cqc_care_homes
   - updated doc string with information from CQC
