@@ -20,6 +20,13 @@ orbs:
 
 jobs:
   task-containerisation:
+    parameters:
+      aws_account_id:
+        type: env_var_name
+      access_key:
+        type: env_var_name
+      secret_key:
+        type: env_var_name
     docker:
       - image: docker:latest
     steps:
@@ -31,10 +38,12 @@ jobs:
       - run:
           name: Build Docker Images
           command: |
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             # Authenticate Docker to ECR
-            docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
-            
+            aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
+            export AWS_ACCOUNT_ID=${<< parameters.aws_account_id >>}
             docker buildx bake all --push
 
   test:
@@ -110,6 +119,15 @@ jobs:
           command: terraform fmt -check -recursive -diff
 
   terraform-plan:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant `tfbackend` file, and auth credentials
+        enum: ["prod", "non_prod"]
+      access_key:
+        type: env_var_name
+      secret_key:
+        type: env_var_name
     working_directory: /tmp/project
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
@@ -119,8 +137,11 @@ jobs:
       - run:
           name: terraform plan
           command: |
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
-            terraform init -input=false
+            export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
+            terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
             terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
             terraform plan -out tfapply
       - store_artifacts:
@@ -133,6 +154,15 @@ jobs:
             - .
 
   terraform-apply:
+    parameters:
+      aws_account:
+        type: enum
+        description: The short name of the AWS account, used to reference the relevant auth credentials
+        enum: ["prod", "non_prod"]
+      access_key:
+        type: env_var_name
+      secret_key:
+        type: env_var_name
     docker:
       - image: docker.mirror.hashicorp.services/hashicorp/terraform:1.13.1
     resource_class: small
@@ -143,17 +173,23 @@ jobs:
       - run:
           name: terraform apply
           command: |
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
             terraform apply -auto-approve tfapply
       - run:
           name: save pipeline resources bucket name
           command: |
             cd terraform/pipeline
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             echo $(terraform output --raw pipeline_resources_bucket_name) > pipeline_resources_bucket_name
       - run:
           name: save datasets bucket name
           command: |
             cd terraform/pipeline
+            export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
+            export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             echo $(terraform output --raw datasets_bucket_name) > datasets_bucket_name
       - persist_to_workspace:
           root: .
@@ -162,12 +198,22 @@ jobs:
             - ./terraform/pipeline/datasets_bucket_name
 
   deploy-dependencies:
+    parameters:
+      access_key:
+        type: env_var_name
+      secret_key:
+        type: env_var_name
     docker:
       - image: cimg/python:3.11.12
     resource_class: small
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - run:
           name: package utils, schemas, projects and environment
           command: |
@@ -195,6 +241,11 @@ jobs:
     steps:
       - attach_workspace:
           at: .
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-default-datasets/"
@@ -212,10 +263,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
+      - run:
           name: terraform destroy
           command: |
             cd terraform/pipeline
-            terraform init -input=false
+            terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select << pipeline.parameters.GHA_Meta >>
             terraform destroy -auto-approve
       - run:
@@ -232,6 +288,9 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
+          aws_account_id: AWS_ACCOUNT_ID
           filters:
             branches:
               only: main
@@ -240,6 +299,9 @@ workflows:
             branches:
               only: main
       - terraform-plan:
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
+          aws_account: "prod"
           requires:
             - test
             - task-containerisation
@@ -248,9 +310,14 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
+          aws_account: "prod"
           requires:
             - plan-approval
       - deploy-dependencies:
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
           requires:
             - terraform-apply
 
@@ -259,6 +326,9 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
+          access_key: AWS_ACCESS_KEY_ID_non_prod
+          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          aws_account_id: AWS_ACCOUNT_ID_non_prod
           filters:
             branches:
               ignore: main
@@ -279,14 +349,22 @@ workflows:
             branches:
               ignore: main
       - terraform-plan:
+          access_key: AWS_ACCESS_KEY_ID_non_prod
+          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          aws_account: "non_prod"
           requires:
             - lint-terraform
             - test
             - task-containerisation
       - terraform-apply:
+          access_key: AWS_ACCESS_KEY_ID_non_prod
+          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
+          aws_account: "non_prod"
           requires:
             - terraform-plan
       - deploy-dependencies:
+          access_key: AWS_ACCESS_KEY_ID_non_prod
+          secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
       - copy-default-data:
