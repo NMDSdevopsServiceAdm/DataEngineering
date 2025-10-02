@@ -44,7 +44,7 @@ def estimate_non_res_capacity_tracker_filled_posts(df: DataFrame) -> DataFrame:
 
 def calculate_care_worker_ratio(df: DataFrame) -> float:
     """
-    Calculate the overall ratio of Capacity Tracker (DT) care workers to all estimated filled posts.
+    Calculate the overall ratio of Capacity Tracker (CT) care workers to all estimated filled posts.
 
     Non-residential care locations only record the number of care workers they employ.
     This function calculates the ratio of CT care workers to Skills for Care (SfC) estimated total posts.
