@@ -41,9 +41,13 @@ All notable changes to this project will be documented in this file.
 
 - Removed the original Step Functions now the replacement ones are fully operational.
 
+- Removed usage of the raw location schema with hardcoded column names and updated all dependent jobs to reference the standardised polars schema with column name references.
+
 - Added a third argument calculate_filled_posts_per_bed_ratio so it can be used for either ASC-WDS posts or Capacity Tracker posts.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
+
+- Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
 ### Improved
 
