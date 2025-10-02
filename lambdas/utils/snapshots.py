@@ -60,7 +60,8 @@ def build_snapshot_table_from_delta(
                     & pl.col(CqcLocationsCleaned.registration_status).eq(
                         pl.lit(RegistrationStatus.registered)
                     )
-                    & pl.col(CqcLocationsCleaned.type) == LocationType.social_care_identifier
+                    & pl.col(CqcLocationsCleaned.type)
+                    == LocationType.social_care_identifier
                 )
             return snapshot
     else:
