@@ -288,9 +288,9 @@ workflows:
     unless: << pipeline.parameters.GHA_Action >>
     jobs:
       - task-containerisation:
-          access_key: AWS_ACCESS_KEY_ID_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_prod
-          aws_account_id: AWS_ACCOUNT_ID_prod
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
+          aws_account_id: AWS_ACCOUNT_ID
           filters:
             branches:
               only: main
@@ -299,8 +299,8 @@ workflows:
             branches:
               only: main
       - terraform-plan:
-          access_key: AWS_ACCESS_KEY_ID_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_prod
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
           aws_account: "prod"
           requires:
             - test
@@ -310,14 +310,14 @@ workflows:
           requires:
             - terraform-plan
       - terraform-apply:
-          access_key: AWS_ACCESS_KEY_ID_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_prod
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
           aws_account: "prod"
           requires:
             - plan-approval
       - deploy-dependencies:
-          access_key: AWS_ACCESS_KEY_ID_prod
-          secret_key: AWS_SECRET_ACCESS_KEY_prod
+          access_key: AWS_ACCESS_KEY_ID
+          secret_key: AWS_SECRET_ACCESS_KEY
           requires:
             - terraform-apply
 
