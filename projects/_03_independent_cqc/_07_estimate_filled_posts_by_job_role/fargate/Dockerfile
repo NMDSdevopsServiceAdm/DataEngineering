@@ -11,6 +11,7 @@ COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/
 COPY utils/value_labels /app/utils/value_labels
 COPY polars_utils /app/polars_utils
 COPY utils/column_names /app/utils/column_names/
+COPY utils/column_values /app/utils/column_values/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/estimate_ind_cqc_filled_posts_by_job_role.py /app/estimate_ind_cqc_filled_posts_by_job_role.py
 
 # Copy all python jobs to WORKDIR
