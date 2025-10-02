@@ -1,9 +1,79 @@
 
 locals {
   step_functions = tomap({
-    for fn in fileset("${path.pipeline}/step-functions", "*.json") :
-    substr(fn, 0, length(fn) - 5) => "${path.pipeline}/step-functions/${fn}"
+    for fn in fileset("step-functions/children", "*.json") :
+    substr(fn, 0, length(fn) - 5) => "step-functions/children/${fn}"
   })
+}
+
+resource "aws_sfn_state_machine" "run_crawler" {
+  name       = "${local.workspace_prefix}-Run-Crawler"
+  role_arn   = aws_iam_role.step_function_iam_role.arn
+  type       = "STANDARD"
+  definition = templatefile("step-functions/Run-Crawler.json", {})
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy
+  ]
+}
+
+resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
+  name     = "${local.workspace_prefix}-Workforce-Intelligence-Pipeline"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/Workforce-Intelligence-Pipeline.json", {
+    dataset_bucket_uri                              = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                             = module.datasets_bucket.bucket_name
+    data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
+    pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
+    transform_ascwds_state_machine_arn              = aws_sfn_state_machine.step_functions_from_files["Transform-ASCWDS-Data"].arn
+    transform_cqc_data_state_machine_arn            = aws_sfn_state_machine.step_functions_from_files["Transform-CQC-Data"].arn
+    trigger_ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.step_functions_from_files["Ind-CQC-Filled-Post-Estimates"].arn
+    trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.step_functions_from_files["SfC-Internal"].arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket,
+    aws_sfn_state_machine.step_functions_from_files,
+  ]
+}
+
+resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
+  name     = "${local.workspace_prefix}-CQC-And-ASCWDS-Orchestrator"
+  role_arn = aws_iam_role.step_function_iam_role.arn
+  type     = "STANDARD"
+  definition = templatefile("step-functions/CQC-And-ASCWDS-Orchestrator.json", {
+    dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
+    dataset_bucket_name                              = module.datasets_bucket.bucket_name
+    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.step_functions_from_files["Ingest-CQC-API-Delta"].arn
+    trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
+  })
+
+  logging_configuration {
+    log_destination        = "${aws_cloudwatch_log_group.state_machines.arn}:*"
+    include_execution_data = true
+    level                  = "ERROR"
+  }
+
+  depends_on = [
+    aws_iam_policy.step_function_iam_policy,
+    module.datasets_bucket,
+    aws_sfn_state_machine.step_functions_from_files,
+    aws_sfn_state_machine.workforce_intelligence_state_machine
+  ]
 }
 
 resource "aws_sfn_state_machine" "step_functions_from_files" {
@@ -22,12 +92,22 @@ resource "aws_sfn_state_machine" "step_functions_from_files" {
     create_snapshot_lambda_lambda_arn    = aws_lambda_function.create_snapshot_lambda.arn
 
     # step-functions
-    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
-    trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
-    transform_ascwds_state_machine_arn               = aws_sfn_state_machine.transform_ascwds_state_machine.arn
-    transform_cqc_data_state_machine_arn             = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
-    trigger_ind_cqc_pipeline_state_machine_arn       = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
-    trigger_sfc_internal_pipeline_state_machine_arn  = aws_sfn_state_machine.sfc_internal_state_machine.arn
+    # ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
+    # trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
+    # transform_ascwds_state_machine_arn               = aws_sfn_state_machine.transform_ascwds_state_machine.arn
+    # transform_cqc_data_state_machine_arn             = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
+    # trigger_ind_cqc_pipeline_state_machine_arn       = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
+    # trigger_sfc_internal_pipeline_state_machine_arn  = aws_sfn_state_machine.sfc_internal_state_machine.arn
+
+    # step-functions
+    # ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.step_functions_from_files["Ingest-CQC-API-Delta"].arn
+    # trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.step_functions_from_files["Workforce-Intelligence-Pipeline"].arn
+    # transform_ascwds_state_machine_arn               = aws_sfn_state_machine.step_functions_from_files["Transform-ASCWDS-Data"].arn
+    # transform_cqc_data_state_machine_arn             = aws_sfn_state_machine.step_functions_from_files["Transform-CQC-Data"].arn
+    # trigger_ind_cqc_pipeline_state_machine_arn       = aws_sfn_state_machine.step_functions_from_files["Ind-CQC-Filled-Post-Estimates"].arn
+    # trigger_sfc_internal_pipeline_state_machine_arn  = aws_sfn_state_machine.step_functions_from_files["SfC-Internal"].arn
+    # run_crawler_state_machine_arn                    = aws_sfn_state_machine.step_functions_from_files["Run-Crawler"].arn
+    run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
     validate_ascwds_workplace_raw_data_job_name                             = module.validate_ascwds_workplace_raw_data_job.job_name
@@ -86,7 +166,6 @@ resource "aws_sfn_state_machine" "step_functions_from_files" {
     reconciliation_job_name                           = module.reconciliation_job.job_name
 
     # crawlers
-    run_crawler_state_machine_arn        = aws_sfn_state_machine.run_crawler.arn
     data_validation_reports_crawler_name = module.data_validation_reports_crawler.crawler_name
     ascwds_crawler_name                  = module.ascwds_crawler.crawler_name
     ind_cqc_filled_posts_crawler_name    = module.ind_cqc_filled_posts_crawler.crawler_name
