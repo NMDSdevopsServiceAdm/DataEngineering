@@ -8,6 +8,7 @@ WORKDIR /app
 
 ENV PYTHONPATH=/app
 
+COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils/utils
 COPY polars_utils /app/polars_utils
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/requirements.txt /app/requirements.txt
 COPY utils/column_names utils/column_names/
