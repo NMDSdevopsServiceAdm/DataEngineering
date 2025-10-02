@@ -32,13 +32,16 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${cluster_arn}",
-                "TaskDefinition": "${task_arn}",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${security_group_id}"],
+                    "Subnets": ${cqc_api_subnet_ids
+                    },
+                    "SecurityGroups": [
+                      "${cqc_api_security_group_id}"
+                    ],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
@@ -120,13 +123,16 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${cluster_arn}",
-                "TaskDefinition": "${task_arn}",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${security_group_id}"],
+                    "Subnets": ${cqc_api_subnet_ids
+                    },
+                    "SecurityGroups": [
+                      "${cqc_api_security_group_id}"
+                    ],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
@@ -166,13 +172,16 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${cluster_arn}",
-                "TaskDefinition": "${task_arn}",
+                "Cluster": "${polars_cluster_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
-                    "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${security_group_id}"],
+                    "Subnets": ${cqc_api_subnet_ids
+                    },
+                    "SecurityGroups": [
+                      "${cqc_api_security_group_id}"
+                    ],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
@@ -249,7 +258,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::aws-sdk:glue:startCrawler",
               "Parameters": {
-                "Name": "${cqc_crawler_name}"
+                "Name": "${cqc_crawler_delta_name}"
               },
               "End": true
             }
