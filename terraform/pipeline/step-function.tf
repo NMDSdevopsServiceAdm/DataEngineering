@@ -1,11 +1,12 @@
-
+# Maps StepFunction files in step-functions/dynamic using filenames as keys
 locals {
   step_functions = tomap({
-    for fn in fileset("step-functions/children", "*.json") :
-    substr(fn, 0, length(fn) - 5) => "step-functions/children/${fn}"
+    for fn in fileset("step-functions/dynamic", "*.json") :
+    substr(fn, 0, length(fn) - 5) => "step-functions/dynamic/${fn}"
   })
 }
 
+# Created explicitly as required by dynamic step functions
 resource "aws_sfn_state_machine" "run_crawler" {
   name       = "${local.workspace_prefix}-Run-Crawler"
   role_arn   = aws_iam_role.step_function_iam_role.arn
@@ -23,6 +24,7 @@ resource "aws_sfn_state_machine" "run_crawler" {
   ]
 }
 
+# Created explicitly as depends on dynamic step functions
 resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   name     = "${local.workspace_prefix}-Workforce-Intelligence-Pipeline"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -32,10 +34,10 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
     dataset_bucket_name                             = module.datasets_bucket.bucket_name
     data_validation_reports_crawler_name            = module.data_validation_reports_crawler.crawler_name
     pipeline_failure_lambda_function_arn            = aws_lambda_function.error_notification_lambda.arn
-    transform_ascwds_state_machine_arn              = aws_sfn_state_machine.step_functions_from_files["Transform-ASCWDS-Data"].arn
-    transform_cqc_data_state_machine_arn            = aws_sfn_state_machine.step_functions_from_files["Transform-CQC-Data"].arn
-    trigger_ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.step_functions_from_files["Ind-CQC-Filled-Post-Estimates"].arn
-    trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.step_functions_from_files["SfC-Internal"].arn
+    transform_ascwds_state_machine_arn              = aws_sfn_state_machine.sf_pipelines["Transform-ASCWDS-Data"].arn
+    transform_cqc_data_state_machine_arn            = aws_sfn_state_machine.sf_pipelines["Transform-CQC-Data"].arn
+    trigger_ind_cqc_pipeline_state_machine_arn      = aws_sfn_state_machine.sf_pipelines["Ind-CQC-Filled-Post-Estimates"].arn
+    trigger_sfc_internal_pipeline_state_machine_arn = aws_sfn_state_machine.sf_pipelines["SfC-Internal"].arn
   })
 
   logging_configuration {
@@ -47,10 +49,11 @@ resource "aws_sfn_state_machine" "workforce_intelligence_state_machine" {
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket,
-    aws_sfn_state_machine.step_functions_from_files,
+    aws_sfn_state_machine.sf_pipelines,
   ]
 }
 
+# Created explicitly as depends on dynamic step functions
 resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   name     = "${local.workspace_prefix}-CQC-And-ASCWDS-Orchestrator"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -58,7 +61,7 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   definition = templatefile("step-functions/CQC-And-ASCWDS-Orchestrator.json", {
     dataset_bucket_uri                               = module.datasets_bucket.bucket_uri
     dataset_bucket_name                              = module.datasets_bucket.bucket_name
-    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.step_functions_from_files["Ingest-CQC-API-Delta"].arn
+    ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-API-Delta"].arn
     trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
   })
 
@@ -71,12 +74,12 @@ resource "aws_sfn_state_machine" "cqc_and_ascwds_orchestrator_state_machine" {
   depends_on = [
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket,
-    aws_sfn_state_machine.step_functions_from_files,
+    aws_sfn_state_machine.sf_pipelines,
     aws_sfn_state_machine.workforce_intelligence_state_machine
   ]
 }
 
-resource "aws_sfn_state_machine" "step_functions_from_files" {
+resource "aws_sfn_state_machine" "sf_pipelines" {
   for_each = local.step_functions
   name     = "${local.workspace_prefix}-${each.key}"
   role_arn = aws_iam_role.step_function_iam_role.arn
@@ -91,22 +94,8 @@ resource "aws_sfn_state_machine" "step_functions_from_files" {
     pipeline_failure_lambda_function_arn = aws_lambda_function.error_notification_lambda.arn
     create_snapshot_lambda_lambda_arn    = aws_lambda_function.create_snapshot_lambda.arn
 
-    # step-functions
-    # ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.cqc_api_delta_state_machine.arn
-    # trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.workforce_intelligence_state_machine.arn
-    # transform_ascwds_state_machine_arn               = aws_sfn_state_machine.transform_ascwds_state_machine.arn
-    # transform_cqc_data_state_machine_arn             = aws_sfn_state_machine.transform_cqc_data_state_machine.arn
-    # trigger_ind_cqc_pipeline_state_machine_arn       = aws_sfn_state_machine.ind_cqc_filled_post_estimates_pipeline_state_machine.arn
-    # trigger_sfc_internal_pipeline_state_machine_arn  = aws_sfn_state_machine.sfc_internal_state_machine.arn
-
-    # step-functions
-    # ingest_cqc_api_state_machine_arn                 = aws_sfn_state_machine.step_functions_from_files["Ingest-CQC-API-Delta"].arn
-    # trigger_workforce_intelligence_state_machine_arn = aws_sfn_state_machine.step_functions_from_files["Workforce-Intelligence-Pipeline"].arn
-    # transform_ascwds_state_machine_arn               = aws_sfn_state_machine.step_functions_from_files["Transform-ASCWDS-Data"].arn
-    # transform_cqc_data_state_machine_arn             = aws_sfn_state_machine.step_functions_from_files["Transform-CQC-Data"].arn
-    # trigger_ind_cqc_pipeline_state_machine_arn       = aws_sfn_state_machine.step_functions_from_files["Ind-CQC-Filled-Post-Estimates"].arn
-    # trigger_sfc_internal_pipeline_state_machine_arn  = aws_sfn_state_machine.step_functions_from_files["SfC-Internal"].arn
-    # run_crawler_state_machine_arn                    = aws_sfn_state_machine.step_functions_from_files["Run-Crawler"].arn
+    # step-functions - cannot include any from this for_each as circular dependency
+    # if needed, create explicitly outside of this resource
     run_crawler_state_machine_arn = aws_sfn_state_machine.run_crawler.arn
 
     # jobs
@@ -134,36 +123,34 @@ resource "aws_sfn_state_machine" "step_functions_from_files" {
     diagnostics_on_known_filled_posts_job_name                              = module.diagnostics_on_known_filled_posts_job.job_name
     diagnostics_on_capacity_tracker_job_name                                = module.diagnostics_on_capacity_tracker_job.job_name
     archive_filled_posts_estimates_job_name                                 = module.archive_filled_posts_estimates_job.job_name
-    # delta_cqc_providers_download_job_name                                   = module.delta_cqc_providers_download_job.job_name
-    # delta_cqc_locations_download_job_name                                   = module.delta_cqc_locations_download_job.job_name
-    validate_providers_api_raw_delta_data_job_name    = module.validate_providers_api_raw_delta_data_job.job_name
-    clean_cqc_provider_data_job_name                  = module.clean_cqc_provider_data_job.job_name
-    clean_cqc_location_data_job_name                  = module.delta_clean_cqc_location_data_job.job_name
-    validate_providers_api_cleaned_data_job_name      = module.validate_providers_api_cleaned_data_job.job_name
-    prepare_dpr_external_job_name                     = module.prepare_dpr_external_data_job.job_name
-    prepare_dpr_survey_job_name                       = module.prepare_dpr_survey_data_job.job_name
-    merge_dpr_data_job_name                           = module.merge_dpr_data_job.job_name
-    estimate_direct_payments_job_name                 = module.estimate_direct_payments_job.job_name
-    split_pa_filled_posts_into_icb_areas_job_name     = module.split_pa_filled_posts_into_icb_areas_job.job_name
-    ingest_ascwds_job_name                            = module.ingest_ascwds_dataset_job.job_name
-    ingest_cqc_pir_job_name                           = module.ingest_cqc_pir_data_job.job_name
-    validate_pir_raw_data_job_name                    = module.validate_pir_raw_data_job.job_name
-    clean_cqc_pir_data_job_name                       = module.clean_cqc_pir_data_job.job_name
-    validate_pir_cleaned_data_job_name                = module.validate_pir_cleaned_data_job.job_name
-    ingest_ct_care_home_job_name                      = module.ingest_capacity_tracker_data_job.job_name
-    clean_ct_care_home_data_job_name                  = module.clean_capacity_tracker_care_home_job.job_name
-    validate_ct_care_home_cleaned_data_job_name       = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
-    ingest_ct_non_res_job_name                        = module.ingest_capacity_tracker_data_job.job_name
-    clean_ct_non_res_data_job_name                    = module.clean_capacity_tracker_non_res_job.job_name
-    validate_ct_non_res_cleaned_data_job_name         = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
-    ingest_ons_data_job_name                          = module.ingest_ons_data_job.job_name
-    validate_postcode_directory_raw_data_job_name     = module.validate_postcode_directory_raw_data_job.job_name
-    clean_ons_data_job_name                           = module.clean_ons_data_job.job_name
-    validate_postcode_directory_cleaned_data_job_name = module.validate_postcode_directory_cleaned_data_job.job_name
-    flatten_cqc_ratings_job_name                      = module.flatten_cqc_ratings_job.job_name
-    merge_coverage_data_job_name                      = module.merge_coverage_data_job.job_name
-    validate_merge_coverage_data_job_name             = module.validate_merge_coverage_data_job.job_name
-    reconciliation_job_name                           = module.reconciliation_job.job_name
+    validate_providers_api_raw_delta_data_job_name                          = module.validate_providers_api_raw_delta_data_job.job_name
+    clean_cqc_provider_data_job_name                                        = module.clean_cqc_provider_data_job.job_name
+    clean_cqc_location_data_job_name                                        = module.delta_clean_cqc_location_data_job.job_name
+    validate_providers_api_cleaned_data_job_name                            = module.validate_providers_api_cleaned_data_job.job_name
+    prepare_dpr_external_job_name                                           = module.prepare_dpr_external_data_job.job_name
+    prepare_dpr_survey_job_name                                             = module.prepare_dpr_survey_data_job.job_name
+    merge_dpr_data_job_name                                                 = module.merge_dpr_data_job.job_name
+    estimate_direct_payments_job_name                                       = module.estimate_direct_payments_job.job_name
+    split_pa_filled_posts_into_icb_areas_job_name                           = module.split_pa_filled_posts_into_icb_areas_job.job_name
+    ingest_ascwds_job_name                                                  = module.ingest_ascwds_dataset_job.job_name
+    ingest_cqc_pir_job_name                                                 = module.ingest_cqc_pir_data_job.job_name
+    validate_pir_raw_data_job_name                                          = module.validate_pir_raw_data_job.job_name
+    clean_cqc_pir_data_job_name                                             = module.clean_cqc_pir_data_job.job_name
+    validate_pir_cleaned_data_job_name                                      = module.validate_pir_cleaned_data_job.job_name
+    ingest_ct_care_home_job_name                                            = module.ingest_capacity_tracker_data_job.job_name
+    clean_ct_care_home_data_job_name                                        = module.clean_capacity_tracker_care_home_job.job_name
+    validate_ct_care_home_cleaned_data_job_name                             = module.validate_cleaned_capacity_tracker_care_home_data_job.job_name
+    ingest_ct_non_res_job_name                                              = module.ingest_capacity_tracker_data_job.job_name
+    clean_ct_non_res_data_job_name                                          = module.clean_capacity_tracker_non_res_job.job_name
+    validate_ct_non_res_cleaned_data_job_name                               = module.validate_cleaned_capacity_tracker_non_res_data_job.job_name
+    ingest_ons_data_job_name                                                = module.ingest_ons_data_job.job_name
+    validate_postcode_directory_raw_data_job_name                           = module.validate_postcode_directory_raw_data_job.job_name
+    clean_ons_data_job_name                                                 = module.clean_ons_data_job.job_name
+    validate_postcode_directory_cleaned_data_job_name                       = module.validate_postcode_directory_cleaned_data_job.job_name
+    flatten_cqc_ratings_job_name                                            = module.flatten_cqc_ratings_job.job_name
+    merge_coverage_data_job_name                                            = module.merge_coverage_data_job.job_name
+    validate_merge_coverage_data_job_name                                   = module.validate_merge_coverage_data_job.job_name
+    reconciliation_job_name                                                 = module.reconciliation_job.job_name
 
     # crawlers
     data_validation_reports_crawler_name = module.data_validation_reports_crawler.crawler_name
