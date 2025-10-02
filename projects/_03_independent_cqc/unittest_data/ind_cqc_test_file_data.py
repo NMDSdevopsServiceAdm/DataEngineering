@@ -3331,8 +3331,8 @@ class CleanIndCQCData:
             "care home",
             "AB1 2CD",
             CareHome.care_home,
-            None,
-            None,
+            20,
+            20,
             date(2022, 1, 2),
         ),
         (
@@ -3373,8 +3373,8 @@ class CleanIndCQCData:
             "care home",
             "AB1 2CD",
             CareHome.care_home,
-            10,
-            10,
+            20,
+            20,
             date(2022, 1, 1),
         ),
     ]
