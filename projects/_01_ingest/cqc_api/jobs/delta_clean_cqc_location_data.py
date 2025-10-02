@@ -116,7 +116,7 @@ def main(
         cqc_location_df, known_la_providerids
     )
 
-    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
+    # cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = remove_records_from_locations_data(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -499,8 +499,8 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
-def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
-    return df.where(df[CQCL.type] == LocationType.social_care_identifier)
+# def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
+#     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
 def impute_historic_relationships(df: DataFrame) -> DataFrame:

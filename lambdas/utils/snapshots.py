@@ -23,6 +23,7 @@ from utils.column_names.ind_cqc_pipeline_columns import (
 )
 from utils.column_values.categorical_column_values import (
     RegistrationStatus,
+    LocationType,
 )
 
 
@@ -59,6 +60,7 @@ def build_snapshot_table_from_delta(
                     & pl.col(CqcLocationsCleaned.registration_status).eq(
                         pl.lit(RegistrationStatus.registered)
                     )
+                    & pl.col(CqcLocationsCleaned.type) == LocationType.social_care_identifier
                 )
             return snapshot
     else:
