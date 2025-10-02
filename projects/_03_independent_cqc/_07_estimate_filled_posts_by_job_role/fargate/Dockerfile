@@ -8,6 +8,7 @@ ENV PYTHONPATH=/app
 
 # Dependencies
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils /app/projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/utils
+COPY utils/value_labels /app/utils/value_labels
 COPY polars_utils /app/polars_utils
 COPY utils/column_names /app/utils/column_names/
 COPY projects/_03_independent_cqc/_07_estimate_filled_posts_by_job_role/fargate/estimate_ind_cqc_filled_posts_by_job_role.py /app/estimate_ind_cqc_filled_posts_by_job_role.py
