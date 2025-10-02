@@ -332,29 +332,29 @@ workflows:
           filters:
             branches:
               ignore: main
-      # - test:
-      #     filters:
-      #       branches:
-      #         ignore: main
-      # - lint-python:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
+      - lint-python:
+          filters:
+            branches:
+              ignore: main
       - lint-terraform:
           filters:
             branches:
               ignore: main
-      # - lint-docstrings:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - lint-docstrings:
+          filters:
+            branches:
+              ignore: main
       - terraform-plan:
           access_key: AWS_ACCESS_KEY_ID_non_prod
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            # - test
+            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
