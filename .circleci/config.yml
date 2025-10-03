@@ -44,6 +44,9 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login -u AWS --password-stdin ${<< parameters.aws_account_id >>}.dkr.ecr.eu-west-2.amazonaws.com
             echo "Rebuilding lambdas and pushing to ECR."
             export AWS_ACCOUNT_ID=${<< parameters.aws_account_id >>}
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+
             docker buildx bake all --push
 
   test:
@@ -137,12 +140,14 @@ jobs:
       - run:
           name: terraform plan
           command: |
+            # This transformation should match the workspace_prefix set in terraform/pipeline/main.tf locals block
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
             export AWS_ACCESS_KEY_ID=${<< parameters.access_key >>}
             export AWS_SECRET_ACCESS_KEY=${<< parameters.secret_key >>}
             cd terraform/pipeline
             export AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID_<< parameters.aws_account >>}
             terraform init -input=false -backend-config=../<< parameters.aws_account >>.s3.tfbackend
-            terraform workspace select ${CIRCLE_BRANCH} || terraform workspace new ${CIRCLE_BRANCH}
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH} || terraform workspace new ${SANITISED_CIRCLE_BRANCH}
             terraform plan -out tfapply
       - store_artifacts:
           path: terraform/pipeline/tfapply
@@ -212,8 +217,8 @@ jobs:
       - run:
           name: Setup Environment Variables
           command: |
-            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
+            echo 'export AWS_ACCESS_KEY_ID="${<< parameters.access_key >>}"' >> "$BASH_ENV"
+            echo 'export AWS_SECRET_ACCESS_KEY="${<< parameters.secret_key >>}"' >> "$BASH_ENV"
       - run:
           name: package utils, schemas, projects and environment
           command: |
