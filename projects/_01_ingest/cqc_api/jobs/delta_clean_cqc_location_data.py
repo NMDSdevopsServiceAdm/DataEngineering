@@ -500,7 +500,11 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
-    window_spec = Window.partitionBy(CQCL.location_id).orderBy(Keys.import_date)
+    window_spec = (
+        Window.partitionBy(CQCL.location_id)
+        .orderBy(Keys.import_date)
+        .rowsBetween(Window.currentRow, Window.unboundedFollowing)
+    )
 
     # 1. Identify future non-social-care records
     # Create a column that is True if the current record is NOT social care, False otherwise.
