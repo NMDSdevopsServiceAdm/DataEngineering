@@ -27,7 +27,7 @@
             "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${security_group_id}"
+              "${independent_cqc_security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }

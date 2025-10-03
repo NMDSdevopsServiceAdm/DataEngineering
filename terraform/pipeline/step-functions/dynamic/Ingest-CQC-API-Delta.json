@@ -40,7 +40,7 @@
                     "Subnets": ${public_subnet_ids
                     },
                     "SecurityGroups": [
-                      "${security_group_id}"
+                      "${cqc_api_security_group_id}"
                     ],
                     "AssignPublicIp": "ENABLED"
                   }
@@ -131,7 +131,7 @@
                     "Subnets": ${public_subnet_ids
                     },
                     "SecurityGroups": [
-                      "${security_group_id}"
+                      "${cqc_api_security_group_id}"
                     ],
                     "AssignPublicIp": "ENABLED"
                   }
@@ -180,7 +180,7 @@
                     "Subnets": ${public_subnet_ids
                     },
                     "SecurityGroups": [
-                      "${security_group_id}"
+                      "${cqc_api_security_group_id}"
                     ],
                     "AssignPublicIp": "ENABLED"
                   }

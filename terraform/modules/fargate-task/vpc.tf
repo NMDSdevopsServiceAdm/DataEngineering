@@ -24,5 +24,4 @@ resource "aws_security_group" "ecs_task_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"] # Allow all outbound traffic (needed for CloudWatch/ECR)
   }
-
 }

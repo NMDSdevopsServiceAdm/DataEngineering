@@ -172,16 +172,21 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     polars_cluster_arn = aws_ecs_cluster.polars_cluster.arn
     model_cluster_arn  = aws_ecs_cluster.polars_cluster.arn
 
+    public_subnet_ids = jsonencode(data.aws_subnets.public.ids)
+
     # ecs tasks
     cqc_api_task_arn         = module.cqc-api.task_arn
-    retrain_task_arn         = module.model_retrain.task_arn
-    preprocess_task_arn      = module.model_preprocess.task_arn
-    predict_task_arn         = module.model_predict.task_arn
     independent_cqc_task_arn = module._03_independent_cqc.task_arn
+    preprocess_task_arn      = module.model_preprocess.task_arn
+    retrain_task_arn         = module.model_retrain.task_arn
+    predict_task_arn         = module.model_predict.task_arn
 
-    # single VPC - so same for all tasks
-    public_subnet_ids = jsonencode(data.aws_subnets.public.ids)
-    security_group_id = aws_security_group.ecs_task_sg.id
+    # ecs task security groups
+    cqc_api_security_group_id         = module.cqc-api.security_group_id
+    independent_cqc_security_group_id = module._03_independent_cqc.security_group_id
+    preprocess_security_group_id      = module.model_preprocess.security_group_id
+    retrain_security_group_id         = module.model_retrain.security_group_id
+    predict_security_group_id         = module.model_predict.security_group_id
 
     # models
     non_res_pir_model_name = "non_res_pir"
