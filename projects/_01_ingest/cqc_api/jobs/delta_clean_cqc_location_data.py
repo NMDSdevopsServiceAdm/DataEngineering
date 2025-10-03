@@ -317,7 +317,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
 
     locations_df = locations_df.where(
         (locations_df[CQCL.registration_status] == RegistrationStatus.registered)
-        & (F.isNull(CQCLClean.deregistration_date))
+        & (F.col(CQCLClean.deregistration_date).isNull())
     )
     return locations_df
 
