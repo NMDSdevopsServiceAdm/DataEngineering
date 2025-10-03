@@ -268,13 +268,10 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Setup Environment Variables
-          command: |
-            echo 'export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"' >> "$BASH_ENV"
-            echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
-      - run:
           name: terraform destroy
           command: |
+            export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID_non_prod}"
+            export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
             terraform workspace select << pipeline.parameters.GHA_Meta >>
