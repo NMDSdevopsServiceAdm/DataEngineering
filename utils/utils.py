@@ -385,8 +385,12 @@ def get_full_snapshot(
     )
 
     spark = get_spark()
-    snapshot = spark.sql(query).withColumns({Keys.year: date_parse.group("year"),
-                                             Keys.month: date_parse.group('month'),
-                                             Keys.day: date_parse.group('day'),
-                                             Keys.import_date: date})
+    snapshot = spark.sql(query).withColumns(
+        {
+            Keys.year: F.lit(date_parse.group("year")),
+            Keys.month: F.lit(date_parse.group("month")),
+            Keys.day: F.lit(date_parse.group("day")),
+            Keys.import_date: F.lit(date),
+        }
+    )
     return snapshot.drop("row_num")
