@@ -241,7 +241,7 @@ def main(
 
     # Filtering on full snapshot
     most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
-    most_recent_snapshot = remove_specialist_colleges(most_recent_snapshot, dim_ss)
+    most_recent_snapshot, _ = remove_specialist_colleges(most_recent_snapshot, dim_ss)
     most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
 
     # Write out full snapshot
@@ -254,7 +254,7 @@ def main(
     # Filtering on delta
     # Fine to remove these as we are overwriting delta
     # If appending, filters would need to be removed as they rely on historical data being processed
-    cqc_location_df = remove_specialist_colleges(cqc_location_df, gac_service_delta)
+    cqc_location_df, _ = remove_specialist_colleges(cqc_location_df, gac_service_delta)
     cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     # Create postcode matching dimension
