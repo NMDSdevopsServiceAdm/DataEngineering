@@ -172,19 +172,14 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     polars_cluster_arn = aws_ecs_cluster.polars_cluster.arn
     model_cluster_arn  = aws_ecs_cluster.polars_cluster.arn
 
+    public_subnet_ids = jsonencode(data.aws_subnets.public.ids)
+
     # ecs tasks
     cqc_api_task_arn         = module.cqc-api.task_arn
     independent_cqc_task_arn = module._03_independent_cqc.task_arn
     preprocess_task_arn      = module.model_preprocess.task_arn
     retrain_task_arn         = module.model_retrain.task_arn
 
-    # ecs task subnets
-    # cqc_api_subnet_ids         = jsonencode(module.cqc-api.subnet_ids)
-    # independent_cqc_subnet_ids = jsonencode(module._03_independent_cqc.subnet_ids)
-    # model_subnet_ids           = jsonencode(module.model_preprocess.subnet_ids)
-    cqc_api_subnet_ids         = jsonencode(data.aws_subnets.public.ids)
-    independent_cqc_subnet_ids = jsonencode(data.aws_subnets.public.ids)
-    model_subnet_ids           = jsonencode(data.aws_subnets.public.ids)
 
     # ecs task security groups
     cqc_api_security_group_id         = module.cqc-api.security_group_id

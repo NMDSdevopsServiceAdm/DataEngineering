@@ -11,7 +11,7 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
               "${preprocess_security_group_id}"
@@ -57,7 +57,7 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
               "${retrain_security_group_id}"
