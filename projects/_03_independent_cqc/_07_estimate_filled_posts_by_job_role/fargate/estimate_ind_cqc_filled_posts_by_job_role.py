@@ -1,6 +1,5 @@
 import logging
 import sys
-from argparse import ArgumentError, ArgumentTypeError
 
 import polars as pl
 
@@ -96,33 +95,25 @@ def main(
 
 
 if __name__ == "__main__":
-    try:
+    args = utils.get_args(
         (
-            estimated_ind_cqc_filled_posts_source,
-            cleaned_ascwds_worker_source,
-            estimated_ind_cqc_filled_posts_by_job_role_destination,
-            *_,
-        ) = utils.get_args(
-            (
-                "--estimated_ind_cqc_filled_posts_source",
-                "Source s3 directory for estimated ind cqc filled posts data",
-            ),
-            (
-                "--cleaned_ascwds_worker_source",
-                "Source s3 directory for parquet ASCWDS worker cleaned dataset",
-            ),
-            (
-                "--estimated_ind_cqc_filled_posts_by_job_role_destination",
-                "Destination s3 directory",
-            ),
-        )
+            "--estimated_ind_cqc_filled_posts_source",
+            "Source s3 directory for estimated ind cqc filled posts data",
+        ),
+        (
+            "--cleaned_ascwds_worker_source",
+            "Source s3 directory for parquet ASCWDS worker cleaned dataset",
+        ),
+        (
+            "--estimated_ind_cqc_filled_posts_by_job_role_destination",
+            "Destination s3 directory",
+        ),
+    )
 
-        main(
-            estimated_ind_cqc_filled_posts_source,
-            cleaned_ascwds_worker_source,
-            estimated_ind_cqc_filled_posts_by_job_role_destination,
-        )
+    main(
+        estimated_ind_cqc_filled_posts_source=args.estimated_ind_cqc_filled_posts_source,
+        cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
+        estimated_ind_cqc_filled_posts_by_job_role_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
+    )
 
-    except (ArgumentError, ArgumentTypeError) as e:
-        logger.error(f"An error occurred parsing arguments for {sys.argv}")
-        raise e
+    logger.info("Finished ind cqc estimates by job role job")
