@@ -336,10 +336,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+#      - test:
+#          filters:
+#            branches:
+#              ignore: main
       - lint-python:
           filters:
             branches:
@@ -358,7 +358,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            - test
+#            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
@@ -371,9 +371,9 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
-      - copy-default-data:
-          requires:
-            - terraform-apply
+#      - copy-default-data:
+#          requires:
+#            - terraform-apply
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>

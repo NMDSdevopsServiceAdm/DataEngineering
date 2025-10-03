@@ -21,6 +21,10 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
+from utils.column_values.categorical_column_values import (
+    RegistrationStatus,
+    LocationType,
+)
 
 
 class DataError(Exception):
@@ -50,6 +54,14 @@ def build_snapshot_table_from_delta(
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
+            if dataset == "locations-cleaned":
+                return snapshot.filter(
+                    pl.col(CqcLocationsCleaned.deregistration_date).is_null()
+                    & pl.col(CqcLocationsCleaned.registration_status).eq(
+                        pl.lit(RegistrationStatus.registered)
+                    )
+                    & ~pl.col(CqcLocationsCleaned.future_non_slc)
+                ).drop(CqcLocationsCleaned.future_non_slc)
             return snapshot
     else:
         raise DataError("No snapshot found for timepoint " + str(timepoint))

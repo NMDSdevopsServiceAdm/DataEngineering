@@ -1,6 +1,7 @@
 import argparse
 import csv
 import os
+import re
 from typing import Any, Generator, List, Optional
 
 import boto3
@@ -365,3 +366,31 @@ def join_dimension(
         )
 
     return joined_df
+
+
+def get_full_snapshot(
+    deltas: DataFrame, primary_key: str, date_key: str, date: str
+) -> DataFrame:
+    deltas.createOrReplaceTempView("DELTA")
+    date_parse = re.match(r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})", date)
+    query = (
+        "SELECT * "
+        "FROM ("
+        f"SELECT *, "
+        f"ROW_NUMBER() OVER(PARTITION BY {primary_key} ORDER BY {date_key} DESC) AS row_num "
+        f"FROM DELTA "
+        f"WHERE {date_key}<='{date}'"
+        ") AS T1 "
+        "WHERE T1.row_num = 1"
+    )
+
+    spark = get_spark()
+    snapshot = spark.sql(query).withColumns(
+        {
+            Keys.year: F.lit(date_parse.group("year")),
+            Keys.month: F.lit(date_parse.group("month")),
+            Keys.day: F.lit(date_parse.group("day")),
+            Keys.import_date: F.lit(date),
+        }
+    )
+    return snapshot.drop("row_num")

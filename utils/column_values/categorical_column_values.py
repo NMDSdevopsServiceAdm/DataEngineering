@@ -39,6 +39,14 @@ class Dormancy(ColumnValues):
 
 
 @dataclass
+class UnrequiredLocation(ColumnValues):
+    """The possible values of the unrequired location column in CQC locations data"""
+
+    unrequired: str = "Y"
+    required: str = "N"
+
+
+@dataclass
 class LocationType(ColumnValues):
     """The possible values of the type column in CQC locations data"""
 

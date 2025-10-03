@@ -160,7 +160,6 @@ def expected_size(df: pl.DataFrame) -> int:
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
         pl.col(CQCL.type) == LocationType.social_care_identifier,
-        pl.col(CQCL.registration_status) == RegistrationStatus.registered,
         is_valid_location(),
         ~(
             (gac_services.list.len() == 1)
