@@ -179,14 +179,18 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     retrain_task_arn         = module.model_retrain.task_arn
 
     # ecs task subnets
-    cqc_api_subnet_ids         = jsonencode(module.cqc-api.subnet_ids)
-    independent_cqc_subnet_ids = jsonencode(module._03_independent_cqc.subnet_ids)
-    model_subnet_ids           = jsonencode(module.model_preprocess.subnet_ids)
+    # cqc_api_subnet_ids         = jsonencode(module.cqc-api.subnet_ids)
+    # independent_cqc_subnet_ids = jsonencode(module._03_independent_cqc.subnet_ids)
+    # model_subnet_ids           = jsonencode(module.model_preprocess.subnet_ids)
+    cqc_api_subnet_ids         = jsonencode(data.aws_subnets.public.ids)
+    independent_cqc_subnet_ids = jsonencode(data.aws_subnets.public.ids)
+    model_subnet_ids           = jsonencode(data.aws_subnets.public.ids)
 
     # ecs task security groups
     cqc_api_security_group_id         = module.cqc-api.security_group_id
     independent_cqc_security_group_id = module._03_independent_cqc.security_group_id
-    model_security_group_id           = module.model_preprocess.security_group_id
+    preprocess_security_group_id      = module.model_preprocess.security_group_id
+    retrain_security_group_id         = module.model_preprocess.security_group_id
 
     # models
     preprocessor_name = "preprocess_non_res_pir"
@@ -203,7 +207,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     aws_iam_policy.step_function_iam_policy,
     module.datasets_bucket
   ]
-
 }
 
 

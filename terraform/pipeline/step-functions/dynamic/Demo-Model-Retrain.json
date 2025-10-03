@@ -14,7 +14,7 @@
             "Subnets": ${model_subnet_ids
             },
             "SecurityGroups": [
-              "${model_security_group_id}"
+              "${preprocess_security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
@@ -60,7 +60,7 @@
             "Subnets": ${model_subnet_ids
             },
             "SecurityGroups": [
-              "${model_security_group_id}"
+              "${retrain_security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
