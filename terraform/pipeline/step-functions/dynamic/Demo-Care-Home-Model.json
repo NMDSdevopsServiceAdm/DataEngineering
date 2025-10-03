@@ -11,10 +11,10 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_preprocess_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${model_preprocess_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
@@ -57,10 +57,10 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_preprocess_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${model_preprocess_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
@@ -85,14 +85,14 @@
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
         "Cluster": "${cluster_arn}",
-        "TaskDefinition": "${prediction_task_arn}",
+        "TaskDefinition": "${predict_task_arn}",
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_preprocess_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${model_preprocess_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }

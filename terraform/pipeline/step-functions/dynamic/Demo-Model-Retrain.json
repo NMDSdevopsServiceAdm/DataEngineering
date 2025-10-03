@@ -11,10 +11,10 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${model_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
@@ -57,10 +57,10 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${model_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${model_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }

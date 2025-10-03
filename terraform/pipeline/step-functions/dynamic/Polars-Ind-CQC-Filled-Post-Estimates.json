@@ -24,10 +24,10 @@
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
           "AwsvpcConfiguration": {
-            "Subnets": ${independent_cqc_subnet_ids
+            "Subnets": ${public_subnet_ids
             },
             "SecurityGroups": [
-              "${independent_cqc_security_group_id}"
+              "${security_group_id}"
             ],
             "AssignPublicIp": "ENABLED"
           }
