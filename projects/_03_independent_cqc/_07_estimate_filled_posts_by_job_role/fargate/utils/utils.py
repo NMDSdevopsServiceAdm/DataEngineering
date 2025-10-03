@@ -58,8 +58,6 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     )
 
-    # print(df.collect().sample())
-
     return df
 
 
