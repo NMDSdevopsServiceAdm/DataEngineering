@@ -81,16 +81,16 @@ def main(
         cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
     )
 
-    # estimated_ind_cqc_filled_posts_by_job_role_lf = (
-    #     JRUtils.join_worker_to_estimates_dataframe(
-    #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
-    #     )
-    # )
+    estimated_ind_cqc_filled_posts_by_job_role_lf = (
+        JRUtils.join_worker_to_estimates_dataframe(
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+        )
+    )
 
-    estimated_ind_cqc_filled_posts_by_job_role_df = aggregated_worker_lf.collect()
+    estimated_ind_cqc_filled_posts_by_job_role_lf.collect()
 
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_by_job_role_df,
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         logger=logger,
     )
