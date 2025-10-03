@@ -40,7 +40,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             MainJobRoleLabels.senior_care_worker,
             MainJobRoleLabels.registered_nurse,
         ),
-        (1, 0, 0, 0, 1, 0, 2, 0, 0),
+        (1, None, None, None, 1, None, 2, None, None),
     ]
 
     estimates_df_before_join_rows = [

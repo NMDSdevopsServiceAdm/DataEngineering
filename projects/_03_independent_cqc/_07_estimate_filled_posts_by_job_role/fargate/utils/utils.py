@@ -34,29 +34,29 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).len(name=IndCQC.ascwds_job_role_counts)
 
-    all_job_roles_df = pl.LazyFrame(
-        {
-            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
-            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
-        }
-    )
+    df = df.with_columns(pl.lit(list_of_job_roles).alias("temp_potential_roles"))
 
-    df = df.join(all_job_roles_df, how="cross")
+    df = df.explode(pl.col("temp_potential_roles"))
 
     df = df.with_columns(
-        (
-            pl.when(
-                pl.col(IndCQC.main_job_role_clean_labelled)
-                == pl.col("mainjrid_clean_labels_right")
-            )
-            .then(pl.col(IndCQC.ascwds_job_role_counts))
-            .otherwise(pl.col("ascwds_job_role_counts_right"))
-        ).alias(IndCQC.ascwds_job_role_counts)
+        pl.when(
+            pl.col(IndCQC.main_job_role_clean_labelled)
+            == pl.col("temp_potential_roles")
+        ).then(pl.col(IndCQC.ascwds_job_role_counts))
+    ).drop(IndCQC.main_job_role_clean_labelled)
+
+    df = df.rename({"temp_potential_roles": IndCQC.main_job_role_clean_labelled})
+
+    df = df.select(
+        [
+            IndCQC.establishment_id,
+            IndCQC.ascwds_worker_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.ascwds_job_role_counts,
+        ]
     )
 
-    df = df.with_columns(
-        pl.col("mainjrid_clean_labels_right").alias(IndCQC.main_job_role_clean_labelled)
-    ).drop(["mainjrid_clean_labels_right", "ascwds_job_role_counts_right"])
+    print(df.collect().sample())
 
     return df
 
