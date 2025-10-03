@@ -2,8 +2,8 @@ resource "aws_ecs_task_definition" "polars_task" {
   family                   = "${local.workspace_prefix}-${var.task_name}-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "4096"
-  memory                   = "16384"
+  cpu                      = var.cpu_size
+  memory                   = var.ram_size
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
@@ -14,15 +14,12 @@ resource "aws_ecs_task_definition" "polars_task" {
 
   container_definitions = jsonencode([
     {
-      name      = "${var.task_name}-container",
-      image     = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${terraform.workspace}",
-      essential = true,
-      cpu       = 4096,
-      memory    = 16384,
-      environment = [
-        { "name" = "AWS_REGION", "value" = var.region },
-        { "name" = "CQC_SECRET_NAME", "value" = var.secret_name }
-      ]
+      name        = "${var.task_name}-container",
+      image       = "${local.account_id}.dkr.ecr.${var.region}.amazonaws.com/${var.ecr_repo_name}:${var.tag_name}",
+      essential   = true,
+      cpu         = var.cpu_size,
+      memory      = var.ram_size,
+      environment = var.environment
       logConfiguration = {
         logDriver = "awslogs",
         options = {

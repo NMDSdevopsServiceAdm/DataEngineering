@@ -122,10 +122,14 @@ resource "aws_iam_role_policy_attachment" "glue_job_cqc_api_primary_key_secrets_
   role       = aws_iam_role.sfc_glue_service_iam_role.name
 }
 
+data "aws_secretsmanager_secret" "cqc_api_primary_key" {
+  name = var.secret_name
+}
+
 resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
   name        = "${terraform.workspace}-retrieve-cqc-api-primary-key-secret"
   path        = "/"
   description = "Retrieves a secret specific to the Bulk download jobs"
 
-  policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = local.cqc_api_primary_key_secret_arn })
+  policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = data.aws_secretsmanager_secret.cqc_api_primary_key.arn })
 }

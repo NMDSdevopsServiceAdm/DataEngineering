@@ -5475,6 +5475,36 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
+class EstimateNonResCTFilledPostsData:
+    estimates_rows = [
+        ("1-001", CareHome.not_care_home, 8.0, 10.0),
+        ("1-002", CareHome.not_care_home, 16.0, 20.0),
+        ("1-003", CareHome.not_care_home, 24.0, 30.0),
+        ("1-004", CareHome.not_care_home, None, 40.0),
+        ("1-005", CareHome.not_care_home, 40.0, None),
+        ("1-006", CareHome.not_care_home, None, None),
+        ("1-007", CareHome.care_home, 100.0, 100.0),
+    ]
+
+    expected_care_worker_ratio = 0.8
+
+    convert_to_all_posts_using_ratio_rows = [
+        ("1-001", CareHome.not_care_home, 1.0),
+        ("1-002", CareHome.not_care_home, 6.0),
+        ("1-003", CareHome.not_care_home, None),
+        ("1-004", CareHome.care_home, 100.0),
+        ("1-005", CareHome.care_home, None),
+    ]
+    expected_convert_to_all_posts_using_ratio_rows = [
+        ("1-001", CareHome.not_care_home, 1.0, 1.25),
+        ("1-002", CareHome.not_care_home, 6.0, 7.5),
+        ("1-003", CareHome.not_care_home, None, None),
+        ("1-004", CareHome.care_home, 100.0, None),
+        ("1-005", CareHome.care_home, None, None),
+    ]
+
+
+@dataclass
 class DiagnosticsOnKnownFilledPostsData:
     estimate_filled_posts_rows = [
         (
@@ -5519,12 +5549,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
-            10,
-            1.0,
-            1704067200,
-            date(2024, 1, 1),
-            11,
-            None,
+            11.0,
             None,
             "2024",
             "01",
@@ -5546,12 +5571,7 @@ class DiagnosticsOnCapacityTrackerData:
             None,
             None,
             10.0,
-            10,
-            1.0,
-            1706832000,
-            date(2024, 2, 1),
-            11,
-            None,
+            11.0,
             None,
             "2024",
             "01",
@@ -5574,39 +5594,13 @@ class DiagnosticsOnCapacityTrackerData:
             10.0,
             10.0,
             None,
-            0.0,
-            1704067200,
-            None,
-            None,
-            date(2024, 1, 1),
-            10,
+            10.0,
             "2024",
             "01",
             "01",
             "20240101",
         ),
     ]
-
-    convert_to_all_posts_using_ratio_rows = [
-        ("loc 1", 1.0),
-        ("loc 2", 6.0),
-        ("loc 3", None),
-    ]
-    expected_convert_to_all_posts_using_ratio_rows = [
-        ("loc 1", 1.0, 1.25),
-        ("loc 2", 6.0, 7.5),
-        ("loc 3", None, None),
-    ]
-
-    calculate_care_worker_ratio_rows = [
-        ("loc 1", 8.0, 10.0),
-        ("loc 2", 16.0, 20.0),
-        ("loc 3", 24.0, 30.0),
-        ("loc 4", None, 40.0),
-        ("loc 5", 40.0, None),
-        ("loc 6", None, None),
-    ]
-    expected_care_worker_ratio = 0.8
 
 
 @dataclass

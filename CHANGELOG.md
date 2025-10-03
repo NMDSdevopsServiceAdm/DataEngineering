@@ -11,11 +11,14 @@ All notable changes to this project will be documented in this file.
 - New function added to merge the old CQC ratings and the new assessment ratings.
 
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
+
 - Implemented complex validation for [validate_delta_locations_api_cleaned](projects/_01_ingest/cqc_api/fargate/validate_delta_locations_api_cleaned.py), includes:
   - split into dimensions table with separate validation
   - Pointblank translation of helper functions and new expressions.
 
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
+
+- Model retraining process using Polars and scikit-learn in Fargate
 
 - Tagging added by default to all Terraform elements
 
@@ -45,6 +48,8 @@ All notable changes to this project will be documented in this file.
 - Added a third argument calculate_filled_posts_per_bed_ratio so it can be used for either ASC-WDS posts or Capacity Tracker posts.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
+
+- Moved the calculation for estimating all Capacity Tracker non-residential filled posts from the diagnostics job to the estimates job.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
