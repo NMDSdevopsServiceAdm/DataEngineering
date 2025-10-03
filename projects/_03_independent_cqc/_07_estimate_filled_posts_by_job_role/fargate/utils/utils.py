@@ -49,6 +49,14 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         {"temp_potential_roles": IndCQC.main_job_role_clean_labelled}
     )
 
+    df = df.group_by(
+        [
+            pl.col(IndCQC.establishment_id),
+            pl.col(IndCQC.ascwds_worker_import_date),
+            pl.col(IndCQC.main_job_role_clean_labelled),
+        ]
+    ).agg(pl.col(IndCQC.ascwds_job_role_counts).sum())
+
     df = df.select(
         [
             IndCQC.establishment_id,
