@@ -387,6 +387,12 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
+    current_dimension = (
+        current_dimension.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
+    )
 
     if previous_dimension:
         delta = current_dimension.join(
@@ -401,13 +407,6 @@ def create_dimension_from_missing_struct_column(
         )
     else:
         delta = current_dimension
-
-    delta = (
-        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
-        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
-        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
-        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
-    )
 
     return delta, current_dimension
 
