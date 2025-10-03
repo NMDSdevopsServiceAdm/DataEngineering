@@ -1,6 +1,7 @@
 import argparse
 import csv
 import os
+import re
 from typing import Any, Generator, List, Optional
 
 import boto3
@@ -365,3 +366,20 @@ def join_dimension(
         )
 
     return joined_df
+
+
+def get_full_snapshot(
+    deltas: DataFrame, primary_key: str, date_key: str, date: str
+) -> DataFrame:
+    date_parse = re.match(r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})", date)
+    query = (
+        f"SELECT *, {date_parse.group('year')} AS {Keys.year}, '{date_parse.group('month')}' AS {Keys.month}, {date_parse.group('day')} AS {Keys.day}, {date} AS {Keys.import_date}"
+        f"FROM (SELECT *, row_number() over(partition by {primary_key} order by {date_key} desc) AS row_num)"
+        f"FROM {deltas}"
+        f"WHERE {date_key}<='{date}')"
+        "WHERE row_num = 1"
+    )
+
+    spark = get_spark()
+    snapshot = spark.sql(query)
+    return snapshot.drop("row_num")

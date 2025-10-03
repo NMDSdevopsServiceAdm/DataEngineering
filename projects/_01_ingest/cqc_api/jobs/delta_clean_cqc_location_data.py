@@ -92,6 +92,7 @@ def main(
     regulated_activities_destination: str,
     specialisms_destination: str,
     postcode_matching_destination: str,
+    full_snapshot_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -116,7 +117,6 @@ def main(
         cqc_location_df, known_la_providerids
     )
 
-    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = remove_records_from_locations_data(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -132,7 +132,7 @@ def main(
     dimension_update_date = cqc_location_df.agg(F.max(Keys.import_date)).collect()[0][0]
 
     # Create regulated activity dimension
-    regulated_activity_delta = create_dimension_from_missing_struct_column(
+    regulated_activity_delta, _ = create_dimension_from_missing_struct_column(
         cqc_location_df,
         CQCL.regulated_activities,
         regulated_activities_destination,
@@ -157,7 +157,7 @@ def main(
     )
 
     # Create specialisms dimension
-    specialisms_delta = create_dimension_from_missing_struct_column(
+    specialisms_delta, _ = create_dimension_from_missing_struct_column(
         cqc_location_df,
         CQCL.specialisms,
         specialisms_destination,
@@ -191,7 +191,7 @@ def main(
     )
 
     # Create GAC service dimension
-    gac_service_delta = create_dimension_from_missing_struct_column(
+    gac_service_delta, gac_service_full = create_dimension_from_missing_struct_column(
         cqc_location_df,
         CQCL.gac_service_types,
         gac_service_destination,
@@ -206,9 +206,6 @@ def main(
         CQCLClean.services_offered,
     )
 
-    cqc_location_df, gac_service_delta = remove_specialist_colleges(
-        cqc_location_df, gac_service_delta
-    )
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
     gac_service_delta = realign_carehome_column_with_primary_service(
@@ -224,6 +221,34 @@ def main(
 
     # Final cleaning on fact table
     cqc_location_df = add_related_location_column(cqc_location_df)
+
+    # Build snapshot
+    most_recent_snapshot = utils.get_full_snapshot(
+        deltas=cqc_location_df,
+        primary_key=CQCLClean.location_id,
+        date_key=Keys.import_date,
+        date=dimension_update_date,
+    )
+
+    # Filtering on full snapshot
+    most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
+    most_recent_snapshot = remove_specialist_colleges(
+        most_recent_snapshot, gac_service_full
+    )
+    most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
+
+    # Write out full snapshot
+    utils.write_to_parquet(
+        most_recent_snapshot,
+        output_dir=full_snapshot_destination,
+        mode="overwrite",
+        partitionKeys=cqcPartitionKeys,
+    )
+    # Filtering on delta
+    # Fine to remove these as we are overwriting delta
+    # If appending, filters would need to be removed as they rely on historical data being processed
+    cqc_location_df = remove_specialist_colleges(cqc_location_df, gac_service_delta)
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     # Create postcode matching dimension
     postcode_matching_delta = create_postcode_matching_dimension(
@@ -248,6 +273,23 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
+    invalid_rows = locations_df.where(
+        (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
+        & (locations_df[CQCL.registration_status] != RegistrationStatus.deregistered)
+    ).count()
+
+    if invalid_rows != 0:
+        warnings.warn(
+            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
+        )
+
+    locations_df = locations_df.where(
+        locations_df[CQCL.registration_status] == RegistrationStatus.registered
+    )
+    return locations_df
 
 
 def create_postcode_matching_dimension(
@@ -360,7 +402,7 @@ def create_dimension_from_missing_struct_column(
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
     )
 
-    return delta
+    return delta, current_dimension
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
@@ -505,20 +547,7 @@ def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
         .orderBy(Keys.import_date)
         .rowsBetween(Window.currentRow, Window.unboundedFollowing)
     )
-
-    # 1. Identify future non-social-care records
-    # Create a column that is True if the current record is NOT social care, False otherwise.
-    df_with_non_social_flag = df.withColumn(
-        "is_non_social_care", (df[CQCL.type] != LocationType.social_care_identifier)
-    )
-
-    df_with_future_flag = df_with_non_social_flag.withColumn(
-        CQCLClean.future_non_slc,
-        F.max(F.col("is_non_social_care")).over(window_spec),
-    )
-    return df_with_future_flag.drop("is_non_social_care").where(
-        df[CQCL.type] == LocationType.social_care_identifier
-    )
+    return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
 def impute_historic_relationships(df: DataFrame) -> DataFrame:
@@ -894,6 +923,7 @@ if __name__ == "__main__":
         regulated_activities_dest,
         specialisms_dest,
         postcode_matching_dest,
+        full_snapshot_dest,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -923,6 +953,10 @@ if __name__ == "__main__":
             "--postcode_matching_destination",
             "Destination s3 directory for postcode matching dimension",
         ),
+        (
+            "--full_snapshot_destination",
+            "Destination s3 directory for full snapshots",
+        ),
     )
     main(
         cqc_location_source,
@@ -932,6 +966,7 @@ if __name__ == "__main__":
         regulated_activities_dest,
         specialisms_dest,
         postcode_matching_dest,
+        full_snapshot_dest,
     )
 
     print("Spark job 'clean_cqc_location_data' complete")
