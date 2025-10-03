@@ -43,9 +43,11 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == pl.col("temp_potential_roles")
         ).then(pl.col(IndCQC.ascwds_job_role_counts))
-    ).drop(IndCQC.main_job_role_clean_labelled)
+    )
 
-    df = df.rename({"temp_potential_roles": IndCQC.main_job_role_clean_labelled})
+    df = df.drop(IndCQC.main_job_role_clean_labelled).rename(
+        {"temp_potential_roles": IndCQC.main_job_role_clean_labelled}
+    )
 
     df = df.select(
         [
@@ -56,7 +58,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     )
 
-    print(df.collect().sample())
+    # print(df.collect().sample())
 
     return df
 
