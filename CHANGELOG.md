@@ -51,7 +51,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
-- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynically, see the [guide](./terraform/pipeline/step-functions/README.md)
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
 
 ### Improved
 

@@ -13,8 +13,8 @@ This document explains how to add new create StepFunctions dynamically `sf_pipel
 
 - **Dependent Step Functions**
   - If the StepFunction depends on another, do **not** add it to the `dynamic` folder.
-  - Instead, add the JSON desifintion to this [step-functions](./) folder.
-  - Then, explicitly add its resource block in [step-function.tf](../step-function.tf) and add paramaeters as needed (see `run_crawler` as an example).
+  - Instead, add the JSON definition to this [step-functions](./) folder.
+  - Then, explicitly add its resource block in [step-function.tf](../step-function.tf) and add parameters as needed (see `run_crawler` as an example).
 
 ## Example Structure
 
