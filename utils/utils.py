@@ -371,11 +371,12 @@ def join_dimension(
 def get_full_snapshot(
     deltas: DataFrame, primary_key: str, date_key: str, date: str
 ) -> DataFrame:
+    deltas.createOrReplaceTempView("DELTA")
     date_parse = re.match(r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})", date)
     query = (
         f"SELECT *, {date_parse.group('year')} AS {Keys.year}, '{date_parse.group('month')}' AS {Keys.month}, {date_parse.group('day')} AS {Keys.day}, {date} AS {Keys.import_date} "
         f"FROM (SELECT *, row_number() over(partition by {primary_key} order by {date_key} desc) AS row_num) "
-        f"FROM {deltas} "
+        f"FROM DELTA "
         f"WHERE {date_key}<='{date}') "
         "WHERE row_num = 1"
     )
