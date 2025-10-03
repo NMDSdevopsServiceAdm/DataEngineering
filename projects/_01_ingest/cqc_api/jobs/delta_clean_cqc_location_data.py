@@ -234,14 +234,34 @@ def main(
         primary_key=CQCLClean.location_id,
         date_key=Keys.import_date,
         date=dimension_update_date,
-    ).drop(CQCLClean.cqc_location_import_date)
-    dim_ss = utils.join_dimension(
-        most_recent_snapshot, gac_service_full, CQCL.location_id
+    )
+    dim_delta = cqc_location_df.join(
+        gac_service_full.drop(
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ),
+        how="left",
+        on=[
+            CQCLClean.location_id,
+            Keys.import_date,
+            CQCLClean.cqc_location_import_date,
+        ],
+    )
+    print("most recent snapshot")
+    most_recent_snapshot.show()
+
+    dim_snapshot = utils.get_full_snapshot(
+        deltas=dim_delta,
+        primary_key=CQCLClean.location_id,
+        date_key=Keys.import_date,
+        date=dimension_update_date,
     )
 
     # Filtering on full snapshot
     most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
-    most_recent_snapshot, _ = remove_specialist_colleges(most_recent_snapshot, dim_ss)
+    most_recent_snapshot, _ = remove_specialist_colleges(most_recent_snapshot, dim_snapshot)
     most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
 
     # Write out full snapshot
@@ -860,7 +880,7 @@ def remove_specialist_colleges(
         gac_services_dimension (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
+        tuple[DataFrame, DataFrame]: cqc_df, gac_services_dimension with locations which are only specialist colleges removed.
     """
     # The below just prevents IDEs from warning you that the "Column object is not callable"
     # - this is a false warning and does not cause an error
