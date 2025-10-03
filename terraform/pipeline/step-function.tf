@@ -180,7 +180,6 @@ resource "aws_sfn_state_machine" "sf_pipelines" {
     preprocess_task_arn      = module.model_preprocess.task_arn
     retrain_task_arn         = module.model_retrain.task_arn
 
-
     # ecs task security groups
     cqc_api_security_group_id         = module.cqc-api.security_group_id
     independent_cqc_security_group_id = module._03_independent_cqc.security_group_id
