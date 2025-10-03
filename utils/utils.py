@@ -375,10 +375,10 @@ def get_full_snapshot(
     date_parse = re.match(r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})", date)
     query = (
         "SELECT *, "
-        f"{date_parse.group('year')} AS {Keys.year}, "
-        f"'{date_parse.group('month')}' AS {Keys.month}, "
-        f"{date_parse.group('day')} AS {Keys.day}, "
-        f"{date} AS {Keys.import_date} "
+        f"{date_parse.group('year')} AS T1.{Keys.year}, "
+        f"'{date_parse.group('month')}' AS T1.{Keys.month}, "
+        f"{date_parse.group('day')} AS T1.{Keys.day}, "
+        f"{date} AS T1.{Keys.import_date} "
         "FROM ("
         f"SELECT *, "
         f"ROW_NUMBER() OVER(PARTITION BY {primary_key} ORDER BY {date_key} DESC) AS row_num "

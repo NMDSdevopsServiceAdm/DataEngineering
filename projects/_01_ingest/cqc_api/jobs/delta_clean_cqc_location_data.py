@@ -388,7 +388,9 @@ def create_dimension_from_missing_struct_column(
         Keys.import_date,
     )
     current_dimension = (
-        current_dimension.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
+        current_dimension.withColumn(
+            DimensionKeys.last_updated, F.lit(dimension_update_date)
+        )
         .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
         .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
         .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
