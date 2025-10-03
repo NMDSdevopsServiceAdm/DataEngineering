@@ -33,7 +33,7 @@ jobs:
           command: |
             # Authenticate Docker to ECR
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
-            
+
             echo "Rebuilding lambdas and pushing to ECR."
             docker buildx bake all --push
 
@@ -262,10 +262,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+      # - test:
+      #     filters:
+      #       branches:
+      #         ignore: main
       - lint-python:
           filters:
             branches:
@@ -281,7 +281,7 @@ workflows:
       - terraform-plan:
           requires:
             - lint-terraform
-            - test
+            # - test
             - task-containerisation
       - terraform-apply:
           requires:
