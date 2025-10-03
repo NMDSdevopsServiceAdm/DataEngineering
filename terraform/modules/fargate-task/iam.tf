@@ -72,6 +72,10 @@ resource "aws_iam_policy" "s3_read_write_policy" {
   })
 }
 
+data "aws_secretsmanager_secret" "cqc_api_primary_key" {
+  name = var.secret_name
+}
+
 resource "aws_iam_policy" "secretsmanager_read_policy" {
   name_prefix = "${local.workspace_prefix}-secretsmanager-"
   description = "IAM policy for Secrets Manager read access to a specific secret."
@@ -84,7 +88,7 @@ resource "aws_iam_policy" "secretsmanager_read_policy" {
         Action = [
           "secretsmanager:GetSecretValue"
         ],
-        Resource = "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:${var.secret_arn_label}",
+        Resource = data.aws_secretsmanager_secret.cqc_api_primary_key.arn
       }
     ]
   })
