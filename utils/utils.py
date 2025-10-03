@@ -374,11 +374,7 @@ def get_full_snapshot(
     deltas.createOrReplaceTempView("DELTA")
     date_parse = re.match(r"(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})", date)
     query = (
-        "SELECT *, "
-        f"{date_parse.group('year')} AS T1.{Keys.year}, "
-        f"'{date_parse.group('month')}' AS T1.{Keys.month}, "
-        f"{date_parse.group('day')} AS T1.{Keys.day}, "
-        f"{date} AS T1.{Keys.import_date} "
+        "SELECT * "
         "FROM ("
         f"SELECT *, "
         f"ROW_NUMBER() OVER(PARTITION BY {primary_key} ORDER BY {date_key} DESC) AS row_num "
@@ -389,5 +385,8 @@ def get_full_snapshot(
     )
 
     spark = get_spark()
-    snapshot = spark.sql(query)
+    snapshot = spark.sql(query).withColumns({Keys.year: date_parse.group("year"),
+                                             Keys.month: date_parse.group('month'),
+                                             Keys.day: date_parse.group('day'),
+                                             Keys.import_date: date})
     return snapshot.drop("row_num")
