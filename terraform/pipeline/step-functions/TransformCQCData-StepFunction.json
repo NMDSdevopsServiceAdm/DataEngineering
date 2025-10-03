@@ -88,7 +88,9 @@
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${security_group_id}"],
+                            "SecurityGroups": [
+                              "${security_group_id}"
+                            ],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
@@ -132,7 +134,9 @@
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${security_group_id}"],
+                            "SecurityGroups": [
+                              "${security_group_id}"
+                            ],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
@@ -176,7 +180,9 @@
                         "NetworkConfiguration": {
                           "AwsvpcConfiguration": {
                             "Subnets": ${public_subnet_ids},
-                            "SecurityGroups": ["${security_group_id}"],
+                            "SecurityGroups": [
+                              "${security_group_id}"
+                            ],
                             "AssignPublicIp": "ENABLED"
                           }
                         },
@@ -196,7 +202,6 @@
                 }
               ],
               "End": true
-            }
             }
           }
         }
