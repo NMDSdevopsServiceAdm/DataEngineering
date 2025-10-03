@@ -206,6 +206,12 @@ def main(
         CQCLClean.services_offered,
     )
 
+    gac_service_full = extract_from_struct(
+        gac_service_full,
+        gac_service_delta[CQCLClean.imputed_gac_service_types][CQCL.description],
+        CQCLClean.services_offered,
+    )
+
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
     gac_service_delta = realign_carehome_column_with_primary_service(
@@ -229,12 +235,13 @@ def main(
         date_key=Keys.import_date,
         date=dimension_update_date,
     )
+    dim_ss = utils.join_dimension(
+        most_recent_snapshot, gac_service_full, CQCL.location_id
+    )
 
     # Filtering on full snapshot
     most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
-    most_recent_snapshot = remove_specialist_colleges(
-        most_recent_snapshot, gac_service_full
-    )
+    most_recent_snapshot = remove_specialist_colleges(most_recent_snapshot, dim_ss)
     most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
 
     # Write out full snapshot
