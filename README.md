@@ -4,10 +4,8 @@
 
 ## Welcome
 This repository contains:
-- Spark jobs for data transformation and feature extraction
+- Spark/Polars jobs for data transformation and feature extraction
 - Terraform code for Amazon Web Services deployment
-
-Be sure to check out our [Wiki](https://github.com/NMDSdevopsServiceAdm/DataEngineering/wiki) for more info!
 
 ## About
 
@@ -51,6 +49,7 @@ pytest-watch
 ## Linting
 ```
 black .                   # Python
+pydoclint .               # Docstring
 terraform fmt -recursive  # Terraform
 ```
 
