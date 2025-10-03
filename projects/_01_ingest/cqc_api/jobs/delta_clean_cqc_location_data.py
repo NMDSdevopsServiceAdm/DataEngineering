@@ -234,7 +234,7 @@ def main(
         primary_key=CQCLClean.location_id,
         date_key=Keys.import_date,
         date=dimension_update_date,
-    )
+    ).drop(CQCLClean.cqc_location_import_date)
     dim_ss = utils.join_dimension(
         most_recent_snapshot, gac_service_full, CQCL.location_id
     )
