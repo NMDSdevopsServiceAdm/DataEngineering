@@ -261,14 +261,16 @@ def main(
 
     # Filtering on full snapshot
     most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
-    most_recent_snapshot, _ = remove_specialist_colleges(most_recent_snapshot, dim_snapshot)
+    most_recent_snapshot, _ = remove_specialist_colleges(
+        most_recent_snapshot, dim_snapshot
+    )
     most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
 
     # Write out full snapshot
     utils.write_to_parquet(
         most_recent_snapshot,
         output_dir=full_snapshot_destination,
-        mode="overwrite",
+        mode="append",
         partitionKeys=cqcPartitionKeys,
     )
     # Filtering on delta
@@ -314,7 +316,7 @@ def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
         )
 
     locations_df = locations_df.where(
-        locations_df[CQCL.registration_status] == RegistrationStatus.registered
+        locations_df[CQCL.registration_status] == RegistrationStatus.registered & F.isnull(CQCLClean.deregistration_date)
     )
     return locations_df
 
