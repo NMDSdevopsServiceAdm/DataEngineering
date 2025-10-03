@@ -51,6 +51,12 @@ All notable changes to this project will be documented in this file.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
+- Changed the remove_duplicate_cqc_care_homes function as followed:
+  - changed function name to remove_dual_registration_cqc_care_homes
+  - updated doc string with information from CQC
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window and
+  instead of looping through applying that to two colums I used the withColumns method.
+
 ### Improved
 
 
