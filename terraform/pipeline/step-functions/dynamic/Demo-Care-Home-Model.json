@@ -6,7 +6,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
-        "Cluster": "${cluster_arn}",
+        "Cluster": "${model_cluster_arn}",
         "TaskDefinition": "${preprocess_task_arn}",
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
@@ -52,7 +52,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
-        "Cluster": "${cluster_arn}",
+        "Cluster": "${model_cluster_arn}",
         "TaskDefinition": "${retrain_task_arn}",
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
@@ -84,7 +84,7 @@
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {
-        "Cluster": "${cluster_arn}",
+        "Cluster": "${model_cluster_arn}",
         "TaskDefinition": "${predict_task_arn}",
         "LaunchType": "FARGATE",
         "NetworkConfiguration": {
