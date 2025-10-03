@@ -116,7 +116,7 @@ def main(
         cqc_location_df, known_la_providerids
     )
 
-    # cqc_location_df = remove_non_social_care_locations(cqc_location_df)
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = remove_records_from_locations_data(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -499,8 +499,22 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
     return df
 
 
-# def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
-#     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
+def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
+    window_spec = Window.partitionBy(CQCL.location_id).orderBy(Keys.import_date)
+
+    # 1. Identify future non-social-care records
+    # Create a column that is True if the current record is NOT social care, False otherwise.
+    df_with_non_social_flag = df.withColumn(
+        "is_non_social_care", (df[CQCL.type] != LocationType.social_care_identifier)
+    )
+
+    df_with_future_flag = df_with_non_social_flag.withColumn(
+        CQCLClean.future_non_slc,
+        F.max(F.col("is_non_social_care")).over(window_spec),
+    )
+    return df_with_future_flag.drop("is_non_social_care").where(
+        df[CQCL.type] == LocationType.social_care_identifier
+    )
 
 
 def impute_historic_relationships(df: DataFrame) -> DataFrame:

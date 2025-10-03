@@ -131,3 +131,4 @@ class NewCqcLocationApiColumns:
     use_of_resources_summary: str = "useOfResourcesSummary"
     website: str = "website"
     well_led: str = "Well-led"
+    future_non_slc: str = "future_non_slc"
