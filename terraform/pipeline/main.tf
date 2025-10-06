@@ -5,10 +5,11 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Branch      = terraform.workspace
-      Owner       = "Data Engineering"
-      CreatedWith = "Terraform"
-      Repository  = "https://github.com/NMDSdevopsServiceAdm/DataEngineering"
+      Branch       = terraform.workspace
+      Owner        = "Data Engineering"
+      CreatedWith  = "Terraform"
+      Repository   = "https://github.com/NMDSdevopsServiceAdm/DataEngineering"
+      IsProduction = local.workspace_prefix == "main"
     }
   }
 }
