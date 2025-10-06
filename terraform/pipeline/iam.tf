@@ -129,3 +129,27 @@ resource "aws_iam_policy" "retrieve_cqc_api_primary_key_secret" {
 
   policy = templatefile("policy-documents/retrieve-specific-secret.json", { secret_arn = local.cqc_api_primary_key_secret_arn })
 }
+
+data "aws_iam_user_group" "madetech" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+  group_name = "madetech"
+}
+
+data "aws_iam_user_group" "analysts" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+  group_name = "analysts"
+}
+
+resource "aws_iam_group_policy" "madetech_group_deny_all_prod" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+
+  group_name = data.aws_iam_user_group.madetech[0].name
+  policy = file("../policy-documents/policy-documents/restrict-prod-access.json")
+}
+
+resource "aws_iam_group_policy" "analysts_group_deny_all_prod" {
+  count = local.workspace_prefix == "main" ? 1 : 0
+
+  group_name = data.aws_iam_user_group.analysts[0].name
+  policy = file("../policy-documents/policy-documents/restrict-prod-access.json")
+}
