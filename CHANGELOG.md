@@ -17,6 +17,10 @@ All notable changes to this project will be documented in this file.
 
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
 
+- Began converting estimates by job role util functions into polars and refactoring the method.
+  - Utils converted were aggregating job role counts and joining to estimates dataframe.
+  - Method change is to not pack job role data into dicts, but instead keep job role as a column with rows per role.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
