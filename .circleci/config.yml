@@ -239,7 +239,7 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-  copy-main-data:
+  copy-default-data:
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -253,7 +253,7 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/"
+          from: "s3://sfc-default-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       - aws-s3/sync:
           aws-region: AWS_REGION
@@ -371,7 +371,7 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
-      - copy-main-data:
+      - copy-default-data:
           requires:
             - terraform-apply
 
