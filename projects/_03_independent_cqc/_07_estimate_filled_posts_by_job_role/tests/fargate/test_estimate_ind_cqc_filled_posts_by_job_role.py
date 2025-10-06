@@ -10,6 +10,7 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
     ESTIMATE_SOURCE = "some/source"
     ASCWDS_WORKER_SOURCE = "some/other/source"
     OUTPUT_DIR = "some/destination"
+    OUTPUT_FILE_NAME = "estimated_ind_cqc_filled_posts_by_job_role_lf.parquet"
 
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
@@ -54,4 +55,6 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         join_worker_to_estimates_dataframe_mock.assert_called_once()
 
-        write_to_parquet_mock.assert_called_once_with(ANY, self.OUTPUT_DIR, logger=ANY)
+        write_to_parquet_mock.assert_called_once_with(
+            ANY, self.OUTPUT_DIR + self.OUTPUT_FILE_NAME, logger=ANY, append=False
+        )
