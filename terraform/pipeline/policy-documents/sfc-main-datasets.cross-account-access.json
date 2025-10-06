@@ -1,0 +1,34 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "ObjectLevel",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+					"arn:aws:iam::856699698263:user/circleci",
+					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
+				]
+            },
+            "Action": [
+                "s3:GetObject",
+                "s3:GetObjectAttributes",
+                "s3:GetObjectVersion",
+                "s3:GetObjectTagging"
+            ],
+            "Resource": "arn:aws:s3:::sfc-main-datasets/*"
+        },
+        {
+            "Sid": "BucketLevel",
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+					"arn:aws:iam::856699698263:user/circleci",
+					"arn:aws:iam::856699698263:role/CrossAccountAccessRole"
+				]
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::sfc-main-datasets"
+        }
+    ]
+}
