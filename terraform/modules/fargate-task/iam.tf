@@ -227,7 +227,7 @@ resource "aws_iam_policy" "sfn_ecs_policy" {
           "ecs:RunTask"
         ],
         Resource = [
-          aws_ecs_task_definition.polars_task.arn,
+          aws_ecs_task_definition.ecs_task.arn,
           var.cluster_arn
         ]
       },

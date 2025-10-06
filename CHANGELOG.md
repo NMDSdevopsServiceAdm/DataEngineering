@@ -19,6 +19,7 @@ All notable changes to this project will be documented in this file.
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
 
 - Model retraining process using Polars and scikit-learn in Fargate
+- Care home model preprocessing, retraining and prediction
 
 - Tagging added by default to all Terraform elements
 
@@ -52,6 +53,8 @@ All notable changes to this project will be documented in this file.
 - Moved the calculation for estimating all Capacity Tracker non-residential filled posts from the diagnostics job to the estimates job.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
+
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
 
 ### Improved
 
