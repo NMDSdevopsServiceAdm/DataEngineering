@@ -339,7 +339,7 @@ Python
 4. Region: eu-west-2
 5. Default output format: json
 6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste `mfa_serial=<mfa arn>` into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<prod profile name>]`)
+7. Paste `mfa_serial=<mfa arn>` (where `mfa_arn` is the arn obtained in step 6) into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<prod profile name>]`)
 8. Run `aws sts get-caller-identity --profile <prod profile name>` and verify that the response looks like:
 ```
 {
@@ -363,7 +363,7 @@ If you've previously set up your AWS CLI to point to this environment, it is rec
 4. Region: eu-west-2
 5. Default output format: json
 6. In *prod* account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
-7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<non-prod profile name>]`):
+7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<non-prod profile name>]`) (where `mfa_arn` is the arn obtained in step 6):
 ```
      mfa_serial=<mfa arn>
      source_profile=<prod profile name>
