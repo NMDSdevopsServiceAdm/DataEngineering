@@ -329,13 +329,56 @@ Python
 
 
 ### aws credentials
+
+#### Prod (i.e. existing) aws account
 1. Open cmd
 
-2. Type `aws configure`
+2. Type `aws configure --profile <prod profile name>`, where `<prod profile name>` is whatever name you want to use to refer to prod
 
 3. Add your aws access key and secret access key
 4. Region: eu-west-2
 5. Default output format: json
+6. In prod account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
+7. Paste `mfa_serial=<mfa arn>` into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<prod profile name>]`)
+8. Run `aws sts get-caller-identity --profile <prod profile name>` and verify that the response looks like:
+```
+{
+    "UserId": *****
+    "Account": "344210435447",
+    "Arn": "arn:aws:iam::344210435447:user/<your username>"
+}
+```
+
+Any command that you run via AWS CLI will need the `--profile <prod profile name>` argument in order to run against this environment.
+
+If you've previously set up your AWS CLI to point to this environment, it is recommended to remove the credentials from the default profile by deleting the `aws_access_key_id` and `aws_secret_access_key` lines from the `[default]` profile in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html). This will ensure you always have to explicitly specify the AWS account you want to run the command against by using the associated `--profile`
+
+
+#### Non-prod (i.e. new) aws account
+1. Open cmd
+
+2. Type `aws configure --profile <non-prod profile name>`, where `<non-prod profile name>` is whatever name you want to use to refer to non-prod
+
+3. Add the same aws access key and secret access key as you used above (you can find these in [`%USERPROFILE%\.aws\credentials`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) if you don't have them to hand
+4. Region: eu-west-2
+5. Default output format: json
+6. In *prod* account AWS console, click on your name in the top right, and navigate to `Security Credentials` in the drop down. On the Security Credentials page, scroll down to Multi-factor Authentication. Copy the value of the `Identifier` field (it should look like `arn:aws:iam::344210435447:mfa/*********`i).
+7. Paste the following into your [`%USERPROFILE%\.aws\config`](https://docs.aws.amazon.com/sdkref/latest/guide/file-location.html) file at the bottom (under `[<non-prod profile name>]`):
+```
+     mfa_serial=<mfa arn>
+     source_profile=<prod profile name>
+     role_arn=arn:aws:iam::856699698263:role/CrossAccountAccessRole
+```
+8. Run `aws sts get-caller-identity --profile <non-prod profile name>` and verify that the response looks like:
+```
+{
+    "UserId": *****
+    "Account": "856699698263",
+    "Arn": "arn:aws:iam::856699698263::assumed-role/CrossAccountAccessRole/******"
+}
+```
+
+Any command that you run via AWS CLI will need the `--profile <non-prod profile name>` argument in order to run against this environment.
 
 
 ### Set up your AWS crendentials as terraform variables
