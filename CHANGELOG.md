@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Model retraining process using Polars and scikit-learn in Fargate
 
+- Tagging added by default to all Terraform elements
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
