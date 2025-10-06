@@ -2,8 +2,8 @@ import argparse
 import logging
 import uuid
 from pathlib import Path
-
 import boto3
+from botocore.exceptions import ClientError
 import polars as pl
 import polars.selectors as cs
 
@@ -175,3 +175,47 @@ def empty_s3_folder(bucket_name: str, prefix: str) -> None:
     keys_str = "\n".join([obj["Key"] for obj in to_delete])
     logging.info(f"Deleting {len(to_delete):} objects:\n{keys_str}")
     s3_client.delete_objects(Bucket=bucket_name, Delete={"Objects": to_delete})
+
+
+def send_sns_notification(
+    topic_arn: str,
+    subject: str,
+    message: str,
+    region_name: str = "eu-west-2",
+) -> None:
+    sns_client = boto3.client("sns", region_name=region_name)
+    try:
+        sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
+    except ClientError as e:
+        util_logger.error(e)
+        util_logger.error(
+            "There was an error writing to SNS - check your IAM permissions and that you have the right topic ARN"
+        )
+        raise
+
+
+def parse_arg_by_type(arg: str) -> bool | int | float | str:
+    """
+    Converts a given argument into one of boolean, integer, float or string in that order. If conversion fails,
+    the string representation of the argument is returned.
+
+    Args:
+        arg (str): The argument to be converted.
+
+    Returns:
+        bool | int | float | str: The converted argument.
+    """
+    try:
+        stripped = arg.strip()
+        if stripped.lower() == "true":
+            return True
+        elif stripped.lower() == "false":
+            return False
+        elif "." in stripped:
+            return float(stripped)
+        elif stripped.isdigit() or stripped[1].isdigit():
+            return int(stripped)
+        else:
+            return str(stripped)
+    except (ValueError, TypeError, IndexError):
+        return str(arg)
