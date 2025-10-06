@@ -170,6 +170,10 @@ resource "aws_iam_role" "admin_role" {
   count              = local.workspace_prefix == "main" ? 1 : 0
   name               = "Admin"
   assume_role_policy = data.aws_iam_policy_document.admin_role_assume_role_policy[0].json
+
+  tags = {
+    HasProductionAccess = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "admin_role_administrator_access_policy_attach" {
