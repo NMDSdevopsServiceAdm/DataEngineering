@@ -177,6 +177,7 @@ resource "aws_iam_role" "admin_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "admin_role_administrator_access_policy_attach" {
+  count      = local.workspace_prefix == "main" ? 1 : 0
   role       = aws_iam_role.admin_role[0].arn
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
