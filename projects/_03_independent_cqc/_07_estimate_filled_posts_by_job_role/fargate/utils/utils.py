@@ -15,8 +15,9 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
 
     This function aggregates the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled
-    then cross joins to a dataframe with all job roles and counts set to 0.
-    So if an establishment does not have particular role, then their count is 0.
+    to get a job role count per workplace. Then explodes a list of all potential job roles per row, and finally deduplicates
+    rows on the exploded job role column by aggregating to get the sum of job role count per role.
+    So if an establishment does not have particular role, then their count for that role is 0.
     All establishments end up with a row for all potential job roles.
 
     Args:
@@ -74,9 +75,12 @@ def join_worker_to_estimates_dataframe(
     aggregated_job_roles_per_establishment_lf: pl.LazyFrame,
 ) -> pl.LazyFrame:
     """
-    Join the ASC-WDS job role count column from the aggregated worker file into the estimated filled post DataFrame.
+    Join the mainjrid_clean_labels and ascwds_job_role_counts columns from the aggregated worker LazyFrame into the estimated filled post LazyFrame.
 
-    Join where establishment_id matches and ascwds_workplace_import_date == ascwds_worker_import_date.
+    Join as left join where:
+      left = estimated filled post LazyFrame
+      right = aggregated worker LazyFrame
+      where establishment_id matches and ascwds_workplace_import_date == ascwds_worker_import_date.
 
     Args:
         estimated_filled_posts_lf (pl.LazyFrame): A dataframe containing estimated filled posts at workplace level.
