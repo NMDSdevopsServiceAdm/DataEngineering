@@ -274,7 +274,9 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
-            terraform workspace select << pipeline.parameters.GHA_Meta >>
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             terraform destroy -auto-approve
       - run:
           name: delete workspace
@@ -283,7 +285,9 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform workspace select default
-            terraform workspace delete << pipeline.parameters.GHA_Meta >>
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
 
 workflows:
