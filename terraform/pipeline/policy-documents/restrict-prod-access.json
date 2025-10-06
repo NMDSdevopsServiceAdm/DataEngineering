@@ -414,7 +414,86 @@
                     "aws:PrincipalTag/HasProductionAccess": false
                 }
             }
+        },
+        {
+            "Sid": "DenyProductionWithouthasProductionAccessS3",
+            "Effect": "Deny",
+            "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:CompleteMultipartUpload",
+                "s3:CopyObject",
+                "s3:CreateBucket",
+                "s3:CreateBucketMetadataConfiguration",
+                "s3:CreateBucketMetadataTableConfiguration",
+                "s3:CreateMultipartUpload",
+                "s3:CreateSession",
+                "s3:DeleteBucket",
+                "s3:DeleteBucketAnalyticsConfiguration",
+                "s3:DeleteBucketCors",
+                "s3:DeleteBucketEncryption",
+                "s3:DeleteBucketIntelligentTieringConfiguration",
+                "s3:DeleteBucketInventoryConfiguration",
+                "s3:DeleteBucketLifecycle",
+                "s3:DeleteBucketMetadataConfiguration",
+                "s3:DeleteBucketMetadataTableConfiguration",
+                "s3:DeleteBucketMetricsConfiguration",
+                "s3:DeleteBucketOwnershipControls",
+                "s3:DeleteBucketPolicy",
+                "s3:DeleteBucketReplication",
+                "s3:DeleteBucketTagging",
+                "s3:DeleteBucketWebsite",
+                "s3:DeleteObject",
+                "s3:DeleteObjects",
+                "s3:DeleteObjectTagging",
+                "s3:DeletePublicAccessBlock",
+                "s3:PutBucketAccelerateConfiguration",
+                "s3:PutBucketAcl",
+                "s3:PutBucketAnalyticsConfiguration",
+                "s3:PutBucketCors",
+                "s3:PutBucketEncryption",
+                "s3:PutBucketIntelligentTieringConfiguration",
+                "s3:PutBucketInventoryConfiguration",
+                "s3:PutBucketLifecycle",
+                "s3:PutBucketLifecycleConfiguration",
+                "s3:PutBucketLogging",
+                "s3:PutBucketMetricsConfiguration",
+                "s3:PutBucketNotification",
+                "s3:PutBucketNotificationConfiguration",
+                "s3:PutBucketOwnershipControls",
+                "s3:PutBucketPolicy",
+                "s3:PutBucketReplication",
+                "s3:PutBucketRequestPayment",
+                "s3:PutBucketTagging",
+                "s3:PutBucketVersioning",
+                "s3:PutBucketWebsite",
+                "s3:PutObject",
+                "s3:PutObjectAcl",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectLockConfiguration",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutPublicAccessBlock",
+                "s3:RenameObject",
+                "s3:RestoreObject",
+                "s3:UpdateBucketMetadataInventoryTableConfiguration",
+                "s3:UpdateBucketMetadataJournalTableConfiguration",
+                "s3:UploadPart",
+                "s3:UploadPartCopy",
+                "s3:WriteGetObjectResponse"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "Bool": {
+                    "aws:ResourceTag/IsProduction": true
+                },
+                "BoolIfExists": {
+                    "aws:PrincipalTag/HasProductionAccess": false
+                }
+            }
         }
+
     ]
 }
 
