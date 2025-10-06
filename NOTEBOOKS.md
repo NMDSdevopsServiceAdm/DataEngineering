@@ -1,3 +1,16 @@
+# Jupyter Notebooks on Amazon Web Services Amazon SageMaker AI
+
+## Steps to Launch
+1. Go to [Amazon SageMaker AI - Notebooks](https://eu-west-2.console.aws.amazon.com/sagemaker/home?region=eu-west-2#/notebooks-and-git-repos)
+2. Start the notebook you require (or `Create notebook instance`)
+3. The Notebook should automatically open in a new window
+4. Stop the cluster when finished
+
+## Cost awareness
+- Amazon SageMaker pricing is based on pay-as-you-go costs for resources, metadata storage, and API requests
+- Always stop the notebook after use
+
+
 # Jupyter Notebooks on Amazon Web Services Elastic MapReduce (EMR)
 
 ## Steps to Launch

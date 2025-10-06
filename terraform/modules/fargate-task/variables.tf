@@ -13,11 +13,6 @@ variable "ecr_repo_name" {
   default = "fargate/cqc"
 }
 
-variable "secret_arn_label" {
-  type    = string
-  default = "cqc_api_primary_key-mK4hzZ"
-}
-
 variable "secret_name" {
   type    = string
   default = "cqc_api_primary_key"
@@ -27,3 +22,20 @@ variable "cluster_arn" {
   type = string
 }
 
+variable "tag_name" {
+  type = string
+}
+
+variable "cpu_size" {
+  type    = number
+  default = 4096
+}
+
+variable "ram_size" {
+  type    = number
+  default = 16384
+}
+
+variable "environment" {
+  type = list(map(string))
+}
