@@ -38,7 +38,7 @@ jdk-8u....-windows-x64.exe
 4. This will open a screen where you need to add credentials into the fields:
 
 Field | To be filled with
---- | --- 
+--- | ---
 Server | athena.eu-west-2.amazonaws.com
 Port | 443
 S3 Staging Directory | s3://skillsforcare/tableau-staging-directory/
@@ -59,7 +59,7 @@ Secret Access Key | Tableau user AWS secret key from the AWS credentials page. A
 2. In 'system variables', select 'new' and add the following:
 
 Variable name | Value
---- | --- 
+--- | ---
 HADOOP_HOME | C:\hadoop-3.2.2
 JAVA_HOME | C:\jdk
 
@@ -77,8 +77,8 @@ C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
 C:\Users\_your_name_\.pyenv\pyenv-win\shims
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python311
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 ```
 
 ### Adding user variables (requires IT):
@@ -86,13 +86,13 @@ C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
 
 2. Under 'user variables', select `path` and then select `edit`
 
-3. Add the below path variables replacing "_your_name_" for your windows user name. 
+3. Add the below path variables replacing "_your_name_" for your windows user name.
 ```
 C:\Users\_your_name_\AppData\Local\Programs\Microsoft VS Code\bin
 C:\Users\_your_name_\AppData\Local\Programs\Git\cmd
 C:\Users\_your_name_\.pyenv\pyenv-win\bin
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\
-C:\Users\_your_name_\AppData\Roaming\Python\Python3.11\Scripts
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\
+C:\Users\_your_name_\AppData\Roaming\Python\Python311\Scripts
 %HADOOP_HOME%\bin
 ```
 
@@ -111,15 +111,15 @@ PYENV_HOME | C:\Users\_your_name_\.pyenv\pyenv-win\
 
 2. Go to https://www.python.org/downloads/
 
-3. Select Ctrl+F and search for `3.11.12`
+3. Select Ctrl+F and search for `3.11.9`
 
 4. Click on the `Download` button
 
 5. Scroll down and select `Windows installer (64-bit)`
 
-6. In your download folder, click on `python-3.11.12-amd64` and install Python manually (in order to change the file location to the location below)
+6. In your download folder, click on `python-3.11.9-amd64` and install Python manually (in order to change the file location to the location below)
 
-7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python3.11`
+7. When asked for a location, choose `C:\Users\_your_name_\AppData\Roaming\Python\Python311`
 
 **Note:** When you set the location for python to install, make sure it matches to the system and user variables for python path we set in the previous step.
 
@@ -280,7 +280,7 @@ Python
 
 ```
 <br>
-    
+
 10. Right click on the folder again, add a file named `settings.json` and paste in the code below:
 <i>Note: Replace `_your_name_` and `_your_code_` in the filepath with your personal options:</i>
 ```
