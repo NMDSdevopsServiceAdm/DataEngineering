@@ -5,9 +5,6 @@
             "Sid": "DenyProductionWithouthasProductionAccessExclStSIamS3",
             "Effect": "Deny",
             "Action": [
-                "*"
-            ],
-            "Resource": [
                 "a2c:*",
                 "a4b:*",
                 "access-analyzer:*",
@@ -78,7 +75,6 @@
                 "cloudshell:*",
                 "cloudtrail-data:*",
                 "cloudtrail:*",
-                "cloudwatch:*",
                 "codeartifact:*",
                 "codebuild:*",
                 "codecatalyst:*",
@@ -406,6 +402,9 @@
                 "workspaces-web:*",
                 "workspaces:*",
                 "xray:*"
+            ],
+            "Resource": [
+                "*"
             ],
             "Condition": {
                 "Bool": {
