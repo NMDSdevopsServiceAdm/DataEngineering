@@ -253,32 +253,8 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ONS/dataset=postcode_directory_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
+          from: "s3://sfc-default-datasets/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
