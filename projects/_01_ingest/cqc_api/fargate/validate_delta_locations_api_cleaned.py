@@ -17,7 +17,7 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import RegistrationStatus, Services
+from utils.column_values.categorical_column_values import Services
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
@@ -26,7 +26,6 @@ compare_columns_to_import = [
     Keys.import_date,
     CQCL.location_id,
     CQCL.provider_id,
-    CQCL.type,
     CQCL.registration_status,
     CQCL.gac_service_types,
     CQCL.regulated_activities,
@@ -153,7 +152,6 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
-        pl.col(CQCL.registration_status) == RegistrationStatus.registered,
         is_valid_location(),
         ~(
             (gac_services.list.len() == 1)

@@ -1,6 +1,5 @@
 import os
 import sys
-import warnings
 
 os.environ["SPARK_VERSION"] = "3.5"
 
@@ -35,7 +34,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
-    LocationType,
     PrimaryServiceType,
     RegistrationStatus,
     RelatedLocation,
@@ -127,24 +125,21 @@ def main(
     )
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
-    registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    dimension_update_date = registered_locations_df.agg(
-        F.max(Keys.import_date)
-    ).collect()[0][0]
+    dimension_update_date = cqc_location_df.agg(F.max(Keys.import_date)).collect()[0][0]
 
     # Create regulated activity dimension
     regulated_activity_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+        cqc_location_df,
         CQCL.regulated_activities,
         regulated_activities_destination,
         dimension_update_date,
     )
-    registered_locations_df = registered_locations_df.drop(CQCL.regulated_activities)
+    cqc_location_df = cqc_location_df.drop(CQCL.regulated_activities)
 
-    registered_locations_df, regulated_activity_delta = (
+    cqc_location_df, regulated_activity_delta = (
         remove_locations_that_never_had_regulated_activities(
-            registered_locations_df, regulated_activity_delta
+            cqc_location_df, regulated_activity_delta
         )
     )
     regulated_activity_delta = extract_registered_manager_names(
@@ -160,12 +155,12 @@ def main(
 
     # Create specialisms dimension
     specialisms_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+        cqc_location_df,
         CQCL.specialisms,
         specialisms_destination,
         dimension_update_date,
     )
-    registered_locations_df = registered_locations_df.drop(CQCL.specialisms)
+    cqc_location_df = cqc_location_df.drop(CQCL.specialisms)
 
     specialisms_delta = extract_from_struct(
         specialisms_delta,
@@ -194,15 +189,13 @@ def main(
 
     # Create GAC service dimension
     gac_service_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+        cqc_location_df,
         CQCL.gac_service_types,
         gac_service_destination,
         dimension_update_date,
     )
     # Drop care home from registered location df - stored in gac service dimension
-    registered_locations_df = registered_locations_df.drop(
-        CQCL.gac_service_types, CQCL.care_home
-    )
+    cqc_location_df = cqc_location_df.drop(CQCL.gac_service_types, CQCL.care_home)
 
     gac_service_delta = extract_from_struct(
         gac_service_delta,
@@ -210,8 +203,8 @@ def main(
         CQCLClean.services_offered,
     )
 
-    registered_locations_df, gac_service_delta = remove_specialist_colleges(
-        registered_locations_df, gac_service_delta
+    cqc_location_df, gac_service_delta = remove_specialist_colleges(
+        cqc_location_df, gac_service_delta
     )
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
@@ -227,19 +220,17 @@ def main(
     )
 
     # Final cleaning on fact table
-    registered_locations_df = add_related_location_column(registered_locations_df)
+    cqc_location_df = add_related_location_column(cqc_location_df)
 
     # Create postcode matching dimension
     postcode_matching_delta = create_postcode_matching_dimension(
-        registered_locations_df,
+        cqc_location_df,
         ons_postcode_directory_df,
         postcode_matching_destination,
         dimension_update_date,
     )
 
-    registered_locations_df = registered_locations_df.drop(
-        CQCL.postal_code, CQCL.postal_address_line1
-    )
+    cqc_location_df = cqc_location_df.drop(CQCL.postal_code, CQCL.postal_address_line1)
 
     utils.write_to_parquet(
         postcode_matching_delta,
@@ -249,7 +240,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        registered_locations_df,
+        cqc_location_df,
         cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
@@ -834,23 +825,6 @@ def remove_specialist_colleges(
     )
 
     return cqc_df, gac_services_dimension
-
-
-def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
-    invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
-        & (locations_df[CQCL.registration_status] != RegistrationStatus.deregistered)
-    ).count()
-
-    if invalid_rows != 0:
-        warnings.warn(
-            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
-        )
-
-    locations_df = locations_df.where(
-        locations_df[CQCL.registration_status] == RegistrationStatus.registered
-    )
-    return locations_df
 
 
 def add_cqc_sector_column_to_cqc_locations_dataframe(
