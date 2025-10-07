@@ -57,6 +57,8 @@ All notable changes to this project will be documented in this file.
 
 - Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
 
+- Moved the filtering of Registered CQC locations into the [IND CQC Merge](projects/_03_independent_cqc/_01_merge/jobs/merge_ind_cqc_data.py) job
+
 ### Improved
 
 
