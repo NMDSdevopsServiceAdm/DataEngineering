@@ -128,11 +128,8 @@ def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
         IndCQC.care_home,
     ]
     distinguishing_columns = [IndCQC.imputed_registration_date, IndCQC.location_id]
-    df.show()
     df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
-    df.show()
     df = deduplicate_care_homes(df, duplicate_columns, distinguishing_columns)
-    df.show()
     return df
 
 
