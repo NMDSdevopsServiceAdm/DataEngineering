@@ -9,7 +9,11 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_values.categorical_column_values import RegistrationStatus, Sector
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
+    Sector,
+)
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
@@ -22,6 +26,7 @@ from utils.validation.validation_utils import (
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
+    CQCLClean.type,
     CQCLClean.cqc_sector,
     CQCLClean.registration_status,
 ]
@@ -40,7 +45,8 @@ def main(
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = cqc_location_df.filter(
-        (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
+        (cqc_location_df[CQCLClean.type] == LocationType.social_care_identifier)
+        & (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
         & (
             cqc_location_df[CQCLClean.registration_status]
             == RegistrationStatus.registered

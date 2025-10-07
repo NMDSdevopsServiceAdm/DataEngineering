@@ -20,6 +20,7 @@ from utils.column_values.categorical_column_values import (
     Dormancy,
     EstimateFilledPostsSource,
     JobGroupLabels,
+    LocationType,
     MainJobRoleLabels,
     PrimaryServiceType,
     PrimaryServiceTypeSecondLevel,
@@ -97,10 +98,10 @@ class MergeIndCQCData:
 class ValidateMergedIndCqcData:
     # fmt: off
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered),
+        (date(2024, 1, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered, LocationType.social_care_identifier),
+        (date(2024, 1, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered, LocationType.social_care_identifier),
+        (date(2024, 2, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered, LocationType.social_care_identifier),
+        (date(2024, 2, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered, LocationType.social_care_identifier),
     ]
     # fmt: on
 

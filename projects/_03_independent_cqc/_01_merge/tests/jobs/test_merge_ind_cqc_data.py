@@ -91,7 +91,7 @@ class MergeIndCQCDatasetTests(unittest.TestCase):
 
         self.assertEqual(read_from_parquet_patch.call_count, 9)
         self.assertEqual(join_dimension_patch.call_count, 4)
-        self.assertEqual(select_rows_with_value_mock.call_count, 2)
+        self.assertEqual(select_rows_with_value_mock.call_count, 3)
         self.assertEqual(join_data_into_cqc_df_mock.call_count, 4)
 
         write_to_parquet_patch.assert_called_once_with(

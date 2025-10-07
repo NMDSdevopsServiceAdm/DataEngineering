@@ -114,6 +114,7 @@ class ValidateMergedIndCqcData:
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
             StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.type, StringType(), True),
         ]
     )
     merged_ind_cqc_schema = StructType(

@@ -31,7 +31,11 @@ from utils.column_names.ind_cqc_pipeline_columns import (
     DimensionPartitionKeys as DimensionKeys,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import RegistrationStatus, Sector
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
+    Sector,
+)
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -148,40 +152,43 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
-    cqc_registered_df = utils.select_rows_with_value(
-        cqc_location_df, CQCLClean.registration_status, RegistrationStatus.registered
+    cqc_filtered_df = utils.select_rows_with_value(
+        cqc_location_df, CQCLClean.type, LocationType.social_care_identifier
     )
-    ind_cqc_registered_df = utils.select_rows_with_value(
-        cqc_registered_df, CQCLClean.cqc_sector, Sector.independent
+    cqc_filtered_df = utils.select_rows_with_value(
+        cqc_filtered_df, CQCLClean.registration_status, RegistrationStatus.registered
+    )
+    cqc_filtered_df = utils.select_rows_with_value(
+        cqc_filtered_df, CQCLClean.cqc_sector, Sector.independent
     )
 
     gac_dim_df = utils.read_from_parquet(
         gac_dim_source,
         selected_columns=gac_dim_columns_to_import,
     )
-    ind_cqc_registered_df = utils.join_dimension(
-        ind_cqc_registered_df, gac_dim_df, CQCLClean.location_id
+    cqc_filtered_df = utils.join_dimension(
+        cqc_filtered_df, gac_dim_df, CQCLClean.location_id
     )
 
     reg_act_dim_df = utils.read_from_parquet(
         reg_act_dim_source, selected_columns=ra_dim_columns_to_import
     )
-    ind_cqc_registered_df = utils.join_dimension(
-        ind_cqc_registered_df, reg_act_dim_df, CQCLClean.location_id
+    cqc_filtered_df = utils.join_dimension(
+        cqc_filtered_df, reg_act_dim_df, CQCLClean.location_id
     )
 
     spec_dim_df = utils.read_from_parquet(
         spec_dim_source, selected_columns=specialism_dim_columns_to_import
     )
-    ind_cqc_registered_df = utils.join_dimension(
-        ind_cqc_registered_df, spec_dim_df, CQCLClean.location_id
+    cqc_filtered_df = utils.join_dimension(
+        cqc_filtered_df, spec_dim_df, CQCLClean.location_id
     )
 
     pcm_dim_df = utils.read_from_parquet(
         pcm_dim_source, selected_columns=pcm_dim_columns_to_import
     )
-    ind_cqc_registered_df = utils.join_dimension(
-        ind_cqc_registered_df, pcm_dim_df, CQCLClean.location_id
+    cqc_filtered_df = utils.join_dimension(
+        cqc_filtered_df, pcm_dim_df, CQCLClean.location_id
     )
 
     ascwds_workplace_df = utils.read_from_parquet(
@@ -202,31 +209,31 @@ def main(
         selected_columns=cleaned_ct_care_home_columns_to_import,
     )
 
-    ind_cqc_registered_df = join_data_into_cqc_df(
-        ind_cqc_registered_df,
+    cqc_filtered_df = join_data_into_cqc_df(
+        cqc_filtered_df,
         cqc_pir_df,
         CQCPIRClean.location_id,
         CQCPIRClean.cqc_pir_import_date,
         CQCPIRClean.care_home,
     )
 
-    ind_cqc_registered_df = join_data_into_cqc_df(
-        ind_cqc_registered_df,
+    cqc_filtered_df = join_data_into_cqc_df(
+        cqc_filtered_df,
         ascwds_workplace_df,
         AWPClean.location_id,
         AWPClean.ascwds_workplace_import_date,
     )
 
-    ind_cqc_registered_df = join_data_into_cqc_df(
-        ind_cqc_registered_df,
+    cqc_filtered_df = join_data_into_cqc_df(
+        cqc_filtered_df,
         ct_non_res_df,
         CTNRClean.cqc_id,
         CTNRClean.ct_non_res_import_date,
         CTNRClean.care_home,
     )
 
-    ind_cqc_registered_df = join_data_into_cqc_df(
-        ind_cqc_registered_df,
+    cqc_filtered_df = join_data_into_cqc_df(
+        cqc_filtered_df,
         ct_care_home_df,
         CTCHClean.cqc_id,
         CTCHClean.ct_care_home_import_date,
@@ -234,7 +241,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        ind_cqc_registered_df,
+        cqc_filtered_df,
         destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
