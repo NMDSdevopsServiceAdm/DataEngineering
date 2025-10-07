@@ -53,6 +53,10 @@ All notable changes to this project will be documented in this file.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
+
+- Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
+
 ### Improved
 
 
