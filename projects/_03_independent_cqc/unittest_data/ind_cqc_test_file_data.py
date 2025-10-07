@@ -95,12 +95,14 @@ class MergeIndCQCData:
 
 @dataclass
 class ValidateMergedIndCqcData:
+    # fmt: off
     cqc_locations_rows = [
-        (date(2024, 1, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 1, 1), "1-002", "Independent", "N", None),
-        (date(2024, 2, 1), "1-001", "Independent", "Y", 10),
-        (date(2024, 2, 1), "1-002", "Independent", "N", None),
+        (date(2024, 1, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered),
+        (date(2024, 1, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered),
+        (date(2024, 2, 1), "1-001", "Independent", "Y", 10, RegistrationStatus.registered),
+        (date(2024, 2, 1), "1-002", "Independent", "N", None, RegistrationStatus.registered),
     ]
+    # fmt: on
 
     # fmt: off
     merged_ind_cqc_rows = [
