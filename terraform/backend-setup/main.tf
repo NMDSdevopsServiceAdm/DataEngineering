@@ -6,7 +6,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    bucket         = "sfc-terraform-state"
+    # Bucket defined in ../*.s3.tfbackend
     key            = "statefiles/workspace=default/backend.tfstate"
     region         = "eu-west-2"
     dynamodb_table = "terraform-locks"
@@ -15,7 +15,7 @@ terraform {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "sfc-terraform-state"
+  bucket = var.bucket
 }
 
 resource "aws_s3_bucket_versioning" "terraform_state_versioning" {

@@ -3,14 +3,14 @@
 ## Prerequisites
 | Tool | Windows | Mac/Linux |
 |------|---------|-----------|
-| Python 3.11.12 | https://www.python.org/downloads/ | https://www.python.org/downloads/ |
+| Python 3.11.9 | https://www.python.org/downloads/ | https://www.python.org/downloads/ |
 | Git | https://github.com/git-guides/install-git | https://github.com/git-guides/install-git |
 | Pyenv | https://github.com/pyenv-win/pyenv-win | https://github.com/pyenv/pyenv |
 | Pipenv | https://www.pythontutorial.net/python-basics/install-pipenv-windows/ | https://pipenv-fork.readthedocs.io/en/latest/install.html |
 | Java JDK8 | https://www.java.com/en/download/ | https://www.java.com/en/download/ |
 
 ## MacOS Java Installation
-This project currently uses SPARK_VERSION 3.5.4 as this is compatible with Python3.11 and Glue 5.0.
+This project currently uses SPARK_VERSION 3.5.4 as this is compatible with Python 3.11 and Glue 5.0.
 
 For Spark installation, note that several JDKs can be used with Spark 3.5, see the guide on [Spark 3.5.4](https://spark.apache.org/docs/3.5.4/)
 

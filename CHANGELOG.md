@@ -11,11 +11,16 @@ All notable changes to this project will be documented in this file.
 - New function added to merge the old CQC ratings and the new assessment ratings.
 
 - Polars version of the estimates by job role job and added job to new step function for ind cqc estimates.
+
 - Implemented complex validation for [validate_delta_locations_api_cleaned](projects/_01_ingest/cqc_api/fargate/validate_delta_locations_api_cleaned.py), includes:
   - split into dimensions table with separate validation
   - Pointblank translation of helper functions and new expressions.
 
 - Function to clean Capacity Tracker care home data by nulling when posts to beds ratio is outside thresholds.
+
+- Model retraining process using Polars and scikit-learn in Fargate
+
+- Tagging added by default to all Terraform elements
 
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
@@ -44,13 +49,23 @@ All notable changes to this project will be documented in this file.
 
 - Removed the deduplication of Capacity Tracker data and used the cleaned Capacity Tracker care home data for imputation.
 
+- Moved the calculation for estimating all Capacity Tracker non-residential filled posts from the diagnostics job to the estimates job.
+
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
+
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
+
+- Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
+
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
+
+- Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
 
 - Changed the remove_duplicate_cqc_care_homes function as followed:
   - changed function name to remove_dual_registration_cqc_care_homes
   - updated doc string with information from CQC
-  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window and
-  instead of looping through applying that to two colums I used the withColumns method.
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window
+  - added location_id as a fallback column to distinguish identical locaitons consistantly
 
 ### Improved
 
