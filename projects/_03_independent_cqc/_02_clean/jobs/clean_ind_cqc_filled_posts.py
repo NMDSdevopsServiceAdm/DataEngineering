@@ -127,14 +127,17 @@ def remove_dual_registration_cqc_care_homes(df: DataFrame) -> DataFrame:
         IndCQC.postcode,
         IndCQC.care_home,
     ]
-    distinguishing_column = IndCQC.imputed_registration_date
+    distinguishing_columns = [IndCQC.imputed_registration_date, IndCQC.location_id]
+    df.show()
     df = copy_ascwds_data_across_duplicate_rows(df, duplicate_columns)
-    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_column)
+    df.show()
+    df = deduplicate_care_homes(df, duplicate_columns, distinguishing_columns)
+    df.show()
     return df
 
 
 def deduplicate_care_homes(
-    df: DataFrame, duplicate_columns: list, distinguishing_column: str
+    df: DataFrame, duplicate_columns: list, distinguishing_columns: list
 ) -> DataFrame:
     """
     Removes cqc locations with dual registration.
@@ -144,7 +147,7 @@ def deduplicate_care_homes(
     Args:
         df (DataFrame): A dataframe containing cqc location data and ascwds data.
         duplicate_columns (list): A list of column names to identify duplicates.
-        distinguishing_column (str): The name of the column which will decide which of the duplicates to keep.
+        distinguishing_columns (list): A list of the columns which will decide which of the duplicates to keep.
 
     Returns:
         DataFrame: A dataframe with dual regestrations deduplicated.
@@ -153,7 +156,7 @@ def deduplicate_care_homes(
     df = df.withColumn(
         temp_col,
         F.row_number().over(
-            Window.partitionBy(duplicate_columns).orderBy(distinguishing_column)
+            Window.partitionBy(duplicate_columns).orderBy(distinguishing_columns)
         ),
     )
     df = df.where(
