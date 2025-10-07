@@ -70,4 +70,6 @@ module "_03_independent_cqc" {
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
   tag_name = terraform.workspace
+  cpu_size      = 8192
+  ram_size      = 32768
 }
