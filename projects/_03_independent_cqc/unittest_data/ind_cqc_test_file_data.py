@@ -3379,6 +3379,51 @@ class CleanIndCQCData:
         ),
     ]
 
+    remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
+        (
+            "loc 3",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+        (
+            "loc 2",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            11,
+            11,
+            date(2022, 1, 1),
+        ),
+    ]
+    expected_remove_cqc_dual_registrations_when_locations_not_sorted_numerically = [
+        (
+            "loc 1",
+            date(2024, 2, 1),
+            "care home",
+            "AB1 2CD",
+            CareHome.care_home,
+            10,
+            10,
+            date(2018, 1, 1),
+        ),
+    ]
+
     remove_cqc_dual_registrations_when_non_res_rows = [
         (
             "loc 1",

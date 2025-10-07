@@ -443,6 +443,22 @@ class RemoveDualRegistrationCqcCareHomes(CleanIndFilledPostsTests):
             returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
         )
 
+    def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_locations_not_sorted_numerically(
+        self,
+    ):
+        test_df = self.spark.createDataFrame(
+            Data.remove_cqc_dual_registrations_when_locations_not_sorted_numerically,
+            Schemas.remove_cqc_dual_registrations_schema,
+        )
+        expected_df = self.spark.createDataFrame(
+            Data.expected_remove_cqc_dual_registrations_when_locations_not_sorted_numerically,
+            Schemas.remove_cqc_dual_registrations_schema,
+        )
+        returned_df = job.remove_dual_registration_cqc_care_homes(test_df)
+        self.assertEqual(
+            returned_df.sort(IndCQC.location_id).collect(), expected_df.collect()
+        )
+
     def test_remove_dual_registration_cqc_care_homes_returns_expected_values_when_non_res(
         self,
     ):
