@@ -39,9 +39,13 @@ def main(
     merged_ind_cqc_df = utils.read_from_parquet(merged_ind_cqc_source)
     rules = Rules.rules_to_check
 
-    rules[RuleName.size_of_dataset] = calculate_expected_size_of_merged_ind_cqc_dataset(
-        cqc_location_df
-    )
+    rules[RuleName.size_of_dataset] = cqc_location_df.filter(
+        (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
+        & (
+            cqc_location_df[CQCLClean.registration_status]
+            == RegistrationStatus.registered
+        )
+    ).count()
 
     check_result_df = validate_dataset(merged_ind_cqc_df, rules)
 
@@ -49,19 +53,6 @@ def main(
 
     if isinstance(check_result_df, DataFrame):
         raise_exception_if_any_checks_failed(check_result_df)
-
-
-def calculate_expected_size_of_merged_ind_cqc_dataset(
-    cqc_location_df: DataFrame,
-) -> int:
-    expected_size = cqc_location_df.where(
-        (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
-        & (
-            cqc_location_df[CQCLClean.registration_status]
-            == RegistrationStatus.registered
-        )
-    ).count()
-    return expected_size
 
 
 if __name__ == "__main__":
