@@ -9,8 +9,7 @@ from utils import utils
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
-from utils.column_values.categorical_column_values import Sector
+from utils.column_values.categorical_column_values import RegistrationStatus, Sector
 from utils.validation.validation_rule_names import RuleNames as RuleName
 from utils.validation.validation_rules.merged_ind_cqc_validation_rules import (
     MergedIndCqcValidationRules as Rules,
@@ -20,12 +19,11 @@ from utils.validation.validation_utils import (
     validate_dataset,
 )
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
-
 cleaned_cqc_locations_columns_to_import = [
     CQCLClean.cqc_location_import_date,
     CQCLClean.location_id,
     CQCLClean.cqc_sector,
+    CQCLClean.registration_status,
 ]
 
 
@@ -38,9 +36,7 @@ def main(
         cleaned_cqc_location_source,
         selected_columns=cleaned_cqc_locations_columns_to_import,
     )
-    merged_ind_cqc_df = utils.read_from_parquet(
-        merged_ind_cqc_source,
-    )
+    merged_ind_cqc_df = utils.read_from_parquet(merged_ind_cqc_source)
     rules = Rules.rules_to_check
 
     rules[RuleName.size_of_dataset] = calculate_expected_size_of_merged_ind_cqc_dataset(
@@ -59,7 +55,11 @@ def calculate_expected_size_of_merged_ind_cqc_dataset(
     cqc_location_df: DataFrame,
 ) -> int:
     expected_size = cqc_location_df.where(
-        cqc_location_df[CQCLClean.cqc_sector] == Sector.independent
+        (cqc_location_df[CQCLClean.cqc_sector] == Sector.independent)
+        & (
+            cqc_location_df[CQCLClean.registration_status]
+            == RegistrationStatus.registered
+        )
     ).count()
     return expected_size
 

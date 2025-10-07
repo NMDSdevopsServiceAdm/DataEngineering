@@ -158,6 +158,7 @@ class ValidateMergedIndCqcData:
         [
             StructField(IndCQC.location_id, StringType(), True),
             StructField(IndCQC.cqc_sector, StringType(), True),
+            StructField(IndCQC.registration_status, StringType(), True),
         ]
     )
 

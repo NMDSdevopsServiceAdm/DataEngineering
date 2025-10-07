@@ -112,9 +112,15 @@ class ValidateMergedIndCqcData:
     # fmt: on
 
     calculate_expected_size_rows = [
-        ("1-001", Sector.independent),
-        ("1-002", Sector.local_authority),
-        ("1-003", None),
+        ("1-001", Sector.independent, RegistrationStatus.registered),
+        ("1-002", Sector.independent, RegistrationStatus.deregistered),
+        ("1-003", Sector.independent, None),
+        ("1-004", Sector.local_authority, RegistrationStatus.registered),
+        ("1-005", Sector.local_authority, RegistrationStatus.deregistered),
+        ("1-006", Sector.local_authority, None),
+        ("1-007", None, RegistrationStatus.registered),
+        ("1-008", None, RegistrationStatus.deregistered),
+        ("1-009", None, None),
     ]
 
 
