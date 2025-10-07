@@ -19,11 +19,12 @@ def lambda_handler(event, context):
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
 
-    date_int = int(
-        datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
-            "%Y%m%d"
-        )
-    )
+    # date_int = int(
+    #     datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+    #         "%Y%m%d"
+    #     )
+    # )
+    date_int = int("20251001")  # TEMPORARY FIX FOR TESTING PURPOSES
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
