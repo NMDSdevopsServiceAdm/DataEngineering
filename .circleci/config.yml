@@ -265,8 +265,8 @@ jobs:
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_providers_api/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_providers_api/"
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/"
@@ -275,10 +275,6 @@ jobs:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=DPR/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=DPR/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ONS/"
