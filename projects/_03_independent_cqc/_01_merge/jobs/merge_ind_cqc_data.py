@@ -45,6 +45,7 @@ cleaned_cqc_locations_columns_to_import = [
     CQCLClean.name,
     CQCLClean.provider_id,
     CQCLClean.cqc_sector,
+    CQCLClean.type,
     CQCLClean.registration_status,
     CQCLClean.imputed_registration_date,
     CQCLClean.dormancy,
