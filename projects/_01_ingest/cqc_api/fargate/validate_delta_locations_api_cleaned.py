@@ -16,14 +16,8 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.validation_table_columns import (
-    Validation,
-)
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-    Services,
-)
+from utils.column_names.validation_table_columns import Validation
+from utils.column_values.categorical_column_values import RegistrationStatus, Services
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
@@ -159,7 +153,6 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
-        pl.col(CQCL.type) == LocationType.social_care_identifier,
         pl.col(CQCL.registration_status) == RegistrationStatus.registered,
         is_valid_location(),
         ~(
