@@ -50,18 +50,18 @@ def lambda_handler(event, context):
 
     fs = S3FileSystem()
 
-    latest_date = get_latest_available_date(fs, event["input_uri"])
-    logger.info(f"Using detected latest snapshot date: {latest_date}")
+    # latest_date = get_latest_available_date(fs, event["input_uri"])
+    # logger.info(f"Using detected latest snapshot date: {latest_date}")
 
-    logger.info(
-        f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
-    )
+    # logger.info(
+    #     f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
+    # )
 
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
         dataset=event["dataset"],
-        timepoint=latest_date,
+        timepoint=date_int,
     )
 
     output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
