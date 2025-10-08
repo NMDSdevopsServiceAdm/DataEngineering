@@ -87,8 +87,17 @@ def main(
         )
     )
 
+    columns_in_output = [
+        IndCQC.location_id,
+        IndCQC.establishment_id,
+        IndCQC.ascwds_workplace_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        IndCQC.ascwds_job_role_counts,
+    ]
     estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.collect()
+        estimated_ind_cqc_filled_posts_by_job_role_lf.select(
+            columns_in_output
+        ).collect()
     )
 
     utils.write_to_parquet(

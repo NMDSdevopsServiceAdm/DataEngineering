@@ -66,8 +66,6 @@ module "_03_independent_cqc" {
   task_name     = "_03_independent_cqc"
   ecr_repo_name = "fargate/03_independent_cqc"
   cluster_arn   = aws_ecs_cluster.polars_cluster.arn
-  cpu_size      = 8192
-  ram_size      = 32768
   environment = [
     { "name" : "AWS_REGION", "value" : "eu-west-2" }
   ]
