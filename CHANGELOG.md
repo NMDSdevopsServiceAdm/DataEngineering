@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 
 - Model retraining process using Polars and scikit-learn in Fargate
 
+- Tagging added by default to all Terraform elements
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
@@ -50,6 +52,10 @@ All notable changes to this project will be documented in this file.
 - Moved the calculation for estimating all Capacity Tracker non-residential filled posts from the diagnostics job to the estimates job.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
+
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
+
+- Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
 
 - Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
 

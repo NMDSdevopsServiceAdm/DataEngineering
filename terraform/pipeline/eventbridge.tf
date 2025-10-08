@@ -112,11 +112,11 @@ resource "aws_iam_policy" "start_state_machines" {
         Effect = "Allow"
         Action = ["states:StartExecution"]
         Resource = [
-          aws_sfn_state_machine.ingest_ascwds_state_machine.arn,
-          aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn,
-          aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn,
-          aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn,
-          aws_sfn_state_machine.ingest_ons_pd_state_machine.arn
+          aws_sfn_state_machine.sf_pipelines["Ingest-ASCWDS"].arn,
+          aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn,
+          aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn,
+          aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn,
+          aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
         ]
       }
     ]
@@ -150,7 +150,7 @@ resource "aws_iam_role_policy_attachment" "start_state_machines" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
   rule      = aws_cloudwatch_event_rule.ascwds_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestASCWDSStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ascwds_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-ASCWDS"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -173,7 +173,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ascwds_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
   rule      = aws_cloudwatch_event_rule.cqc_pir_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestCqcPirStateMachine"
-  arn       = aws_sfn_state_machine.ingest_cqc_pir_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-CQC-PIR"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -196,7 +196,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_cqc_pir_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
   rule      = aws_cloudwatch_event_rule.ons_pd_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestONSStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ons_pd_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-ONSPD"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -219,7 +219,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ons_pd_state_machine" {
 resource "aws_cloudwatch_event_target" "trigger_ingest_ct_care_home_state_machine" {
   rule      = aws_cloudwatch_event_rule.ct_care_home_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestCTCHStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ct_care_home_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Care-Home"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {
@@ -242,7 +242,7 @@ resource "aws_cloudwatch_event_target" "trigger_ingest_ct_care_home_state_machin
 resource "aws_cloudwatch_event_target" "trigger_ingest_ct_non_res_state_machine" {
   rule      = aws_cloudwatch_event_rule.ct_non_res_csv_added.name
   target_id = "${local.workspace_prefix}-StartIngestCTNRStateMachine"
-  arn       = aws_sfn_state_machine.ingest_ct_non_res_state_machine.arn
+  arn       = aws_sfn_state_machine.sf_pipelines["Ingest-Capacity-Tracker-Non-Res"].arn
   role_arn  = aws_iam_role.start_state_machines.arn
 
   input_transformer {

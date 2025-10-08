@@ -1,5 +1,5 @@
 output "task_arn" {
-  value = aws_ecs_task_definition.polars_task.arn
+  value = aws_ecs_task_definition.ecs_task.arn
 }
 
 output "subnet_ids" {
