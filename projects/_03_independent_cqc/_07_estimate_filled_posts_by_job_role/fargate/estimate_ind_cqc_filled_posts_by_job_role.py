@@ -87,24 +87,21 @@ def main(
         )
     )
 
-    columns_in_output = [
-        IndCQC.location_id,
-        IndCQC.establishment_id,
-        IndCQC.ascwds_workplace_import_date,
-        IndCQC.main_job_role_clean_labelled,
-        IndCQC.ascwds_job_role_counts,
-    ]
-    estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.select(
-            columns_in_output
-        ).collect()
+    # columns_in_output = [
+    #     IndCQC.location_id,
+    #     IndCQC.establishment_id,
+    #     IndCQC.ascwds_workplace_import_date,
+    #     IndCQC.main_job_role_clean_labelled,
+    #     IndCQC.ascwds_job_role_counts,
+    # ]
+
+    estimated_ind_cqc_filled_posts_by_job_role_lf_schema = (
+        estimated_ind_cqc_filled_posts_by_job_role_lf.collect_schema()
     )
 
-    utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_by_job_role_lf,
-        f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
-        logger=logger,
-        append=False,
+    estimated_ind_cqc_filled_posts_by_job_role_lf.sink_parquet(
+        path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
+        compression="snappy",
     )
 
 
