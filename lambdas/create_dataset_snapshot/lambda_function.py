@@ -1,7 +1,7 @@
 import json
 import logging
 
-from re import match
+from re import match, sub, search
 from datetime import datetime
 
 from s3fs import S3FileSystem
@@ -16,6 +16,25 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def get_latest_available_date(fs, input_uri):
+    bucket_path = sub(r"^s3://", "", input_uri)
+    all_paths = fs.ls(bucket_path)
+
+    available_dates = []
+    for path in all_paths:
+        # Match only import_date=YYYYMMDD folders
+        match_date = search(r"import_date=(\d{8})", path)
+        if match_date:
+            available_dates.append(int(match_date.group(1)))
+
+    if not available_dates:
+        raise ValueError(f"No valid date partitions found under {input_uri}")
+
+    latest_date = max(available_dates)
+    logger.info(f"Detected latest available date: {latest_date}")
+    return latest_date
+
+
 def lambda_handler(event, context):
     logger.info("Received event: \n" + json.dumps(event, indent=2))
 
@@ -28,6 +47,12 @@ def lambda_handler(event, context):
             "%Y%m%d"
         )
     )
+
+    fs = S3FileSystem()
+
+    latest_date = get_latest_available_date(fs, event["input_uri"])
+    logger.info(f"Using detected latest snapshot date: {latest_date}")
+
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
@@ -36,12 +61,11 @@ def lambda_handler(event, context):
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
         dataset=event["dataset"],
-        timepoint=date_int,
+        timepoint=latest_date,
     )
 
     output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
-    fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
         snapshot_df.drop(
             [Keys.year, Keys.month, Keys.day, Keys.import_date]
