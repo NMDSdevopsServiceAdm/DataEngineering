@@ -75,7 +75,7 @@
                 "JobName": "${validate_providers_api_raw_delta_data_job_name}",
                 "Arguments": {
                   "--raw_cqc_provider_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_providers_api/version=3.0.0/",
-                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=delta_providers_api_raw/"
+                  "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_validation_reports_delta_providers_api_raw/"
                 }
               },
               "Next": "Build Providers Dataset"
