@@ -1,7 +1,7 @@
 from re import match
 from typing import Generator, Optional
 from datetime import datetime
-
+import logging
 import polars as pl
 
 from schemas import (
@@ -21,7 +21,8 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.ind_cqc_pipeline_columns import (
     PartitionKeys as Keys,
 )
-
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class DataError(Exception):
     pass
@@ -51,8 +52,10 @@ def build_snapshot_table_from_delta(
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
+        latest = snapshot
     else:
-        raise DataError("No snapshot found for timepoint " + str(timepoint))
+        logger.info(f"No snapshot found for {timepoint}, returning most recent")
+        return latest
 
 
 def get_snapshots(
