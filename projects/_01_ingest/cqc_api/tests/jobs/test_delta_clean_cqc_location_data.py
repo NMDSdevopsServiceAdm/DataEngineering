@@ -174,7 +174,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
     def test_create_dimension_from_missing_struct_column(
-        self, mock_impute_missing_struct_column, mock_read_from_parquet
+        self, mock_impute_missing_struct_column: Mock, mock_read_from_parquet: Mock
     ):
         # GIVEN
         #   Historic data:
@@ -190,7 +190,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
 
         # WHEN
         #   the function is run
-        returned_df = job.create_dimension_from_missing_struct_column(
+        returned_df, _ = job.create_dimension_from_missing_struct_column(
             df=Mock(),
             missing_struct_column=CQCL.gac_service_types,
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
@@ -223,7 +223,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
     def test_create_dimension_when_no_historic_data(
-        self, mock_impute_missing_struct_column, mock_read_from_parquet
+        self, mock_impute_missing_struct_column: Mock, mock_read_from_parquet: Mock
     ):
         # GIVEN
         #   Trying to read historic data creates an analysis exception
@@ -241,7 +241,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
 
         # WHEN
         #   the function is run
-        returned_df = job.create_dimension_from_missing_struct_column(
+        returned_df, _ = job.create_dimension_from_missing_struct_column(
             df=Mock(),
             missing_struct_column=CQCL.gac_service_types,
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
@@ -266,6 +266,44 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             returned_df.select(column_order).collect(),
             expected_df.select(column_order).collect(),
         )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    def test_create_dimension_returns_current_dimension(
+        self, mock_impute_missing_struct_column: Mock, mock_read_from_parquet: Mock
+    ):
+        # GIVEN
+        #   Reading historic data raises an AnalysisException (no previous dimension exists)
+        mock_read_from_parquet.side_effect = AnalysisException("no previous dimension")
+        mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
+            Data.create_gac_service_dimension_rows,
+            Schemas.gac_service_dimension_input_schema,
+        )
+
+        # WHEN
+        #   the function is run
+        delta_df, current_dimension_df = (
+            job.create_dimension_from_missing_struct_column(
+                df=Mock(),
+                missing_struct_column=CQCL.gac_service_types,
+                dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
+                dimension_update_date="20240201",
+            )
+        )
+
+        # THEN
+        #   Check both returned objects are DataFrames
+        self.assertIsInstance(delta_df, DataFrame)
+        self.assertIsInstance(current_dimension_df, DataFrame)
+
+        #   Check the current dimension includes date partition columns
+        for col in [
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ]:
+            self.assertIn(col, current_dimension_df.columns)
 
 
 class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
