@@ -15,6 +15,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
@@ -87,32 +88,36 @@ def main(
         )
     )
 
-    # columns_in_output = [
-    #     IndCQC.location_id,
-    #     IndCQC.establishment_id,
-    #     IndCQC.ascwds_workplace_import_date,
-    #     IndCQC.main_job_role_clean_labelled,
-    #     IndCQC.ascwds_job_role_counts,
-    # ]
-
-    estimated_ind_cqc_filled_posts_by_job_role_lf_schema = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.collect_schema()
+    write_to_parquet_in_chunks(
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        estimated_ind_cqc_filled_posts_by_job_role_destination,
     )
 
-    total_rows = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.select(pl.len()).collect().item()
+
+def write_to_parquet_in_chunks(
+    estimated_ind_cqc_filled_posts_by_job_role_lf: pl.LazyFrame,
+    estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+) -> None:
+    partitions_df = (
+        estimated_ind_cqc_filled_posts_by_job_role_lf.select(PartitionKeys)
+        .unique()
+        .collect()
     )
 
-    print(f"Total rows: {total_rows}")
+    for row in partitions_df.iter_rows(named=True):
+        chunk = estimated_ind_cqc_filled_posts_by_job_role_lf.filter(
+            (pl.col(Keys.year) == row[Keys.year])
+            & (pl.col(Keys.month) == row[Keys.month])
+            & (pl.col(Keys.day) == row[Keys.day])
+            & (pl.col(Keys.import_date) == row[Keys.import_date])
+        ).collect()
 
-    batch_size = pl.lit(100000, pl.Int64())
-    for i in range(0, total_rows, batch_size):
-        estimated_ind_cqc_filled_posts_by_job_role_lf.slice(i, batch_size).sink_parquet(
-            path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf-{i}.parquet",
-            compression="snappy",
-        )
+        partition_path = "/".join(f"{k}={v}" for k, v in row.items())
 
-        print(f"Wrote batch {i} of {total_rows}")
+        path = f"{estimated_ind_cqc_filled_posts_by_job_role_destination}{partition_path}/part.parquet"
+
+        utils.write_to_parquet(df=chunk, output_path=path, logger=logger, append=False)
+        print(f"Wrote {path} which has {chunk.height} rows")
 
 
 if __name__ == "__main__":

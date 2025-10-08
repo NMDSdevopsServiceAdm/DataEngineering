@@ -100,3 +100,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
         (10, 5, None, 20),
     ]
+
+    test_writing_to_parquet_rows = [
+        ("1-001",),
+        ("1001",),
+        (date(2025, 1, 1),),
+        (MainJobRoleLabels.care_worker,),
+        (10,),
+        ("2025",),
+        ("01",),
+        ("01",),
+        ("20250101",),
+    ]
