@@ -109,7 +109,7 @@ def main(
 
     print(f"Total rows: {total_rows}")
 
-    batch_size = 100, 000
+    batch_size = pl.lit(100000, pl.Int64())
     for i in range(0, total_rows, batch_size):
         estimated_ind_cqc_filled_posts_by_job_role_lf.slice(i, batch_size).sink_parquet(
             path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
