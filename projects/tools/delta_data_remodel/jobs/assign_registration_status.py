@@ -1,13 +1,10 @@
 import boto3
-from schemas.cqc_locations_cleaned_schema_polars import POLARS_CLEANED_LOCATIONS_SCHEMA
 import polars as pl
 
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
-)
+from utils.column_values.categorical_column_values import RegistrationStatus
 
 BUCKET_NAME = "sfc-1036-fix-locations-full-datasets"
 BACKUP_PREFIX = (

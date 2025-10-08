@@ -14,7 +14,7 @@ Some resources have been created outside of terraform. The extra resources you w
 
 ## Deploying Terraform
 
-1. Set up your Amazon Web Services crendentials as terraform variables
+1. Set up your Amazon Web Services credentials as terraform variables
 
 Copy the file located at `terraform/pipeline/terraform.tfvars.example` and save as `terraform/pipeline/terraform.tfvars`.
 
@@ -28,22 +28,25 @@ Populate this file with your access key and secret access key.
 % pwd
 /Users/username/Projects/skillsforcare/DataEngineering/terraform/pipeline
 ```
-3. Run `terraform plan` to evaluate the planned changes
+3. Run `terraform init -backend-config=../non_prod.s3.tfbackend` to ensure you are using the correct AWS account and have all modules installed
+4. Run `terraform plan` to evaluate the planned changes
 ```
 terraform plan
 ```
-4. Check the planned changes to make sure they are correct!
-5. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
+5. Check the planned changes to make sure they are correct!
+6. Then run `terraform apply` to deploy the changes. Confirm with `yes` when prompted
 ```
 terraform apply
 ```
+
+In the very rare case you need to do a manual production deployment from your own machine, you'll need to rerun `terraform init`, using `../prod.s3.tfbackend` as the value for `-backend-config`. It is then essential that once you have performed this deployment, you rerun `terraform init -backend-config=../non_prod.s3.tfbackend`, otherwise any summary action may be accidentally applied to the production environment if the `allowed_account_ids` entry is accidentally deleted.
 
 ## Destroying Terraform
 To remove Terraform generated infrastructure first ensure you are in the correct directory working on the correct workspace.
 
 ```
 cd terraform/pipeline
-terraform init
+terraform init -backend-config=../non_prod.s3.tfbackend
 terraform workspace list
 ```
 

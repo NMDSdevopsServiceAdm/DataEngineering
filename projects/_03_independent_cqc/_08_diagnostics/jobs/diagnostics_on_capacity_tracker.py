@@ -4,16 +4,17 @@ import sys
 os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
-from pyspark.sql import functions as F
 
+from polars_utils.logger import get_logger
 from projects._03_independent_cqc._08_diagnostics.utils import (
     diagnostics_utils as dUtils,
 )
-from projects._03_independent_cqc.utils.utils.utils import merge_columns_in_order
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import CareHome
+
+logger = get_logger(__name__)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 estimate_filled_posts_columns: list = [
@@ -31,16 +32,10 @@ estimate_filled_posts_columns: list = [
     IndCQC.imputed_posts_care_home_model,
     IndCQC.imputed_posts_non_res_combined_model,
     IndCQC.estimate_filled_posts,
-    IndCQC.number_of_beds,
-    IndCQC.number_of_beds_banded,
     IndCQC.ct_care_home_total_employed,
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.ct_non_res_care_workers_employed,
-    IndCQC.ct_non_res_care_workers_employed_imputed,
-    IndCQC.current_region,
-    IndCQC.current_cssr,
-    IndCQC.current_lsoa21,
-    IndCQC.unix_time,
+    IndCQC.ct_non_res_filled_post_estimate,
     Keys.year,
     Keys.month,
     Keys.day,
@@ -58,14 +53,18 @@ def main(
     non_res_diagnostics_destination,
     non_res_summary_diagnostics_destination,
 ):
-    print("Creating diagnostics for capacity tracker data")
+    logger.info("Creating diagnostics for capacity tracker data")
 
     filled_posts_df: DataFrame = utils.read_from_parquet(
         estimate_filled_posts_source, estimate_filled_posts_columns
     )
 
-    care_home_diagnostics_df = run_diagnostics_for_care_homes(filled_posts_df)
-    non_res_diagnostics_df = run_diagnostics_for_non_residential(filled_posts_df)
+    care_home_diagnostics_df = run_diagnostics(
+        filled_posts_df, CareHome.care_home, IndCQC.ct_care_home_total_employed_imputed
+    )
+    non_res_diagnostics_df = run_diagnostics(
+        filled_posts_df, CareHome.not_care_home, IndCQC.ct_non_res_filled_post_estimate
+    )
 
     care_home_summary_df = dUtils.create_summary_diagnostics_table(
         care_home_diagnostics_df
@@ -98,149 +97,49 @@ def main(
     )
 
 
-def run_diagnostics_for_care_homes(filled_posts_df: DataFrame) -> DataFrame:
-    """
-    Controls the steps to generate the care home diagnostic data frame using capacity tracker data as a comparison.
-
-    Args:
-        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
-
-    Returns:
-        DataFrame: A dataframe containing diagnostic data for care homes using capacity tracker values.
-    """
-    care_home_diagnostics_df = utils.select_rows_with_value(
-        filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.care_home
-    )
-    list_of_models = dUtils.create_list_of_models()
-    care_home_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_imputed,
-        list_of_models,
-    )
-    care_home_diagnostics_df = dUtils.filter_to_known_values(
-        care_home_diagnostics_df, IndCQC.estimate_value
-    )
-
-    window = dUtils.create_window_for_model_and_service_splits()
-
-    care_home_diagnostics_df = dUtils.calculate_distribution_metrics(
-        care_home_diagnostics_df, window
-    )
-    care_home_diagnostics_df = dUtils.calculate_residuals(
-        care_home_diagnostics_df,
-        IndCQC.ct_care_home_total_employed_imputed,
-    )
-    care_home_diagnostics_df = dUtils.calculate_aggregate_residuals(
-        care_home_diagnostics_df,
-        window,
-        absolute_value_cutoff,
-        percentage_value_cutoff,
-        standardised_value_cutoff,
-    )
-    return care_home_diagnostics_df
-
-
-def run_diagnostics_for_non_residential(filled_posts_df: DataFrame) -> DataFrame:
-    """
-    Controls the steps to generate the non residential diagnostic data frame using capacity tracker data as a comparison.
-
-    Args:
-        filled_posts_df (DataFrame): A dataframe containing pipeline estimates.
-
-    Returns:
-        DataFrame: A dataframe containing diagnostic data for non residential locations using capacity tracker values.
-    """
-    non_res_diagnostics_df = utils.select_rows_with_value(
-        filled_posts_df, IndCQC.care_home, value_to_keep=CareHome.not_care_home
-    )
-    care_worker_ratio = calculate_care_worker_ratio(
-        non_res_diagnostics_df,
-    )
-    non_res_diagnostics_df = convert_to_all_posts_using_ratio(
-        non_res_diagnostics_df, care_worker_ratio
-    )
-    non_res_diagnostics_df = merge_columns_in_order(
-        non_res_diagnostics_df,
-        [
-            IndCQC.ct_non_res_all_posts,
-            IndCQC.estimate_filled_posts,
-        ],
-        IndCQC.ct_non_res_filled_post_estimate,
-        IndCQC.ct_non_res_filled_post_estimate_source,
-    )
-    list_of_models = dUtils.create_list_of_models()
-    non_res_diagnostics_df = dUtils.restructure_dataframe_to_column_wise(
-        non_res_diagnostics_df,
-        IndCQC.ct_non_res_filled_post_estimate,
-        list_of_models,
-    )
-    non_res_diagnostics_df = dUtils.filter_to_known_values(
-        non_res_diagnostics_df, IndCQC.estimate_value
-    )
-
-    window = dUtils.create_window_for_model_and_service_splits()
-
-    non_res_diagnostics_df = dUtils.calculate_distribution_metrics(
-        non_res_diagnostics_df, window
-    )
-    non_res_diagnostics_df = dUtils.calculate_residuals(
-        non_res_diagnostics_df, IndCQC.ct_non_res_filled_post_estimate
-    )
-    non_res_diagnostics_df = dUtils.calculate_aggregate_residuals(
-        non_res_diagnostics_df,
-        window,
-        absolute_value_cutoff,
-        percentage_value_cutoff,
-        standardised_value_cutoff,
-    )
-    return non_res_diagnostics_df
-
-
-def calculate_care_worker_ratio(df: DataFrame) -> float:
-    """
-    Calculate the overall ratio of care workers to all posts and print it.
-
-    Args:
-        df (DataFrame): A dataframe containing the columns estimate_filled_posts and cqc_care_workers_employed_imputed.
-    Returns:
-        float: A float representing the ratio between care workers and all posts.
-    """
-    df = df.where(
-        (df[IndCQC.ct_non_res_care_workers_employed_imputed].isNotNull())
-        & (df[IndCQC.estimate_filled_posts].isNotNull())
-    )
-    total_care_workers = df.agg(
-        F.sum(df[IndCQC.ct_non_res_care_workers_employed_imputed])
-    ).collect()[0][0]
-    total_posts = df.agg(F.sum(df[IndCQC.estimate_filled_posts])).collect()[0][0]
-    care_worker_ratio = total_care_workers / total_posts
-    print(f"The care worker ratio used is: {care_worker_ratio}.")
-    return care_worker_ratio
-
-
-def convert_to_all_posts_using_ratio(
-    df: DataFrame, care_worker_ratio: float
+def run_diagnostics(
+    df: DataFrame, care_home_value: str, col_for_diagnostics: str
 ) -> DataFrame:
     """
-    Convert the cqc_care_workers_employed figures to all workers.
+    Controls the steps to generate the diagnostic data frame using capacity tracker data as a comparison.
 
     Args:
-        df (DataFrame): A dataframe with non res capacity tracker data.
-        care_worker_ratio (float): The ratio of all care workers divided by all posts.
+        df (DataFrame): A dataframe containing pipeline estimates.
+        care_home_value (str): The categorical value to filter the care_home column by.
+        col_for_diagnostics (str): The column name to use for diagnostics comparison.
 
     Returns:
-        DataFrame: A dataframe with a new column containing the all-workers estimate.
+        DataFrame: A dataframe containing diagnostic data for locations using capacity tracker values.
     """
-    df = df.withColumn(
-        IndCQC.ct_non_res_all_posts,
-        F.col(IndCQC.ct_non_res_care_workers_employed_imputed) / care_worker_ratio,
+    filtered_df = utils.select_rows_with_value(
+        df, IndCQC.care_home, value_to_keep=care_home_value
     )
-    return df
+
+    list_of_models = dUtils.create_list_of_models()
+    restructured_df = dUtils.restructure_dataframe_to_column_wise(
+        filtered_df, col_for_diagnostics, list_of_models
+    )
+    known_estimates_df = dUtils.filter_to_known_values(
+        restructured_df, IndCQC.estimate_value
+    )
+
+    window = dUtils.create_window_for_model_and_service_splits()
+
+    diagnostics_df = dUtils.calculate_distribution_metrics(known_estimates_df, window)
+    diagnostics_df = dUtils.calculate_residuals(diagnostics_df, col_for_diagnostics)
+    diagnostics_df = dUtils.calculate_aggregate_residuals(
+        diagnostics_df,
+        window,
+        absolute_value_cutoff,
+        percentage_value_cutoff,
+        standardised_value_cutoff,
+    )
+    return diagnostics_df
 
 
 if __name__ == "__main__":
-    print("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
-    print(f"Job parameters: {sys.argv}")
+    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' starting...")
+    logger.info(f"Job parameters: {sys.argv}")
 
     (
         estimate_filled_posts_source,
@@ -279,4 +178,4 @@ if __name__ == "__main__":
         non_res_summary_diagnostics_destination,
     )
 
-    print("Spark job 'diagnostics_on_capacity_tracker_data' complete")
+    logger.info("Spark job 'diagnostics_on_capacity_tracker_data' complete")

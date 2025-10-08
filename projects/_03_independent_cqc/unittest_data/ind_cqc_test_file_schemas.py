@@ -2016,6 +2016,36 @@ class EstimateFilledPostsModelsUtils:
 
 
 @dataclass
+class EstimateNonResCTFilledPostsSchemas:
+    estimates_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, DoubleType(), True
+            ),
+            StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
+        ]
+    )
+
+    convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), False),
+            StructField(IndCQC.care_home, StringType(), False),
+            StructField(
+                IndCQC.ct_non_res_care_workers_employed_imputed, DoubleType(), True
+            ),
+        ]
+    )
+    expected_convert_to_all_posts_using_ratio_schema = StructType(
+        [
+            *convert_to_all_posts_using_ratio_schema,
+            StructField(IndCQC.ct_non_res_filled_post_estimate, DoubleType(), True),
+        ]
+    )
+
+
+@dataclass
 class ModelPrimaryServiceRateOfChange:
     primary_service_rate_of_change_schema = StructType(
         [
@@ -2856,41 +2886,12 @@ class DiagnosticsOnCapacityTrackerSchemas:
             StructField(IndCQC.imputed_pir_filled_posts_model, FloatType(), True),
             StructField(IndCQC.imputed_posts_non_res_combined_model, FloatType(), True),
             StructField(IndCQC.estimate_filled_posts, DoubleType(), True),
-            StructField(IndCQC.number_of_beds, IntegerType(), True),
-            StructField(IndCQC.number_of_beds_banded, DoubleType(), True),
-            StructField(IndCQC.unix_time, IntegerType(), True),
-            StructField(IndCQC.ct_care_home_import_date, DateType(), True),
-            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
-            StructField(IndCQC.ct_non_res_import_date, DateType(), True),
-            StructField(IndCQC.ct_non_res_care_workers_employed, IntegerType(), True),
+            StructField(IndCQC.ct_care_home_total_employed_imputed, DoubleType(), True),
+            StructField(IndCQC.ct_non_res_filled_post_estimate, DoubleType(), True),
             StructField(Keys.year, StringType(), True),
             StructField(Keys.month, StringType(), True),
             StructField(Keys.day, StringType(), True),
             StructField(Keys.import_date, StringType(), True),
-        ]
-    )
-
-    convert_to_all_posts_using_ratio_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
-            ),
-        ]
-    )
-    expected_convert_to_all_posts_using_ratio_schema = StructType(
-        [
-            *convert_to_all_posts_using_ratio_schema,
-            StructField(IndCQC.ct_non_res_filled_post_estimate, FloatType(), True),
-        ]
-    )
-    calculate_care_worker_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(
-                IndCQC.ct_non_res_care_workers_employed_imputed, FloatType(), True
-            ),
-            StructField(IndCQC.estimate_filled_posts, FloatType(), True),
         ]
     )
 

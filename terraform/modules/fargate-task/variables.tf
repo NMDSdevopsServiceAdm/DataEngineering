@@ -13,11 +13,6 @@ variable "ecr_repo_name" {
   default = "fargate/cqc"
 }
 
-variable "secret_arn_label" {
-  type    = string
-  default = "cqc_api_primary_key-mK4hzZ"
-}
-
 variable "secret_name" {
   type    = string
   default = "cqc_api_primary_key"

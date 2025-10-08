@@ -1,30 +1,23 @@
+from datetime import datetime
 from re import match
 from typing import Generator, Optional
-from datetime import datetime
 
 import polars as pl
 
-from schemas import (
-    cqc_locations_schema_polars as LocationsSchema,
-    cqc_provider_schema_polars as ProvidersSchema,
-    cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned,
+from schemas import cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned
+from schemas import cqc_locations_schema_polars as LocationsSchema
+from schemas import cqc_provider_schema_polars as ProvidersSchema
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CqcLocationsCleaned,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CqcLocations,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CqcLocations,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CqcLocationsCleaned,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-from utils.column_values.categorical_column_values import (
-    RegistrationStatus,
-    LocationType,
-)
+from utils.column_values.categorical_column_values import RegistrationStatus
 
 
 class DataError(Exception):

@@ -1,6 +1,5 @@
 import os
 import sys
-import warnings
 
 os.environ["SPARK_VERSION"] = "3.5"
 
@@ -249,8 +248,6 @@ def main(
             CQCLClean.cqc_location_import_date,
         ],
     )
-    print("most recent snapshot")
-    most_recent_snapshot.show()
 
     dim_snapshot = utils.get_full_snapshot(
         deltas=dim_delta,
@@ -260,7 +257,11 @@ def main(
     )
 
     # Filtering on full snapshot
-    most_recent_snapshot = select_registered_locations_only(most_recent_snapshot)
+    most_recent_snapshot = utils.select_rows_with_value(
+        most_recent_snapshot,
+        CQCLClean.registration_status,
+        RegistrationStatus.registered,
+    )
     most_recent_snapshot, _ = remove_specialist_colleges(
         most_recent_snapshot, dim_snapshot
     )
@@ -302,24 +303,6 @@ def main(
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
-
-
-def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
-    invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
-        & (locations_df[CQCL.registration_status] != RegistrationStatus.deregistered)
-    ).count()
-
-    if invalid_rows != 0:
-        warnings.warn(
-            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
-        )
-
-    locations_df = locations_df.where(
-        (locations_df[CQCL.registration_status] == RegistrationStatus.registered)
-        & (locations_df[CQCLClean.deregistration_date].isNull())
-    )
-    return locations_df
 
 
 def create_postcode_matching_dimension(
@@ -573,6 +556,7 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
+    # TODO check why this was added as it's not actually used
     window_spec = (
         Window.partitionBy(CQCL.location_id)
         .orderBy(Keys.import_date)
