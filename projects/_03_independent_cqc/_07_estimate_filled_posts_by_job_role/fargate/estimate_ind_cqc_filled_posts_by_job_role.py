@@ -100,11 +100,7 @@ def main(
     )
 
     total_rows = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.select(
-            pl.len(estimated_ind_cqc_filled_posts_by_job_role_lf)
-        )
-        .collect()
-        .item()
+        estimated_ind_cqc_filled_posts_by_job_role_lf.select(pl.len()).collect().item()
     )
 
     print(f"Total rows: {total_rows}")
