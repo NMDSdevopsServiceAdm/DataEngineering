@@ -99,10 +99,24 @@ def main(
         estimated_ind_cqc_filled_posts_by_job_role_lf.collect_schema()
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_lf.sink_parquet(
-        path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
-        compression="snappy",
+    total_rows = (
+        estimated_ind_cqc_filled_posts_by_job_role_lf.select(
+            pl.len(estimated_ind_cqc_filled_posts_by_job_role_lf)
+        )
+        .collect()
+        .item()
     )
+
+    print(f"Total rows: {total_rows}")
+
+    batch_size = 100, 000
+    for i in range(0, total_rows, batch_size):
+        estimated_ind_cqc_filled_posts_by_job_role_lf.slice(i, batch_size).sink_parquet(
+            path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
+            compression="snappy",
+        )
+
+        print(f"Wrote batch {i} of {total_rows}")
 
 
 if __name__ == "__main__":
