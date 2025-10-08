@@ -306,8 +306,29 @@ def main(
 
 
 def create_postcode_matching_dimension(
-    cqc_df, postcode_df, dimension_location, dimension_update_date
-):
+    cqc_df: DataFrame,
+    postcode_df: DataFrame,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> DataFrame:
+    """
+    Create or update a postcode matching dimension for CQC locations.
+
+    This function attempts to read an existing postcode dimension from the specified
+    location. If it exists, the function calculates the delta between the current
+    postcode matches and the previous dimension. If it does not exist, a new dimension
+    is created. The resulting DataFrame includes additional metadata columns for
+    tracking updates.
+
+    Args:
+        cqc_df (DataFrame): Dataframe with CQC location data, including the address and postcode
+        postcode_df (DataFrame): A  DataFrame containing valid postcodes for matching.
+        dimension_location (str): S3 path to the previous postcode dimension parquet file.
+        dimension_update_date (str): Date string (YYYYMMDD) representing when the dimension is updated.
+
+    Returns:
+        DataFrame: DataFrame containing the delta of postcode matches.
+    """
     try:
         previous_dimension = utils.read_from_parquet(dimension_location)
     except AnalysisException:
@@ -361,6 +382,7 @@ def create_dimension_from_missing_struct_column(
 ) -> DataFrame:
     """
     Creates delta dimension table for a given missing struct column.
+
     Args:
         df (DataFrame): Dataframe with column which has missing structs
         missing_struct_column (str): Name of missing struct column
