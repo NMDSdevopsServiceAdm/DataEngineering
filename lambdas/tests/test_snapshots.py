@@ -1,11 +1,10 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import polars as pl
 import polars.testing as pl_testing
 
 import lambdas.utils.snapshots as job
-
 
 PATCH_PATH = "lambdas.utils.snapshots"
 

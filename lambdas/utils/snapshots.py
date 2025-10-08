@@ -53,8 +53,7 @@ def build_snapshot_table_from_delta(
                     & pl.col(CqcLocationsCleaned.registration_status).eq(
                         pl.lit(RegistrationStatus.registered)
                     )
-                    & ~pl.col(CqcLocationsCleaned.future_non_slc)
-                ).drop(CqcLocationsCleaned.future_non_slc)
+                )
             return snapshot
     else:
         raise DataError("No snapshot found for timepoint " + str(timepoint))

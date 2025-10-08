@@ -38,7 +38,6 @@ class NewCqcLocationApiColumns:
     effective: str = "Effective"
     end_date: str = "endDate"
     first_visit_date: str = "firstVisitDate"
-    future_non_slc: str = "future_non_slc"
     gac_service_types: str = "gacServiceTypes"
     historic_ratings: str = "historicRatings"
     inspection_area_id: str = "inspectionAreaId"
