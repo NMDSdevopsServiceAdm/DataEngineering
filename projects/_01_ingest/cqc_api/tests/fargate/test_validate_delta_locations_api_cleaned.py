@@ -1,7 +1,7 @@
 import json
 import unittest
 from pathlib import Path
-from unittest.mock import ANY, Mock, call, patch
+from unittest.mock import Mock, patch
 
 import polars as pl
 
@@ -34,34 +34,32 @@ class ValidateLocationsRawTests(unittest.TestCase):
         mock_read_parquet.side_effect = [self.cleaned_df, self.raw_df]
 
         # When
-        job.main("bucket", "my/dataset/", "my/reports/", "other/dataset/")
+        job.main("bucket", "my/dataset/", "my/reports/")
 
         # Then
-        mock_read_parquet.assert_has_calls(
-            [
-                call("s3://bucket/my/dataset/", exclude_complex_types=True),
-                call("s3://bucket/other/dataset/", selected_columns=ANY),
-            ]
+        mock_read_parquet.assert_called_once_with(
+            "s3://bucket/my/dataset/", exclude_complex_types=True
         )
         mock_write_reports.assert_called_once()
 
         validation_arg = mock_write_reports.call_args[0][0]
         report_json = json.loads(validation_arg.get_json_report())
 
-        self.assertDictContainsSubset(
-            {
-                "assertion_type": "row_count_match",
-                "all_passed": False,
-            },
-            report_json[0],
-        )
+        # TODO - Delete once used in other jobs
+        # self.assertDictContainsSubset(
+        #     {
+        #         "assertion_type": "row_count_match",
+        #         "all_passed": False,
+        #     },
+        #     report_json[0],
+        # )
         self.assertDictContainsSubset(
             {
                 "assertion_type": "col_vals_not_null",
                 "column": "locationId",
                 "all_passed": True,
             },
-            report_json[1],
+            report_json[0],
         )
         self.assertDictContainsSubset(
             {
@@ -69,7 +67,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "column": "providerId",
                 "all_passed": False,
             },
-            report_json[3],
+            report_json[2],
         )
         self.assertDictContainsSubset(
             {
@@ -77,7 +75,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "column": ["locationId", "cqc_location_import_date"],
                 "all_passed": True,
             },
-            report_json[8],
+            report_json[7],
         )
         self.assertDictContainsSubset(
             {
@@ -86,7 +84,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": True,
                 "na_pass": True,
             },
-            report_json[9],
+            report_json[8],
         )
         self.assertDictContainsSubset(
             {
@@ -95,7 +93,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": False,
                 "n_failed": 2,
             },
-            report_json[10],
+            report_json[9],
         )
         self.assertDictContainsSubset(
             {
@@ -104,7 +102,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": False,
                 "n_failed": 2,
             },
-            report_json[11],
+            report_json[10],
         )
         self.assertDictContainsSubset(
             {
@@ -116,7 +114,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                     "Independent",
                 ],
             },
-            report_json[12],
+            report_json[11],
         )
         self.assertDictContainsSubset(
             {
@@ -125,7 +123,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": True,
                 "values": ["Y", "N", None],
             },
-            report_json[14],
+            report_json[13],
         )
         self.assertDictContainsSubset(
             {
@@ -133,7 +131,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": True,
                 "brief": "dormancy needs to be null, or one of ['Y', 'N']",
             },
-            report_json[18],
+            report_json[17],
         )
 
 

@@ -70,11 +70,9 @@
                         "bucket_name_arg": "--bucket_name",
                         "bucket_name": "${dataset_bucket_name}",
                         "source_path_arg": "--source_path",
-                        "source_path": "domain=CQC_delta/dataset=delta_locations_api_cleaned/",
+                        "source_path": "domain=CQC_delta/dataset=full_locations_api_cleaned/",
                         "reports_path_arg": "--reports_path",
                         "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_delta_locations_api_cleaned/",
-                        "compare_path_arg": "--compare_path",
-                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
                       },
                       "Next": "Validate Locations Cleaned"
                     },
@@ -99,7 +97,7 @@
                           "ContainerOverrides": [
                             {
                               "Name": "cqc-api-container",
-                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path, $.compare_path_arg, $.compare_path)"
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path)"
                             }
                           ]
                         }

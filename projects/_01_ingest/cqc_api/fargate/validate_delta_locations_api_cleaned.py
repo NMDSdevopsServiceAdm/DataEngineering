@@ -1,3 +1,9 @@
+"""
+Note: compare_path isn't used in this script, but I've left it in commented out so
+we can use it later when converting other jobs to pointblank.
+At that point, we can remove the commented out code from this job.
+"""
+
 import sys
 
 import pointblank as pb
@@ -37,7 +43,10 @@ logger = get_logger(__name__)
 
 
 def main(
-    bucket_name: str, source_path: str, reports_path: str, compare_path: str
+    # bucket_name: str, source_path: str, reports_path: str, compare_path: str
+    bucket_name: str,
+    source_path: str,
+    reports_path: str,
 ) -> None:
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
@@ -46,17 +55,16 @@ def main(
             - shoud correspond to workspace / feature branch name
         source_path (str): the source dataset path to be validated
         reports_path (str): the output path to write reports to
-        compare_path (str): path to a dataset to compare against for expected size
     """
     source_df = utils.read_parquet(
         f"s3://{bucket_name}/{source_path}", exclude_complex_types=True
     ).with_columns(
         str_length_cols([CQCL.location_id, CQCL.provider_id]),
     )
-    compare_df = utils.read_parquet(
-        f"s3://{bucket_name}/{compare_path}",
-        selected_columns=compare_columns_to_import,
-    )
+    # compare_df = utils.read_parquet(
+    #     f"s3://{bucket_name}/{compare_path}",
+    #     selected_columns=compare_columns_to_import,
+    # )
 
     validation = (
         pb.Validate(
@@ -67,7 +75,7 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(expected_size(compare_df))
+        # .row_count_match(expected_size(compare_df))
         # complete columns
         .col_vals_not_null(
             [
@@ -144,28 +152,28 @@ def main(
     vl.write_reports(validation, bucket_name, reports_path)
 
 
-def expected_size(df: pl.DataFrame) -> int:
-    gac_services = pl.col(CQCL.gac_service_types)
-    cleaned_df = df.with_columns(
-        # nullify empty lists to avoid index out of bounds error
-        pl.when(gac_services.list.len() > 0).then(gac_services),
-    ).filter(
-        # TODO: remove regulated_activities
-        has_value(df, CQCL.regulated_activities, CQCL.location_id),
-        has_value(df, CQCL.provider_id, CQCL.location_id),
-        pl.col(CQCL.type) == LocationType.social_care_identifier,
-        is_valid_location(),
-        ~(
-            (gac_services.list.len() == 1)
-            & (gac_services.is_not_null())
-            & (
-                gac_services.list[0].struct.field(CQCL.description)
-                == Services.specialist_college_service
-            )
-        ),
-    )
-    logger.info(f"Expected size {cleaned_df.height}")
-    return cleaned_df.height
+# def expected_size(df: pl.DataFrame) -> int:
+#     gac_services = pl.col(CQCL.gac_service_types)
+#     cleaned_df = df.with_columns(
+#         # nullify empty lists to avoid index out of bounds error
+#         pl.when(gac_services.list.len() > 0).then(gac_services),
+#     ).filter(
+#         # TODO: remove regulated_activities
+#         has_value(df, CQCL.regulated_activities, CQCL.location_id),
+#         has_value(df, CQCL.provider_id, CQCL.location_id),
+#         pl.col(CQCL.type) == LocationType.social_care_identifier,
+#         is_valid_location(),
+#         ~(
+#             (gac_services.list.len() == 1)
+#             & (gac_services.is_not_null())
+#             & (
+#                 gac_services.list[0].struct.field(CQCL.description)
+#                 == Services.specialist_college_service
+#             )
+#         ),
+#     )
+#     logger.info(f"Expected size {cleaned_df.height}")
+#     return cleaned_df.height
 
 
 if __name__ == "__main__":
