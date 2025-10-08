@@ -51,6 +51,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated the glue script job parameters for SFC-Internal jobs to match SFC-Internal step function.
 
+- Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
+
 ### Improved
 
 
