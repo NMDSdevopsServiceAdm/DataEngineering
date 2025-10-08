@@ -1,7 +1,7 @@
 import unittest
 import warnings
 from dataclasses import asdict
-from unittest.mock import ANY, Mock, patch
+from unittest.mock import ANY, MagicMock, Mock, patch
 
 from pyspark.errors import AnalysisException
 from pyspark.sql import DataFrame
@@ -39,6 +39,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
     TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
     TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
+    TEST_FULL_SNAPSHOT_DESTINATION = "another/directory"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -61,6 +62,7 @@ class MainTests(CleanCQCLocationDatasetTests):
     @patch(f"{PATCH_PATH}.create_postcode_matching_dimension")
     @patch(f"{PATCH_PATH}.remove_non_social_care_locations")
     @patch(f"{PATCH_PATH}.remove_specialist_colleges")
+    @patch(f"{PATCH_PATH}.utils.get_full_snapshot")
     @patch(f"{PATCH_PATH}.add_related_location_column")
     @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.allocate_primary_service_type")
@@ -99,6 +101,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
         add_related_location_column_mock: Mock,
+        get_full_snapshot_mock: Mock,
         remove_specialist_colleges_mock: Mock,
         remove_non_social_care_locations_mock: Mock,
         create_postcode_matching_dim_mock: Mock,
@@ -107,14 +110,15 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.test_clean_cqc_location_df,
             self.test_ons_postcode_directory_df,
         ]
+        create_dimension_from_missing_struct_column_mock.return_value = (
+            MagicMock(),
+            MagicMock(),
+        )
         remove_locations_that_never_had_regulated_activities_mock.return_value = (
             Mock(),
             Mock(),
         )
-        remove_specialist_colleges_mock.return_value = (
-            Mock(),
-            Mock(),
-        )
+        remove_specialist_colleges_mock.return_value = (Mock(), Mock())
 
         job.main(
             self.TEST_LOC_SOURCE,
@@ -124,6 +128,7 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
             self.TEST_SPECIALISM_DIMENSION_SOURCE,
             self.TEST_POSTCODE_DIMENSION_SOURCE,
+            self.TEST_FULL_SNAPSHOT_DESTINATION,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
@@ -138,13 +143,14 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(create_dimension_from_missing_struct_column_mock.call_count, 3)
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()
-        self.assertEqual(5, write_to_parquet_mock.call_count)
-        self.assertEqual(extract_from_struct_mock.call_count, 2)
+        self.assertEqual(write_to_parquet_mock.call_count, 6)
+        self.assertEqual(extract_from_struct_mock.call_count, 3)
         self.assertEqual(classify_specialisms_mock.call_count, 3)
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         add_related_location_column_mock.assert_called_once()
-        remove_specialist_colleges_mock.assert_called_once()
+        self.assertEqual(get_full_snapshot_mock.call_count, 2)
+        self.assertEqual(remove_specialist_colleges_mock.call_count, 2)
         self.assertEqual(remove_non_social_care_locations_mock.call_count, 2)
         create_postcode_matching_dim_mock.assert_called_once()
 
