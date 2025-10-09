@@ -42,12 +42,9 @@ compare_columns_to_import = [
 logger = get_logger(__name__)
 
 
-def main(
-    # bucket_name: str, source_path: str, reports_path: str, compare_path: str
-    bucket_name: str,
-    source_path: str,
-    reports_path: str,
-) -> None:
+def main(bucket_name: str, source_path: str, reports_path: str) -> None:
+    # def main(bucket_name: str, source_path: str, reports_path: str, compare_path: str) -> None:
+
     """Validates a dataset according to a set of provided rules and produces a summary report as well as failure outputs.
 
     Args:
@@ -183,12 +180,13 @@ if __name__ == "__main__":
         ("--bucket_name", "S3 bucket for source dataset and validation report"),
         ("--source_path", "The filepath of the dataset to validate"),
         ("--reports_path", "The filepath to output reports"),
-        (
-            "--compare_path",
-            "The filepath to a dataset to compare against for expected size",
-        ),
+        # (
+        #     "--compare_path",
+        #     "The filepath to a dataset to compare against for expected size",
+        # ),
     )
     logger.info(f"Starting validation for {args.source_path}")
 
-    main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
+    # main(args.bucket_name, args.source_path, args.reports_path, args.compare_path)
+    main(args.bucket_name, args.source_path, args.reports_path)
     logger.info(f"Validation of {args.source_path} complete")
