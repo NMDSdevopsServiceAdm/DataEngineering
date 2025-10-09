@@ -57,6 +57,8 @@ All notable changes to this project will be documented in this file.
 
 - Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
 
+- Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
+
 ### Improved
 
 
