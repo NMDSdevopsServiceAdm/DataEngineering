@@ -239,7 +239,7 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-  copy-default-data:
+  copy-main-data:
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -407,7 +407,7 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
-      - copy-default-data:
+      - copy-main-data:
           requires:
             - terraform-apply
 
