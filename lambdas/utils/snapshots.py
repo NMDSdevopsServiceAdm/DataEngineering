@@ -50,7 +50,7 @@ def build_snapshot_table_from_delta(
         latest = snapshot
     else:
         logger.info(
-            f"No snapshot found for {timepoint}, returning most recent snapshot: {latest}"
+            f"No snapshot found for {timepoint}, returning most recent snapshot- {latest}"
         )
         return latest
 
