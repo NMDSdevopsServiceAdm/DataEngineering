@@ -72,7 +72,7 @@
                         "source_path_arg": "--source_path",
                         "source_path": "domain=CQC_delta/dataset=full_locations_api_cleaned/",
                         "reports_path_arg": "--reports_path",
-                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_delta_locations_api_cleaned/",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_delta_locations_api_cleaned/"
                       },
                       "Next": "Validate Locations Cleaned"
                     },
