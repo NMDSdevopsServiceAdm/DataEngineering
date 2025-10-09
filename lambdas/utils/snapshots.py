@@ -47,13 +47,14 @@ def build_snapshot_table_from_delta(
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
-            if dataset == "locations-cleaned":
-                return snapshot.filter(
-                    pl.col(CqcLocationsCleaned.deregistration_date).is_null()
-                    & pl.col(CqcLocationsCleaned.registration_status).eq(
-                        pl.lit(RegistrationStatus.registered)
-                    )
-                )
+            # Might be best keeping Dereg in cleaned dataset to hashing out for now
+            # if dataset == "locations-cleaned":
+            #     return snapshot.filter(
+            #         pl.col(CqcLocationsCleaned.deregistration_date).is_null()
+            #         & pl.col(CqcLocationsCleaned.registration_status).eq(
+            #             pl.lit(RegistrationStatus.registered)
+            #         )
+            #     )
             return snapshot
     else:
         raise DataError("No snapshot found for timepoint " + str(timepoint))
