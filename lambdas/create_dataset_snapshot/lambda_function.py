@@ -1,16 +1,12 @@
 import json
 import logging
-
-from re import match
 from datetime import datetime
+from re import match
 
 from s3fs import S3FileSystem
 
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.snapshots import build_snapshot_table_from_delta
-
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

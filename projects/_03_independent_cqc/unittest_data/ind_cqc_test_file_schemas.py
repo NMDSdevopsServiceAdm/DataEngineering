@@ -113,6 +113,8 @@ class ValidateMergedIndCqcData:
             StructField(CQCLClean.cqc_sector, StringType(), True),
             StructField(CQCLClean.care_home, StringType(), True),
             StructField(CQCLClean.number_of_beds, IntegerType(), True),
+            StructField(CQCLClean.registration_status, StringType(), True),
+            StructField(CQCLClean.type, StringType(), True),
         ]
     )
     merged_ind_cqc_schema = StructType(
@@ -152,12 +154,6 @@ class ValidateMergedIndCqcData:
             StructField(IndCQC.organisation_id, StringType(), True),
             StructField(IndCQC.total_staff_bounded, IntegerType(), True),
             StructField(IndCQC.worker_records_bounded, IntegerType(), True),
-        ]
-    )
-    calculate_expected_size_schema = StructType(
-        [
-            StructField(IndCQC.location_id, StringType(), True),
-            StructField(IndCQC.cqc_sector, StringType(), True),
         ]
     )
 
