@@ -257,11 +257,6 @@ def main(
     )
 
     # Filtering on full snapshot
-    most_recent_snapshot = utils.select_rows_with_value(
-        most_recent_snapshot,
-        CQCLClean.registration_status,
-        RegistrationStatus.registered,
-    )
     most_recent_snapshot, _ = remove_specialist_colleges(
         most_recent_snapshot, dim_snapshot
     )
