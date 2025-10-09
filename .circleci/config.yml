@@ -239,7 +239,7 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-  copy-main-data:
+  copy-default-data:
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -253,12 +253,8 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
+          from: "s3://sfc-default-datasets/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
@@ -340,10 +336,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      # - test:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
@@ -362,7 +358,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            # - test
+            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
@@ -375,7 +371,7 @@ workflows:
           secret_key: AWS_SECRET_ACCESS_KEY_non_prod
           requires:
             - terraform-apply
-      - copy-main-data:
+      - copy-default-data:
           requires:
             - terraform-apply
 

@@ -9,7 +9,7 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
-    lf: pl.LazyFrame, list_of_job_roles: list
+    df: pl.LazyFrame, list_of_job_roles: list
 ) -> pl.LazyFrame:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
@@ -21,13 +21,13 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     All establishments end up with a row for all potential job roles.
 
     Args:
-        lf (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
+        df (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
         pl.LazyFrame: The input dataframe with a count of rows for all potential job roles.
     """
-    lf = lf.group_by(
+    df = df.group_by(
         [
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
@@ -35,37 +35,39 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).len(name=IndCQC.ascwds_job_role_counts)
 
-    lf = lf.with_columns(pl.lit(list_of_job_roles).alias("temp_potential_roles"))
+    df = df.with_columns(pl.lit(list_of_job_roles).alias("temp_potential_roles"))
 
-    lf = lf.explode(pl.col("temp_potential_roles"))
+    df = df.explode(pl.col("temp_potential_roles"))
 
-    lf = lf.with_columns(
+    df = df.with_columns(
         pl.when(
             pl.col(IndCQC.main_job_role_clean_labelled)
             == pl.col("temp_potential_roles")
         ).then(pl.col(IndCQC.ascwds_job_role_counts))
     )
 
-    lf = lf.drop(IndCQC.main_job_role_clean_labelled).rename(
+    df = df.drop(IndCQC.main_job_role_clean_labelled).rename(
         {"temp_potential_roles": IndCQC.main_job_role_clean_labelled}
     )
 
-    new_columns_suffix = "_ascwds_counts"
-    index = [
-        pl.col(IndCQC.establishment_id),
-        pl.col(IndCQC.ascwds_worker_import_date),
-    ]
-    on = pl.col(IndCQC.main_job_role_clean_labelled)
-    values = pl.col(IndCQC.ascwds_job_role_counts)
-    unique_values = list_of_job_roles
-    aggregate_function = lambda col: col.sum()
+    df = df.group_by(
+        [
+            pl.col(IndCQC.establishment_id),
+            pl.col(IndCQC.ascwds_worker_import_date),
+            pl.col(IndCQC.main_job_role_clean_labelled),
+        ]
+    ).agg(pl.col(IndCQC.ascwds_job_role_counts).sum())
 
-    lf = lf.group_by(index).agg(
-        aggregate_function(values.filter(on == value)).alias(value + new_columns_suffix)
-        for value in unique_values
+    df = df.select(
+        [
+            IndCQC.establishment_id,
+            IndCQC.ascwds_worker_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.ascwds_job_role_counts,
+        ]
     )
 
-    return lf
+    return df
 
 
 def join_worker_to_estimates_dataframe(

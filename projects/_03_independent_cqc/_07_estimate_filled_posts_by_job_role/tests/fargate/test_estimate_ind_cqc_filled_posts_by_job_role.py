@@ -1,33 +1,19 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import polars as pl
-import polars.testing as pl_testing
-
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_data import (
-    EstimateIndCQCFilledPostsByJobRoleUtilsData as Data,
-)
-from projects._03_independent_cqc.unittest_data.polars_ind_cqc_test_file_schemas import (
-    EstimateIndCQCFilledPostsByJobRoleUtilsSchemas as Schemas,
-)
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
 class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
-    def setUp(self):
-        self.ESTIMATE_SOURCE = "some/source"
-        self.ASCWDS_WORKER_SOURCE = "some/other/source"
-        self.OUTPUT_DIR = "some/destination/"
-        self.OUTPUT_FILE_NAME = "file.parquet"
+    ESTIMATE_SOURCE = "some/source"
+    ASCWDS_WORKER_SOURCE = "some/other/source"
+    OUTPUT_DIR = "some/destination"
+    OUTPUT_FILE_NAME = "estimated_ind_cqc_filled_posts_by_job_role_lf.parquet"
 
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
-    def setUp(self) -> None:
-        super().setUp()
-
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(f"{PATCH_PATH}.JRUtils.aggregate_ascwds_worker_job_roles_per_establishment")
@@ -70,8 +56,5 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         join_worker_to_estimates_dataframe_mock.assert_called_once()
 
         write_to_parquet_mock.assert_called_once_with(
-            df=ANY,
-            output_path=self.OUTPUT_DIR + self.OUTPUT_FILE_NAME,
-            logger=ANY,
-            append=False,
+            ANY, self.OUTPUT_DIR + self.OUTPUT_FILE_NAME, logger=ANY, append=False
         )
