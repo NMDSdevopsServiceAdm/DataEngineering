@@ -24,30 +24,15 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         ),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_rows = [
-        ("101", "101", "101", "101", "101", "101", "102", "102", "102"),
+        ("101", "101", "102"),
         (
             date(2025, 1, 1),
-            date(2025, 1, 1),
-            date(2025, 1, 1),
             date(2025, 1, 2),
-            date(2025, 1, 2),
-            date(2025, 1, 2),
-            date(2025, 1, 1),
-            date(2025, 1, 1),
             date(2025, 1, 1),
         ),
-        (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-        ),
-        (1, 1, 0, 0, 1, 0, 2, 0, 0),
+        (1, 0, 2),
+        (1, 1, 0),
+        (0, 0, 0),
     ]
 
     estimates_df_before_join_rows = [
@@ -64,18 +49,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (date(2025, 1, 1), date(2025, 1, 2), date(2025, 1, 1)),
     ]
     worker_df_before_join_rows = [
-        ("1001", "1001", "1002"),
-        (date(2025, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
-        (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_management,
-            MainJobRoleLabels.care_worker,
-        ),
-        (10, 5, 20),
+        ("1001", "1002"),
+        (date(2025, 1, 1), date(2025, 1, 1)),
+        (10, 0),
+        (20, 0),
+        (30, 0),
     ]
     expected_join_worker_to_estimates_dataframe_rows = [
         (
-            "1-001",
             "1-001",
             "1-001",
             "1-002",
@@ -83,32 +64,14 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
         (
             "1001",
             "1001",
-            "1001",
             "1002",
         ),
         (
             date(2025, 1, 1),
-            date(2025, 1, 1),
             date(2025, 1, 2),
             date(2025, 1, 1),
         ),
-        (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_management,
-            None,
-            MainJobRoleLabels.care_worker,
-        ),
-        (10, 5, None, 20),
-    ]
-
-    test_writing_to_parquet_rows = [
-        ("1-001",),
-        ("1001",),
-        (date(2025, 1, 1),),
-        (MainJobRoleLabels.care_worker,),
-        (10,),
-        ("2025",),
-        ("01",),
-        ("01",),
-        ("20250101",),
+        (10, None, 0),
+        (20, None, 0),
+        (30, None, 0),
     ]

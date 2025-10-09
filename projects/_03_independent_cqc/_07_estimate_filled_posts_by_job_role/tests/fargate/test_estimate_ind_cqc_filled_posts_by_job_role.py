@@ -21,19 +21,14 @@ class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
         self.ESTIMATE_SOURCE = "some/source"
         self.ASCWDS_WORKER_SOURCE = "some/other/source"
         self.OUTPUT_DIR = "some/destination/"
-        self.OUTPUT_FILE_NAME = "estimated_ind_cqc_filled_posts_by_job_role_lf.parquet"
-
-        self.test_estimates_lf = pl.LazyFrame(
-            data=Data.test_writing_to_parquet_rows,
-            schema=Schemas.test_writing_to_parquet_schema,
-        )
+        self.OUTPUT_FILE_NAME = "file.parquet"
 
 
 class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.write_to_parquet_in_chunks")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
     @patch(f"{PATCH_PATH}.JRUtils.aggregate_ascwds_worker_job_roles_per_establishment")
     @patch(f"{PATCH_PATH}.pl.scan_parquet")
@@ -42,7 +37,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         scan_parquet_mock: Mock,
         join_worker_to_estimates_dataframe_mock: Mock,
         aggregate_ascwds_worker_job_roles_per_establishment_mock: Mock,
-        write_to_parquet_in_chunks_mock: Mock,
+        write_to_parquet_mock: Mock,
     ):
         estimated_ind_cqc_filled_posts_scan_mock = Mock()
         cleaned_ascwds_worker_scan_mock = Mock()
@@ -73,19 +68,10 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
 
         aggregate_ascwds_worker_job_roles_per_establishment_mock.assert_called_once()
         join_worker_to_estimates_dataframe_mock.assert_called_once()
-        write_to_parquet_in_chunks_mock.assert_called_once()
-
-    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
-    def test_write_to_parquet_in_chunks(
-        self,
-        write_to_parquet_mock: Mock,
-    ):
-        job.write_to_parquet_in_chunks(self.test_estimates_lf, self.OUTPUT_DIR)
 
         write_to_parquet_mock.assert_called_once_with(
             df=ANY,
-            output_path=self.OUTPUT_DIR
-            + f"{Keys.year}=2025/{Keys.month}=01/{Keys.day}=01/{Keys.import_date}=20250101/part.parquet",
+            output_path=self.OUTPUT_DIR + self.OUTPUT_FILE_NAME,
             logger=ANY,
             append=False,
         )

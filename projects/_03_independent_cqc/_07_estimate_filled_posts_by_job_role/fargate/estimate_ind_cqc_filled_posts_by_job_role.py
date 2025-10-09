@@ -88,36 +88,12 @@ def main(
         )
     )
 
-    write_to_parquet_in_chunks(
-        estimated_ind_cqc_filled_posts_by_job_role_lf,
-        estimated_ind_cqc_filled_posts_by_job_role_destination,
+    utils.write_to_parquet(
+        df=estimated_ind_cqc_filled_posts_by_job_role_lf,
+        output_path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}file.parquet",
+        logger=logger,
+        append=False,
     )
-
-
-def write_to_parquet_in_chunks(
-    estimated_ind_cqc_filled_posts_by_job_role_lf: pl.LazyFrame,
-    estimated_ind_cqc_filled_posts_by_job_role_destination: str,
-) -> None:
-    partitions_df = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.select(PartitionKeys)
-        .unique()
-        .collect()
-    )
-
-    for row in partitions_df.iter_rows(named=True):
-        chunk = estimated_ind_cqc_filled_posts_by_job_role_lf.filter(
-            (pl.col(Keys.year) == row[Keys.year])
-            & (pl.col(Keys.month) == row[Keys.month])
-            & (pl.col(Keys.day) == row[Keys.day])
-            & (pl.col(Keys.import_date) == row[Keys.import_date])
-        ).collect()
-
-        partition_path = "/".join(f"{k}={v}" for k, v in row.items())
-
-        path = f"{estimated_ind_cqc_filled_posts_by_job_role_destination}{partition_path}/part.parquet"
-
-        utils.write_to_parquet(df=chunk, output_path=path, logger=logger, append=False)
-        print(f"Wrote {path} which has {chunk.height} rows")
 
 
 if __name__ == "__main__":
