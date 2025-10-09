@@ -1,6 +1,5 @@
 import os
 import sys
-import warnings
 
 os.environ["SPARK_VERSION"] = "3.5"
 
@@ -92,6 +91,7 @@ def main(
     regulated_activities_destination: str,
     specialisms_destination: str,
     postcode_matching_destination: str,
+    full_snapshot_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
@@ -116,7 +116,6 @@ def main(
         cqc_location_df, known_la_providerids
     )
 
-    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
     cqc_location_df = remove_records_from_locations_data(cqc_location_df)
     cqc_location_df = utils.format_date_fields(
         cqc_location_df,
@@ -128,24 +127,21 @@ def main(
     )
 
     cqc_location_df = impute_historic_relationships(cqc_location_df)
-    registered_locations_df = select_registered_locations_only(cqc_location_df)
 
-    dimension_update_date = registered_locations_df.agg(
-        F.max(Keys.import_date)
-    ).collect()[0][0]
+    dimension_update_date = cqc_location_df.agg(F.max(Keys.import_date)).collect()[0][0]
 
     # Create regulated activity dimension
-    regulated_activity_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+    regulated_activity_delta, _ = create_dimension_from_missing_struct_column(
+        cqc_location_df,
         CQCL.regulated_activities,
         regulated_activities_destination,
         dimension_update_date,
     )
-    registered_locations_df = registered_locations_df.drop(CQCL.regulated_activities)
+    cqc_location_df = cqc_location_df.drop(CQCL.regulated_activities)
 
-    registered_locations_df, regulated_activity_delta = (
+    cqc_location_df, regulated_activity_delta = (
         remove_locations_that_never_had_regulated_activities(
-            registered_locations_df, regulated_activity_delta
+            cqc_location_df, regulated_activity_delta
         )
     )
     regulated_activity_delta = extract_registered_manager_names(
@@ -160,13 +156,13 @@ def main(
     )
 
     # Create specialisms dimension
-    specialisms_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+    specialisms_delta, _ = create_dimension_from_missing_struct_column(
+        cqc_location_df,
         CQCL.specialisms,
         specialisms_destination,
         dimension_update_date,
     )
-    registered_locations_df = registered_locations_df.drop(CQCL.specialisms)
+    cqc_location_df = cqc_location_df.drop(CQCL.specialisms)
 
     specialisms_delta = extract_from_struct(
         specialisms_delta,
@@ -194,16 +190,14 @@ def main(
     )
 
     # Create GAC service dimension
-    gac_service_delta = create_dimension_from_missing_struct_column(
-        registered_locations_df,
+    gac_service_delta, gac_service_full = create_dimension_from_missing_struct_column(
+        cqc_location_df,
         CQCL.gac_service_types,
         gac_service_destination,
         dimension_update_date,
     )
     # Drop care home from registered location df - stored in gac service dimension
-    registered_locations_df = registered_locations_df.drop(
-        CQCL.gac_service_types, CQCL.care_home
-    )
+    cqc_location_df = cqc_location_df.drop(CQCL.gac_service_types, CQCL.care_home)
 
     gac_service_delta = extract_from_struct(
         gac_service_delta,
@@ -211,9 +205,12 @@ def main(
         CQCLClean.services_offered,
     )
 
-    registered_locations_df, gac_service_delta = remove_specialist_colleges(
-        registered_locations_df, gac_service_delta
+    gac_service_full = extract_from_struct(
+        gac_service_full,
+        gac_service_delta[CQCLClean.imputed_gac_service_types][CQCL.description],
+        CQCLClean.services_offered,
     )
+
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
     gac_service_delta = realign_carehome_column_with_primary_service(
@@ -228,19 +225,65 @@ def main(
     )
 
     # Final cleaning on fact table
-    registered_locations_df = add_related_location_column(registered_locations_df)
+    cqc_location_df = add_related_location_column(cqc_location_df)
+
+    # Build snapshot
+    most_recent_snapshot = utils.get_full_snapshot(
+        deltas=cqc_location_df,
+        primary_key=CQCLClean.location_id,
+        date_key=Keys.import_date,
+        date=dimension_update_date,
+    )
+    dim_delta = cqc_location_df.join(
+        gac_service_full.drop(
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.last_updated,
+        ),
+        how="left",
+        on=[
+            CQCLClean.location_id,
+            Keys.import_date,
+            CQCLClean.cqc_location_import_date,
+        ],
+    )
+
+    dim_snapshot = utils.get_full_snapshot(
+        deltas=dim_delta,
+        primary_key=CQCLClean.location_id,
+        date_key=Keys.import_date,
+        date=dimension_update_date,
+    )
+
+    # Filtering on full snapshot
+    most_recent_snapshot, _ = remove_specialist_colleges(
+        most_recent_snapshot, dim_snapshot
+    )
+    most_recent_snapshot = remove_non_social_care_locations(most_recent_snapshot)
+
+    # Write out full snapshot
+    utils.write_to_parquet(
+        most_recent_snapshot,
+        output_dir=full_snapshot_destination,
+        mode="append",
+        partitionKeys=cqcPartitionKeys,
+    )
+    # Filtering on delta
+    # Fine to remove these as we are overwriting delta
+    # If appending, filters would need to be removed as they rely on historical data being processed
+    cqc_location_df, _ = remove_specialist_colleges(cqc_location_df, gac_service_delta)
+    cqc_location_df = remove_non_social_care_locations(cqc_location_df)
 
     # Create postcode matching dimension
     postcode_matching_delta = create_postcode_matching_dimension(
-        registered_locations_df,
+        cqc_location_df,
         ons_postcode_directory_df,
         postcode_matching_destination,
         dimension_update_date,
     )
 
-    registered_locations_df = registered_locations_df.drop(
-        CQCL.postal_code, CQCL.postal_address_line1
-    )
+    cqc_location_df = cqc_location_df.drop(CQCL.postal_code, CQCL.postal_address_line1)
 
     utils.write_to_parquet(
         postcode_matching_delta,
@@ -250,7 +293,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        registered_locations_df,
+        cqc_location_df,
         cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
@@ -258,8 +301,29 @@ def main(
 
 
 def create_postcode_matching_dimension(
-    cqc_df, postcode_df, dimension_location, dimension_update_date
-):
+    cqc_df: DataFrame,
+    postcode_df: DataFrame,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> DataFrame:
+    """
+    Create or update a postcode matching dimension for CQC locations.
+
+    This function attempts to read an existing postcode dimension from the specified
+    location. If it exists, the function calculates the delta between the current
+    postcode matches and the previous dimension. If it does not exist, a new dimension
+    is created. The resulting DataFrame includes additional metadata columns for
+    tracking updates.
+
+    Args:
+        cqc_df (DataFrame): Dataframe with CQC location data, including the address and postcode
+        postcode_df (DataFrame): A  DataFrame containing valid postcodes for matching.
+        dimension_location (str): S3 path to the previous postcode dimension parquet file.
+        dimension_update_date (str): Date string (YYYYMMDD) representing when the dimension is updated.
+
+    Returns:
+        DataFrame: DataFrame containing the delta of postcode matches.
+    """
     try:
         previous_dimension = utils.read_from_parquet(dimension_location)
     except AnalysisException:
@@ -313,6 +377,7 @@ def create_dimension_from_missing_struct_column(
 ) -> DataFrame:
     """
     Creates delta dimension table for a given missing struct column.
+
     Args:
         df (DataFrame): Dataframe with column which has missing structs
         missing_struct_column (str): Name of missing struct column
@@ -345,6 +410,14 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
+    current_dimension = (
+        current_dimension.withColumn(
+            DimensionKeys.last_updated, F.lit(dimension_update_date)
+        )
+        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
+        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
+        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
+    )
 
     if previous_dimension:
         delta = current_dimension.join(
@@ -360,14 +433,7 @@ def create_dimension_from_missing_struct_column(
     else:
         delta = current_dimension
 
-    delta = (
-        delta.withColumn(DimensionKeys.last_updated, F.lit(dimension_update_date))
-        .withColumn(DimensionKeys.year, F.lit(dimension_update_date[:4]))
-        .withColumn(DimensionKeys.month, F.lit(dimension_update_date[4:6]))
-        .withColumn(DimensionKeys.day, F.lit(dimension_update_date[6:]))
-    )
-
-    return delta
+    return delta, current_dimension
 
 
 def clean_provider_id_column(cqc_df: DataFrame) -> DataFrame:
@@ -507,6 +573,12 @@ def impute_missing_registration_dates(df: DataFrame) -> DataFrame:
 
 
 def remove_non_social_care_locations(df: DataFrame) -> DataFrame:
+    # TODO check why this was added as it's not actually used
+    window_spec = (
+        Window.partitionBy(CQCL.location_id)
+        .orderBy(Keys.import_date)
+        .rowsBetween(Window.currentRow, Window.unboundedFollowing)
+    )
     return df.where(df[CQCL.type] == LocationType.social_care_identifier)
 
 
@@ -812,7 +884,7 @@ def remove_specialist_colleges(
         gac_services_dimension (DataFrame): A cleaned locations dataframe with the services_offered column already created.
 
     Returns:
-        tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
+        tuple[DataFrame, DataFrame]: cqc_df, gac_services_dimension with locations which are only specialist colleges removed.
     """
     # The below just prevents IDEs from warning you that the "Column object is not callable"
     # - this is a false warning and does not cause an error
@@ -839,23 +911,6 @@ def remove_specialist_colleges(
     )
 
     return cqc_df, gac_services_dimension
-
-
-def select_registered_locations_only(locations_df: DataFrame) -> DataFrame:
-    invalid_rows = locations_df.where(
-        (locations_df[CQCL.registration_status] != RegistrationStatus.registered)
-        & (locations_df[CQCL.registration_status] != RegistrationStatus.deregistered)
-    ).count()
-
-    if invalid_rows != 0:
-        warnings.warn(
-            f"{invalid_rows} row(s) has/have an invalid registration status and have been dropped."
-        )
-
-    locations_df = locations_df.where(
-        locations_df[CQCL.registration_status] == RegistrationStatus.registered
-    )
-    return locations_df
 
 
 def add_cqc_sector_column_to_cqc_locations_dataframe(
@@ -900,6 +955,7 @@ if __name__ == "__main__":
         regulated_activities_dest,
         specialisms_dest,
         postcode_matching_dest,
+        full_snapshot_dest,
     ) = utils.collect_arguments(
         (
             "--cqc_location_source",
@@ -929,6 +985,10 @@ if __name__ == "__main__":
             "--postcode_matching_destination",
             "Destination s3 directory for postcode matching dimension",
         ),
+        (
+            "--full_snapshot_destination",
+            "Destination s3 directory for full snapshots",
+        ),
     )
     main(
         cqc_location_source,
@@ -938,6 +998,7 @@ if __name__ == "__main__":
         regulated_activities_dest,
         specialisms_dest,
         postcode_matching_dest,
+        full_snapshot_dest,
     )
 
     print("Spark job 'clean_cqc_location_data' complete")
