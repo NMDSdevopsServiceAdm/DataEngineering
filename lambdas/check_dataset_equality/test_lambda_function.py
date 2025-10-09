@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import patch
 
 import polars as pl
-
 from lambda_function import lambda_handler
 
 
