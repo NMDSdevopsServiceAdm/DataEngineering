@@ -1,14 +1,14 @@
-import logging
 import json
+import logging
 
 import polars as pl
 import polars.testing as pl_test
 
-from utils.column_names.raw_data_files.cqc_provider_api_columns import (
-    CqcProviderApiColumns as CqcProviders,
-)
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CqcLocations,
+)
+from utils.column_names.raw_data_files.cqc_provider_api_columns import (
+    CqcProviderApiColumns as CqcProviders,
 )
 
 logger = logging.getLogger()

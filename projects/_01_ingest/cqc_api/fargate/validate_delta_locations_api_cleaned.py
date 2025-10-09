@@ -16,9 +16,7 @@ from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
-from utils.column_names.validation_table_columns import (
-    Validation,
-)
+from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
