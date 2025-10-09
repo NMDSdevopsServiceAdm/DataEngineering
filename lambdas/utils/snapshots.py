@@ -1,27 +1,26 @@
+import logging
+from datetime import datetime
 from re import match
 from typing import Generator, Optional
-from datetime import datetime
 
 import polars as pl
 
-from schemas import (
-    cqc_locations_schema_polars as LocationsSchema,
-    cqc_provider_schema_polars as ProvidersSchema,
-    cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned,
+from schemas import cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned
+from schemas import cqc_locations_schema_polars as LocationsSchema
+from schemas import cqc_provider_schema_polars as ProvidersSchema
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CqcLocationsCleaned,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.raw_data_files.cqc_location_api_columns import (
+    NewCqcLocationApiColumns as CqcLocations,
 )
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
 )
-from utils.column_names.raw_data_files.cqc_location_api_columns import (
-    NewCqcLocationApiColumns as CqcLocations,
-)
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    CqcLocationCleanedColumns as CqcLocationsCleaned,
-)
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class DataError(Exception):
     pass
@@ -40,19 +39,18 @@ def build_snapshot_table_from_delta(
         read_folder (str): delta dataset folder
         dataset (str): CQC organisation type (locations or providers)
         timepoint (int): timepoint to get data for (yyyymmdd)
-
+ 
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
-
-    Raises:
-        DataError: if no snapshot is found for the specified date
-
+ 
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
+        latest = snapshot
     else:
-        raise DataError("No snapshot found for timepoint " + str(timepoint))
+        logger.info(f"No snapshot found for {timepoint}, returning most recent")
+        return latest
 
 
 def get_snapshots(
