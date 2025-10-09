@@ -22,6 +22,7 @@ from utils.column_names.raw_data_files.cqc_provider_api_columns import (
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 class DataError(Exception):
     pass
 
@@ -39,10 +40,10 @@ def build_snapshot_table_from_delta(
         read_folder (str): delta dataset folder
         dataset (str): CQC organisation type (locations or providers)
         timepoint (int): timepoint to get data for (yyyymmdd)
- 
+
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
- 
+
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
@@ -135,4 +136,3 @@ def get_snapshots(
                     .cast(pl.Date),
                 )
         yield previous_ss
-
