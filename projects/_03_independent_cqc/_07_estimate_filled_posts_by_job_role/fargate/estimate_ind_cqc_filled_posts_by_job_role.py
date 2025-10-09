@@ -78,18 +78,59 @@ def main(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
-    aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
-    )
+    # aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
+    #     cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
+    # )
 
-    estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
-        )
-    )
+    # estimated_ind_cqc_filled_posts_by_job_role_lf = (
+    #     JRUtils.join_worker_to_estimates_dataframe(
+    #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+    #     )
+    # )
+
+    estimated_ind_cqc_filled_posts_lf = estimated_ind_cqc_filled_posts_lf.with_columns(
+        pl.lit(10, pl.Int64()).alias("job_role_1"),
+        pl.lit(10, pl.Int64()).alias("job_role_2"),
+        pl.lit(10, pl.Int64()).alias("job_role_3"),
+        pl.lit(10, pl.Int64()).alias("job_role_4"),
+        pl.lit(10, pl.Int64()).alias("job_role_5"),
+        pl.lit(10, pl.Int64()).alias("job_role_6"),
+        pl.lit(10, pl.Int64()).alias("job_role_7"),
+        pl.lit(10, pl.Int64()).alias("job_role_8"),
+        pl.lit(10, pl.Int64()).alias("job_role_9"),
+        pl.lit(10, pl.Int64()).alias("job_role_10"),
+        pl.lit(10, pl.Int64()).alias("job_role_11"),
+        pl.lit(10, pl.Int64()).alias("job_role_12"),
+        pl.lit(10, pl.Int64()).alias("job_role_13"),
+        pl.lit(10, pl.Int64()).alias("job_role_14"),
+        pl.lit(10, pl.Int64()).alias("job_role_15"),
+        pl.lit(10, pl.Int64()).alias("job_role_16"),
+        pl.lit(10, pl.Int64()).alias("job_role_17"),
+        pl.lit(10, pl.Int64()).alias("job_role_18"),
+        pl.lit(10, pl.Int64()).alias("job_role_19"),
+        pl.lit(10, pl.Int64()).alias("job_role_20"),
+        pl.lit(10, pl.Int64()).alias("job_role_21"),
+        pl.lit(10, pl.Int64()).alias("job_role_22"),
+        pl.lit(10, pl.Int64()).alias("job_role_23"),
+        pl.lit(10, pl.Int64()).alias("job_role_24"),
+        pl.lit(10, pl.Int64()).alias("job_role_25"),
+        pl.lit(10, pl.Int64()).alias("job_role_26"),
+        pl.lit(10, pl.Int64()).alias("job_role_27"),
+        pl.lit(10, pl.Int64()).alias("job_role_28"),
+        pl.lit(10, pl.Int64()).alias("job_role_29"),
+        pl.lit(10, pl.Int64()).alias("job_role_30"),
+        pl.lit(10, pl.Int64()).alias("job_role_31"),
+        pl.lit(10, pl.Int64()).alias("job_role_32"),
+        pl.lit(10, pl.Int64()).alias("job_role_33"),
+        pl.lit(10, pl.Int64()).alias("job_role_34"),
+        pl.lit(10, pl.Int64()).alias("job_role_35"),
+        pl.lit(10, pl.Int64()).alias("job_role_36"),
+        pl.lit(10, pl.Int64()).alias("job_role_37"),
+        pl.lit(10, pl.Int64()).alias("job_role_38"),
+    ).collect()
 
     utils.write_to_parquet(
-        df=estimated_ind_cqc_filled_posts_by_job_role_lf,
+        df=estimated_ind_cqc_filled_posts_lf,
         output_path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}file.parquet",
         logger=logger,
         append=False,
