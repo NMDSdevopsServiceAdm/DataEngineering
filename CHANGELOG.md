@@ -61,6 +61,16 @@ All notable changes to this project will be documented in this file.
 
 - Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
 
+- Tidy up StepFunctions Terraform code to include a `for_each` to create (most) pipelines dynamically, see the [guide](./terraform/pipeline/step-functions/README.md)
+
+- Explicitly set `required_providers` in `pipeline/main.tf`, in order to version-lock the Terraform AWS provider to the minor version specified
+
+- Changed the remove_duplicate_cqc_care_homes function as followed:
+  - changed function name to remove_dual_registration_cqc_care_homes
+  - updated doc string with information from CQC
+  - changed how ASC-WDS data is copied across dual registrations to coalesce the orginal value and the max over a window
+  - added location_id as a fallback column to distinguish identical locaitons consistantly
+
 ### Improved
 
 
