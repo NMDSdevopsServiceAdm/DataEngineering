@@ -207,7 +207,6 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             dimension_update_date=max_import_date,
         )
-        returned_df.show()
 
         # THEN
         #   Most recent changes returned as delta
@@ -215,7 +214,6 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             Data.expected_gac_service_delta_when_import_date_already_exists_in_dimension_rows,
             Schemas.gac_service_dimension_return_schema,
         )
-        expected_df.show()
         mock_read_from_parquet.assert_called_once_with(
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE
         )
@@ -270,14 +268,12 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             dimension_update_date="20240201",
         )
-        returned_df.show()
         # THEN
         #   The updated rows and the new row should be returned
         expected_df = self.spark.createDataFrame(
             Data.expected_gac_service_delta_rows,
             Schemas.gac_service_dimension_return_schema,
         )
-        expected_df.show()
         mock_read_from_parquet.assert_called_once_with(
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE
         )
@@ -329,8 +325,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             dimension_update_date="20240201",
         )
-        returned_df.show()
-        expected_df.show()
+
         # THEN
         #   The original data should be returned in full, with new columns for the update date
         mock_read_from_parquet.assert_called_once()

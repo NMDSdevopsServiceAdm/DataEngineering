@@ -313,6 +313,10 @@ def create_dimension_from_missing_struct_column(
 ) -> DataFrame:
     """
     Creates delta dimension table for a given missing struct column.
+
+    If most recent import has already been processed, this will be removed from the
+    dimension dataset and the resulting dataset will be overwritten in s3.
+
     Args:
         df (DataFrame): Dataframe with column which has missing structs
         missing_struct_column (str): Name of missing struct column
@@ -345,22 +349,20 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
-    # previous_dimension.show()
-    # current_dimension.show()
 
-    # previous_dimension.show()
     if previous_dimension:
-        if (
+        import_date_exists_in_dimension: bool = (
             previous_dimension.where(
                 previous_dimension[DimensionKeys.import_date] == dimension_update_date
             ).count()
             > 0
-        ):
+        )
+        if import_date_exists_in_dimension:
 
             previous_dimension = previous_dimension.where(
                 previous_dimension[DimensionKeys.import_date] != dimension_update_date
             )
-            # overwrite previous dimension
+
             utils.write_to_parquet(
                 previous_dimension,
                 dimension_location,
