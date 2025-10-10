@@ -6,6 +6,7 @@ os.environ["SPARK_VERSION"] = "3.5"
 from typing import Optional
 
 from pyspark.sql import DataFrame
+from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
 from utils import utils
@@ -35,6 +36,7 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
     Sector,
+    Services,
 )
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -162,6 +164,7 @@ def main(
     cqc_filtered_df = utils.select_rows_with_value(
         cqc_filtered_df, CQCLClean.cqc_sector, Sector.independent
     ).drop(CQCLClean.cqc_sector)
+    cqc_filtered_df = remove_specialist_colleges(cqc_filtered_df)
 
     gac_dim_df = utils.read_from_parquet(
         gac_dim_source,
@@ -295,6 +298,37 @@ def join_data_into_cqc_df(
     return cqc_df_with_join_data
 
 
+def remove_specialist_colleges(cqc_df: DataFrame) -> DataFrame:
+    """
+    Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
+
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    Args:
+        cqc_df (DataFrame): A dataframe without services_offered, but where the location_ids need to be aligned
+
+    Returns:
+        DataFrame: cqq_df with locations which are only specialist colleges removed.
+    """
+    # The below just prevents IDEs from warning you that the "Column object is not callable"
+    # - this is a false warning and does not cause an error
+    # noinspection PyCallingNonCallable
+    to_remove = cqc_df.where(
+        (cqc_df[CQCLClean.services_offered][0] == Services.specialist_college_service)
+        & (F.size(cqc_df[CQCLClean.services_offered]) == 1)
+        & (cqc_df[CQCLClean.services_offered].isNotNull())
+    ).select(CQCLClean.location_id, Keys.import_date)
+
+    cqc_df = cqc_df.join(
+        to_remove,
+        on=[CQCLClean.location_id, Keys.import_date],
+        how="left_anti",
+    )
+
+    return cqc_df
+
+
 if __name__ == "__main__":
     print("Spark job 'merge_ind_cqc_data' starting...")
     print(f"Job parameters: {sys.argv}")
@@ -365,4 +399,5 @@ if __name__ == "__main__":
         destination,
     )
 
+    print("Spark job 'merge_ind_cqc_data' complete")
     print("Spark job 'merge_ind_cqc_data' complete")
