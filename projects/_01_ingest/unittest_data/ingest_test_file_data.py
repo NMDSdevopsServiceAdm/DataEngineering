@@ -3360,6 +3360,118 @@ class CQCLocationsData:
         ),
     ]
 
+    previous_gac_service_dimension_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            CareHome.not_care_home,
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-1",
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            CareHome.not_care_home,
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+        (
+            "loc-2",
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            CareHome.care_home,
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-3",
+            [{"name": "Name C", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            CareHome.care_home,
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+    ]
+    create_gac_service_dimension_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc-1",
+            date(2023, 1, 1),
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "20230101",
+        ),
+        (
+            "loc-1",
+            date(2024, 2, 1),
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "20240201",
+        ),
+        (
+            "loc-2",
+            date(2023, 1, 1),
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            "20230101",
+        ),
+        (
+            "loc-3",
+            date(2024, 2, 1),
+            [{"name": "Name Changed", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "20240201",
+        ),
+    ]
+    expected_gac_service_delta_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc-1",
+            date(2023, 1, 1),
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-1",
+            date(2024, 2, 1),
+            [{"name": "Name B", "description": "Desc B"}],
+            [{"name": "Name B", "description": "Desc B"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+        (
+            "loc-3",
+            date(2024, 2, 1),
+            [{"name": "Name Changed", "description": "Desc C"}],
+            [{"name": "Name C", "description": "Desc C"}],
+            "2024",
+            "02",
+            "01",
+            "20240201",
+            "20240201",
+        ),
+    ]
+
     postcode_matching_dimension_historic_rows = [
         (
             "loc1",
