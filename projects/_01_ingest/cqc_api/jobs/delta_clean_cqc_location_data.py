@@ -204,9 +204,6 @@ def main(
         CQCLClean.services_offered,
     )
 
-    # registered_locations_df, gac_service_delta = remove_specialist_colleges(
-    #     registered_locations_df, gac_service_delta
-    # )
     gac_service_delta = allocate_primary_service_type(gac_service_delta)
 
     gac_service_delta = realign_carehome_column_with_primary_service(
@@ -783,49 +780,6 @@ def add_related_location_column(df: DataFrame) -> DataFrame:
         ),
     )
     return df
-
-
-def remove_specialist_colleges(
-    cqc_df: DataFrame, gac_services_dimension: DataFrame
-) -> tuple[DataFrame, DataFrame]:
-    """
-    Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
-
-    We do not include locations which are only specialist colleges in our
-    estimates. This function identifies and removes the ones listed in the locations dataset.
-
-    Args:
-        cqc_df (DataFrame): A dataframe without services_offered, but where the location_ids need to be aligned
-        gac_services_dimension (DataFrame): A cleaned locations dataframe with the services_offered column already created.
-
-    Returns:
-        tuple[DataFrame, DataFrame]: cqq_df, gac_services_dimension with locations which are only specialist colleges removed.
-    """
-    # The below just prevents IDEs from warning you that the "Column object is not callable"
-    # - this is a false warning and does not cause an error
-    # noinspection PyCallingNonCallable
-    to_remove = gac_services_dimension.where(
-        (
-            gac_services_dimension[CQCLClean.services_offered][0]
-            == Services.specialist_college_service
-        )
-        & (F.size(gac_services_dimension[CQCLClean.services_offered]) == 1)
-        & (gac_services_dimension[CQCLClean.services_offered].isNotNull())
-    ).select(CQCLClean.location_id, Keys.import_date)
-
-    cqc_df = cqc_df.join(
-        to_remove,
-        on=[CQCLClean.location_id, Keys.import_date],
-        how="left_anti",
-    )
-
-    gac_services_dimension = gac_services_dimension.join(
-        to_remove,
-        on=[CQCLClean.location_id, Keys.import_date],
-        how="left_anti",
-    )
-
-    return cqc_df, gac_services_dimension
 
 
 def add_cqc_sector_column_to_cqc_locations_dataframe(

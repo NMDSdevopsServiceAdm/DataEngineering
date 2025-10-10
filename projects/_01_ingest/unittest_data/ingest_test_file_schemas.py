@@ -1992,18 +1992,6 @@ class CQCLocationsSchema:
         ]
     )
 
-    remove_specialist_colleges_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(
-                CQCLClean.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-            ),
-        ]
-    )
     add_related_location_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
