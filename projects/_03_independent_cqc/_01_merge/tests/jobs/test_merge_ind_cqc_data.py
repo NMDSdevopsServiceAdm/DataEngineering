@@ -169,7 +169,7 @@ class RemoveSpecialistCollegesTests(MergeIndCQCDatasetTests):
             Data.test_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
+        returned_df = job.remove_specialist_colleges(test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_only_service_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -183,7 +183,7 @@ class RemoveSpecialistCollegesTests(MergeIndCQCDatasetTests):
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
+        returned_df = job.remove_specialist_colleges(test_df)
         expected_df = self.spark.createDataFrame(
             Data.test_multiple_services_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -197,7 +197,7 @@ class RemoveSpecialistCollegesTests(MergeIndCQCDatasetTests):
             Data.test_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
+        returned_df = job.remove_specialist_colleges(test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_without_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -211,7 +211,7 @@ class RemoveSpecialistCollegesTests(MergeIndCQCDatasetTests):
             Data.test_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
+        returned_df = job.remove_specialist_colleges(test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_empty_array_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
@@ -225,7 +225,7 @@ class RemoveSpecialistCollegesTests(MergeIndCQCDatasetTests):
             Data.test_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
         )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
+        returned_df = job.remove_specialist_colleges(test_df)
         expected_df = self.spark.createDataFrame(
             Data.expected_null_row_specialist_colleges_rows,
             Schemas.remove_specialist_colleges_schema,
