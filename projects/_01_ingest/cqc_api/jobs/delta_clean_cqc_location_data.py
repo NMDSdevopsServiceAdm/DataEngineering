@@ -352,10 +352,8 @@ def create_dimension_from_missing_struct_column(
 
     if previous_dimension:
         import_date_exists_in_dimension: bool = (
-            previous_dimension.where(
-                previous_dimension[DimensionKeys.import_date] == dimension_update_date
-            ).count()
-            > 0
+            previous_dimension.agg(F.max(DimensionKeys.import_date)).collect()[0][0]
+            == dimension_update_date
         )
         if import_date_exists_in_dimension:
 
