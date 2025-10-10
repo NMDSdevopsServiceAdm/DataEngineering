@@ -345,8 +345,29 @@ def create_dimension_from_missing_struct_column(
         CQCLClean.cqc_location_import_date,
         Keys.import_date,
     )
+    # previous_dimension.show()
+    # current_dimension.show()
 
+    # previous_dimension.show()
     if previous_dimension:
+        if (
+            previous_dimension.where(
+                previous_dimension[DimensionKeys.import_date] == dimension_update_date
+            ).count()
+            > 0
+        ):
+
+            previous_dimension = previous_dimension.where(
+                previous_dimension[DimensionKeys.import_date] != dimension_update_date
+            )
+            # overwrite previous dimension
+            utils.write_to_parquet(
+                previous_dimension,
+                dimension_location,
+                mode="overwrite",
+                partitionKeys=dimensionPartitionKeys,
+            )
+
         delta = current_dimension.join(
             previous_dimension,
             on=[
