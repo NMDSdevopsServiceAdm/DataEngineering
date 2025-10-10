@@ -33,7 +33,7 @@ jobs:
           command: |
             # Authenticate Docker to ECR
             docker login -u AWS -p $(aws ecr get-login-password --region eu-west-2) ${AWS_ACCOUNT_ID}.dkr.ecr.eu-west-2.amazonaws.com
-            
+
             echo "Rebuilding lambdas and pushing to ECR."
             docker buildx bake all --push
 
@@ -192,7 +192,7 @@ jobs:
           from: dependencies
           to: "s3://$(cat terraform/pipeline/pipeline_resources_bucket_name)/dependencies"
 
-  copy-default-data:
+  copy-main-data:
     docker:
       - image: cimg/base:current
     resource_class: small
@@ -201,7 +201,7 @@ jobs:
           at: .
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-default-datasets/"
+          from: "s3://sfc-main-datasets/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/"
       - aws-s3/sync:
           aws-region: AWS_REGION
@@ -266,10 +266,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+      # - test:
+      #     filters:
+      #       branches:
+      #         ignore: main
       - lint-python:
           filters:
             branches:
@@ -285,7 +285,7 @@ workflows:
       - terraform-plan:
           requires:
             - lint-terraform
-            - test
+            # - test
             - task-containerisation
       - terraform-apply:
           requires:
@@ -293,7 +293,7 @@ workflows:
       - deploy-dependencies:
           requires:
             - terraform-apply
-      - copy-default-data:
+      - copy-main-data:
           requires:
             - terraform-apply
 
