@@ -164,7 +164,6 @@ def main(
     cqc_filtered_df = utils.select_rows_with_value(
         cqc_filtered_df, CQCLClean.cqc_sector, Sector.independent
     ).drop(CQCLClean.cqc_sector)
-    cqc_filtered_df = remove_specialist_colleges(cqc_filtered_df)
 
     gac_dim_df = utils.read_from_parquet(
         gac_dim_source,
@@ -173,6 +172,7 @@ def main(
     cqc_filtered_df = utils.join_dimension(
         cqc_filtered_df, gac_dim_df, CQCLClean.location_id
     )
+    cqc_filtered_df = remove_specialist_colleges(cqc_filtered_df)
 
     reg_act_dim_df = utils.read_from_parquet(
         reg_act_dim_source, selected_columns=ra_dim_columns_to_import
