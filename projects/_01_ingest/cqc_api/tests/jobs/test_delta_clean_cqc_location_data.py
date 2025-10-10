@@ -40,6 +40,13 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
     TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+    dimensionPartitionKeys = [
+        DimensionKeys.year,
+        DimensionKeys.month,
+        DimensionKeys.day,
+        DimensionKeys.last_updated,
+        DimensionKeys.import_date,
+    ]
 
     def setUp(self) -> None:
         self.spark = utils.get_spark()
@@ -172,16 +179,20 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     def test_create_dimension_from_missing_struct_column_when_import_date_already_exists_in_dimension(
-        self, mock_impute_missing_struct_column, mock_read_from_parquet
+        self,
+        mock_write_to_parquet,
+        mock_impute_missing_struct_column,
+        mock_read_from_parquet,
     ):
         # GIVEN
-        #   Historic data:
+        #   Historic data with current dat previously run:
         mock_read_from_parquet.return_value = self.spark.createDataFrame(
             Data.previous_gac_service_dimension_when_import_date_already_exists_in_dimension_rows,
             Schemas.gac_service_dimension_schema,
         )
-        #   Current data has some updates to old rows and a new row
+        #   Current data with a change from previous run
         mock_impute_missing_struct_column.return_value = self.spark.createDataFrame(
             Data.create_gac_service_dimension_when_import_date_already_exists_in_dimension_rows,
             Schemas.gac_service_dimension_input_schema,
@@ -199,7 +210,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
         returned_df.show()
 
         # THEN
-        #   The updated rows and the new row should be returned
+        #   Most recent changes returned as delta
         expected_df = self.spark.createDataFrame(
             Data.expected_gac_service_delta_when_import_date_already_exists_in_dimension_rows,
             Schemas.gac_service_dimension_return_schema,
@@ -221,11 +232,23 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             expected_df.select(column_order).collect(),
             returned_df.select(column_order).collect(),
         )
+        # AND
+        # most recent import date removed from previous dimensions
+        mock_write_to_parquet.assert_called_with(
+            ANY,
+            ANY,
+            mode="overwrite",
+            partitionKeys=self.dimensionPartitionKeys,
+        )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     def test_create_dimension_from_missing_struct_column(
-        self, mock_impute_missing_struct_column, mock_read_from_parquet
+        self,
+        mock_write_to_parquet,
+        mock_impute_missing_struct_column,
+        mock_read_from_parquet,
     ):
         # GIVEN
         #   Historic data:
@@ -271,11 +294,18 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             expected_df.select(column_order).collect(),
             returned_df.select(column_order).collect(),
         )
+        # AND
+        # dimension not overwritten
+        mock_write_to_parquet.assert_not_called()
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     def test_create_dimension_when_no_historic_data(
-        self, mock_impute_missing_struct_column, mock_read_from_parquet
+        self,
+        mock_write_to_parquet,
+        mock_impute_missing_struct_column,
+        mock_read_from_parquet,
     ):
         # GIVEN
         #   Trying to read historic data creates an analysis exception
@@ -319,6 +349,9 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             returned_df.select(column_order).collect(),
             expected_df.select(column_order).collect(),
         )
+        # AND
+        # dimension not overwritten
+        mock_write_to_parquet.assert_not_called()
 
 
 class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
