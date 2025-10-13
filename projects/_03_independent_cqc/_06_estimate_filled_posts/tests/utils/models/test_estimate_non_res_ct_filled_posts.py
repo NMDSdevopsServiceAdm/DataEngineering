@@ -13,7 +13,9 @@ from projects._03_independent_cqc.unittest_data.ind_cqc_test_file_schemas import
 from utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCqc
 
-PATCH_PATH: str = "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts"
+PATCH_PATH: str = (
+    "projects._03_independent_cqc._06_estimate_filled_posts.utils.models.estimate_non_res_ct_filled_posts"
+)
 
 
 class EstimateNonResCTFilledPostsTests(unittest.TestCase):
