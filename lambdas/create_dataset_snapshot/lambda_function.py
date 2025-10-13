@@ -24,7 +24,10 @@ def lambda_handler(event, context):
             "%Y%m%d"
         )
     )
-
+    logger.info(
+        f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
+    )
+    
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
