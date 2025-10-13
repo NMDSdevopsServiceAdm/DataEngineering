@@ -4,6 +4,7 @@ from typing import Generator, Optional
 
 import polars as pl
 
+from polars_utils.logger import get_logger
 from schemas import cqc_locations_cleaned_schema_polars as LocationsSchemaCleaned
 from schemas import cqc_locations_schema_polars as LocationsSchema
 from schemas import cqc_provider_schema_polars as ProvidersSchema
@@ -17,6 +18,8 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
 from utils.column_names.raw_data_files.cqc_provider_api_columns import (
     CqcProviderApiColumns as CqcProviders,
 )
+
+logger = get_logger(__name__)
 
 
 class DataError(Exception):
@@ -40,15 +43,16 @@ def build_snapshot_table_from_delta(
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
 
-    Raises:
-        DataError: if no snapshot is found for the specified date
-
     """
     for snapshot in get_snapshots(bucket, read_folder, dataset):
         if snapshot.item(1, Keys.import_date) == timepoint:
             return snapshot
+        latest = snapshot
     else:
-        raise DataError("No snapshot found for timepoint " + str(timepoint))
+        logger.info(
+            f"No snapshot found for: {timepoint}, returning most recent snapshot: {latest}"
+        )
+        return latest
 
 
 def get_snapshots(
