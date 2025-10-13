@@ -88,7 +88,7 @@ def main(
     )
 
     estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        estimated_ind_cqc_filled_posts_by_job_role_lf.collect()
+        estimated_ind_cqc_filled_posts_by_job_role_lf.collect(engine="streaming")
     )
 
     utils.write_to_parquet(
