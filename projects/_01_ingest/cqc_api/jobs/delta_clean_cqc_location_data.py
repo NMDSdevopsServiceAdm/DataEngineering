@@ -258,8 +258,26 @@ def main(
 
 
 def create_postcode_matching_dimension(
-    cqc_df, postcode_df, dimension_location, dimension_update_date
+    cqc_df: DataFrame,
+    postcode_df: DataFrame,
+    dimension_location: str,
+    dimension_update_date: str,
 ):
+    """
+    Creates delta dimension table for postcodes.
+
+    If most recent import has already been processed, this will be removed from the
+    dimension dataset and the resulting dataset will be overwritten in s3.
+
+    Args:
+        df (DataFrame): Dataframe with column which has missing structs
+        postcode_df (str): Dataframe with postcode directory
+        dimension_location (str): Path that dimension is stored in
+        dimension_update_date (str): Date that delta data will be stored in
+
+    Returns:
+        DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
     try:
         previous_dimension = utils.read_from_parquet(dimension_location)
     except AnalysisException:
