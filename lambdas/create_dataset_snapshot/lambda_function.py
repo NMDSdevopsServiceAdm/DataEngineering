@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from re import match, search, sub
+from re import match
 
 from s3fs import S3FileSystem
 
@@ -25,8 +25,6 @@ def lambda_handler(event, context):
         )
     )
 
-    fs = S3FileSystem()
-
     snapshot_df = build_snapshot_table_from_delta(
         bucket=input_parse.group("bucket"),
         read_folder=input_parse.group("read_folder"),
@@ -36,6 +34,7 @@ def lambda_handler(event, context):
 
     output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
+    fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
         snapshot_df.drop(
             [Keys.year, Keys.month, Keys.day, Keys.import_date]
