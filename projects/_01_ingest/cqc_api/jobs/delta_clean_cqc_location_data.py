@@ -262,7 +262,7 @@ def create_postcode_matching_dimension(
     postcode_df: DataFrame,
     dimension_location: str,
     dimension_update_date: str,
-):
+) -> DataFrame:
     """
     Creates delta dimension table for postcodes.
 
@@ -270,8 +270,8 @@ def create_postcode_matching_dimension(
     dimension dataset and the resulting dataset will be overwritten in s3.
 
     Args:
-        df (DataFrame): Dataframe with column which has missing structs
-        postcode_df (str): Dataframe with postcode directory
+        cqc_df (DataFrame): Dataframe with column which has missing structs
+        postcode_df (DataFrame): Dataframe with postcode directory
         dimension_location (str): Path that dimension is stored in
         dimension_update_date (str): Date that delta data will be stored in
 
