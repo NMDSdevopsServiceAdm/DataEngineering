@@ -74,6 +74,9 @@ def main(
         cqc_location_df, CQCL.type, LocationType.social_care_identifier
     )
 
+    cqc_location_df = utils.select_rows_with_value(
+        cqc_location_df, CQCL.registration_status, RegistrationStatus.registered
+    )
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
     assessment_ratings_df = prepare_assessment_ratings(cqc_location_df)
