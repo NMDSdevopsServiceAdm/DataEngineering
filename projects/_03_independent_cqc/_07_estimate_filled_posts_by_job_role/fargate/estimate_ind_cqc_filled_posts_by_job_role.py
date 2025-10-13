@@ -15,7 +15,6 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
@@ -93,8 +92,8 @@ def main(
     )
 
     utils.write_to_parquet(
-        df=estimated_ind_cqc_filled_posts_by_job_role_lf,
-        output_path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}file.parquet",
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
         logger=logger,
         append=False,
     )
