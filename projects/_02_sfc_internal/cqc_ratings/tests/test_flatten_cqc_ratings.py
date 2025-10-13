@@ -54,6 +54,7 @@ class MainTests(FlattenCQCRatingsTests):
     @patch(f"{PATCH_PATH}.prepare_assessment_ratings")
     @patch(f"{PATCH_PATH}.prepare_historic_ratings")
     @patch(f"{PATCH_PATH}.prepare_current_ratings")
+    @patch(f"{PATCH_PATH}.remove_specialist_colleges")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_value")
     @patch(f"{PATCH_PATH}.filter_to_first_import_of_most_recent_month")
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -62,6 +63,7 @@ class MainTests(FlattenCQCRatingsTests):
         read_from_parquet_mock: Mock,
         filter_to_first_import_of_most_recent_month_mock: Mock,
         select_rows_with_value_mock: Mock,
+        remove_specialist_colleges_mock: Mock,
         prepare_current_ratings_mock: Mock,
         prepare_historic_ratings_mock: Mock,
         prepare_assessment_ratings_mock: Mock,
@@ -93,7 +95,8 @@ class MainTests(FlattenCQCRatingsTests):
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
         self.assertEqual(filter_to_first_import_of_most_recent_month_mock.call_count, 2)
-        select_rows_with_value_mock.assert_called_once()
+        self.assertEqual(select_rows_with_value_mock.call_count, 2)
+        remove_specialist_colleges_mock.assert_called_once()
         prepare_current_ratings_mock.assert_called_once()
         prepare_historic_ratings_mock.assert_called_once()
         prepare_assessment_ratings_mock.assert_called_once()
