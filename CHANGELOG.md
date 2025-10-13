@@ -61,6 +61,8 @@ All notable changes to this project will be documented in this file.
 
 - Copies the full prod data into branch for testing purposes as opposed to the small subset currently used.
 
+- Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
+
 ### Improved
 
 
