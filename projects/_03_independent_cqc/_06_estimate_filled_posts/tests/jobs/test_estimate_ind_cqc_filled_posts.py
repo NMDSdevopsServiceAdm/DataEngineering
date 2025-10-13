@@ -5,12 +5,8 @@ from unittest.mock import ANY, Mock, patch
 import projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts as job
 from tests.test_file_data import EstimateIndCQCFilledPostsData as Data
 from tests.test_file_schemas import EstimateIndCQCFilledPostsSchemas as Schemas
-
 from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-)
-
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 PATCH_PATH = "projects._03_independent_cqc._06_estimate_filled_posts.jobs.estimate_ind_cqc_filled_posts"
 
@@ -47,6 +43,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         warnings.filterwarnings("ignore", category=ResourceWarning)
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    @patch(f"{PATCH_PATH}.allocate_primary_service_type_second_level")
+    @patch(f"{PATCH_PATH}.estimate_non_res_capacity_tracker_filled_posts")
     @patch(f"{PATCH_PATH}.merge_columns_in_order")
     @patch(f"{PATCH_PATH}.model_imputation_with_extrapolation_and_interpolation")
     @patch(f"{PATCH_PATH}.combine_non_res_with_and_without_dormancy_models")
@@ -63,6 +61,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
         combine_non_res_with_and_without_dormancy_models_patch: Mock,
         model_imputation_with_extrapolation_and_interpolation: Mock,
         merge_columns_in_order_mock: Mock,
+        estimate_non_res_capacity_tracker_filled_posts_mock: Mock,
+        allocate_primary_service_type_second_level_mock: Mock,
         write_to_parquet_patch: Mock,
     ):
         read_from_parquet_patch.side_effect = [
@@ -95,6 +95,8 @@ class EstimateIndCQCFilledPostsTests(unittest.TestCase):
             model_imputation_with_extrapolation_and_interpolation.call_count, 3
         )
         self.assertEqual(merge_columns_in_order_mock.call_count, 1)
+        estimate_non_res_capacity_tracker_filled_posts_mock.assert_called_once()
+        allocate_primary_service_type_second_level_mock.assert_called_once()
         self.assertEqual(write_to_parquet_patch.call_count, 1)
         write_to_parquet_patch.assert_any_call(
             ANY,
