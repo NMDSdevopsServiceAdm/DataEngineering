@@ -19,11 +19,15 @@ from utils.column_names.raw_data_files.ascwds_workplace_columns import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
+    CqcLocationCleanedColumns as CQCLClean,
+)
 from utils.column_values.categorical_column_values import (
     CQCCurrentOrHistoricValues,
     CQCRatingsValues,
     LocationType,
     RegistrationStatus,
+    Services,
 )
 from utils.value_labels.cqc_ratings.label_dictionary import (
     unknown_ratings_labels_dict as UnknownRatings,
@@ -78,7 +82,7 @@ def main(
         cqc_location_df, CQCL.type, LocationType.social_care_identifier
     )
 
-    
+    cqc_location_df = remove_specialist_colleges(cqc_location_df)
 
     current_ratings_df = prepare_current_ratings(cqc_location_df)
     historic_ratings_df = prepare_historic_ratings(cqc_location_df)
@@ -827,6 +831,27 @@ def create_benchmark_ratings_dataset(benchmark_ratings_df: DataFrame) -> DataFra
         & benchmark_ratings_df[CQCRatings.overall_rating].isNotNull()
     )
     return benchmark_ratings_df
+
+
+def remove_specialist_colleges(df: DataFrame) -> DataFrame:
+    """
+    Removes rows where 'Specialist college service' is the only service listed in 'services_offered'.
+
+    We do not include locations which are only specialist colleges in our
+    estimates. This function identifies and removes the ones listed in the locations dataset.
+
+    Args:
+        df (DataFrame): A cleaned locations dataframe with the services_offered column already created.
+
+    Returns:
+        DataFrame: A cleaned locations dataframe with locations which are only specialist colleges removed.
+    """
+    df = df.where(
+        (df[CQCLClean.services_offered][0] != Services.specialist_college_service)
+        | (F.size(df[CQCLClean.services_offered]) != 1)
+        | (df[CQCLClean.services_offered].isNull())
+    )
+    return df
 
 
 if __name__ == "__main__":
