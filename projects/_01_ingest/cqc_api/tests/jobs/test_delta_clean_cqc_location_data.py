@@ -60,22 +60,19 @@ class MainTests(CleanCQCLocationDatasetTests):
 
     @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     @patch(f"{PATCH_PATH}.create_postcode_matching_dimension")
-    @patch(f"{PATCH_PATH}.add_cqc_sector_column_to_cqc_locations_dataframe")
     @patch(f"{PATCH_PATH}.add_related_location_column")
-    @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.realign_carehome_column_with_primary_service")
     @patch(f"{PATCH_PATH}.allocate_primary_service_type")
-    @patch(f"{PATCH_PATH}.remove_specialist_colleges")
     @patch(f"{PATCH_PATH}.classify_specialisms")
     @patch(f"{PATCH_PATH}.extract_from_struct")
+    @patch(f"{PATCH_PATH}.extract_registered_manager_names")
     @patch(f"{PATCH_PATH}.remove_locations_that_never_had_regulated_activities")
     @patch(f"{PATCH_PATH}.impute_missing_struct_column")
     @patch(f"{PATCH_PATH}.create_dimension_from_missing_struct_column")
-    @patch(f"{PATCH_PATH}.select_registered_locations_only")
     @patch(f"{PATCH_PATH}.impute_historic_relationships")
     @patch(f"{PATCH_PATH}.utils.format_date_fields", wraps=utils.format_date_fields)
     @patch(f"{PATCH_PATH}.remove_records_from_locations_data")
-    @patch(f"{PATCH_PATH}.remove_non_social_care_locations")
+    @patch(f"{PATCH_PATH}.add_cqc_sector_column_to_cqc_locations_dataframe")
     @patch(f"{PATCH_PATH}.utils.select_rows_with_non_null_value")
     @patch(f"{PATCH_PATH}.clean_provider_id_column")
     @patch(f"{PATCH_PATH}.cUtils.column_to_date", wraps=cUtils.column_to_date)
@@ -88,22 +85,19 @@ class MainTests(CleanCQCLocationDatasetTests):
         column_to_date_mock: Mock,
         clean_provider_id_column_mock: Mock,
         select_rows_with_non_null_value_mock: Mock,
-        remove_non_social_care_locations_mock: Mock,
+        add_cqc_sector_column_to_cqc_locations_dataframe: Mock,
         remove_records_from_locations_data_mock: Mock,
         format_date_fields_mock: Mock,
         impute_historic_relationships_mock: Mock,
-        select_registered_locations_only_mock: Mock,
         create_dimension_from_missing_struct_column_mock: Mock,
         impute_missing_struct_column_mock: Mock,
         remove_locations_that_never_had_regulated_activities_mock: Mock,
+        extract_registered_manager_names_mock: Mock,
         extract_from_struct_mock: Mock,
         classify_specialisms_mock: Mock,
-        remove_specialist_colleges_mock: Mock,
         allocate_primary_service_type_mock: Mock,
         realign_carehome_column_with_primary_service_mock: Mock,
-        extract_registered_manager_names_mock: Mock,
         add_related_location_column_mock: Mock,
-        add_cqc_sector_column_to_cqc_locations_dataframe: Mock,
         create_postcode_matching_dim_mock: Mock,
         write_to_parquet_mock: Mock,
     ):
@@ -112,10 +106,6 @@ class MainTests(CleanCQCLocationDatasetTests):
             self.test_ons_postcode_directory_df,
         ]
         remove_locations_that_never_had_regulated_activities_mock.return_value = (
-            Mock(),
-            Mock(),
-        )
-        remove_specialist_colleges_mock.return_value = (
             Mock(),
             Mock(),
         )
@@ -135,17 +125,14 @@ class MainTests(CleanCQCLocationDatasetTests):
         self.assertEqual(column_to_date_mock.call_count, 2)
         clean_provider_id_column_mock.assert_called_once()
         select_rows_with_non_null_value_mock.assert_called_once()
-        remove_non_social_care_locations_mock.assert_called_once()
         remove_records_from_locations_data_mock.assert_called_once()
         format_date_fields_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()
-        select_registered_locations_only_mock.assert_called_once()
         self.assertEqual(create_dimension_from_missing_struct_column_mock.call_count, 3)
         impute_missing_struct_column_mock.assert_not_called()
         remove_locations_that_never_had_regulated_activities_mock.assert_called_once()
         self.assertEqual(extract_from_struct_mock.call_count, 2)
         self.assertEqual(classify_specialisms_mock.call_count, 3)
-        remove_specialist_colleges_mock.assert_called_once()
         allocate_primary_service_type_mock.assert_called_once()
         realign_carehome_column_with_primary_service_mock.assert_called_once()
         extract_registered_manager_names_mock.assert_called_once()
@@ -407,27 +394,6 @@ class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
         )
         returned_df = job.impute_missing_registration_dates(test_df)
         self.assertEqual(expected_df.collect(), returned_df.collect())
-
-
-class RemovedNonSocialCareLocationsTests(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-
-    def test_remove_non_social_care_locations_only_keeps_social_care_orgs(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.social_care_org_rows, Schemas.social_care_org_schema
-        )
-
-        returned_social_care_df = job.remove_non_social_care_locations(test_df)
-        returned_social_care_data = returned_social_care_df.collect()
-
-        expected_social_care_data = self.spark.createDataFrame(
-            Data.expected_social_care_org_rows, Schemas.social_care_org_schema
-        ).collect()
-
-        self.assertEqual(returned_social_care_data, expected_social_care_data)
 
 
 class ImputeHistoricRelationshipsTests(CleanCQCLocationDatasetTests):
@@ -731,133 +697,6 @@ class RealignCareHomeColumnWthPrimaryServiceTests(CleanCQCLocationDatasetTests):
 
     def test_care_home_values_match_expected_data(self):
         self.assertEqual(self.returned_data, self.expected_data)
-
-
-class RemoveSpecialistCollegesTests(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        super().setUp()
-        self.mock_cqc_df = Mock()
-        self.mock_cqc_df.join.return_value = Mock()
-
-    def test_remove_specialist_colleges_removes_rows_where_specialist_college_is_only_service(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_only_service_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_only_service_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_remove_specialist_colleges_does_not_remove_rows_where_specialist_college_is_one_of_multiple_services(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_multiple_services_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.test_multiple_services_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_remove_specialist_colleges_does_not_remove_rows_where_specialist_college_is_not_listed_in_services(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_without_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_without_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_remove_specialist_colleges_does_not_remove_rows_where_gac_service_type_struct_is_empty(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_empty_array_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_empty_array_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-    def test_remove_specialist_colleges_does_not_remove_rows_where_gac_service_type_column_is_null(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.test_null_row_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        _, returned_df = job.remove_specialist_colleges(self.mock_cqc_df, test_df)
-        expected_df = self.spark.createDataFrame(
-            Data.expected_null_row_specialist_colleges_rows,
-            Schemas.remove_specialist_colleges_schema,
-        )
-        self.assertEqual(returned_df.collect(), expected_df.collect())
-
-
-class SelectRegisteredLocationsOnlyTest(CleanCQCLocationDatasetTests):
-    def setUp(self) -> None:
-        return super().setUp()
-
-    def test_select_registered_locations_only_splits_data_correctly(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_rows, Schemas.registration_status_schema
-        )
-
-        returned_registered_df = job.select_registered_locations_only(test_df)
-        returned_registered_data = returned_registered_df.collect()
-
-        expected_registered_data = self.spark.createDataFrame(
-            Data.expected_registered_rows, Schemas.registration_status_schema
-        ).collect()
-
-        self.assertEqual(returned_registered_data, expected_registered_data)
-
-    def test_select_registered_locations_only_raises_a_warning_if_any_rows_are_invalid(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_with_missing_data_rows,
-            Schemas.registration_status_schema,
-        )
-        returned_registered_df = job.select_registered_locations_only(test_df)
-        returned_registered_data = returned_registered_df.collect()
-
-        expected_registered_data = self.spark.createDataFrame(
-            Data.expected_registered_rows, Schemas.registration_status_schema
-        ).collect()
-
-        self.assertEqual(returned_registered_data, expected_registered_data)
-
-        self.assertWarns(Warning)
-
-    def test_select_registered_locations_only_does_not_raise_a_warning_if_all_rows_are_valid(
-        self,
-    ):
-        test_df = self.spark.createDataFrame(
-            Data.registration_status_rows, Schemas.registration_status_schema
-        )
-        with warnings.catch_warnings(record=True) as warnings_log:
-            returned_registered_df = job.select_registered_locations_only(test_df)
-
-            self.assertEqual(warnings_log, [])
 
 
 class CleanProviderIdColumn(CleanCQCLocationDatasetTests):

@@ -108,6 +108,9 @@ All notable changes to this project will be documented in this file.
 
 - Removed recode_unknown_codes_to_null function call at preperation step of assessment data within flatten_cqc_ratings job.
 
+- Stopped the filtering of non social care, deregistered and specialist college locations in the cleaning of delta locations data.
+  The removal of these not required locations happens in merge_ind_cqc_data job.
+
 ### Improved
 
 

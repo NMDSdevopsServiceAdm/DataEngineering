@@ -2004,6 +2004,7 @@ class CQCLocationsSchema:
             ),
         ]
     )
+
     add_related_location_column_schema = StructType(
         [
             StructField(CQCL.location_id, StringType(), True),
