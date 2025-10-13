@@ -63,6 +63,9 @@ All notable changes to this project will be documented in this file.
 
 - Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
 
+- Added Welsh postcodes to postcode correction dictionary. Note: A postcode is in Cardiff and another in Newport.
+  These must be reviewed as soon as possible.
+
 ### Improved
 
 
