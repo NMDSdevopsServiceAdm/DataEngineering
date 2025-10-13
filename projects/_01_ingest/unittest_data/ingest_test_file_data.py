@@ -3560,6 +3560,49 @@ class CQCLocationsData:
         ("loc_1", "123456789", "20240201"),
     ]
 
+    test_only_service_specialist_colleges_rows = [
+        ("loc 1", "20240101", [Services.specialist_college_service]),
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
+    ]
+    test_multiple_services_specialist_colleges_rows = [
+        (
+            "loc 2",
+            "20240101",
+            [
+                Services.specialist_college_service,
+                Services.acute_services_with_overnight_beds,
+            ],
+        ),
+        (
+            "loc 3",
+            "20240101",
+            [
+                Services.acute_services_with_overnight_beds,
+                Services.specialist_college_service,
+            ],
+        ),
+    ]
+    test_without_specialist_colleges_rows = [
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
+    ]
+    test_empty_array_specialist_colleges_rows = [
+        ("loc 5", "20240101", []),
+    ]
+    test_null_row_specialist_colleges_rows = [
+        ("loc 6", "20240101", None),
+    ]
+    expected_only_service_specialist_colleges_rows = [
+        ("loc 4", "20240101", [Services.care_home_service_with_nursing]),
+    ]
+    expected_multiple_services_specialist_colleges_rows = (
+        test_multiple_services_specialist_colleges_rows
+    )
+    expected_without_specialist_colleges_rows = test_without_specialist_colleges_rows
+    expected_empty_array_specialist_colleges_rows = (
+        test_empty_array_specialist_colleges_rows
+    )
+    expected_null_row_specialist_colleges_rows = test_null_row_specialist_colleges_rows
+
     add_related_location_column_rows = [
         ("loc 1", None),
         ("loc 2", []),
