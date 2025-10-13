@@ -281,6 +281,22 @@ def create_postcode_matching_dimension(
     )
 
     if previous_dimension:
+        import_date_exists_in_dimension: bool = (
+            previous_dimension.agg(F.max(DimensionKeys.import_date)).collect()[0][0]
+            == dimension_update_date
+        )
+        if import_date_exists_in_dimension:
+
+            previous_dimension = previous_dimension.where(
+                previous_dimension[DimensionKeys.import_date] != dimension_update_date
+            )
+
+            utils.write_to_parquet(
+                previous_dimension,
+                dimension_location,
+                mode="overwrite",
+                partitionKeys=dimensionPartitionKeys,
+            )
         delta = current_dimension.join(
             previous_dimension,
             on=[
