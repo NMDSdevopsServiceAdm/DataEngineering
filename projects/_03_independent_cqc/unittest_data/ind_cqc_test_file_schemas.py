@@ -29,18 +29,24 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 )
 from utils.column_names.ind_cqc_pipeline_columns import (
     ArchivePartitionKeys as ArchiveKeys,
-    IndCqcColumns as IndCQC,
+)
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import (
     NonResWithAndWithoutDormancyCombinedColumns as NRModel_TempCol,
+)
+from utils.column_names.ind_cqc_pipeline_columns import (
     NullGroupedProviderColumns as NGPcol,
-    PartitionKeys as Keys,
+)
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_names.ind_cqc_pipeline_columns import (
     PrimaryServiceRateOfChangeColumns as RoC_TempCol,
 )
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
-    MainJobRoleLabels,
     JobGroupLabels,
+    MainJobRoleLabels,
 )
 
 
@@ -3321,5 +3327,24 @@ class IndCQCDataUtils:
         [
             *allocate_primary_service_type_second_level_schema,
             StructField(IndCQC.primary_service_type_second_level, StringType(), True),
+        ]
+    )
+
+
+@dataclass
+class NullCtPostsToBedsOutliers:
+    null_ct_posts_to_beds_outliers_schema = StructType(
+        [
+            StructField(IndCQC.location_id, StringType(), True),
+            StructField(IndCQC.ct_care_home_total_employed, IntegerType(), True),
+            StructField(IndCQC.ct_care_home_posts_per_bed_ratio, FloatType(), True),
+        ]
+    )
+    expected_null_ct_posts_to_beds_outliers_schema = StructType(
+        [
+            *null_ct_posts_to_beds_outliers_schema,
+            StructField(
+                IndCQC.ct_care_home_total_employed_cleaned, IntegerType(), True
+            ),
         ]
     )

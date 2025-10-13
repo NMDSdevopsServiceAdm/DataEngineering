@@ -5,13 +5,14 @@ os.environ["SPARK_VERSION"] = "3.5"
 
 from pyspark.sql import DataFrame
 
-from utils import utils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.care_homes import (
     model_care_homes,
+)
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
+    model_imputation_with_extrapolation_and_interpolation,
+)
+from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
+    combine_non_res_with_and_without_dormancy_models,
 )
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_dormancy import (
     model_non_res_with_dormancy,
@@ -19,16 +20,13 @@ from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res
 from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_without_dormancy import (
     model_non_res_without_dormancy,
 )
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.non_res_with_and_without_dormancy_combined import (
-    combine_non_res_with_and_without_dormancy_models,
-)
-from projects._03_independent_cqc._06_estimate_filled_posts.utils.models.imputation_with_extrapolation_and_interpolation import (
-    model_imputation_with_extrapolation_and_interpolation,
-)
 from projects._03_independent_cqc.utils.utils.utils import (
-    merge_columns_in_order,
     allocate_primary_service_type_second_level,
+    merge_columns_in_order,
 )
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
 ind_cqc_columns = [
     IndCQC.cqc_location_import_date,
@@ -53,11 +51,10 @@ ind_cqc_columns = [
     IndCQC.registered_manager_names,
     IndCQC.ct_non_res_import_date,
     IndCQC.ct_non_res_care_workers_employed,
-    IndCQC.ct_non_res_care_workers_employed_dedup,
     IndCQC.ct_non_res_care_workers_employed_imputed,
     IndCQC.ct_care_home_import_date,
     IndCQC.ct_care_home_total_employed,
-    IndCQC.ct_care_home_total_employed_dedup,
+    IndCQC.ct_care_home_total_employed_cleaned,
     IndCQC.ct_care_home_total_employed_imputed,
     IndCQC.cqc_pir_import_date,
     IndCQC.pir_people_directly_employed_dedup,

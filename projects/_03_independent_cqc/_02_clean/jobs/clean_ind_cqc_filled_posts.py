@@ -4,22 +4,23 @@ from typing import Optional
 
 os.environ["SPARK_VERSION"] = "3.5"
 
-from pyspark.sql import DataFrame, Window, functions as F
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
 
-from utils import utils
 import utils.cleaning_utils as cUtils
-from utils.column_names.ind_cqc_pipeline_columns import (
-    PartitionKeys as Keys,
-    IndCqcColumns as IndCQC,
-)
-from utils.column_values.categorical_column_values import CareHome
 from projects._03_independent_cqc._02_clean.utils.ascwds_filled_posts_calculator.ascwds_filled_posts_calculator import (
     calculate_ascwds_filled_posts,
 )
 from projects._03_independent_cqc._02_clean.utils.clean_ascwds_filled_post_outliers.clean_ascwds_filled_post_outliers import (
     clean_ascwds_filled_post_outliers,
 )
-
+from projects._03_independent_cqc._02_clean.utils.clean_ct_care_home_outliers.clean_ct_care_home_outliers import (
+    null_ct_posts_to_beds_outliers,
+)
+from utils import utils
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import CareHome
 
 PartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 average_number_of_beds: str = "avg_beds"
@@ -58,19 +59,11 @@ def main(
         IndCQC.pir_people_directly_employed_cleaned,
         IndCQC.pir_people_directly_employed_dedup,
     )
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.ct_care_home_total_employed,
-        IndCQC.ct_care_home_total_employed_dedup,
-    )
-    locations_df = create_column_with_repeated_values_removed(
-        locations_df,
-        IndCQC.ct_non_res_care_workers_employed,
-        IndCQC.ct_non_res_care_workers_employed_dedup,
-    )
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup,
+        IndCQC.filled_posts_per_bed_ratio,
     )
 
     locations_df = cUtils.create_banded_bed_count_column(
@@ -82,8 +75,18 @@ def main(
     locations_df = clean_ascwds_filled_post_outliers(locations_df)
 
     locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
-        locations_df, IndCQC.ascwds_filled_posts_dedup_clean
+        locations_df,
+        IndCQC.ascwds_filled_posts_dedup_clean,
+        IndCQC.filled_posts_per_bed_ratio,
     )
+
+    locations_df = cUtils.calculate_filled_posts_per_bed_ratio(
+        locations_df,
+        IndCQC.ct_care_home_total_employed,
+        IndCQC.ct_care_home_posts_per_bed_ratio,
+    )
+
+    locations_df = null_ct_posts_to_beds_outliers(locations_df)
 
     print(f"Exporting as parquet to {cleaned_ind_cqc_destination}")
 
