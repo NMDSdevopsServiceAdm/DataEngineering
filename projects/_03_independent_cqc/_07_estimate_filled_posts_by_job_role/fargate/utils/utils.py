@@ -9,7 +9,7 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
-    df: pl.LazyFrame, list_of_job_roles: list
+    lf: pl.LazyFrame, list_of_job_roles: list
 ) -> pl.LazyFrame:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
@@ -21,13 +21,38 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     All establishments end up with a row for all potential job roles.
 
     Args:
-        df (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
+        lf (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
         pl.LazyFrame: The input dataframe with a count of rows for all potential job roles.
     """
-    df = df.group_by(
+    unique_workplaces_lf = lf.unique(
+        [
+            pl.col(IndCQC.establishment_id),
+            pl.col(IndCQC.ascwds_worker_import_date),
+        ]
+    ).select(
+        pl.col(IndCQC.establishment_id),
+        pl.col(IndCQC.ascwds_worker_import_date),
+    )
+
+    all_job_roles_lf = pl.LazyFrame(
+        {
+            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
+            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
+        }
+    )
+
+    unique_workplaces_lf = unique_workplaces_lf.join(
+        other=all_job_roles_lf, how="cross"
+    )
+
+    unique_workplaces_lf.rename(
+        {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
+    )
+
+    worker_count_lf = lf.group_by(
         [
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
@@ -35,39 +60,23 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).len(name=IndCQC.ascwds_job_role_counts)
 
-    all_job_roles_df = pl.LazyFrame(
-        {
-            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
-            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
-        }
-    )
-
-    df = df.join(all_job_roles_df, how="cross")
-
-    df = df.with_columns(
-        (
-            pl.when(
-                pl.col(IndCQC.main_job_role_clean_labelled)
-                == pl.col("mainjrid_clean_labels_right")
-            )
-            .then(pl.col(IndCQC.ascwds_job_role_counts))
-            .otherwise(pl.col("ascwds_job_role_counts_right"))
-        ).alias(IndCQC.ascwds_job_role_counts)
-    )
-
-    df = df.with_columns(
-        pl.col("mainjrid_clean_labels_right").alias(IndCQC.main_job_role_clean_labelled)
-    ).drop(["mainjrid_clean_labels_right", "ascwds_job_role_counts_right"])
-
-    df = df.group_by(
-        [
+    unique_workplaces_lf = unique_workplaces_lf.join(
+        other=worker_count_lf,
+        on=[
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
             pl.col(IndCQC.main_job_role_clean_labelled),
-        ]
-    ).agg(pl.col(IndCQC.ascwds_job_role_counts).sum())
+        ],
+        how="left",
+    )
 
-    return df
+    unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
+
+    unique_workplaces_lf = unique_workplaces_lf.drop(
+        IndCQC.ascwds_job_role_counts
+    ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+
+    return unique_workplaces_lf
 
 
 def join_worker_to_estimates_dataframe(

@@ -16,7 +16,7 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
     )
     expected_aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(
         list(aggregate_ascwds_worker_job_roles_per_establishment_schema.items())
-        + [(IndCQC.ascwds_job_role_counts, pl.Int64())]
+        + [(IndCQC.ascwds_job_role_counts, pl.UInt32())]
     )
 
     estimates_df_before_join_schema = pl.Schema(
