@@ -3436,6 +3436,30 @@ class CQCLocationsData:
             "20240201",
         ),
     ]
+    expected_gac_service_dim_for_overwrite_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc-1",
+            None,
+            [{"name": "Name B", "description": "Desc B"}],
+            CareHome.not_care_home,
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+        (
+            "loc-2",
+            [{"name": "Name A", "description": "Desc A"}],
+            [{"name": "Name A", "description": "Desc A"}],
+            CareHome.care_home,
+            "2024",
+            "02",
+            "01",
+            "20230101",
+            "20240201",
+        ),
+    ]
     expected_gac_service_delta_when_import_date_already_exists_in_dimension_rows = [
         (
             "loc-1",
@@ -3562,6 +3586,126 @@ class CQCLocationsData:
             "01",
             "20240101",
             "20240201",
+        ),
+    ]
+
+    postcode_matching_dimension_historic_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc1",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+        (
+            "loc1",
+            date(2023, 8, 1),
+            "some street",
+            "AB12 XCD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230801",
+            "20230801",
+        ),
+        (
+            "loc2",
+            date(2024, 1, 1),
+            "some street",
+            "EF45 4GH",
+            "EF45 4GH",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            "20240101",
+        ),
+    ]
+
+    postcode_matching_dimension_current_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc1",
+            "some name",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2023",
+            "01",
+            "01",
+            "20230101",
+        ),
+        (
+            "loc2",
+            "other name",
+            date(2024, 1, 1),
+            "some street",
+            "EF45 4YZ",
+            "EF45 4YZ",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+        ),
+    ]
+
+    expected_postcode_matching_dimension_for_overwrite_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc1",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230101",
+            "20230101",
+        ),
+        (
+            "loc1",
+            date(2023, 8, 1),
+            "some street",
+            "AB12 XCD",
+            "AB12 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230801",
+            "20230801",
+        ),
+    ]
+
+    expected_postcode_matching_dimension_when_import_date_already_exists_in_dimension_rows = [
+        (
+            "loc1",
+            date(2023, 1, 1),
+            "some street",
+            "AB12 3CD",
+            "AB89 3CD",
+            "2024",
+            "01",
+            "01",
+            "20230101",
+            "20240101",
+        ),
+        (
+            "loc2",
+            date(2024, 1, 1),
+            "some street",
+            "EF45 4YZ",
+            "EF45 4YZ",
+            "2024",
+            "01",
+            "01",
+            "20240101",
+            "20240101",
         ),
     ]
 

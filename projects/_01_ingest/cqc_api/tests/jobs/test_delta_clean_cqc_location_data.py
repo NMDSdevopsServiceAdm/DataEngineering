@@ -214,6 +214,10 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             Data.expected_gac_service_delta_when_import_date_already_exists_in_dimension_rows,
             Schemas.gac_service_dimension_return_schema,
         )
+        expected_dim_df = self.spark.createDataFrame(
+            Data.expected_gac_service_dim_for_overwrite_when_import_date_already_exists_in_dimension_rows,
+            Schemas.gac_service_dimension_schema,
+        )
         mock_read_from_parquet.assert_called_once_with(
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE
         )
@@ -237,6 +241,10 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             ANY,
             mode="overwrite",
             partitionKeys=self.dimensionPartitionKeys,
+        )
+        self.assertEqual(
+            mock_write_to_parquet.call_args[0][0].select(column_order).collect(),
+            expected_dim_df.select(column_order).collect(),
         )
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
@@ -316,6 +324,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             Data.expected_gac_service_delta_when_no_history_rows,
             Schemas.gac_service_dimension_return_schema,
         )
+        max_import_date = "20240201"
 
         # WHEN
         #   the function is run
@@ -323,7 +332,7 @@ class CreateDimensionTests(CleanCQCLocationDatasetTests):
             df=Mock(),
             missing_struct_column=CQCL.gac_service_types,
             dimension_location=self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
-            dimension_update_date="20240201",
+            dimension_update_date=max_import_date,
         )
 
         # THEN
@@ -355,8 +364,82 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
 
     @patch(f"{PATCH_PATH}.utils.read_from_parquet")
     @patch(f"{PATCH_PATH}.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
+    def test_postcode_matching_dimension_when_import_date_already_exists_in_dimension(
+        self,
+        mock_write_to_parquet,
+        mock_run_postcode_matching,
+        mock_read_from_parquet,
+    ):
+        # GIVEN
+        #   Historic data with current dat previously run:
+        mock_read_from_parquet.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_historic_when_import_date_already_exists_in_dimension_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+        #   Current data with a change from previous run
+        mock_run_postcode_matching.return_value = self.spark.createDataFrame(
+            Data.postcode_matching_dimension_current_when_import_date_already_exists_in_dimension_rows,
+            Schemas.postcode_matching_dimension_input_schema,
+        )
+
+        # WHEN
+        returned_df = job.create_postcode_matching_dimension(
+            cqc_df=Mock(),
+            postcode_df=Mock(),
+            dimension_location=self.TEST_POSTCODE_DIMENSION_SOURCE,
+            dimension_update_date="20240101",
+        )
+
+        # THEN
+        #   The updated rows and the new row should be returned
+        expected_df = self.spark.createDataFrame(
+            Data.expected_postcode_matching_dimension_when_import_date_already_exists_in_dimension_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+        expected_dim_df = self.spark.createDataFrame(
+            Data.expected_postcode_matching_dimension_for_overwrite_when_import_date_already_exists_in_dimension_rows,
+            Schemas.postcode_matching_dimension_schema,
+        )
+        mock_read_from_parquet.assert_called_once_with(
+            self.TEST_POSTCODE_DIMENSION_SOURCE
+        )
+        mock_run_postcode_matching.assert_called_once()
+        self.assertEqual(len(returned_df.columns), len(expected_df.columns))
+        column_order = [
+            CQCLCleaned.location_id,
+            CQCLCleaned.cqc_location_import_date,
+            CQCLCleaned.postal_address_line1,
+            CQCLCleaned.postcode,
+            CQCLCleaned.postcode_cleaned,
+            DimensionKeys.year,
+            DimensionKeys.month,
+            DimensionKeys.day,
+            DimensionKeys.import_date,
+            DimensionKeys.last_updated,
+        ]
+        self.assertEqual(
+            expected_df.select(column_order).collect(),
+            returned_df.select(column_order).collect(),
+        )
+        # AND
+        # most recent import date removed from previous dimensions
+        mock_write_to_parquet.assert_called_with(
+            ANY,
+            ANY,
+            mode="overwrite",
+            partitionKeys=self.dimensionPartitionKeys,
+        )
+        self.assertEqual(
+            mock_write_to_parquet.call_args[0][0].select(column_order).collect(),
+            expected_dim_df.select(column_order).collect(),
+        )
+
+    @patch(f"{PATCH_PATH}.utils.read_from_parquet")
+    @patch(f"{PATCH_PATH}.run_postcode_matching")
+    @patch(f"{PATCH_PATH}.utils.write_to_parquet")
     def test_postcode_matching_dimension(
-        self, mock_run_postcode_matching, mock_read_from_parquet
+        self, mock_write_to_parquet, mock_run_postcode_matching, mock_read_from_parquet
     ):
         # GIVEN
         #   Historic data:
@@ -404,6 +487,9 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
             expected_df.select(column_order).collect(),
             returned_df.select(column_order).collect(),
         )
+        # AND
+        # dimension not overwritten
+        mock_write_to_parquet.assert_not_called()
 
 
 class CleanRegistrationDateTests(CleanCQCLocationDatasetTests):
