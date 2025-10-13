@@ -157,17 +157,6 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
-        pl.col(CQCL.type) == LocationType.social_care_identifier,
-        pl.col(CQCL.registration_status) == RegistrationStatus.registered,
-        is_valid_location(),
-        ~(
-            (gac_services.list.len() == 1)
-            & (gac_services.is_not_null())
-            & (
-                gac_services.list[0].struct.field(CQCL.description)
-                == Services.specialist_college_service
-            )
-        ),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
