@@ -32,10 +32,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
         ]
-    ).select(
-        pl.col(IndCQC.establishment_id),
-        pl.col(IndCQC.ascwds_worker_import_date),
-    )
+    ).drop(IndCQC.main_job_role_clean_labelled)
 
     all_job_roles_lf = pl.LazyFrame(
         {

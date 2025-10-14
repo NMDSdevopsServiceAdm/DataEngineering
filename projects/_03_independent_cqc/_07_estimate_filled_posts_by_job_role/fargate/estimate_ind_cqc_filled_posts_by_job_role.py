@@ -19,6 +19,10 @@ cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
     IndCQC.main_job_role_clean_labelled,
+    Keys.year,
+    Keys.month,
+    Keys.day,
+    Keys.import_date,
 ]
 estimated_ind_cqc_filled_posts_columns_to_import = [
     IndCQC.cqc_location_import_date,
