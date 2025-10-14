@@ -6,7 +6,6 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
-from polars_utils.raw_data_adjustments import is_valid_location
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -17,11 +16,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-    Services,
-)
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
