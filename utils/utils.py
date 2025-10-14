@@ -140,19 +140,34 @@ def read_csv(source, delimiter=","):
     return df
 
 
-def read_incorrect_postcode_csv_to_dict(source: str, delimiter: str = ",") -> dict:
+def read_incorrect_postcode_csv_to_dict(
+    bucket: str, key: str, s3_client: object = None
+) -> dict:
     """
     Read csv of postcode corrections from given location to a dictionary.
 
     Args:
-        source(str): The s3 URI of the csv file containing the postcode corrections
-        delimiter(str): The delimiter used in the file. Defaults to a comma
+        bucket(str): The s3 bucket containing the postcode correction csv
+        key(str): The path within the s3 bucket to the postcode correction csv
+        s3_client(object): An s3 client
 
     Returns:
         dict: A dictionary of postcode corrections in the format {incorrect: correct}
     """
-    # TO DO
-    return dict
+    if s3_client is None:
+        s3_client = boto3.client("s3")
+    postcode_obj = s3_client.get_object(Bucket=bucket, Key=key)
+
+    postcode_data = postcode_obj["Body"].read().decode("utf-8").splitlines()
+    postcode_records = csv.reader(postcode_data)
+    headers = next(postcode_records)
+    keys = []
+    values = []
+    for record in postcode_records:
+        keys.append(record[0])
+        values.append(record[1])
+        postcode_dict = dict(zip(keys, values))
+    return postcode_dict
 
 
 def read_csv_with_defined_schema(source, schema):
