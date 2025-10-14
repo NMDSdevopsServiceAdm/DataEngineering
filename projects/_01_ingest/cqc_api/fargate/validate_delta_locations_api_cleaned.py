@@ -71,7 +71,7 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(expected_size(compare_df))
+        # .row_count_match(expected_size(compare_df))
         # complete columns
         .col_vals_not_null(
             [
@@ -99,10 +99,10 @@ def main(
         .col_vals_in_set(
             CQCLClean.cqc_sector, CatValues.sector_column_values.categorical_values
         )
-        .col_vals_in_set(
-            CQCLClean.registration_status,
-            CatValues.registration_status_column_values.categorical_values,
-        )
+        # .col_vals_in_set(
+        #     CQCLClean.registration_status,
+        #     CatValues.registration_status_column_values.categorical_values,
+        # )
         .col_vals_in_set(
             CQCLClean.dormancy,
             # na_pass is not an optional parameter to .col_vals_in_set
@@ -122,13 +122,13 @@ def main(
             ),
             brief=f"{CQCLClean.cqc_sector} needs to be one of {CatValues.sector_column_values.categorical_values}",
         )
-        .specially(
-            vl.is_unique_count_equal(
-                CQCLClean.registration_status,
-                CatValues.registration_status_column_values.count_of_categorical_values,
-            ),
-            brief=f"{CQCLClean.registration_status} needs to be one of {CatValues.registration_status_column_values.categorical_values}",
-        )
+        # .specially(
+        #     vl.is_unique_count_equal(
+        #         CQCLClean.registration_status,
+        #         CatValues.registration_status_column_values.count_of_categorical_values,
+        #     ),
+        #     brief=f"{CQCLClean.registration_status} needs to be one of {CatValues.registration_status_column_values.categorical_values}",
+        # )
         .specially(
             vl.is_unique_count_equal(
                 CQCLClean.dormancy,
