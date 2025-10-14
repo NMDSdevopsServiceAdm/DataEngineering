@@ -253,10 +253,6 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=locations_api/version=2.1.1/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=locations_api/version=2.1.1/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
       - aws-s3/sync:
@@ -376,10 +372,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      # - test:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
@@ -398,7 +394,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            # - test
+            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
