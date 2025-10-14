@@ -54,9 +54,9 @@ def main(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
-    # aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-    #     cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
-    # )
+    aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
+        cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
+    )
 
     # estimated_ind_cqc_filled_posts_by_job_role_lf = (
     #     JRUtils.join_worker_to_estimates_dataframe(
@@ -64,13 +64,13 @@ def main(
     #     )
     # )
 
-    plan = estimated_ind_cqc_filled_posts_lf.explain(
-        engine="streaming",
-    )
-    print(plan)
+    # plan = estimated_ind_cqc_filled_posts_lf.explain(
+    #     engine="streaming",
+    # )
+    # logger.info(plan)
 
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_lf.collect(engine="streaming"),
+        aggregated_worker_lf.collect(engine="streaming"),
         f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
         logger=logger,
         append=False,
