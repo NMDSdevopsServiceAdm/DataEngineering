@@ -37,44 +37,44 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         pl.col(IndCQC.ascwds_worker_import_date),
     )
 
-    all_job_roles_lf = pl.LazyFrame(
-        {
-            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
-            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
-        }
-    )
+    # all_job_roles_lf = pl.LazyFrame(
+    #     {
+    #         IndCQC.main_job_role_clean_labelled: list_of_job_roles,
+    #         IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
+    #     }
+    # )
 
-    unique_workplaces_lf = unique_workplaces_lf.join(
-        other=all_job_roles_lf, how="cross"
-    )
+    # unique_workplaces_lf = unique_workplaces_lf.join(
+    #     other=all_job_roles_lf, how="cross"
+    # )
 
-    unique_workplaces_lf.rename(
-        {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
-    )
+    # unique_workplaces_lf.rename(
+    #     {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
+    # )
 
-    worker_count_lf = lf.group_by(
-        [
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-            pl.col(IndCQC.main_job_role_clean_labelled),
-        ]
-    ).len(name=IndCQC.ascwds_job_role_counts)
+    # worker_count_lf = lf.group_by(
+    #     [
+    #         pl.col(IndCQC.establishment_id),
+    #         pl.col(IndCQC.ascwds_worker_import_date),
+    #         pl.col(IndCQC.main_job_role_clean_labelled),
+    #     ]
+    # ).len(name=IndCQC.ascwds_job_role_counts)
 
-    unique_workplaces_lf = unique_workplaces_lf.join(
-        other=worker_count_lf,
-        on=[
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-            pl.col(IndCQC.main_job_role_clean_labelled),
-        ],
-        how="left",
-    )
+    # unique_workplaces_lf = unique_workplaces_lf.join(
+    #     other=worker_count_lf,
+    #     on=[
+    #         pl.col(IndCQC.establishment_id),
+    #         pl.col(IndCQC.ascwds_worker_import_date),
+    #         pl.col(IndCQC.main_job_role_clean_labelled),
+    #     ],
+    #     how="left",
+    # )
 
-    unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
+    # unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
 
-    unique_workplaces_lf = unique_workplaces_lf.drop(
-        IndCQC.ascwds_job_role_counts
-    ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+    # unique_workplaces_lf = unique_workplaces_lf.drop(
+    #     IndCQC.ascwds_job_role_counts
+    # ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
 
     return unique_workplaces_lf
 
