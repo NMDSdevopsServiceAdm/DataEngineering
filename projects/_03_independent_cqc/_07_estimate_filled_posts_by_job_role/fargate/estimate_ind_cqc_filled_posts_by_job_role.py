@@ -58,6 +58,8 @@ def main(
         cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
     )
 
+    logger.info("Finished joining lazyframes")
+
     # estimated_ind_cqc_filled_posts_by_job_role_lf = (
     #     JRUtils.join_worker_to_estimates_dataframe(
     #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
@@ -71,7 +73,7 @@ def main(
 
     total_rows = aggregated_worker_lf.select(pl.len()).collect().item()
 
-    print(f"Total rows: {total_rows}")
+    logger.info(f"Total rows: {total_rows}")
 
     batch_size = pl.lit(100000, pl.Int64())
     for i in range(0, total_rows, batch_size):
@@ -80,7 +82,7 @@ def main(
             compression="snappy",
         )
 
-        print(f"Wrote batch {i} of {total_rows}")
+        logger.info(f"Wrote batch {i} of {total_rows}")
 
     # utils.write_to_parquet(
     #     aggregated_worker_lf.collect(engine="streaming"),

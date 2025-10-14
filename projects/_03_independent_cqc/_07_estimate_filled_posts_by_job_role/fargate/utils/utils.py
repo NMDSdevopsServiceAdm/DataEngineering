@@ -70,8 +70,6 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         how="left",
     )
 
-    print("Finished joining lazyframes")
-
     # unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
 
     # unique_workplaces_lf = unique_workplaces_lf.drop(
