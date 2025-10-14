@@ -77,14 +77,14 @@ def main(
 
     logger.info(f"Total rows: {total_rows}")
 
-    batch_size = pl.lit(100000, pl.Int64())
-    for i in range(0, total_rows, batch_size):
-        aggregated_worker_lf.slice(i, batch_size).sink_parquet(
-            path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf-{i}.parquet",
-            compression="snappy",
-        )
+    # batch_size = pl.lit(100000, pl.Int64())
+    # for i in range(0, total_rows, batch_size):
+    #     aggregated_worker_lf.slice(i, batch_size).sink_parquet(
+    #         path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf-{i}.parquet",
+    #         compression="snappy",
+    #     )
 
-        logger.info(f"Wrote batch {i} of {total_rows}")
+    #     logger.info(f"Wrote batch {i} of {total_rows}")
 
     # utils.write_to_parquet(
     #     aggregated_worker_lf.collect(engine="streaming"),
