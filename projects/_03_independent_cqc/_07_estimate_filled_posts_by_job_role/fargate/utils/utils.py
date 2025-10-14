@@ -37,16 +37,16 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         pl.col(IndCQC.ascwds_worker_import_date),
     )
 
-    # all_job_roles_lf = pl.LazyFrame(
-    #     {
-    #         IndCQC.main_job_role_clean_labelled: list_of_job_roles,
-    #         IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
-    #     }
-    # )
+    all_job_roles_lf = pl.LazyFrame(
+        {
+            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
+            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
+        }
+    )
 
-    # unique_workplaces_lf = unique_workplaces_lf.join(
-    #     other=all_job_roles_lf, how="cross"
-    # )
+    unique_workplaces_lf = unique_workplaces_lf.join(
+        other=all_job_roles_lf, how="cross"
+    )
 
     # unique_workplaces_lf.rename(
     #     {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
