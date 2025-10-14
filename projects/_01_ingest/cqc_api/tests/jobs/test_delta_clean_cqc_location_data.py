@@ -124,7 +124,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         create_cleaned_registration_date_column_mock.assert_called_once()
         self.assertEqual(column_to_date_mock.call_count, 2)
         clean_provider_id_column_mock.assert_called_once()
-        select_rows_with_non_null_value_mock.assert_called_once()
+        self.assertEqual(select_rows_with_non_null_value_mock.call_count, 3)
         remove_records_from_locations_data_mock.assert_called_once()
         format_date_fields_mock.assert_called_once()
         impute_historic_relationships_mock.assert_called_once()

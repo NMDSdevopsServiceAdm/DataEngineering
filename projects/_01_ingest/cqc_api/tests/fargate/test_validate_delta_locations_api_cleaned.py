@@ -77,7 +77,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "column": ["locationId", "cqc_location_import_date"],
                 "all_passed": True,
             },
-            report_json[8],
+            report_json[9],
         )
         self.assertDictContainsSubset(
             {
@@ -86,7 +86,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": False,
                 "na_pass": True,
             },
-            report_json[9],
+            report_json[10],
         )
         self.assertDictContainsSubset(
             {
@@ -95,7 +95,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": False,
                 "n_failed": 2,
             },
-            report_json[10],
+            report_json[11],
         )
         self.assertDictContainsSubset(
             {
@@ -104,7 +104,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": False,
                 "n_failed": 2,
             },
-            report_json[11],
+            report_json[12],
         )
         self.assertDictContainsSubset(
             {
@@ -116,7 +116,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                     "Independent",
                 ],
             },
-            report_json[12],
+            report_json[13],
         )
         self.assertDictContainsSubset(
             {
@@ -125,7 +125,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": True,
                 "values": ["Y", "N", None],
             },
-            report_json[14],
+            report_json[15],
         )
         self.assertDictContainsSubset(
             {
@@ -133,7 +133,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
                 "all_passed": True,
                 "brief": "dormancy needs to be null, or one of ['Y', 'N']",
             },
-            report_json[18],
+            report_json[19],
         )
 
 

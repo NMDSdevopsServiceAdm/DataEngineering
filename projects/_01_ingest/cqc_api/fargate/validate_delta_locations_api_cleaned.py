@@ -76,6 +76,7 @@ def main(
                 CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.name,
+                CQCLClean.type,
             ]
         )
         # index columns
@@ -152,6 +153,8 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
+        has_value(df, CQCL.registration_status, CQCL.location_id),
+        has_value(df, CQCL.type, CQCL.location_id),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
