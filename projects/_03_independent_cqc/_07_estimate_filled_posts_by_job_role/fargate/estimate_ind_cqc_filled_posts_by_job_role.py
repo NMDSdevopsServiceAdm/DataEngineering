@@ -71,7 +71,9 @@ def main(
     # )
     # logger.info(plan)
 
-    total_rows = aggregated_worker_lf.select(pl.len()).collect().item()
+    total_rows = (
+        aggregated_worker_lf.select(pl.len()).collect(engine="streaming").item()
+    )
 
     logger.info(f"Total rows: {total_rows}")
 
