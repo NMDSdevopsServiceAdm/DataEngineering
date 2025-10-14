@@ -69,12 +69,16 @@ def main(
     # )
     # logger.info(plan)
 
-    utils.write_to_parquet(
-        aggregated_worker_lf.collect(engine="streaming"),
-        f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
-        logger=logger,
-        append=False,
+    aggregated_worker_lf.sink_parquet(
+        path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet"
     )
+
+    # utils.write_to_parquet(
+    #     aggregated_worker_lf.collect(engine="streaming"),
+    #     f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
+    #     logger=logger,
+    #     append=False,
+    # )
 
 
 if __name__ == "__main__":
