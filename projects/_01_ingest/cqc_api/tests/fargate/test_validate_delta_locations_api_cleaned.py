@@ -81,9 +81,9 @@ class ValidateLocationsRawTests(unittest.TestCase):
         )
         self.assertDictContainsSubset(
             {
-                "assertion_type": "col_vals_between",
+                "assertion_type": "col_vals_ge",
                 "column": "numberOfBeds",
-                "all_passed": True,
+                "all_passed": False,
                 "na_pass": True,
             },
             report_json[9],

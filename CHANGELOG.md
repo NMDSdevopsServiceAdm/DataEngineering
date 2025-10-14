@@ -66,6 +66,8 @@ All notable changes to this project will be documented in this file.
 - Added Welsh postcodes to postcode correction dictionary. Note: A postcode is in Cardiff and another in Newport.
   These must be reviewed as soon as possible.
 
+- Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
+
 ### Improved
 
 

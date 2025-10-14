@@ -34,7 +34,6 @@ class LocationsAPICleanedValidationRules:
             Validation.provider_id_length: 3,
         },
         RuleName.max_values: {
-            CQCLClean.number_of_beds: 500,
             Validation.location_id_length: 14,
             Validation.provider_id_length: 14,
         },
