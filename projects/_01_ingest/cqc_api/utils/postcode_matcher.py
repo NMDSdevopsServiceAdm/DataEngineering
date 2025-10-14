@@ -5,9 +5,6 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
-from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
-    ManualPostcodeCorrections,
-)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -17,6 +14,7 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
+from utils.utils import read_incorrect_postcode_csv_to_dict
 
 
 def run_postcode_matching(
@@ -225,7 +223,7 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = ManualPostcodeCorrections.postcode_corrections_dict
+    mapping_dict: Dict[str, str] = read_incorrect_postcode_csv_to_dict()
 
     mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 

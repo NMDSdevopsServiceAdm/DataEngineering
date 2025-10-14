@@ -371,7 +371,7 @@ class GeneralUtilsTests(UtilsTests):
         stubber.add_response("get_object", test_response, expected_params)
 
         returned_dict = utils.read_incorrect_postcode_csv_to_dict(
-            "test-bucket", "my-test/key/", stubber.get_s3_client()
+            "s3://test-bucket/my-test/key/", stubber.get_s3_client()
         )
         expected_dict = UtilsData.expected_dict
         self.assertEqual(returned_dict, expected_dict)
