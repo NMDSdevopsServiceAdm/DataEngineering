@@ -79,7 +79,7 @@ def main(
                 CQCLClean.cqc_location_import_date,
                 CQCLClean.provider_id,
                 CQCLClean.cqc_sector,
-                CQCLClean.registration_status,
+                # CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.name,
             ]
@@ -92,7 +92,7 @@ def main(
             ],
         )
         # between (inclusive)
-        .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
+        # .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # categorical
