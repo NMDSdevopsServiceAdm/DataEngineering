@@ -91,8 +91,9 @@ def main(
                 CQCLClean.cqc_location_import_date,
             ],
         )
+        # greater than or equal to
+        .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
         # between (inclusive)
-        .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
         .col_vals_between(Validation.provider_id_length, 3, 14)
         # categorical
