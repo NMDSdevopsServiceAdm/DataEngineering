@@ -68,6 +68,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
 
+- Removed locations from CQC delta clean when registration status or location type are null.
+
 ### Improved
 
 
