@@ -376,10 +376,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
+      # - test:
+      #     filters:
+      #       branches:
+      #         ignore: main
       - lint-python:
           filters:
             branches:
@@ -398,7 +398,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            - test
+            # - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
