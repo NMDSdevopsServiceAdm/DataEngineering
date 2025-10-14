@@ -140,6 +140,21 @@ def read_csv(source, delimiter=","):
     return df
 
 
+def read_incorrect_postcode_csv_to_dict(source: str, delimiter: str = ",") -> dict:
+    """
+    Read csv of postcode corrections from given location to a dictionary.
+
+    Args:
+        source(str): The s3 URI of the csv file containing the postcode corrections
+        delimiter(str): The delimiter used in the file. Defaults to a comma
+
+    Returns:
+        dict: A dictionary of postcode corrections in the format {incorrect: correct}
+    """
+    # TO DO
+    return dict
+
+
 def read_csv_with_defined_schema(source, schema):
     spark = get_spark()
 

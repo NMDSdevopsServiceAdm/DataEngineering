@@ -50,6 +50,7 @@ class UtilsData:
         ("1-00002", 12.34),
         ("1-00003", -1.0),
     ]
+    expected_dict = {"AB12CE": "AB12CD", "EF12GI": "EF12GH"}
 
 
 @dataclass

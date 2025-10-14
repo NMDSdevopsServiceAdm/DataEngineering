@@ -82,6 +82,7 @@ class StubberClass:
 
 class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
+    test_postcode_csv_path = "tests/test_data/example_postcode_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
@@ -350,6 +351,13 @@ class GeneralUtilsTests(UtilsTests):
         df = utils.read_csv(self.test_csv_path)
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
         self.assertEqual(df.count(), 3)
+
+    def test_read_incorrect_postcode_csv_to_dict(self):
+        returned_dict = utils.read_incorrect_postcode_csv_to_dict(
+            self.test_postcode_csv_path
+        )
+        expected_dict = UtilsData.expected_dict
+        self.assertEqual(returned_dict, expected_dict)
 
     def test_read_csv_with_defined_schema(self):
         schema = StructType(
