@@ -71,9 +71,16 @@ def main(
     # )
     # logger.info(plan)
 
-    total_rows = (
-        aggregated_worker_lf.select(pl.len()).collect(engine="streaming").item()
-    )
+    total_rows = 0
+    for i in range(2013, 2025, 1):
+        rows_in_partition = (
+            aggregated_worker_lf.filter(pl.col(Keys.year) == i)
+            .select(pl.len())
+            .collect(engine="streaming")
+            .item()
+        )
+        logger.info(f"Rows in partition: {rows_in_partition}")
+        total_rows += rows_in_partition
 
     logger.info(f"Total rows: {total_rows}")
 
