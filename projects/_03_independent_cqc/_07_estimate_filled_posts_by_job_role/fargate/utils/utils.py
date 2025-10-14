@@ -48,17 +48,17 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         other=all_job_roles_lf, how="cross"
     )
 
-    # unique_workplaces_lf.rename(
-    #     {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
-    # )
+    unique_workplaces_lf.rename(
+        {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
+    )
 
-    # worker_count_lf = lf.group_by(
-    #     [
-    #         pl.col(IndCQC.establishment_id),
-    #         pl.col(IndCQC.ascwds_worker_import_date),
-    #         pl.col(IndCQC.main_job_role_clean_labelled),
-    #     ]
-    # ).len(name=IndCQC.ascwds_job_role_counts)
+    worker_count_lf = lf.group_by(
+        [
+            pl.col(IndCQC.establishment_id),
+            pl.col(IndCQC.ascwds_worker_import_date),
+            pl.col(IndCQC.main_job_role_clean_labelled),
+        ]
+    ).len(name=IndCQC.ascwds_job_role_counts)
 
     # unique_workplaces_lf = unique_workplaces_lf.join(
     #     other=worker_count_lf,
