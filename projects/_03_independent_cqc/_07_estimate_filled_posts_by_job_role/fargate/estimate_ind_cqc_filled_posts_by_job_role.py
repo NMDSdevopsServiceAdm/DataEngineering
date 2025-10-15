@@ -110,7 +110,9 @@ def sink_parquet_with_partitions(
 
 
 def get_unique_years_as_list(lf: pl.LazyFrame) -> list:
-    return lf.select(Keys.year).unique().collect().to_series().to_list()
+    return (
+        lf.select(Keys.year).unique().collect(engine="streaming").to_series().to_list()
+    )
 
 
 if __name__ == "__main__":
