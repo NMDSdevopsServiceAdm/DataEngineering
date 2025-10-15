@@ -67,6 +67,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
 
+- Updated docker file for create_dataset_snapshot lambda function to explicitly copy polars_utils while running.
+
 ### Improved
 
 
