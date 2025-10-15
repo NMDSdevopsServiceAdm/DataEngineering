@@ -91,6 +91,8 @@ def main(
             estimated_ind_cqc_filled_posts_by_job_role_destination,
         )
 
+        logger.info(f"Finished sinking year: {i}")
+
 
 def sink_parquet_with_partitions(
     lf: pl.LazyFrame, estimated_ind_cqc_filled_posts_by_job_role_destination: str
