@@ -108,6 +108,10 @@ def main(
     cqc_location_df = utils.select_rows_with_non_null_value(
         cqc_location_df, CQCL.provider_id
     )
+    cqc_location_df = utils.select_rows_with_non_null_value(
+        cqc_location_df, CQCL.registration_status
+    )
+    cqc_location_df = utils.select_rows_with_non_null_value(cqc_location_df, CQCL.type)
 
     known_la_providerids = LocalAuthorityProviderIds.known_ids
     cqc_location_df = add_cqc_sector_column_to_cqc_locations_dataframe(

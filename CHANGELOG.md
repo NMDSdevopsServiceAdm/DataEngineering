@@ -69,6 +69,8 @@ All notable changes to this project will be documented in this file.
 
 - Updated docker file for create_dataset_snapshot lambda function to explicitly copy polars_utils while running.
 
+- Removed locations from CQC delta clean when registration status or location type are null.
+
 ### Improved
 
 
