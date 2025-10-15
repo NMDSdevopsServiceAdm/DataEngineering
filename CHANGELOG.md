@@ -71,7 +71,7 @@ All notable changes to this project will be documented in this file.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
-- Fixed CQC location clean validation script expected row count to align with the filtering in the job.
+- Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 ### Improved
 
