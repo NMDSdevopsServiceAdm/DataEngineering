@@ -15,6 +15,7 @@ formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
@@ -64,6 +65,10 @@ def main(
 
     logger.info("Finished joining lazyframes")
 
+    sink_parquet_with_partitions(
+        aggregated_worker_lf, estimated_ind_cqc_filled_posts_by_job_role_destination
+    )
+
     # estimated_ind_cqc_filled_posts_by_job_role_lf = (
     #     JRUtils.join_worker_to_estimates_dataframe(
     #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
@@ -86,11 +91,26 @@ def main(
     #     logger.info(f"Rows in partition {i}: {rows_in_partition}")
     #     total_rows += rows_in_partition
 
-    total_rows = (
-        aggregated_worker_lf.select(pl.len()).collect(engine="streaming").item()
+    # total_rows = (
+    #     aggregated_worker_lf.select(pl.len()).collect(engine="streaming").item()
+    # )
+
+    # logger.info(f"Total rows: {total_rows}")
+
+
+def sink_parquet_with_partitions(
+    lf: pl.LazyFrame, estimated_ind_cqc_filled_posts_by_job_role_destination: str
+):
+    path = pl.PartitionByKey(
+        base_path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}",
+        include_key=False,
+        by=partition_keys,
     )
 
-    logger.info(f"Total rows: {total_rows}")
+    lf.sink_parquet(
+        path=path,
+        mkdir=True,
+    )
 
     # batch_size = pl.lit(100000, pl.Int64())
     # for i in range(0, total_rows, batch_size):

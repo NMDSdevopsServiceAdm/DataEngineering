@@ -22,6 +22,10 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.care_worker,
         ),
+        ("2025", "2025", "2025", "2025", "2025"),
+        ("01", "01", "01", "01", "01"),
+        ("01", "01", "01", "01", "01"),
+        ("20250101", "20250101", "20250101", "20250101", "20250101"),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_rows = [
         ("101", "101", "101", "101", "101", "101", "102", "102", "102"),
@@ -46,6 +50,20 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsData:
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.senior_care_worker,
             MainJobRoleLabels.registered_nurse,
+        ),
+        ("2025", "2025", "2025", "2025", "2025", "2025", "2025", "2025", "2025"),
+        ("01", "01", "01", "01", "01", "01", "01", "01", "01"),
+        ("01", "01", "01", "01", "01", "01", "01", "01", "01"),
+        (
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
         ),
         (1, 1, 0, 0, 1, 0, 2, 0, 0),
     ]

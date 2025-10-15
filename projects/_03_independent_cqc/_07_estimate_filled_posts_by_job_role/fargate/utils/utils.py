@@ -1,6 +1,7 @@
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
@@ -67,11 +68,24 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         how="left",
     )
 
-    # unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
+    unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
 
-    # unique_workplaces_lf = unique_workplaces_lf.drop(
-    #     IndCQC.ascwds_job_role_counts
-    # ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+    unique_workplaces_lf = unique_workplaces_lf.drop(
+        IndCQC.ascwds_job_role_counts
+    ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+
+    unique_workplaces_lf = unique_workplaces_lf.select(
+        [
+            IndCQC.establishment_id,
+            IndCQC.ascwds_worker_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
+            IndCQC.ascwds_job_role_counts,
+        ]
+    )
 
     return unique_workplaces_lf
 

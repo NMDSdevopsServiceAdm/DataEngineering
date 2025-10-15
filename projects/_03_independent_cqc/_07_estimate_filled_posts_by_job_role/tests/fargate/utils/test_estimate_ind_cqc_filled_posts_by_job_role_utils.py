@@ -39,14 +39,12 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
                 [
                     IndCQC.establishment_id,
                     IndCQC.ascwds_worker_import_date,
-                    IndCQC.main_job_role_clean_labelled,
                 ]
             ),
             expected_lf.sort(
                 [
                     IndCQC.establishment_id,
                     IndCQC.ascwds_worker_import_date,
-                    IndCQC.main_job_role_clean_labelled,
                 ]
             ),
         )
