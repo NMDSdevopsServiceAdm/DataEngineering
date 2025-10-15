@@ -79,10 +79,6 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
             IndCQC.establishment_id,
             IndCQC.ascwds_worker_import_date,
             IndCQC.main_job_role_clean_labelled,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
             IndCQC.ascwds_job_role_counts,
         ]
     )

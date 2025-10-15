@@ -13,10 +13,6 @@ class EstimateIndCQCFilledPostsByJobRoleUtilsSchemas:
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
             (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (Keys.year, pl.String()),
-            (Keys.month, pl.String()),
-            (Keys.day, pl.String()),
-            (Keys.import_date, pl.String()),
         ]
     )
     expected_aggregate_ascwds_worker_job_roles_per_establishment_schema = pl.Schema(

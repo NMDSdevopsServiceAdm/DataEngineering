@@ -63,39 +63,20 @@ def main(
         cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
     )
 
-    logger.info("Finished joining lazyframes")
+    logger.info("Finished aggregating worker data")
 
-    sink_parquet_with_partitions(
-        aggregated_worker_lf, estimated_ind_cqc_filled_posts_by_job_role_destination
+    estimated_ind_cqc_filled_posts_by_job_role_lf = (
+        JRUtils.join_worker_to_estimates_dataframe(
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+        )
     )
 
-    # estimated_ind_cqc_filled_posts_by_job_role_lf = (
-    #     JRUtils.join_worker_to_estimates_dataframe(
-    #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
-    #     )
-    # )
+    logger.info("Finished joing worker data to estimates")
 
-    # plan = estimated_ind_cqc_filled_posts_lf.explain(
-    #     engine="streaming",
-    # )
-    # logger.info(plan)
-
-    # total_rows = 0
-    # for i in range(2013, 2025, 1):
-    #     rows_in_partition = (
-    #         aggregated_worker_lf.filter(pl.col(Keys.year) == i)
-    #         .select(pl.len())
-    #         .collect(engine="streaming")
-    #         .item()
-    #     )
-    #     logger.info(f"Rows in partition {i}: {rows_in_partition}")
-    #     total_rows += rows_in_partition
-
-    # total_rows = (
-    #     aggregated_worker_lf.select(pl.len()).collect(engine="streaming").item()
-    # )
-
-    # logger.info(f"Total rows: {total_rows}")
+    sink_parquet_with_partitions(
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        estimated_ind_cqc_filled_posts_by_job_role_destination,
+    )
 
 
 def sink_parquet_with_partitions(
@@ -111,22 +92,6 @@ def sink_parquet_with_partitions(
         path=path,
         mkdir=True,
     )
-
-    # batch_size = pl.lit(100000, pl.Int64())
-    # for i in range(0, total_rows, batch_size):
-    #     aggregated_worker_lf.slice(i, batch_size).sink_parquet(
-    #         path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf-{i}.parquet",
-    #         compression="snappy",
-    #     )
-
-    #     logger.info(f"Wrote batch {i} of {total_rows}")
-
-    # utils.write_to_parquet(
-    #     aggregated_worker_lf.collect(engine="streaming"),
-    #     f"{estimated_ind_cqc_filled_posts_by_job_role_destination}estimated_ind_cqc_filled_posts_by_job_role_lf.parquet",
-    #     logger=logger,
-    #     append=False,
-    # )
 
 
 if __name__ == "__main__":
