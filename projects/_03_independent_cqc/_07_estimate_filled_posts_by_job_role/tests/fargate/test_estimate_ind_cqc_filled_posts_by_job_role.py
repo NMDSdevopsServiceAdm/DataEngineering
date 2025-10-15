@@ -94,3 +94,19 @@ class SinkParquetWithPartitions(EstimateIndCQCFilledPostsByJobRoleTests):
                 "some\destination\year=2025\month=01\day=01\import_date=20250101"
             ).exists()
         )
+
+
+class GetUniqueYearsAsList(EstimateIndCQCFilledPostsByJobRoleTests):
+    def test_get_unique_years_as_list_returns_expected_list(self):
+        test_lf = pl.LazyFrame(
+            {
+                Keys.year: ["2025", "2024"],
+                Keys.month: ["01", "01"],
+                Keys.day: ["01", "01"],
+                Keys.import_date: ["20250101", "20240101"],
+            }
+        )
+        returned_list = job.get_unique_years_as_list(test_lf)
+        expected_list = ["2025", "2024"]
+
+        self.assertEqual(returned_list, expected_list)
