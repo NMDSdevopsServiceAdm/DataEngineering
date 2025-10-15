@@ -52,6 +52,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
             {
                 "assertion_type": "row_count_match",
                 "all_passed": False,
+                "brief": "Cleaned file has 3 rows but expecting 0 rows",
             },
             report_json[0],
         )
