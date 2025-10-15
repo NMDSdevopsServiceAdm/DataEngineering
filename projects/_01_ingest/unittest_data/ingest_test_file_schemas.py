@@ -974,6 +974,8 @@ class PostcodeMatcherSchema:
             StructField(CQCL.name, StringType(), False),
             StructField(CQCL.postal_address_line1, StringType(), False),
             StructField(CQCL.postal_code, StringType(), False),
+            StructField(CQCL.registration_status, StringType(), False),
+            StructField(CQCL.type, StringType(), False),
         ]
     )
     postcodes_schema = StructType(
@@ -1101,7 +1103,7 @@ class PostcodeMatcherSchema:
         ]
     )
 
-    combine_matched_df1_schema = StructType(
+    combine_df1_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
@@ -1109,7 +1111,7 @@ class PostcodeMatcherSchema:
             StructField(ONSClean.current_cssr, StringType(), False),
         ]
     )
-    combine_matched_df2_schema = StructType(
+    combine_df2_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
@@ -1118,7 +1120,7 @@ class PostcodeMatcherSchema:
             StructField(ONSClean.current_cssr, StringType(), False),
         ]
     )
-    expected_combine_matched_schema = StructType(
+    expected_combine_schema = StructType(
         [
             StructField(CQCLClean.location_id, StringType(), False),
             StructField(CQCLClean.cqc_location_import_date, DateType(), False),
