@@ -3,7 +3,7 @@ import sys
 import pointblank as pb
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
@@ -19,7 +19,6 @@ from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
-from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
 compare_columns_to_import = [
     Keys.import_date,
@@ -152,12 +151,6 @@ def main(
 def expected_size(df: pl.DataFrame) -> int:
     gac_services = pl.col(CQCL.gac_service_types)
 
-    exclude_locations = [
-        RecordsToRemoveInLocationsData.dental_practice,
-        RecordsToRemoveInLocationsData.temp_registration,
-        # add more if needed
-    ]
-
     cleaned_df = df.with_columns(
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
@@ -167,7 +160,7 @@ def expected_size(df: pl.DataFrame) -> int:
         has_value(df, CQCL.provider_id, CQCL.location_id),
         has_value(df, CQCL.registration_status, CQCL.location_id),
         has_value(df, CQCL.type, CQCL.location_id),
-        ~pl.col(CQCL.location_id).is_in(exclude_locations),
+        raw_data_adjustments.is_valid_location(),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
