@@ -1335,18 +1335,20 @@ class ExtractRegisteredManagerNamesData:
 class PostcodeMatcherData:
     # fmt: off
     locations_where_all_match_rows = [
-        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),  # lower case but matches ok
-        ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),  # wrong now but amended later (match to the first known one, not the second)
-        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
-        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
-        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),  # known issue (actually need one from the invalid list here)
-        ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),  # match this in truncated
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa", RegistrationStatus.registered, LocationType.social_care_identifier),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa", RegistrationStatus.registered, LocationType.social_care_identifier),  # lower case but matches ok
+        ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA", RegistrationStatus.registered, LocationType.social_care_identifier),  # wrong now but amended later (match to the first known one, not the second)
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA", RegistrationStatus.registered, LocationType.social_care_identifier),
+        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA", RegistrationStatus.registered, LocationType.social_care_identifier),
+        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH", RegistrationStatus.registered, LocationType.social_care_identifier),  # known issue (actually need one from the invalid list here)
+        ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ", RegistrationStatus.registered, LocationType.social_care_identifier),  # match this in truncated
+        ("1-005", date(2025, 1, 1), "name 1", "1 road name", "AA1 1AA", RegistrationStatus.deregistered, LocationType.social_care_identifier),  # matches but not registered
+        ("1-006", date(2025, 1, 1), "name 1", "1 road name", "AA1 1AA", RegistrationStatus.registered, LocationType.nhs_healthcare_identifier),  # matches but not social care
     ]
     locations_with_unmatched_postcode_rows = [
-        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-005", date(2025, 1, 1), "name 5", "5 road name", "AA2 5XX"),  # never known
+        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa", RegistrationStatus.registered, LocationType.social_care_identifier),
+        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa", RegistrationStatus.registered, LocationType.social_care_identifier),
+        ("1-002", date(2025, 1, 1), "name 5", "5 road name", "AA2 5XX", RegistrationStatus.registered, LocationType.social_care_identifier),  # never known
     ]
     # fmt: on
 
@@ -1452,15 +1454,15 @@ class PostcodeMatcherData:
         ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AB1 2CD")
     ]
 
-    combine_matched_df1_rows = [
+    combine_df1_rows = [
         ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1"),
         ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1"),
     ]
-    combine_matched_df2_rows = [
+    combine_df2_rows = [
         ("1-002", date(2025, 1, 1), "ZZ11AA", "ZZ11", "CSSR 2"),
         ("1-004", date(2025, 1, 1), "ZZ12AA", "ZZ12", "CSSR 3"),
     ]
-    expected_combine_matched_rows = [
+    expected_combine_rows = [
         ("1-001", date(2025, 1, 1), "AA11AA", "CSSR 1", None),
         ("1-002", date(2025, 1, 1), "ZZ11AA", "CSSR 2", "ZZ11"),
         ("1-003", date(2025, 1, 1), "AA12AA", "CSSR 1", None),

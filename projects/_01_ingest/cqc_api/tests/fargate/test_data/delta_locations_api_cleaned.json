@@ -47,7 +47,7 @@
   "numberOfBeds": [
     null,
     0,
-    500
+    -1
   ],
   "dormancy": [
     null,

@@ -6,7 +6,6 @@ import polars as pl
 from polars_utils import utils
 from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
-from polars_utils.raw_data_adjustments import is_valid_location
 from polars_utils.validation import actions as vl
 from polars_utils.validation.constants import GLOBAL_ACTIONS, GLOBAL_THRESHOLDS
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
@@ -17,11 +16,6 @@ from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_names.validation_table_columns import Validation
-from utils.column_values.categorical_column_values import (
-    LocationType,
-    RegistrationStatus,
-    Services,
-)
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
@@ -82,6 +76,7 @@ def main(
                 # CQCLClean.registration_status,
                 CQCLClean.imputed_registration_date,
                 CQCLClean.name,
+                CQCLClean.type,
             ]
         )
         # index columns
@@ -91,6 +86,8 @@ def main(
                 CQCLClean.cqc_location_import_date,
             ],
         )
+        # greater than or equal to
+        .col_vals_ge(CQCLClean.number_of_beds, 0, na_pass=True)
         # between (inclusive)
         # .col_vals_between(CQCLClean.number_of_beds, 0, 500, na_pass=True)
         .col_vals_between(Validation.location_id_length, 3, 14)
@@ -157,6 +154,8 @@ def expected_size(df: pl.DataFrame) -> int:
         # TODO: remove regulated_activities
         has_value(df, CQCL.regulated_activities, CQCL.location_id),
         has_value(df, CQCL.provider_id, CQCL.location_id),
+        has_value(df, CQCL.registration_status, CQCL.location_id),
+        has_value(df, CQCL.type, CQCL.location_id),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height

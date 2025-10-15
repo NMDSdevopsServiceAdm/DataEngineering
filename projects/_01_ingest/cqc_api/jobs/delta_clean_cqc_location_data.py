@@ -108,6 +108,10 @@ def main(
     cqc_location_df = utils.select_rows_with_non_null_value(
         cqc_location_df, CQCL.provider_id
     )
+    cqc_location_df = utils.select_rows_with_non_null_value(
+        cqc_location_df, CQCL.registration_status
+    )
+    cqc_location_df = utils.select_rows_with_non_null_value(cqc_location_df, CQCL.type)
 
     known_la_providerids = LocalAuthorityProviderIds.known_ids
     cqc_location_df = add_cqc_sector_column_to_cqc_locations_dataframe(
@@ -246,8 +250,30 @@ def main(
 
 
 def create_postcode_matching_dimension(
-    cqc_df, postcode_df, dimension_location, dimension_update_date
-):
+    cqc_df: DataFrame,
+    postcode_df: DataFrame,
+    dimension_location: str,
+    dimension_update_date: str,
+) -> DataFrame:
+    """
+    Creates (or updates) the postcode matching dimension by comparing current CQC data
+    against the existing dimension and appending only new records.
+
+    This function reads any existing dimension from the given location, generates a
+    current dimension using postcode matching logic, identifies new rows not present
+    in the previous dimension (if available), and adds metadata columns for
+    date-based partitioning.
+
+    Args:
+        cqc_df (DataFrame): DataFrame containing CQC location data.
+        postcode_df (DataFrame): DataFrame containing postcode data used for matching.
+        dimension_location (str): S3 path where the dimension data should be stored
+            dimension parquet file is stored.
+        dimension_update_date (str): Date string in 'YYYYMMDD' format for creating partition keys.
+
+    Returns:
+        DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
+    """
     try:
         previous_dimension = utils.read_from_parquet(dimension_location)
     except AnalysisException:

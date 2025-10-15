@@ -56,8 +56,7 @@ class LocationsApiCleanedCategoricalValues:
     sector_column_values = Sector(CQCLClean.cqc_sector)
     dormancy_column_values = Dormancy(CQCLClean.dormancy, contains_null_values=True)
     registration_status_column_values = RegistrationStatus(
-        CQCLClean.registration_status,
-        # value_to_remove=RegistrationStatus.deregistered,
+        CQCLClean.registration_status
     )
     primary_service_type_column_values = PrimaryServiceType(
         CQCLClean.primary_service_type
