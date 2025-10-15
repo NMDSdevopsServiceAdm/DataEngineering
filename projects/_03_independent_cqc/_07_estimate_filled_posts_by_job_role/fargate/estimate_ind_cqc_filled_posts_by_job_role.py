@@ -99,7 +99,7 @@ def main(
 
     for i in unique_years_list:
         batch = estimated_ind_cqc_filled_posts_by_job_role_lf.filter(
-            pl.col(Keys.year == i)
+            pl.col(Keys.year) == i
         )
 
         sink_parquet_with_partitions(
