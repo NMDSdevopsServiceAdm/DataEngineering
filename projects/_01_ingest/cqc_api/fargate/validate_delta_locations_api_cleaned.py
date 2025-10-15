@@ -19,6 +19,7 @@ from utils.column_names.validation_table_columns import Validation
 from utils.column_values.categorical_columns_by_dataset import (
     LocationsApiCleanedCategoricalValues as CatValues,
 )
+from utils.raw_data_adjustments import RecordsToRemoveInLocationsData
 
 compare_columns_to_import = [
     Keys.import_date,
@@ -55,6 +56,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
+    expected_row_count = expected_size(compare_df)
 
     validation = (
         pb.Validate(
@@ -65,7 +67,7 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(expected_size(compare_df))
+        .row_count_match(expected_row_count)
         # complete columns
         .col_vals_not_null(
             [
@@ -146,6 +148,13 @@ def main(
 
 def expected_size(df: pl.DataFrame) -> int:
     gac_services = pl.col(CQCL.gac_service_types)
+
+    exclude_locations = [
+        RecordsToRemoveInLocationsData.dental_practice,
+        RecordsToRemoveInLocationsData.temp_registration,
+        # add more if needed
+    ]
+
     cleaned_df = df.with_columns(
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
@@ -155,6 +164,7 @@ def expected_size(df: pl.DataFrame) -> int:
         has_value(df, CQCL.provider_id, CQCL.location_id),
         has_value(df, CQCL.registration_status, CQCL.location_id),
         has_value(df, CQCL.type, CQCL.location_id),
+        ~pl.col(CQCL.location_id).is_in(exclude_locations),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
