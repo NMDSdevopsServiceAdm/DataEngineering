@@ -119,10 +119,7 @@ def sink_parquet_with_partitions(
         by=partition_keys,
     )
 
-    lf.sink_parquet(
-        path=path,
-        mkdir=True,
-    )
+    lf.sink_parquet(path=path, mkdir=True, engine="streaming")
 
 
 def get_unique_years_as_list(lf: pl.LazyFrame) -> list:
