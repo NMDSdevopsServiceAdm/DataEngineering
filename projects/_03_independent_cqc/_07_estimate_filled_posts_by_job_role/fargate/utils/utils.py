@@ -11,7 +11,7 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
     lf: pl.LazyFrame, list_of_job_roles: list
-) -> pl.LazyFrame:
+) -> list[pl.DataFrame]:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
 
@@ -26,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
-        pl.LazyFrame: The input dataframe with a count of rows for all potential job roles.
+        list[pl.DataFrame]: The input dataframe with a count of rows for all potential job roles.
     """
     unique_workplaces_lf = lf.unique(
         [
@@ -83,13 +83,14 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     )
 
-    # use collect_all here to return list of dataframes.
-    return unique_workplaces_lf
+    return pl.collect_all(
+        lazy_frames=[unique_workplaces_lf, worker_count_lf], engine="streaming"
+    )
 
 
 def join_worker_to_estimates_dataframe(
     estimated_filled_posts_lf: pl.LazyFrame,
-    aggregated_job_roles_per_establishment_lf: pl.LazyFrame,
+    aggregated_job_roles_per_establishment_lf: pl.DataFrame,
 ) -> pl.LazyFrame:
     """
     Join the mainjrid_clean_labels and ascwds_job_role_counts columns from the aggregated worker LazyFrame into the estimated filled post LazyFrame.
@@ -101,7 +102,7 @@ def join_worker_to_estimates_dataframe(
 
     Args:
         estimated_filled_posts_lf (pl.LazyFrame): A dataframe containing estimated filled posts at workplace level.
-        aggregated_job_roles_per_establishment_lf (pl.LazyFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
+        aggregated_job_roles_per_establishment_lf (pl.DataFrame): ASC-WDS job role breakdown dataframe aggregated at workplace level.
 
     Returns:
         pl.LazyFrame: The estimated filled post DataFrame with the job role count map column joined in.

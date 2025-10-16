@@ -64,15 +64,19 @@ def main(
     )
 
     logger.info("Finished aggregating worker data. Printing query plan.")
-    logger.info(aggregated_worker_lf.explain(format="tree"))
 
     estimated_ind_cqc_filled_posts_by_job_role_lf = (
         JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf[0]
         )
     )
 
     logger.info("Finished joing worker data to estimates")
+
+    sink_parquet_with_partitions(
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        estimated_ind_cqc_filled_posts_by_job_role_destination,
+    )
 
     # unique_years_list = get_unique_years_as_list(
     #     estimated_ind_cqc_filled_posts_by_job_role_lf
