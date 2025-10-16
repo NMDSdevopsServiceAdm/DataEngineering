@@ -71,6 +71,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
+- Added placeholder tasks for new processes in [Transform-CQC-Data step function](./terraform/pipeline/step-functions/dynamic/Transform-CQC-Data.json).
+
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 ### Improved
