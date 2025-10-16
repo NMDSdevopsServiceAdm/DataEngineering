@@ -97,10 +97,6 @@ def main(
     cqc_location_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
-    # TEMP DIAGNOSTICS
-    input_df = utils.read_from_parquet(
-        cqc_location_source, selected_columns=cqc_location_api_cols_to_import
-    )
 
     ons_postcode_directory_df = utils.read_from_parquet(
         cleaned_ons_postcode_directory_source, selected_columns=ons_cols_to_import
@@ -248,25 +244,23 @@ def main(
         partitionKeys=dimensionPartitionKeys,
     )
 
-    # TEMP DIAGNOSTICS
-    validation_df = expected_size(input_df)
-    print(f"returned rows: {cqc_location_df.count()}")
-    print(f"expected rows: {validation_df.count()}")
-
-    differences_df = diff_on_keys(cqc_location_df, validation_df)
-
-    # utils.write_to_parquet(
-    #     cqc_location_df,
-    #     cleaned_cqc_location_destination,
-    #     mode="overwrite",
-    #     partitionKeys=cqcPartitionKeys,
-    # )
     utils.write_to_parquet(
-        differences_df,
+        cqc_location_df,
         cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+    # TEMP DIAGNOSTICS
+    print(f"returned rows: {cqc_location_df.count()}")
+
+    input_df = utils.read_from_parquet(
+        cqc_location_source, selected_columns=cqc_location_api_cols_to_import
+    )
+    validation_df = expected_size(input_df)
+    print(f"expected rows: {validation_df.count()}")
+
+    diff_on_keys(cqc_location_df, validation_df)
 
 
 # TEMP DIAGNOSTICS
@@ -308,22 +302,19 @@ def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
     ]
     key_cols = [CQCL.location_id, Keys.import_date]
 
-    # ✅ Add a source indicator (do this BEFORE filtering)
-    df1_tagged = df1.withColumn("source_df", F.lit("cleaned_df"))
-    df2_tagged = df2.withColumn("source_df", F.lit("valid_df"))
+    # Add a source indicator
+    df1_reduced = df1.select(*cols_to_keep)
+    df2_reduced = df2.select(*cols_to_keep)
 
-    # ✅ Rows in df1 but not df2
-    only_in_df1 = df1_tagged.join(
-        df2_tagged.select(*key_cols), on=key_cols, how="left_anti"
-    )
+    # Rows in df1 but not df2
+    only_in_df1 = df1_reduced.join(df2.select(*key_cols), on=key_cols, how="left_anti")
+    print("only in cleaned df:")
+    only_in_df1.show(25, truncate=False)
 
-    # ✅ Rows in df2 but not df1
-    only_in_df2 = df2_tagged.join(
-        df1_tagged.select(*key_cols), on=key_cols, how="left_anti"
-    )
-
-    # ✅ Union and select the desired columns (plus source_df)
-    return only_in_df1.unionByName(only_in_df2).select(*cols_to_keep, "source_df")
+    # Rows in df2 but not df1
+    only_in_df2 = df2_reduced.join(df1.select(*key_cols), on=key_cols, how="left_anti")
+    print("only in validation df:")
+    only_in_df2.show(25, truncate=False)
 
 
 def create_postcode_matching_dimension(
