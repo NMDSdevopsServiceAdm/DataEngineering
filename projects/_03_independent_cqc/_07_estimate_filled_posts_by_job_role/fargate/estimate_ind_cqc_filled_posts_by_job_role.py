@@ -73,10 +73,14 @@ def main(
 
     # logger.info("Finished joing worker data to estimates")
 
-    sink_parquet_with_partitions(
-        aggregated_worker_lf,
-        "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=temp_folder_estimates/",
+    aggregated_worker_lf.write_parquet(
+        "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/temp_folder/temp.parquet",
     )
+
+    # sink_parquet_with_partitions(
+    #     aggregated_worker_lf,
+    #     "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=temp_folder_estimates/",
+    # )
 
     # unique_years_list = get_unique_years_as_list(
     #     estimated_ind_cqc_filled_posts_by_job_role_lf
