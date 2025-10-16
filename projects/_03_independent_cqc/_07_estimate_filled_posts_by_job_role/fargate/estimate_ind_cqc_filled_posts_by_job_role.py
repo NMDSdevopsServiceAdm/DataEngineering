@@ -59,22 +59,27 @@ def main(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
-    aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
-    )
+    # aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
+    #     cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
+    # )
 
-    logger.info("Finished aggregating worker data. Printing query plan.")
+    # logger.info("Finished aggregating worker data. Printing query plan.")
 
-    estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf[0]
-        )
-    )
+    # estimated_ind_cqc_filled_posts_by_job_role_lf = (
+    #     JRUtils.join_worker_to_estimates_dataframe(
+    #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf[0]
+    #     )
+    # )
 
-    logger.info("Finished joing worker data to estimates")
+    # logger.info("Finished joing worker data to estimates")
 
     sink_parquet_with_partitions(
-        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        estimated_ind_cqc_filled_posts_lf,
+        "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=temp_folder_estimates/",
+    )
+
+    sink_parquet_with_partitions(
+        cleaned_ascwds_worker_lf,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
     )
 
