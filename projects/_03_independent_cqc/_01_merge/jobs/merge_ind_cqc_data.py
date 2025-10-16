@@ -148,13 +148,13 @@ def main(
     )
     cqc_filtered_df = utils.select_rows_with_value(
         cqc_location_df, CQCLClean.type, LocationType.social_care_identifier
-    ).drop(CQCLClean.type)
+    )
     cqc_filtered_df = utils.select_rows_with_value(
         cqc_filtered_df, CQCLClean.registration_status, RegistrationStatus.registered
-    ).drop(CQCLClean.registration_status)
+    )
     cqc_filtered_df = utils.select_rows_with_value(
         cqc_filtered_df, CQCLClean.cqc_sector, Sector.independent
-    ).drop(CQCLClean.cqc_sector)
+    )
 
     gac_dim_df = utils.read_from_parquet(
         gac_dim_source,
