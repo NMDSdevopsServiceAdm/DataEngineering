@@ -26,8 +26,6 @@ compare_columns_to_import = [
     CQCL.provider_id,
     CQCL.type,
     CQCL.registration_status,
-    CQCL.gac_service_types,
-    CQCL.regulated_activities,
 ]
 
 
@@ -149,14 +147,7 @@ def main(
 
 
 def expected_size(df: pl.DataFrame) -> int:
-    gac_services = pl.col(CQCL.gac_service_types)
-
-    cleaned_df = df.with_columns(
-        # nullify empty lists to avoid index out of bounds error
-        pl.when(gac_services.list.len() > 0).then(gac_services),
-    ).filter(
-        # TODO: remove regulated_activities
-        has_value(df, CQCL.regulated_activities, CQCL.location_id),
+    cleaned_df = df.filter(
         has_value(df, CQCL.provider_id, CQCL.location_id),
         has_value(df, CQCL.registration_status, CQCL.location_id),
         has_value(df, CQCL.type, CQCL.location_id),

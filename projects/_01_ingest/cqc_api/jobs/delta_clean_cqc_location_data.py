@@ -265,15 +265,7 @@ def main(
 
 # TEMP DIAGNOSTICS
 def expected_size(df: DataFrame) -> DataFrame:
-    gac_services = CQCL.gac_service_types
-
-    validation_df = df.withColumn(
-        # nullify empty lists to avoid index out of bounds error
-        gac_services,
-        F.when(F.size(F.col(gac_services)) > 0, F.col(gac_services)).otherwise(
-            F.lit(None)
-        ),
-    ).filter(
+    validation_df = df.filter(
         F.col(CQCL.provider_id).isNotNull()
         & F.col(CQCL.registration_status).isNotNull()
         & F.col(CQCL.type).isNotNull()
@@ -290,7 +282,6 @@ def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
         CQCL.location_id,
         CQCL.provider_id,
         CQCL.registration_status,
-        CQCL.gac_service_types,
         CQCL.type,
     ]
     key_cols = [CQCL.location_id, Keys.import_date]
