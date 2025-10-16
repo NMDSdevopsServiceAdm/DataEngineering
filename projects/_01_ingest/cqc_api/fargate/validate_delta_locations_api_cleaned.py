@@ -3,7 +3,7 @@ import sys
 import pointblank as pb
 import polars as pl
 
-from polars_utils import utils
+from polars_utils import raw_data_adjustments, utils
 from polars_utils.expressions import has_value, str_length_cols
 from polars_utils.logger import get_logger
 from polars_utils.validation import actions as vl
@@ -55,6 +55,7 @@ def main(
         f"s3://{bucket_name}/{compare_path}",
         selected_columns=compare_columns_to_import,
     )
+    expected_row_count = expected_size(compare_df)
 
     validation = (
         pb.Validate(
@@ -65,7 +66,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        # .row_count_match(expected_size(compare_df))
+        .row_count_match(
+            expected_row_count,
+            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        )
         # complete columns
         .col_vals_not_null(
             [
@@ -147,6 +151,7 @@ def main(
 
 def expected_size(df: pl.DataFrame) -> int:
     gac_services = pl.col(CQCL.gac_service_types)
+
     cleaned_df = df.with_columns(
         # nullify empty lists to avoid index out of bounds error
         pl.when(gac_services.list.len() > 0).then(gac_services),
@@ -156,6 +161,7 @@ def expected_size(df: pl.DataFrame) -> int:
         has_value(df, CQCL.provider_id, CQCL.location_id),
         has_value(df, CQCL.registration_status, CQCL.location_id),
         has_value(df, CQCL.type, CQCL.location_id),
+        raw_data_adjustments.is_valid_location(),
     )
     logger.info(f"Expected size {cleaned_df.height}")
     return cleaned_df.height
