@@ -2,7 +2,7 @@
 
 # TODO - review order of tasks below
 
-# TODO - remove_non_social_care_locations
+# TODO - remove_non_social_care_locations (assuming some have switched between SC and not)
 # TODO - remove_specialist_colleges
 
 # TODO - select_deregistered_locations_only (only those within 2 months of import date)
