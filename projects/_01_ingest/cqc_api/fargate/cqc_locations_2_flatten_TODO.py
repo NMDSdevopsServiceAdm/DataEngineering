@@ -2,6 +2,8 @@
 
 # TODO - remove_records_from_locations_data
 
+# TODO - remove locations who have never been a social care locations
+
 # TODO - create_cleaned_registration_date_column
 # TODO - column_to_date (imputed_registration_date)
 # TODO - format_date_fields (both registration dates)
