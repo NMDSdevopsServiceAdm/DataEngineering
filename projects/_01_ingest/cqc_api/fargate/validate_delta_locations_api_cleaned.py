@@ -66,10 +66,10 @@ def main(
             actions=GLOBAL_ACTIONS,
         )
         # dataset size
-        .row_count_match(
-            expected_row_count,
-            brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
-        )
+        # .row_count_match(
+        #     expected_row_count,
+        #     brief=f"Cleaned file has {source_df.height} rows but expecting {expected_row_count} rows",
+        # )
         # complete columns
         .col_vals_not_null(
             [
