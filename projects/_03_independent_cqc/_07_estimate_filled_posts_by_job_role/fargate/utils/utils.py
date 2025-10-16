@@ -83,6 +83,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     )
 
+    # use collect_all here to return list of dataframes.
     return unique_workplaces_lf
 
 

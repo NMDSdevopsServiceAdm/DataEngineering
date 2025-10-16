@@ -68,7 +68,7 @@ def main(
 
     estimated_ind_cqc_filled_posts_by_job_role_lf = (
         JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf[0]
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
         )
     )
 
