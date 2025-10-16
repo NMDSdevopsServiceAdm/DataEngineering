@@ -288,17 +288,13 @@ def expected_size(df: DataFrame) -> DataFrame:
 # TEMP DIAGNOSTICS
 def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
     cols_to_keep = [
-        CQCL.location_id,
         Keys.import_date,
+        CQCL.location_id,
         CQCL.regulated_activities,
         CQCL.provider_id,
         CQCL.registration_status,
         CQCL.gac_service_types,
         CQCL.type,
-        Keys.import_date,
-        Keys.year,
-        Keys.month,
-        Keys.day,
     ]
     key_cols = [CQCL.location_id, Keys.import_date]
 
