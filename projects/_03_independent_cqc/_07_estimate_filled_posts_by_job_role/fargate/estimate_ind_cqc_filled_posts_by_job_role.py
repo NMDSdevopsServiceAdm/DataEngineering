@@ -55,12 +55,18 @@ def main(
         estimated_ind_cqc_filled_posts_source,
     ).select(estimated_ind_cqc_filled_posts_columns_to_import)
 
-    cleaned_ascwds_worker_lf = pl.scan_parquet(
+    cleaned_ascwds_worker_lf_1 = pl.scan_parquet(
+        cleaned_ascwds_worker_source,
+    ).select(cleaned_ascwds_worker_columns_to_import)
+
+    cleaned_ascwds_worker_lf_2 = pl.scan_parquet(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf, JRUtils.LIST_OF_JOB_ROLES_SORTED
+        cleaned_ascwds_worker_lf_1,
+        cleaned_ascwds_worker_lf_2,
+        JRUtils.LIST_OF_JOB_ROLES_SORTED,
     )
 
     # logger.info("Finished aggregating worker data. Printing query plan.")

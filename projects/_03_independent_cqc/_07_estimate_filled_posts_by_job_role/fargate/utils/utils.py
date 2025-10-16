@@ -10,7 +10,7 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
-    lf: pl.LazyFrame, list_of_job_roles: list
+    lf_1: pl.LazyFrame, lf_2: pl.LazyFrame, list_of_job_roles: list
 ) -> list[pl.DataFrame]:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
@@ -22,13 +22,14 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     All establishments end up with a row for all potential job roles.
 
     Args:
-        lf (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
+        lf_1 (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
+        lf_2 (pl.LazyFrame): The same dataframe as lf_1.
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
         list[pl.DataFrame]: The input dataframe with a count of rows for all potential job roles.
     """
-    unique_workplaces_lf = lf.unique(
+    unique_workplaces_lf = lf_1.unique(
         [
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
@@ -50,7 +51,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
     )
 
-    worker_count_lf = lf.group_by(
+    worker_count_lf = lf_2.group_by(
         [
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
