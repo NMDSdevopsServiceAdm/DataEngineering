@@ -50,42 +50,40 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
     )
 
-    worker_count_lf = lf.group_by(
-        [
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-            pl.col(IndCQC.main_job_role_clean_labelled),
-        ]
-    ).len(name=IndCQC.ascwds_job_role_counts)
+    # worker_count_lf = lf.group_by(
+    #     [
+    #         pl.col(IndCQC.establishment_id),
+    #         pl.col(IndCQC.ascwds_worker_import_date),
+    #         pl.col(IndCQC.main_job_role_clean_labelled),
+    #     ]
+    # ).len(name=IndCQC.ascwds_job_role_counts)
 
-    unique_workplaces_lf = unique_workplaces_lf.join(
-        other=worker_count_lf,
-        on=[
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-            pl.col(IndCQC.main_job_role_clean_labelled),
-        ],
-        how="left",
-    )
+    # unique_workplaces_lf = unique_workplaces_lf.join(
+    #     other=worker_count_lf,
+    #     on=[
+    #         pl.col(IndCQC.establishment_id),
+    #         pl.col(IndCQC.ascwds_worker_import_date),
+    #         pl.col(IndCQC.main_job_role_clean_labelled),
+    #     ],
+    #     how="left",
+    # )
 
-    unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
+    # unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
 
-    unique_workplaces_lf = unique_workplaces_lf.drop(
-        IndCQC.ascwds_job_role_counts
-    ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+    # unique_workplaces_lf = unique_workplaces_lf.drop(
+    #     IndCQC.ascwds_job_role_counts
+    # ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
 
-    unique_workplaces_lf = unique_workplaces_lf.select(
-        [
-            IndCQC.establishment_id,
-            IndCQC.ascwds_worker_import_date,
-            IndCQC.main_job_role_clean_labelled,
-            IndCQC.ascwds_job_role_counts,
-        ]
-    )
+    # unique_workplaces_lf = unique_workplaces_lf.select(
+    #     [
+    #         IndCQC.establishment_id,
+    #         IndCQC.ascwds_worker_import_date,
+    #         IndCQC.main_job_role_clean_labelled,
+    #         IndCQC.ascwds_job_role_counts,
+    #     ]
+    # )
 
-    return pl.collect_all(
-        lazy_frames=[unique_workplaces_lf, worker_count_lf], engine="streaming"
-    )
+    return unique_workplaces_lf.collect(engine="streaming")
 
 
 def join_worker_to_estimates_dataframe(
