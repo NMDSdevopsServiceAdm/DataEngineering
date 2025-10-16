@@ -274,9 +274,7 @@ def expected_size(df: DataFrame) -> DataFrame:
             F.lit(None)
         ),
     ).filter(
-        # TODO: remove regulated_activities
-        F.col(CQCL.regulated_activities).isNotNull()
-        & F.col(CQCL.provider_id).isNotNull()
+        F.col(CQCL.provider_id).isNotNull()
         & F.col(CQCL.registration_status).isNotNull()
         & F.col(CQCL.type).isNotNull()
         & (F.col(CQCL.location_id) != RecordsToRemoveInLocationsData.dental_practice)
@@ -290,7 +288,6 @@ def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
     cols_to_keep = [
         Keys.import_date,
         CQCL.location_id,
-        CQCL.regulated_activities,
         CQCL.provider_id,
         CQCL.registration_status,
         CQCL.gac_service_types,
