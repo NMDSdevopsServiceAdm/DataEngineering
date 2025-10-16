@@ -63,8 +63,15 @@ All notable changes to this project will be documented in this file.
 
 - Updated the build_snapshot_table_from_delta() function to retrieve the latest available data when the CQC API has not been executed on the step function run date.
 
-- Added Welsh postcodes to postcode correction dictionary. Note: A postcode is in Cardiff and another in Newport.
-  These must be reviewed as soon as possible.
+- Only check postcodes match for locations who provide social care and are registered at that point in time.
+
+- Removed validation check for a maximum of 500 beds in the CQC clean locations validation script.
+
+- Updated docker file for create_dataset_snapshot lambda function to explicitly copy polars_utils while running.
+
+- Removed locations from CQC delta clean when registration status or location type are null.
+
+- Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 ### Improved
 
