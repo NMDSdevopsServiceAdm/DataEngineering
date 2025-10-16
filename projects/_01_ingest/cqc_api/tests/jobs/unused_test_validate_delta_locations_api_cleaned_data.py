@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import projects._01_ingest.cqc_api.jobs.validate_delta_locations_api_cleaned_data as job
+import projects._01_ingest.cqc_api.jobs.unused_validate_delta_locations_api_cleaned_data as job
 from projects._01_ingest.unittest_data.ingest_test_file_data import (
     ValidateLocationsAPICleanedData as Data,
 )
@@ -14,7 +14,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 )
 
 PATCH_PATH = (
-    "projects._01_ingest.cqc_api.jobs.validate_delta_locations_api_cleaned_data"
+    "projects._01_ingest.cqc_api.jobs.unused_validate_delta_locations_api_cleaned_data"
 )
 
 

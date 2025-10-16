@@ -4,9 +4,11 @@ from unittest.mock import Mock, patch
 
 import polars as pl
 
-import projects._01_ingest.cqc_api.fargate.validate_delta_locations_api_raw as job
+import projects._01_ingest.cqc_api.fargate.validate_cqc_locations_1_api_delta_download as job
 
-PATCH_PATH = "polars_utils"
+PATCH_PATH = (
+    "projects._01_ingest.cqc_api.fargate.validate_cqc_locations_1_api_delta_download"
+)
 
 
 class ValidateLocationsRawTests(unittest.TestCase):
@@ -29,7 +31,7 @@ class ValidateLocationsRawTests(unittest.TestCase):
             orient="row",
         )
 
-    @patch(f"{PATCH_PATH}.validation.actions.write_reports")
+    @patch(f"{PATCH_PATH}.vl.write_reports")
     @patch(f"{PATCH_PATH}.utils.read_parquet")
     def test_invalid_dataset(self, mock_read_parquet: Mock, mock_write_reports: Mock):
         # Given
