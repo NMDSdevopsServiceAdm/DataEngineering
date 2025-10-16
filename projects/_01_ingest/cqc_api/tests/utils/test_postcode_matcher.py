@@ -69,10 +69,10 @@ class MainTests(PostcodeMatcherTests):
         raise_error_if_unmatched_mock.assert_called_once()
         combine_matched_dataframes_mock.assert_called_once()
 
-    def test_main_completes_when_all_postcodes_match(self):
+    def test_main_completes_and_returns_expected_rows_when_all_postcodes_match(self):
         returned_df = job.run_postcode_matching(self.locations_df, self.postcodes_df)
 
-        self.assertEqual(returned_df.count(), self.locations_df.count())
+        self.assertEqual(returned_df.count(), 7)
 
     def test_main_raises_error_when_some_postcodes_do_not_match(self):
         locations_df = self.spark.createDataFrame(
