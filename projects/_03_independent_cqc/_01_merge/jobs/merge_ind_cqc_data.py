@@ -184,7 +184,7 @@ def main(
     cqc_filtered_df = utils.join_dimension(
         cqc_filtered_df, pcm_dim_df, CQCLClean.location_id
     )
-
+    output_df = cqc_filtered_df
     ascwds_workplace_df = utils.read_from_parquet(
         cleaned_ascwds_workplace_source,
         selected_columns=cleaned_ascwds_workplace_columns_to_import,
@@ -232,7 +232,7 @@ def main(
     )
 
     utils.write_to_parquet(
-        cqc_filtered_df,
+        output_df,
         destination,
         mode="overwrite",
         partitionKeys=PartitionKeys,
