@@ -11,7 +11,7 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
     lf: pl.LazyFrame, list_of_job_roles: list
-) -> list[pl.LazyFrame]:
+) -> list[pl.DataFrame]:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
 
@@ -26,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
-        list[pl.LazyFrame]: The input dataframe with a count of rows for all potential job roles.
+        list[pl.DataFrame]: The input dataframe with a count of rows for all potential job roles.
     """
     unique_workplaces_lf = lf.unique(
         [
