@@ -55,18 +55,17 @@ def main(
         estimated_ind_cqc_filled_posts_source,
     ).select(estimated_ind_cqc_filled_posts_columns_to_import)
 
-    cleaned_ascwds_worker_lf_1 = pl.scan_parquet(
-        cleaned_ascwds_worker_source,
-    ).select(cleaned_ascwds_worker_columns_to_import)
-
-    cleaned_ascwds_worker_lf_2 = pl.scan_parquet(
+    cleaned_ascwds_worker_lf = pl.scan_parquet(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
-        cleaned_ascwds_worker_lf_1,
-        cleaned_ascwds_worker_lf_2,
+        cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
+    )
+
+    sink_parquet_with_partitions(
+        aggregated_worker_lf, estimated_ind_cqc_filled_posts_by_job_role_destination
     )
 
     # logger.info("Finished aggregating worker data. Printing query plan.")
@@ -78,14 +77,6 @@ def main(
     # )
 
     # logger.info("Finished joing worker data to estimates")
-
-    aggregated_worker_lf[0].write_parquet(
-        "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/temp_folder/unique_workplaces.parquet"
-    )
-
-    aggregated_worker_lf[1].write_parquet(
-        "s3://sfc-1032-jb-rle-est-prs-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/temp_folder/worker_counts.parquet"
-    )
 
     # unique_years_list = get_unique_years_as_list(
     #     estimated_ind_cqc_filled_posts_by_job_role_lf

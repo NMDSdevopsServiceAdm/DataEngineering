@@ -20,6 +20,7 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.senior_care_worker,
             MainJobRoleLabels.registered_nurse,
+            MainJobRoleLabels.social_worker,
         ]
 
         test_lf = pl.LazyFrame(

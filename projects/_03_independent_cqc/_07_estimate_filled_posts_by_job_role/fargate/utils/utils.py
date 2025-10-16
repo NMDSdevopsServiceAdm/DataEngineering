@@ -10,8 +10,8 @@ LIST_OF_JOB_ROLES_SORTED = sorted(list(AscwdsJobRoles.labels_dict.values()))
 
 
 def aggregate_ascwds_worker_job_roles_per_establishment(
-    lf_1: pl.LazyFrame, lf_2: pl.LazyFrame, list_of_job_roles: list
-) -> list[pl.DataFrame]:
+    lf: pl.LazyFrame, list_of_job_roles: list
+) -> pl.LazyFrame:
     """
     Counts rows in the worker dataset by establishment_id, ascwds_worker_import_date and main_job_role_clean_labelled.
 
@@ -22,36 +22,14 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     All establishments end up with a row for all potential job roles.
 
     Args:
-        lf_1 (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
-        lf_2 (pl.LazyFrame): The same dataframe as lf_1.
+        lf (pl.LazyFrame): A dataframe containing cleaned ASC-WDS worker data.
         list_of_job_roles (list): A list of job roles in alphabetical order.
 
     Returns:
-        list[pl.DataFrame]: The input dataframe with a count of rows for all potential job roles.
+        pl.LazyFrame: The input dataframe with a count of rows for all potential job roles.
     """
-    unique_workplaces_lf = lf_1.unique(
-        [
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-        ]
-    ).drop(IndCQC.main_job_role_clean_labelled)
-
-    all_job_roles_lf = pl.LazyFrame(
-        {
-            IndCQC.main_job_role_clean_labelled: list_of_job_roles,
-            IndCQC.ascwds_job_role_counts: [0] * len(list_of_job_roles),
-        }
-    )
-
-    unique_workplaces_lf = unique_workplaces_lf.join(
-        other=all_job_roles_lf, how="cross"
-    )
-
-    unique_workplaces_lf.rename(
-        {IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts}
-    )
-
-    worker_count_lf = lf_2.group_by(
+    # Aggregate worker data into one row per job role per workplace with a count column.
+    worker_count_lf = lf.group_by(
         [
             pl.col(IndCQC.establishment_id),
             pl.col(IndCQC.ascwds_worker_import_date),
@@ -59,34 +37,47 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).len(name=IndCQC.ascwds_job_role_counts)
 
-    # unique_workplaces_lf = unique_workplaces_lf.join(
-    #     other=worker_count_lf,
-    #     on=[
-    #         pl.col(IndCQC.establishment_id),
-    #         pl.col(IndCQC.ascwds_worker_import_date),
-    #         pl.col(IndCQC.main_job_role_clean_labelled),
-    #     ],
-    #     how="left",
-    # )
+    # Pivot the job role labels into columns, with the counts as their values.
+    aggregation = [
+        (pl.col(IndCQC.main_job_role_clean_labelled) == role).sum().alias(role)
+        for role in list_of_job_roles
+    ]
 
-    # unique_workplaces_lf = unique_workplaces_lf.fill_null(0)
+    worker_count_lf = worker_count_lf.group_by(
+        [
+            pl.col(IndCQC.establishment_id),
+            pl.col(IndCQC.ascwds_worker_import_date),
+        ]
+    ).agg(aggregation)
 
-    # unique_workplaces_lf = unique_workplaces_lf.drop(
-    #     IndCQC.ascwds_job_role_counts
-    # ).rename({IndCQC.ascwds_job_role_counts + "_right": IndCQC.ascwds_job_role_counts})
+    # Add a column for any missing job roles and make all values in that column 0.
+    job_role_columns_to_add = [
+        role for role in list_of_job_roles if role not in worker_count_lf.columns
+    ]
 
-    # unique_workplaces_lf = unique_workplaces_lf.select(
-    #     [
-    #         IndCQC.establishment_id,
-    #         IndCQC.ascwds_worker_import_date,
-    #         IndCQC.main_job_role_clean_labelled,
-    #         IndCQC.ascwds_job_role_counts,
-    #     ]
-    # )
-
-    return pl.collect_all(
-        lazy_frames=[unique_workplaces_lf, worker_count_lf], engine="streaming"
+    # Pivot all the job role columns into rows.
+    worker_count_lf = worker_count_lf.unpivot(
+        index=[
+            IndCQC.establishment_id,
+            IndCQC.ascwds_worker_import_date,
+        ],
+        on=[role for role in list_of_job_roles],
+        variable_name=IndCQC.main_job_role_clean_labelled,
+        value_name=IndCQC.ascwds_job_role_counts,
     )
+
+    # print(
+    #     worker_count_lf.collect()
+    #     .sort(
+    #         [
+    #             IndCQC.establishment_id,
+    #             IndCQC.ascwds_worker_import_date,
+    #         ]
+    #     )
+    #     .glimpse(max_items_per_column=20)
+    # )
+
+    return worker_count_lf
 
 
 def join_worker_to_estimates_dataframe(
