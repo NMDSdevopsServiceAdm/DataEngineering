@@ -293,7 +293,7 @@ def expected_size(df: DataFrame) -> DataFrame:
 
 # TEMP DIAGNOSTICS
 def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
-    cols = [
+    cols_to_keep = [
         CQCL.location_id,
         Keys.import_date,
         CQCL.regulated_activities,
@@ -301,22 +301,29 @@ def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
         CQCL.registration_status,
         CQCL.gac_service_types,
         CQCL.type,
-        "source_df",
+        Keys.import_date,
+        Keys.year,
+        Keys.month,
+        Keys.day,
     ]
     key_cols = [CQCL.location_id, Keys.import_date]
 
-    # Add source tags
+    # ✅ Add a source indicator (do this BEFORE filtering)
     df1_tagged = df1.withColumn("source_df", F.lit("cleaned_df"))
     df2_tagged = df2.withColumn("source_df", F.lit("valid_df"))
 
-    # Rows in df1 but not df2 (by key)
-    only_in_df1 = df1_tagged.join(df2.select(*cols), on=key_cols, how="left_anti")
+    # ✅ Rows in df1 but not df2
+    only_in_df1 = df1_tagged.join(
+        df2_tagged.select(*key_cols), on=key_cols, how="left_anti"
+    )
 
-    # Rows in df2 but not df1 (by key)
-    only_in_df2 = df2_tagged.join(df1.select(*cols), on=key_cols, how="left_anti")
+    # ✅ Rows in df2 but not df1
+    only_in_df2 = df2_tagged.join(
+        df1_tagged.select(*key_cols), on=key_cols, how="left_anti"
+    )
 
-    # Union the differences
-    return only_in_df1.unionByName(only_in_df2)
+    # ✅ Union and select the desired columns (plus source_df)
+    return only_in_df1.unionByName(only_in_df2).select(*cols_to_keep, "source_df")
 
 
 def create_postcode_matching_dimension(
