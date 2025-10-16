@@ -42,7 +42,10 @@ from utils.column_values.categorical_column_values import (
     Specialisms,
 )
 from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
-from utils.raw_data_adjustments import remove_records_from_locations_data
+from utils.raw_data_adjustments import (
+    RecordsToRemoveInLocationsData,
+    remove_records_from_locations_data,
+)
 
 cqcPartitionKeys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 dimensionPartitionKeys = [
@@ -92,6 +95,10 @@ def main(
     postcode_matching_destination: str,
 ):
     cqc_location_df = utils.read_from_parquet(
+        cqc_location_source, selected_columns=cqc_location_api_cols_to_import
+    )
+    # TEMP DIAGNOSTICS
+    input_df = utils.read_from_parquet(
         cqc_location_source, selected_columns=cqc_location_api_cols_to_import
     )
 
@@ -241,12 +248,75 @@ def main(
         partitionKeys=dimensionPartitionKeys,
     )
 
+    # TEMP DIAGNOSTICS
+    validation_df = expected_size(input_df)
+    print(f"returned rows: {cqc_location_df.count()}")
+    print(f"expected rows: {validation_df.count()}")
+
+    differences_df = diff_on_keys(cqc_location_df, validation_df)
+
+    # utils.write_to_parquet(
+    #     cqc_location_df,
+    #     cleaned_cqc_location_destination,
+    #     mode="overwrite",
+    #     partitionKeys=cqcPartitionKeys,
+    # )
     utils.write_to_parquet(
-        cqc_location_df,
+        differences_df,
         cleaned_cqc_location_destination,
         mode="overwrite",
         partitionKeys=cqcPartitionKeys,
     )
+
+
+# TEMP DIAGNOSTICS
+def expected_size(df: DataFrame) -> DataFrame:
+    gac_services = CQCL.gac_service_types
+
+    validation_df = df.withColumn(
+        # nullify empty lists to avoid index out of bounds error
+        gac_services,
+        F.when(F.size(F.col(gac_services)) > 0, F.col(gac_services)).otherwise(
+            F.lit(None)
+        ),
+    ).filter(
+        # TODO: remove regulated_activities
+        F.col(CQCL.regulated_activities).isNotNull()
+        & F.col(CQCL.provider_id).isNotNull()
+        & F.col(CQCL.registration_status).isNotNull()
+        & F.col(CQCL.type).isNotNull()
+        & (F.col(CQCL.location_id) != RecordsToRemoveInLocationsData.dental_practice)
+        & (F.col(CQCL.location_id) != RecordsToRemoveInLocationsData.temp_registration)
+    )
+    return validation_df
+
+
+# TEMP DIAGNOSTICS
+def diff_on_keys(df1: DataFrame, df2: DataFrame) -> DataFrame:
+    cols = [
+        CQCL.location_id,
+        Keys.import_date,
+        CQCL.regulated_activities,
+        CQCL.provider_id,
+        CQCL.registration_status,
+        CQCL.gac_service_types,
+        CQCL.type,
+        "source_df",
+    ]
+    key_cols = [CQCL.location_id, Keys.import_date]
+
+    # Add source tags
+    df1_tagged = df1.withColumn("source_df", F.lit("cleaned_df"))
+    df2_tagged = df2.withColumn("source_df", F.lit("valid_df"))
+
+    # Rows in df1 but not df2 (by key)
+    only_in_df1 = df1_tagged.join(df2.select(*cols), on=key_cols, how="left_anti")
+
+    # Rows in df2 but not df1 (by key)
+    only_in_df2 = df2_tagged.join(df1.select(*cols), on=key_cols, how="left_anti")
+
+    # Union the differences
+    return only_in_df1.unionByName(only_in_df2)
 
 
 def create_postcode_matching_dimension(
