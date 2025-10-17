@@ -64,55 +64,16 @@ def main(
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
     )
 
-    sink_parquet_with_partitions(
-        aggregated_worker_lf, estimated_ind_cqc_filled_posts_by_job_role_destination
+    estimated_ind_cqc_filled_posts_by_job_role_lf = (
+        JRUtils.join_worker_to_estimates_dataframe(
+            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
+        )
     )
 
-    # logger.info("Finished aggregating worker data. Printing query plan.")
-
-    # estimated_ind_cqc_filled_posts_by_job_role_lf = (
-    #     JRUtils.join_worker_to_estimates_dataframe(
-    #         estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf[0]
-    #     )
-    # )
-
-    # logger.info("Finished joing worker data to estimates")
-
-    # unique_years_list = get_unique_years_as_list(
-    #     estimated_ind_cqc_filled_posts_by_job_role_lf
-    # )
-
-    # unique_years_list = [
-    #     2013,
-    #     2014,
-    #     2015,
-    #     2016,
-    #     2017,
-    #     2018,
-    #     2019,
-    #     2020,
-    #     2021,
-    #     2022,
-    #     2023,
-    #     2024,
-    #     2025,
-    # ]
-
-    # logger.info("Finished getting unqiue list of year to loop through")
-
-    # logger.info("Starting to sink parquet via loop")
-
-    # for i in unique_years_list:
-    #     batch = estimated_ind_cqc_filled_posts_by_job_role_lf.filter(
-    #         pl.col(Keys.year) == i
-    #     )
-
-    #     sink_parquet_with_partitions(
-    #         batch,
-    #         estimated_ind_cqc_filled_posts_by_job_role_destination,
-    #     )
-
-    #     logger.info(f"Finished sinking year: {i}")
+    sink_parquet_with_partitions(
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
+        estimated_ind_cqc_filled_posts_by_job_role_destination,
+    )
 
 
 def sink_parquet_with_partitions(
@@ -125,12 +86,6 @@ def sink_parquet_with_partitions(
     )
 
     lf.sink_parquet(path=path, mkdir=True, engine="streaming")
-
-
-def get_unique_years_as_list(lf: pl.LazyFrame) -> list:
-    return (
-        lf.select(Keys.year).unique().collect(engine="streaming").to_series().to_list()
-    )
 
 
 if __name__ == "__main__":
