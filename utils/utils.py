@@ -345,7 +345,7 @@ def join_dimension(
         ),
         [
             primary_key,
-            Keys.import_date,
+            # Keys.import_date,
         ],
         how="left",
     )
