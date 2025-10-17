@@ -34,10 +34,10 @@ def lambda_handler(event, context):
         timepoint=date_int,
     )
     snapshot_date = snapshot_df[Keys.import_date][1]
-    date_int = int(
-        datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
-    )
-    output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
+    # date_int = int(
+    #     datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
+    # )
+    output_uri = event["output_uri"] + f"import_date={snapshot_date}/file.parquet"
 
     fs = S3FileSystem()
     with fs.open(output_uri, mode="wb") as destination:
