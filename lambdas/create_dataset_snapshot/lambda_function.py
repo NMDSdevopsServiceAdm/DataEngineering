@@ -18,11 +18,11 @@ def lambda_handler(event, context):
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
 
-    date_int = int(
-        datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
-            "%Y%m%d"
-        )
-    )
+    # date_int = int(
+    #     datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+    #         "%Y%m%d"
+    #     )
+    # )
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
@@ -33,7 +33,12 @@ def lambda_handler(event, context):
         dataset=event["dataset"],
         timepoint=date_int,
     )
-
+    snapshot_date = snapshot_df[Keys.import_date][1]
+    date_int = int(
+        datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
+            "%Y%m%d"
+        )
+    )
     output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
     fs = S3FileSystem()
