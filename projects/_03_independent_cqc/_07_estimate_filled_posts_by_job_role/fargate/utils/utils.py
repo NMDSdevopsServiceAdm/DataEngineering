@@ -30,10 +30,6 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         IndCQC.establishment_id,
         IndCQC.ascwds_worker_import_date,
         IndCQC.main_job_role_clean_labelled,
-        Keys.year,
-        Keys.month,
-        Keys.day,
-        Keys.import_date,
     ]
 
     # Aggregate worker data into one row per job role per workplace with a count column.
@@ -54,18 +50,11 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         index=[
             IndCQC.establishment_id,
             IndCQC.ascwds_worker_import_date,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
         ],
         on=[role for role in list_of_job_roles],
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.ascwds_job_role_counts,
     )
-
-    # Put the columns in a better order.
-    worker_count_lf = worker_count_lf.select(columns + [IndCQC.ascwds_job_role_counts])
 
     return worker_count_lf
 
