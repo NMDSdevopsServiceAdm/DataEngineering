@@ -97,7 +97,7 @@ class NewCqcLocationApiColumns:
     region: str = "region"
     registered_manager_absent_date: str = "registeredManagerAbsentDate"
     registration_date: str = "registrationDate"
-    registration_status: str = "registrationstatus"
+    registration_status: str = "registrationStatus"
     regulated_activities: str = "regulatedActivities"
     related_documents: str = "relatedDocuments"
     related_location_id: str = "relatedLocationId"
