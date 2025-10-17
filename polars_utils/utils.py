@@ -141,23 +141,23 @@ def sink_to_parquet(
     output_path = Path(output_path)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    fname = f"{uuid.uuid4()}.parquet"
     if append:
-        output_file = output_path / fname
-    else:
-        output_file = output_path / fname
+        fname = f"{uuid.uuid4()}.parquet"
+        if isinstance(output_path, str):
+            output_path += fname
+        else:
+            output_path = output_path / fname
 
     try:
-        # Sink the lazy frame to Parquet with optional partitioning
         if partition_cols:
-            lazy_df.sink_parquet(output_file, partition_by=partition_cols)
+            lazy_df.sink_parquet(output_path, partition_by=partition_cols)
             logger.info(
-                f"LazyFrame sunk to Parquet at {output_file} partitioned by {partition_cols}"
+                f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
             )
         else:
-            lazy_df.sink_parquet(output_file)
+            lazy_df.sink_parquet(output_path)
             logger.info(
-                f"LazyFrame sunk to Parquet at {output_file} without partitioning"
+                f"LazyFrame sunk to Parquet at {output_path} without partitioning"
             )
     except Exception as e:
         logger.error(f"Failed to sink LazyFrame to Parquet: {e}")
