@@ -35,9 +35,7 @@ def lambda_handler(event, context):
     )
     snapshot_date = snapshot_df[Keys.import_date][1]
     date_int = int(
-        datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
-            "%Y%m%d"
-        )
+        datetime.strptime(snapshot_date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%Y%m%d")
     )
     output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
 
