@@ -37,7 +37,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).len(name=IndCQC.ascwds_job_role_counts)
 
-    # Pivot the job role labels into columns, with the counts as their values.
+    # Pivot the job role labels into columns, with the counts as their values, and add columns for all potential job roles.
     aggregation = [
         (pl.col(IndCQC.main_job_role_clean_labelled) == role).sum().alias(role)
         for role in list_of_job_roles
@@ -50,16 +50,15 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         ]
     ).agg(aggregation)
 
-    # Add a column for any missing job roles and make all values in that column 0.
-    job_role_columns_to_add = [
-        role for role in list_of_job_roles if role not in worker_count_lf.columns
-    ]
-
     # Pivot all the job role columns into rows.
     worker_count_lf = worker_count_lf.unpivot(
         index=[
             IndCQC.establishment_id,
             IndCQC.ascwds_worker_import_date,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
         ],
         on=[role for role in list_of_job_roles],
         variable_name=IndCQC.main_job_role_clean_labelled,
