@@ -83,6 +83,8 @@ All notable changes to this project will be documented in this file.
 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
 
+- Added a new generic sink_to_parquet function in polars_utils for saving LazyFrames to s3.
+
 
 ### Changed
 - Expanded acronyms in documentation.

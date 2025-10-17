@@ -117,8 +117,7 @@ def sink_to_parquet(
     append: bool = True,
 ) -> None:
     """
-    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy),
-    with optional partitioning.
+    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy), with optional partitioning.
 
     Args:
         lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
@@ -129,6 +128,9 @@ def sink_to_parquet(
 
     Returns:
         None
+    
+    Raises:
+        Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
     """
     if logger is None:
         logger = logging.getLogger(__name__)
@@ -139,7 +141,6 @@ def sink_to_parquet(
 
     logger.info("did not finish!")
     output_path = Path(output_path)
-    output_path.mkdir(parents=True, exist_ok=True)
 
     if append:
         fname = f"{uuid.uuid4()}.parquet"
@@ -150,12 +151,17 @@ def sink_to_parquet(
 
     try:
         if partition_cols:
-            lazy_df.sink_parquet(output_path, partition_by=partition_cols)
+            path = pl.PartitionByKey(
+                base_path=f"{output_path}",
+                include_key=False,
+                by=partition_cols,
+            )
+            lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
             logger.info(
                 f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
             )
         else:
-            lazy_df.sink_parquet(output_path)
+            lazy_df.sink_parquet(output_path, engine="streaming")
             logger.info(
                 f"LazyFrame sunk to Parquet at {output_path} without partitioning"
             )

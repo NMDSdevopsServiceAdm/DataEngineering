@@ -154,17 +154,10 @@ class TestSinkParquet(TestUtils):
     def test_sink_parquet_writes_simple_lazyframe(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         lazy_df = df.lazy()
-        destination = "some_directory/folder/abc.parquet"
-
-        with self.assertLogs(self.logger) as cm:
-            utils.sink_to_parquet(
-                lazy_df, destination, logger=self.logger, append=False
-            )
+        destination: str = str(self.temp_dir) + "/"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
         files = glob(os.path.join(str(destination), "*.parquet"))
-        # Verify that a Parquet file was written
-        # self.assertTrue(destination.exists())
-        # self.assertTrue(files.is_file())
-        self.assertIn(f"LazyFrame sunk to Parquet at {destination}", cm.output[0])
+        self.assertEqual(len(files), 1)
 
     def test_sink_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
@@ -172,7 +165,6 @@ class TestSinkParquet(TestUtils):
         destination: str = str(self.temp_dir) + "/"
         utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
         utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
-        # There should now be multiple parquet files inside the folder
         files = glob(os.path.join(destination, "*.parquet"))
         self.assertEqual(len(files), 2)
 
@@ -199,8 +191,6 @@ class TestSinkParquet(TestUtils):
             logger=self.logger,
             append=False,
         )
-
-        # Check that subdirectories for partitions exist
         partitions = [d.name for d in destination.iterdir() if d.is_dir()]
         self.assertTrue(set(partitions) == {"part=x", "part=y"})
 
