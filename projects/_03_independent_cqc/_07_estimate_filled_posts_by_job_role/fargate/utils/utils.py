@@ -28,14 +28,18 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     Returns:
         pl.LazyFrame: The input dataframe with a count of rows for all potential job roles.
     """
+    columns = [
+        IndCQC.establishment_id,
+        IndCQC.ascwds_worker_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
+    ]
+
     # Aggregate worker data into one row per job role per workplace with a count column.
-    worker_count_lf = lf.group_by(
-        [
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-            pl.col(IndCQC.main_job_role_clean_labelled),
-        ]
-    ).len(name=IndCQC.ascwds_job_role_counts)
+    worker_count_lf = lf.group_by(columns).len(name=IndCQC.ascwds_job_role_counts)
 
     # Pivot the job role labels into columns, with the counts as their values, and add columns for all potential job roles.
     aggregation = [
@@ -44,10 +48,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     ]
 
     worker_count_lf = worker_count_lf.group_by(
-        [
-            pl.col(IndCQC.establishment_id),
-            pl.col(IndCQC.ascwds_worker_import_date),
-        ]
+        [col for col in columns if col not in [IndCQC.main_job_role_clean_labelled]]
     ).agg(aggregation)
 
     # Pivot all the job role columns into rows.
@@ -65,16 +66,8 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         value_name=IndCQC.ascwds_job_role_counts,
     )
 
-    # print(
-    #     worker_count_lf.collect()
-    #     .sort(
-    #         [
-    #             IndCQC.establishment_id,
-    #             IndCQC.ascwds_worker_import_date,
-    #         ]
-    #     )
-    #     .glimpse(max_items_per_column=20)
-    # )
+    # Put the columns in a better order.
+    worker_count_lf = worker_count_lf.select(columns + [IndCQC.ascwds_job_role_counts])
 
     return worker_count_lf
 
