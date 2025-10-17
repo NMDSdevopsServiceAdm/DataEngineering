@@ -57,7 +57,7 @@ class NewCqcLocationApiColumns:
     last_report: str = "lastReport"
     link_id: str = "linkId"
     local_authority: str = "localAuthority"
-    location_id: str = "locationid"
+    location_id: str = "locationId"
     location_types: str = "locationTypes"
     main_phone_number: str = "mainPhoneNumber"
     name: str = "name"
