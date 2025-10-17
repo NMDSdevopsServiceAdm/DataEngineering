@@ -1,14 +1,16 @@
-import tempfile
-import shutil
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
-    main,
-    InvalidTimestampArgumentError,
-)
-import unittest
-from unittest.mock import patch
 import os
 import pathlib
+import shutil
+import tempfile
+import unittest
+from unittest.mock import patch
+
 import polars as pl
+
+from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
+    InvalidTimestampArgumentError,
+    main,
+)
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers"
 

@@ -222,7 +222,7 @@ jobs:
       - run:
           name: package utils, schemas, projects and environment
           command: |
-            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment
+            mkdir dependencies && zip -r dependencies/dependencies.zip utils schemas projects environment polars_utils
       - run:
           name: Download Deequ jar
           command: |
@@ -253,12 +253,40 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker_cleaned/"
+          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker/"
       - aws-s3/sync:
           aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
+          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=workplace/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=workplace/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_care_home_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=full_providers_api/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=full_providers_api/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=ONS/dataset=postcode_directory_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ONS/dataset=postcode_directory_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
@@ -278,7 +306,9 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform init -input=false -backend-config=../non_prod.s3.tfbackend
-            terraform workspace select << pipeline.parameters.GHA_Meta >>
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            terraform workspace select ${SANITISED_CIRCLE_BRANCH}
             terraform destroy -auto-approve
       - run:
           name: delete workspace
@@ -287,7 +317,9 @@ jobs:
             export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"
             cd terraform/pipeline
             terraform workspace select default
-            terraform workspace delete << pipeline.parameters.GHA_Meta >>
+            export CIRCLE_BRANCH="<< pipeline.parameters.GHA_Meta >>"
+            export SANITISED_CIRCLE_BRANCH=$(echo ${CIRCLE_BRANCH:0:30} | tr -c '[:alnum:]\n' '-' | tr '[:upper:]' '[:lower:]')
+            terraform workspace delete ${SANITISED_CIRCLE_BRANCH}
 
 
 workflows:
@@ -340,10 +372,10 @@ workflows:
           filters:
             branches:
               ignore: main
-      # - test:
-      #     filters:
-      #       branches:
-      #         ignore: main
+      - test:
+          filters:
+            branches:
+              ignore: main
       - lint-python:
           filters:
             branches:
@@ -362,7 +394,7 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            # - test
+            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod

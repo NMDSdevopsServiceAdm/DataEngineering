@@ -2,10 +2,11 @@ import argparse
 import logging
 import uuid
 from pathlib import Path
+
 import boto3
-from botocore.exceptions import ClientError
 import polars as pl
 import polars.selectors as cs
+from botocore.exceptions import ClientError
 
 util_logger = logging.getLogger(__name__)
 util_logger.setLevel(logging.INFO)

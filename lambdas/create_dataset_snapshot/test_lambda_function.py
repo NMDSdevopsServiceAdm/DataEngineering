@@ -1,6 +1,6 @@
-import unittest
-from unittest.mock import patch, MagicMock, Mock
 import sys
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 import polars as pl
 
@@ -11,6 +11,7 @@ mock_utils_module = MagicMock()
 sys.modules["utils"] = mock_utils_module
 
 from lambda_function import lambda_handler
+
 import lambdas.utils.snapshots as job
 
 PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
