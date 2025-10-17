@@ -128,7 +128,7 @@ def sink_to_parquet(
 
     Returns:
         None: This function does not return any value.
-    
+
     Raises:
         Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
     """
