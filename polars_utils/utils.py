@@ -109,6 +109,61 @@ def write_to_parquet(
     logger.info("Parquet written to {}".format(output_path))
 
 
+def sink_to_parquet(
+    lazy_df: pl.LazyFrame,
+    output_path: str | Path,
+    partition_cols: list[str] | None = None,
+    logger: logging.Logger = None,
+    append: bool = True,
+) -> None:
+    """
+    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy),
+    with optional partitioning.
+
+    Args:
+        lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
+        output_path (str | Path): Directory path to sink Parquet files.
+        partition_cols (list[str] | None): Columns to partition by. Defaults to None.
+        logger (logging.Logger): Optional logger for messages. Defaults to None.
+        append (bool): Whether to append (True) or overwrite (False). Defaults to True.
+
+    Returns:
+        None
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    if lazy_df is None or len(lazy_df.collect_schema().names()) == 0:
+        logger.info("The provided LazyFrame was empty. No data was written.")
+        return
+
+    logger.info("did not finish!")
+    output_path = Path(output_path)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    fname = f"{uuid.uuid4()}.parquet"
+    if append:
+        output_file = output_path / fname
+    else:
+        output_file = output_path / fname
+
+    try:
+        # Sink the lazy frame to Parquet with optional partitioning
+        if partition_cols:
+            lazy_df.sink_parquet(output_file, partition_by=partition_cols)
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_file} partitioned by {partition_cols}"
+            )
+        else:
+            lazy_df.sink_parquet(output_file)
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_file} without partitioning"
+            )
+    except Exception as e:
+        logger.error(f"Failed to sink LazyFrame to Parquet: {e}")
+        raise
+
+
 def get_args(*args: tuple) -> argparse.Namespace:
     """Provides Args from argparse.ArgumentParser for a set of tuples.
 

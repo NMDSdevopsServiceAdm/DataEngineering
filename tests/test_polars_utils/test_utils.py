@@ -138,6 +138,72 @@ class TestWriteParquet(TestUtils):
         self.assertEqual(len(files), 1)
 
 
+class TestSinkParquet(TestUtils):
+    def test_sink_parquet_does_nothing_for_empty_lazyframe(self):
+        lazy_df: pl.LazyFrame = pl.DataFrame({}).lazy()
+        destination = self.temp_dir / "test.parquet"
+        with self.assertLogs(self.logger) as cm:
+            utils.sink_to_parquet(
+                lazy_df, destination, None, logger=self.logger, append=False
+            )
+        self.assertFalse(destination.exists())
+        self.assertTrue(
+            "The provided LazyFrame was empty. No data was written." in cm.output[0]
+        )
+
+    def test_sink_parquet_writes_simple_lazyframe(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination = self.temp_dir / "test.parquet"
+        with self.assertLogs(self.logger) as cm:
+            utils.sink_to_parquet(
+                lazy_df, destination, None, logger=self.logger, append=False
+            )
+        self.assertTrue(destination.exists())
+        self.assertTrue(
+            f"LazyFrame sunk to Parquet at {destination} without partitioning"
+            in cm.output[0]
+        )
+
+    def test_sink_parquet_writes_with_append(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination: str = str(self.temp_dir) + "/"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=True)
+        # There should now be multiple parquet files inside the folder
+        files = glob(os.path.join(destination, "*.parquet"))
+        self.assertEqual(len(files), 2)
+
+    def test_sink_parquet_writes_with_overwrite(self):
+        df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
+        lazy_df = df.lazy()
+        destination = self.temp_dir / "test.parquet"
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+        utils.sink_to_parquet(lazy_df, destination, logger=self.logger, append=False)
+
+        files = glob(os.path.join(self.temp_dir, "*.parquet"))
+        self.assertEqual(len(files), 1)
+
+    def test_sink_parquet_with_partitioning(self):
+        df: pl.DataFrame = pl.DataFrame(
+            {"a": [1, 2, 1, 2], "b": [4, 5, 6, 7], "part": ["x", "x", "y", "y"]}
+        )
+        lazy_df = df.lazy()
+        destination = self.temp_dir / "partition_test"
+        utils.sink_to_parquet(
+            lazy_df,
+            destination,
+            partition_cols=["part"],
+            logger=self.logger,
+            append=False,
+        )
+
+        # Check that subdirectories for partitions exist
+        partitions = [d.name for d in destination.iterdir() if d.is_dir()]
+        self.assertTrue(set(partitions) == {"part=x", "part=y"})
+
+
 class TestGenerateS3Dir(TestUtils):
     def test_get_date_partitioned_s3_path_version(self):
         dec_first_21 = datetime(2021, 12, 1)
