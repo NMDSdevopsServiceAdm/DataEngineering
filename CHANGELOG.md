@@ -22,6 +22,8 @@ All notable changes to this project will be documented in this file.
 
 - Tagging added by default to all Terraform elements
 
+- Plan of action for new CQC Ingestion process.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
