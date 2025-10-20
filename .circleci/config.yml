@@ -368,10 +368,6 @@ workflows:
           filters:
             branches:
               ignore: main
-      - test:
-          filters:
-            branches:
-              ignore: main
       - lint-python:
           filters:
             branches:
@@ -405,6 +401,12 @@ workflows:
       - copy-main-data:
           requires:
             - terraform-apply
+      - test:
+          requires:
+            - terraform-apply
+          filters:
+            branches:
+              ignore: main
 
   delete-development-environment:
     when: << pipeline.parameters.GHA_Action >>
