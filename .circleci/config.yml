@@ -390,7 +390,6 @@ workflows:
           aws_account: "non_prod"
           requires:
             - lint-terraform
-            - test
             - task-containerisation
       - terraform-apply:
           access_key: AWS_ACCESS_KEY_ID_non_prod
