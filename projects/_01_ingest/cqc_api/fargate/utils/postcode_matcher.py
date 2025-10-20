@@ -205,13 +205,11 @@ def get_first_successful_postcode_match(
             CQCLClean.cqc_location_import_date,
         )
         .with_columns(
-            pl.row_index(
-                row_number
-            ).over(  # Note. Warning in documentation for row_index.
-                CQCLClean.location_id, order_by=CQCLClean.cqc_location_import_date
-            )
+            pl.cum_count(CQCLClean.location_id)
+            .over(CQCLClean.location_id, order_by=CQCLClean.cqc_location_import_date)
+            .alias(row_number)
         )
-        .filter(pl.col(row_number) == 0)
+        .filter(pl.col(row_number) == 1)
         .rename({CQCLClean.postcode_cleaned: successfully_matched_postcode})
         .drop(CQCLClean.cqc_location_import_date, row_number)
     )
