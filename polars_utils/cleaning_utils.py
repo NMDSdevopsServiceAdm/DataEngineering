@@ -14,7 +14,7 @@ def add_aligned_date_column(
 
     Args:
         primary_lf (pl.LazyFrame): LazyFrame to which the aligned date column will be added.
-        secondary_lf (pl.LazyFrame): LazyFrame providing candidate dates for alignment.
+        secondary_lf (pl.LazyFrame): LazyFrame with dates for alignment.
         primary_column (str): Column name in `primary_lf` containing date values.
         secondary_column (str): Column name in `secondary_lf` containing date values.
 
@@ -28,12 +28,13 @@ def add_aligned_date_column(
         secondary_lf.select(secondary_column).unique().sort(secondary_column)
     )
 
-    # Perform asof join ("backward" = nearest date 'less than or equal to')
+    # Join secondary dates to primary dates using asof join
     primary_lf_with_aligned_dates = primary_sorted.join_asof(
         secondary_sorted,
         left_on=primary_column,
         right_on=secondary_column,
-        strategy="backward",
+        strategy="backward",  # less than or equal to
+        coalesce=False,  # include secondary_column in join
     )
 
     return primary_lf_with_aligned_dates
