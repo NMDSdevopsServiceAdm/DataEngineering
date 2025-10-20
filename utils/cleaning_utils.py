@@ -112,7 +112,7 @@ def column_to_date(
     return new_df
 
 
-# converted to polars -> polars_utils.cleaning_utils
+# converted to polars -> polars_utils.cleaning_utils.add_aligned_date_column
 def align_import_dates(
     primary_df: DataFrame,
     secondary_df: DataFrame,
@@ -130,7 +130,7 @@ def align_import_dates(
     return aligned_dates
 
 
-# converted to polars -> polars_utils.cleaning_utils
+# converted to polars -> polars_utils.cleaning_utils.add_aligned_date_column
 def cross_join_unique_dates(
     primary_df: DataFrame,
     secondary_df: DataFrame,
@@ -146,7 +146,7 @@ def cross_join_unique_dates(
     return possible_matches
 
 
-# converted to polars -> polars_utils.cleaning_utils
+# converted to polars -> polars_utils.cleaning_utils.add_aligned_date_column
 def determine_best_date_matches(
     possible_matches: DataFrame, primary_column: str, secondary_column: str
 ) -> DataFrame:
@@ -170,7 +170,7 @@ def determine_best_date_matches(
     return aligned_dates.select(primary_column, secondary_column)
 
 
-# converted to polars -> polars_utils.cleaning_utils
+# converted to polars -> polars_utils.cleaning_utils.add_aligned_date_column
 def add_aligned_date_column(
     primary_df: DataFrame,
     secondary_df: DataFrame,
