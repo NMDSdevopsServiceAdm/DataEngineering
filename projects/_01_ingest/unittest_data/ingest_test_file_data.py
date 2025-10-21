@@ -1422,6 +1422,11 @@ class PostcodeMatcherData:
         ("1-003", None),  # null values should remain as null
     ]
 
+    postcode_corrections_dict = {
+        "CH52LY": "CH16HU",  # Welsh postcode, replaced with nearest English postcode
+        "TF73QH": "TF74EH",  # Incorrectly entered and no other postcodes exist starting 'TF7 3'
+    }
+
     truncate_postcode_rows = [
         ("AA11AA", date(2023, 1, 1)),
         ("AA11AB", date(2023, 1, 1)),
@@ -3725,6 +3730,7 @@ class CQCLocationsData:
         ("1-10000000002", None, Sector.local_authority),
         ("1-10000000003", "data", Sector.local_authority),
     ]
+    expected_postcode_dict = {"AB12CE": "AB12CD", "EF12GI": "EF12GH"}
 
 
 @dataclass

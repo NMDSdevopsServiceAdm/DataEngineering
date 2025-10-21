@@ -78,6 +78,7 @@ All notable changes to this project will be documented in this file.
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 ### Improved
+- Moved postcode corrections dictionary into a csv file in s3.
 
 
 ## [v2025.08.0] - 09/09/2025
