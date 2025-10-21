@@ -231,7 +231,7 @@
                 "cqc_source_arg": "--cqc_locations_api_delta_source",
                 "cqc_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
                 "cqc_destination_arg": "--cqc_locations_flattened_destination",
-                "cqc_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_02_delta_flattened/"
+                "cqc_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
               },
               "Next": "Flatten Delta CQC Locations"
             },
