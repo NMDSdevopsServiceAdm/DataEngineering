@@ -240,12 +240,12 @@
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
                 "Cluster": "${polars_cluster_arn}",
-                "TaskDefinition": "${task_arn}",
+                "TaskDefinition": "${cqc_api_task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
                   "AwsvpcConfiguration": {
                     "Subnets": ${public_subnet_ids},
-                    "SecurityGroups": ["${security_group_id}"],
+                    "SecurityGroups": ["${cqc_api_security_group_id}"],
                     "AssignPublicIp": "ENABLED"
                   }
                 },
