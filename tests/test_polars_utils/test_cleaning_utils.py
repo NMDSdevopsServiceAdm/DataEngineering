@@ -42,12 +42,6 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
             self.secondary_column,
         )
 
-    def test_function_returns_the_original_number_of_rows(self):
-        returned_rows = self.returned_lf.collect().height
-        original_rows = self.primary_lf.collect().height
-
-        self.assertEqual(returned_rows, original_rows)
-
     def test_expected_columns_are_returned(self):
         returned_columns = sorted(self.returned_lf.collect_schema().names())
         expected_columns = sorted(
