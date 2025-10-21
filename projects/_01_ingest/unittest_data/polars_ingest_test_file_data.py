@@ -1,17 +1,13 @@
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
 )
 from utils.column_values.categorical_column_values import (
     CareHome,
-    PrimaryServiceType,
+    LocationType,
     RegistrationStatus,
-    Sector,
-    Services,
-    Specialisms,
-    SpecialistGeneralistOther,
 )
 
 
@@ -776,28 +772,134 @@ class ExtractRegisteredManagerNamesData:
 @dataclass
 class PostcodeMatcherTest:
     locations_where_all_match_rows = [
-        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-002", date(2020, 1, 1), "name 2", "2 road name", "AA1 ZAA"),
-        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 2AA"),
-        ("1-002", date(2025, 1, 1), "name 2", "2 road name", "AA1 3AA"),
-        ("1-003", date(2025, 1, 1), "name 3", "3 road name", "TF7 3QH"),
-        ("1-004", date(2025, 1, 1), "name 4", "4 road name", "AA1 4ZZ"),
+        ("1-001", "1-001", "1-002", "1-002", "1-002", "1-003", "1-004"),
+        (
+            date(2020, 1, 1),
+            date(2025, 1, 1),
+            date(2020, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+        ),
+        ("name 1", "name 1", "name 2", "name 2", "name 2", "name 3", "name 4"),
+        (
+            "1 road name",
+            "1 road name",
+            "2 road name",
+            "2 road name",
+            "2 road name",
+            "3 road name",
+            "4 road name",
+        ),
+        ("AA1 1aa", "AA1 1aa", "AA1 ZAA", "AA1 2AA", "AA1 3AA", "TF7 3QH", "AA1 4ZZ"),
+        (
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+        ),
+        (
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+        ),
     ]
     locations_with_unmatched_postcode_rows = [
-        ("1-001", date(2020, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-001", date(2025, 1, 1), "name 1", "1 road name", "AA1 1aa"),
-        ("1-005", date(2025, 1, 1), "name 5", "5 road name", "AA2 5XX"),
+        ("1-001", "1-001", "1-005"),
+        (date(2020, 1, 1), date(2025, 1, 1), date(2025, 1, 1)),
+        ("name 1", "name 1", "name 5"),
+        ("1 road name", "1 road name", "5 road name"),
+        ("AA1 1aa", "AA1 1aa", "AA2 5XX"),
+        (
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+            RegistrationStatus.registered,
+        ),
+        (
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+            LocationType.social_care_identifier,
+        ),
     ]
     postcodes_rows = [
-        ("AA11AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 1", "SubICB 1"),
-        ("AA12AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 2", "SubICB 1"),
-        ("AA13AA", date(2020, 1, 1), "CSSR 1", None, "CCG 1", "CSSR 3", "SubICB 1"),
-        ("AA11AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 1", "SubICB 1"),
-        ("AA12AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 2", "SubICB 1"),
-        ("AA13AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 3", "SubICB 1"),
-        ("AA14AA", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 4", "SubICB 1"),
-        ("TF74EH", date(2025, 1, 1), "CSSR 1", "SubICB 1", None, "CSSR 5", "SubICB 1"),
+        (
+            "AA11AA",
+            "AA12AA",
+            "AA13AA",
+            "AA11AA",
+            "AA12AA",
+            "AA13AA",
+            "AA14AA",
+            "TF74EH",
+        ),
+        (
+            date(2020, 1, 1),
+            date(2020, 1, 1),
+            date(2020, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+        ),
+        (
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+            "CSSR 1",
+        ),
+        (
+            None,
+            None,
+            None,
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+        ),
+        (
+            "CCG 1",
+            "CCG 1",
+            "CCG 1",
+            None,
+            None,
+            None,
+            None,
+            None,
+        ),
+        (
+            "CSSR 1",
+            "CSSR 2",
+            "CSSR 3",
+            "CSSR 1",
+            "CSSR 2",
+            "CSSR 3",
+            "CSSR 4",
+            "CSSR 5",
+        ),
+        (
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+            "SubICB 1",
+        ),
     ]
 
     clean_postcode_column_rows = [
@@ -860,6 +962,11 @@ class PostcodeMatcherTest:
         ("1-001", "1-002", "1-003"),
         ("CH16HU", "AB12CD", None),
     ]
+
+    postcode_corrections_dict = {
+        "CH52LY": "CH16HU",  # Welsh postcode, replaced with nearest English postcode
+        "TF73QH": "TF74EH",  # Incorrectly entered and no other postcodes exist starting 'TF7 3'
+    }
 
     truncate_postcode_rows = [
         ("AA11AA", "AA11AB", "AB1CD", "B1CD"),

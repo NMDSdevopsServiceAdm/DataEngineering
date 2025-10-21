@@ -3,8 +3,8 @@ from typing import Dict, Tuple
 import polars as pl
 
 import polars_utils.cleaning_utils as cUtils
-from projects._01_ingest.cqc_api.utils.postcode_replacement_dictionary import (
-    ManualPostcodeCorrections,
+from projects._01_ingest.cqc_api.utils.utils import (
+    read_manual_postcode_corrections_csv_to_dict,
 )
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -22,7 +22,9 @@ from utils.column_values.categorical_column_values import (
 
 
 def run_postcode_matching(
-    locations_lf: pl.LazyFrame, postcode_lf: pl.LazyFrame
+    locations_lf: pl.LazyFrame,
+    postcode_lf: pl.LazyFrame,
+    manual_postcode_corrections_source: str,
 ) -> pl.LazyFrame:
     """
     Runs full postcode matching logic and raises error if final validation fails.
@@ -40,6 +42,7 @@ def run_postcode_matching(
     Args:
         locations_lf (pl.LazyFrame): LazyFrame of workplaces with postcodes.
         postcode_lf (pl.LazyFrame): LazyFrame of ONS postcode directory.
+        manual_postcode_corrections_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         pl.LazyFrame: Fully matched LazyFrame.
@@ -85,7 +88,9 @@ def run_postcode_matching(
     )
 
     # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
-    amended_locations_lf = amend_invalid_postcodes(unmatched_reassigned_locations_lf)
+    amended_locations_lf = amend_invalid_postcodes(
+        unmatched_reassigned_locations_lf, manual_postcode_corrections_source
+    )
     matched_amended_locations_lf, unmatched_amended_locations_lf = join_postcode_data(
         amended_locations_lf, postcode_lf, CQCLClean.postcode_cleaned
     )
@@ -226,7 +231,9 @@ def get_first_successful_postcode_match(
     return reassigned_lf
 
 
-def amend_invalid_postcodes(lf: pl.LazyFrame) -> pl.LazyFrame:
+def amend_invalid_postcodes(
+    lf: pl.LazyFrame, manual_postcode_corrections_source: str
+) -> pl.LazyFrame:
     """
     Replace invalid postcodes in the LazyFrame using a predefined mapping.
 
@@ -236,11 +243,14 @@ def amend_invalid_postcodes(lf: pl.LazyFrame) -> pl.LazyFrame:
 
     Args:
         lf (pl.LazyFrame): Input LazyFrame containing a column of postcodes.
+        manual_postcode_corrections_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         pl.LazyFrame: A new LazyFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = ManualPostcodeCorrections.postcode_corrections_dict
+    mapping_dict: Dict[str, str] = read_manual_postcode_corrections_csv_to_dict(
+        manual_postcode_corrections_source
+    )
 
     lf = lf.with_columns(pl.col(CQCLClean.postcode_cleaned).replace(mapping_dict))
     return lf

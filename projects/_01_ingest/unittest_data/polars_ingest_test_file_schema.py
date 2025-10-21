@@ -8,9 +8,6 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
-from utils.column_names.ind_cqc_pipeline_columns import (
-    DimensionPartitionKeys as DimKeys,
-)
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_names.raw_data_files.cqc_location_api_columns import (
     NewCqcLocationApiColumns as CQCL,
@@ -101,6 +98,8 @@ class PostcodeMatcherTest:
             (CQCL.name, pl.String()),
             (CQCL.postal_address_line1, pl.String()),
             (CQCL.postal_code, pl.String()),
+            (CQCLClean.registration_status, pl.String()),
+            (CQCLClean.type, pl.String()),
         ]
     )
     postcodes_schema = pl.Schema(
