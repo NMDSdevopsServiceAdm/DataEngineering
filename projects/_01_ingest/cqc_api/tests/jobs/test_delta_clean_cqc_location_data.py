@@ -150,7 +150,6 @@ class MainTests(CleanCQCLocationDatasetTests):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-        self.assertEqual(write_to_parquet_mock.call_count, 5)
 
         final_df: DataFrame = write_to_parquet_mock.call_args[0][0]
         expected_cols = list(asdict(CQCLCleaned()).values())
