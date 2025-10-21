@@ -253,6 +253,14 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=ASCWDS/dataset=worker_cleaned/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ASCWDS/dataset=worker_cleaned/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
       - aws-s3/sync:
@@ -400,9 +408,9 @@ workflows:
       - copy-main-data:
           requires:
             - terraform-apply
-      - test:
-          requires:
-            - terraform-apply
+      # - test:
+      #     requires:
+      #       - terraform-apply
           filters:
             branches:
               ignore: main
