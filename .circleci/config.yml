@@ -253,6 +253,10 @@ jobs:
             echo 'export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY_non_prod}"' >> "$BASH_ENV"
       - aws-s3/sync:
           aws-region: AWS_REGION
+          from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
+          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
+      - aws-s3/sync:
+          aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
       - aws-s3/sync:
@@ -283,10 +287,6 @@ jobs:
           aws-region: AWS_REGION
           from: "s3://sfc-main-datasets/domain=CQC/dataset=pir_cleaned/"
           to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=pir_cleaned/"
-      - aws-s3/sync:
-          aws-region: AWS_REGION
-          from: "s3://sfc-main-datasets/domain=CQC/dataset=postcode_corrections/"
-          to: "s3://$(cat terraform/pipeline/datasets_bucket_name)/domain=CQC/dataset=postcode_corrections/"
       - aws-s3/sync:
           aws-region: AWS_REGION
           from: "s3://sfc-main-pipeline-resources/models/"
