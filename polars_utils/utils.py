@@ -181,9 +181,6 @@ def sink_to_parquet(
         logger.info("The provided LazyFrame was empty. No data was written.")
         return
 
-    logger.info("did not finish!")
-    output_path = Path(output_path)
-
     if append:
         fname = f"{uuid.uuid4()}.parquet"
         if isinstance(output_path, str):
