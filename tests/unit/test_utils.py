@@ -1,9 +1,8 @@
-import csv
 import shutil
 import unittest
 from datetime import date, datetime
 from enum import Enum
-from io import BytesIO, StringIO
+from io import BytesIO
 from pathlib import Path
 
 import boto3
@@ -83,7 +82,6 @@ class StubberClass:
 
 class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
-    test_postcode_csv_path = "tests/test_data/example_postcode_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
@@ -352,29 +350,6 @@ class GeneralUtilsTests(UtilsTests):
         df = utils.read_csv(self.test_csv_path)
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
         self.assertEqual(df.count(), 3)
-
-    def test_read_manual_postcode_corrections_csv_to_dict(self):
-        with open(self.test_postcode_csv_path, "rb") as file:
-            body = file.read()
-        byte_string_length = len(body)
-
-        body = StreamingBody(BytesIO(body), byte_string_length)
-
-        test_response = {
-            "Body": body,
-            "ContentLength": byte_string_length * self.smaller_string_boost,
-        }
-
-        expected_params = {"Bucket": "test-bucket", "Key": "my-test/key/"}
-
-        stubber = StubberClass(StubberType.client)
-        stubber.add_response("get_object", test_response, expected_params)
-
-        returned_dict = utils.read_manual_postcode_corrections_csv_to_dict(
-            "s3://test-bucket/my-test/key/", stubber.get_s3_client()
-        )
-        expected_dict = UtilsData.expected_dict
-        self.assertEqual(returned_dict, expected_dict)
 
     def test_read_csv_with_defined_schema(self):
         schema = StructType(

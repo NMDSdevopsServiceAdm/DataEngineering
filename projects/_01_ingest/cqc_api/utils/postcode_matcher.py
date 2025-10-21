@@ -5,6 +5,9 @@ from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
 
 import utils.cleaning_utils as cUtils
+from projects._01_ingest.cqc_api.utils.utils import (
+    read_manual_postcode_corrections_csv_to_dict,
+)
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -18,7 +21,6 @@ from utils.column_values.categorical_column_values import (
     LocationType,
     RegistrationStatus,
 )
-from utils.utils import read_manual_postcode_corrections_csv_to_dict
 
 
 def run_postcode_matching(

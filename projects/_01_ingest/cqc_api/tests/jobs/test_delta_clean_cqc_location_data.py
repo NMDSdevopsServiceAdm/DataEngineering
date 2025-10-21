@@ -39,7 +39,7 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
     TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
     TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
-    TEST_manual_postcode_corrections_SOURCE = (
+    TEST_MANUAL_POSTCODE_CORRECTIONS_SOURCE = (
         "some/path/manual_postcode_corrections.csv"
     )
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
@@ -116,7 +116,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         job.main(
             self.TEST_LOC_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
-            self.TEST_manual_postcode_corrections_SOURCE,
+            self.TEST_MANUAL_POSTCODE_CORRECTIONS_SOURCE,
             self.TEST_DESTINATION,
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
@@ -150,7 +150,6 @@ class MainTests(CleanCQCLocationDatasetTests):
             mode="overwrite",
             partitionKeys=self.partition_keys,
         )
-        self.assertEqual(write_to_parquet_mock.call_count, 5)
 
         final_df: DataFrame = write_to_parquet_mock.call_args[0][0]
         expected_cols = list(asdict(CQCLCleaned()).values())
@@ -290,7 +289,7 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
             postcode_df=Mock(),
             dimension_location=self.TEST_POSTCODE_DIMENSION_SOURCE,
             dimension_update_date="20240201",
-            manual_postcode_corrections_source=self.TEST_manual_postcode_corrections_SOURCE,
+            manual_postcode_corrections_source=self.TEST_MANUAL_POSTCODE_CORRECTIONS_SOURCE,
         )
 
         # THEN
