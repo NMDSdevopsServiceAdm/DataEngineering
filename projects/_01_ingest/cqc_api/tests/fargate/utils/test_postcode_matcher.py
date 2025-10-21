@@ -27,15 +27,15 @@ class RunPostcodeMatchingTests(unittest.TestCase):
 
 class MainPostcodeMatcherTests(RunPostcodeMatchingTests):
     def setUp(self):
-        self.locations_where_all_match_df = pl.LazyFrame(
+        self.locations_where_all_match_lf = pl.LazyFrame(
             Data.locations_where_all_match_rows,
             Schemas.locations_schema,
         )
-        self.locations_with_unmatched_postcode_df = pl.LazyFrame(
+        self.locations_with_unmatched_postcode_lf = pl.LazyFrame(
             Data.locations_with_unmatched_postcode_rows,
             Schemas.locations_schema,
         )
-        self.postcodes_df = pl.LazyFrame(
+        self.postcodes_lf = pl.LazyFrame(
             Data.postcodes_rows,
             Schemas.postcodes_schema,
         )
@@ -60,13 +60,13 @@ class MainPostcodeMatcherTests(RunPostcodeMatchingTests):
         raise_error_if_unmatched_mock: Mock,
     ):
         join_postcode_data_mock.return_value = (
-            self.locations_where_all_match_df,
-            self.locations_where_all_match_df,
+            self.locations_where_all_match_lf,
+            self.locations_where_all_match_lf,
         )
 
         job.run_postcode_matching(
-            self.locations_where_all_match_df,
-            self.postcodes_df,
+            self.locations_where_all_match_lf,
+            self.postcodes_lf,
             self.manual_postcode_corrections_csv_path,
         )
 
@@ -86,21 +86,21 @@ class MainPostcodeMatcherTests(RunPostcodeMatchingTests):
         mock_read_manual_postcode_corrections_csv_to_dict.return_value = (
             Data.postcode_corrections_dict
         )
-        returned_df = job.run_postcode_matching(
-            self.locations_where_all_match_df,
-            self.postcodes_df,
+        returned_lf = job.run_postcode_matching(
+            self.locations_where_all_match_lf,
+            self.postcodes_lf,
             self.manual_postcode_corrections_csv_path,
         )
 
         self.assertEqual(
-            returned_df.collect().height,
-            self.locations_where_all_match_df.collect().height,
+            returned_lf.collect().height,
+            self.locations_where_all_match_lf.collect().height,
         )
 
     def test_main_raises_error_when_some_postcodes_do_not_match(self):
         with self.assertRaises(TypeError) as context:
             job.run_postcode_matching(
-                self.locations_with_unmatched_postcode_df, self.postcodes_df
+                self.locations_with_unmatched_postcode_lf, self.postcodes_lf
             )
 
         self.assertTrue(
@@ -113,77 +113,77 @@ class CleanPostcodeColumnTests(RunPostcodeMatchingTests):
     def setUp(
         self,
     ):
-        self.test_df = pl.LazyFrame(
+        self.postcodes_lf = pl.LazyFrame(
             data=Data.clean_postcode_column_rows,
             schema=Schemas.clean_postcode_column_schema,
         )
 
     def test_returns_expected_values_when_drop_is_false(self):
-        returned_df = job.clean_postcode_column(
-            self.test_df, CQCL.postal_code, CQCLClean.postcode_cleaned, False
+        returned_lf = job.clean_postcode_column(
+            self.postcodes_lf, CQCL.postal_code, CQCLClean.postcode_cleaned, False
         )
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             data=Data.expected_clean_postcode_column_when_drop_is_false_rows,
             schema=Schemas.expected_clean_postcode_column_when_drop_is_false_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
     def test_returns_expected_values_when_drop_is_true(self):
-        returned_df = job.clean_postcode_column(
-            self.test_df, CQCL.postal_code, CQCLClean.postcode_cleaned, True
+        returned_lf = job.clean_postcode_column(
+            self.postcodes_lf, CQCL.postal_code, CQCLClean.postcode_cleaned, True
         )
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             data=Data.expected_clean_postcode_column_when_drop_is_true_rows,
             schema=Schemas.expected_clean_postcode_column_when_drop_is_true_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class JoinPostcodeDataTests(RunPostcodeMatchingTests):
     def test_returns_expected_dataframe(self):
-        locations_df = pl.LazyFrame(
+        locations_lf = pl.LazyFrame(
             data=Data.join_postcode_data_locations_rows,
             schema=Schemas.join_postcode_data_locations_schema,
         )
-        postcode_df = pl.LazyFrame(
+        postcode_lf = pl.LazyFrame(
             data=Data.join_postcode_data_postcodes_rows,
             schema=Schemas.join_postcode_data_postcodes_schema,
         )
-        returned_matched_df, returned_unmatched_df = job.join_postcode_data(
-            locations_df, postcode_df, CQCLClean.postcode_cleaned
+        returned_matched_lf, returned_unmatched_lf = job.join_postcode_data(
+            locations_lf, postcode_lf, CQCLClean.postcode_cleaned
         )
-        expected_matched_df = pl.LazyFrame(
+        expected_matched_lf = pl.LazyFrame(
             data=Data.expected_join_postcode_data_matched_rows,
             schema=Schemas.expected_join_postcode_data_matched_schema,
         )
-        expected_unmatched_df = pl.LazyFrame(
+        expected_unmatched_lf = pl.LazyFrame(
             data=Data.expected_join_postcode_data_unmatched_rows,
             schema=Schemas.expected_join_postcode_data_unmatched_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_matched_df, expected_matched_df)
-        pl_testing.assert_frame_equal(returned_unmatched_df, expected_unmatched_df)
+        pl_testing.assert_frame_equal(returned_matched_lf, expected_matched_lf)
+        pl_testing.assert_frame_equal(returned_unmatched_lf, expected_unmatched_lf)
 
 
 class GetFirstSuccessfulPostcodeMatchTests(RunPostcodeMatchingTests):
     def test_get_first_successful_postcode_match_returns_expected_dataframe(self):
-        unmatched_df = pl.LazyFrame(
+        unmatched_lf = pl.LazyFrame(
             Data.first_successful_postcode_unmatched_rows,
             Schemas.first_successful_postcode_unmatched_schema,
         )
-        matched_df = pl.LazyFrame(
+        matched_lf = pl.LazyFrame(
             Data.first_successful_postcode_matched_rows,
             Schemas.first_successful_postcode_matched_schema,
         )
 
-        returned_df = job.get_first_successful_postcode_match(unmatched_df, matched_df)
-        expected_df = pl.LazyFrame(
+        returned_lf = job.get_first_successful_postcode_match(unmatched_lf, matched_lf)
+        expected_lf = pl.LazyFrame(
             Data.expected_get_first_successful_postcode_match_rows,
             Schemas.expected_get_first_successful_postcode_match_schema,
         )
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class AmendInvalidPostcodesTests(RunPostcodeMatchingTests):
@@ -191,75 +191,75 @@ class AmendInvalidPostcodesTests(RunPostcodeMatchingTests):
     def test_amend_invalid_postcodes_returns_expected_values(
         self, mock_read_manual_postcode_corrections_csv_to_dict
     ):
-        test_df = pl.LazyFrame(
+        postcodes_lf = pl.LazyFrame(
             Data.amend_invalid_postcodes_rows, Schemas.amend_invalid_postcodes_schema
         )
         mock_read_manual_postcode_corrections_csv_to_dict.return_value = (
             Data.postcode_corrections_dict
         )
 
-        returned_df = job.amend_invalid_postcodes(
-            test_df, self.manual_postcode_corrections_csv_path
+        returned_lf = job.amend_invalid_postcodes(
+            postcodes_lf, self.manual_postcode_corrections_csv_path
         )
 
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             Data.expected_amend_invalid_postcodes_rows,
             Schemas.amend_invalid_postcodes_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class TruncatePostcodeTests(RunPostcodeMatchingTests):
     def test_truncate_postcode_returns_expected_dataframe(self):
-        test_df = pl.LazyFrame(
+        postcodes_lf = pl.LazyFrame(
             Data.truncate_postcode_rows, Schemas.truncate_postcode_schema
         )
-        returned_df = job.truncate_postcode(test_df)
+        returned_lf = job.truncate_postcode(postcodes_lf)
 
-        expected_df = pl.LazyFrame(
+        expected_lf = pl.LazyFrame(
             Data.expected_truncate_postcode_rows,
             Schemas.expected_truncate_postcode_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class CreateTruncatedPostcodeDfTests(RunPostcodeMatchingTests):
-    def test_create_truncated_postcode_df_returns_expected_dataframe(self) -> None:
-        test_df = pl.LazyFrame(
+    def test_create_truncated_postcode_lf_returns_expected_dataframe(self) -> None:
+        postcodes_lf = pl.LazyFrame(
             Data.create_truncated_postcode_df_rows,
             Schemas.create_truncated_postcode_df_schema,
         )
-        returned_df = job.create_truncated_postcode_lf(test_df)
-        expected_df = pl.LazyFrame(
+        returned_lf = job.create_truncated_postcode_lf(postcodes_lf)
+        expected_lf = pl.LazyFrame(
             Data.expected_create_truncated_postcode_df_rows,
             Schemas.expected_create_truncated_postcode_df_schema,
         )
 
-        pl_testing.assert_frame_equal(returned_df, expected_df)
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
 
 
 class RaiseErrorIfUnmatched(RunPostcodeMatchingTests):
     def test_raise_error_if_unmatched_raises_type_error_when_contains_data(self):
-        unknown_df = pl.LazyFrame(
+        unknown_lf = pl.LazyFrame(
             Data.raise_error_if_unmatched_rows,
             Schemas.raise_error_if_unmatched_schema,
         )
 
         with self.assertRaises(TypeError) as context:
-            job.raise_error_if_unmatched(unknown_df)
+            job.raise_error_if_unmatched(unknown_lf)
 
         self.assertTrue(
             "Unmatched postcodes found: [('1-001', 'name 1', '1 road name', 'AB1 2CD')]",
             str(context.exception),
         )
 
-    def test_raise_error_if_unmatched_does_not_raise_error_when_df_is_empty(self):
-        empty_df = pl.LazyFrame([], Schemas.raise_error_if_unmatched_schema)
+    def test_raise_error_if_unmatched_does_not_raise_error_when_lf_is_empty(self):
+        empty_lf = pl.LazyFrame([], Schemas.raise_error_if_unmatched_schema)
 
         try:
-            job.raise_error_if_unmatched(empty_df)
+            job.raise_error_if_unmatched(empty_lf)
         except Exception as e:
             self.fail(
                 f"raise_error_if_unmatched() raised an exception unexpectedly: {e}"
