@@ -3730,6 +3730,7 @@ class CQCLocationsData:
         ("1-10000000002", None, Sector.local_authority),
         ("1-10000000003", "data", Sector.local_authority),
     ]
+    expected_postcode_dict = {"AB12CE": "AB12CD", "EF12GI": "EF12GH"}
 
 
 @dataclass
