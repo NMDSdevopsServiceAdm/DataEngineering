@@ -353,7 +353,7 @@ class GeneralUtilsTests(UtilsTests):
         self.assertEqual(df.columns, ["col_a", "col_b", "col_c", "date_col"])
         self.assertEqual(df.count(), 3)
 
-    def test_read_incorrect_postcode_csv_to_dict(self):
+    def test_read_manual_postcode_corrections_csv_to_dict(self):
         with open(self.test_postcode_csv_path, "rb") as file:
             body = file.read()
         byte_string_length = len(body)
@@ -370,7 +370,7 @@ class GeneralUtilsTests(UtilsTests):
         stubber = StubberClass(StubberType.client)
         stubber.add_response("get_object", test_response, expected_params)
 
-        returned_dict = utils.read_incorrect_postcode_csv_to_dict(
+        returned_dict = utils.read_manual_postcode_corrections_csv_to_dict(
             "s3://test-bucket/my-test/key/", stubber.get_s3_client()
         )
         expected_dict = UtilsData.expected_dict

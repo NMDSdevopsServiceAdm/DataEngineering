@@ -389,7 +389,7 @@ module "delta_clean_cqc_location_data_job" {
   job_parameters = {
     "--cqc_location_source"                   = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
     "--cleaned_ons_postcode_directory_source" = "${module.datasets_bucket.bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
-    "--incorrect_postcode_source"             = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=postcode_corrections/incorrect_postcodes.csv",
+    "--manual_postcode_corrections_source"             = "${module.datasets_bucket.bucket_uri}/domain=CQC/dataset=postcode_corrections/manual_postcode_corrections.csv",
     "--cleaned_cqc_location_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=delta_locations_api_cleaned/",
     "--gac_service_destination"               = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
     "--regulated_activities_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",

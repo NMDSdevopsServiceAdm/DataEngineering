@@ -140,7 +140,9 @@ def read_csv(source, delimiter=","):
     return df
 
 
-def read_incorrect_postcode_csv_to_dict(source: str, s3_client: object = None) -> dict:
+def read_manual_postcode_corrections_csv_to_dict(
+    source: str, s3_client: object = None
+) -> dict:
     """
     Read csv of postcode corrections from given location to a dictionary.
 

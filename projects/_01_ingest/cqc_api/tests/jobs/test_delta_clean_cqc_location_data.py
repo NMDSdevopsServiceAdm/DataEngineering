@@ -39,7 +39,9 @@ class CleanCQCLocationDatasetTests(unittest.TestCase):
     TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE = "dimension/some/other/directory2"
     TEST_SPECIALISM_DIMENSION_SOURCE = "dimension/some/other/directory3"
     TEST_POSTCODE_DIMENSION_SOURCE = "dimension/some/other/directory4"
-    TEST_INCORRECT_POSTCODE_SOURCE = "some/path/incorrect_postcodes.csv"
+    TEST_manual_postcode_corrections_SOURCE = (
+        "some/path/manual_postcode_corrections.csv"
+    )
     partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
     def setUp(self) -> None:
@@ -114,7 +116,7 @@ class MainTests(CleanCQCLocationDatasetTests):
         job.main(
             self.TEST_LOC_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
-            self.TEST_INCORRECT_POSTCODE_SOURCE,
+            self.TEST_manual_postcode_corrections_SOURCE,
             self.TEST_DESTINATION,
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
@@ -288,7 +290,7 @@ class CreatePostcodeMatchingDimensionTests(CleanCQCLocationDatasetTests):
             postcode_df=Mock(),
             dimension_location=self.TEST_POSTCODE_DIMENSION_SOURCE,
             dimension_update_date="20240201",
-            incorrect_postcode_source=self.TEST_INCORRECT_POSTCODE_SOURCE,
+            manual_postcode_corrections_source=self.TEST_manual_postcode_corrections_SOURCE,
         )
 
         # THEN

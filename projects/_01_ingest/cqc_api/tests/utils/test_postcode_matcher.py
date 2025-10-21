@@ -28,7 +28,9 @@ class PostcodeMatcherTests(unittest.TestCase):
             Data.postcodes_rows,
             Schemas.postcodes_schema,
         )
-        self.incorrect_postcode_csv_path = "some/path/incorrect_postcodes.csv"
+        self.manual_postcode_corrections_csv_path = (
+            "some/path/manual_postcode_corrections.csv"
+        )
 
 
 class MainTests(PostcodeMatcherTests):
@@ -59,7 +61,9 @@ class MainTests(PostcodeMatcherTests):
         join_postcode_data_mock.return_value = self.locations_df, self.locations_df
 
         job.run_postcode_matching(
-            self.locations_df, self.postcodes_df, self.incorrect_postcode_csv_path
+            self.locations_df,
+            self.postcodes_df,
+            self.manual_postcode_corrections_csv_path,
         )
 
         self.assertEqual(clean_postcode_column_mock.call_count, 2)
@@ -72,24 +76,26 @@ class MainTests(PostcodeMatcherTests):
         raise_error_if_unmatched_mock.assert_called_once()
         combine_matched_dataframes_mock.assert_called_once()
 
-    @patch(f"{PATCH_PATH}.read_incorrect_postcode_csv_to_dict")
+    @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_main_completes_and_returns_expected_rows_when_all_postcodes_match(
-        self, mock_read_incorrect_postcode_csv_to_dict
+        self, mock_read_manual_postcode_corrections_csv_to_dict
     ):
-        mock_read_incorrect_postcode_csv_to_dict.return_value = (
+        mock_read_manual_postcode_corrections_csv_to_dict.return_value = (
             Data.postcode_corrections_dict
         )
         returned_df = job.run_postcode_matching(
-            self.locations_df, self.postcodes_df, self.incorrect_postcode_csv_path
+            self.locations_df,
+            self.postcodes_df,
+            self.manual_postcode_corrections_csv_path,
         )
 
         self.assertEqual(returned_df.count(), 7)
 
-    @patch(f"{PATCH_PATH}.read_incorrect_postcode_csv_to_dict")
+    @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_main_raises_error_when_some_postcodes_do_not_match(
-        self, mock_read_incorrect_postcode_csv_to_dict
+        self, mock_read_manual_postcode_corrections_csv_to_dict
     ):
-        mock_read_incorrect_postcode_csv_to_dict.return_value = (
+        mock_read_manual_postcode_corrections_csv_to_dict.return_value = (
             Data.postcode_corrections_dict
         )
 
@@ -100,7 +106,9 @@ class MainTests(PostcodeMatcherTests):
 
         with self.assertRaises(TypeError) as context:
             job.run_postcode_matching(
-                locations_df, self.postcodes_df, self.incorrect_postcode_csv_path
+                locations_df,
+                self.postcodes_df,
+                self.manual_postcode_corrections_csv_path,
             )
 
         self.assertTrue(
@@ -250,19 +258,19 @@ class AmendInvalidPostcodesTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.read_incorrect_postcode_csv_to_dict")
+    @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_amend_invalid_postcodes_returns_expected_values(
-        self, mock_read_incorrect_postcode_csv_to_dict
+        self, mock_read_manual_postcode_corrections_csv_to_dict
     ):
         test_df = self.spark.createDataFrame(
             Data.amend_invalid_postcodes_rows, Schemas.amend_invalid_postcodes_schema
         )
-        mock_read_incorrect_postcode_csv_to_dict.return_value = (
+        mock_read_manual_postcode_corrections_csv_to_dict.return_value = (
             Data.postcode_corrections_dict
         )
 
         returned_df = job.amend_invalid_postcodes(
-            test_df, self.incorrect_postcode_csv_path
+            test_df, self.manual_postcode_corrections_csv_path
         )
 
         expected_df = self.spark.createDataFrame(
