@@ -57,7 +57,7 @@
         "estimated_ind_cqc_filled_posts_source_name": "--estimated_ind_cqc_filled_posts_source",
         "estimated_ind_cqc_filled_posts_source_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts/",
         "prepared_ascwds_job_role_counts_source_name": "--prepared_ascwds_job_role_counts_source",
-        "prepared_ascwds_job_role_counts_source_value": "${dataset_bucket_uri}/domain=ASCWDS/dataset=prepared_ascwds_job_role_counts/",
+        "prepared_ascwds_job_role_counts_source_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=prepared_ascwds_job_role_counts/",
         "estimated_ind_cqc_filled_posts_by_job_role_destination_name": "--estimated_ind_cqc_filled_posts_by_job_role_destination",
         "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/"
       },
