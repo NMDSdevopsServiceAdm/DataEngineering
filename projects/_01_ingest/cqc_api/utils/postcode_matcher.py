@@ -22,8 +22,7 @@ from utils.utils import read_incorrect_postcode_csv_to_dict
 
 
 def run_postcode_matching(
-    locations_df: DataFrame,
-    postcode_df: DataFrame,
+    locations_df: DataFrame, postcode_df: DataFrame, incorrect_postcode_source: str
 ) -> DataFrame:
     """
     Runs full postcode matching logic and raises error if final validation fails.
@@ -41,6 +40,7 @@ def run_postcode_matching(
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
         postcode_df (DataFrame): ONS postcode directory.
+        incorrect_postcode_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: Fully matched DataFrame.
@@ -88,7 +88,9 @@ def run_postcode_matching(
     )
 
     # Step 3 - Replace known postcode issues using the invalid postcode dictionary.
-    amended_locations_df = amend_invalid_postcodes(unmatched_reassigned_locations_df)
+    amended_locations_df = amend_invalid_postcodes(
+        unmatched_reassigned_locations_df, incorrect_postcode_source
+    )
     matched_amended_locations_df, unmatched_amended_locations_df = join_postcode_data(
         amended_locations_df, postcode_df, CQCLClean.postcode_cleaned
     )
@@ -226,7 +228,7 @@ def get_first_successful_postcode_match(
     return reassigned_df
 
 
-def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
+def amend_invalid_postcodes(df: DataFrame, incorrect_postcode_source: str) -> DataFrame:
     """
     Replace invalid postcodes in the DataFrame using a predefined mapping.
 
@@ -236,11 +238,14 @@ def amend_invalid_postcodes(df: DataFrame) -> DataFrame:
 
     Args:
         df (DataFrame): Input DataFrame containing a column of postcodes.
+        incorrect_postcode_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: A new DataFrame with amended postcodes.
     """
-    mapping_dict: Dict[str, str] = read_incorrect_postcode_csv_to_dict()
+    mapping_dict: Dict[str, str] = read_incorrect_postcode_csv_to_dict(
+        incorrect_postcode_source
+    )
 
     mapping_expr = F.create_map([F.lit(x) for kv in mapping_dict.items() for x in kv])
 

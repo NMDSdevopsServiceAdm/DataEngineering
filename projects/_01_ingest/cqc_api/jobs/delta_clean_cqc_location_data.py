@@ -85,6 +85,7 @@ ons_cols_to_import = [
 def main(
     cqc_location_source: str,
     cleaned_ons_postcode_directory_source: str,
+    incorrect_postcode_source: str,
     cleaned_cqc_location_destination: str,
     gac_service_destination: str,
     regulated_activities_destination: str,
@@ -254,6 +255,7 @@ def create_postcode_matching_dimension(
     postcode_df: DataFrame,
     dimension_location: str,
     dimension_update_date: str,
+    incorrect_postcode_source: str,
 ) -> DataFrame:
     """
     Creates (or updates) the postcode matching dimension by comparing current CQC data
@@ -270,6 +272,7 @@ def create_postcode_matching_dimension(
         dimension_location (str): S3 path where the dimension data should be stored
             dimension parquet file is stored.
         dimension_update_date (str): Date string in 'YYYYMMDD' format for creating partition keys.
+        incorrect_postcode_source (str): The s3 URI for the incorrect postcode csv.
 
     Returns:
         DataFrame: Dataframe of delta dimension table, with rows of the changes since the last update.
@@ -292,6 +295,7 @@ def create_postcode_matching_dimension(
             Keys.import_date,
         ),
         postcode_df,
+        incorrect_postcode_source,
     )
 
     if previous_dimension:
