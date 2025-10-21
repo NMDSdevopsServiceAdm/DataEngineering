@@ -7,12 +7,12 @@ from unittest.mock import patch
 
 import polars as pl
 
-from projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers import (
+from projects._01_ingest.cqc_api.fargate.cqc_providers_1_api_delta_download import (
     InvalidTimestampArgumentError,
     main,
 )
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.delta_download_cqc_providers"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_providers_1_api_delta_download"
 
 
 class TestDeltaDownloadCQCProviders(unittest.TestCase):
