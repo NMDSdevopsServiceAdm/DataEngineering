@@ -95,7 +95,7 @@ class PrepareJobRoleCountsUtilsData:
             MainJobRoleLabels.registered_nurse,
             MainJobRoleLabels.social_worker,
         ),
-        (1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+        (1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0),
         (
             "2025",
             "2025",

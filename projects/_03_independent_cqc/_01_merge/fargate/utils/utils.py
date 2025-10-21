@@ -39,9 +39,13 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     worker_count_lf = lf.group_by(columns).len(name=IndCQC.ascwds_job_role_counts)
 
     aggregation = [
-        (pl.col(IndCQC.main_job_role_clean_labelled) == role).sum().alias(role)
+        pl.col(IndCQC.ascwds_job_role_counts)
+        .filter(pl.col(IndCQC.main_job_role_clean_labelled) == role)
+        .sum()
+        .alias(role)
         for role in list_of_job_roles
     ]
+
     worker_count_lf = worker_count_lf.group_by(
         [col for col in columns if col not in [IndCQC.main_job_role_clean_labelled]]
     ).agg(aggregation)
