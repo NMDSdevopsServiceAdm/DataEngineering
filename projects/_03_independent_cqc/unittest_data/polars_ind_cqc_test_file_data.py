@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
@@ -21,6 +22,34 @@ class PrepareJobRoleCountsUtilsData:
             MainJobRoleLabels.senior_care_worker,
             MainJobRoleLabels.care_worker,
             MainJobRoleLabels.care_worker,
+        ),
+        (
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+        ),
+        (
+            "01",
+            "01",
+            "01",
+            "01",
+            "01",
+        ),
+        (
+            "01",
+            "01",
+            "02",
+            "01",
+            "01",
+        ),
+        (
+            "20250101",
+            "20250101",
+            "20250102",
+            "20250101",
+            "20250101",
         ),
     ]
     expected_aggregate_ascwds_worker_job_roles_per_establishment_rows = [
@@ -67,6 +96,36 @@ class PrepareJobRoleCountsUtilsData:
             MainJobRoleLabels.social_worker,
         ),
         (1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
+        (
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+            "2025",
+        ),
+        ("01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01", "01"),
+        ("01", "01", "01", "01", "02", "02", "02", "02", "01", "01", "01", "01"),
+        (
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250102",
+            "20250102",
+            "20250102",
+            "20250102",
+            "20250101",
+            "20250101",
+            "20250101",
+            "20250101",
+        ),
     ]
 
 

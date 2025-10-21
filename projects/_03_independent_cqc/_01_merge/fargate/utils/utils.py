@@ -1,6 +1,7 @@
 import polars as pl
 
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
+from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
@@ -29,6 +30,10 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         IndCQC.establishment_id,
         IndCQC.ascwds_worker_import_date,
         IndCQC.main_job_role_clean_labelled,
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
     ]
 
     # Aggregate worker data into one row per job role per workplace with a count column.
@@ -49,10 +54,28 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         index=[
             IndCQC.establishment_id,
             IndCQC.ascwds_worker_import_date,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
         ],
         on=[role for role in list_of_job_roles],
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.ascwds_job_role_counts,
+    )
+
+    # Order columns
+    worker_count_lf = worker_count_lf.select(
+        [
+            IndCQC.establishment_id,
+            IndCQC.ascwds_worker_import_date,
+            IndCQC.main_job_role_clean_labelled,
+            IndCQC.ascwds_job_role_counts,
+            Keys.year,
+            Keys.month,
+            Keys.day,
+            Keys.import_date,
+        ]
     )
 
     return worker_count_lf
