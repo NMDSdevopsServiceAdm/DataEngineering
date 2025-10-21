@@ -222,11 +222,43 @@
           }
         },
         {
-          "StartAt": "(placeholder) Flatten Delta CQC Locations",
+          "StartAt": "Set Flatten Delta CQC Locations Parameters",
           "States": {
-            "(placeholder) Flatten Delta CQC Locations": {
+            "Set Flatten Delta CQC Locations Parameters": {
               "Type": "Pass",
-              "Result": "Placeholder for Flatten Delta CQC Locations",
+              "Result": {
+                "script": "cqc_locations_2_flatten.py",
+                "cqc_source_arg": "--cqc_locations_api_delta_source",
+                "cqc_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                "cqc_destination_arg": "--cqc_locations_flattened_destination",
+                "cqc_destination": "${dataset_bucket_uri}/domain=CQC_delta/dataset=locations_02_delta_flattened/"
+              },
+              "Next": "Flatten Delta CQC Locations"
+            },
+            "Flatten Delta CQC Locations": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::ecs:runTask.sync",
+              "Parameters": {
+                "Cluster": "${cluster_arn}",
+                "TaskDefinition": "${task_arn}",
+                "LaunchType": "FARGATE",
+                "NetworkConfiguration": {
+                  "AwsvpcConfiguration": {
+                    "Subnets": ${public_subnet_ids},
+                    "SecurityGroups": ["${security_group_id}"],
+                    "AssignPublicIp": "ENABLED"
+                  }
+                },
+                "Overrides": {
+                  "ContainerOverrides": [
+                    {
+                      "Name": "cqc-api-container",
+                      "Command.$": "States.Array($.script, $.cqc_source_arg, $.cqc_source, $.cqc_destination_arg, $.cqc_destination)"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": "$.flattenedLocationResult",
               "Next": "(placeholder) Build, Clean and Validate Locations"
             },
             "(placeholder) Build, Clean and Validate Locations": {
