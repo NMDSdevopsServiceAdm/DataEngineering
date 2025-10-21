@@ -1,9 +1,9 @@
 import logging
 import sys
-from argparse import ArgumentError, ArgumentTypeError
 
 import polars as pl
 
+import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.utils.utils as JRUtils
 from polars_utils import utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
@@ -69,49 +69,44 @@ def main(
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
         estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
     """
-    estimated_ind_cqc_filled_posts_df = pl.scan_parquet(
+    estimated_ind_cqc_filled_posts_lf = pl.scan_parquet(
         estimated_ind_cqc_filled_posts_source,
     ).select(estimated_ind_cqc_filled_posts_columns_to_import)
 
-    cleaned_ascwds_worker_df = pl.scan_parquet(
+    prepared_ascwds_job_role_counts_lf = pl.scan_parquet(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
 
+    estimated_ind_cqc_filled_posts_by_job_role_lf = (
+        JRUtils.join_worker_to_estimates_dataframe(
+            estimated_ind_cqc_filled_posts_lf, prepared_ascwds_job_role_counts_lf
+        )
+    )
+
     utils.write_to_parquet(
-        estimated_ind_cqc_filled_posts_df,
+        estimated_ind_cqc_filled_posts_by_job_role_lf,
         estimated_ind_cqc_filled_posts_by_job_role_destination,
         logger=logger,
     )
 
 
 if __name__ == "__main__":
-    try:
+    args = utils.get_args(
         (
-            estimated_ind_cqc_filled_posts_source,
-            cleaned_ascwds_worker_source,
-            estimated_ind_cqc_filled_posts_by_job_role_destination,
-            *_,
-        ) = utils.collect_arguments(
-            (
-                "--estimated_ind_cqc_filled_posts_source",
-                "Source s3 directory for estimated ind cqc filled posts data",
-            ),
-            (
-                "--cleaned_ascwds_worker_source",
-                "Source s3 directory for parquet ASCWDS worker cleaned dataset",
-            ),
-            (
-                "--estimated_ind_cqc_filled_posts_by_job_role_destination",
-                "Destination s3 directory",
-            ),
-        )
-
-        main(
-            estimated_ind_cqc_filled_posts_source,
-            cleaned_ascwds_worker_source,
-            estimated_ind_cqc_filled_posts_by_job_role_destination,
-        )
-
-    except (ArgumentError, ArgumentTypeError) as e:
-        logger.error(f"An error occurred parsing arguments for {sys.argv}")
-        raise e
+            "--estimated_ind_cqc_filled_posts_source",
+            "Source s3 directory for estimated ind cqc filled posts data",
+        ),
+        (
+            "--prepared_ascwds_job_role_count_source",
+            "Source s3 directory for parquet ASCWDS worker job role counts dataset",
+        ),
+        (
+            "--estimated_ind_cqc_filled_posts_by_job_role_destination",
+            "Destination s3 directory",
+        ),
+    )
+    main(
+        estimated_ind_cqc_filled_posts_source=args.estimated_ind_cqc_filled_posts_source,
+        prepared_ascwds_job_role_count_source=args.prepared_ascwds_job_role_count_source,
+        estimated_ind_cqc_filled_posts_by_job_role_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
+    )
