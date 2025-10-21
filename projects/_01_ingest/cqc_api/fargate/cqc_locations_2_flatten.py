@@ -83,7 +83,7 @@ def main(
         cqc_locations_flattened_destination,
         logger=logger,
         partition_cols=cqc_partition_keys,
-        append=True,
+        append=False,
     )
 
 
