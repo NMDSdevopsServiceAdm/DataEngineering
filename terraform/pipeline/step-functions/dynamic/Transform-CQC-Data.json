@@ -239,7 +239,7 @@
               "Type": "Task",
               "Resource": "arn:aws:states:::ecs:runTask.sync",
               "Parameters": {
-                "Cluster": "${cluster_arn}",
+                "Cluster": "${polars_cluster_arn}",
                 "TaskDefinition": "${task_arn}",
                 "LaunchType": "FARGATE",
                 "NetworkConfiguration": {
