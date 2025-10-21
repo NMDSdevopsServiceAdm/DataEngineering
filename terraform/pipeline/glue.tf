@@ -394,7 +394,6 @@ module "delta_clean_cqc_location_data_job" {
     "--gac_service_destination"               = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
     "--regulated_activities_destination"      = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
     "--specialisms_destination"               = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
-    "--postcode_matching_destination"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/",
     "--postcode_matching_destination"         = "${module.datasets_bucket.bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/"
   }
   extra_conf = " --conf spark.sql.autoBroadcastJoinThreshold=-1"
