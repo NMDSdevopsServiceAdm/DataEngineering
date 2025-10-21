@@ -34,48 +34,76 @@ cqc_location_cols_to_import = [
 
 
 def main(
-    cqc_locations_source: str,
-    cleaned_ons_source: str,
-    flattened_cqc_locations_destination: str,
+    cqc_locations_api_delta_source: str,
+    cqc_locations_flattened_destination: str,
 ) -> None:
-    # TODO - scan parquet to get delta data (only select cols required)
+    # Scan parquet to get CQC locations delta data in LazyFrame format
     cqc_lf = utils.scan_parquet(
-        cqc_locations_source,
+        cqc_locations_api_delta_source,
         schema=POLARS_LOCATION_SCHEMA,
         selected_columns=cqc_location_cols_to_import,
     )
+    logger.info("CQC Location LazyFrame read in")
+
+    # TODO - remove_records_from_locations_data
+
+    # TODO - remove locations who have never been a social care locations
+
+    # TODO - create_cleaned_registration_date_column
+    # TODO - column_to_date (imputed_registration_date)
+    # TODO - format_date_fields (both registration dates)
+
+    # TODO - column_to_date (cqc_location_import_date)
+
+    # TODO - clean_provider_id_column
+    # TODO - select_rows_with_non_null_value (provider_id)
+    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
+
+    # TODO - impute_historic_relationships
+
+    # TODO - impute_missing_struct_column (gac_service_types, regulated_activities, specialisms)
+
+    # TODO - remove_locations_that_never_had_regulated_activities
+
+    # TODO - extract_from_struct (services_offered, specialisms_offered)
+
+    # TODO - classify_specialisms (dementia, learning_disabilities, mental_health)
+
+    # TODO - allocate_primary_service_type
+    # TODO - realign_carehome_column_with_primary_service
+
+    # TODO - extract_registered_manager_names
+    # TODO - add_related_location_column
+
+    # TODO - drop unrequired cols
+
+    # Store flattened data in s3
+    utils.sink_to_parquet(
+        cqc_lf,
+        cqc_locations_flattened_destination,
+        logger=logger,
+        partition_cols=cqc_partition_keys,
+        append=True,
+    )
 
 
-# TODO - remove_records_from_locations_data
+if __name__ == "__main__":
+    logger.info("Running Flatten CQC Locations job")
 
-# TODO - remove locations who have never been a social care locations
+    args = utils.get_args(
+        (
+            "--cqc_locations_api_delta_source",
+            "S3 URI to read CQC locations raw API delta data from",
+        ),
+        (
+            "--cqc_locations_flattened_destination",
+            "S3 URI to save flattened CQC locations data to",
+        ),
+    )
 
-# TODO - create_cleaned_registration_date_column
-# TODO - column_to_date (imputed_registration_date)
-# TODO - format_date_fields (both registration dates)
+    main(
+        cqc_locations_api_delta_source=args.cqc_locations_api_delta_source,
+        cqc_locations_flattened_destination=args.cqc_locations_flattened_destination,
+    )
 
-# TODO - column_to_date (cqc_location_import_date)
-
-# TODO - clean_provider_id_column
-# TODO - select_rows_with_non_null_value (provider_id)
-# TODO - add_cqc_sector_column_to_cqc_locations_dataframe
-
-# TODO - impute_historic_relationships
-
-# TODO - impute_missing_struct_column (gac_service_types, regulated_activities, specialisms)
-
-# TODO - remove_locations_that_never_had_regulated_activities
-
-# TODO - extract_from_struct (services_offered, specialisms_offered)
-
-# TODO - classify_specialisms (dementia, learning_disabilities, mental_health)
-
-# TODO - allocate_primary_service_type
-# TODO - realign_carehome_column_with_primary_service
-
-# TODO - extract_registered_manager_names
-# TODO - add_related_location_column
-# TODO - run_postcode_matching (filter to relevant locations only)
-
-# TODO - drop unrequired cols
-# TODO - sink_parquet to store flattened data in s3
+    logger.info("Finished Flatten CQC Locations job")
