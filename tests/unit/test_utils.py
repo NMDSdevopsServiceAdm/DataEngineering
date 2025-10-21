@@ -82,7 +82,6 @@ class StubberClass:
 
 class UtilsTests(unittest.TestCase):
     test_csv_path = "tests/test_data/example_csv.csv"
-    test_postcode_csv_path = "tests/test_data/example_postcode_csv.csv"
     test_csv_custom_delim_path = "tests/test_data/example_csv_custom_delimiter.csv"
     tmp_dir = "tmp-out"
     TEST_ASCWDS_WORKPLACE_FILE = "tests/test_data/tmp-workplace"
