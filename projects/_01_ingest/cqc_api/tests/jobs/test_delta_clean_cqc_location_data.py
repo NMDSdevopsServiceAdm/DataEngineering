@@ -114,12 +114,12 @@ class MainTests(CleanCQCLocationDatasetTests):
         job.main(
             self.TEST_LOC_SOURCE,
             self.TEST_ONS_POSTCODE_DIRECTORY_SOURCE,
+            self.TEST_INCORRECT_POSTCODE_SOURCE,
             self.TEST_DESTINATION,
             self.TEST_GAC_SERVICE_DIMENSION_SOURCE,
             self.TEST_REGULATED_ACTIVITY_DIMENSION_SOURCE,
             self.TEST_SPECIALISM_DIMENSION_SOURCE,
             self.TEST_POSTCODE_DIMENSION_SOURCE,
-            self.TEST_INCORRECT_POSTCODE_SOURCE,
         )
 
         self.assertEqual(read_from_parquet_mock.call_count, 2)
