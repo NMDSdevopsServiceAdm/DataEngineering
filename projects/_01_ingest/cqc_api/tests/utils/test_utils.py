@@ -44,7 +44,9 @@ class TestClassifySpecialisms(unittest.TestCase):
 
 
 class ReadManualPostcodeCorrectionsCsvTests(unittest.TestCase):
-    test_postcode_csv_path = "tests/test_data/example_postcode_csv.csv"
+    test_postcode_csv_path = (
+        "projects/_01_ingest/unittest_data/test_manual_postcode_corrections.csv"
+    )
 
     # increase length of string to simulate realistic file size
     smaller_string_boost = 35
