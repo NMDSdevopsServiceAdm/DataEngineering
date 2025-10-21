@@ -12,6 +12,11 @@ def add_aligned_date_column(
 
     Uses `join_asof` to align each primary date with the nearest non-future secondary date.
 
+    After this function, we join the full secondary_lf into primary_lf based on the
+    `secondary_column`. Unfortunately this needs to be a two step process as we want the entire
+    datasets to be aligned on the same date, as opposed to aligning dates to whenever each
+    individual location ID or postcode last existed.
+
     Args:
         primary_lf (pl.LazyFrame): LazyFrame to which the aligned date column will be added.
         secondary_lf (pl.LazyFrame): LazyFrame with dates for alignment.
