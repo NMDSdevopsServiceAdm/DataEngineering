@@ -73,6 +73,8 @@ All notable changes to this project will be documented in this file.
 
 - Removed locations from CQC delta clean when registration status or location type are null.
 
+- Added placeholder tasks for new processes in [Transform-CQC-Data step function](./terraform/pipeline/step-functions/dynamic/Transform-CQC-Data.json).
+
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 - Moved the preparation of worker job role data into it's own polars task in the ind CQC estimates pipeline.
@@ -86,6 +88,8 @@ All notable changes to this project will be documented in this file.
 - New function added within flatten_cqc_ratings_job to flatten the new assessment column which is now used by CQC to publish the ratings data.
 
 - Added current_lsoa21 column to the IND CQC pipeline. This column is now included across all jobs, ensuring it is present the Archive outputs.
+
+- Added a new generic sink_to_parquet function in polars_utils for saving LazyFrames to s3.
 
 
 ### Changed

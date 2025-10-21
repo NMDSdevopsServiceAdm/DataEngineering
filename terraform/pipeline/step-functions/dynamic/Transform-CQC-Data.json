@@ -220,6 +220,52 @@
               "End": true
             }
           }
+        },
+        {
+          "StartAt": "(placeholder) Flatten Delta CQC Locations",
+          "States": {
+            "(placeholder) Flatten Delta CQC Locations": {
+              "Type": "Pass",
+              "Result": "Placeholder for Flatten Delta CQC Locations",
+              "Next": "(placeholder) Build, Clean and Validate Locations"
+            },
+            "(placeholder) Build, Clean and Validate Locations": {
+              "Type": "Parallel",
+              "Branches": [
+                {
+                  "StartAt": "(placeholder) Build Full CQC Locations",
+                  "States": {
+                    "(placeholder) Build Full CQC Locations": {
+                      "Type": "Pass",
+                      "Result": "Placeholder for Build Full CQC Locations",
+                      "Next": "(placeholder) Clean Full CQC Locations"
+                    },
+                    "(placeholder) Clean Full CQC Locations": {
+                      "Type": "Pass",
+                      "Result": "Placeholder for Build Full CQC Locations",
+                      "Next": "(placeholder) Validate Full CQC Locations"
+                    },
+                    "(placeholder) Validate Full CQC Locations": {
+                      "Type": "Pass",
+                      "Result": "Placeholder for Validate Full CQC Locations",
+                      "End": true
+                    }
+                  }
+                },
+                {
+                  "StartAt": "(placeholder) Validate Flatten Delta CQC Locations",
+                  "States": {
+                    "(placeholder) Validate Flatten Delta CQC Locations": {
+                      "Type": "Pass",
+                      "Result": "Placeholder for Validate Flatten Delta CQC Locations",
+                      "End": true
+                    }
+                  }
+                }
+              ],
+              "End": true
+            }
+          }
         }
       ],
       "Next": "Handle Error and Run Crawler",
