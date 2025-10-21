@@ -44,7 +44,7 @@ def main(
     prepared_ascwds_job_role_counts_destination: str,
 ) -> None:
     """
-    Creates estimates of filled posts split by main job role.
+    Prepares cleaned ASC-WDS worker data for merging with ind cqc estimates.
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
