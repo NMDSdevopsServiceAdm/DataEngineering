@@ -90,3 +90,148 @@ class ExtractRegisteredManagerNamesSchema:
         list(add_registered_manager_names_full_lf_schema.items())
         + [(CQCLClean.registered_manager_names, pl.List(pl.String()))]
     )
+
+
+@dataclass
+class PostcodeMatcherTest:
+    locations_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCL.name, pl.String()),
+            (CQCL.postal_address_line1, pl.String()),
+            (CQCL.postal_code, pl.String()),
+        ]
+    )
+    postcodes_schema = pl.Schema(
+        [
+            (ONS.postcode, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.contemporary_cssr, pl.String()),
+            (ONSClean.contemporary_sub_icb, pl.String()),
+            (ONSClean.contemporary_ccg, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+            (ONSClean.current_sub_icb, pl.String()),
+        ]
+    )
+
+    clean_postcode_column_schema = pl.Schema([(CQCL.postal_code, pl.String())])
+    expected_clean_postcode_column_when_drop_is_false_schema = pl.Schema(
+        [(CQCL.postal_code, pl.String()), (CQCLClean.postcode_cleaned, pl.String())]
+    )
+    expected_clean_postcode_column_when_drop_is_true_schema = pl.Schema(
+        [(CQCLClean.postcode_cleaned, pl.String())]
+    )
+
+    join_postcode_data_locations_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+    join_postcode_data_postcodes_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.current_cssr, pl.String()),
+        ]
+    )
+    expected_join_postcode_data_matched_schema = pl.Schema(
+        list(join_postcode_data_locations_schema.items())
+        + [(ONSClean.current_cssr, pl.String())]
+    )
+    expected_join_postcode_data_unmatched_schema = join_postcode_data_locations_schema
+
+    first_successful_postcode_unmatched_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+    first_successful_postcode_matched_schema = pl.Schema(
+        list(first_successful_postcode_unmatched_schema.items())
+        + [(ONSClean.current_cssr, pl.String())]
+    )
+    expected_get_first_successful_postcode_match_schema = (
+        first_successful_postcode_unmatched_schema
+    )
+
+    amend_invalid_postcodes_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+
+    truncate_postcode_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+        ]
+    )
+    expected_truncate_postcode_schema = pl.Schema(
+        list(truncate_postcode_schema.items())
+        + [(CQCLClean.postcode_truncated, pl.String())]
+    )
+
+    create_truncated_postcode_df_schema = pl.Schema(
+        [
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (CQCLClean.contemporary_ons_import_date, pl.Date()),
+            (CQCLClean.contemporary_cssr, pl.String()),
+            (CQCLClean.contemporary_ccg, pl.String()),
+            (CQCLClean.contemporary_sub_icb, pl.String()),
+            (CQCLClean.current_cssr, pl.String()),
+            (CQCLClean.current_sub_icb, pl.String()),
+        ]
+    )
+    expected_create_truncated_postcode_df_schema = pl.Schema(
+        [
+            (ONSClean.contemporary_ons_import_date, pl.Date()),
+            (ONSClean.contemporary_cssr, pl.String()),
+            (ONSClean.contemporary_ccg, pl.String()),
+            (ONSClean.contemporary_sub_icb, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+            (ONSClean.current_sub_icb, pl.String()),
+            (CQCLClean.postcode_truncated, pl.String()),
+        ]
+    )
+
+    raise_error_if_unmatched_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.name, pl.String()),
+            (CQCLClean.postal_address_line1, pl.String()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+        ]
+    )
+
+    combine_matched_df1_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date),
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+        ]
+    )
+    combine_matched_df2_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (CQCLClean.postcode_truncated, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+        ]
+    )
+    expected_combine_matched_schema = pl.Schema(
+        [
+            (CQCLClean.location_id, pl.String()),
+            (CQCLClean.cqc_location_import_date, pl.Date()),
+            (CQCLClean.postcode_cleaned, pl.String()),
+            (ONSClean.current_cssr, pl.String()),
+            (CQCLClean.postcode_truncated, pl.String()),
+        ]
+    )
