@@ -37,6 +37,7 @@ class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     @patch(f"{PATCH_PATH}.combine_matched_dataframes")
     @patch(f"{PATCH_PATH}.raise_error_if_unmatched")
     @patch(f"{PATCH_PATH}.truncate_postcode")
@@ -76,6 +77,7 @@ class MainTests(PostcodeMatcherTests):
         raise_error_if_unmatched_mock.assert_called_once()
         combine_matched_dataframes_mock.assert_called_once()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_main_completes_and_returns_expected_rows_when_all_postcodes_match(
         self, mock_read_manual_postcode_corrections_csv_to_dict
@@ -91,6 +93,7 @@ class MainTests(PostcodeMatcherTests):
 
         self.assertEqual(returned_df.count(), 7)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_main_raises_error_when_some_postcodes_do_not_match(
         self, mock_read_manual_postcode_corrections_csv_to_dict
@@ -137,14 +140,17 @@ class CleanPostcodeColumnTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
         self.expected_data = self.expected_df.collect()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_clean_postcode_column_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_clean_postcode_column_returns_expected_columns_when_column_is_not_dropped(
         self,
     ):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_clean_postcode_column_returns_expected_columns_when_column_is_dropped(
         self,
     ):
@@ -186,12 +192,14 @@ class JoinPostcodeDataTests(PostcodeMatcherTests):
             Schemas.expected_join_postcode_data_unmatched_schema,
         )
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_join_postcode_data_returns_expected_matched_columns(self):
         self.assertEqual(
             sorted(self.returned_matched_df.columns),
             sorted(self.expected_matched_df.columns),
         )
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_join_postcode_data_returns_expected_matched_rows(self):
         returned_data = (
             self.returned_matched_df.select(*self.expected_matched_df.columns)
@@ -202,12 +210,14 @@ class JoinPostcodeDataTests(PostcodeMatcherTests):
 
         self.assertEqual(returned_data, expected_data)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_join_postcode_data_returns_expected_unmatched_columns(self):
         self.assertEqual(
             self.returned_unmatched_df.columns,
             self.expected_unmatched_df.columns,
         )
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_join_postcode_data_returns_expected_unmatched_rows(self):
         self.assertEqual(
             self.returned_unmatched_df.sort(CQCLClean.location_id).collect(),
@@ -238,14 +248,17 @@ class GetFirstSuccessfulPostcodeMatch(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.location_id).collect()
         self.expected_data = expected_df.collect()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_get_first_successful_postcode_match_returns_original_columns(self):
         self.assertEqual(
             sorted(self.returned_df.columns), sorted(self.unmatched_df.columns)
         )
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_get_first_successful_postcode_match_returns_original_number_of_rows(self):
         self.assertEqual(self.returned_df.count(), self.unmatched_df.count())
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_get_first_successful_postcode_match_returns_expected_postcodes(self):
         for i in range(len(self.expected_data)):
             self.assertEqual(
@@ -258,6 +271,7 @@ class AmendInvalidPostcodesTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     @patch(f"{PATCH_PATH}.read_manual_postcode_corrections_csv_to_dict")
     def test_amend_invalid_postcodes_returns_expected_values(
         self, mock_read_manual_postcode_corrections_csv_to_dict
@@ -300,9 +314,11 @@ class TruncatePostcodeTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
         self.expected_data = self.expected_df.collect()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_truncate_postcode_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_truncate_postcode_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
@@ -324,9 +340,11 @@ class CreateTruncatedPostcodeDfTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.postcode_cleaned).collect()
         self.expected_data = self.expected_df.collect()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_create_truncated_postcode_df_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_create_truncated_postcode_df_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
 
@@ -335,6 +353,7 @@ class RaiseErrorIfUnmatched(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_raise_error_if_unmatched_raises_type_error_when_contains_data(self):
         unknown_df = self.spark.createDataFrame(
             Data.raise_error_if_unmatched_rows,
@@ -349,6 +368,7 @@ class RaiseErrorIfUnmatched(PostcodeMatcherTests):
             str(context.exception),
         )
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_raise_error_if_unmatched_does_not_raise_error_when_df_is_empty(self):
         empty_df = self.spark.createDataFrame(
             [], Schemas.raise_error_if_unmatched_schema
@@ -383,8 +403,10 @@ class CombineMatchedDataframesTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.location_id).collect()
         self.expected_data = self.expected_df.collect()
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_combine_matched_dataframes_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
+    # converted to polars -> projects._01_ingest.cqc_api.tests.fargate.utils.test_postcode_matcher.py
     def test_combine_matched_dataframes_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)
