@@ -15,6 +15,54 @@ util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
 
 
+def scan_parquet(
+    source: str | Path,
+    schema: pl.Schema | None = None,
+    selected_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Reads in parquet into a LazyFrame
+
+    Args:
+        source (str | Path): the full path in s3 of the dataset
+        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        selected_columns (list[str] | None, optional): list of columns to return as a
+            subset of the columns in the schema. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: the raw data as a polars LazyFrame
+
+    Raises:
+        FileNotFoundError: if there are no files in the source directory
+
+    """
+    if isinstance(source, str):
+        source = source.strip("/") + "/"
+
+        # Check if directory exists.
+        s3_client = boto3.client("s3")
+        response = s3_client.list_objects_v2(
+            Bucket=source.split("/")[2],
+            Prefix=source.split("/", 3)[3],
+            MaxKeys=1,
+        )
+        if "Contents" not in response:
+            raise FileNotFoundError(f"No files in {source}")
+
+    lf = pl.scan_parquet(
+        source,
+        schema=schema,
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert",
+            extra_struct_fields="ignore",
+        ),
+        extra_columns="ignore",
+        missing_columns="insert",
+    ).select(selected_columns or cs.all())
+
+    return lf
+
+
 def read_parquet(
     source: str | Path,
     schema: pl.Schema | None = None,
@@ -46,23 +94,7 @@ def read_parquet(
         )
     else:
         logging.info("Determining schema from dataset scan")
-        # Polars may only scan the first hive partition to establish the schema.
-        # By including missing_columns="insert", we prevent a failure but will
-        # exclude columns introduced in later partitions.
-        # TODO: establish full schema from latest data
-        raw = (
-            pl.scan_parquet(
-                source,
-                cast_options=pl.ScanCastOptions(
-                    missing_struct_fields="insert",
-                    extra_struct_fields="ignore",
-                ),
-                extra_columns="ignore",
-                missing_columns="insert",
-            )
-            .select(selected_columns or cs.all())
-            .collect()
-        )
+        raw = scan_parquet(source, selected_columns=selected_columns).collect()
 
     if not exclude_complex_types:
         return raw
@@ -75,6 +107,7 @@ def write_to_parquet(
     output_path: str | Path,
     logger: logging.Logger = util_logger,
     append: bool = True,
+    partition_cols: list[str] | None = None,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -90,6 +123,7 @@ def write_to_parquet(
             If not provided, a default logger will be used (or you can ensure
             `util_logger` is globally available).
         append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
         None
@@ -105,8 +139,77 @@ def write_to_parquet(
             output_path += fname
         else:
             output_path = output_path / fname
-    df.write_parquet(output_path)
-    logger.info("Parquet written to {}".format(output_path))
+
+    if not partition_cols:
+        df.write_parquet(output_path)
+        logger.info("Parquet written to {}".format(output_path))
+    else:
+        df.rechunk().write_parquet(
+            output_path,
+            use_pyarrow=True,
+            pyarrow_options={"compression": "snappy", "partition_cols": partition_cols},
+        )
+
+
+def sink_to_parquet(
+    lazy_df: pl.LazyFrame,
+    output_path: str | Path,
+    partition_cols: list[str] | None = None,
+    logger: logging.Logger = None,
+    append: bool = True,
+) -> None:
+    """
+    Sinks a Polars LazyFrame directly to Parquet using sink_parquet (fully lazy), with optional partitioning.
+
+    Args:
+        lazy_df (pl.LazyFrame): The Polars LazyFrame to write.
+        output_path (str | Path): Directory path to sink Parquet files.
+        partition_cols (list[str] | None): Columns to partition by. Defaults to None.
+        logger (logging.Logger): Optional logger for messages. Defaults to None.
+        append (bool): Whether to append (True) or overwrite (False). Defaults to True.
+
+    Returns:
+        None: This function does not return any value.
+
+    Raises:
+        Exception: If writing the LazyFrame to Parquet fails, e.g., due to file system errors, invalid paths, or issues with the LazyFrame.
+    """
+    if logger is None:
+        logger = logging.getLogger(__name__)
+
+    if lazy_df is None or len(lazy_df.collect_schema().names()) == 0:
+        logger.info("The provided LazyFrame was empty. No data was written.")
+        return
+
+    logger.info("did not finish!")
+    output_path = Path(output_path)
+
+    if append:
+        fname = f"{uuid.uuid4()}.parquet"
+        if isinstance(output_path, str):
+            output_path += fname
+        else:
+            output_path = output_path / fname
+
+    try:
+        if partition_cols:
+            path = pl.PartitionByKey(
+                base_path=f"{output_path}",
+                include_key=False,
+                by=partition_cols,
+            )
+            lazy_df.sink_parquet(path=path, mkdir=True, engine="streaming")
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_path} partitioned by {partition_cols}"
+            )
+        else:
+            lazy_df.sink_parquet(output_path, engine="streaming")
+            logger.info(
+                f"LazyFrame sunk to Parquet at {output_path} without partitioning"
+            )
+    except Exception as e:
+        logger.error(f"Failed to sink LazyFrame to Parquet: {e}")
+        raise
 
 
 def get_args(*args: tuple) -> argparse.Namespace:

@@ -2,10 +2,10 @@ import unittest
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-import projects._01_ingest.cqc_api.jobs.delta_download_cqc_providers as job
+import projects._01_ingest.cqc_api.jobs.unused_delta_download_cqc_locations as job
 from utils import utils
 
-PATCH_PATH = "projects._01_ingest.cqc_api.jobs.delta_download_cqc_providers"
+PATCH_PATH = "projects._01_ingest.cqc_api.jobs.unused_delta_download_cqc_locations"
 
 
 class MainTests(unittest.TestCase):
@@ -24,9 +24,9 @@ class MainTests(unittest.TestCase):
         # Given
         mock_get_secret.return_value = '{"Ocp-Apim-Subscription-Key": "test"}'
         mock_get_updated_objects.return_value = [
-            {"providerId": 1},
-            {"providerId": 2},
-            {"providerId": 3},
+            {"locationId": 1},
+            {"locationId": 2},
+            {"locationId": 3},
         ]
         start_time = "2025-06-02T08:00:00Z"
         end_time = "2025-06-02T09:00:00Z"

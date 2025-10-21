@@ -35,7 +35,7 @@ class MainTests(PostcodeMatcherTests):
     def setUp(self) -> None:
         super().setUp()
 
-    @patch(f"{PATCH_PATH}.combine_dataframes")
+    @patch(f"{PATCH_PATH}.combine_matched_dataframes")
     @patch(f"{PATCH_PATH}.raise_error_if_unmatched")
     @patch(f"{PATCH_PATH}.truncate_postcode")
     @patch(f"{PATCH_PATH}.create_truncated_postcode_df")
@@ -54,7 +54,7 @@ class MainTests(PostcodeMatcherTests):
         create_truncated_postcode_df_mock: Mock,
         truncate_postcode_mock: Mock,
         raise_error_if_unmatched_mock: Mock,
-        combine_dataframes_mock: Mock,
+        combine_matched_dataframes_mock: Mock,
     ):
         join_postcode_data_mock.return_value = self.locations_df, self.locations_df
 
@@ -70,10 +70,10 @@ class MainTests(PostcodeMatcherTests):
         create_truncated_postcode_df_mock.assert_called_once()
         truncate_postcode_mock.assert_called_once()
         raise_error_if_unmatched_mock.assert_called_once()
-        combine_dataframes_mock.assert_called_once()
+        combine_matched_dataframes_mock.assert_called_once()
 
     @patch(f"{PATCH_PATH}.read_incorrect_postcode_csv_to_dict")
-    def test_main_completes_when_all_postcodes_match(
+    def test_main_completes_and_returns_expected_rows_when_all_postcodes_match(
         self, mock_read_incorrect_postcode_csv_to_dict
     ):
         mock_read_incorrect_postcode_csv_to_dict.return_value = (
@@ -83,7 +83,7 @@ class MainTests(PostcodeMatcherTests):
             self.locations_df, self.postcodes_df, self.incorrect_postcode_csv_path
         )
 
-        self.assertEqual(returned_df.count(), self.locations_df.count())
+        self.assertEqual(returned_df.count(), 7)
 
     @patch(f"{PATCH_PATH}.read_incorrect_postcode_csv_to_dict")
     def test_main_raises_error_when_some_postcodes_do_not_match(
@@ -366,7 +366,7 @@ class CombineMatchedDataframesTests(PostcodeMatcherTests):
             Data.combine_df2_rows,
             Schemas.combine_df2_schema,
         )
-        self.returned_df = job.combine_dataframes([matched_1_df, matched_2_df])
+        self.returned_df = job.combine_matched_dataframes([matched_1_df, matched_2_df])
 
         self.expected_df = self.spark.createDataFrame(
             Data.expected_combine_rows,
@@ -375,8 +375,8 @@ class CombineMatchedDataframesTests(PostcodeMatcherTests):
         self.returned_data = self.returned_df.sort(CQCLClean.location_id).collect()
         self.expected_data = self.expected_df.collect()
 
-    def test_combine_dataframes_returns_expected_values(self):
+    def test_combine_matched_dataframes_returns_expected_values(self):
         self.assertEqual(self.returned_data, self.expected_data)
 
-    def test_combine_dataframes_returns_expected_columns(self):
+    def test_combine_matched_dataframes_returns_expected_columns(self):
         self.assertEqual(self.returned_df.columns, self.expected_df.columns)

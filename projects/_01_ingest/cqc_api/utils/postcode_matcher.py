@@ -27,7 +27,7 @@ def run_postcode_matching(
     """
     Runs full postcode matching logic and raises error if final validation fails.
 
-    This function first splits the full locations file into locations who are required to have a postcode match and those who are not.
+    This function filters to `Registered`, `Social Care` locations who are required to have a postcode match.
     The process of matching postcodes to the required locations consists of 5 iterations:
         - 1 - Match postcodes where there is an exact match at that point in time.
         - 2 - If not, reassign unmatched postcode with the first successfully matched postcode for that location ID (where available).
@@ -35,7 +35,7 @@ def run_postcode_matching(
         - 4 - If not, match the postcode based on the first half of the postcode only (truncated postcode).
         - 5 - If not, raise an error to manually investigate any unmatched postcodes.
 
-    If an error isn't raised, return a DataFrame with all of the matched postcodes from steps 1 to 4, plus the original unrequired postcode match locations.
+    If an error isn't raised, return a DataFrame with all of the matched postcodes from steps 1 to 4.
 
     Args:
         locations_df (DataFrame): DataFrame of workplaces with postcodes.
@@ -50,7 +50,6 @@ def run_postcode_matching(
         (F.col(CQCLClean.registration_status) == RegistrationStatus.registered)
         & (F.col(CQCLClean.type) == LocationType.social_care_identifier)
     )
-    unrequired_locations_df = locations_df.exceptAll(required_locations_df)
 
     # Clean postcode columns to upper case, remove spaces and add as a new column.
     required_locations_df = clean_postcode_column(
@@ -108,14 +107,13 @@ def run_postcode_matching(
     # Step 5 - Raise an error and abort pipeline to manually investigate any unmatched postcodes.
     raise_error_if_unmatched(unmatched_truncated_locations_df)
 
-    # Step 6 - Create a final DataFrame with all matched postcodes plus the unrequired matched locations.
-    final_matched_df = combine_dataframes(
+    # Step 6 - Create a final DataFrame with all matched postcodes.
+    final_matched_df = combine_matched_dataframes(
         [
             matched_locations_df,
             matched_reassigned_locations_df,
             matched_amended_locations_df,
             matched_truncated_locations_df,
-            unrequired_locations_df,
         ]
     )
 
@@ -367,7 +365,7 @@ def raise_error_if_unmatched(unmatched_df: DataFrame) -> None:
     raise TypeError(f"Unmatched postcodes found: {errors}")
 
 
-def combine_dataframes(dataframes: List[DataFrame]) -> DataFrame:
+def combine_matched_dataframes(dataframes: List[DataFrame]) -> DataFrame:
     """
     Combines a list of DataFrames using unionByName.
 
