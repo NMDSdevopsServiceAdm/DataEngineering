@@ -21,6 +21,9 @@ class PrepareJobRoleCountsUtilsSchemas:
         ]
     )
 
+
+@dataclass
+class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:
     estimates_df_before_join_schema = pl.Schema(
         [
             (IndCQC.location_id, pl.String()),

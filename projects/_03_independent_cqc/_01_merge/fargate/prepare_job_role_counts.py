@@ -16,6 +16,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
+
 cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
@@ -47,33 +48,25 @@ def main(
 
     Args:
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
-        prepared_ascwds_job_role_counts_destination (str): destination for output.
+        prepared_ascwds_job_role_counts_destination (str): destination for output
     """
-    cleaned_ascwds_worker_lf = pl.scan_parquet(
-        cleaned_ascwds_worker_source,
-    ).select(cleaned_ascwds_worker_columns_to_import)
+    cleaned_ascwds_worker_lf = utils.scan_parquet(
+        source=cleaned_ascwds_worker_source,
+        selected_columns=cleaned_ascwds_worker_columns_to_import,
+    )
 
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
         cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
     )
 
-    sink_parquet_with_partitions(
-        aggregated_worker_lf,
-        prepared_ascwds_job_role_counts_destination,
+    utils.sink_to_parquet(
+        lazy_df=aggregated_worker_lf,
+        output_path=prepared_ascwds_job_role_counts_destination,
+        partition_cols=partition_keys,
+        logger=logger,
+        append=False,
     )
-
-
-def sink_parquet_with_partitions(
-    lf: pl.LazyFrame, prepared_ascwds_job_role_counts_destination: str
-) -> None:
-    path = pl.PartitionByKey(
-        base_path=f"{prepared_ascwds_job_role_counts_destination}",
-        include_key=False,
-        by=partition_keys,
-    )
-
-    lf.sink_parquet(path=path, mkdir=True, engine="streaming")
 
 
 if __name__ == "__main__":

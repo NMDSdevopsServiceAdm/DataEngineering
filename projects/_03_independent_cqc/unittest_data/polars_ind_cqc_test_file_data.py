@@ -69,6 +69,9 @@ class PrepareJobRoleCountsUtilsData:
         (1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0),
     ]
 
+
+@dataclass
+class EstimateIndCqcFilledPostsByJobRoleUtilsData:
     estimates_df_before_join_rows = [
         (
             "1-001",
