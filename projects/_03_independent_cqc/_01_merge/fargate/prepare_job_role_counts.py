@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
     main(
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
-        prepared_ascwds_job_role_counts_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
+        prepared_ascwds_job_role_counts_destination=args.prepared_ascwds_job_role_counts_destination,
     )
 
     logger.info("Finished preparing ascwds job role counts")
