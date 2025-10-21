@@ -319,16 +319,6 @@ resource "aws_iam_policy" "step_function_iam_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "glue:GetJobRuns"
-        ],
-        "Resource" : [
-          module.delta_cqc_locations_download_job.job_arn,
-          module.delta_cqc_providers_download_job.job_arn
-        ]
-      },
-      {
-        "Effect" : "Allow",
-        "Action" : [
           "s3:GetObject",
           "s3:GetBucketLocation",
           "s3:ListBucket"
