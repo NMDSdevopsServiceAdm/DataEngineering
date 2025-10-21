@@ -39,22 +39,16 @@ estimated_ind_cqc_filled_posts_columns_to_import = [
 
 
 def main(
-    estimated_ind_cqc_filled_posts_source: str,
     cleaned_ascwds_worker_source: str,
-    estimated_ind_cqc_filled_posts_by_job_role_destination: str,
+    prepared_ascwds_job_role_counts_destination: str,
 ) -> None:
     """
     Creates estimates of filled posts split by main job role.
 
     Args:
-        estimated_ind_cqc_filled_posts_source (str): path to the estimates ind cqc filled posts data
         cleaned_ascwds_worker_source (str): path to the cleaned worker data
-        estimated_ind_cqc_filled_posts_by_job_role_destination (str): path to where to save the outputs
+        prepared_ascwds_job_role_counts_destination (str): destination for output.
     """
-    estimated_ind_cqc_filled_posts_lf = pl.scan_parquet(
-        estimated_ind_cqc_filled_posts_source,
-    ).select(estimated_ind_cqc_filled_posts_columns_to_import)
-
     cleaned_ascwds_worker_lf = pl.scan_parquet(
         cleaned_ascwds_worker_source,
     ).select(cleaned_ascwds_worker_columns_to_import)
@@ -64,23 +58,17 @@ def main(
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
     )
 
-    estimated_ind_cqc_filled_posts_by_job_role_lf = (
-        JRUtils.join_worker_to_estimates_dataframe(
-            estimated_ind_cqc_filled_posts_lf, aggregated_worker_lf
-        )
-    )
-
     sink_parquet_with_partitions(
-        estimated_ind_cqc_filled_posts_by_job_role_lf,
-        estimated_ind_cqc_filled_posts_by_job_role_destination,
+        aggregated_worker_lf,
+        prepared_ascwds_job_role_counts_destination,
     )
 
 
 def sink_parquet_with_partitions(
-    lf: pl.LazyFrame, estimated_ind_cqc_filled_posts_by_job_role_destination: str
+    lf: pl.LazyFrame, prepared_ascwds_job_role_counts_destination: str
 ) -> None:
     path = pl.PartitionByKey(
-        base_path=f"{estimated_ind_cqc_filled_posts_by_job_role_destination}",
+        base_path=f"{prepared_ascwds_job_role_counts_destination}",
         include_key=False,
         by=partition_keys,
     )
@@ -91,23 +79,18 @@ def sink_parquet_with_partitions(
 if __name__ == "__main__":
     args = utils.get_args(
         (
-            "--estimated_ind_cqc_filled_posts_source",
-            "Source s3 directory for estimated ind cqc filled posts data",
-        ),
-        (
             "--cleaned_ascwds_worker_source",
             "Source s3 directory for parquet ASCWDS worker cleaned dataset",
         ),
         (
-            "--estimated_ind_cqc_filled_posts_by_job_role_destination",
-            "Destination s3 directory",
+            "--prepared_ascwds_job_role_counts_destination",
+            "Destination s3 directory for prepared_ascwds_job_role_counts",
         ),
     )
 
     main(
-        estimated_ind_cqc_filled_posts_source=args.estimated_ind_cqc_filled_posts_source,
         cleaned_ascwds_worker_source=args.cleaned_ascwds_worker_source,
-        estimated_ind_cqc_filled_posts_by_job_role_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
+        prepared_ascwds_job_role_counts_destination=args.estimated_ind_cqc_filled_posts_by_job_role_destination,
     )
 
-    logger.info("Finished ind cqc estimates by job role job")
+    logger.info("Finished preparing ascwds job role counts")
