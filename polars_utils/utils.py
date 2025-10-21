@@ -15,6 +15,54 @@ util_logger.addHandler(logging.StreamHandler())
 util_logger.handlers[0].setFormatter(formatter)
 
 
+def scan_parquet(
+    source: str | Path,
+    schema: pl.Schema | None = None,
+    selected_columns: list[str] | None = None,
+) -> pl.LazyFrame:
+    """
+    Reads in parquet into a LazyFrame
+
+    Args:
+        source (str | Path): the full path in s3 of the dataset
+        schema (pl.Schema | None, optional): Polars schema to apply to dataset read
+        selected_columns (list[str] | None, optional): list of columns to return as a
+            subset of the columns in the schema. Defaults to None.
+
+    Returns:
+        pl.LazyFrame: the raw data as a polars LazyFrame
+
+    Raises:
+        FileNotFoundError: if there are no files in the source directory
+
+    """
+    if isinstance(source, str):
+        source = source.strip("/") + "/"
+
+        # Check if directory exists.
+        s3_client = boto3.client("s3")
+        response = s3_client.list_objects_v2(
+            Bucket=source.split("/")[2],
+            Prefix=source.split("/", 3)[3],
+            MaxKeys=1,
+        )
+        if "Contents" not in response:
+            raise FileNotFoundError(f"No files in {source}")
+
+    lf = pl.scan_parquet(
+        source,
+        schema=schema,
+        cast_options=pl.ScanCastOptions(
+            missing_struct_fields="insert",
+            extra_struct_fields="ignore",
+        ),
+        extra_columns="ignore",
+        missing_columns="insert",
+    ).select(selected_columns or cs.all())
+
+    return lf
+
+
 def read_parquet(
     source: str | Path,
     schema: pl.Schema | None = None,
@@ -46,23 +94,7 @@ def read_parquet(
         )
     else:
         logging.info("Determining schema from dataset scan")
-        # Polars may only scan the first hive partition to establish the schema.
-        # By including missing_columns="insert", we prevent a failure but will
-        # exclude columns introduced in later partitions.
-        # TODO: establish full schema from latest data
-        raw = (
-            pl.scan_parquet(
-                source,
-                cast_options=pl.ScanCastOptions(
-                    missing_struct_fields="insert",
-                    extra_struct_fields="ignore",
-                ),
-                extra_columns="ignore",
-                missing_columns="insert",
-            )
-            .select(selected_columns or cs.all())
-            .collect()
-        )
+        raw = scan_parquet(source, selected_columns=selected_columns).collect()
 
     if not exclude_complex_types:
         return raw
@@ -75,6 +107,7 @@ def write_to_parquet(
     output_path: str | Path,
     logger: logging.Logger = util_logger,
     append: bool = True,
+    partition_cols: list[str] | None = None,
 ) -> None:
     """Writes a Polars DataFrame to a Parquet file.
 
@@ -90,6 +123,7 @@ def write_to_parquet(
             If not provided, a default logger will be used (or you can ensure
             `util_logger` is globally available).
         append (bool): Whether to append to existing files or overwrite them. Defaults to False.
+        partition_cols (list[str] | None): List of columns to partition by (optional - mutually exclusive with append).
 
     Return:
         None
@@ -105,8 +139,16 @@ def write_to_parquet(
             output_path += fname
         else:
             output_path = output_path / fname
-    df.write_parquet(output_path)
-    logger.info("Parquet written to {}".format(output_path))
+
+    if not partition_cols:
+        df.write_parquet(output_path)
+        logger.info("Parquet written to {}".format(output_path))
+    else:
+        df.rechunk().write_parquet(
+            output_path,
+            use_pyarrow=True,
+            pyarrow_options={"compression": "snappy", "partition_cols": partition_cols},
+        )
 
 
 def sink_to_parquet(
