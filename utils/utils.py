@@ -159,12 +159,7 @@ def read_incorrect_postcode_csv_to_dict(source: str, s3_client: object = None) -
     postcode_data = postcode_obj["Body"].read().decode("utf-8").splitlines()
     postcode_records = csv.reader(postcode_data)
     headers = next(postcode_records)
-    keys = []
-    values = []
-    for record in postcode_records:
-        keys.append(record[0])
-        values.append(record[1])
-        postcode_dict = dict(zip(keys, values))
+    postcode_dict = {record[0]: record[1] for record in postcode_records}
     return postcode_dict
 
 
