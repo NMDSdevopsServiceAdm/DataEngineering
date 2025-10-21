@@ -36,20 +36,16 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         Keys.import_date,
     ]
 
-    # Aggregate worker data into one row per job role per workplace with a count column.
     worker_count_lf = lf.group_by(columns).len(name=IndCQC.ascwds_job_role_counts)
 
-    # Pivot the job role labels into columns, with the counts as their values, and add columns for all potential job roles.
     aggregation = [
         (pl.col(IndCQC.main_job_role_clean_labelled) == role).sum().alias(role)
         for role in list_of_job_roles
     ]
-
     worker_count_lf = worker_count_lf.group_by(
         [col for col in columns if col not in [IndCQC.main_job_role_clean_labelled]]
     ).agg(aggregation)
 
-    # Pivot all the job role columns into rows.
     worker_count_lf = worker_count_lf.unpivot(
         index=[
             IndCQC.establishment_id,
@@ -64,7 +60,6 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         value_name=IndCQC.ascwds_job_role_counts,
     )
 
-    # Order columns
     worker_count_lf = worker_count_lf.select(
         [
             IndCQC.establishment_id,
