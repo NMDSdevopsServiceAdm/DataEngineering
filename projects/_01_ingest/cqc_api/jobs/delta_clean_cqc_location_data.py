@@ -849,6 +849,7 @@ if __name__ == "__main__":
     (
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
+        incorrect_postcode_source,
         cleaned_cqc_location_destination,
         gac_service_dest,
         regulated_activities_dest,
@@ -862,6 +863,10 @@ if __name__ == "__main__":
         (
             "--cleaned_ons_postcode_directory_source",
             "Source s3 directory for parquet ONS postcode directory dataset",
+        ),
+        (
+            "--incorrect_postcode_source",
+            "Source s3 location for incorrect postcode csv dataset",
         ),
         (
             "--cleaned_cqc_location_destination",
@@ -887,6 +892,7 @@ if __name__ == "__main__":
     main(
         cqc_location_source,
         cleaned_ons_postcode_directory_source,
+        incorrect_postcode_source,
         cleaned_cqc_location_destination,
         gac_service_dest,
         regulated_activities_dest,
