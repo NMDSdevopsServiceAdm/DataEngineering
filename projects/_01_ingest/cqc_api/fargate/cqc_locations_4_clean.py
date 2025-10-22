@@ -1,5 +1,6 @@
+import polars as pl
+
 from polars_utils import logger, utils
-from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
@@ -11,6 +12,10 @@ from utils.column_names.cleaned_data_files.ons_cleaned import (
     current_geography_columns,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.column_values.categorical_column_values import (
+    LocationType,
+    RegistrationStatus,
+)
 
 logger = logger.get_logger(__name__)
 
@@ -32,11 +37,12 @@ def main(
     # Scan parquet to get CQC locations full data in LazyFrame format
     cqc_lf = utils.scan_parquet(
         cqc_locations_full_flattened_source,
-        schema=POLARS_LOCATION_SCHEMA,
     )
     logger.info("Full Flattened CQC Location LazyFrame read in")
 
-    # TODO - remove_non_social_care_locations
+    cqc_lf = cqc_lf.filter(
+        pl.col(CQCLClean.type) == LocationType.social_care_identifier
+    )
 
     # TODO - remove_specialist_colleges
 
@@ -47,20 +53,21 @@ def main(
     # - sink parquet to s3
     # - Create ticket to update reconciliation process after this (some steps won't be required now)
 
-    # TODO - select_registered_locations_only
+    cqc_reg_lf = cqc_lf.filter(
+        pl.col(CQCLClean.registration_status) == RegistrationStatus.registered
+    )
 
     # Scan parquet to get ONS Postcode Directory data in LazyFrame format
-    cqc_lf = utils.scan_parquet(
+    ons_lf = utils.scan_parquet(
         ons_postcode_directory_source,
         selected_columns=ons_cols_to_import,
     )
     logger.info("CQC Location LazyFrame read in")
-    # TODO - join in ONS postcode data
-    # TODO - run_postcode_matching (filter to relevant locations only)
+    # TODO - join in ONS postcode data / run_postcode_matching (filter to relevant locations only if haven't already)
 
-    # Store cleaned Registered data in s3
+    # Store cleaned registered data in s3
     utils.sink_to_parquet(
-        cqc_lf,
+        cqc_reg_lf,
         cqc_registered_locations_cleaned_destination,
         logger=logger,
         partition_cols=cqc_partition_keys,
