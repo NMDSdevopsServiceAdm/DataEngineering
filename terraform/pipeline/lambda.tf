@@ -147,7 +147,8 @@ data "aws_iam_policy_document" "create_snapshot_lambda" {
     resources = [
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_providers_api/version=3.0.0/*",
       "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_locations_api/version=3.0.0/*",
-      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_locations_api_cleaned/*"
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=full_locations_api_cleaned/*",
+      "arn:aws:s3:::sfc-${local.workspace_prefix}-datasets/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/*"
     ]
   }
 }
