@@ -283,7 +283,7 @@
                       "Next": "Set Clean Full CQC Locations Parameters"
                     },
                     "Set Clean Full CQC Locations Parameters": {
-                      "Type": "Task",
+                      "Type": "Pass",
                       "Result": {
                         "script": "cqc_locations_4_clean.py",
                         "cqc_full_flat_source_arg_name": "--cqc_locations_full_flattened_source",
@@ -321,7 +321,7 @@
                         }
                       },
                       "ResultPath": "$.cleanedLocationResult",
-                      "Next": "(placeholder) Build, Clean and Validate Locations"
+                      "Next": "(placeholder) Validate Full CQC Locations"
                     },
                     "(placeholder) Validate Full CQC Locations": {
                       "Type": "Pass",
