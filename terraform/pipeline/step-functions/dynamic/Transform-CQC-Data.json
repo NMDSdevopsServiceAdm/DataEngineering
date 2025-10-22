@@ -260,23 +260,68 @@
                 }
               },
               "ResultPath": "$.flattenedLocationResult",
-              "Next": "(placeholder) Build, Clean and Validate Locations"
+              "Next": "Build, Clean and Validate Locations"
             },
-            "(placeholder) Build, Clean and Validate Locations": {
+            "Build, Clean and Validate Locations": {
               "Type": "Parallel",
               "Branches": [
                 {
-                  "StartAt": "(placeholder) Build Full CQC Locations",
+                  "StartAt": "Build Full CQC Locations",
                   "States": {
-                    "(placeholder) Build Full CQC Locations": {
-                      "Type": "Pass",
-                      "Result": "Placeholder for Build Full CQC Locations",
-                      "Next": "(placeholder) Clean Full CQC Locations"
+                    "Build Full CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::lambda:invoke",
+                      "Parameters": {
+                        "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
+                        "Payload": {
+                          "dataset": "locations",
+                          "input_uri": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                          "output_uri.$": "States.Format('${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_03_full_flattened/year={}/month={}/day={}/', States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 0), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 1), States.ArrayGetItem(States.StringSplit($$.State.EnteredTime, '-,T'), 2))",
+                          "snapshot_date.$": "$$.State.EnteredTime"
+                        }
+                      },
+                      "Next": "Set Clean Full CQC Locations Parameters"
                     },
-                    "(placeholder) Clean Full CQC Locations": {
-                      "Type": "Pass",
-                      "Result": "Placeholder for Build Full CQC Locations",
-                      "Next": "(placeholder) Validate Full CQC Locations"
+                    "Set Clean Full CQC Locations Parameters": {
+                      "Type": "Task",
+                      "Result": {
+                        "script": "cqc_locations_4_clean.py",
+                        "cqc_full_flat_source_arg_name": "--cqc_locations_full_flattened_source",
+                        "cqc_full_flat_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                        "ons_pd_source_arg_name": "--ons_postcode_directory_source",
+                        "ons_pd_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=delta_locations_api/version=3.0.0",
+                        "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
+                        "cqc_registered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                        "cqc_deregistered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
+                        "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/"
+                      },
+                      "Next": "Clean Full CQC Locations"
+                    },
+                    "Clean Full CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": ["${cqc_api_security_group_id}"],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.cqc_full_flat_source_arg_name, $.cqc_full_flat_source_arg_location, $.ons_pd_source_arg_name, $.ons_pd_source_arg_location, $.cqc_registered_destination_arg_name, $.cqc_registered_destination_arg_location, $.cqc_deregistered_destination_arg_name, $.cqc_deregistered_destination_arg_location)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.cleanedLocationResult",
+                      "Next": "(placeholder) Build, Clean and Validate Locations"
                     },
                     "(placeholder) Validate Full CQC Locations": {
                       "Type": "Pass",
