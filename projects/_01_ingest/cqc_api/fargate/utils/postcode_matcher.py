@@ -9,9 +9,6 @@ from polars_utils.utils import split_s3_uri
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
-from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
-    NewCqcLocationApiColumns as CQCL,
-)
 from utils.column_names.cleaned_data_files.ons_cleaned import (
     OnsCleanedColumns as ONSClean,
 )
@@ -55,7 +52,7 @@ def run_postcode_matching(
 
     # Clean postcode columns to upper case, remove spaces and add as a new column.
     locations_lf = clean_postcode_column(
-        locations_lf, CQCL.postal_code, CQCLClean.postcode_cleaned, drop_col=False
+        locations_lf, CQCLClean.postal_code, CQCLClean.postcode_cleaned, drop_col=False
     )
 
     postcode_lf = clean_postcode_column(
@@ -349,9 +346,9 @@ def raise_error_if_unmatched(unmatched_lf: pl.LazyFrame) -> None:
 
     rows = (
         unmatched_lf.select(
-            CQCL.location_id,
-            CQCL.name,
-            CQCL.postal_address_line1,
+            CQCLClean.location_id,
+            CQCLClean.name,
+            CQCLClean.postal_address_line1,
             CQCLClean.postcode_cleaned,
         )
         .unique()
@@ -361,9 +358,9 @@ def raise_error_if_unmatched(unmatched_lf: pl.LazyFrame) -> None:
     )
     errors = [
         (
-            r[CQCL.location_id],
-            r[CQCL.name],
-            r[CQCL.postal_address_line1],
+            r[CQCLClean.location_id],
+            r[CQCLClean.name],
+            r[CQCLClean.postal_address_line1],
             r[CQCLClean.postcode_cleaned],
         )
         for r in rows
