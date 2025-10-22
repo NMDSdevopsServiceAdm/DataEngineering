@@ -272,16 +272,12 @@ class TestSinkParquet(TestUtils):
                 append=False,
             )
 
-            # Collect written Parquet file paths
             written_files = [str(p) for p in output_path.rglob("*.parquet")]
 
-            # Check the number of files written
-            self.assertEqual(len(written_files), 2)
-
-            # Check the partitions match expected format with zero-padded month and day
             expected_partition_1 = Path("year=2024", "month=04", "day=15")
             expected_partition_2 = Path("year=2025", "month=11", "day=05")
 
+            self.assertEqual(len(written_files), 2)
             self.assertTrue(any(str(expected_partition_1) in p for p in written_files))
             self.assertTrue(any(str(expected_partition_2) in p for p in written_files))
 
