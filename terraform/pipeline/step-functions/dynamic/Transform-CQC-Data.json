@@ -269,7 +269,7 @@
                   "StartAt": "Build Full CQC Locations",
                   "States": {
                     "Build Full CQC Locations": {
-                      "Type": "Pass",
+                      "Type": "Task",
                       "Resource": "arn:aws:states:::lambda:invoke",
                       "Parameters": {
                         "FunctionName": "${create_snapshot_lambda_lambda_arn}:$LATEST",
