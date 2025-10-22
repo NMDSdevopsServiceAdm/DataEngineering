@@ -109,6 +109,17 @@ def your_function(df: DataFrame) -> DataFrame:
 - Always reference columns via that module — do not hardcode strings
 - Helps consistency and reduces typos
 
+## Dataset Names in AWS S3
+- Athena uses the dataset partition to name the tables so we will use this structure when saving files to S3
+- `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
+
+Examples:
+    `dataset=cqc_providers_01_delta_api`
+    `dataset=cqc_locations_01_delta_api`
+    `dataset=cqc_locations_02_delta_flattened`
+    `dataset=ind_cqc_01_merged`
+    `dataset=ind_cqc_02_cleaned`
+
 ## Naming Conventions
 - Use `snake_case` for variables and functions
 - Use `PascalCase` for class names
@@ -123,22 +134,16 @@ def your_function(df: DataFrame) -> DataFrame:
 - File naming: `test_<module>.py`
 - Class naming: `YourFunctionNameTests`
 - Test naming: `test_<expected_behaviour>()` or `test_when_<scenario>_returns_<expected_outcome>()`
-- Structure tests in the `GIVEN`, `WHEN`, `THEN` format
 
 Example:
 
 ```python
 class CleanIdColumnTests:
     def test_does_not_change_valid_ids(self):
-        # GIVEN
-        #   Input where all ID's are valid
         input_lf = pl.LazyFrame(...)
 
-        # WHEN
         returned_lf = job.function_name(...)
 
-        # THEN
-        #   ID's should remain as they were
         expected_lf = pl.LazyFrame(...)
         pl_testing.assert_frame_equal(expected_lf, output_lf)
 
