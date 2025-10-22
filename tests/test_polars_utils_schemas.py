@@ -8,6 +8,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 @dataclass
@@ -29,5 +32,22 @@ class CleaningUtilsSchemas:
             (CQCLClean.cqc_location_import_date, pl.Date()),
             (CQCLClean.location_id, pl.String()),
             (AWPClean.ascwds_workplace_import_date, pl.Date()),
+        ]
+    )
+
+    worker_schema = pl.Schema(
+        [
+            (AWK.worker_id, pl.String()),
+            (AWK.gender, pl.String()),
+            (AWK.nationality, pl.String()),
+        ]
+    )
+    expected_schema_with_new_columns = pl.Schema(
+        [
+            (AWK.worker_id, pl.String()),
+            (AWK.gender, pl.String()),
+            (AWK.nationality, pl.String()),
+            ("gender_labels", pl.String()),
+            ("nationality_labels", pl.String()),
         ]
     )

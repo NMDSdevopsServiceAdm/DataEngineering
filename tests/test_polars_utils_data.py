@@ -51,3 +51,31 @@ class CleaningUtilsData:
         ("1-001",),
         (None,),
     ]
+
+    worker_rows = [
+        ("1", "2", "3", "4", "5", "6"),
+        ("1", "1", "2", "2", None, "2"),
+        ("100", "101", "102", "103", "103", None),
+    ]
+    gender = {
+        "1": "male",
+        "2": "female",
+    }
+    nationality = {
+        "100": "British",
+        "101": "French",
+        "102": "Spanish",
+        "103": "Portuguese",
+    }
+    expected_rows_with_new_columns = [
+        ("1", "2", "3", "4", "5", "6"),
+        ("1", "1", "2", "2", None, "2"),
+        ("100", "101", "102", "103", "103", None),
+        ("male", "male", "female", "female", None, "female"),
+        ("British", "French", "Spanish", "Portuguese", "Portuguese", None),
+    ]
+    expected_rows_without_new_columns = [
+        ("1", "2", "3", "4", "5", "6"),
+        ("male", "male", "female", "female", None, "female"),
+        ("British", "French", "Spanish", "Portuguese", "Portuguese", None),
+    ]

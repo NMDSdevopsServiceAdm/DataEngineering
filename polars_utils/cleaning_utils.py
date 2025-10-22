@@ -43,3 +43,40 @@ def add_aligned_date_column(
     )
 
     return primary_lf_with_aligned_dates
+
+
+def apply_categorical_labels(
+    lf: pl.LazyFrame,
+    labels: dict,
+    columns_to_apply: list,
+    add_as_new_column: bool = True,
+) -> pl.LazyFrame:
+    """
+    Replace the values in one or more columns in the given LazyFrame by mapping using a dict.
+
+    The given labels dict must have column names as keys and a dict object as values. The value dict object
+    must have the old value as keys and the replacement value as values.
+    The given columns_to_apply must be a list of 1 or more column names which are also keys within the given labels dict.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame in which to replace values.
+        labels (dict): A dict object where keys are column names and values are dict object (keys = old value, values = replacement)
+        columns_to_apply (list): A list of column names to replace value in.
+        add_as_new_column (bool): True will add a new column with replacement values. False will overwrite original values. Defaults to True.
+
+    Returns:
+        pl.LazyFrame: A LazyFrame with values replaced.
+    """
+    for column_name in columns_to_apply:
+        labels_dict = labels[column_name]
+        if add_as_new_column is True:
+            new_column_name = column_name + "_labels"
+            lf = lf.with_columns(
+                pl.col(column_name).replace(labels_dict).alias(new_column_name)
+            )
+        elif add_as_new_column is False:
+            lf = lf.with_columns(
+                pl.col(column_name).replace(labels_dict).alias(column_name)
+            )
+
+    return lf

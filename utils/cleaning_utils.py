@@ -15,6 +15,7 @@ import_date_s3_uri_format = "yyyyMMdd"
 pir_submission_date_uri_format = "dd-MMM-yy"
 
 
+# converted to polars -> polars_utils\cleaning_utils.py
 def apply_categorical_labels(
     df: DataFrame,
     labels: dict,

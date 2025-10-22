@@ -12,6 +12,9 @@ from utils.column_names.cleaned_data_files.ascwds_workplace_cleaned import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_names.raw_data_files.ascwds_worker_columns import (
+    AscwdsWorkerColumns as AWK,
+)
 
 
 class PolarsCleaningUtilsTests(unittest.TestCase):
@@ -139,3 +142,142 @@ class AddAlignedDateColumnsTests(PolarsCleaningUtilsTests):
             returned_lf.select(self.column_order_for_assertion),
             expected_lf.select(self.column_order_for_assertion),
         )
+
+
+class ApplyCategoricalLabelsTests(unittest.TestCase):
+    def setUp(self):
+        self.test_worker_lf = pl.LazyFrame(
+            data=Data.worker_rows, schema=Schemas.worker_schema
+        )
+        self.label_dict = {AWK.gender: Data.gender, AWK.nationality: Data.nationality}
+        self.expected_lf_with_new_columns = pl.LazyFrame(
+            data=Data.expected_rows_with_new_columns,
+            schema=Schemas.expected_schema_with_new_columns,
+        )
+        self.expected_lf_without_new_columns = pl.LazyFrame(
+            data=Data.expected_rows_without_new_columns, schema=Schemas.worker_schema
+        )
+
+    def test_apply_categorical_labels_completes(self):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+        )
+
+        self.assertIsNotNone(returned_lf)
+
+    def test_apply_categorical_labels_adds_a_new_column_when_given_one_column_and_new_column_is_set_to_true(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender],
+            add_as_new_column=True,
+        )
+
+        expected_columns = len(self.test_worker_lf.columns) + 1
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_adds_two_new_columns_when_given_two_columns_and_new_column_is_set_to_true(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+        )
+
+        expected_columns = len(self.test_worker_lf.columns) + 2
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_adds_new_columns_with_replaced_values_when_new_column_is_set_to_true(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=True,
+        )
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf_with_new_columns)
+
+    def test_apply_categorical_labels_does_not_add_a_new_column_when_given_one_column_and_new_column_is_set_to_false(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender],
+            add_as_new_column=False,
+        )
+
+        expected_columns = len(self.test_worker_lf.columns)
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_does_not_add_new_columns_when_given_two_columns_and_new_column_is_set_to_false(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+        )
+
+        expected_columns = len(self.test_worker_lf.columns)
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_replaces_values_when_new_column_is_set_to_false(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            add_as_new_column=False,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf_without_new_columns)
+
+    def test_apply_categorical_labels_adds_a_new_column_when_given_one_column_and_new_column_is_undefined(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf, self.label_dict, [AWK.gender]
+        )
+
+        expected_columns = len(self.test_worker_lf.columns) + 1
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_adds_two_new_columns_when_given_two_columns_and_new_column_is_undefined(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+        )
+
+        expected_columns = len(self.test_worker_lf.columns) + 2
+
+        self.assertEqual(len(returned_lf.columns), expected_columns)
+
+    def test_apply_categorical_labels_adds_new_columns_with_replaced_values_when_new_column_is_undefined(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, self.expected_lf_with_new_columns)
