@@ -50,6 +50,7 @@ def apply_categorical_labels(
     labels: dict,
     columns_to_apply: list,
     add_as_new_column: bool = True,
+    customise_new_column_names: list = [],
 ) -> pl.LazyFrame:
     """
     Replace the values in one or more columns in the given LazyFrame by mapping using a dict.
@@ -63,14 +64,18 @@ def apply_categorical_labels(
         labels (dict): A dict object where keys are column names and values are dict object (keys = old value, values = replacement)
         columns_to_apply (list): A list of column names to replace value in.
         add_as_new_column (bool): True will add a new column with replacement values. False will overwrite original values. Defaults to True.
+        customise_new_column_names (list): A list of custom names to give new label columns. WARNING: The elements of this list must be in the same order as the items in the given columns_to_apply.
 
     Returns:
         pl.LazyFrame: A LazyFrame with values replaced.
     """
-    for column_name in columns_to_apply:
+    for i, column_name in enumerate(columns_to_apply):
         labels_dict = labels[column_name]
         if add_as_new_column is True:
-            new_column_name = column_name + "_labels"
+            if customise_new_column_names:
+                new_column_name = customise_new_column_names[i]
+            else:
+                new_column_name = column_name + "_labels"
             lf = lf.with_columns(
                 pl.col(column_name).replace(labels_dict).alias(new_column_name)
             )

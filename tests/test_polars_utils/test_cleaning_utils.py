@@ -281,3 +281,37 @@ class ApplyCategoricalLabelsTests(unittest.TestCase):
         )
 
         pl_testing.assert_frame_equal(returned_lf, self.expected_lf_with_new_columns)
+
+    def test_apply_categorical_labels_adds_1_new_column_with_1_custom_name(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender],
+            True,
+            ["custom_gender_column_name"],
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_rows_with_1_new_column_and_1_custom_column_name,
+            schema=Schemas.expected_schema_with_new_1_column_and_1_custom_column_name,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)
+
+    def test_apply_categorical_labels_adds_2_new_column_with_2_custom_name(
+        self,
+    ):
+        returned_lf = job.apply_categorical_labels(
+            self.test_worker_lf,
+            self.label_dict,
+            [AWK.gender, AWK.nationality],
+            True,
+            ["custom_gender_column_name", "custom_nationality_column_name"],
+        )
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_rows_with_2_new_columns_and_2_custom_column_names,
+            schema=Schemas.expected_schema_with_new_2_columns_and_2_custom_column_names,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

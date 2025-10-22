@@ -51,3 +51,20 @@ class CleaningUtilsSchemas:
             ("nationality_labels", pl.String()),
         ]
     )
+    expected_schema_with_new_1_column_and_1_custom_column_name = pl.Schema(
+        [
+            (AWK.worker_id, pl.String()),
+            (AWK.gender, pl.String()),
+            (AWK.nationality, pl.String()),
+            ("custom_gender_column_name", pl.String()),
+        ]
+    )
+    expected_schema_with_new_2_columns_and_2_custom_column_names = pl.Schema(
+        [
+            (AWK.worker_id, pl.String()),
+            (AWK.gender, pl.String()),
+            (AWK.nationality, pl.String()),
+            ("custom_gender_column_name", pl.String()),
+            ("custom_nationality_column_name", pl.String()),
+        ]
+    )

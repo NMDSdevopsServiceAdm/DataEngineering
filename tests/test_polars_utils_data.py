@@ -79,3 +79,16 @@ class CleaningUtilsData:
         ("male", "male", "female", "female", None, "female"),
         ("British", "French", "Spanish", "Portuguese", "Portuguese", None),
     ]
+    expected_rows_with_1_new_column_and_1_custom_column_name = [
+        ("1", "2", "3", "4", "5", "6"),
+        ("1", "1", "2", "2", None, "2"),
+        ("100", "101", "102", "103", "103", None),
+        ("male", "male", "female", "female", None, "female"),
+    ]
+    expected_rows_with_2_new_columns_and_2_custom_column_names = [
+        ("1", "2", "3", "4", "5", "6"),
+        ("1", "1", "2", "2", None, "2"),
+        ("100", "101", "102", "103", "103", None),
+        ("male", "male", "female", "female", None, "female"),
+        ("British", "French", "Spanish", "Portuguese", "Portuguese", None),
+    ]
