@@ -650,6 +650,7 @@ class GeneralUtilsTests(UtilsTests):
         csv_test = utils.is_csv(csv_name_without_extention)
         self.assertFalse(csv_test)
 
+    # converted to polars -> tests.test_polars_utils.test_utils.py
     def test_split_s3_uri(self):
         s3_uri = "s3://sfc-data-engineering-raw/domain=ASCWDS/dataset=workplace/"
         bucket_name, prefix = utils.split_s3_uri(s3_uri)
