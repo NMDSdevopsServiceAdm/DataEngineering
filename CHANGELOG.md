@@ -79,6 +79,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
 
+- Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 
