@@ -63,14 +63,12 @@ def main(
         .col_vals_not_null(
             [
                 CQCLClean.location_id,
-                CQCLClean.cqc_location_import_date,
             ]
         )
         # index columns
         .rows_distinct(
             [
                 CQCLClean.location_id,
-                CQCLClean.cqc_location_import_date,
             ],
         )
         # between (inclusive)
