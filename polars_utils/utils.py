@@ -190,6 +190,13 @@ def sink_to_parquet(
 
     try:
         if partition_cols:
+            pad_cols = [col for col in partition_cols if col in ("day", "month")]
+
+            if pad_cols:
+                lazy_df = lazy_df.with_columns(
+                    [pl.col(c).cast(pl.Utf8).str.zfill(2) for c in pad_cols]
+                )
+
             path = pl.PartitionByKey(
                 base_path=f"{output_path}",
                 include_key=False,

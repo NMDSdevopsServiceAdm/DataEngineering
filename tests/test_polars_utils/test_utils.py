@@ -251,6 +251,36 @@ class TestSinkParquet(TestUtils):
         partitions = [d.name for d in destination.iterdir() if d.is_dir()]
         self.assertTrue(set(partitions) == {"part=x", "part=y"})
 
+    def test_day_month_partition_casting(self):
+        lazy_df = pl.LazyFrame(
+            {
+                "id": ["1-001", "1-002"],
+                "value": [1, 200],
+                "year": [2024, 2025],
+                "month": [4, 11],
+                "day": [15, 5],
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_path = Path(tmpdir)
+
+            utils.sink_to_parquet(
+                lazy_df,
+                output_path,
+                partition_cols=["year", "month", "day"],
+                append=False,
+            )
+
+            written_files = [str(p) for p in output_path.rglob("*.parquet")]
+
+            expected_partition_1 = Path("year=2024", "month=04", "day=15")
+            expected_partition_2 = Path("year=2025", "month=11", "day=05")
+
+            self.assertEqual(len(written_files), 2)
+            self.assertTrue(any(str(expected_partition_1) in p for p in written_files))
+            self.assertTrue(any(str(expected_partition_2) in p for p in written_files))
+
 
 class TestGenerateS3Dir(TestUtils):
     def test_get_date_partitioned_s3_path_version(self):
