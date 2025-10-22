@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Plan of action for new CQC Ingestion process.
 
+- Build full locations dataset (cqc_locations_03_full_flattened) from delta flattened dataset (cqc_locations_02_delta_flattened) using existing create_snapshot_dataset lambda function.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
