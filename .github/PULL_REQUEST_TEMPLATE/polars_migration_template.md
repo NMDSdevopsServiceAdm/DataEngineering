@@ -17,6 +17,8 @@ Trello ticket [#number](add link)
 - [ ] Unit tests added
 - [ ] Docstrings added
 - [ ] Added comment to pyspark functions which have been migrated with the link to the new location
-      # converted to polars -> filepath.py
+      `# converted to polars -> filepath.py`
+- [ ] Use new file structure when saving to S3
+      `{dataset}_{sub_dataset_if_relevant}_{order_of_process_if_relevant}_{very_brief_description}`
 - [ ] Updated CHANGELOG
 - [ ] Moved Trello ticket to PR column
