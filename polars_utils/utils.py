@@ -1,6 +1,7 @@
 import argparse
 import logging
 import uuid
+from datetime import date
 from pathlib import Path
 
 import boto3
@@ -244,7 +245,25 @@ def get_args(*args: tuple) -> argparse.Namespace:
         raise argparse.ArgumentError(None, "Error parsing argument")
 
 
-def generate_s3_dir(destination_prefix, domain, dataset, date, version="1.0.0"):
+def generate_s3_dir(
+    destination_prefix: str,
+    domain: str,
+    dataset: str,
+    date: date,
+    version: str = "1.0.0",
+) -> str:
+    """Generates an s3 URI from componant parts of the address and prints the location to stdout.
+
+    Args:
+        destination_prefix(str): The address of the s3 bucket.
+        domain(str): The value of the domain key for the URI path.
+        dataset(str): The value of the dataset key for the URI path.
+        date(date): The date to be used to construct the import_date, year, month, and day partition values for the URI path.
+        version(str): The value of the version key for the URI path. Defaults to "1.0.0".
+
+    Returns:
+        str: The desired s3 URI
+    """
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
