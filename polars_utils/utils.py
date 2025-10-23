@@ -252,11 +252,10 @@ def generate_s3_dir(
     date: date,
     version: str = "1.0.0",
 ) -> str:
-    """Generates an s3 URI from componant parts of the address and prints the location to stdout (standard output stream).
+    """Generates an s3 URI from componant parts of the address and prints the location to stdout.
 
     Example:
         generate_s3_dir("s3://my-bucket", "my-domain", "my-dataset", date.today(), "1.0.0")
-        returns "s3://my-bucket/domain=my-domain/dataset=my-dataset/version=1.0.0/year=YYYY/month=MM/day=DD/import_date=YYYYMMDD/"
 
     Args:
         destination_prefix(str): The address of the s3 bucket.
@@ -268,14 +267,12 @@ def generate_s3_dir(
     Returns:
         str: The desired s3 URI
     """
-    if logger is None:
-        logger = logging.getLogger(__name__)
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
     import_date = year + month + day
     output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
-    logger.info(f"Generated output s3 dir: {output_dir}")
+    print(f"Generated output s3 dir: {output_dir}")
     return output_dir
 
 
@@ -316,7 +313,7 @@ def send_sns_notification(
     message: str,
     region_name: str = "eu-west-2",
 ) -> None:
-    """Publish an SNS notification based on given data.
+    """Does a thing
 
     Args:
         topic_arn(str): The ARN for the SNS topic.
