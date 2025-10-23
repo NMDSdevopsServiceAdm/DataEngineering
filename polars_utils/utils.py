@@ -313,7 +313,17 @@ def send_sns_notification(
     message: str,
     region_name: str = "eu-west-2",
 ) -> None:
+    """Does a thing
 
+    Args:
+        topic_arn(str): The ARN for the SNS topic.
+        subject(str): The SNS subject line.
+        message(str): The SNS message.
+        region_name(str): Sets the region for the boto3 client. Defaults to "eu-west-2"
+
+    Raises:
+        ClientError: If there is an error writing to SNS
+    """
     sns_client = boto3.client("sns", region_name=region_name)
     try:
         sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
