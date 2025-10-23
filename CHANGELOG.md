@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Plan of action for new CQC Ingestion process.
 
+- Added validation script for flatten CQC location process and test script for this validation.
+
 - Build full locations dataset (cqc_locations_03_full_flattened) from delta flattened dataset (cqc_locations_02_delta_flattened) using existing create_snapshot_dataset lambda function.
 
 ### Changed
@@ -80,6 +82,8 @@ All notable changes to this project will be documented in this file.
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
+
+- Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

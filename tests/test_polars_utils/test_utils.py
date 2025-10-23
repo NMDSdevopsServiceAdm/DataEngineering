@@ -18,7 +18,6 @@ from moto import mock_aws, sns
 from moto.core import DEFAULT_ACCOUNT_ID, set_initial_no_auth_action_count
 
 from polars_utils import utils
-from polars_utils.utils import write_to_parquet
 
 SRC_PATH = "polars_utils.validation.actions"
 PATCH_PATH = "polars_utils.utils"
@@ -181,15 +180,15 @@ class TestWriteParquet(TestUtils):
     def test_write_parquet_writes_with_append(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination: str = str(self.temp_dir) + "/"
-        write_to_parquet(df, destination, self.logger)
-        write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
+        utils.write_to_parquet(df, destination, self.logger)
         self.assertEqual(len(glob(destination + "/**", recursive=True)), 3)
 
     def test_write_parquet_writes_with_overwrite(self):
         df: pl.DataFrame = pl.DataFrame({"a": [1, 2, 1], "b": [4, 5, 6]})
         destination = self.temp_dir / "test.parquet"
-        write_to_parquet(df, destination, self.logger, append=False)
-        write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
+        utils.write_to_parquet(df, destination, self.logger, append=False)
 
         files = glob(os.path.join(self.temp_dir, "*.parquet"))
         self.assertEqual(len(files), 1)
