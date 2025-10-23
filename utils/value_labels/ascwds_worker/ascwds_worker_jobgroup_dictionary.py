@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     JobGroupLabels,
     MainJobRoleLabels,
@@ -9,6 +10,8 @@ from utils.column_values.categorical_column_values import (
 @dataclass
 class AscwdsWorkerValueLabelsJobGroup:
     """A dict where keys = job role and values = job group"""
+
+    column_name: str = IndCQC.main_job_group_labelled
 
     job_role_to_job_group_dict = {
         MainJobRoleLabels.advocacy: JobGroupLabels.direct_care,

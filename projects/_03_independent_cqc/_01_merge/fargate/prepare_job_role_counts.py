@@ -4,9 +4,13 @@ import sys
 import polars as pl
 
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
-from polars_utils import utils
+from polars_utils import cleaning_utils as CUtils
+from polars_utils import utils as utils
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.value_labels.ascwds_worker.worker_label_dictionary import (
+    ascwds_worker_labels_dict,
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -58,6 +62,16 @@ def main(
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
         cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
+    )
+
+    aggregated_worker_lf = JRUtils.create_job_role_ratios(aggregated_worker_lf)
+
+    aggregated_worker_lf = CUtils.apply_categorical_labels(
+        lf=aggregated_worker_lf,
+        labels=ascwds_worker_labels_dict,
+        columns_to_apply=[IndCQC.main_job_role_clean_labelled],
+        add_as_new_column=True,
+        customise_new_column_names=[IndCQC.main_job_group_labelled],
     )
 
     utils.sink_to_parquet(

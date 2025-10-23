@@ -117,7 +117,9 @@ def create_clean_main_job_role_column(df: DataFrame) -> DataFrame:
     df = cUtils.apply_categorical_labels(
         df,
         ascwds_worker_labels_dict,
-        ascwds_worker_labels_dict.keys(),
+        [
+            AWKClean.main_job_role_clean
+        ],  # Only apply job role labels. Job group labels not needed at this stage of the pipeline.
         add_as_new_column=True,
     )
     return df

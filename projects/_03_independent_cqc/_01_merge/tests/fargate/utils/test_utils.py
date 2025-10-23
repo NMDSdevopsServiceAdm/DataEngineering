@@ -49,3 +49,18 @@ class AggregateAscwdsWorkerJobRolesPerEstablishmentTests(unittest.TestCase):
                 ]
             ),
         )
+
+
+class CreateJobRoleRatios(unittest.TestCase):
+    def test_create_job_role_ratios_returns_expected_data(self):
+        test_lf = pl.LazyFrame(
+            data=Data.create_job_role_ratios_rows,
+            schema=Schemas.create_job_role_ratios_schema,
+        )
+        returned_lf = job.create_job_role_ratios(test_lf)
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_create_job_role_ratios_rows,
+            schema=Schemas.expected_create_job_role_ratios_schema,
+        )
+
+        pl_testing.assert_frame_equal(returned_lf, expected_lf)

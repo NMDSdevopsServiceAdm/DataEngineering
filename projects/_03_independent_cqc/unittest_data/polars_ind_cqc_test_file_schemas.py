@@ -32,6 +32,21 @@ class PrepareJobRoleCountsUtilsSchemas:
         ]
     )
 
+    create_job_role_ratios_schema = pl.Schema(
+        [
+            (IndCQC.establishment_id, pl.String()),
+            (IndCQC.ascwds_worker_import_date, pl.Date()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.ascwds_job_role_counts, pl.UInt32()),
+        ]
+    )
+    expected_create_job_role_ratios_schema = pl.Schema(
+        list(create_job_role_ratios_schema.items())
+        + [
+            (IndCQC.ascwds_job_role_ratios, pl.Float64()),
+        ]
+    )
+
 
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsSchemas:

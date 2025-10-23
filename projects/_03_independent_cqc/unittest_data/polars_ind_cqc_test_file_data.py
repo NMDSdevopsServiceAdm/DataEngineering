@@ -128,6 +128,30 @@ class PrepareJobRoleCountsUtilsData:
         ),
     ]
 
+    create_job_role_ratios_rows = [
+        ("1001", "1001", "1001", "1001", "1002", "1002"),
+        (
+            date(2025, 1, 1),
+            date(2025, 1, 1),
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+            date(2025, 1, 2),
+        ),
+        (
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+        ),
+        (5, 5, 4, 6, 3, 7),
+    ]
+    expected_create_job_role_ratios_rows = create_job_role_ratios_rows + [
+        (0.5, 0.5, 0.4, 0.6, 0.3, 0.7)
+    ]
+
 
 @dataclass
 class EstimateIndCqcFilledPostsByJobRoleUtilsData:

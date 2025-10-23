@@ -78,3 +78,33 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
 
     return worker_count_lf
+
+
+def create_job_role_ratios(lf: pl.LazyFrame) -> pl.LazyFrame:
+    """
+    Adds a column ascwds_job_role_ratios which is ascwds_job_role_counts divided by their total per workplace.
+
+    Args:
+        lf (pl.LazyFrame): A LazyFrame with aggregated job role counts per workplace.
+
+    Returns:
+        pl.LazyFrame: The input LazyFrame with a new column ascwds_job_role_ratios.
+    """
+    columns = [
+        IndCQC.establishment_id,
+        IndCQC.ascwds_worker_import_date,
+    ]
+    temp_job_role_counts_total = "temp_job_role_counts_total"
+    lf = lf.with_columns(
+        pl.sum(IndCQC.ascwds_job_role_counts)
+        .over(columns)
+        .alias(temp_job_role_counts_total)
+    )
+
+    lf = lf.with_columns(
+        (
+            pl.col(IndCQC.ascwds_job_role_counts) / pl.col(temp_job_role_counts_total)
+        ).alias(IndCQC.ascwds_job_role_ratios)
+    )
+
+    return lf.drop(temp_job_role_counts_total)
