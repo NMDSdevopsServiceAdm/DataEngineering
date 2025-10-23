@@ -1,8 +1,8 @@
 {
   "Comment": "State machine for polars version of ind cqc estimates pipeline",
-  "StartAt": "Set parameters",
+  "StartAt": "Set Prepare ASCWDS Job Role Counts Parameters",
   "States": {
-    "Set parameters": {
+    "Set Prepare ASCWDS Job Role Counts Parameters": {
       "Type": "Pass",
       "Result": {
         "Script_name": "prepare_job_role_counts.py",
@@ -39,7 +39,7 @@
           ]
         }
       },
-      "Next": "Set parameters (1)",
+      "Next": "Set Estimate Filled Posts By Job Role Parameters",
       "Catch": [
         {
           "ErrorEquals": [
@@ -50,7 +50,7 @@
         }
       ]
     },
-    "Set parameters (1)": {
+    "Set Estimate Filled Posts By Job Role Parameters": {
       "Type": "Pass",
       "Result": {
         "Script_name": "estimate_ind_cqc_filled_posts_by_job_role.py",
@@ -61,9 +61,9 @@
         "estimated_ind_cqc_filled_posts_by_job_role_destination_name": "--estimated_ind_cqc_filled_posts_by_job_role_destination",
         "estimated_ind_cqc_filled_posts_by_job_role_destination_value": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_estimated_filled_posts_by_job_role_polars/"
       },
-      "Next": "Run Estimate Filled Posts By Job Role"
+      "Next": "Estimate Filled Posts By Job Role"
     },
-    "Run Estimate Filled Posts By Job Role": {
+    "Estimate Filled Posts By Job Role": {
       "Type": "Task",
       "Resource": "arn:aws:states:::ecs:runTask.sync",
       "Parameters": {

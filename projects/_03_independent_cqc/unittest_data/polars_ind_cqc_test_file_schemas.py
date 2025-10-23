@@ -23,12 +23,12 @@ class PrepareJobRoleCountsUtilsSchemas:
         [
             (IndCQC.establishment_id, pl.String()),
             (IndCQC.ascwds_worker_import_date, pl.Date()),
-            (IndCQC.main_job_role_clean_labelled, pl.String()),
-            (IndCQC.ascwds_job_role_counts, pl.UInt32()),
             (Keys.year, pl.String()),
             (Keys.month, pl.String()),
             (Keys.day, pl.String()),
             (Keys.import_date, pl.String()),
+            (IndCQC.main_job_role_clean_labelled, pl.String()),
+            (IndCQC.ascwds_job_role_counts, pl.UInt32()),
         ]
     )
 

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import date
 
-from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 from utils.column_values.categorical_column_values import MainJobRoleLabels
 
 
@@ -82,21 +81,6 @@ class PrepareJobRoleCountsUtilsData:
             date(2025, 1, 1),
         ),
         (
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-            MainJobRoleLabels.social_worker,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-            MainJobRoleLabels.social_worker,
-            MainJobRoleLabels.care_worker,
-            MainJobRoleLabels.senior_care_worker,
-            MainJobRoleLabels.registered_nurse,
-            MainJobRoleLabels.social_worker,
-        ),
-        (1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0),
-        (
             "2025",
             "2025",
             "2025",
@@ -126,6 +110,21 @@ class PrepareJobRoleCountsUtilsData:
             "20250101",
             "20250101",
         ),
+        (
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.registered_nurse,
+            MainJobRoleLabels.social_worker,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.registered_nurse,
+            MainJobRoleLabels.social_worker,
+            MainJobRoleLabels.care_worker,
+            MainJobRoleLabels.senior_care_worker,
+            MainJobRoleLabels.registered_nurse,
+            MainJobRoleLabels.social_worker,
+        ),
+        (1, 1, 0, 0, 0, 1, 0, 0, 2, 0, 0, 0),
     ]
 
 

@@ -1,19 +1,10 @@
-import logging
-import sys
-
-import polars as pl
-
 import projects._03_independent_cqc._01_merge.fargate.utils.utils as JRUtils
 from polars_utils import utils
+from polars_utils.logger import get_logger
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__name__)
 
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
@@ -21,17 +12,6 @@ cleaned_ascwds_worker_columns_to_import = [
     IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
     IndCQC.main_job_role_clean_labelled,
-    Keys.year,
-    Keys.month,
-    Keys.day,
-    Keys.import_date,
-]
-estimated_ind_cqc_filled_posts_columns_to_import = [
-    IndCQC.cqc_location_import_date,
-    IndCQC.location_id,
-    IndCQC.ascwds_workplace_import_date,
-    IndCQC.establishment_id,
-    IndCQC.estimate_filled_posts,
     Keys.year,
     Keys.month,
     Keys.day,

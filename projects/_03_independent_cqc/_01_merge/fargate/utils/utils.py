@@ -26,7 +26,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     Returns:
         pl.LazyFrame: The input LazyFrame with a new column for the count job roles per workplace.
     """
-    columns = [
+    original_columns = [
         IndCQC.establishment_id,
         IndCQC.ascwds_worker_import_date,
         IndCQC.main_job_role_clean_labelled,
@@ -36,8 +36,15 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         Keys.import_date,
     ]
 
-    worker_count_lf = lf.group_by(columns).len(name=IndCQC.ascwds_job_role_counts)
+    worker_count_lf = lf.group_by(original_columns).len(
+        name=IndCQC.ascwds_job_role_counts
+    )
 
+    pivot_columns = [
+        col
+        for col in original_columns
+        if col not in [IndCQC.main_job_role_clean_labelled]
+    ]
     aggregation = [
         pl.col(IndCQC.ascwds_job_role_counts)
         .filter(pl.col(IndCQC.main_job_role_clean_labelled) == role)
@@ -45,36 +52,19 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
         .alias(role)
         for role in list_of_job_roles
     ]
+    worker_count_lf = worker_count_lf.group_by(pivot_columns).agg(aggregation)
 
-    worker_count_lf = worker_count_lf.group_by(
-        [col for col in columns if col not in [IndCQC.main_job_role_clean_labelled]]
-    ).agg(aggregation)
-
+    unpivot_columns = [
+        col
+        for col in original_columns
+        if col
+        not in [IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_counts]
+    ]
     worker_count_lf = worker_count_lf.unpivot(
-        index=[
-            IndCQC.establishment_id,
-            IndCQC.ascwds_worker_import_date,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
-        ],
+        index=unpivot_columns,
         on=[role for role in list_of_job_roles],
         variable_name=IndCQC.main_job_role_clean_labelled,
         value_name=IndCQC.ascwds_job_role_counts,
-    )
-
-    worker_count_lf = worker_count_lf.select(
-        [
-            IndCQC.establishment_id,
-            IndCQC.ascwds_worker_import_date,
-            IndCQC.main_job_role_clean_labelled,
-            IndCQC.ascwds_job_role_counts,
-            Keys.year,
-            Keys.month,
-            Keys.day,
-            Keys.import_date,
-        ]
     )
 
     return worker_count_lf

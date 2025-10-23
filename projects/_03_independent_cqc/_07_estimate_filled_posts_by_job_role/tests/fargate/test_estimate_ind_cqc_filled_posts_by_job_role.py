@@ -1,8 +1,4 @@
-import shutil
-import tempfile
 import unittest
-from glob import glob
-from pathlib import Path
 from unittest.mock import ANY, Mock, call, patch
 
 import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role as job
@@ -10,20 +6,20 @@ import projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargat
 PATCH_PATH = "projects._03_independent_cqc._07_estimate_filled_posts_by_job_role.fargate.estimate_ind_cqc_filled_posts_by_job_role"
 
 
-class EstimateIndCQCFilledPostsByJobRoleTests(unittest.TestCase):
-    def setUp(self):
-        self.ESTIMATE_SOURCE = "some/source"
-        self.PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
-        self.TEMP_DIR = Path(tempfile.mkdtemp())
+class MainTests(unittest.TestCase):
+    ESTIMATE_SOURCE = "some/source"
+    PREPARED_JOB_ROLE_COUNTS_SOURCE = "some/other/source"
+    ESTIMATES_DESTINATION = "some/destination"
 
-    def tearDown(self):
-        shutil.rmtree(self.TEMP_DIR)
+    mock_estimate_data = Mock(name="estimate_data")
+    mock_prepared_job_role_counts_data = Mock(name="prepared_job_role_counts_data")
 
-
-class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
     @patch(f"{PATCH_PATH}.utils.sink_to_parquet")
     @patch(f"{PATCH_PATH}.JRUtils.join_worker_to_estimates_dataframe")
-    @patch(f"{PATCH_PATH}.utils.scan_parquet")
+    @patch(
+        f"{PATCH_PATH}.utils.scan_parquet",
+        return_value=[mock_estimate_data, mock_prepared_job_role_counts_data],
+    )
     def test_main_runs(
         self,
         scan_parquet_mock: Mock,
@@ -31,7 +27,9 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
         sink_to_parquet_mock: Mock,
     ):
         job.main(
-            self.ESTIMATE_SOURCE, self.PREPARED_JOB_ROLE_COUNTS_SOURCE, self.TEMP_DIR
+            self.ESTIMATE_SOURCE,
+            self.PREPARED_JOB_ROLE_COUNTS_SOURCE,
+            self.ESTIMATES_DESTINATION,
         )
 
         self.assertEqual(scan_parquet_mock.call_count, 2)
@@ -52,7 +50,7 @@ class MainTests(EstimateIndCQCFilledPostsByJobRoleTests):
 
         sink_to_parquet_mock.assert_called_once_with(
             lazy_df=ANY,
-            output_path=self.TEMP_DIR,
+            output_path=self.ESTIMATES_DESTINATION,
             partition_cols=job.partition_keys,
             logger=job.logger,
             append=False,
