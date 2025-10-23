@@ -76,7 +76,7 @@ def main(
 
 
 if __name__ == "__main__":
-    logger.info("Running Flatten CQC Locations job")
+    logger.info("Running Clean Full CQC Locations job")
 
     args = utils.get_args(
         (
@@ -104,4 +104,4 @@ if __name__ == "__main__":
         cqc_deregistered_locations_destination=args.cqc_deregistered_locations_destination,
     )
 
-    logger.info("Finished Flatten CQC Locations job")
+    logger.info("Finished Clean Full CQC Locations job")
