@@ -268,14 +268,14 @@ def generate_s3_dir(
     Returns:
         str: The desired s3 URI
     """
-    if util_logger is None:
-        util_logger = logging.getLogger(__name__)
+    if logger is None:
+        logger = logging.getLogger(__name__)
     year = f"{date.year}"
     month = f"{date.month:02d}"
     day = f"{date.day:02d}"
     import_date = year + month + day
     output_dir = f"{destination_prefix}/domain={domain}/dataset={dataset}/version={version}/year={year}/month={month}/day={day}/import_date={import_date}/"
-    util_logger.info(f"Generated output s3 dir: {output_dir}")
+    logger.info(f"Generated output s3 dir: {output_dir}")
     return output_dir
 
 
