@@ -79,7 +79,7 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
 
-- Moved the preparation of worker job role data into it's own polars task in the ind CQC estimates pipeline.
+- Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.

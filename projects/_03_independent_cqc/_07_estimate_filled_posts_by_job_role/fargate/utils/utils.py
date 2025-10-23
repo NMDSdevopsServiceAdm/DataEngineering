@@ -20,7 +20,7 @@ def join_worker_to_estimates_dataframe(
         aggregated_job_roles_per_establishment_lf (pl.LazyFrame): A LazyFrame with job role counts per workplace.
 
     Returns:
-        pl.LazyFrame: The estimated filled post LazyFrame with the job role count column.
+        pl.LazyFrame: The estimated filled post LazyFrame with columns main_job_role_clean_labelled and ascwds_job_role_counts added.
     """
 
     merged_lf = estimated_filled_posts_lf.join(

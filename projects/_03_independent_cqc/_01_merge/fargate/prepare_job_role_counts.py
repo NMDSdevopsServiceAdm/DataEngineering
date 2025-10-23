@@ -9,8 +9,8 @@ logger = get_logger(__name__)
 partition_keys = [Keys.year, Keys.month, Keys.day, Keys.import_date]
 
 cleaned_ascwds_worker_columns_to_import = [
-    IndCQC.ascwds_worker_import_date,
     IndCQC.establishment_id,
+    IndCQC.ascwds_worker_import_date,
     IndCQC.main_job_role_clean_labelled,
     Keys.year,
     Keys.month,
@@ -35,9 +35,19 @@ def main(
         selected_columns=cleaned_ascwds_worker_columns_to_import,
     )
 
+    columns_to_aggregate_on = [
+        IndCQC.establishment_id,
+        IndCQC.ascwds_worker_import_date,
+        IndCQC.main_job_role_clean_labelled,
+        Keys.year,
+        Keys.month,
+        Keys.day,
+        Keys.import_date,
+    ]
     aggregated_worker_lf = JRUtils.aggregate_ascwds_worker_job_roles_per_establishment(
         cleaned_ascwds_worker_lf,
         JRUtils.LIST_OF_JOB_ROLES_SORTED,
+        columns_to_aggregate_on,
     )
 
     utils.sink_to_parquet(
