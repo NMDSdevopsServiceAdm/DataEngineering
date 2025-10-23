@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import ANY, Mock, call, patch
 
-import projects._01_ingest.cqc_api.fargate.cqc_locations_4_clean as job
+import projects._01_ingest.cqc_api.fargate.cqc_locations_4_full_clean as job
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
 
-PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_4_clean"
+PATCH_PATH = "projects._01_ingest.cqc_api.fargate.cqc_locations_4_full_clean"
 
 
 class CqcLocationsFlattenTests(unittest.TestCase):
