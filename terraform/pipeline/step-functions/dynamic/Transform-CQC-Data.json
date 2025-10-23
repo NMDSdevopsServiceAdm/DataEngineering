@@ -283,8 +283,8 @@
                         "ons_pd_source_arg_location": "${dataset_bucket_uri}/domain=ONS/dataset=postcode_directory_cleaned/",
                         "cqc_registered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
                         "cqc_registered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
-                        "cqc_deregistered_destination_arg_name": "--cqc_registered_locations_cleaned_destination",
-                        "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_cleaned_deregistered/"
+                        "cqc_deregistered_destination_arg_name": "--cqc_deregistered_locations_destination",
+                        "cqc_deregistered_destination_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_deregistered/"
                       },
                       "Next": "Clean Full CQC Locations"
                     },
