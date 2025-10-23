@@ -63,14 +63,11 @@ def main(
         .col_vals_not_null(
             [
                 CQCLClean.location_id,
+                Keys.import_date,
             ]
         )
         # index columns
-        .rows_distinct(
-            [
-                CQCLClean.location_id,
-            ],
-        )
+        .rows_distinct([CQCLClean.location_id, Keys.import_date])
         # between (inclusive)
         .col_vals_between(Validation.location_id_length, 3, 14).interrogate()
     )
