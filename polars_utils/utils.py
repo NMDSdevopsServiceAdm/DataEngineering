@@ -252,10 +252,11 @@ def generate_s3_dir(
     date: date,
     version: str = "1.0.0",
 ) -> str:
-    """Generates an s3 URI from componant parts of the address and prints the location to stdout.
+    """Generates an s3 URI from componant parts of the address and prints the location to stdout (standard output stream).
 
     Example:
         generate_s3_dir("s3://my-bucket", "my-domain", "my-dataset", date.today(), "1.0.0")
+        returns "s3://my-bucket/domain=my-domain/dataset=my-dataset/version=1.0.0/year=YYYY/month=MM/day=DD/import_date=YYYYMMDD/"
 
     Args:
         destination_prefix(str): The address of the s3 bucket.
@@ -313,7 +314,7 @@ def send_sns_notification(
     message: str,
     region_name: str = "eu-west-2",
 ) -> None:
-    """Does a thing
+    """Publish an SNS notification based on given data.
 
     Args:
         topic_arn(str): The ARN for the SNS topic.
