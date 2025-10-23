@@ -254,6 +254,9 @@ def generate_s3_dir(
 ) -> str:
     """Generates an s3 URI from componant parts of the address and prints the location to stdout.
 
+    Example:
+        generate_s3_dir("s3://my-bucket", "my-domain", "my-dataset", date.today(), "1.0.0")
+
     Args:
         destination_prefix(str): The address of the s3 bucket.
         domain(str): The value of the domain key for the URI path.
@@ -310,6 +313,7 @@ def send_sns_notification(
     message: str,
     region_name: str = "eu-west-2",
 ) -> None:
+
     sns_client = boto3.client("sns", region_name=region_name)
     try:
         sns_client.publish(TopicArn=topic_arn, Subject=subject, Message=message)
