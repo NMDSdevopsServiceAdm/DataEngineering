@@ -34,7 +34,9 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
     )
 
     columns_to_remain_as_rows = [
-        col for col in lf.columns if col not in [IndCQC.main_job_role_clean_labelled]
+        col
+        for col in columns_to_aggregate_on
+        if col not in [IndCQC.main_job_role_clean_labelled]
     ]
     aggregation_per_job_role = [
         pl.col(IndCQC.ascwds_job_role_counts)
@@ -49,7 +51,7 @@ def aggregate_ascwds_worker_job_roles_per_establishment(
 
     group_identification_columns = [
         col
-        for col in lf.columns
+        for col in columns_to_aggregate_on
         if col
         not in [IndCQC.main_job_role_clean_labelled, IndCQC.ascwds_job_role_counts]
     ]
