@@ -276,7 +276,7 @@
                     "Set Clean Full CQC Locations Parameters": {
                       "Type": "Pass",
                       "Result": {
-                        "script": "cqc_locations_4_clean.py",
+                        "script": "cqc_locations_4_full_clean.py",
                         "cqc_full_flat_source_arg_name": "--cqc_locations_full_flattened_source",
                         "cqc_full_flat_source_arg_location": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
                         "ons_pd_source_arg_name": "--ons_postcode_directory_source",
