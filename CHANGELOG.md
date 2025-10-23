@@ -77,6 +77,8 @@ All notable changes to this project will be documented in this file.
 
 - Changed CQC location clean validation script expected row count to exclude raw data adjustment locations.
 
+- Created a job to flatten CQC location data to remove some unwanted data and simplify complex struct columns.
+
 - Moved the preparation of worker job role data into it's own polars task in the ind CQC estimates pipeline.
 
 ### Improved
