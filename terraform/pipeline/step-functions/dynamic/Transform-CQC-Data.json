@@ -93,7 +93,7 @@
                           "snapshot_date.$": "$$.State.EnteredTime"
                         }
                       },
-                      "Next": "(placeholder) Clean Full CQC Locations"
+                      "Next": "Set Clean Full CQC Locations Parameters"
                     },
                     "Set Clean Full CQC Locations Parameters": {
                       "Type": "Pass",
