@@ -1,5 +1,7 @@
 import polars as pl
 
+import_date_s3_uri_format = "%Y%m%d"
+
 
 def add_aligned_date_column(
     primary_lf: pl.LazyFrame,
@@ -43,3 +45,22 @@ def add_aligned_date_column(
     )
 
     return primary_lf_with_aligned_dates
+
+
+def column_to_date(
+    lf: pl.LazyFrame,
+    column_to_format: str,
+    new_column: str = None,
+    string_format: str = import_date_s3_uri_format,
+) -> pl.LazyFrame:
+    if new_column is None:
+        new_column = column_to_format
+
+    lf = lf.with_columns(
+        pl.col(column_to_format)
+        .cast(pl.String())
+        .str.to_date(string_format)
+        .alias(new_column)
+    )
+
+    return lf
