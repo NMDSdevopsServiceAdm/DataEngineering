@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     main(
         dataset=args.dataset,
-        latest=args.latest,
+        latest=latest,
         input_uri=args.input_uri,
         output_uri=args.output_uri,
     )
