@@ -18,6 +18,26 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 
 @dataclass
+class FlattenUtilsSchema:
+    clean_registration_date_column_input_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.registration_date, pl.Date()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
+    clean_registration_date_column_output_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.registration_date, pl.Date()),
+            (Keys.import_date, pl.String()),
+            (CQCLClean.imputed_registration_date, pl.Date()),
+        ]
+    )
+
+
+@dataclass
 class ExtractRegisteredManagerNamesSchema:
     contact_struct = pl.Struct(
         [
