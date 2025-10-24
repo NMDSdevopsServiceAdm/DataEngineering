@@ -10,7 +10,7 @@ COPY lambdas/check_dataset_equality/requirements.txt .
 RUN  pip install -r requirements.txt
 
 # Copy function code
-COPY lambdas/check_dataset_equality/lambda_function.py .
+COPY lambdas/check_dataset_equality/check_dataset_equality.py .
 COPY utils/column_names utils/column_names/
 COPY projects/tools projects/tools/
 
