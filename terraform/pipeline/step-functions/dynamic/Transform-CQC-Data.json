@@ -286,11 +286,49 @@
                   }
                 },
                 {
-                  "StartAt": "(placeholder) Validate Flatten Delta CQC Locations",
+                  "StartAt": "Set Validate Flatten Delta CQC Locations Parameters",
                   "States": {
-                    "(placeholder) Validate Flatten Delta CQC Locations": {
+                    "Set Validate Flatten Delta CQC Locations Parameters": {
                       "Type": "Pass",
-                      "Result": "Placeholder for Validate Flatten Delta CQC Locations",
+                      "Result": {
+                        "script": "validate_cqc_locations_2_flatten.py",
+                        "bucket_name_arg": "--bucket_name",
+                        "bucket_name": "${dataset_bucket_name}",
+                        "source_path_arg": "--source_path",
+                        "source_path": "domain=CQC_delta/dataset=cqc_locations_02_delta_flattened/",
+                        "reports_path_arg": "--reports_path",
+                        "reports_path": "domain=data_validation_reports/dataset=data_validation_reports_cqc_locations_02_delta_flattened/",
+                        "compare_path_arg": "--compare_path",
+                        "compare_path": "domain=CQC_delta/dataset=delta_locations_api/version=3.0.0/"
+                      },
+                      "Next": "Validate Flatten Delta CQC Locations"
+                    },
+                    "Validate Flatten Delta CQC Locations": {
+                      "Type": "Task",
+                      "Resource": "arn:aws:states:::ecs:runTask.sync",
+                      "Parameters": {
+                        "Cluster": "${polars_cluster_arn}",
+                        "TaskDefinition": "${cqc_api_task_arn}",
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                          "AwsvpcConfiguration": {
+                            "Subnets": ${public_subnet_ids},
+                            "SecurityGroups": [
+                              "${cqc_api_security_group_id}"
+                            ],
+                            "AssignPublicIp": "ENABLED"
+                          }
+                        },
+                        "Overrides": {
+                          "ContainerOverrides": [
+                            {
+                              "Name": "cqc-api-container",
+                              "Command.$": "States.Array($.script, $.bucket_name_arg, $.bucket_name, $.source_path_arg, $.source_path, $.reports_path_arg, $.reports_path, $.compare_path_arg, $.compare_path)"
+                            }
+                          ]
+                        }
+                      },
+                      "ResultPath": "$.validateFlattenDeltaCQCLocationsResult",
                       "End": true
                     }
                   }

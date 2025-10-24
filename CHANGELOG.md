@@ -24,6 +24,8 @@ All notable changes to this project will be documented in this file.
 
 - Plan of action for new CQC Ingestion process.
 
+- Added validation script for flatten CQC location process and test script for this validation.
+
 ### Changed
 - Migrated Polars validation scripts over to use PointBlank (compatible with >= Python 3.11), so far:
   - locations_raw
