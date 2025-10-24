@@ -83,6 +83,8 @@ All notable changes to this project will be documented in this file.
 
 - Created a job to clean the full CQC location data to remove some unwanted data, join in ONS postcode data and split registered and deregistered locations.
 
+- Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

@@ -1,29 +1,22 @@
-from pyspark.sql import DataFrame, functions as F, Window
-from pyspark.sql.types import MapType, FloatType
 from typing import List
 
+from pyspark.sql import DataFrame, Window
+from pyspark.sql import functions as F
+from pyspark.sql.types import FloatType, MapType
+
+from projects.utils.utils.utils import calculate_new_column, calculate_windowed_column
 from utils.column_names.ind_cqc_pipeline_columns import IndCqcColumns as IndCQC
 from utils.column_values.categorical_column_values import (
     EstimateFilledPostsSource,
     JobGroupLabels,
     MainJobRoleLabels,
 )
+from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
+    AscwdsWorkerValueLabelsJobGroup,
+)
 from utils.value_labels.ascwds_worker.ascwds_worker_mainjrid import (
     AscwdsWorkerValueLabelsMainjrid as AscwdsJobRoles,
 )
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
-
-from utils.value_labels.ascwds_worker.ascwds_worker_jobgroup_dictionary import (
-    AscwdsWorkerValueLabelsJobGroup,
-)
-from utils.column_values.categorical_column_values import (
-    JobGroupLabels,
-    MainJobRoleLabels,
-)
-from projects.utils.utils.utils import calculate_new_column, calculate_windowed_column
-
 
 list_of_job_roles_sorted = sorted(list(AscwdsJobRoles.labels_dict.values()))
 list_of_job_groups_sorted = sorted(
@@ -39,6 +32,7 @@ list_of_non_rm_managers = sorted(
 )
 
 
+# Converted to polars - projects\_03_independent_cqc\_07_estimate_filled_posts_by_job_role\fargate\utils\utils.py
 def aggregate_ascwds_worker_job_roles_per_establishment(
     df: DataFrame, list_of_job_roles: list
 ) -> DataFrame:
@@ -106,6 +100,7 @@ def create_map_column(
     return df
 
 
+# Converted to polars - projects\_03_independent_cqc\_07_estimate_filled_posts_by_job_role\fargate\utils\utils.py
 def merge_dataframes(
     estimated_filled_posts_df: DataFrame,
     aggregated_job_roles_per_establishment_df: DataFrame,
