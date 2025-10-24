@@ -31,10 +31,10 @@ def lambda_handler(event, context):
     base_paths = fs.find(
         f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
-    bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
+    bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     logger.info("bucket_prefix is %s", bucket_prefix)
     partitions = [
-        p.removeprefix(bucket_prefix).removesuffix(".parquet")
+        "/".join(p.removeprefix(bucket_prefix).split("/")[:-1])
         for p in base_paths
         if "import_date=" in p
     ]
