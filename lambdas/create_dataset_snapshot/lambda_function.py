@@ -39,9 +39,9 @@ def lambda_handler(event, context):
         if "import_date=" in p and p.endswith("/")
     ]
     ## For all partitions make snapshot
-    logger.info("partitions found", partitions)
+    logger.info("partitions found %s", partitions)
     for partition in partitions:
-        logger.info("Inside partition: ", partition)
+        logger.info("Inside partition: %s", partition)
 
         snapshot_df = build_snapshot_table_from_delta(
             bucket=input_parse.group("bucket"),
