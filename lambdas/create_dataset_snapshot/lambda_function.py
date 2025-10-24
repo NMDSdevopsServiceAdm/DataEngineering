@@ -34,10 +34,7 @@ def lambda_handler(event, context):
     bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
 
     partitions = [
-        "/".join(p.replace(bucket_prefix, "").split("/")[:5])
-        + "/"  # keep only year/month/day/import_date folder
-        for p in base_paths
-        if "import_date=" in p
+        p.replace(bucket_prefix, "") for p in base_paths if "import_date=" in p
     ]
     ## For all partitions make snapshot
     logger.info("partitions found %s", partitions)
