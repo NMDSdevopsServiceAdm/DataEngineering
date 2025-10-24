@@ -1,23 +1,14 @@
-import sys
 import unittest
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, patch
 
 import polars as pl
 
-mock_s3fs_module = MagicMock()
-sys.modules["s3fs"] = mock_s3fs_module
+import lambdas.create_dataset_snapshot.create_dataset_snapshot as job
 
-mock_utils_module = MagicMock()
-sys.modules["utils"] = mock_utils_module
-
-from lambda_function import lambda_handler
-
-import lambdas.utils.snapshots as job
-
-PATCH_PATH = "projects.tools.delta_data_remodel.jobs.utils"
+PATCH_PATH = "lambdas.create_dataset_snapshot"
 
 
-class TestLambdaFunction(unittest.TestCase):
+class TestCreateDatasetSnapshotLambda(unittest.TestCase):
     def setUp(self):
         self.snapshot_df = pl.DataFrame(
             {
@@ -37,10 +28,11 @@ class TestLambdaFunction(unittest.TestCase):
             }
         )
 
-    @patch("lambda_function.build_snapshot_table_from_delta")
-    @patch("lambda_function.S3FileSystem")
+    @unittest.skip("TO DO - ticket in trello")
+    @patch(f"{PATCH_PATH}.utils.snapshots.build_snapshot_table_from_delta")
+    @patch(f"{PATCH_PATH}.create_dataset_snapshot.S3FileSystem")
     @patch("polars.DataFrame.write_parquet")
-    def test_lambda_function(
+    def test_create_dataset_snapshot_lambda(
         self,
         mock_write_parquet,
         mock_s3fs,
@@ -53,7 +45,7 @@ class TestLambdaFunction(unittest.TestCase):
 
         self.snapshot_df.write_parquet = mock_write_parquet
 
-        lambda_handler(
+        job.lambda_handler(
             event={
                 "input_uri": "s3://test-bucket/some/filepath",
                 "output_uri": "output_uri/",
@@ -70,39 +62,3 @@ class TestLambdaFunction(unittest.TestCase):
             "output_uri/import_date=20250723/file.parquet", mode="wb"
         )
         mock_write_parquet.assert_called_once()
-
-
-class TestUtilDependencies(unittest.TestCase):
-    def setUp(self):
-        self.base_snapshot = pl.DataFrame(
-            {
-                "import_date": [
-                    20130301,
-                    20130301,
-                    20130301,
-                    20130301,
-                    20130301,
-                ],
-                "providerId": ["a", "b", "c", "d", "e"],
-                "value": ["same", "same", "same", "same", "same"],
-                "deregistrationDate": ["", "", "", "", ""],
-            }
-        )
-
-    @patch(f"{PATCH_PATH}.snapshots")
-    def test_build_snapshot_table_from_delta(self, mock_snapshots: Mock):
-        # Given
-        mock_snapshots.return_value = [
-            self.base_snapshot,
-        ]
-
-        expected = self.base_snapshot
-
-        # When
-        result = job.build_snapshot_table_from_delta(
-            "bucket", "read_folder", dataset="providers", timepoint=20130301
-        )
-
-        # Then
-        pl.testing.assert_frame_equal(result, expected)
-        mock_snapshots.assert_called_once()

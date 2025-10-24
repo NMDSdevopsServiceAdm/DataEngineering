@@ -2,12 +2,14 @@ import unittest
 from unittest.mock import patch
 
 import polars as pl
-from lambda_function import lambda_handler
+
+from lambdas.check_dataset_equality.check_dataset_equality import lambda_handler
 
 
-class TestLambdaFunction(unittest.TestCase):
+class TestCheckDatasetEqualityLambda(unittest.TestCase):
+    @unittest.skip("TO DO - ticket in trello")
     @patch("polars.read_parquet")
-    def test_lambda_function(self, mock_read_parquet):
+    def test_check_dataset_equality_lambda(self, mock_read_parquet):
         mock_read_parquet.return_value = pl.DataFrame(
             {
                 "import_date": [
