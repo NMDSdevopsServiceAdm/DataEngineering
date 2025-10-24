@@ -20,11 +20,7 @@ def lambda_handler(event, context):
     )
     year = event["year"]
     logger.info("year is %s", year)
-    date_int = int(
-        datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
-            "%Y%m%d"
-        )
-    )
+
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
@@ -37,7 +33,7 @@ def lambda_handler(event, context):
     partitions = [
         "/".join(p.removeprefix(bucket_prefix).split("/")[:-1])
         for p in base_paths
-        if "import_date=" in p and (year is None or f"year={year}/" in p)
+        if "import_date=" in p and (year is "" or f"year={year}/" in p)
     ]
     ## For all partitions make snapshot
     logger.info("partitions found %s", partitions)
@@ -58,5 +54,5 @@ def lambda_handler(event, context):
                 [Keys.year, Keys.month, Keys.day, Keys.import_date]
             ).write_parquet(destination, compression="snappy")
         logger.info(
-            f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
+            f"Finished processing snapshots for {event['dataset']}. The files can be found at {event['output_uri']}"
         )
