@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     input_parse = match(
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", event["input_uri"]
     )
-    year = event["snapshot_date"]
+    year = event["year"]
     logger.info("year is %s", year)
     date_int = int(
         datetime.strptime(event["snapshot_date"], "%Y-%m-%dT%H:%M:%S.%fZ").strftime(
