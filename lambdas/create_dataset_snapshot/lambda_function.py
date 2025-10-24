@@ -27,21 +27,34 @@ def lambda_handler(event, context):
     logger.info(
         f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
     )
-
-    snapshot_df = build_snapshot_table_from_delta(
-        bucket=input_parse.group("bucket"),
-        read_folder=input_parse.group("read_folder"),
-        dataset=event["dataset"],
-        timepoint=date_int,
-    )
-
-    output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
-
     fs = S3FileSystem()
-    with fs.open(output_uri, mode="wb") as destination:
-        snapshot_df.drop(
-            [Keys.year, Keys.month, Keys.day, Keys.import_date]
-        ).write_parquet(destination, compression="snappy")
-    logger.info(
-        f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
+    base_paths = fs.find(
+        f"s3//{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
+    partitions = [
+        p.replace(
+            f"{input_parse.group('bucket')}/", ""
+        )  # do we need to take the dataset name out as well?
+        for p in base_paths
+        if "import_date=" in p and p.endswith("/")
+    ]
+    ## For all partitions make snapshot
+    logger.info("partitions found", partitions)
+    for partition in partitions:
+        logger.info("Inside partition: ", partition)
+
+        snapshot_df = build_snapshot_table_from_delta(
+            bucket=input_parse.group("bucket"),
+            read_folder=input_parse.group("read_folder"),
+            dataset=event["dataset"],
+            timepoint=partition,
+        )
+        output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
+
+        with fs.open(output_uri, mode="wb") as destination:
+            snapshot_df.drop(
+                [Keys.year, Keys.month, Keys.day, Keys.import_date]
+            ).write_parquet(destination, compression="snappy")
+        logger.info(
+            f"Finished processing snapshot {event['snapshot_date']}. The files can be found at {event['output_uri']}"
+        )
