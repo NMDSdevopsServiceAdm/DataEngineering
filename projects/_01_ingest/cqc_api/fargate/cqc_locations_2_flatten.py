@@ -1,4 +1,5 @@
 from polars_utils import logger, utils
+from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
@@ -61,7 +62,14 @@ def main(
 
     # TODO - impute_historic_relationships
 
-    # TODO - impute_missing_struct_column (gac_service_types, regulated_activities, specialisms)
+    cqc_lf = fUtils.impute_missing_struct_columns(
+        cqc_lf,
+        [
+            CQCLClean.gac_service_types,
+            CQCLClean.regulated_activities,
+            CQCLClean.specialisms,
+        ],
+    )
 
     # TODO - remove_locations_that_never_had_regulated_activities
 
