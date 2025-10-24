@@ -21,10 +21,8 @@ def assign_cqc_sector(cqc_lf: pl.LazyFrame, la_provider_ids: list[str]) -> pl.La
         pl.LazyFrame: Input dataframe with new CQC sector column.
     """
     cqc_lf = cqc_lf.with_columns(
-        # 1. If the Provider ID is in the list of la_provider_ids then assign "Local authority"
         pl.when(pl.col(CQCLClean.provider_id).is_in(la_provider_ids))
         .then(pl.lit(Sector.local_authority))
-        # 2. Otherwise, assign "Independent"
         .otherwise(pl.lit(Sector.independent))
         .alias(CQCLClean.cqc_sector)
     )
