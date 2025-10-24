@@ -19,6 +19,14 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
+    clean_provider_id_column_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+            (Keys.import_date, pl.String()),
+        ]
+    )
+
     assign_cqc_sector_schema = pl.Schema(
         [
             (CQCL.location_id, pl.String()),

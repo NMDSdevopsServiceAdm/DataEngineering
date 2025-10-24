@@ -1,3 +1,5 @@
+import polars as pl
+
 from polars_utils import logger, utils
 from projects._01_ingest.cqc_api.fargate.utils import flatten_utils as fUtils
 from schemas.cqc_locations_schema_polars import POLARS_LOCATION_SCHEMA
@@ -57,8 +59,9 @@ def main(
 
     # TODO - column_to_date (cqc_location_import_date)
 
-    # TODO - clean_provider_id_column
-    # TODO - select_rows_with_non_null_value (provider_id)
+    cqc_lf = fUtils.clean_provider_id_column(cqc_lf=cqc_lf)
+    cqc_lf = cqc_lf.filter(pl.col(CQCLClean.provider_id).is_not_null())
+
     cqc_lf = fUtils.assign_cqc_sector(
         cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
     )
