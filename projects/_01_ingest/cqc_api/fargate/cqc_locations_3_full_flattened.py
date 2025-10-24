@@ -91,7 +91,7 @@ def build_snapshot_table_from_delta(
         dataset (str): CQC organisation type (locations or providers)
         partition (str): partition string of the base path which is used to get data for timepoint (yyyymmdd)
     Returns:
-    Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
+        Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
     """
     # get import date from partition str and save as timepoint
     timepoint = int(search(r"import_date=(\d{8})", partition).group(1))
