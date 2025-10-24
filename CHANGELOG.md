@@ -85,6 +85,8 @@ All notable changes to this project will be documented in this file.
 
 - Moved the preparation of worker job role data into its own polars task in the ind CQC estimates pipeline.
 
+- Reverted merge_ind_cqc_data job to state on 15th September, before using dimension datasets.
+
 ### Improved
 - Moved postcode corrections dictionary into a csv file in s3.
 

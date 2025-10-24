@@ -15,11 +15,7 @@
               "Parameters": {
                 "JobName": "${merge_ind_cqc_data_job_name}",
                 "Arguments": {
-                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
-                  "--gac_services_dimension_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_gac_service/",
-                  "--regulated_activities_dimension_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_regulated_activities/",
-                  "--specialisms_dimension_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_specialisms/",
-                  "--postcode_matching_dimension_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=dim_postcode_matching/",
+                  "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
                   "--cleaned_cqc_pir_source": "${dataset_bucket_uri}/domain=CQC/dataset=pir_cleaned/",
                   "--cleaned_ascwds_workplace_source": "${dataset_bucket_uri}/domain=ASCWDS/dataset=workplace_cleaned/",
                   "--cleaned_ct_non_res_source": "${dataset_bucket_uri}/domain=capacity_tracker/dataset=capacity_tracker_non_residential_cleaned/",
@@ -59,7 +55,7 @@
                       "Parameters": {
                         "JobName": "${validate_merged_ind_cqc_data_job_name}",
                         "Arguments": {
-                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=full_locations_api_cleaned/",
+                          "--cleaned_cqc_location_source": "${dataset_bucket_uri}/domain=CQC_delta/dataset=cqc_locations_04_full_cleaned_registered/",
                           "--merged_ind_cqc_source": "${dataset_bucket_uri}/domain=ind_cqc_filled_posts/dataset=ind_cqc_merged_data/",
                           "--report_destination": "${dataset_bucket_uri}/domain=data_validation_reports/dataset=data_quality_report_ind_cqc_merged_data/"
                         }

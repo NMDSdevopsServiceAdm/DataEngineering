@@ -103,19 +103,6 @@ class MergeIndCQCData:
         ]
     )
 
-    remove_specialist_colleges_schema = StructType(
-        [
-            StructField(CQCL.location_id, StringType(), True),
-            StructField(Keys.import_date, StringType(), True),
-            StructField(
-                CQCLClean.services_offered,
-                ArrayType(
-                    StringType(),
-                ),
-            ),
-        ]
-    )
-
 
 @dataclass
 class ValidateMergedIndCqcData:
