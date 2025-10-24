@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from re import match
+from re import match, search
 
 from s3fs import S3FileSystem
 
@@ -49,7 +49,8 @@ def lambda_handler(event, context):
             dataset=event["dataset"],
             partition=partition,
         )
-        output_uri = event["output_uri"] + f"import_date={date_int}/file.parquet"
+        timepoint = int(search(r"import_date=(\d{8})", partition).group(1))
+        output_uri = event["output_uri"] + f"import_date={timepoint}/file.parquet"
 
         with fs.open(output_uri, mode="wb") as destination:
             snapshot_df.drop(
