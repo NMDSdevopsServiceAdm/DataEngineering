@@ -8,11 +8,27 @@ from utils.column_values.categorical_column_values import (
     CareHome,
     LocationType,
     RegistrationStatus,
+    Sector,
 )
 
 
 @dataclass
 class FlattenUtilsData:
+    assign_cqc_sector = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+    ]
+    expected_assign_cqc_sector_local_authority = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+        (Sector.local_authority, Sector.local_authority),
+    ]
+    expected_assign_cqc_sector_independent = [
+        ("1-001", "1-002"),
+        ("1-0001", "1-0002"),
+        (Sector.independent, Sector.independent),
+    ]
+
     impute_missing_struct_single_struct_col_rows = [
         ("1-001", "1-001", "1-001", "1-001"),
         ("20240101", "20240201", "20240301", "20240401"),

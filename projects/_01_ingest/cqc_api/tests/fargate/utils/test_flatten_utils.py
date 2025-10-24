@@ -13,12 +13,44 @@ from projects._01_ingest.unittest_data.polars_ingest_test_file_schema import (
 from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
+from utils.column_values.categorical_column_values import Sector
 
 PATCH_PATH = "projects._01_ingest.cqc_api.fargate.utils.flatten_utils"
 
 
-class ImputeMissingStructColumnsTests(unittest.TestCase):
+class AssignCqcSectorTests(unittest.TestCase):
+    def test_assigns_local_authority(self):
+        lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_schema,
+        )
+        local_authority_provider_ids = lf.collect()[CQCLClean.provider_id].to_list()
 
+        result_lf = job.assign_cqc_sector(lf, local_authority_provider_ids)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_local_authority,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+    def test_assigns_independent(self):
+        lf = pl.LazyFrame(
+            data=Data.assign_cqc_sector,
+            schema=Schemas.assign_cqc_sector_schema,
+        )
+        local_authority_provider_ids = ["non-matching-id-1", "non-matching-id-2"]
+
+        result_lf = job.assign_cqc_sector(lf, local_authority_provider_ids)
+
+        expected_lf = pl.LazyFrame(
+            data=Data.expected_assign_cqc_sector_independent,
+            schema=Schemas.expected_assign_cqc_sector_schema,
+        )
+        pl_testing.assert_frame_equal(expected_lf, result_lf)
+
+
+class ImputeMissingStructColumnsTests(unittest.TestCase):
     def test_single_struct_column_imputation(self):
         """Tests imputation for a single struct column with None and empty dicts."""
 

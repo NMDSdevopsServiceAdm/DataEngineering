@@ -19,6 +19,16 @@ from utils.column_names.raw_data_files.ons_columns import (
 
 @dataclass
 class FlattenUtilsSchema:
+    assign_cqc_sector_schema = pl.Schema(
+        [
+            (CQCL.location_id, pl.String()),
+            (CQCL.provider_id, pl.String()),
+        ]
+    )
+    expected_assign_cqc_sector_schema = pl.Schema(
+        list(assign_cqc_sector_schema.items()) + [(CQCLClean.cqc_sector, pl.String())]
+    )
+
     impute_missing_struct_schema = pl.Schema(
         [
             (CQCLClean.location_id, pl.String()),

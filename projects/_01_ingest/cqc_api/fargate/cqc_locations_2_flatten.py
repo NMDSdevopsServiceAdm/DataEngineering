@@ -5,6 +5,7 @@ from utils.column_names.cleaned_data_files.cqc_location_cleaned import (
     CqcLocationCleanedColumns as CQCLClean,
 )
 from utils.column_names.ind_cqc_pipeline_columns import PartitionKeys as Keys
+from utils.cqc_local_authority_provider_ids import LocalAuthorityProviderIds
 
 logger = logger.get_logger(__name__)
 
@@ -58,7 +59,9 @@ def main(
 
     # TODO - clean_provider_id_column
     # TODO - select_rows_with_non_null_value (provider_id)
-    # TODO - add_cqc_sector_column_to_cqc_locations_dataframe
+    cqc_lf = fUtils.assign_cqc_sector(
+        cqc_lf=cqc_lf, la_provider_ids=LocalAuthorityProviderIds.known_ids
+    )
 
     # TODO - impute_historic_relationships
 
