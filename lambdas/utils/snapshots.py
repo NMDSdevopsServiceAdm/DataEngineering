@@ -38,7 +38,7 @@ def build_snapshot_table_from_delta(
         bucket (str): delta dataset bucket
         read_folder (str): delta dataset folder
         dataset (str): CQC organisation type (locations or providers)
-        partition (int): partition string of the base path which is used to get data for timepoint (yyyymmdd)
+        partition (str): partition string of the base path which is used to get data for timepoint (yyyymmdd)
 
     Returns:
         Optional[pl.DataFrame]: Snapshot pl.DataFrame, if one exists, else None
