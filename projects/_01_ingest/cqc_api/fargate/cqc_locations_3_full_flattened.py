@@ -32,49 +32,46 @@ def main(
     dataset: str,
     input_uri: str,
     output_uri: str,
+    partition: Optional[str] = None,
 ) -> None:
-
+    fs = S3FileSystem()
     input_parse = match(
         "s3://(?P<bucket>[\w\-=.]+)/(?P<read_folder>[\w/-=.]+)", input_uri
     )
 
-    logger.info(
-        f"bucket={input_parse.group('bucket')}, read_folder={input_parse.group('read_folder')}"
-    )
-
-    fs = S3FileSystem()
-
-    base_paths = fs.find(
-        f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
-    )
     bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
-    logger.info("bucket_prefix is %s", bucket_prefix)
-    partitions = [
-        "/".join(p.removeprefix(bucket_prefix).split("/")[:-1])
-        for p in base_paths
-        if "import_date=" in p
-    ]
-    ## For all partitions make snapshot
-    logger.info("partitions found %s", partitions)
-    for partition in partitions:
-        logger.info("Inside partition: %s", partition)
 
+    # If partition provided, process just that one
+    if partition:
+        partitions = [partition]
+    else:
+        # Otherwise discover all partitions
+        base_paths = fs.find(f"s3://{bucket_prefix}")
+        partitions = [
+            "/".join(p.removeprefix(bucket_prefix).split("/")[:-1])
+            for p in base_paths
+            if "import_date=" in p
+        ]
+
+    logger.info("Partitions to process: %s", partitions)
+
+    for partition in partitions:
+        logger.info("Processing partition: %s", partition)
         snapshot_df = build_snapshot_table_from_delta(
             bucket=input_parse.group("bucket"),
             read_folder=input_parse.group("read_folder"),
             dataset=dataset,
             partition=partition,
         )
-        timepoint = int(search(r"import_date=(\d{8})", partition).group(1))
-        output_uri = output_uri + partition + "/file.parquet"
+        if snapshot_df is None:
+            continue
 
-        with fs.open(output_uri, mode="wb") as destination:
+        output_path = f"{output_uri.rstrip('/')}/{partition.lstrip('/')}/file.parquet"
+        with fs.open(output_path, "wb") as destination:
             snapshot_df.drop(
                 [Keys.year, Keys.month, Keys.day, Keys.import_date]
             ).write_parquet(destination, compression="snappy")
-        logger.info(
-            f"Finished processing snapshots for {dataset}. The files can be found at {output_uri}"
-        )
+        logger.info(f"✅ Wrote snapshot to {output_path}")
 
 
 def build_snapshot_table_from_delta(
