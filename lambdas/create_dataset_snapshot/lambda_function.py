@@ -31,11 +31,11 @@ def lambda_handler(event, context):
     base_paths = fs.find(
         f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
-    bucket_prefix = (
-        f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
-    )
+    bucket_prefix = f"{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
+
     partitions = [
-        p.replace(bucket_prefix, "")  # do we need to take the dataset name out as well?
+        "/".join(p.replace(bucket_prefix, "").split("/")[:5])
+        + "/"  # keep only year/month/day/import_date folder
         for p in base_paths
         if "import_date=" in p
     ]
@@ -51,7 +51,7 @@ def lambda_handler(event, context):
             partition=partition,
         )
         timepoint = int(search(r"import_date=(\d{8})", partition).group(1))
-        output_uri = event["output_uri"] + f"import_date={timepoint}/file.parquet"
+        output_uri = event["output_uri"] + partition + "/file.parquet"
 
         with fs.open(output_uri, mode="wb") as destination:
             snapshot_df.drop(
