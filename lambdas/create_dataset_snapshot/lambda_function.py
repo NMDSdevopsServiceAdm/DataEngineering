@@ -31,12 +31,13 @@ def lambda_handler(event, context):
     base_paths = fs.find(
         f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}"
     )
+    bucket_prefix = (
+        f"s3://{input_parse.group('bucket')}/{input_parse.group('read_folder')}/"
+    )
     partitions = [
-        p.replace(
-            f"{input_parse.group('bucket')}/", ""
-        )  # do we need to take the dataset name out as well?
+        p.replace(bucket_prefix, "")  # do we need to take the dataset name out as well?
         for p in base_paths
-        if "import_date=" in p and p.endswith("/")
+        if "import_date=" in p
     ]
     ## For all partitions make snapshot
     logger.info("partitions found %s", partitions)
